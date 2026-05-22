@@ -163,5 +163,9 @@ export const es: Dictionary = {
     degreeGridHint: "Los grados de la escala muestran su numeral romano; los acordes prestados usan notación ♭/♯ estándar.",
     voicingLensCrossRef: "Voicing y lente del acorde están en la pestaña Vista.",
     chordPositionLabel: "Acorde",
+    qualityGroupTriads: "Tríadas",
+    qualityGroupSus: "Suspendidos / Quinta",
+    qualityGroupSixths: "Acordes de 6ª",
+    qualityGroupSevenths: "Acordes de 7ª",
   },
 };

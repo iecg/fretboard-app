@@ -2,7 +2,7 @@ import { startTransition, useMemo } from "react";
 import clsx from "clsx";
 import { useSetAtom } from "jotai";
 import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
-import { SCALE_FAMILIES, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
+import { SCALE_FAMILIES, NOTES, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
@@ -21,10 +21,9 @@ import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
 import { DegreeGrid } from "../shared/DegreeGrid";
-import { ChordQualitySelect } from "../shared/ChordQualitySelect";
 import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
-import { RootNoteSelect } from "../shared/RootNoteSelect";
 import { BackingTrackControls } from "./BackingTrackControls";
+import { buildQualitySelectGroups } from "./qualityGroups";
 import shared from "../shared/shared.module.css";
 import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
 import { CUSTOM_PRESET_ID, updateProgressionStepRootAtom } from "../../store/progressionAtoms";
@@ -97,6 +96,17 @@ export function SongControls() {
         ],
       },
     ],
+    [t],
+  );
+
+  const qualityGroups: LabeledSelectGroup[] = useMemo(
+    () =>
+      buildQualitySelectGroups({
+        triads: t("controls.qualityGroupTriads"),
+        sus: t("controls.qualityGroupSus"),
+        sixths: t("controls.qualityGroupSixths"),
+        sevenths: t("controls.qualityGroupSevenths"),
+      }),
     [t],
   );
 
@@ -175,10 +185,15 @@ export function SongControls() {
         {t("inspector.groupKey")}
       </GroupHeader>
       <Prop label={t("controls.root")} span={6}>
-        <RootNoteSelect
+        <LabeledSelect
+          label={t("controls.root")}
+          hideLabel
           value={rootNote}
-          onSelect={handleRootNote}
-          useFlats={useFlats}
+          onChange={handleRootNote}
+          options={NOTES.map((note) => ({
+            value: note,
+            label: getNoteDisplay(note, rootNote, useFlats),
+          }))}
         />
       </Prop>
       <Prop label={t("inspector.scaleLabel")} span={6}>
@@ -367,8 +382,9 @@ export function SongControls() {
             </div>
             <div className={shared["control-section"]}>
               <span className={styles["field-label"]}>Quality</span>
-              <ChordQualitySelect
-                label="Chord quality"
+              <LabeledSelect
+                label={t("controls.quality")}
+                hideLabel
                 value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
                 onChange={(quality) =>
                   updateProgressionStepQuality({
@@ -376,6 +392,7 @@ export function SongControls() {
                     qualityOverride: quality,
                   })
                 }
+                groups={qualityGroups}
               />
               <p className={shared["field-hint"]}>
                 {activeResolvedProgressionStep?.qualityOverrideApplied

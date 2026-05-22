@@ -163,5 +163,9 @@ export const en: Dictionary = {
     degreeGridHint: "In-key degrees show their Roman numeral; borrowed roots use standard ♭/♯ notation.",
     voicingLensCrossRef: "Voicing & lens for this chord live on the View tab.",
     chordPositionLabel: "Chord",
+    qualityGroupTriads: "Triads",
+    qualityGroupSus: "Suspended / Power",
+    qualityGroupSixths: "6th Chords",
+    qualityGroupSevenths: "7th Chords",
   },
 };

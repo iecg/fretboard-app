@@ -160,6 +160,10 @@ export interface Dictionary {
     degreeGridHint: string;
     voicingLensCrossRef: string;
     chordPositionLabel: string;
+    qualityGroupTriads: string;
+    qualityGroupSus: string;
+    qualityGroupSixths: string;
+    qualityGroupSevenths: string;
   };
 }
 

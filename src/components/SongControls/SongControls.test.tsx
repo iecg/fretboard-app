@@ -31,7 +31,7 @@ describe("SongControls", () => {
     expect(screen.getByRole("group", { name: "Chord root" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Chord quality" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Quality" })).toBeInTheDocument();
   });
 
   it("loads a preset into the editable list", async () => {
@@ -50,16 +50,19 @@ describe("SongControls", () => {
   it("selects steps and edits degree, duration, and quality", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<SongControls />, store);
+    const user = userEvent.setup();
 
-    await userEvent.click(screen.getByRole("button", { name: /^2.*V/i }));
+    await user.click(screen.getByRole("button", { name: /^2.*V/i }));
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
-    await userEvent.click(within(screen.getByRole("group", { name: "Chord root" })).getByRole("button", { name: "A vi" }));
+    await user.click(within(screen.getByRole("group", { name: "Chord root" })).getByRole("button", { name: "A vi" }));
     // Set duration value to 2 via stepper
     fireEvent.click(screen.getByLabelText(/Increase Duration value/i));
     // Set duration unit to Bar
-    await userEvent.click(within(screen.getByRole("group", { name: "Duration unit" })).getByRole("button", { name: "Bar" }));
-    await userEvent.click(within(screen.getByRole("group", { name: "Chord quality" })).getByRole("button", { name: "7" }));
+    await user.click(within(screen.getByRole("group", { name: "Duration unit" })).getByRole("button", { name: "Bar" }));
+    // Select quality via combobox
+    await user.click(screen.getByRole("combobox", { name: "Quality" }));
+    await user.click(screen.getByRole("option", { name: "7" }));
 
     expect(store.get(progressionStepsAtom)[1]).toMatchObject({
       degree: "vi",
@@ -68,7 +71,7 @@ describe("SongControls", () => {
     });
   });
 
-  it("keeps the quality override sticky on re-click (does not null it)", async () => {
+  it("keeps the quality override sticky on re-select (does not null it)", async () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
@@ -76,10 +79,11 @@ describe("SongControls", () => {
       ]],
     ]);
     renderWithStore(<SongControls />, store);
-    const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
-    // "7" is the short label for Dominant 7th — it is the active cell.
-    // Re-clicking the already-active quality should keep the override, not null it.
-    await userEvent.click(within(qualityGroup).getByRole("button", { name: "7" }));
+    const user = userEvent.setup();
+    // "7" is the short label for Dominant 7th — it is the active value.
+    // Re-selecting the already-active quality via the combobox should keep the override, not null it.
+    await user.click(screen.getByRole("combobox", { name: "Quality" }));
+    await user.click(screen.getByRole("option", { name: "7" }));
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
   });
 
@@ -222,21 +226,39 @@ describe("SongControls CHORDS list", () => {
   });
 });
 
-describe("SongControls QUALITY grid", () => {
+describe("SongControls QUALITY dropdown", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("renders the selected-chord Quality as a grid, not a scrolling bar", () => {
+  it("renders the selected-chord Quality as a combobox (not a button grid)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const qualityGroup = screen.getByRole("group", { name: "Chord quality" });
-    expect(qualityGroup).not.toHaveAttribute("data-overflow");
-    expect(within(qualityGroup).getByRole("button", { name: "Maj" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Quality" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Maj" })).not.toBeInTheDocument();
   });
 
   it("has no standalone Diatonic button", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.queryByRole("button", { name: "Diatonic" })).not.toBeInTheDocument();
+  });
+
+  it("opens with grouped options: Triads, Suspended / Power, 6th Chords, 7th Chords", async () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("combobox", { name: "Quality" }));
+    expect(screen.getByText("Triads")).toBeInTheDocument();
+    expect(screen.getByText("Suspended / Power")).toBeInTheDocument();
+    expect(screen.getByText("6th Chords")).toBeInTheDocument();
+    expect(screen.getByText("7th Chords")).toBeInTheDocument();
+  });
+
+  it("selecting a quality option calls updateProgressionStepQuality", async () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    renderWithStore(<SongControls />, store);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("combobox", { name: "Quality" }));
+    await user.click(screen.getByRole("option", { name: "M7" }));
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Major 7th");
   });
 
   it("shows the selected root in the DegreeGrid when a quality override is set", () => {
@@ -262,6 +284,30 @@ describe("SongControls DEGREE", () => {
     const cells = within(group).getAllByRole("button");
     expect(cells.length).toBe(12);
     expect(within(group).queryByRole("button", { name: "Off" })).toBeNull();
+  });
+});
+
+describe("SongControls ROOT dropdown (KEY section)", () => {
+  it("renders the song key Root as a combobox with 12 options", async () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const user = userEvent.setup();
+    // The KEY section root is a LabeledSelect combobox
+    const rootCombos = screen.getAllByRole("combobox", { name: "Root" });
+    expect(rootCombos.length).toBeGreaterThanOrEqual(1);
+    // Open and verify 12 note options
+    await user.click(rootCombos[0]);
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBe(12);
+  });
+
+  it("selecting a root note updates rootNoteAtom", async () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    renderWithStore(<SongControls />, store);
+    const user = userEvent.setup();
+    const rootCombos = screen.getAllByRole("combobox", { name: "Root" });
+    await user.click(rootCombos[0]);
+    await user.click(screen.getByRole("option", { name: "G" }));
+    expect(store.get(rootNoteAtom)).toBe("G");
   });
 });
 
