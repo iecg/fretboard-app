@@ -64,12 +64,18 @@ function fullVoicings(params: GenerateVoicingsParams): Voicing[] {
 }
 
 /**
+ * Maximum fretted-fret span for a close voicing. Capped at 4 so the candidate
+ * set stays within playable shapes (typical hand reach around mid-neck). A
+ * larger value re-admits spread/spider shapes that don't feel "close".
+ */
+export const CLOSE_VOICING_SPAN_LIMIT = 4;
+
+/**
  * Generate Close voicings: 3/4/5-note polygons on adjacent strings, where each
  * polygon contains every chord tone (no skipped tones). Note count matches the
  * chord's tone count: triads = 3, tetrads = 4, pentads = 5.
  *
- * Span limit: a maximum 6-fret raw span (the pinky reach of a typical hand at
- * mid-neck). The hand-span physical filter at the atom layer prunes further.
+ * Span limit: see {@link CLOSE_VOICING_SPAN_LIMIT}.
  */
 function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
   const { chordRoot, chordType, tuning, maxFret } = params;
@@ -97,7 +103,6 @@ function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
     candidateFrets[s] = frets;
   }
 
-  const RAW_SPAN_LIMIT = 6;
   const voicings: Voicing[] = [];
   const seen = new Set<string>();
 
@@ -128,7 +133,7 @@ function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
         if (frettedFrets.length >= 2) {
           const span =
             Math.max(...frettedFrets) - Math.min(...frettedFrets);
-          if (span > RAW_SPAN_LIMIT) return;
+          if (span > CLOSE_VOICING_SPAN_LIMIT) return;
         }
 
         const sorted = [...picked].sort((a, b) => a.stringIndex - b.stringIndex);

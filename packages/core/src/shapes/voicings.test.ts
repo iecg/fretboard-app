@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { generateVoicings, type VoicingType } from "./voicings";
+import {
+  generateVoicings,
+  CLOSE_VOICING_SPAN_LIMIT,
+  type VoicingType,
+} from "./voicings";
+import { NOTES } from "../theory";
 
 const STD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
 
@@ -157,5 +162,53 @@ describe("closeVoicings — open-string filter", () => {
       const maxFret = Math.max(...v.notes.map((n) => n.fretIndex));
       expect(maxFret).toBeLessThan(5);
     }
+  });
+});
+
+describe("closeVoicings span cap", () => {
+  it("exports CLOSE_VOICING_SPAN_LIMIT as 4", () => {
+    expect(CLOSE_VOICING_SPAN_LIMIT).toBe(4);
+  });
+
+  it("never emits a candidate whose fretted-fret span exceeds the cap", () => {
+    const allChords = [
+      "Major Triad",
+      "Minor Triad",
+      "Dominant 7th",
+      "Major 7th",
+    ] as const;
+    for (const chordType of allChords) {
+      for (const chordRoot of NOTES) {
+        const voicings = generateVoicings({
+          chordRoot,
+          chordType,
+          tuning: STD_TUNING,
+          maxFret: 24,
+          voicingType: "close",
+        });
+        for (const v of voicings) {
+          const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+          if (fretted.length < 2) continue;
+          const span = Math.max(...fretted) - Math.min(...fretted);
+          expect(
+            span,
+            `${chordRoot} ${chordType}: ${JSON.stringify(
+              v.positionKeys,
+            )} span=${span}`,
+          ).toBeLessThanOrEqual(CLOSE_VOICING_SPAN_LIMIT);
+        }
+      }
+    }
+  });
+
+  it("emits at least one close voicing for C7 standard tuning", () => {
+    const voicings = generateVoicings({
+      chordRoot: "C",
+      chordType: "Dominant 7th",
+      tuning: STD_TUNING,
+      maxFret: 24,
+      voicingType: "close",
+    });
+    expect(voicings.length).toBeGreaterThan(0);
   });
 });
