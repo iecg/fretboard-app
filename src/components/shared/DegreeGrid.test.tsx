@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { DegreeGrid } from "./DegreeGrid";
+import styles from "./DegreeGrid.module.css";
 
 describe("DegreeGrid", () => {
   const baseProps = {
@@ -103,6 +104,29 @@ describe("DegreeGrid", () => {
         expect(btn.textContent).toContain(numeral);
         expect(btn.getAttribute("aria-label")).toContain(note.replace("#", "♯"));
       }
+    });
+
+    it("flips spelling to flats when useFlats=true overrides a sharp-default tonic", () => {
+      const { container } = render(
+        <DegreeGrid
+          {...baseProps}
+          scaleName="Major"
+          tonicNote="G"
+          selectedNote="G"
+          useFlats={true}
+        />,
+      );
+      // G major defaults to sharps — without the override, the C♯ chromatic
+      // slot would display "C♯". With useFlats=true it must render as "D♭",
+      // and no note-display span should contain a ♯.
+      const noteSpans = Array.from(
+        container.querySelectorAll<HTMLElement>(`.${styles.note}`),
+      );
+      expect(noteSpans).not.toHaveLength(0);
+      const displays = noteSpans.map((n) => n.textContent ?? "");
+      expect(displays).toContain("D♭");
+      expect(displays).not.toContain("C♯");
+      for (const d of displays) expect(d).not.toMatch(/♯/);
     });
 
     it("never renders a raw integer numeral as a borrowed label", () => {
