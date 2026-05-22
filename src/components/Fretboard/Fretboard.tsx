@@ -1,3 +1,4 @@
+'use memo'
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
 import { clsx } from "clsx";
 import { useAtomValue } from "jotai";
