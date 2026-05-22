@@ -342,9 +342,19 @@ describe("SongControls grid layout", () => {
     expect(screen.queryByRole("switch", { name: "Loop" })).not.toBeInTheDocument();
   });
 
-  it("shows a SELECTED header naming the active chord", () => {
-    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByText(/^Selected —/i)).toBeInTheDocument();
+  it("shows pill + chord-label + counter header for the active chord", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    // The pill class uses CSS Modules so query by role within the header element
+    const editorHeader = container.querySelector("header");
+    expect(editorHeader).toBeInTheDocument();
+    // Chord label shows the resolved chord name
+    expect(within(editorHeader!).getByText("C Major Triad")).toBeInTheDocument();
+    // Counter shows "Chord 1 / 2" (BASE_SEEDS has 2 steps, index 0 active)
+    expect(within(editorHeader!).getByText(/Chord 1 \/ 2/i)).toBeInTheDocument();
+    // Pill is present (aria-hidden, so not queryable by accessible name)
+    const pillEl = editorHeader!.querySelector("[aria-hidden='true']");
+    expect(pillEl).toBeInTheDocument();
+    expect(pillEl?.textContent?.trim()).toBe("I");
   });
 
   it("renders the rehosted backing-track controls", () => {

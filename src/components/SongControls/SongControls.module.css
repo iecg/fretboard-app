@@ -120,13 +120,45 @@
   flex-wrap: wrap;
 }
 
-.editor-selected {
+.editor-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2, 0.5rem);
+  margin-bottom: var(--space-3, 0.75rem);
+}
+
+.editor-degree-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  background: var(--faceplate-bg-elevated);
+  border: 1px solid var(--faceplate-divider);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-main);
   font-family: var(--font-mono);
-  font-size: 0.625rem;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.05em;
+}
+
+.editor-chord-label {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  flex: 1;
+}
+
+.editor-position {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
   text-transform: uppercase;
-  color: var(--dc-fg);
+  letter-spacing: 0.12em;
 }
 
 /* Editor sub-section labels (Degree / Duration / Quality) — matches the

@@ -162,5 +162,6 @@ export const en: Dictionary = {
     manualQualityHint: "Sets the chord quality directly.",
     degreeGridHint: "In-key degrees show their Roman numeral; borrowed roots use standard ♭/♯ notation.",
     voicingLensCrossRef: "Voicing & lens for this chord live on the View tab.",
+    chordPositionLabel: "Chord",
   },
 };

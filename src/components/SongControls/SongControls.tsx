@@ -300,10 +300,17 @@ export function SongControls() {
       <Prop span={3}>
         {activeStep ? (
           <div className={styles["editor-cell"]}>
-            <span className={styles["editor-selected"]}>
-              Selected — {activeStep.degree} ·{" "}
-              {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
-            </span>
+            <header className={styles["editor-header"]}>
+              <span className={styles["editor-degree-pill"]} aria-hidden="true">
+                {activeStep.degree}
+              </span>
+              <span className={styles["editor-chord-label"]}>
+                {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
+              </span>
+              <span className={styles["editor-position"]}>
+                {`${t("controls.chordPositionLabel")} ${activeProgressionStepIndex + 1} / ${progressionSteps.length}`}
+              </span>
+            </header>
             <div className={shared["control-section"]}>
               <span className={styles["field-label"]}>{t("controls.root")}</span>
               <p className={shared["field-hint"]}>

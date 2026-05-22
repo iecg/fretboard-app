@@ -159,6 +159,7 @@ export interface Dictionary {
     manualQualityHint: string;
     degreeGridHint: string;
     voicingLensCrossRef: string;
+    chordPositionLabel: string;
   };
 }
 
