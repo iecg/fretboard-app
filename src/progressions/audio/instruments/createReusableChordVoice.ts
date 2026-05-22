@@ -10,7 +10,6 @@ interface ReusableChordVoiceConfig {
 }
 
 const DEFAULT_SHARED_MAX_POLYPHONY = 32;
-
 export function createReusableChordVoice(
   config: ReusableChordVoiceConfig,
 ): ChordVoice {
@@ -47,19 +46,38 @@ export function createReusableChordVoice(
 
       const scheduledNotes = [...notes];
       const activeSynth = getSynth(dest, scheduledNotes);
-      activeSynth.triggerAttackRelease(
-        scheduledNotes,
-        config.durationFor(options),
-        time,
-        velocity,
-      );
+      const duration = config.durationFor(options);
+      const now = Tone.now();
+      const delayMs = Math.max(0, (time - now) * 1000);
 
       let cancelled = false;
+      let attackQueued = false;
+      let futureAttackTimer: ReturnType<typeof setTimeout> | null = null;
+
+      const queueAttack = () => {
+        if (cancelled) return;
+        attackQueued = true;
+        futureAttackTimer = null;
+        activeSynth.triggerAttackRelease(scheduledNotes, duration, time, velocity);
+      };
+
+      if (delayMs === 0) {
+        queueAttack();
+      } else {
+        futureAttackTimer = setTimeout(queueAttack, delayMs);
+      }
+
       return {
         cancel: () => {
           if (cancelled) return;
           cancelled = true;
-          activeSynth.triggerRelease(scheduledNotes, Tone.now());
+          if (futureAttackTimer) {
+            clearTimeout(futureAttackTimer);
+            futureAttackTimer = null;
+          }
+          if (attackQueued) {
+            activeSynth.triggerRelease(scheduledNotes, Tone.now());
+          }
         },
       };
     },

@@ -54,13 +54,15 @@ describe("organVoice — Tone.PolySynth backend", () => {
     expect(opts.volume).toBe(-10);
   });
 
-  it("triggers the full voicing once with the requested time + velocity (sustained default)", () => {
+  it("triggers the full voicing once with the requested time + velocity (sustained default)", async () => {
     organVoice.scheduleChord(
       {} as AudioNode,
       ["C3", "E3", "G3"],
       4.0,
       { velocity: 0.5 },
     );
+    expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(4_500);
     expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
     const [chord, duration, time, velocity] =
       spies.triggerAttackRelease.mock.calls[0]!;
@@ -74,7 +76,7 @@ describe("organVoice — Tone.PolySynth backend", () => {
     organVoice.scheduleChord({} as AudioNode, ["C3", "E3", "G3"], 0, {
       velocity: 0.7,
     });
-    organVoice.scheduleChord({} as AudioNode, ["D3", "F3", "A3"], 1, {
+    organVoice.scheduleChord({} as AudioNode, ["D3", "F3", "A3"], 0, {
       velocity: 0.7,
     });
 
@@ -88,7 +90,7 @@ describe("organVoice — Tone.PolySynth backend", () => {
     const secondDest = {} as AudioNode;
 
     organVoice.scheduleChord(firstDest, ["C3", "E3", "G3"], 0, { velocity: 0.7 });
-    organVoice.scheduleChord(secondDest, ["D3", "F3", "A3"], 1, { velocity: 0.7 });
+    organVoice.scheduleChord(secondDest, ["D3", "F3", "A3"], 0, { velocity: 0.7 });
 
     expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     expect(spies.connect).toHaveBeenCalledTimes(2);
@@ -166,7 +168,7 @@ describe("organVoice — Tone.PolySynth backend", () => {
     const secondHandle = organVoice.scheduleChord(
       {} as AudioNode,
       ["D3", "F3", "A3"],
-      0.5,
+      0,
       { velocity: 0.7 },
     );
 
@@ -182,6 +184,22 @@ describe("organVoice — Tone.PolySynth backend", () => {
     expect(spies.triggerRelease).toHaveBeenNthCalledWith(2, ["D3", "F3", "A3"], 0);
     expect(spies.releaseAll).not.toHaveBeenCalled();
     expect(spies.dispose).not.toHaveBeenCalled();
+  });
+
+  it("cancel() prevents a future-scheduled chord from ever being attacked", async () => {
+    const handle = organVoice.scheduleChord(
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
+      2,
+      { velocity: 0.7 },
+    );
+
+    handle.cancel();
+    await vi.advanceTimersByTimeAsync(2_500);
+
+    expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
+    expect(spies.triggerRelease).not.toHaveBeenCalled();
+    expect(spies.releaseAll).not.toHaveBeenCalled();
   });
 
   it("cancel() is idempotent — repeated calls release only once", () => {

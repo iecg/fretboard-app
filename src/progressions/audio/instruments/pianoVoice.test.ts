@@ -59,13 +59,15 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     expect(opts.volume).toBe(-6);
   });
 
-  it("triggers the full voicing once with the requested time + velocity (staccato default)", () => {
+  it("triggers the full voicing once with the requested time + velocity (staccato default)", async () => {
     pianoVoice.scheduleChord(
       {} as AudioNode,
       ["C3", "E3", "G3"],
       2.5,
       { velocity: 0.6 },
     );
+    expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(3_000);
     expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
     const [chord, duration, time, velocity] =
       spies.triggerAttackRelease.mock.calls[0]!;
@@ -79,7 +81,7 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     pianoVoice.scheduleChord({} as AudioNode, ["C3", "E3", "G3"], 0, {
       velocity: 0.7,
     });
-    pianoVoice.scheduleChord({} as AudioNode, ["F3", "A3", "C4"], 1, {
+    pianoVoice.scheduleChord({} as AudioNode, ["F3", "A3", "C4"], 0, {
       velocity: 0.7,
     });
 
@@ -93,7 +95,7 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     const secondDest = {} as AudioNode;
 
     pianoVoice.scheduleChord(firstDest, ["C3", "E3", "G3"], 0, { velocity: 0.7 });
-    pianoVoice.scheduleChord(secondDest, ["F3", "A3", "C4"], 1, { velocity: 0.7 });
+    pianoVoice.scheduleChord(secondDest, ["F3", "A3", "C4"], 0, { velocity: 0.7 });
 
     expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     expect(spies.connect).toHaveBeenCalledTimes(2);
@@ -171,7 +173,7 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     const secondHandle = pianoVoice.scheduleChord(
       {} as AudioNode,
       ["F3", "A3", "C4"],
-      0.5,
+      0,
       { velocity: 0.7 },
     );
 
@@ -187,6 +189,22 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     expect(spies.triggerRelease).toHaveBeenNthCalledWith(2, ["F3", "A3", "C4"], 0);
     expect(spies.releaseAll).not.toHaveBeenCalled();
     expect(spies.dispose).not.toHaveBeenCalled();
+  });
+
+  it("cancel() prevents a future-scheduled chord from ever being attacked", async () => {
+    const handle = pianoVoice.scheduleChord(
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
+      2,
+      { velocity: 0.7 },
+    );
+
+    handle.cancel();
+    await vi.advanceTimersByTimeAsync(2_500);
+
+    expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
+    expect(spies.triggerRelease).not.toHaveBeenCalled();
+    expect(spies.releaseAll).not.toHaveBeenCalled();
   });
 
   it("cancel() is idempotent — repeated calls release only once", () => {
