@@ -74,6 +74,7 @@ src/
   - Shared module CSS in `src/components/shared/shared.module.css`.
   - Use `clsx` for conditional classes, `cva` for variant class systems, `motion` (from `motion/react`) for animations.
   - Stylelint wired into `pnpm run lint` and `lint-staged`. Package manager is **pnpm** (workspace defined in `pnpm-workspace.yaml`).
+- **React Compiler:** Enabled via `babel-plugin-react-compiler` in `vite.config.ts` with `compilationMode: 'infer'`. Every component and hook in `src/` and `packages/core/src/` is auto-memoized — manual `useMemo` / `useCallback` / `React.memo` is rarely needed for render-perf and should be added only when profiling proves it. The `react-compiler/react-compiler` ESLint rule runs at `error` and guards Rules-of-React compliance. To opt a single component out, add `'use no memo'` as the first statement of the function body with a `// TODO(react-compiler): <reason>` comment.
 - **A11y:** ARIA labels + semantic HTML + `:focus-visible` styles required. `vitest-axe` available for component tests.
 
 ## CAGED / 3NPS System

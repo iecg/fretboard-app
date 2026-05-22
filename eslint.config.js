@@ -26,8 +26,7 @@ export default defineConfig([
     },
     rules: {
       // React Compiler bails on code that violates the Rules of React.
-      // Surfaced at 'warn' during rollout so CI doesn't break; promoted
-      // to 'error' once the codebase is clean (see plan Task 8).
+      // This rule is enforced at 'error' level to ensure compiler compliance.
       'react-compiler/react-compiler': 'error',
     },
   },

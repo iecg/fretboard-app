@@ -81,6 +81,8 @@ interface FretboardProps {
 }
 
 export function Fretboard(props: FretboardProps) {
+  // TODO(react-compiler): It intentionally disables exhaustive-deps for stable refs 
+  // in specific useMemo blocks which confuses the compiler's auto-memoization logic.
   'use no memo';
   const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
