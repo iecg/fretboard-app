@@ -75,4 +75,53 @@ describe("generateVoicings — v2.0", () => {
       expect(strings[3] - strings[0]).toBe(3);
     }
   });
+
+  it("'close' returns [] for chord types with <3 members (dyad: Power Chord)", () => {
+    const result = generateVoicings({
+      chordRoot: "C",
+      chordType: "Power Chord (5)",
+      tuning: STD_TUNING,
+      maxFret: 24,
+      voicingType: "close",
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("'close' returns [] when tuning.length !== 6", () => {
+    const result = generateVoicings({
+      chordRoot: "C",
+      chordType: "Major Triad",
+      tuning: ["E4", "B3", "G3", "D3", "A2"], // 5-string tuning
+      maxFret: 24,
+      voicingType: "close",
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("'close' returns [] for an unknown chord type", () => {
+    const result = generateVoicings({
+      chordRoot: "C",
+      chordType: "Not A Chord",
+      tuning: STD_TUNING,
+      maxFret: 24,
+      voicingType: "close",
+    });
+    expect(result).toEqual([]);
+  });
+
+  it("'close' triad contains all three chord pitch classes (C major: {0, 4, 7})", () => {
+    const result = generateVoicings({
+      chordRoot: "C",
+      chordType: "Major Triad",
+      tuning: STD_TUNING,
+      maxFret: 24,
+      voicingType: "close",
+    });
+    expect(result.length).toBeGreaterThan(0);
+    const expectedPCs = new Set([0, 4, 7]);
+    for (const v of result) {
+      const pcs = new Set(v.notes.map((n) => n.midi % 12));
+      expect(pcs).toEqual(expectedPCs);
+    }
+  });
 });
