@@ -36,18 +36,25 @@ vi.mock("./components/Fretboard/Fretboard", async () => {
   };
 });
 
-vi.mock("./components/CircleOfFifths/CircleOfFifths", async () => {
+// v2.0: CircleOfFifths is no longer rendered by App. We need a root-note
+// setter that IS rendered. Mock FingeringPatternControls (rendered in the
+// View tab) to also render a test-only root-note change button.
+vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async () => {
   const { useAtomValue, useSetAtom } = await import("jotai");
   const { rootNoteAtom } = await import("./store/scaleAtoms");
   const { setRootNoteAtom } = await import("./store/actions");
   return {
-    CircleOfFifths: () => {
+    FingeringPatternControls: () => {
       const rootNote = useAtomValue(rootNoteAtom);
       const setRootNote = useSetAtom(setRootNoteAtom);
       return (
-        <button data-testid="circle-of-fifths" onClick={() => setRootNote("G")}>
-          CoF: {rootNote}
-        </button>
+        <>
+          <div data-testid="fingering-controls">Fingering Controls</div>
+          {/* Test-only root-note setter, replaces the removed CircleOfFifths */}
+          <button data-testid="set-root-note" onClick={() => setRootNote("G")}>
+            Set Root: {rootNote}
+          </button>
+        </>
       );
     },
   };
@@ -68,8 +75,9 @@ const setViewport = (width: number, height: number) => {
 };
 
 // Inspector tab bodies (Radix Tabs) only mount when active; tests that exercise
-// Scale/Chord tab controls must select the tab first.
-const selectInspectorTab = async (name: "Scale" | "Chord" | "Song") => {
+// View/Song tab controls must select the tab first.
+// v2.0 IA: Scale Fingering and Chord Voicing both live in the "View" tab.
+const selectInspectorTab = async (name: "View" | "Song") => {
   await userEvent.click(await screen.findByRole("tab", { name }));
 };
 
@@ -91,8 +99,8 @@ describe("App", () => {
       localStorage.setItem(k("rootNote"), "G");
       localStorage.setItem(k("scaleName"), "Minor");
       render(<App />);
-      await selectInspectorTab("Scale");
-      expect(await screen.findByTestId("circle-of-fifths")).toHaveTextContent("CoF: G");
+      // The fretboard mock reflects rootNote directly; no tab selection needed.
+      expect(await screen.findByTestId("fretboard")).toHaveTextContent("Fretboard: G");
     });
 
     it("seeds isMuted in storage and forwards initial mute state to synth", () => {
@@ -106,8 +114,8 @@ describe("App", () => {
   describe("root note changes (Circle of Fifths -> Fretboard)", () => {
     it("propagates a new root note to the fretboard", async () => {
       render(<App />);
-      await selectInspectorTab("Scale");
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      await selectInspectorTab("View");
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: G");
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
@@ -122,8 +130,8 @@ describe("App", () => {
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("Scale");
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      await selectInspectorTab("View");
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string }>;
         expect(persisted[0]?.manualRoot).toBe("G");
@@ -138,8 +146,8 @@ describe("App", () => {
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("Scale");
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      await selectInspectorTab("View");
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
         const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string | null }>;
@@ -178,7 +186,8 @@ describe("App", () => {
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("Chord");
+      // v2.0: Chord Voicing lives in the "View" tab (no separate Chord tab).
+      await selectInspectorTab("View");
       const chordTypeGroup = await screen.findByRole("group", { name: "Chord Type" });
       fireEvent.click(within(chordTypeGroup).getByRole("button", { name: "min" }));
       await waitFor(() => {
@@ -254,9 +263,10 @@ describe("App", () => {
       await waitFor(() => {
         expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
       });
-      // Changing rootNote via CoF should reset chordOverlayHidden to false
-      await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      // Changing rootNote resets chordOverlayHidden to false.
+      // v2.0: FingeringPatternControls mock (in View tab) exposes the root-note setter.
+      await userEvent.click(await screen.findByRole("tab", { name: "View" }));
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("false");
       });
