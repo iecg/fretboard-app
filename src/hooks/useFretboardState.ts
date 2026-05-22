@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useAtomValue } from "jotai";
-import { chordTonesAtom, chordRootAtom, chordFretSpreadAtom, practiceLensAtom, fullChordMatchesAtom, voicingConnectorsAtom } from "../store/chordOverlayAtoms";
+import { chordTonesAtom, chordRootAtom, practiceLensAtom, fullChordMatchesAtom, voicingAtom } from "../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom, activePositionAtom } from "../store/chordScope";
 import { recenterKeyAtom, fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { currentTuningAtom, fretStartAtom, fretEndAtom } from "../store/layoutAtoms";
@@ -166,7 +166,6 @@ export function useFretboardState() {
 
   const chordTones = useAtomValue(chordTonesAtom);
   const chordRoot = useAtomValue(chordRootAtom);
-  const chordFretSpread = useAtomValue(chordFretSpreadAtom);
   const practiceLens = useAtomValue(practiceLensAtom);
   const colorNotes = useAtomValue(effectiveColorNotesAtom);
   const hiddenNotes = useAtomValue(effectiveHiddenNotesAtom);
@@ -175,7 +174,7 @@ export function useFretboardState() {
   const cagedShapes = useAtomValue(cagedShapesAtom);
   const npsPosition = useAtomValue(npsPositionAtom);
   const fullChordMatches = useAtomValue(fullChordMatchesAtom);
-  const showChordConnectors = useAtomValue(voicingConnectorsAtom);
+  const showChordConnectors = useAtomValue(voicingAtom) !== "off";
   const chordScopeToPosition = useAtomValue(chordScopeToPositionAtom);
   const activePosition = useAtomValue(activePositionAtom);
 
@@ -220,7 +219,7 @@ export function useFretboardState() {
       return selectFullChordMatchesForThreeNpsPosition(
         fullChordMatches,
         boxBounds,
-        chordFretSpread,
+        0,
       );
     }
     return fullChordMatches;
@@ -232,7 +231,6 @@ export function useFretboardState() {
     shapePolygons,
     cagedShapes,
     boxBounds,
-    chordFretSpread,
   ]);
   const visibleFullChordPositions = useMemo(
     () =>
@@ -261,7 +259,7 @@ export function useFretboardState() {
     recenterKey,
     chordTones,
     chordRoot,
-    chordFretSpread,
+    chordFretSpread: 0,
     practiceLens,
     colorNotes,
     hiddenNotes,

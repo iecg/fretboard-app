@@ -5,7 +5,7 @@ import { RESET } from "jotai/utils";
 import { k } from "../test-utils/storage";
 import { setRootNoteAtom, setScaleNameAtom, setFingeringPatternAtom, resetAtom } from "./actions";
 import { isMutedAtom } from "./audioAtoms";
-import { chordRootAtom, chordTypeAtom, linkChordRootAtom, chordFretSpreadAtom, practiceLensAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
+import { chordRootAtom, chordTypeAtom, linkChordRootAtom, practiceLensAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
 import { updateActiveChordAtom, activeChordCachedDegreeAtom } from "./songStateAtoms";
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
 import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
@@ -308,7 +308,6 @@ describe("atoms", () => {
       store.set(displayFormatAtom, "degrees");
       store.set(linkChordRootAtom, false);
       store.set(practiceLensAtom, "tones");
-      store.set(chordFretSpreadAtom, 5);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
       store.set(tuningNameAtom, "Drop D");
@@ -333,7 +332,6 @@ describe("atoms", () => {
       expect(store.get(chordTypeAtom)).toBeNull();
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
-      expect(store.get(chordFretSpreadAtom)).toBe(0);
       expect(store.get(fingeringPatternAtom)).toBe("none");
       expect(store.get(npsPositionAtom)).toBe(1);
       expect(store.get(tuningNameAtom)).toBe("Standard");

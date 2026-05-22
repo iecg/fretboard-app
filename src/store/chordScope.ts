@@ -17,17 +17,6 @@ export const chordScopeToPositionAtom = atomWithStorage<boolean>(
 );
 
 /**
- * Persisted collapsed/expanded state for the Chord-tab VOICING section.
- * Default collapsed — the simpler reading is the common case.
- */
-export const voicingSectionExpandedAtom = atomWithStorage<boolean>(
-  k("voicingSectionExpanded"),
-  false,
-  booleanStorage,
-  GET_ON_INIT,
-);
-
-/**
  * True when the fingering mode resolves to a single, identifiable position:
  *   - `caged` with exactly one shape selected
  *   - `3nps` with a position > 0
