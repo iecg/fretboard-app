@@ -203,6 +203,20 @@ export const beatsPerBarAtom = atomWithStorage<number>(
   GET_ON_INIT,
 );
 
+export type TimeSignatureDenominator = 1 | 2 | 4 | 8 | 16;
+const TIME_SIGNATURE_DENOMINATORS: readonly TimeSignatureDenominator[] = [1, 2, 4, 8, 16];
+
+const timeSignatureDenominatorStorage = createStorage<TimeSignatureDenominator>({
+  validate: (v) => TIME_SIGNATURE_DENOMINATORS.includes(v as TimeSignatureDenominator),
+});
+
+export const timeSignatureDenominatorAtom = atomWithStorage<TimeSignatureDenominator>(
+  k("timeSignatureDenominator"),
+  4,
+  timeSignatureDenominatorStorage,
+  GET_ON_INIT,
+);
+
 /**
  * Genre / instrument / pattern / swing configuration. Persisted so returning
  * users keep their groove. Defaults reproduce the original behaviour exactly

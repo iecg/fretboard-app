@@ -403,3 +403,20 @@ describe("derived progression atoms", () => {
     });
   });
 });
+
+import { timeSignatureDenominatorAtom } from "./progressionAtoms";
+
+describe("timeSignatureDenominatorAtom", () => {
+  it("defaults to 4 (quarter-note beat)", () => {
+    const store = createStore();
+    expect(store.get(timeSignatureDenominatorAtom)).toBe(4);
+  });
+
+  it("accepts members of the valid denominator set", () => {
+    const store = createStore();
+    for (const d of [1, 2, 4, 8, 16] as const) {
+      store.set(timeSignatureDenominatorAtom, d);
+      expect(store.get(timeSignatureDenominatorAtom)).toBe(d);
+    }
+  });
+});
