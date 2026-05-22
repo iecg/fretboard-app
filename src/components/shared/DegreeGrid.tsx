@@ -31,20 +31,41 @@ interface CellInfo {
 // `getDegreesForScale` instead, which honours mode-specific spelling. Lowercase
 // is used universally as a quality-neutral label (the cell's quality is set
 // independently by the user).
-const BORROWED_NUMERAL_BY_OFFSET: Record<number, string> = {
+//
+// Diatonic-position labels (no accidental) are the same in either spelling.
+const NATURAL_NUMERAL_BY_OFFSET: Record<number, string> = {
   0: "i",
-  1: "♭ii",
   2: "ii",
-  3: "♭iii",
   4: "iii",
   5: "iv",
-  6: "♯iv",
   7: "v",
-  8: "♭vi",
   9: "vi",
-  10: "♭vii",
   11: "vii",
 };
+// Chromatic-offset labels — accidental follows the active enharmonic preference,
+// matching the chord-root spelling (Roman-numeral convention: numeral accidental
+// ≡ root accidental). This keeps the numeral coherent with the note name shown
+// above it, instead of mixing flats (♭ii, ♭iii, ♭vi, ♭vii) with a stray ♯iv.
+const FLAT_BORROWED_BY_OFFSET: Record<number, string> = {
+  1: "♭ii",
+  3: "♭iii",
+  6: "♭v",
+  8: "♭vi",
+  10: "♭vii",
+};
+const SHARP_BORROWED_BY_OFFSET: Record<number, string> = {
+  1: "♯i",
+  3: "♯ii",
+  6: "♯iv",
+  8: "♯v",
+  10: "♯vi",
+};
+
+function getBorrowedNumeral(offset: number, useFlats: boolean): string {
+  if (offset in NATURAL_NUMERAL_BY_OFFSET) return NATURAL_NUMERAL_BY_OFFSET[offset];
+  const chromatic = useFlats ? FLAT_BORROWED_BY_OFFSET : SHARP_BORROWED_BY_OFFSET;
+  return chromatic[offset] ?? "";
+}
 
 export function DegreeGrid({
   scaleName,
@@ -64,7 +85,7 @@ export function DegreeGrid({
       const inKey = diatonic.has(note);
       const numeral = inKey
         ? degreesMap[offset] ?? ""
-        : BORROWED_NUMERAL_BY_OFFSET[offset] ?? "";
+        : getBorrowedNumeral(offset, useFlats);
       return {
         note,
         display: formatAccidental(getNoteDisplay(note, tonicNote, useFlats)),
