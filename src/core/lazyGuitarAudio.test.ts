@@ -19,6 +19,7 @@ import {
   setGuitarAudioErrorHandler,
   setGuitarMutePreference,
 } from "./lazyGuitarAudio";
+import * as lazyGuitarAudio from "./lazyGuitarAudio";
 
 describe("lazyGuitarAudio", () => {
   beforeEach(() => {
@@ -89,5 +90,30 @@ describe("lazyGuitarAudio", () => {
 
     expect(audioModule.synth.playNote).toHaveBeenCalledWith(440);
     await playPromise;
+  });
+
+  it("retries loading the lazy audio module after an import failure", async () => {
+    const testControls = lazyGuitarAudio as typeof lazyGuitarAudio & {
+      __setLazyGuitarAudioModuleLoaderForTests?: (
+        loader: () => Promise<typeof audioModule>,
+      ) => void;
+    };
+    const setModuleLoader = testControls.__setLazyGuitarAudioModuleLoaderForTests;
+
+    expect(setModuleLoader).toBeTypeOf("function");
+
+    const loadError = new Error("chunk load failed");
+    const loader = vi
+      .fn<() => Promise<typeof audioModule>>()
+      .mockRejectedValueOnce(loadError)
+      .mockResolvedValueOnce(audioModule);
+
+    setModuleLoader!(loader);
+
+    await expect(playGuitarNote(440)).rejects.toThrow(loadError);
+    await expect(playGuitarNote(440)).resolves.toBeUndefined();
+
+    expect(loader).toHaveBeenCalledTimes(2);
+    expect(audioModule.synth.playNote).toHaveBeenCalledWith(440);
   });
 });

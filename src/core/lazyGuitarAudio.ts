@@ -1,9 +1,12 @@
 type GuitarSynthModule = typeof import("./audio");
 
+const defaultModuleLoader = () => import("./audio");
+
 let modulePromise: Promise<GuitarSynthModule> | null = null;
 let loadedModule: GuitarSynthModule | null = null;
 let desiredMute = false;
 let errorHandler: ((message: string) => void) | undefined;
+let moduleLoader: () => Promise<GuitarSynthModule> = defaultModuleLoader;
 
 async function loadAudioModule(): Promise<GuitarSynthModule> {
   if (loadedModule) {
@@ -11,12 +14,19 @@ async function loadAudioModule(): Promise<GuitarSynthModule> {
   }
 
   if (!modulePromise) {
-    modulePromise = import("./audio").then((mod) => {
-      loadedModule = mod;
-      mod.synth.onError = errorHandler;
-      mod.synth.setMute(desiredMute);
-      return mod;
-    });
+    modulePromise = Promise.resolve()
+      .then(() => moduleLoader())
+      .then((mod) => {
+        loadedModule = mod;
+        mod.synth.onError = errorHandler;
+        mod.synth.setMute(desiredMute);
+        return mod;
+      })
+      .catch((error: unknown) => {
+        modulePromise = null;
+        loadedModule = null;
+        throw error;
+      });
   }
   return modulePromise;
 }
@@ -68,4 +78,13 @@ export function __resetLazyGuitarAudioForTests(): void {
   loadedModule = null;
   desiredMute = false;
   errorHandler = undefined;
+  moduleLoader = defaultModuleLoader;
+}
+
+export function __setLazyGuitarAudioModuleLoaderForTests(
+  nextLoader: () => Promise<GuitarSynthModule>,
+): void {
+  modulePromise = null;
+  loadedModule = null;
+  moduleLoader = nextLoader;
 }
