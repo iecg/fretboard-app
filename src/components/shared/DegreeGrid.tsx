@@ -26,12 +26,25 @@ interface CellInfo {
   numeral: string;
 }
 
+// Parent-major-relative Roman-numeral label for every chromatic offset from the
+// tonic. Used for cells that are *not* in the active scale's diatonic set (any
+// scale: Major, Natural Minor, Dorian, etc.) — the in-key cells go through
+// `getDegreesForScale` instead, which honours mode-specific spelling. Lowercase
+// is used universally as a quality-neutral label (the cell's quality is set
+// independently by the user).
 const BORROWED_NUMERAL_BY_OFFSET: Record<number, string> = {
+  0: "i",
   1: "♭ii",
+  2: "ii",
   3: "♭iii",
+  4: "iii",
+  5: "iv",
   6: "♯iv",
+  7: "v",
   8: "♭vi",
+  9: "vi",
   10: "♭vii",
+  11: "vii",
 };
 
 export function DegreeGrid({
@@ -51,7 +64,7 @@ export function DegreeGrid({
       const inKey = diatonic.has(note);
       const numeral = inKey
         ? degreesMap[offset] ?? ""
-        : BORROWED_NUMERAL_BY_OFFSET[offset] ?? `${offset}`;
+        : BORROWED_NUMERAL_BY_OFFSET[offset] ?? "";
       return {
         note,
         display: formatAccidental(getNoteDisplay(note, tonicNote)),
