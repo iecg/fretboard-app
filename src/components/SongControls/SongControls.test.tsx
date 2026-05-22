@@ -121,19 +121,16 @@ describe("SongControls", () => {
   });
 });
 
-describe("SongControls METER", () => {
-  it("renders a Beats per bar stepper that cycles 3→4→6→8", () => {
+describe("SongControls TIME", () => {
+  it("renders a Time Signature picker with the default 4/4 value", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [beatsPerBarAtom, 4],
     ]);
     renderWithStore(<SongControls />, store);
-    // The "Beats per bar" stepper label is hidden inside its Prop cell; the
-    // cell's own "Beats/Bar" micro-label is the visible heading.
-    expect(screen.getByText("Beats/Bar")).toBeTruthy();
-    expect(screen.getByText("4")).toBeTruthy();
-    fireEvent.click(screen.getByLabelText(/Increase Beats per bar/i));
-    expect(screen.getByText("6")).toBeTruthy();
+    // The TimeSignaturePicker renders a combobox labelled "Time signature"
+    expect(screen.getByLabelText(/time signature/i)).toBeInTheDocument();
+    expect(screen.getByText("4/4")).toBeTruthy();
   });
 });
 
@@ -207,9 +204,9 @@ describe("SongControls CHORDS list", () => {
     localStorage.clear();
   });
 
-  it("uses the section label 'Chords' (not 'Steps')", () => {
+  it("uses the section label 'Progression' (not 'Chords' or 'Steps')", () => {
     const { getByText, queryByText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(getByText("Chords")).toBeTruthy();
+    expect(getByText("Progression")).toBeTruthy();
     expect(queryByText("Steps")).toBeNull();
   });
 
@@ -285,15 +282,39 @@ describe("SongControls DURATION", () => {
   });
 });
 
+describe("SongControls v2.0", () => {
+  it("renders the Time group heading, not Meter", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByText("Time")).toBeInTheDocument();
+    expect(screen.queryByText("Meter")).not.toBeInTheDocument();
+  });
+
+  it("does not render a Length readout", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByText(/^Length$/)).not.toBeInTheDocument();
+  });
+
+  it("renders a Time Signature picker (default 4/4)", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByLabelText(/time signature/i)).toBeInTheDocument();
+  });
+
+  it("renders the Preset picker (inside the Progression group's right slot)", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByText("Progression")).toBeInTheDocument();
+    expect(screen.getByLabelText(/preset/i)).toBeVisible();
+  });
+});
+
 describe("SongControls grid layout", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("renders Meter / Chords / Backing Track group headers", () => {
+  it("renders Time / Progression / Backing Track group headers", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByRole("heading", { name: "Meter" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Chords" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Time" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Progression" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Backing Track" })).toBeInTheDocument();
   });
 
@@ -305,12 +326,6 @@ describe("SongControls grid layout", () => {
   it("shows a SELECTED header naming the active chord", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByText(/^Selected —/i)).toBeInTheDocument();
-  });
-
-  it("shows the progression length readout", () => {
-    // BASE_SEEDS is two 1-bar steps -> a 2-bar progression.
-    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByText("2 bars")).toBeInTheDocument();
   });
 
   it("renders the rehosted backing-track controls", () => {

@@ -113,11 +113,11 @@
   gap: 0.6rem;
 }
 
-.length-readout {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--dc-fg);
-  font-variant-numeric: tabular-nums;
+.progression-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+  flex-wrap: wrap;
 }
 
 .editor-selected {

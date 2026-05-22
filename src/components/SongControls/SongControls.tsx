@@ -2,7 +2,6 @@ import { startTransition } from "react";
 import clsx from "clsx";
 import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
 import {
-  BEATS_PER_BAR_OPTIONS,
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
   MIN_PROGRESSION_TEMPO_BPM,
@@ -21,6 +20,7 @@ import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/Labeled
 import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
 import { DegreeSelect } from "../shared/DegreeSelect";
 import { ChordQualitySelect } from "../shared/ChordQualitySelect";
+import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { BackingTrackControls } from "./BackingTrackControls";
 import shared from "../shared/shared.module.css";
 import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
@@ -54,12 +54,9 @@ export function SongControls() {
     updateProgressionStepDegree,
     updateProgressionStepDuration,
     updateProgressionStepQuality,
-    beatsPerBar,
-    setBeatsPerBar,
     progressionTempoBpm,
     setProgressionTempoBpm,
     currentProgressionPresetId,
-    totalProgressionBars,
   } = useProgressionState();
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
@@ -107,37 +104,15 @@ export function SongControls() {
     startTransition(() => loadProgressionPreset(id));
   };
   const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
-  // totalProgressionBars is fractional (beats / beatsPerBar); round up to whole
-  // bars for the read-only Length readout and clamp to a 1-bar minimum.
-  const lengthLabel = formatProgressionDurationLabel({
-    value: Math.ceil(Math.max(1, totalProgressionBars)),
-    unit: "bar",
-  });
 
   return (
     <PropGrid columns={6}>
-      {/* ── METER ────────────────────────────────────────────────────────── */}
-      {/* One uniform 6-column row: Beats/Bar · Tempo · Length · Preset. */}
-      <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
-      <Prop label={t("inspector.meterBeats")} span={1}>
-        <StepperControl
-          label="Beats per bar"
-          hideLabel
-          value={beatsPerBar}
-          min={BEATS_PER_BAR_OPTIONS[0]}
-          max={BEATS_PER_BAR_OPTIONS[BEATS_PER_BAR_OPTIONS.length - 1]}
-          step={1}
-          onChange={(next) => {
-            // Cycle through the allowed set directionally
-            const current = beatsPerBar;
-            const idx = BEATS_PER_BAR_OPTIONS.indexOf(current as 3 | 4 | 6 | 8);
-            const dir = next > current ? 1 : -1;
-            const nextIdx = Math.max(0, Math.min(BEATS_PER_BAR_OPTIONS.length - 1, idx + dir));
-            setBeatsPerBar(BEATS_PER_BAR_OPTIONS[nextIdx]);
-          }}
-        />
+      {/* ── TIME ─────────────────────────────────────────────────────────── */}
+      <GroupHeader>{t("inspector.groupTime")}</GroupHeader>
+      <Prop label={t("inspector.timeSignature")} span={3}>
+        <TimeSignaturePicker />
       </Prop>
-      <Prop label={t("inspector.meterTempo")} span={1}>
+      <Prop label={t("inspector.meterTempo")} span={3}>
         <StepperControl
           label={t("inspector.meterTempo")}
           hideLabel
@@ -149,68 +124,65 @@ export function SongControls() {
           onChange={setProgressionTempoBpm}
         />
       </Prop>
-      <Prop label={t("inspector.meterLength")} span={1}>
-        <span className={styles["length-readout"]}>{lengthLabel}</span>
-      </Prop>
-      <Prop label={t("inspector.meterPreset")} span={3}>
-        <LabeledSelect
-          label="Preset"
-          hideLabel
-          value={currentProgressionPresetId}
-          groups={presetGroups}
-          onChange={handlePresetChange}
-        />
-      </Prop>
 
-      {/* ── CHORDS ───────────────────────────────────────────────────────── */}
+      {/* ── PROGRESSION ──────────────────────────────────────────────────── */}
       <GroupHeader
         right={
-          <div className={styles["step-actions"]}>
-            <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
-              <Plus size={16} aria-hidden="true" />
-              <span>Add</span>
-            </button>
-            <button
-              type="button"
-              className={shared["control-button"]}
-              onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
-              disabled={!activeStep || activeProgressionStepIndex === 0}
-              aria-label="Move chord up"
-            >
-              <ArrowUp size={16} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={shared["control-button"]}
-              onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
-              disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
-              aria-label="Move chord down"
-            >
-              <ArrowDown size={16} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={shared["control-button"]}
-              onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
-              disabled={!activeStep}
-              aria-label="Duplicate chord"
-            >
-              <CopyPlus size={16} aria-hidden="true" />
-              <span>Duplicate</span>
-            </button>
-            <button
-              type="button"
-              className={shared["control-button"]}
-              onClick={() => activeStep && removeProgressionStep(activeStep.id)}
-              disabled={!activeStep}
-              aria-label="Remove chord"
-            >
-              <Trash2 size={16} aria-hidden="true" />
-            </button>
+          <div className={styles["progression-toolbar"]}>
+            <LabeledSelect
+              label={t("inspector.progressionPreset")}
+              hideLabel
+              value={currentProgressionPresetId}
+              groups={presetGroups}
+              onChange={handlePresetChange}
+            />
+            <div className={styles["step-actions"]}>
+              <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
+                <Plus size={16} aria-hidden="true" />
+                <span>Add</span>
+              </button>
+              <button
+                type="button"
+                className={shared["control-button"]}
+                onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
+                disabled={!activeStep || activeProgressionStepIndex === 0}
+                aria-label="Move chord up"
+              >
+                <ArrowUp size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className={shared["control-button"]}
+                onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
+                disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
+                aria-label="Move chord down"
+              >
+                <ArrowDown size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className={shared["control-button"]}
+                onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
+                disabled={!activeStep}
+                aria-label="Duplicate chord"
+              >
+                <CopyPlus size={16} aria-hidden="true" />
+                <span>Duplicate</span>
+              </button>
+              <button
+                type="button"
+                className={shared["control-button"]}
+                onClick={() => activeStep && removeProgressionStep(activeStep.id)}
+                disabled={!activeStep}
+                aria-label="Remove chord"
+              >
+                <Trash2 size={16} aria-hidden="true" />
+              </button>
+            </div>
           </div>
         }
       >
-        {t("inspector.groupChords")}
+        {t("inspector.groupProgression")}
       </GroupHeader>
       <Prop span={3}>
         <div className={styles["chords-cell"]}>
