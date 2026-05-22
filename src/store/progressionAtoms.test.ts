@@ -27,6 +27,7 @@ import {
   updateProgressionStepDegreeAtom,
   updateProgressionStepDurationAtom,
   updateProgressionStepQualityAtom,
+  timeSignatureDenominatorAtom,
   updateProgressionStepRootAtom,
 } from "./progressionAtoms";
 import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
@@ -403,8 +404,6 @@ describe("derived progression atoms", () => {
     });
   });
 });
-
-import { timeSignatureDenominatorAtom } from "./progressionAtoms";
 
 describe("timeSignatureDenominatorAtom", () => {
   it("defaults to 4 (quarter-note beat)", () => {

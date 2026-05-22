@@ -39,6 +39,7 @@ import {
   booleanStorage,
   constrainedNumberStorage,
   createStorage,
+  enumValidator,
   k,
   numberValidator,
   stringValidator,
@@ -207,7 +208,7 @@ export type TimeSignatureDenominator = 1 | 2 | 4 | 8 | 16;
 const TIME_SIGNATURE_DENOMINATORS: readonly TimeSignatureDenominator[] = [1, 2, 4, 8, 16];
 
 const timeSignatureDenominatorStorage = createStorage<TimeSignatureDenominator>({
-  validate: (v) => TIME_SIGNATURE_DENOMINATORS.includes(v as TimeSignatureDenominator),
+  validate: enumValidator(TIME_SIGNATURE_DENOMINATORS),
 });
 
 export const timeSignatureDenominatorAtom = atomWithStorage<TimeSignatureDenominator>(
