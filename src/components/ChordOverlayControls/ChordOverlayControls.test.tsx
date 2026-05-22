@@ -214,6 +214,22 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
+  describe("F5h: snap-to-scale toggle", () => {
+    it("renders the snap-to-scale switch when fingeringPattern !== 'none'", () => {
+      renderManual();
+      expect(
+        screen.getByRole("switch", { name: /snap to scale/i }),
+      ).toBeInTheDocument();
+    });
+
+    it("hides the snap-to-scale switch when fingeringPattern === 'none'", () => {
+      renderManual([[fingeringPatternAtom, "none"]]);
+      expect(
+        screen.queryByRole("switch", { name: /snap to scale/i }),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   describe("Task 3.6: per-tab visibility switches", () => {
     it("does not render a visibility switch (moved to ViewTab group header)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_SEEDS]);

@@ -81,6 +81,7 @@ export const es: Dictionary = {
     voicingClose: "Cerrado",
     chordStringSetLabel: "Cuerdas",
     chordStringSetAll: "Todas",
+    chordSnapToScaleLabel: "Ajustar a escala",
     stringSetAll: "Todas",
     stringSetBass: "Graves",
     stringSetLowerMid: "Medios graves",
