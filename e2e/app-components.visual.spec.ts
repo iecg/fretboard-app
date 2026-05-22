@@ -22,20 +22,20 @@ test.describe("App Components Visual", () => {
   });
 
   test("circle-of-fifths-desktop-1280x900", async ({ page }) => {
-    // CircleOfFifths now lives in the Inspector's Scale tab — activate it
-    // before the panel is mounted into the DOM.
-    await page.getByRole("tab", { name: "Scale" }).click();
-    const locator = page.getByTestId("circle-of-fifths-svg");
+    // v2.0: CircleOfFifths is no longer rendered in the app shell.
+    // Capture the Inspector View tab (Scale Fingering + Chord Voicing controls)
+    // which replaced the old Scale/Chord/Key 3-tab layout.
+    await page.getByRole("tab", { name: "View" }).click();
+    const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
-    // Scroll locator into view before capturing as requested
     await locator.scrollIntoViewIfNeeded();
     await expectLocatorVisual(locator, "circle-of-fifths-desktop-1280x900");
   });
 
   test("circle-of-fifths-light-1280x900", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
-    await page.getByRole("tab", { name: "Scale" }).click();
-    const locator = page.getByTestId("circle-of-fifths-svg");
+    await page.getByRole("tab", { name: "View" }).click();
+    const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
     await locator.scrollIntoViewIfNeeded();
     await expectLocatorVisual(locator, "circle-of-fifths-light-1280x900");

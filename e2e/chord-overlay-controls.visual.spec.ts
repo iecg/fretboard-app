@@ -31,9 +31,9 @@ test.describe("Chord Overlay Controls Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    // ChordOverlayControls now lives in the Inspector's Chord tab — activate
+    // ChordOverlayControls now lives in the Inspector's View tab — activate
     // it so the panel is mounted into the DOM.
-    await page.getByRole("tab", { name: "Chord" }).click();
+    await page.getByRole("tab", { name: "View" }).click();
 
     // Wait for the chord-type toggle bar to be visible.
     await page
@@ -64,7 +64,7 @@ test.describe("Chord Overlay Controls Visual", () => {
       { width: 1280, height: 900 },
     );
 
-    await page.getByRole("tab", { name: "Chord" }).click();
+    await page.getByRole("tab", { name: "View" }).click();
 
     await page
       .getByRole("group", { name: "Chord Type" })
@@ -82,7 +82,7 @@ test.describe("Chord Overlay Controls Visual", () => {
 
   test("chord-overlay-controls-manual-mobile-390x844", async ({ page }) => {
     // Mobile viewport validates the scroll-overflow CSS added in plan 01-03.
-    // After the mobile rehost, chord controls live in the Inspector's Chord tab
+    // After the mobile rehost, chord controls live in the Inspector's View tab
     // (mobileTabAtom was removed). Navigate via tab click.
     await loadVisualState(
       page,
@@ -94,8 +94,8 @@ test.describe("Chord Overlay Controls Visual", () => {
       { width: 390, height: 844 },
     );
 
-    // Activate the Chord tab so ChordOverlayControls is visible.
-    await page.getByRole("tab", { name: "Chord" }).click();
+    // Activate the View tab so ChordOverlayControls is visible.
+    await page.getByRole("tab", { name: "View" }).click();
 
     // Wait for the chord-type toggle bar to be visible in the chords tab.
     const toggleBar = page.getByRole("group", { name: "Chord Type" }).first();

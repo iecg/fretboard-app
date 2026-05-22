@@ -17,13 +17,14 @@ test.describe("App Mobile Visual", () => {
     await expect(page.getByTestId("app-container")).toBeVisible();
     await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
 
-    // The Circle of Fifths lives in the Scale tab of the Inspector.
-    // mobileTabAtom was removed in the mobile rehost; navigate via click.
-    await page.getByRole("tab", { name: "Scale" }).click();
+    // v2.0: CircleOfFifths is no longer in the app shell. The Inspector now
+    // has 2 tabs: View (Scale Fingering + Chord Voicing) and Song.
+    // Capture the View tab content as the key-controls visual.
+    await page.getByRole("tab", { name: "View" }).click();
 
-    const circleLocator = page.getByTestId("circle-of-fifths-svg");
-    await expect(circleLocator).toBeVisible();
-    await expectLocatorVisual(circleLocator, "app-mobile-key-tab-portrait-390x844");
+    const viewTabLocator = page.getByTestId("view-tab");
+    await expect(viewTabLocator).toBeVisible();
+    await expectLocatorVisual(viewTabLocator, "app-mobile-key-tab-portrait-390x844");
   });
 
   test("app-mobile-light-portrait-390x844", async ({ page }) => {
