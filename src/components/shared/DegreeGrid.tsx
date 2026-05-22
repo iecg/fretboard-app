@@ -73,6 +73,7 @@ export function DegreeGrid({
             cell.note === selectedNote && styles.selected,
           )}
           data-in-key={cell.inKey ? "true" : "false"}
+          aria-pressed={cell.note === selectedNote}
           aria-label={cell.inKey ? `${cell.display} ${cell.numeral}` : `${cell.numeral} ${cell.display}`}
           onClick={() =>
             cell.inKey
