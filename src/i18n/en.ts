@@ -100,6 +100,8 @@ export const en: Dictionary = {
     voicingSection: "Voicing",
     scaleLayer: "Scale layer",
     chordLayer: "Chord layer",
+    groupScaleFingering: "Scale Fingering",
+    groupChordVoicing: "Chord Voicing",
   },
   statusBar: {
     key: "Key",

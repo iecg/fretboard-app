@@ -1,0 +1,24 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 0.5rem);
+}
+
+/* On wide desktop variants, host the two groups side-by-side. */
+:global(.app-container[data-layout-variant="desktop-3col"]) .root,
+:global(.app-container[data-layout-variant="desktop-split"]) .root {
+  flex-direction: row;
+  gap: var(--space-4, 1rem);
+}
+
+:global(.app-container[data-layout-variant="desktop-3col"]) .group,
+:global(.app-container[data-layout-variant="desktop-split"]) .group {
+  flex: 1 1 0;
+  min-width: 0;
+}

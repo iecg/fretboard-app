@@ -100,6 +100,8 @@ export const es: Dictionary = {
     voicingSection: "Voicing",
     scaleLayer: "Capa de escala",
     chordLayer: "Capa de acorde",
+    groupScaleFingering: "Digitación de escala",
+    groupChordVoicing: "Voicing de acorde",
   },
   statusBar: {
     key: "Tonalidad",

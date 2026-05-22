@@ -97,6 +97,8 @@ export interface Dictionary {
     voicingSection: string;
     scaleLayer: string;
     chordLayer: string;
+    groupScaleFingering: string;
+    groupChordVoicing: string;
   };
   statusBar: {
     key: string;
