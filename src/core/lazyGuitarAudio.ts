@@ -63,14 +63,18 @@ export function setGuitarAudioErrorHandler(
     });
 }
 
-export async function resumeGuitarAudio(): Promise<void> {
+export function isGuitarAudioLoaded(): boolean {
+  return loadedModule !== null;
+}
+
+export async function resumeGuitarAudio(): Promise<boolean> {
   if (loadedModule) {
     await loadedModule.synth.resume();
-    return;
+    return true;
   }
 
-  const mod = await loadAudioModule();
-  await mod.synth.resume();
+  preloadAudioModule();
+  return false;
 }
 
 export async function playGuitarNote(frequency: number): Promise<void> {
@@ -79,8 +83,7 @@ export async function playGuitarNote(frequency: number): Promise<void> {
     return;
   }
 
-  const mod = await loadAudioModule();
-  await mod.synth.playNote(frequency);
+  preloadAudioModule();
 }
 
 export function __resetLazyGuitarAudioForTests(): void {

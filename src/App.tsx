@@ -75,16 +75,26 @@ function AppContent() {
 
   // Safari/iOS robustness: resume AudioContext on first interaction
   useEffect(() => {
-    const handleGesture = () => {
-      void resumeGuitarAudio();
+    const removeGestureListeners = () => {
       window.removeEventListener("click", handleGesture);
       window.removeEventListener("touchstart", handleGesture);
+    };
+
+    const handleGesture = () => {
+      void Promise.resolve(resumeGuitarAudio())
+        .then((didResume) => {
+          if (didResume) {
+            removeGestureListeners();
+          }
+        })
+        .catch(() => {
+          // Keep listeners installed so the next gesture can retry resume.
+        });
     };
     window.addEventListener("click", handleGesture);
     window.addEventListener("touchstart", handleGesture);
     return () => {
-      window.removeEventListener("click", handleGesture);
-      window.removeEventListener("touchstart", handleGesture);
+      removeGestureListeners();
     };
   }, []);
 

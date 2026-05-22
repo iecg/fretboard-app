@@ -9,7 +9,10 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
-import { setGuitarMutePreference } from "./core/lazyGuitarAudio";
+import {
+  resumeGuitarAudio,
+  setGuitarMutePreference,
+} from "./core/lazyGuitarAudio";
 import { get3NPSCoordinates, STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
@@ -60,6 +63,8 @@ vi.mock("./core/lazyGuitarAudio", () => ({
   playGuitarNote: vi.fn(),
 }));
 
+const mockResumeGuitarAudio = vi.mocked(resumeGuitarAudio);
+
 const setViewport = (width: number, height: number) => {
   Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: width });
   Object.defineProperty(window, "innerHeight", { writable: true, configurable: true, value: height });
@@ -76,6 +81,7 @@ describe("App", () => {
     localStorage.clear();
     vi.clearAllMocks();
     setViewport(1920, 1200);
+    mockResumeGuitarAudio.mockResolvedValue(false);
   });
   afterEach(() => localStorage.clear());
 
@@ -166,6 +172,44 @@ describe("App", () => {
       await waitFor(() => {
         expect(document.documentElement.getAttribute("data-theme")).toBe("modern-light");
       });
+    });
+
+    it("keeps the global gesture listeners installed until resume succeeds on a loaded runtime", async () => {
+      mockResumeGuitarAudio.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+
+      render(<App />);
+
+      fireEvent.click(window);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+      });
+
+      fireEvent.click(window);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps the global gesture listeners installed when resume fails", async () => {
+      mockResumeGuitarAudio
+        .mockRejectedValueOnce(new Error("resume failed"))
+        .mockResolvedValueOnce(true);
+
+      render(<App />);
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+      });
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+      });
+
+      fireEvent.click(window);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
     });
   });
 
