@@ -45,9 +45,10 @@ export function createReusableChordVoice(
       const velocity = Math.max(0, Math.min(1, options.velocity ?? 0.7));
       if (velocity <= 0 || notes.length === 0) return { cancel: () => {} };
 
-      const activeSynth = getSynth(dest, notes);
+      const scheduledNotes = [...notes];
+      const activeSynth = getSynth(dest, scheduledNotes);
       activeSynth.triggerAttackRelease(
-        notes as string[],
+        scheduledNotes,
         config.durationFor(options),
         time,
         velocity,
@@ -58,7 +59,7 @@ export function createReusableChordVoice(
         cancel: () => {
           if (cancelled) return;
           cancelled = true;
-          activeSynth.releaseAll(Tone.now());
+          activeSynth.triggerRelease(scheduledNotes, Tone.now());
         },
       };
     },

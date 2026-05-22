@@ -142,7 +142,7 @@ describe("organVoice — Tone.PolySynth backend", () => {
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
-  it("cancel() releases all voices immediately", () => {
+  it("cancel() releases only that handle's notes immediately", () => {
     const handle = organVoice.scheduleChord(
       {} as AudioNode,
       ["C3", "E3", "G3"],
@@ -150,7 +150,37 @@ describe("organVoice — Tone.PolySynth backend", () => {
       { velocity: 0.7 },
     );
     handle.cancel();
-    expect(spies.releaseAll).toHaveBeenCalledTimes(1);
+    expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
+    expect(spies.triggerRelease).toHaveBeenCalledWith(["C3", "E3", "G3"], 0);
+    expect(spies.releaseAll).not.toHaveBeenCalled();
+    expect(spies.dispose).not.toHaveBeenCalled();
+  });
+
+  it("cancel() keeps shared synth handles isolated", () => {
+    const firstHandle = organVoice.scheduleChord(
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
+      0,
+      { velocity: 0.7 },
+    );
+    const secondHandle = organVoice.scheduleChord(
+      {} as AudioNode,
+      ["D3", "F3", "A3"],
+      0.5,
+      { velocity: 0.7 },
+    );
+
+    firstHandle.cancel();
+
+    expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
+    expect(spies.triggerRelease).toHaveBeenCalledWith(["C3", "E3", "G3"], 0);
+    expect(spies.releaseAll).not.toHaveBeenCalled();
+
+    secondHandle.cancel();
+
+    expect(spies.triggerRelease).toHaveBeenCalledTimes(2);
+    expect(spies.triggerRelease).toHaveBeenNthCalledWith(2, ["D3", "F3", "A3"], 0);
+    expect(spies.releaseAll).not.toHaveBeenCalled();
     expect(spies.dispose).not.toHaveBeenCalled();
   });
 
@@ -164,7 +194,9 @@ describe("organVoice — Tone.PolySynth backend", () => {
     handle.cancel();
     handle.cancel();
     handle.cancel();
-    expect(spies.releaseAll).toHaveBeenCalledTimes(1);
+    expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
+    expect(spies.triggerRelease).toHaveBeenCalledWith(["C3", "E3", "G3"], 0);
+    expect(spies.releaseAll).not.toHaveBeenCalled();
     expect(spies.dispose).not.toHaveBeenCalled();
   });
 });
