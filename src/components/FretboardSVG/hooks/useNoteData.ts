@@ -57,7 +57,7 @@ export interface UseNoteDataProps {
   shapeScope?: "single" | "multi" | "global";
   activeShape?: ActiveShapeType;
   scaleName: string;
-  useFlats: boolean;
+  preferFlats: boolean;
   displayFormat?: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
   wrappedNotes: Set<string>;
@@ -100,7 +100,7 @@ export function useNoteData({
   shapeScope,
   activeShape,
   scaleName,
-  useFlats,
+  preferFlats,
   displayFormat,
   degreeColorsEnabled,
   wrappedNotes,
@@ -310,7 +310,7 @@ export function useNoteData({
           noteName,
           rootNote,
           scale,
-          useFlats,
+          preferFlats,
         );
         if (displayFormat === "degrees" && rootNote) {
           const noteIdx = NOTES.indexOf(noteName);
@@ -401,5 +401,5 @@ export function useNoteData({
       }
     }
     return notes;
-  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, chordFretSpread, scaleName, useFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys, fullChordShapeByPosition, chordBoxBounds, leadLensData]);
+  }, [numStrings, fretboardLayout, totalColumns, startFret, maxFret, hiddenNotes, highlightNotes, hasChordOverlay, chordTones, rootNote, chordRoot, colorNotes, shapePolygons, chordFretSpread, scaleName, preferFlats, displayFormat, degreeColorsEnabled, wrappedNotes, practiceLens, tuning, noteSemantics, activePattern, activeShape, shapeScope, fullChordPositionKeys, fullChordShapeByPosition, chordBoxBounds, leadLensData]);
 }

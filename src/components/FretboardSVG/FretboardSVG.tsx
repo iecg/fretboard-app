@@ -92,7 +92,7 @@ interface FretboardSVGProps {
   /** Set of note names to suppress from rendering entirely. */
   hiddenNotes?: Set<string>;
   /** When true, renders flat spellings instead of sharps where applicable. */
-  useFlats?: boolean;
+  preferFlats?: boolean;
   /** Name of the active scale, used for degree color mapping and aria label. */
   scaleName?: string;
   /**
@@ -159,7 +159,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   shapePolygons = [],
   wrappedNotes = DEFAULT_WRAPPED_NOTES,
   hiddenNotes,
-  useFlats = false,
+  preferFlats = false,
   scaleName = "",
   activePattern,
   activeShape,
@@ -297,7 +297,7 @@ export const FretboardSVG = memo(function FretboardSVG({
   }, [polygonData, startFret, endFret, neckHeight, fretToX, stringYAt]);
 
   const displayRoot = rootNote
-    ? getNoteDisplay(rootNote, rootNote, useFlats)
+    ? getNoteDisplay(rootNote, rootNote, preferFlats)
     : "";
   // If multiple fullChordVoicings map to the same positionKey, shapeByPosition
   // keeps the first shape encountered so note colors stay deterministic.
@@ -401,7 +401,7 @@ export const FretboardSVG = memo(function FretboardSVG({
     shapeScope,
     activeShape,
     scaleName: scaleName || "",
-    useFlats,
+    preferFlats,
     displayFormat,
     degreeColorsEnabled,
     wrappedNotes,

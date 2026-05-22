@@ -15,7 +15,7 @@ export interface DegreeGridProps {
   selectedNote: string;
   onSelectInKey: (note: string, degree: string) => void;
   onSelectBorrowed: (note: string, degreeLabel: string) => void;
-  useFlats: boolean;
+  preferFlats: boolean;
 }
 
 interface CellInfo {
@@ -61,9 +61,9 @@ const SHARP_BORROWED_BY_OFFSET: Record<number, string> = {
   10: "♯vi",
 };
 
-function getBorrowedNumeral(offset: number, useFlats: boolean): string {
+function getBorrowedNumeral(offset: number, preferFlats: boolean): string {
   if (offset in NATURAL_NUMERAL_BY_OFFSET) return NATURAL_NUMERAL_BY_OFFSET[offset];
-  const chromatic = useFlats ? FLAT_BORROWED_BY_OFFSET : SHARP_BORROWED_BY_OFFSET;
+  const chromatic = preferFlats ? FLAT_BORROWED_BY_OFFSET : SHARP_BORROWED_BY_OFFSET;
   return chromatic[offset] ?? "";
 }
 
@@ -73,7 +73,7 @@ export function DegreeGrid({
   selectedNote,
   onSelectInKey,
   onSelectBorrowed,
-  useFlats,
+  preferFlats,
 }: DegreeGridProps) {
   const cells: CellInfo[] = useMemo(() => {
     const diatonic = getDiatonicNotes(scaleName, tonicNote);
@@ -85,15 +85,15 @@ export function DegreeGrid({
       const inKey = diatonic.has(note);
       const numeral = inKey
         ? degreesMap[offset] ?? ""
-        : getBorrowedNumeral(offset, useFlats);
+        : getBorrowedNumeral(offset, preferFlats);
       return {
         note,
-        display: formatAccidental(getNoteDisplay(note, tonicNote, useFlats)),
+        display: formatAccidental(getNoteDisplay(note, tonicNote, preferFlats)),
         inKey,
         numeral,
       };
     });
-  }, [scaleName, tonicNote, useFlats]);
+  }, [scaleName, tonicNote, preferFlats]);
 
   const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const selectedIndex = cells.findIndex((c) => c.note === selectedNote);

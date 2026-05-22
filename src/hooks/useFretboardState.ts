@@ -5,7 +5,7 @@ import { chordScopeToPositionAtom, activePositionAtom } from "../store/chordScop
 import { recenterKeyAtom, fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { currentTuningAtom, fretStartAtom, fretEndAtom } from "../store/layoutAtoms";
 import { noteSemanticMapAtom } from "../store/practiceLensAtoms";
-import { rootNoteAtom, scaleNameAtom, useFlatsAtom, effectiveColorNotesAtom, effectiveHiddenNotesAtom } from "../store/scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, preferFlatsAtom, effectiveColorNotesAtom, effectiveHiddenNotesAtom } from "../store/scaleAtoms";
 import { effectiveShapeDataAtom, autoCenterTargetAtom } from "../store/shapeAtoms";
 import { displayFormatAtom } from "../store/uiAtoms";
 import type { CagedShape, Voicing, VoicingNote, ShapePolygon } from "@fretflow/core";
@@ -157,7 +157,7 @@ export function useFretboardState() {
   const startFret = useAtomValue(fretStartAtom);
   const endFret = useAtomValue(fretEndAtom);
   const displayFormat = useAtomValue(displayFormatAtom);
-  const useFlats = useAtomValue(useFlatsAtom);
+  const preferFlats = useAtomValue(preferFlatsAtom);
   const noteSemanticMap = useAtomValue(noteSemanticMapAtom);
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
     useAtomValue(effectiveShapeDataAtom);
@@ -249,7 +249,7 @@ export function useFretboardState() {
     startFret,
     endFret,
     displayFormat,
-    useFlats,
+    preferFlats,
     noteSemanticMap,
     highlightNotes,
     boxBounds,

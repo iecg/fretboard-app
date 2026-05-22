@@ -112,9 +112,9 @@ export const scaleFamilyAtom = atom<ScaleFamilyId>(
   (get) => getScaleFamily(get(scaleNameAtom)).id,
 );
 
-// Translates legacy "useFlats" to new mode and clears the stale key.
+// Translates legacy "preferFlats" to new mode and clears the stale key.
 function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
-  const legacy = withStorageErrorBoundary<string | null>("useFlats", null);
+  const legacy = withStorageErrorBoundary<string | null>("preferFlats", null);
   const raw = legacy.getRaw();
   if (raw === null) return "auto";
   legacy.remove();
@@ -126,7 +126,7 @@ export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
   readLegacyAccidentalMode(),
 );
 
-export const useFlatsAtom = atom((get) =>
+export const preferFlatsAtom = atom((get) =>
   resolveAccidentalMode(
     get(rootNoteAtom),
     get(scaleNameAtom),
@@ -161,7 +161,7 @@ export const activeBrowseOptionAtom = atom((get) =>
     get(rootNoteAtom),
     get(scaleNameAtom),
     "parallel",
-    get(useFlatsAtom),
+    get(preferFlatsAtom),
   ),
 );
 
@@ -173,7 +173,7 @@ export const degreeChipsAtom = atom((get) => {
   const rootNote = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const scaleNotes = get(scaleNotesAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
   const intervals = SCALES[scaleName] || [];
   const degreesMap = getDegreesForScale(scaleName);
 
@@ -188,7 +188,7 @@ export const degreeChipsAtom = atom((get) => {
     return {
       internalNote: note,
       note: formatAccidental(
-        getNoteDisplayInScale(note, rootNote, intervals, useFlats),
+        getNoteDisplayInScale(note, rootNote, intervals, preferFlats),
       ),
       interval: formatAccidental(interval),
       scaleDegree,
@@ -269,7 +269,7 @@ export const effectiveColorNotesAtom: Atom<string[]> = gatedAtom(
 export const practiceBarColorNotesAtom = atom((get) => {
   const colorNotes = get(colorNotesAtom);
   const rootNote = get(rootNoteAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
 
   if (colorNotes.length === 0) return [] as PracticeBarColorNote[];
   const rootIdx = NOTES.indexOf(rootNote);
@@ -280,7 +280,7 @@ export const practiceBarColorNotesAtom = atom((get) => {
     const intervalName = INTERVAL_NAMES[interval] ?? "";
     return {
       internalNote: note,
-      displayNote: formatAccidental(getNoteDisplay(note, rootNote, useFlats)),
+      displayNote: formatAccidental(getNoteDisplay(note, rootNote, preferFlats)),
       intervalName: formatAccidental(intervalName),
     };
   });

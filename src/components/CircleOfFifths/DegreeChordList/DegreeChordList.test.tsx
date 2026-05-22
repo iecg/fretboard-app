@@ -50,7 +50,7 @@ describe("DegreeChordList", () => {
 
   it("resolves flat-key display for F Major (IV = B♭, V = C)", () => {
     const { container } = renderWithAtoms(
-      <DegreeChordList rootNote="F" scaleName="Major" useFlats={true} />,
+      <DegreeChordList rootNote="F" scaleName="Major" preferFlats={true} />,
     );
     const rows = getRows(container);
     const cells = rows.map(rowCells);

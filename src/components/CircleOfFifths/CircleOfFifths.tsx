@@ -43,7 +43,7 @@ interface CircleOfFifthsProps {
   /** Name of the active scale, used to highlight scale-member segments. */
   scaleName?: string;
   /** When true, renders flat spellings instead of sharps where applicable. */
-  useFlats?: boolean;
+  preferFlats?: boolean;
   /** Controls enharmonic label display: "auto" infers from the key, "on" always shows, "off" never shows. */
   enharmonicDisplay?: "auto" | "on" | "off";
   /** Layout variant: "card" wraps the SVG in a card container; "inline" renders flush. */
@@ -54,7 +54,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
   rootNote,
   setRootNote,
   scaleName = "Major",
-  useFlats = false,
+  preferFlats = false,
   enharmonicDisplay = "auto",
   variant = "card",
 }: CircleOfFifthsProps) {
@@ -65,7 +65,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
     rootNote,
     rootNote,
     scaleIntervals,
-    useFlats,
+    preferFlats,
   );
   const degreeMap = getDegreesForScale(scaleName);
 
@@ -129,7 +129,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             const { primary } = getCircleNoteLabels(
               note,
               rootNote,
-              useFlats,
+              preferFlats,
               scaleIntervals,
               enharmonicDisplay,
             );
@@ -243,7 +243,7 @@ export const CircleOfFifths = memo(function CircleOfFifths({
             const { primary, enharmonic } = getCircleNoteLabels(
               note,
               rootNote,
-              useFlats,
+              preferFlats,
               scaleIntervals,
               enharmonicDisplay,
             );

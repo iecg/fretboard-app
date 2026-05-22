@@ -16,7 +16,7 @@ describe("NoteGrid/NoteGrid", () => {
         notes={NOTES}
         selected="C"
         onSelect={() => {}}
-        useFlats={false}
+        preferFlats={false}
       />,
     );
     const buttons = screen.getAllByRole("button");
@@ -29,7 +29,7 @@ describe("NoteGrid/NoteGrid", () => {
         notes={NOTES}
         selected="C#"
         onSelect={() => {}}
-        useFlats={false}
+        preferFlats={false}
       />,
     );
     const activeButton = screen.getByRole("button", { name: /C♯/ });
@@ -45,33 +45,33 @@ describe("NoteGrid/NoteGrid", () => {
         notes={NOTES}
         selected="C"
         onSelect={onSelect}
-        useFlats={false}
+        preferFlats={false}
       />,
     );
     fireEvent.click(screen.getByText("D"));
     expect(onSelect).toHaveBeenCalledWith("D");
   });
 
-  it("displays flats when useFlats is true", () => {
+  it("displays flats when preferFlats is true", () => {
     render(
       <NoteGrid
         notes={NOTES}
         selected="C"
         onSelect={() => {}}
-        useFlats={true}
+        preferFlats={true}
       />,
     );
     expect(screen.getByText("B♭")).toBeInTheDocument();
     expect(screen.queryByText("A♯")).not.toBeInTheDocument();
   });
 
-  it("displays sharps when useFlats is false", () => {
+  it("displays sharps when preferFlats is false", () => {
     render(
       <NoteGrid
         notes={NOTES}
         selected="C"
         onSelect={() => {}}
-        useFlats={false}
+        preferFlats={false}
       />,
     );
     expect(screen.getByText("A♯")).toBeInTheDocument();
@@ -84,7 +84,7 @@ describe("NoteGrid/NoteGrid", () => {
         notes={NOTES}
         selected="C"
         onSelect={() => {}}
-        useFlats={false}
+        preferFlats={false}
       />,
     );
     expect(await axe(container)).toHaveNoViolations();

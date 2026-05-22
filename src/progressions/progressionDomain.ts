@@ -477,7 +477,7 @@ export function resolveProgressionStep(
   scaleName: string,
   rootNote: string,
   index = 0,
-  useFlats = false,
+  preferFlats = false,
 ): ResolvedProgressionStep {
   const diatonic = getDiatonicChord(
     step.degree,
@@ -504,7 +504,7 @@ export function resolveProgressionStep(
   const overrideValid =
     step.qualityOverride !== null && CHORD_DEFINITIONS[step.qualityOverride] !== undefined;
   const quality = overrideValid ? step.qualityOverride! : diatonic.quality;
-  const rootLabel = formatAccidental(getNoteDisplay(diatonic.root, rootNote, useFlats));
+  const rootLabel = formatAccidental(getNoteDisplay(diatonic.root, rootNote, preferFlats));
 
   return {
     ...step,

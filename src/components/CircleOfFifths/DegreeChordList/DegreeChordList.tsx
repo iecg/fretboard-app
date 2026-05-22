@@ -16,7 +16,7 @@ export interface DegreeChordListProps {
   /** Scale name (e.g., "Major", "Phrygian", "Natural Minor"). */
   scaleName: string;
   /** Force flat-display when true; sharp-display when false. Auto-detected from FLAT_KEYS when omitted. */
-  useFlats?: boolean;
+  preferFlats?: boolean;
   /** Roman-numeral DegreeId of the active row (renders the active highlight). */
   activeDegreeId?: DegreeId | null;
   /** Click handler for row selection. Disabled rows do not invoke this. */
@@ -63,7 +63,7 @@ interface DegreeRowData {
 function DegreeChordListImpl({
   rootNote,
   scaleName,
-  useFlats,
+  preferFlats,
   activeDegreeId,
   onSelect,
   className,
@@ -85,10 +85,10 @@ function DegreeChordListImpl({
         };
       }
       const rootDisplay = formatAccidental(
-        getNoteDisplay(chord.root, rootNote, useFlats),
+        getNoteDisplay(chord.root, rootNote, preferFlats),
       );
       const notesLabel = getChordNotes(chord.root, chord.quality)
-        .map((note) => formatAccidental(getNoteDisplay(note, rootNote, useFlats)))
+        .map((note) => formatAccidental(getNoteDisplay(note, rootNote, preferFlats)))
         .join(" ");
       return {
         degreeId,
@@ -98,7 +98,7 @@ function DegreeChordListImpl({
         enabled: true,
       };
     });
-  }, [rootNote, scaleName, useFlats]);
+  }, [rootNote, scaleName, preferFlats]);
 
   const label =
     ariaLabel ?? `Diatonic chords for ${rootNote} ${scaleName}`;

@@ -18,7 +18,7 @@ import {
   rootNoteAtom,
   scaleNameAtom,
   scaleNotesAtom,
-  useFlatsAtom,
+  preferFlatsAtom,
 } from "./scaleAtoms";
 
 // ---------------------------------------------------------------------------
@@ -64,7 +64,7 @@ export function buildChordRowEntries(
   chordRoot: string,
   rootNote: string,
   scaleName: string,
-  useFlats: boolean,
+  preferFlats: boolean,
 ): ChordRowEntry[] {
   const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
   const degreesMap = getDegreesForScale(scaleName);
@@ -85,7 +85,7 @@ export function buildChordRowEntries(
     }
     return {
       internalNote: m.note,
-      displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
+      displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, preferFlats)),
       memberName: m.name === "root" ? "1" : formatAccidental(m.name),
       role,
       inScale,
@@ -133,6 +133,6 @@ export const allChordMembersAtom = atom((get) => {
     get(chordRootAtom),
     get(rootNoteAtom),
     get(scaleNameAtom),
-    get(useFlatsAtom),
+    get(preferFlatsAtom),
   );
 });
