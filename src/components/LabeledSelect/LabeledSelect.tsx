@@ -26,6 +26,10 @@ interface LabeledSelectBaseProps {
   'aria-describedby'?: string;
   disabled?: boolean;
   hideLabel?: boolean;
+  /** When true, sizes the trigger intrinsically (width: auto with a 5rem
+   * minimum) instead of stretching to its container. Apply to short-value
+   * selects like Root/Quality/Pattern/Voicing/TimeSignature. */
+  fit?: boolean;
 }
 
 /** Exactly one of `options` (flat) or `groups` (grouped) must be provided. */
@@ -62,6 +66,7 @@ export function LabeledSelect({
   'aria-describedby': ariaDescribedBy,
   disabled,
   hideLabel,
+  fit,
 }: LabeledSelectProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
@@ -77,6 +82,7 @@ export function LabeledSelect({
         },
         className,
       )}
+      data-fit={fit ? '' : undefined}
     >
       <span id={labelId} className={styles['labeled-select-label-text']}>
         {label}

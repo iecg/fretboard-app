@@ -44,10 +44,10 @@ export function ChordStringSetPicker() {
     <LabeledSelect
       label={t("inspector.chordStringSetLabel")}
       hideLabel
+      fit
       value={value}
       onChange={setValue}
       options={items}
-      // TODO(F7): pass `fit` once LabeledSelect ships the prop in Task 7.
     />
   );
 }

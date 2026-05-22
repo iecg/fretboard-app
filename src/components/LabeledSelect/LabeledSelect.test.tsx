@@ -101,6 +101,35 @@ describe('LabeledSelect/LabeledSelect', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
+  it('emits data-fit on the root when fit prop is true', () => {
+    const { container } = render(
+      <LabeledSelect
+        label="Test"
+        value="major-modes"
+        options={scaleOptions}
+        onChange={vi.fn()}
+        fit
+      />,
+    );
+    const root = container.querySelector('.labeled-select');
+    expect(root).not.toBeNull();
+    expect(root).toHaveAttribute('data-fit');
+  });
+
+  it('omits data-fit when fit is false', () => {
+    const { container } = render(
+      <LabeledSelect
+        label="Test"
+        value="major-modes"
+        options={scaleOptions}
+        onChange={vi.fn()}
+      />,
+    );
+    const root = container.querySelector('.labeled-select');
+    expect(root).not.toBeNull();
+    expect(root).not.toHaveAttribute('data-fit');
+  });
+
   it('has no accessibility violations (disabled state)', async () => {
     const { container } = render(
       <LabeledSelect

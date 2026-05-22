@@ -185,6 +185,7 @@ export function SongControls() {
         <LabeledSelect
           label={t("controls.root")}
           hideLabel
+          fit
           value={rootNote}
           onChange={handleRootNote}
           options={NOTES.map((note) => ({
@@ -378,6 +379,7 @@ export function SongControls() {
               <LabeledSelect
                 label={t("controls.quality")}
                 hideLabel
+                fit
                 value={
                   activeStep?.qualityOverride
                   ?? activeResolvedProgressionStep?.quality

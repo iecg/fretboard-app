@@ -35,6 +35,14 @@
   transition: var(--dc-transition);
 }
 
+/* Opt-in: size the trigger to its content (e.g., short-value selects like
+ * Root, Quality, Pattern, Voicing, TimeSignature). */
+.labeled-select[data-fit] .labeled-select-trigger {
+  width: auto;
+  max-width: 100%;
+  min-width: var(--labeled-select-min-width, 5rem);
+}
+
 .labeled-select-trigger:hover:not([data-disabled]) {
   background-color: var(--dc-bg-hover);
   border-color: var(--dc-border-hover);
