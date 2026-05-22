@@ -28,7 +28,7 @@ export default defineConfig([
       // React Compiler bails on code that violates the Rules of React.
       // Surfaced at 'warn' during rollout so CI doesn't break; promoted
       // to 'error' once the codebase is clean (see plan Task 8).
-      'react-compiler/react-compiler': 'warn',
+      'react-compiler/react-compiler': 'error',
     },
   },
   // Set all jsx-a11y rules to 'error' — violations break CI.
