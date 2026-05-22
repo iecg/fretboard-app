@@ -29,11 +29,6 @@ export const en: Dictionary = {
       accidentalsHint: "Auto chooses sharps or flats based on the current musical context.",
       enharmonicDisplayHint: "Controls whether equivalent note spellings appear when they clarify the theory view.",
       themeHint: "Choose your preferred color theme. System matches your device settings.",
-      handSize: "Hand size",
-      handSizeHint: "Filters Close voicings to ones you can physically reach.",
-      handSizeSmall: "Small",
-      handSizeMedium: "Medium",
-      handSizeLarge: "Large",
     },
   },
   inspector: {

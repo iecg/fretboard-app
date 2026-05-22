@@ -18,11 +18,3 @@ export type {
 export {
   generateVoicings, openStringMidi,
 } from "./voicings";
-
-export {
-  fretPositionMm,
-  voicingWidthMm,
-  filterByHandSpan,
-  HAND_SPAN_THRESHOLDS_MM,
-  type HandSize,
-} from "./handSpan";

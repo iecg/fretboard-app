@@ -27,11 +27,6 @@ export interface Dictionary {
       accidentalsHint: string;
       enharmonicDisplayHint: string;
       themeHint: string;
-      handSize: string;
-      handSizeHint: string;
-      handSizeSmall: string;
-      handSizeMedium: string;
-      handSizeLarge: string;
     };
   };
   inspector: {

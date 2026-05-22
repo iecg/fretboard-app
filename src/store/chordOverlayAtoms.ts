@@ -9,7 +9,6 @@ import {
   getNoteDisplay,
   formatAccidental,
   generateVoicings,
-  filterByHandSpan,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
@@ -34,7 +33,6 @@ import {
   activeChordQualityAtom,
 } from "./songStateAtoms";
 import { currentTuningAtom } from "./layoutAtoms";
-import { handSizeAtom } from "./settingsAtoms";
 import {
   cagedShapesAtom,
   cagedOctaveAtom,
@@ -286,8 +284,7 @@ export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | nu
 
 /**
  * All Close voicings that fit within the active scale-shape window (or all of
- * them when no shape is active or when {@link chordSnapToScaleAtom} is off)
- * AND pass the hand-span filter.
+ * them when no shape is active or when {@link chordSnapToScaleAtom} is off).
  */
 export const closeCandidatesAtom = atom((get): Voicing[] => {
   const chordType = get(chordTypeAtom);
@@ -299,15 +296,14 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
     maxFret: 24,
     voicingType: "close",
   });
-  const handFiltered = filterByHandSpan(all, get(handSizeAtom));
 
-  // User has opted out of scale-window snapping — return every hand-fitting
-  // candidate regardless of scale shape.
-  if (!get(chordSnapToScaleAtom)) return handFiltered;
+  // User has opted out of scale-window snapping — return every candidate
+  // regardless of scale shape.
+  if (!get(chordSnapToScaleAtom)) return all;
 
   const scaleWindow = get(activeScaleWindowAtom);
-  if (!scaleWindow) return handFiltered;
-  return handFiltered.filter((v) => {
+  if (!scaleWindow) return all;
+  return all.filter((v) => {
     const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
     if (fretted.length === 0) return true;
     const min = Math.min(...fretted);

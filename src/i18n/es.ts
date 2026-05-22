@@ -29,11 +29,6 @@ export const es: Dictionary = {
       accidentalsHint: "Elige automáticamente sostenidos o bemoles según el contexto musical actual.",
       enharmonicDisplayHint: "Controla si aparecen notas enarmónicas equivalentes cuando aclaran la vista teórica.",
       themeHint: "Elige tu tema de color preferido. Sistema coincide con la configuración de tu dispositivo.",
-      handSize: "Tamaño de mano",
-      handSizeHint: "Filtra los voicings cerrados a los que puedes alcanzar físicamente.",
-      handSizeSmall: "Pequeña",
-      handSizeMedium: "Mediana",
-      handSizeLarge: "Grande",
     },
   },
   inspector: {
