@@ -156,6 +156,7 @@ export interface Dictionary {
     diatonicDefaultHint: string;
     manualQualityHint: string;
     degreeGridHint: string;
+    voicingLensCrossRef: string;
   };
 }
 

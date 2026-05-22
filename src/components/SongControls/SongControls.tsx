@@ -387,6 +387,9 @@ export function SongControls() {
                   : "No quality selected uses the diatonic chord from the active scale."}
               </p>
             </div>
+            <p className={shared["field-hint"]}>
+              {t("inspector.voicingLensCrossRef")}
+            </p>
           </div>
         ) : (
           <p className={shared["field-hint"]}>Select a chord to edit its degree, duration, and quality.</p>
