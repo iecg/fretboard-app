@@ -15,7 +15,6 @@ export interface DegreeGridProps {
   selectedNote: string;
   onSelectInKey: (note: string, degree: string) => void;
   onSelectBorrowed: (note: string, degreeLabel: string) => void;
-   
   useFlats: boolean;
 }
 
@@ -53,6 +52,7 @@ export function DegreeGrid({
   selectedNote,
   onSelectInKey,
   onSelectBorrowed,
+  useFlats,
 }: DegreeGridProps) {
   const cells: CellInfo[] = useMemo(() => {
     const diatonic = getDiatonicNotes(scaleName, tonicNote);
@@ -67,12 +67,12 @@ export function DegreeGrid({
         : BORROWED_NUMERAL_BY_OFFSET[offset] ?? "";
       return {
         note,
-        display: formatAccidental(getNoteDisplay(note, tonicNote)),
+        display: formatAccidental(getNoteDisplay(note, tonicNote, useFlats)),
         inKey,
         numeral,
       };
     });
-  }, [scaleName, tonicNote]);
+  }, [scaleName, tonicNote, useFlats]);
 
   return (
     <div className={styles.grid} role="group" aria-label="Chord root">
