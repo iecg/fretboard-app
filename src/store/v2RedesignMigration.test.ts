@@ -91,4 +91,13 @@ describe("runV2RedesignMigration", () => {
     expect(() => runV2RedesignMigration()).not.toThrow();
     spy.mockRestore();
   });
+
+  it("does not modify existing progressionSteps storage", () => {
+    const original = JSON.stringify([
+      { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    localStorage.setItem(`${STORAGE_PREFIX}progressionSteps`, original);
+    runV2RedesignMigration();
+    expect(localStorage.getItem(`${STORAGE_PREFIX}progressionSteps`)).toBe(original);
+  });
 });
