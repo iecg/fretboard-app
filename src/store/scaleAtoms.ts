@@ -112,9 +112,9 @@ export const scaleFamilyAtom = atom<ScaleFamilyId>(
   (get) => getScaleFamily(get(scaleNameAtom)).id,
 );
 
-// Translates legacy "preferFlats" to new mode and clears the stale key.
+// Translates legacy "useFlats" to new mode and clears the stale key.
 function readLegacyAccidentalMode(): "sharps" | "flats" | "auto" {
-  const legacy = withStorageErrorBoundary<string | null>("preferFlats", null);
+  const legacy = withStorageErrorBoundary<string | null>("useFlats", null);
   const raw = legacy.getRaw();
   if (raw === null) return "auto";
   legacy.remove();
