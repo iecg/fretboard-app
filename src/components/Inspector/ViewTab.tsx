@@ -29,7 +29,7 @@ export function ViewTab() {
           <span id="view-fingering-heading">{t("inspector.groupScaleFingering")}</span>
         </GroupHeader>
         <PropGrid columns={6}>
-          <FingeringPatternControls />
+          <FingeringPatternControls hideHeader />
         </PropGrid>
       </section>
       <section className={styles.group} aria-labelledby="view-voicing-heading">

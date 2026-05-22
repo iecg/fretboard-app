@@ -17,6 +17,12 @@ const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
 
+export interface FingeringPatternControlsProps {
+  /** When true, suppresses the internal "Fingering" GroupHeader. Use when the
+   * host already renders its own section heading for this group. */
+  hideHeader?: boolean;
+}
+
 /**
  * Renders the FINGERING property-grid group: the group header plus the
  * pattern selector and its per-pattern sub-controls, as `Prop` cells. It is
@@ -24,7 +30,7 @@ const isTouchPrimary =
  * transparent to CSS grid, so the emitted `GroupHeader`/`Prop` elements become
  * direct grid items.
  */
-export function FingeringPatternControls() {
+export function FingeringPatternControls({ hideHeader = false }: FingeringPatternControlsProps) {
   const { t } = useTranslation();
   const {
     fingeringPattern,
@@ -67,7 +73,7 @@ export function FingeringPatternControls() {
 
   return (
     <>
-      <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>
+      {!hideHeader && <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>}
 
       <Prop label={t("inspector.positionCluster")} span={2}>
         <ToggleBar

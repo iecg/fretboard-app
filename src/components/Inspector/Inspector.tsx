@@ -3,18 +3,12 @@ import * as RadixTabs from "@radix-ui/react-tabs";
 import clsx from "clsx";
 import { useTranslation } from "../../hooks/useTranslation";
 import { INSPECTOR_TABS, type InspectorTabId } from "./tabs";
-import { ScaleTab } from "./ScaleTab";
-import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayControls";
+import { ViewTab } from "./ViewTab";
 import { SongControls } from "../SongControls/SongControls";
 import styles from "./Inspector.module.css";
 
 const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
-  scale: () => <ScaleTab />,
-  chord: () => (
-    <div className={styles.tabBody} data-inspector-tab="chord">
-      <ChordOverlayControls />
-    </div>
-  ),
+  view: () => <ViewTab />,
   song: () => (
     <div className={styles.tabBody} data-inspector-tab="song">
       <SongControls />
@@ -23,17 +17,12 @@ const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
 };
 
 export interface InspectorProps {
-  /**
-   * "top" (default) renders inline text-only tabs at the top of the panel.
-   * "bottom" docks the tab list to the bottom of the viewport as an
-   * icon+label bar — used on the mobile tier and the tablet-split variant.
-   */
   placement?: "top" | "bottom";
 }
 
 export function Inspector({ placement = "top" }: InspectorProps) {
   const { t } = useTranslation();
-  const [active, setActive] = useState<InspectorTabId>("scale");
+  const [active, setActive] = useState<InspectorTabId>("view");
 
   const tabList = (
     <RadixTabs.List className={styles.tabList} aria-label="Inspector">
@@ -55,14 +44,7 @@ export function Inspector({ placement = "top" }: InspectorProps) {
       value={active}
       onValueChange={(value) => setActive(value as InspectorTabId)}
     >
-      {placement === "top" ? (
-        <div className={styles.tabHeader}>
-          <span className={styles.panelLabel}>{t("inspector.panelLabel")}</span>
-          {tabList}
-        </div>
-      ) : (
-        tabList
-      )}
+      {placement === "top" ? <div className={styles.tabHeader}>{tabList}</div> : tabList}
       {INSPECTOR_TABS.map((tab) => (
         <RadixTabs.Content
           key={tab.id}

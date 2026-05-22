@@ -9,22 +9,9 @@
   padding: var(--space-3, 0.75rem);
 }
 
-/* DAW Shell Phase 13b — a mono "Inspector" kicker. Top placement renders it
-   inline with the tab row inside `.tabHeader`. */
-.panelLabel {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--faceplate-accent);
-  padding-inline: var(--space-1, 0.25rem);
-  white-space: nowrap;
-}
-
-/* Top-placement header row — the "Inspector" kicker and the tab pills share
-   one baseline. The divider rule sits on this row, with `padding-bottom`
-   opening a gap between the pills and the line. */
+/* Top-placement header row — tab pills share one baseline. The divider rule
+   sits on this row, with `padding-bottom` opening a gap between pills and the
+   line. */
 .tabHeader {
   display: flex;
   align-items: center;
