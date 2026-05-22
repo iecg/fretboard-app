@@ -24,6 +24,7 @@ import {
   booleanStorage,
   constrainedNumberStorage,
   enumValidator,
+  stringValidator,
   GET_ON_INIT,
   withStorageErrorBoundary,
 } from "../utils/storage";
@@ -192,6 +193,12 @@ const voicingValueStorage = createStorage<VoicingType>({
 
 const closePositionIndexStorage = constrainedNumberStorage({ integer: true });
 
+const selectedCloseVoicingKeyStorage = createStorage<string | null>({
+  serialize: (v) => (v === null ? "" : v),
+  deserialize: (raw) => (raw === "" ? null : raw),
+  validate: stringValidator({ nullable: true }),
+});
+
 /**
  * The single Voicing control. Off = no connector polygons. Full = CAGED full-
  * chord polygon at the active scale shape's position (or all 5 positions when
@@ -207,14 +214,46 @@ export const voicingAtom = atomWithStorage<VoicingType>(
 );
 
 /**
- * Cycle pointer for Close voicings. Stored raw; wrapping happens in the
- * derived `voicingMatchesAtom` (modulo candidate count). Reset to 0 by an
- * effect in ChordOverlayControls when the active scale shape changes.
+ * Cycle pointer for Close voicings.
+ *
+ * @deprecated The Close voicing picker no longer uses a numeric cycle index;
+ * selection is content-addressed via {@link selectedCloseVoicingKeyAtom}.
+ * This atom is retained temporarily so the legacy `ClosePositionCycle`
+ * component and its test continue to compile until Task F5e/f/g remove the
+ * consumers and Task F5g retires this export.
  */
 export const closePositionIndexAtom = atomWithStorage<number>(
   k("closePositionIndex"),
   0,
   closePositionIndexStorage,
+  GET_ON_INIT,
+);
+
+/**
+ * Toggle for "snap close voicings to the active scale window". When true
+ * (default), `closeCandidatesAtom` is filtered to candidates that fit inside
+ * `activeScaleWindowAtom`. When false, the filter is bypassed and every
+ * hand-span-fitting candidate is offered regardless of scale position.
+ */
+export const chordSnapToScaleAtom = atomWithStorage<boolean>(
+  k("chordSnapToScale"),
+  true,
+  booleanStorage,
+  GET_ON_INIT,
+);
+
+/**
+ * Content-addressed key for the currently selected Close voicing. Format:
+ * `voicing.positionKeys.join("|")`. Survives chord changes by being keyed off
+ * note positions rather than a list index; when the stored key no longer
+ * matches any candidate (chord changed, scale window narrowed, etc.) the
+ * derived {@link selectedCloseVoicingAtom} gracefully falls back to the first
+ * candidate.
+ */
+export const selectedCloseVoicingKeyAtom = atomWithStorage<string | null>(
+  k("selectedCloseVoicingKey"),
+  null,
+  selectedCloseVoicingKeyStorage,
   GET_ON_INIT,
 );
 
@@ -271,7 +310,8 @@ export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | nu
 
 /**
  * All Close voicings that fit within the active scale-shape window (or all of
- * them when no shape is active) AND pass the hand-span filter.
+ * them when no shape is active or when {@link chordSnapToScaleAtom} is off)
+ * AND pass the hand-span filter.
  */
 export const closeCandidatesAtom = atom((get): Voicing[] => {
   const chordType = get(chordTypeAtom);
@@ -285,6 +325,10 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
   });
   const handFiltered = filterByHandSpan(all, get(handSizeAtom));
 
+  // User has opted out of scale-window snapping — return every hand-fitting
+  // candidate regardless of scale shape.
+  if (!get(chordSnapToScaleAtom)) return handFiltered;
+
   const scaleWindow = get(activeScaleWindowAtom);
   if (!scaleWindow) return handFiltered;
   return handFiltered.filter((v) => {
@@ -297,8 +341,11 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
 });
 
 /**
- * The renderer's voicing source. Picks Full output (optionally narrowed to the
- * active CAGED shape), the single Close polygon at the wrapped cycle index, or [].
+ * The renderer's voicing source. For Full, returns CAGED matches (optionally
+ * narrowed to the active CAGED shape). For Close, returns ALL fitting
+ * candidates — the renderer is responsible for distinguishing the
+ * user-selected voicing (via {@link selectedCloseVoicingAtom}) from the
+ * remaining secondary candidates.
  */
 export const voicingMatchesAtom = atom((get): Voicing[] => {
   const voicing = get(voicingAtom);
@@ -317,12 +364,48 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
     }
     return all;
   }
-  // close
+  // close: return every fitting candidate. Selection vs. dimming of the
+  // non-selected candidates is the renderer's job (Task F5c/d).
+  return get(closeCandidatesAtom);
+});
+
+/**
+ * The currently selected Close voicing, resolved from
+ * {@link selectedCloseVoicingKeyAtom} against the live candidate list. Falls
+ * back to the first candidate when the stored key has gone stale (chord
+ * changed, scale window narrowed, snap toggled, etc.). Returns null only when
+ * there are no candidates at all.
+ */
+export const selectedCloseVoicingAtom = atom((get): Voicing | null => {
   const candidates = get(closeCandidatesAtom);
-  if (candidates.length === 0) return [];
-  const idx = get(closePositionIndexAtom);
-  const wrapped = ((idx % candidates.length) + candidates.length) % candidates.length;
-  return [candidates[wrapped]];
+  if (candidates.length === 0) return null;
+  const key = get(selectedCloseVoicingKeyAtom);
+  const found =
+    key !== null
+      ? candidates.find((v) => v.positionKeys.join("|") === key)
+      : null;
+  return found ?? candidates[0];
+});
+
+/**
+ * The set of fretboard positions that should render the "chord tone"
+ * emphasis. Decoupled from {@link voicingMatchesAtom} so that the Close
+ * voicing picker can change selection (which updates the connector polyline
+ * only) without disturbing which notes are highlighted on the neck.
+ *
+ * For Full: union of every matched full-chord polygon's positions.
+ * For Close: union of every fitting candidate's positions (so users see all
+ * the available voicing options highlighted in the active window).
+ */
+export const chordHighlightPositionsAtom = atom((get): Set<string> => {
+  const voicing = get(voicingAtom);
+  if (voicing === "off") return new Set<string>();
+  if (get(chordOverlayHiddenAtom)) return new Set<string>();
+  if (voicing === "full") {
+    return new Set(get(voicingMatchesAtom).flatMap((v) => v.positionKeys));
+  }
+  // close: snap-to-scale toggle is already applied inside closeCandidatesAtom.
+  return new Set(get(closeCandidatesAtom).flatMap((v) => v.positionKeys));
 });
 
 // Migrates from legacy viewMode value on first access.

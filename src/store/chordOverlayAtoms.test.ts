@@ -10,6 +10,11 @@ import {
   closePositionIndexAtom,
   closeCandidatesAtom,
   chordSourceIsProgressionAtom,
+  chordHighlightPositionsAtom,
+  chordOverlayHiddenAtom,
+  selectedCloseVoicingAtom,
+  selectedCloseVoicingKeyAtom,
+  chordSnapToScaleAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
@@ -510,5 +515,244 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
     expect(one.length).toBeGreaterThan(0);
     expect(one.every((v) => v.shape === "E")).toBe(true);
     expect(one.length).toBeLessThan(all.length);
+  });
+
+  it("close branch returns ALL fitting candidates (not just the cycle-selected one)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+    ]);
+    const matches = store.get(voicingMatchesAtom);
+    const candidates = store.get(closeCandidatesAtom);
+    expect(candidates.length).toBeGreaterThan(1);
+    expect(matches).toEqual(candidates);
+  });
+
+  it("close branch ignores closePositionIndexAtom (returns full candidate list regardless)", () => {
+    const storeIdx0 = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [closePositionIndexAtom, 0],
+    ]);
+    const storeIdx2 = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [closePositionIndexAtom, 2],
+    ]);
+    expect(storeIdx0.get(voicingMatchesAtom)).toEqual(storeIdx2.get(voicingMatchesAtom));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group J — chordHighlightPositionsAtom (v2.0 — decoupled highlight source)
+// ---------------------------------------------------------------------------
+
+describe("chordHighlightPositionsAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns an empty Set when voicing is 'off'", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "off"],
+    ]);
+    expect(store.get(chordHighlightPositionsAtom)).toEqual(new Set<string>());
+  });
+
+  it("returns an empty Set when chordOverlayHidden is true (regardless of voicing)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [chordOverlayHiddenAtom, true],
+    ]);
+    expect(store.get(chordHighlightPositionsAtom)).toEqual(new Set<string>());
+
+    const closeStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [chordOverlayHiddenAtom, true],
+    ]);
+    expect(closeStore.get(chordHighlightPositionsAtom)).toEqual(new Set<string>());
+  });
+
+  it("voicing=full: returns the union of voicingMatchesAtom positionKeys", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+    ]);
+    const matches = store.get(voicingMatchesAtom);
+    expect(matches.length).toBeGreaterThan(1);
+    const expected = new Set(matches.flatMap((v) => v.positionKeys));
+    expect(store.get(chordHighlightPositionsAtom)).toEqual(expected);
+  });
+
+  it("voicing=close: returns the union of ALL closeCandidatesAtom positionKeys (not just one)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+    ]);
+    const candidates = store.get(closeCandidatesAtom);
+    expect(candidates.length).toBeGreaterThan(1);
+    const expected = new Set(candidates.flatMap((v) => v.positionKeys));
+    const actual = store.get(chordHighlightPositionsAtom);
+    expect(actual).toEqual(expected);
+    // Explicitly confirm "more than one candidate worth of keys":
+    expect(actual.size).toBeGreaterThan(candidates[0]!.positionKeys.length);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group K — selectedCloseVoicingAtom (v2.0 — picker selection)
+// ---------------------------------------------------------------------------
+
+describe("selectedCloseVoicingAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns null when there are no candidates (no chord active)", () => {
+    const store = makeAtomStore([[progressionStepsAtom, []]]);
+    expect(store.get(selectedCloseVoicingAtom)).toBeNull();
+  });
+
+  it("returns the first candidate when no key has been stored", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+    ]);
+    const candidates = store.get(closeCandidatesAtom);
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(store.get(selectedCloseVoicingAtom)).toBe(candidates[0]);
+  });
+
+  it("returns the matching candidate when a stored key is present in the candidate list", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+    ]);
+    const candidates = store.get(closeCandidatesAtom);
+    expect(candidates.length).toBeGreaterThan(1);
+    const target = candidates[1]!;
+    const targetKey = target.positionKeys.join("|");
+    store.set(selectedCloseVoicingKeyAtom, targetKey);
+    expect(store.get(selectedCloseVoicingAtom)).toBe(target);
+  });
+
+  it("falls back to the first candidate when the stored key matches none (stale after chord change)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+    ]);
+    store.set(selectedCloseVoicingKeyAtom, "0-99|1-99|2-99");
+    const candidates = store.get(closeCandidatesAtom);
+    expect(candidates.length).toBeGreaterThan(0);
+    expect(store.get(selectedCloseVoicingAtom)).toBe(candidates[0]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group L — chordSnapToScaleAtom + closeCandidatesAtom interaction
+// ---------------------------------------------------------------------------
+
+describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("defaults to true", () => {
+    const store = makeAtomStore([]);
+    expect(store.get(chordSnapToScaleAtom)).toBe(true);
+  });
+
+  it("snap=on + scale pattern active: candidates are filtered by the scale window", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+    const window = store.get(activeScaleWindowAtom);
+    expect(window).not.toBeNull();
+    const candidates = store.get(closeCandidatesAtom);
+    // All fretted notes must lie within [lo, hi].
+    for (const v of candidates) {
+      const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+      if (fretted.length === 0) continue;
+      expect(Math.min(...fretted)).toBeGreaterThanOrEqual(window!.lo);
+      expect(Math.max(...fretted)).toBeLessThanOrEqual(window!.hi);
+    }
+  });
+
+  it("snap=off + scale pattern active: candidates IGNORE the scale window (full hand-filtered set)", () => {
+    const seeds = [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+    ] as const;
+
+    const snapOn = makeAtomStore([...seeds, [chordSnapToScaleAtom, true]] as Parameters<typeof makeAtomStore>[0]);
+    const snapOff = makeAtomStore([...seeds, [chordSnapToScaleAtom, false]] as Parameters<typeof makeAtomStore>[0]);
+
+    const snapOnCount = snapOn.get(closeCandidatesAtom).length;
+    const snapOffCount = snapOff.get(closeCandidatesAtom).length;
+
+    // A real window must drop at least one candidate; otherwise this seed
+    // doesn't exercise the snap toggle and the test isn't meaningful.
+    expect(snapOffCount).toBeGreaterThan(snapOnCount);
+  });
+
+  it("snap=on + no scale pattern: no window to apply (returns hand-filtered set)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "none"],
+      [chordSnapToScaleAtom, true],
+    ]);
+    expect(store.get(activeScaleWindowAtom)).toBeNull();
+    expect(store.get(closeCandidatesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("snap=off + no scale pattern: same as snap=on + no pattern (no-op)", () => {
+    const seeds = [
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "none"],
+    ] as const;
+    const snapOn = makeAtomStore([...seeds, [chordSnapToScaleAtom, true]] as Parameters<typeof makeAtomStore>[0]);
+    const snapOff = makeAtomStore([...seeds, [chordSnapToScaleAtom, false]] as Parameters<typeof makeAtomStore>[0]);
+    expect(snapOff.get(closeCandidatesAtom).length).toBe(snapOn.get(closeCandidatesAtom).length);
   });
 });
