@@ -36,3 +36,4 @@ export * from "./circleOfFifthsUtils";
 export * from "./shapes";
 export * from "./shapes/practicePatterns";
 export { transposeNoteToSharps } from "./lib/tonal";
+export { getDiatonicNotes } from "./diatonicNotes";
