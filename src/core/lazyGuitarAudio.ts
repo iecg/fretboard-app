@@ -32,15 +32,21 @@ async function loadAudioModule(): Promise<GuitarSynthModule> {
 }
 
 function preloadAudioModule(): void {
-  void loadAudioModule();
+  void loadAudioModule().catch(() => {
+    // Swallow preload failures; explicit resume/play calls can retry.
+  });
 }
 
 export function setGuitarMutePreference(mute: boolean): void {
   desiredMute = mute;
   preloadAudioModule();
-  void modulePromise?.then((mod) => {
-    mod.synth.setMute(mute);
-  });
+  void modulePromise
+    ?.then((mod) => {
+      mod.synth.setMute(mute);
+    })
+    .catch(() => {
+      // Swallow preload failures; explicit resume/play calls can retry.
+    });
 }
 
 export function setGuitarAudioErrorHandler(
@@ -48,9 +54,13 @@ export function setGuitarAudioErrorHandler(
 ): void {
   errorHandler = nextHandler;
   preloadAudioModule();
-  void modulePromise?.then((mod) => {
-    mod.synth.onError = nextHandler;
-  });
+  void modulePromise
+    ?.then((mod) => {
+      mod.synth.onError = nextHandler;
+    })
+    .catch(() => {
+      // Swallow preload failures; explicit resume/play calls can retry.
+    });
 }
 
 export async function resumeGuitarAudio(): Promise<void> {

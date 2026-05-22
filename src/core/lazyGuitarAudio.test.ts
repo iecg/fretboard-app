@@ -92,6 +92,33 @@ describe("lazyGuitarAudio", () => {
     await playPromise;
   });
 
+  it("suppresses preload failures during preference registration", async () => {
+    const testControls = lazyGuitarAudio as typeof lazyGuitarAudio & {
+      __setLazyGuitarAudioModuleLoaderForTests?: (
+        loader: () => Promise<typeof audioModule>,
+      ) => void;
+    };
+    const setModuleLoader = testControls.__setLazyGuitarAudioModuleLoaderForTests;
+
+    expect(setModuleLoader).toBeTypeOf("function");
+
+    const loadError = new Error("chunk load failed");
+    const loader = vi
+      .fn<() => Promise<typeof audioModule>>()
+      .mockRejectedValueOnce(loadError)
+      .mockResolvedValueOnce(audioModule);
+
+    setModuleLoader!(loader);
+
+    setGuitarMutePreference(true);
+    setGuitarAudioErrorHandler(() => {});
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(audioModule.synth.setMute).not.toHaveBeenCalled();
+  });
+
   it("retries loading the lazy audio module after an import failure", async () => {
     const testControls = lazyGuitarAudio as typeof lazyGuitarAudio & {
       __setLazyGuitarAudioModuleLoaderForTests?: (
