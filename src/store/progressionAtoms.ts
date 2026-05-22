@@ -1,5 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET } from "jotai/utils";
+import { getDegreeSequence, getDiatonicChord } from "@fretflow/core";
 import {
   DEFAULT_BEATS_PER_BAR,
   DEFAULT_PROGRESSION_TEMPO_BPM,
@@ -438,12 +439,23 @@ export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName
 });
 
 export const addProgressionStepAtom = atom(null, (get, set) => {
-  const degrees = get(resolvedProgressionStepsAtom).filter((step) => !step.unavailable);
+  const tonic = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
   const previous = get(activeProgressionStepAtom);
-  const degree = previous?.degree ?? degrees[0]?.degree ?? "I";
+  const sequence = getDegreeSequence(scaleName);
+
+  const previousIdx = previous ? sequence.indexOf(previous.degree) : -1;
+  const nextIdx = previousIdx >= 0
+    ? (previousIdx + 1) % sequence.length
+    : 0;
+  const degree = sequence[nextIdx] ?? "I";
+
+  const diatonic = getDiatonicChord(degree, scaleName, tonic);
+  const qualityOverride = diatonic?.quality ?? null;
+
   const next = [
     ...get(progressionStepsAtom),
-    createProgressionStep({ degree, duration: { value: 1, unit: "bar" }, qualityOverride: null }),
+    createProgressionStep({ degree, duration: { value: 1, unit: "bar" }, qualityOverride }),
   ];
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, next.length - 1);
@@ -500,7 +512,7 @@ export const duplicateProgressionStepAtom = atom(
 
 export const updateProgressionStepDegreeAtom = atom(null, (get, set, update: { id: string; degree: string }) => {
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
-    step.id === update.id ? { ...step, degree: update.degree, qualityOverride: null } : step,
+    step.id === update.id ? { ...step, degree: update.degree } : step,
   ));
 });
 
@@ -534,10 +546,9 @@ export const updateProgressionStepRootAtom = atom(
 );
 
 /**
- * Updates the cached `degree` on the target step without clearing
- * `qualityOverride` (unlike `updateProgressionStepDegreeAtom`, which resets
- * the override). Used when the resolver wants to refresh the degree hint for
- * a manual-root step or otherwise persist a recomputed degree.
+ * Updates the cached `degree` on the target step without touching any other
+ * field. Used when the resolver wants to refresh the degree hint for a
+ * manual-root step or otherwise persist a recomputed degree.
  */
 export const updateProgressionStepCachedDegreeAtom = atom(
   null,

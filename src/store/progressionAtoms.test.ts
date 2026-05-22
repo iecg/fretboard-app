@@ -356,7 +356,7 @@ describe("derived progression atoms", () => {
       expect(store.get(progressionStepsAtom)[0]!.degree).toBe("IV");
     });
 
-    it("does not clear qualityOverride (unlike updateProgressionStepDegreeAtom)", () => {
+    it("does not clear qualityOverride", () => {
       const store = createStore();
       store.set(progressionStepsAtom, [
         { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
@@ -417,5 +417,59 @@ describe("timeSignatureDenominatorAtom", () => {
       store.set(timeSignatureDenominatorAtom, d);
       expect(store.get(timeSignatureDenominatorAtom)).toBe(d);
     }
+  });
+});
+
+describe("addProgressionStepAtom — v2.0 smart default", () => {
+  it("seeds new step's qualityOverride with diatonic quality (not null)", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(progressionStepsAtom, []);
+    store.set(addProgressionStepAtom);
+    const steps = store.get(progressionStepsAtom);
+    expect(steps).toHaveLength(1);
+    expect(steps[0].qualityOverride).toBe("Major Triad");
+  });
+
+  it("uses the next ascending in-key degree for subsequent steps", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(progressionStepsAtom, [
+      {
+        id: "1",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major Triad",
+        manualRoot: null,
+      },
+    ]);
+    store.set(addProgressionStepAtom);
+    const steps = store.get(progressionStepsAtom);
+    expect(steps).toHaveLength(2);
+    expect(steps[1].degree).toBe("ii");
+    expect(steps[1].qualityOverride).toBe("Minor Triad");
+  });
+});
+
+describe("updateProgressionStepDegreeAtom — v2.0 independence", () => {
+  it("does NOT reset qualityOverride when the degree changes", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "Major");
+    store.set(progressionStepsAtom, [
+      {
+        id: "1",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: "Major 7",
+        manualRoot: null,
+      },
+    ]);
+    store.set(updateProgressionStepDegreeAtom, { id: "1", degree: "ii" });
+    const steps = store.get(progressionStepsAtom);
+    expect(steps[0].degree).toBe("ii");
+    expect(steps[0].qualityOverride).toBe("Major 7");
   });
 });
