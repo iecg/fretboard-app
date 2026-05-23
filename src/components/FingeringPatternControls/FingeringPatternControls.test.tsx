@@ -280,7 +280,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(store.get(fingeringPatternAtom)).toBe("one-string");
     });
 
-    it("one-string string chooser is a LabeledSelect (combobox) defaulting to String 1", () => {
+    it("one-string string chooser is a LabeledSelect (combobox) defaulting to 1", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "one-string"); });
       render(
@@ -288,10 +288,10 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      // String chooser is now a LabeledSelect (combobox), not individual buttons.
-      // Default index 0 → selected label "String 1".
+      // String chooser is now a StringSetPicker (combobox), not individual buttons.
+      // Default index 0 → selected label "1" (dot-format: single string renders as "1").
       const combobox = screen.getByRole("combobox", { name: /^String$/i });
-      expect(combobox).toHaveTextContent("String 1");
+      expect(combobox).toHaveTextContent("1");
     });
 
     it("two-strings pair chooser is a LabeledSelect (combobox) defaulting to 1·2", () => {
@@ -498,7 +498,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     });
 
     describe("Task 6.4 — LabeledSelect string-set UX", () => {
-      it("one-string: string chooser is a LabeledSelect (combobox role) with options String 1–6", () => {
+      it("one-string: string chooser is a StringSetPicker (combobox role) with dot-only options 1–6", () => {
         const store = createStore();
         act(() => { store.set(fingeringPatternAtom, "one-string"); });
         render(
@@ -509,10 +509,10 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         // The Radix Select trigger has role="combobox"
         const combobox = screen.getByRole("combobox", { name: /^String$/i });
         expect(combobox).toBeInTheDocument();
-        // The options are labelled "String 1" through "String 6" (in the Radix portal)
+        // The options are labelled "1" through "6" (dot-format, guitar-numbered)
         // They are available as options in the listbox when the select is opened
-        // We can verify via aria: the selected value text should show "String 1" by default
-        expect(combobox).toHaveTextContent("String 1");
+        // We can verify via aria: the selected value text should show "1" by default
+        expect(combobox).toHaveTextContent("1");
       });
 
       it("one-string: selecting a different option updates oneStringIndexAtom", async () => {
@@ -526,10 +526,31 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
             <FingeringPatternControls />
           </Provider>
         );
-        // Open the Radix Select portal and click "String 3" (index 2)
+        // Open the Radix Select portal and click "3" (index 2, dot-format)
         await userEvent.click(screen.getByRole("combobox", { name: /^String$/i }));
-        await userEvent.click(screen.getByRole("option", { name: "String 3" }));
+        await userEvent.click(screen.getByRole("option", { name: "3" }));
         expect(store.get(oneStringIndexAtom)).toBe(2);
+      });
+
+      it("1-string mode renders the string selector with dot-only option labels ('1'..'6')", async () => {
+        const store = createStore();
+        act(() => { store.set(fingeringPatternAtom, "one-string"); });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        const trigger = screen.getByRole("combobox", { name: /^String$/i });
+        await userEvent.click(trigger);
+        // All 6 single-string options render as "1", "2", ..., "6" (dot-format)
+        expect(screen.getByRole("option", { name: "1" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "2" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "3" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "4" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "5" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "6" })).toBeInTheDocument();
+        // Negative assertion: the old "String 1" label is gone
+        expect(screen.queryByRole("option", { name: /^String/ })).toBeNull();
       });
 
       it("two-strings: pair chooser is a StringSetPicker (combobox role) with dot-separator options", () => {

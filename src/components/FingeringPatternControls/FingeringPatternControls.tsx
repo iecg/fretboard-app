@@ -249,9 +249,9 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
               label={t("controls.string")}
               value={String(oneStringIndex)}
               onChange={(v) => setOneStringIndex(Number(v))}
-              options={[1, 2, 3, 4, 5, 6].map((n, i) => ({
+              options={[0, 1, 2, 3, 4, 5].map((i) => ({
                 id: String(i),
-                label: `String ${n}`,
+                strings: [i],
               }))}
               width="fixed"
               widthValue="5rem"
