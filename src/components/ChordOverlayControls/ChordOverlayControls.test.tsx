@@ -215,14 +215,14 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it("renders the snap-to-scale switch when fingeringPattern !== 'none'", () => {
       renderManual();
       expect(
-        screen.getByRole("switch", { name: /snap to scale/i }),
+        screen.getByRole("switch", { name: /lock to scale/i }),
       ).toBeInTheDocument();
     });
 
     it("hides the snap-to-scale switch when fingeringPattern === 'none'", () => {
       renderManual([[fingeringPatternAtom, "none"]]);
       expect(
-        screen.queryByRole("switch", { name: /snap to scale/i }),
+        screen.queryByRole("switch", { name: /lock to scale/i }),
       ).not.toBeInTheDocument();
     });
   });

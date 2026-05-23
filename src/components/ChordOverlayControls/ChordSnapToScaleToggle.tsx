@@ -13,7 +13,7 @@ export function ChordSnapToScaleToggle() {
   const [checked, setChecked] = useAtom(chordSnapToScaleAtom);
   return (
     <Switch
-      label={t("inspector.chordSnapToScaleLabel")}
+      label={t("inspector.chordLockToScaleLabel")}
       checked={checked}
       onChange={setChecked}
     />

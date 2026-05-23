@@ -17,7 +17,7 @@ describe("ChordSnapToScaleToggle", () => {
   it("renders a switch reflecting the atom (default true)", () => {
     const store = makeAtomStore();
     renderWithStore(<ChordSnapToScaleToggle />, store);
-    const sw = screen.getByRole("switch", { name: /snap to scale/i });
+    const sw = screen.getByRole("switch", { name: /lock to scale/i });
     expect(sw).toHaveAttribute("aria-checked", "true");
   });
 
@@ -26,7 +26,7 @@ describe("ChordSnapToScaleToggle", () => {
     renderWithStore(<ChordSnapToScaleToggle />, store);
     expect(store.get(chordSnapToScaleAtom)).toBe(true);
     await userEvent.click(
-      screen.getByRole("switch", { name: /snap to scale/i }),
+      screen.getByRole("switch", { name: /lock to scale/i }),
     );
     expect(store.get(chordSnapToScaleAtom)).toBe(false);
   });
