@@ -97,6 +97,10 @@ export const es: Dictionary = {
     chordLayer: "Capa de acorde",
     groupScaleFingering: "Escala",
     groupChordVoicing: "Acorde",
+    groupScaleFingeringDesc: "Resalta las notas de la escala en el diapasón.",
+    groupChordVoicingDesc: "Voicing del acorde bajo el cabezal.",
+    stateShowing: "Mostrando",
+    stateHidden: "Oculto",
   },
   statusBar: {
     key: "Tonalidad",

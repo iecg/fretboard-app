@@ -88,4 +88,27 @@ describe("ViewTab", () => {
       expect(store.get(chordOverlayHiddenAtom)).toBe(true);
     });
   });
+
+  describe("Variant B sectioned cards", () => {
+    it("Scale card reflects the master toggle via data-active", () => {
+      const store = makeAtomStore([[scaleVisibleAtom, false]]);
+      renderWithStore(<ViewTab />, store);
+      const fingeringSection = screen.getByRole("region", { name: /^scale$/i });
+      expect(fingeringSection).toHaveAttribute("data-active", "false");
+    });
+
+    it("Chord card reflects the master toggle via data-active", () => {
+      const store = makeAtomStore([[chordOverlayHiddenAtom, true]]);
+      renderWithStore(<ViewTab />, store);
+      const voicingSection = screen.getByRole("region", { name: /^chord$/i });
+      expect(voicingSection).toHaveAttribute("data-active", "false");
+    });
+
+    it("Scale card flips to data-active='true' when scaleVisibleAtom is true", () => {
+      const store = makeAtomStore([[scaleVisibleAtom, true]]);
+      renderWithStore(<ViewTab />, store);
+      const fingeringSection = screen.getByRole("region", { name: /^scale$/i });
+      expect(fingeringSection).toHaveAttribute("data-active", "true");
+    });
+  });
 });

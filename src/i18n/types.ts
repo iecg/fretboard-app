@@ -95,6 +95,10 @@ export interface Dictionary {
     chordLayer: string;
     groupScaleFingering: string;
     groupChordVoicing: string;
+    groupScaleFingeringDesc: string;
+    groupChordVoicingDesc: string;
+    stateShowing: string;
+    stateHidden: string;
   };
   statusBar: {
     key: string;

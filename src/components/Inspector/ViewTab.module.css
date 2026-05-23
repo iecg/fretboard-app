@@ -4,8 +4,85 @@
   gap: var(--space-4, 1rem);
 }
 
-.group {
+.card {
+  border: 1px solid var(--faceplate-divider);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent);
+  overflow: hidden;
+}
+
+.cardHead {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2, 0.5rem);
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: rgba(255, 255, 255, 0.012);
+  border-bottom: 1px solid var(--faceplate-divider);
+  transition: border-color 160ms ease;
+}
+
+.cardName {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dc-fg);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.cardState {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faceplate-accent);
+  transition: color 160ms ease;
+}
+
+.cardDesc {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  color: var(--dc-fg-muted);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+.cardBody {
+  padding: 1rem;
+  transition: opacity 160ms ease;
+}
+
+.card[data-active="false"] .cardHead {
+  border-bottom-color: transparent;
+}
+
+.card[data-active="false"] .cardState {
+  color: var(--dc-fg-muted);
+}
+
+.card[data-active="false"] .cardBody {
+  opacity: 0.42;
+}
+
+/* Mobile tier: tighten card padding so the controls keep breathing room
+   against the rest of the inspector. */
+:global(.app-container[data-layout-tier="mobile"]) .cardHead {
+  padding: 0.5rem 0.75rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .cardBody {
+  padding: 0.75rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .cardDesc {
+  /* Description gets noisy on narrow widths — hide it; the section name and
+     toggle still convey the meaning. */
+  display: none;
 }

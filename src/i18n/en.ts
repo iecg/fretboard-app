@@ -97,6 +97,10 @@ export const en: Dictionary = {
     chordLayer: "Chord layer",
     groupScaleFingering: "Scale",
     groupChordVoicing: "Chord",
+    groupScaleFingeringDesc: "Highlight scale notes on the fretboard.",
+    groupChordVoicingDesc: "Voicing for the chord under the playhead.",
+    stateShowing: "Showing",
+    stateHidden: "Hidden",
   },
   statusBar: {
     key: "Key",
