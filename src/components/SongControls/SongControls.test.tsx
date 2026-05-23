@@ -590,8 +590,11 @@ describe("SongControls grid layout", () => {
 
   it("shows pill + chord-label + counter header for the active chord", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    // The pill class uses CSS Modules so query by role within the header element
-    const editorHeader = container.querySelector("header");
+    // The pill class uses CSS Modules so query by role within the header element.
+    // SongControls now nests sections inside InspectorCard <header>s, so target
+    // the editor's header specifically by locating the chord label first.
+    const editorHeader = container
+      .querySelector('[class*="editor-header"]') as HTMLElement | null;
     expect(editorHeader).toBeInTheDocument();
     // Chord label shows the resolved chord name
     expect(within(editorHeader!).getByText("C Major Triad")).toBeInTheDocument();

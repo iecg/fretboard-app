@@ -97,6 +97,10 @@ export interface Dictionary {
     groupChordVoicing: string;
     groupScaleFingeringDesc: string;
     groupChordVoicingDesc: string;
+    groupKeyDesc: string;
+    groupTimeDesc: string;
+    groupProgressionDesc: string;
+    groupBackingTrackDesc: string;
     stateShowing: string;
     stateHidden: string;
   };

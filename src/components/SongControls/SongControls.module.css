@@ -88,10 +88,16 @@
   letter-spacing: 0.12em;
 }
 
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .groupRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: flex-start;
   width: 100%;
 }

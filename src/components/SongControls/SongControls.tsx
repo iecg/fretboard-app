@@ -17,7 +17,8 @@ import type { ProgressionPresetCategory } from "../../progressions/progressionDo
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
-import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
+import { PropGrid, Prop } from "../Inspector/InspectorGrid";
+import { InspectorCard } from "../Inspector/InspectorCard";
 import { DegreeGrid } from "../shared/DegreeGrid";
 import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { BackingTrackControls } from "./BackingTrackControls";
@@ -172,65 +173,75 @@ export function SongControls() {
     startTransition(() => loadProgressionPreset(id));
   };
   return (
-    <div>
+    <div className={styles.sections}>
       {/* ── KEY + TIME flex composer ──────────────────────────────────────── */}
       <div className={styles.groupRow}>
         <div className={styles.groupColumn}>
-          <GroupHeader>
-            {t("inspector.groupKey")}
-          </GroupHeader>
-          <PropGrid columns={6}>
-            <Prop label={t("controls.root")} span={3}>
-              <LabeledSelect
-                label={t("controls.root")}
-                hideLabel
-                width="fixed"
-                widthValue="6rem"
-                value={rootNote}
-                onChange={handleRootNote}
-                options={NOTES.map((note) => ({
-                  value: note,
-                  label: getNoteDisplay(note, rootNote, preferFlats),
-                }))}
-              />
-            </Prop>
-            <Prop label={t("inspector.scaleLabel")} span={3}>
-              <LabeledSelect
-                label={t("inspector.scaleLabel")}
-                value={scaleName}
-                groups={scaleGroups}
-                onChange={handleScaleName}
-                hideLabel
-              />
-            </Prop>
-          </PropGrid>
+          <InspectorCard
+            name={t("inspector.groupKey")}
+            description={t("inspector.groupKeyDesc")}
+            labelledById="song-key-heading"
+          >
+            <PropGrid columns={6}>
+              <Prop label={t("controls.root")} span={3}>
+                <LabeledSelect
+                  label={t("controls.root")}
+                  hideLabel
+                  width="fixed"
+                  widthValue="6rem"
+                  value={rootNote}
+                  onChange={handleRootNote}
+                  options={NOTES.map((note) => ({
+                    value: note,
+                    label: getNoteDisplay(note, rootNote, preferFlats),
+                  }))}
+                />
+              </Prop>
+              <Prop label={t("inspector.scaleLabel")} span={3}>
+                <LabeledSelect
+                  label={t("inspector.scaleLabel")}
+                  value={scaleName}
+                  groups={scaleGroups}
+                  onChange={handleScaleName}
+                  hideLabel
+                />
+              </Prop>
+            </PropGrid>
+          </InspectorCard>
         </div>
         <div className={styles.groupColumn}>
-          <GroupHeader>{t("inspector.groupTime")}</GroupHeader>
-          <PropGrid columns={6}>
-            <Prop label={t("inspector.timeSignature")} span={1}>
-              <TimeSignaturePicker />
-            </Prop>
-            <Prop label={t("inspector.meterTempo")} span={5}>
-              <StepperControl
-                label={t("inspector.meterTempo")}
-                hideLabel
-                value={progressionTempoBpm}
-                min={MIN_PROGRESSION_TEMPO_BPM}
-                max={MAX_PROGRESSION_TEMPO_BPM}
-                step={5}
-                formatValue={(bpm) => `${bpm} BPM`}
-                onChange={setProgressionTempoBpm}
-              />
-            </Prop>
-          </PropGrid>
+          <InspectorCard
+            name={t("inspector.groupTime")}
+            description={t("inspector.groupTimeDesc")}
+            labelledById="song-time-heading"
+          >
+            <PropGrid columns={6}>
+              <Prop label={t("inspector.timeSignature")} span={1}>
+                <TimeSignaturePicker />
+              </Prop>
+              <Prop label={t("inspector.meterTempo")} span={5}>
+                <StepperControl
+                  label={t("inspector.meterTempo")}
+                  hideLabel
+                  value={progressionTempoBpm}
+                  min={MIN_PROGRESSION_TEMPO_BPM}
+                  max={MAX_PROGRESSION_TEMPO_BPM}
+                  step={5}
+                  formatValue={(bpm) => `${bpm} BPM`}
+                  onChange={setProgressionTempoBpm}
+                />
+              </Prop>
+            </PropGrid>
+          </InspectorCard>
         </div>
       </div>
 
-      <PropGrid columns={6}>
       {/* ── PROGRESSION ──────────────────────────────────────────────────── */}
-      <GroupHeader
-        right={
+      <InspectorCard
+        name={t("inspector.groupProgression")}
+        description={t("inspector.groupProgressionDesc")}
+        labelledById="song-progression-heading"
+        actions={
           <div className={styles["progression-toolbar"]}>
             <LabeledSelect
               label={t("inspector.progressionPreset")}
@@ -285,9 +296,8 @@ export function SongControls() {
           </div>
         }
       >
-        {t("inspector.groupProgression")}
-      </GroupHeader>
-      <Prop span={6}>
+        <PropGrid columns={6}>
+          <Prop span={6}>
         {activeStep ? (
           <div className={styles["editor-cell"]}>
             <header className={styles["editor-header"]}>
@@ -383,11 +393,20 @@ export function SongControls() {
         ) : (
           <p className={shared["field-hint"]}>Select a chord to edit its degree, duration, and quality.</p>
         )}
-      </Prop>
+          </Prop>
+        </PropGrid>
+      </InspectorCard>
 
       {/* ── BACKING TRACK ────────────────────────────────────────────────── */}
-      <BackingTrackControls />
-    </PropGrid>
+      <InspectorCard
+        name={t("inspector.groupBackingTrack")}
+        description={t("inspector.groupBackingTrackDesc")}
+        labelledById="song-backing-heading"
+      >
+        <PropGrid columns={6}>
+          <BackingTrackControls hideHeader />
+        </PropGrid>
+      </InspectorCard>
     </div>
   );
 }
