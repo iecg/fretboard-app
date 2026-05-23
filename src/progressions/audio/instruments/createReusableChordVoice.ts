@@ -13,6 +13,7 @@ interface ReusableChordVoiceConfig {
 interface PooledSynthEntry {
   synth: Tone.PolySynth<Tone.Synth>;
   busyUntil: number;
+  leaseGeneration: number;
 }
 
 const DEFAULT_SHARED_MAX_POLYPHONY = 32;
@@ -48,7 +49,7 @@ export function createReusableChordVoice(
       DEFAULT_SHARED_MAX_POLYPHONY,
     );
     synth.connect(dest);
-    return { synth, busyUntil: 0 };
+    return { synth, busyUntil: 0, leaseGeneration: 0 };
   };
 
   const acquireEntry = (
@@ -81,6 +82,8 @@ export function createReusableChordVoice(
       const scheduledNotes = [...notes];
       const durationSec = config.durationFor(options);
       const entry = acquireEntry(dest, scheduledNotes, now);
+      const leaseGeneration = entry.leaseGeneration + 1;
+      entry.leaseGeneration = leaseGeneration;
       entry.busyUntil = time + durationSec + config.releaseTailSec;
       entry.synth.triggerAttackRelease(
         scheduledNotes,
@@ -95,6 +98,9 @@ export function createReusableChordVoice(
         cancel: () => {
           if (cancelled) return;
           cancelled = true;
+          if (entry.leaseGeneration !== leaseGeneration) {
+            return;
+          }
 
           const cancelTime = Tone.now();
           if (cancelTime < time) {

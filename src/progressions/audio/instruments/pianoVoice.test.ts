@@ -237,6 +237,33 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("cancel() becomes a no-op after that pooled synth lease is reassigned", async () => {
+    const t = await tone;
+    const dest = {} as AudioNode;
+    const firstHandle = pianoVoice.scheduleChord(dest, ["C3", "E3", "G3"], 0, {
+      velocity: 0.7,
+      style: "staccato",
+    });
+
+    t.setNow(2);
+    const secondHandle = pianoVoice.scheduleChord(dest, ["F3", "A3", "C4"], 2.1, {
+      velocity: 0.7,
+      style: "staccato",
+    });
+
+    await vi.advanceTimersByTimeAsync(2_200);
+    t.setNow(2.2);
+    firstHandle.cancel();
+
+    const [sharedInstance] = t.instances;
+    expect(sharedInstance?.releaseAll).not.toHaveBeenCalled();
+
+    secondHandle.cancel();
+
+    expect(sharedInstance?.releaseAll).toHaveBeenCalledTimes(1);
+    expect(sharedInstance?.releaseAll).toHaveBeenCalledWith(2.2);
+  });
+
   it("cancel() prevents a future-scheduled chord from ever being attacked", async () => {
     const t = await tone;
     const handle = pianoVoice.scheduleChord(
