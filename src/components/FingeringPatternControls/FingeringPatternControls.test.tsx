@@ -294,7 +294,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(combobox).toHaveTextContent("String 1");
     });
 
-    it("two-strings pair chooser is a LabeledSelect (combobox) defaulting to Strings 1-2", () => {
+    it("two-strings pair chooser is a LabeledSelect (combobox) defaulting to 1·2", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "two-strings"); });
       render(
@@ -302,10 +302,10 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      // Pair chooser is now a LabeledSelect (combobox), not individual buttons.
-      // Default pair 0 → selected label "Strings 1-2".
+      // Pair chooser is now a StringSetPicker (combobox), not individual buttons.
+      // Default pair 0 → selected label "1·2" (dot-separator guitar-numbered).
       const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
-      expect(combobox).toHaveTextContent("Strings 1-2");
+      expect(combobox).toHaveTextContent("1·2");
     });
 
     it('shows both Strings and Interval sub-controls when fingeringPattern === "two-strings"', () => {
@@ -379,7 +379,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(store.get(twoStringsIntervalAtom)).toBe(3);
     });
 
-    it("pair select shows 'Strings 1-2' as default when interval is Off (adjacent topology)", () => {
+    it("pair select shows '1·2' as default when interval is Off (adjacent topology)", () => {
       const store = createStore();
       act(() => {
         store.set(fingeringPatternAtom, "two-strings");
@@ -391,12 +391,12 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      // Pair chooser is now a LabeledSelect; default pair 0 → "Strings 1-2"
+      // Pair chooser is now a StringSetPicker; default pair 0 → "1·2" (dot-separator)
       const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
-      expect(combobox).toHaveTextContent("Strings 1-2");
+      expect(combobox).toHaveTextContent("1·2");
     });
 
-    it("pair select shows 'Strings 1-3' when interval is 6ths (skip-one topology)", () => {
+    it("pair select shows '1·3' when interval is 6ths (skip-one topology)", () => {
       const store = createStore();
       act(() => {
         store.set(fingeringPatternAtom, "two-strings");
@@ -408,9 +408,9 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      // Skip-one topology: pair 0 → "Strings 1-3"
+      // Skip-one topology: pair 0 → "1·3" (dot-separator guitar-numbered)
       const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
-      expect(combobox).toHaveTextContent("Strings 1-3");
+      expect(combobox).toHaveTextContent("1·3");
     });
 
     it("has no axe violations with one-string pattern active", async () => {
@@ -532,11 +532,11 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         expect(store.get(oneStringIndexAtom)).toBe(2);
       });
 
-      it("two-strings: pair chooser is a LabeledSelect (combobox role) with options Strings 1-2 etc.", () => {
+      it("two-strings: pair chooser is a StringSetPicker (combobox role) with dot-separator options", () => {
         const store = createStore();
         act(() => {
           store.set(fingeringPatternAtom, "two-strings");
-          store.set(twoStringsIntervalAtom, 0); // adjacent topology → "Strings N-(N+1)"
+          store.set(twoStringsIntervalAtom, 0); // adjacent topology → "N·(N+1)"
           store.set(twoStringsPairAtom, 0);
         });
         render(
@@ -546,11 +546,11 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         );
         const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
         expect(combobox).toBeInTheDocument();
-        // Pair 0 with adjacent topology → "Strings 1-2"
-        expect(combobox).toHaveTextContent("Strings 1-2");
+        // Pair 0 with adjacent topology → "1·2" (dot-separator guitar-numbered)
+        expect(combobox).toHaveTextContent("1·2");
       });
 
-      it("two-strings skip-one (6ths): pair chooser shows skip-one options (Strings 1-3 etc.)", () => {
+      it("two-strings skip-one (6ths): pair chooser shows skip-one options (1·3 etc.)", () => {
         const store = createStore();
         act(() => {
           store.set(fingeringPatternAtom, "two-strings");
@@ -564,8 +564,8 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
         );
         const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
         expect(combobox).toBeInTheDocument();
-        // Default pair 0 → "Strings 1-3" for skip-one topology
-        expect(combobox).toHaveTextContent("Strings 1-3");
+        // Default pair 0 → "1·3" for skip-one topology (dot-separator guitar-numbered)
+        expect(combobox).toHaveTextContent("1·3");
       });
 
       it("two-strings: selecting a different pair option updates twoStringsPairAtom", async () => {
@@ -580,9 +580,9 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
             <FingeringPatternControls />
           </Provider>
         );
-        // Open the Radix Select portal and click "Strings 3-4" (pair index 2)
+        // Open the Radix Select portal and click "3·4" (pair index 2, dot-separator format)
         await userEvent.click(screen.getByRole("combobox", { name: /^Strings$/i }));
-        await userEvent.click(screen.getByRole("option", { name: "Strings 3-4" }));
+        await userEvent.click(screen.getByRole("option", { name: "3·4" }));
         expect(store.get(twoStringsPairAtom)).toBe(2);
       });
     });
