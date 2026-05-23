@@ -9,6 +9,7 @@ import {
   voicingStringSetAtom,
   effectiveStringSetAtom,
   activeScaleWindowAtom,
+  activeScalePatternPositionsAtom,
   closeCandidatesAtom,
   chordSourceIsProgressionAtom,
   chordHighlightPositionsAtom,
@@ -587,7 +588,7 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
     expect(store.get(chordSnapToScaleAtom)).toBe(true);
   });
 
-  it("snap=on + scale pattern active: candidates are filtered by the scale window", () => {
+  it("snap=on + scale pattern active: candidates are filtered to the pattern's position-key set", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -597,15 +598,17 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
       [cagedShapesAtom, new Set<CagedShape>(["E"])],
       [chordSnapToScaleAtom, true],
     ]);
-    const window = store.get(activeScaleWindowAtom);
-    expect(window).not.toBeNull();
+    const patternKeys = store.get(activeScalePatternPositionsAtom);
+    expect(patternKeys.size).toBeGreaterThan(0);
     const candidates = store.get(closeCandidatesAtom);
-    // All fretted notes must lie within [lo, hi].
+    // All fretted notes must lie on the pattern's position-key set.
     for (const v of candidates) {
-      const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
-      if (fretted.length === 0) continue;
-      expect(Math.min(...fretted)).toBeGreaterThanOrEqual(window!.lo);
-      expect(Math.max(...fretted)).toBeLessThanOrEqual(window!.hi);
+      for (const key of v.positionKeys) {
+        const [, fretStr] = key.split("-");
+        if (fretStr !== "0") {
+          expect(patternKeys.has(key)).toBe(true);
+        }
+      }
     }
   });
 
@@ -654,6 +657,97 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
     const snapOn = makeAtomStore([...seeds, [chordSnapToScaleAtom, true]] as Parameters<typeof makeAtomStore>[0]);
     const snapOff = makeAtomStore([...seeds, [chordSnapToScaleAtom, false]] as Parameters<typeof makeAtomStore>[0]);
     expect(snapOff.get(closeCandidatesAtom).length).toBe(snapOn.get(closeCandidatesAtom).length);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group G4 — closeCandidatesAtom + chordSnapToScaleAtom (Plan G4)
+// ---------------------------------------------------------------------------
+
+describe("closeCandidatesAtom + chordSnapToScaleAtom (Plan G4)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("filters voicings to those whose fretted notes ALL fall on the active pattern's position-key set", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+
+    const candidates = store.get(closeCandidatesAtom);
+    const patternKeys = store.get(activeScalePatternPositionsAtom);
+    expect(patternKeys.size).toBeGreaterThan(0);
+    for (const v of candidates) {
+      for (const key of v.positionKeys) {
+        const [, fretStr] = key.split("-");
+        if (fretStr !== "0") {
+          expect(patternKeys.has(key)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("does NOT filter when chordSnapToScaleAtom === false", () => {
+    const snapOnStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+    const snapOffStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, false],
+    ]);
+
+    const patternKeys = snapOnStore.get(activeScalePatternPositionsAtom);
+    const snapOffCandidates = snapOffStore.get(closeCandidatesAtom);
+
+    // When snap is off, there should be at least one voicing whose fretted notes
+    // include a position NOT on the pattern — confirming the filter was bypassed.
+    const anyOutside = snapOffCandidates.some((v) =>
+      v.positionKeys.some((k) => {
+        const [, fretStr] = k.split("-");
+        return fretStr !== "0" && !patternKeys.has(k);
+      }),
+    );
+    expect(anyOutside).toBe(true);
+  });
+
+  it("returns full hand-filtered candidate set when fingeringPattern is 'none' regardless of snap", () => {
+    const snapOnStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "none"],
+      [chordSnapToScaleAtom, true],
+    ]);
+    const snapOffStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "none"],
+      [chordSnapToScaleAtom, false],
+    ]);
+
+    const snapOn = snapOnStore.get(closeCandidatesAtom).length;
+    const snapOff = snapOffStore.get(closeCandidatesAtom).length;
+    expect(snapOn).toBe(snapOff);
   });
 });
 

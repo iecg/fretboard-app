@@ -43,6 +43,7 @@ import {
   fingeringPatternAtom,
   npsPositionAtom,
 } from "./fingeringAtoms";
+import { shapeDataAtom } from "./shapeAtoms";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
@@ -311,6 +312,26 @@ export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | nu
 });
 
 /**
+ * The set of `"string-fret"` position keys covered by the active scale
+ * pattern. Returns the full position-key set for CAGED and 3NPS patterns
+ * (sourced from `shapeDataAtom.highlightNotes`, which are already coord
+ * strings). Returns an empty set for patterns that don't define a positional
+ * window (none, one-string, two-strings), so the snap filter becomes a no-op.
+ */
+export const activeScalePatternPositionsAtom = atom<Set<string>>((get) => {
+  const pattern = get(fingeringPatternAtom);
+  if (pattern === "caged" || pattern === "3nps") {
+    const { highlightNotes } = get(shapeDataAtom);
+    // highlightNotes for caged/3nps are "string-fret" coordinate strings.
+    // Filter to only coord-shaped entries (contain a dash) to guard against
+    // the "none" fallback which stores bare note names.
+    return new Set(highlightNotes.filter((n) => n.includes("-")));
+  }
+  // none, one-string, two-strings have no positional pattern to lock to.
+  return new Set();
+});
+
+/**
  * All Close voicings that fit within the active scale-shape window (or all of
  * them when no shape is active or when {@link chordSnapToScaleAtom} is off).
  */
@@ -325,19 +346,21 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
     voicingType: "close",
   });
 
-  // Apply the scale-window snap (if enabled and a window exists), then the
-  // string-set filter. Either step is a no-op when its precondition is unmet.
+  // Apply the position-key snap (if enabled and a pattern is active), then
+  // the string-set filter. Either step is a no-op when its precondition is
+  // unmet.
   let windowed = all;
   if (get(chordSnapToScaleAtom)) {
-    const scaleWindow = get(activeScaleWindowAtom);
-    if (scaleWindow) {
-      windowed = all.filter((v) => {
-        const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
-        if (fretted.length === 0) return true;
-        const min = Math.min(...fretted);
-        const max = Math.max(...fretted);
-        return min >= scaleWindow.lo && max <= scaleWindow.hi;
-      });
+    const patternKeys = get(activeScalePatternPositionsAtom);
+    if (patternKeys.size > 0) {
+      windowed = all.filter((v) =>
+        v.positionKeys.every((key) => {
+          const dashIdx = key.indexOf("-");
+          const fretStr = dashIdx !== -1 ? key.slice(dashIdx + 1) : "0";
+          // Open strings (fret 0) are not bound to a pattern position.
+          return fretStr === "0" || patternKeys.has(key);
+        }),
+      );
     }
   }
 
