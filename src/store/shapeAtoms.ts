@@ -19,6 +19,7 @@ import {
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
+  cagedOctaveAtom,
   npsPositionAtom,
   npsOctaveAtom,
   clickedShapeAtom,
@@ -51,8 +52,10 @@ const cagedShapeDataAtom = atom((get): ShapeData => {
   const scaleName = get(scaleNameAtom);
   const currentTuning = get(currentTuningAtom);
   const cagedShapes = get(cagedShapesAtom);
+  const cagedOctave = get(cagedOctaveAtom);
 
   const shapesToRender = CAGED_SHAPES.filter((s) => cagedShapes.has(s));
+  const singleShapeMode = cagedShapes.size === 1;
   const allCoords = new Set<string>();
   const allBounds: { minFret: number; maxFret: number }[] = [];
   const allPolygons: ShapePolygon[] = [];
@@ -60,9 +63,26 @@ const cagedShapeDataAtom = atom((get): ShapeData => {
 
   for (const shape of shapesToRender) {
     const res = getCagedCoordinates(rootNote, shape, scaleName, currentTuning, 24);
-    res.coordinates.forEach((c) => allCoords.add(c));
-    allBounds.push(...res.bounds);
-    allPolygons.push(...res.polygons);
+
+    if (singleShapeMode && res.polygons.length > 1) {
+      // Slice to the chosen octave; clamp index to available range.
+      const idx = Math.min(cagedOctave, res.polygons.length - 1);
+      const chosenBounds = res.bounds[idx]!;
+      allPolygons.push(res.polygons[idx]!);
+      allBounds.push(chosenBounds);
+      // Keep only coordinates that fall within the chosen octave's fret bounds.
+      for (const coord of res.coordinates) {
+        const fret = parseInt(coord.split("-")[1], 10);
+        if (fret >= chosenBounds.minFret && fret <= chosenBounds.maxFret) {
+          allCoords.add(coord);
+        }
+      }
+    } else {
+      res.coordinates.forEach((c) => allCoords.add(c));
+      allBounds.push(...res.bounds);
+      allPolygons.push(...res.polygons);
+    }
+
     res.wrappedNotes.forEach((kk) => mergedWrappedNotes.add(kk));
   }
 
