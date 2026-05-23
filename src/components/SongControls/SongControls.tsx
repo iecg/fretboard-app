@@ -172,53 +172,62 @@ export function SongControls() {
     startTransition(() => loadProgressionPreset(id));
   };
   return (
-    <PropGrid columns={6}>
-      {/* ── KEY ──────────────────────────────────────────────────────────── */}
-      <GroupHeader>
-        {t("inspector.groupKey")}
-      </GroupHeader>
-      <Prop label={t("controls.root")} span={3}>
-        <LabeledSelect
-          label={t("controls.root")}
-          hideLabel
-          width="fixed"
-          widthValue="6rem"
-          value={rootNote}
-          onChange={handleRootNote}
-          options={NOTES.map((note) => ({
-            value: note,
-            label: getNoteDisplay(note, rootNote, preferFlats),
-          }))}
-        />
-      </Prop>
-      <Prop label={t("inspector.scaleLabel")} span={3}>
-        <LabeledSelect
-          label={t("inspector.scaleLabel")}
-          value={scaleName}
-          groups={scaleGroups}
-          onChange={handleScaleName}
-          hideLabel
-        />
-      </Prop>
+    <div>
+      {/* ── KEY + TIME flex composer ──────────────────────────────────────── */}
+      <div className={styles.groupRow}>
+        <div className={styles.groupColumn}>
+          <GroupHeader>
+            {t("inspector.groupKey")}
+          </GroupHeader>
+          <PropGrid columns={6}>
+            <Prop label={t("controls.root")} span={3}>
+              <LabeledSelect
+                label={t("controls.root")}
+                hideLabel
+                width="fixed"
+                widthValue="6rem"
+                value={rootNote}
+                onChange={handleRootNote}
+                options={NOTES.map((note) => ({
+                  value: note,
+                  label: getNoteDisplay(note, rootNote, preferFlats),
+                }))}
+              />
+            </Prop>
+            <Prop label={t("inspector.scaleLabel")} span={3}>
+              <LabeledSelect
+                label={t("inspector.scaleLabel")}
+                value={scaleName}
+                groups={scaleGroups}
+                onChange={handleScaleName}
+                hideLabel
+              />
+            </Prop>
+          </PropGrid>
+        </div>
+        <div className={styles.groupColumn}>
+          <GroupHeader>{t("inspector.groupTime")}</GroupHeader>
+          <PropGrid columns={6}>
+            <Prop label={t("inspector.timeSignature")} span={1}>
+              <TimeSignaturePicker />
+            </Prop>
+            <Prop label={t("inspector.meterTempo")} span={5}>
+              <StepperControl
+                label={t("inspector.meterTempo")}
+                hideLabel
+                value={progressionTempoBpm}
+                min={MIN_PROGRESSION_TEMPO_BPM}
+                max={MAX_PROGRESSION_TEMPO_BPM}
+                step={5}
+                formatValue={(bpm) => `${bpm} BPM`}
+                onChange={setProgressionTempoBpm}
+              />
+            </Prop>
+          </PropGrid>
+        </div>
+      </div>
 
-      {/* ── TIME ─────────────────────────────────────────────────────────── */}
-      <GroupHeader>{t("inspector.groupTime")}</GroupHeader>
-      <Prop label={t("inspector.timeSignature")} span={1}>
-        <TimeSignaturePicker />
-      </Prop>
-      <Prop label={t("inspector.meterTempo")} span={5}>
-        <StepperControl
-          label={t("inspector.meterTempo")}
-          hideLabel
-          value={progressionTempoBpm}
-          min={MIN_PROGRESSION_TEMPO_BPM}
-          max={MAX_PROGRESSION_TEMPO_BPM}
-          step={5}
-          formatValue={(bpm) => `${bpm} BPM`}
-          onChange={setProgressionTempoBpm}
-        />
-      </Prop>
-
+      <PropGrid columns={6}>
       {/* ── PROGRESSION ──────────────────────────────────────────────────── */}
       <GroupHeader
         right={
@@ -379,5 +388,6 @@ export function SongControls() {
       {/* ── BACKING TRACK ────────────────────────────────────────────────── */}
       <BackingTrackControls />
     </PropGrid>
+    </div>
   );
 }

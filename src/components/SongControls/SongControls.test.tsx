@@ -551,6 +551,26 @@ describe("SongControls G11b: step-list removal", () => {
   });
 });
 
+describe("Top-row group composer (Plan I-T5)", () => {
+  it("wraps KEY + TIME groups in a flex composer container", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const composer = container.querySelector("[class*='groupRow']");
+    expect(composer).toBeTruthy();
+    expect(getComputedStyle(composer as Element).display).toBe("flex");
+    const columns = composer?.querySelectorAll("[class*='groupColumn']");
+    expect(columns?.length).toBe(2);
+  });
+
+  it("each group column has flex: 1 1 24rem (grow + shrink with sensible basis)", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const columns = container.querySelectorAll("[class*='groupColumn']");
+    expect(columns.length).toBeGreaterThan(0);
+    const styles = getComputedStyle(columns[0]);
+    // Computed style for `flex: 1 1 24rem` is usually "1 1 384px" (24*16)
+    expect(styles.flex).toMatch(/1\s+1\s+(24rem|384px)/);
+  });
+});
+
 describe("SongControls grid layout", () => {
   beforeEach(() => {
     localStorage.clear();

@@ -88,6 +88,22 @@
   letter-spacing: 0.12em;
 }
 
+.groupRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.groupColumn {
+  flex: 1 1 24rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 /* Editor sub-section labels (Degree / Duration / Quality) — matches the
    inspector's mono micro-label (.propLabel) so every label in the panel
    shares one typographic style. */
