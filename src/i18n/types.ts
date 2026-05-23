@@ -159,7 +159,6 @@ export interface Dictionary {
     qualityGroupSus: string;
     qualityGroupSixths: string;
     qualityGroupSevenths: string;
-    cagedOctaveAriaLabel: string;
   };
 }
 

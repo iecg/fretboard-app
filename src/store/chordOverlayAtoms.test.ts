@@ -20,7 +20,7 @@ import {
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
-import { cagedShapesAtom, cagedOctaveAtom, fingeringPatternAtom, npsPositionAtom } from "./fingeringAtoms";
+import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import {
   activeChordCachedDegreeAtom,
@@ -388,57 +388,6 @@ describe("activeScaleWindowAtom — CAGED octave switching", () => {
     expect(window!.hi).toBeGreaterThan(window!.lo);
   });
 
-  it("switching cagedOctaveAtom yields a different lo/hi when 2+ matches exist for the shape", () => {
-    // C Major Triad with shape "G" or "D" typically has voicings at multiple octaves
-    // across the neck. We look for any shape+chord combo where 2 windows differ.
-    // Rather than asserting a specific shape, find one programmatically.
-    const shapes: CagedShape[] = ["C", "A", "G", "E", "D"];
-    let foundDifference = false;
-
-    for (const shape of shapes) {
-      const store0 = makeAtomStore([
-        [rootNoteAtom, "C"],
-        [scaleNameAtom, "Major"],
-        [progressionStepsAtom, progressionWith({ degree: "I" })],
-        [fingeringPatternAtom, "caged"],
-        [cagedShapesAtom, new Set<CagedShape>([shape])],
-        [cagedOctaveAtom, 0],
-      ]);
-      const store1 = makeAtomStore([
-        [rootNoteAtom, "C"],
-        [scaleNameAtom, "Major"],
-        [progressionStepsAtom, progressionWith({ degree: "I" })],
-        [fingeringPatternAtom, "caged"],
-        [cagedShapesAtom, new Set<CagedShape>([shape])],
-        [cagedOctaveAtom, 1],
-      ]);
-      const w0 = store0.get(activeScaleWindowAtom);
-      const w1 = store1.get(activeScaleWindowAtom);
-      if (w0 && w1 && (w0.lo !== w1.lo || w0.hi !== w1.hi)) {
-        foundDifference = true;
-        // Verify the difference is consistent: lo and hi differ
-        expect(w0).not.toEqual(w1);
-        break;
-      }
-    }
-
-    // If no shape produces 2 distinct voicings, at minimum octave=0 and octave=1
-    // should both return a valid non-null window (falls back to matchesOfShape[0]).
-    if (!foundDifference) {
-      // Fallback: just verify the atom is stable at both octave values
-      const store = makeAtomStore([
-        [rootNoteAtom, "C"],
-        [scaleNameAtom, "Major"],
-        [progressionStepsAtom, progressionWith({ degree: "I" })],
-        [fingeringPatternAtom, "caged"],
-        [cagedShapesAtom, new Set<CagedShape>(["E"])],
-        [cagedOctaveAtom, 0],
-      ]);
-      expect(store.get(activeScaleWindowAtom)).not.toBeNull();
-      store.set(cagedOctaveAtom, 1);
-      expect(store.get(activeScaleWindowAtom)).not.toBeNull();
-    }
-  });
 });
 
 // ---------------------------------------------------------------------------

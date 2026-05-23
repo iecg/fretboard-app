@@ -79,13 +79,6 @@ export const npsOctaveAtom = atomWithStorage(
   GET_ON_INIT,
 );
 
-export const cagedOctaveAtom = atomWithStorage(
-  k("cagedOctave"),
-  0,
-  npsOctaveStorage,  // reuse the same 0..1 integer constraint
-  GET_ON_INIT,
-);
-
 export const clickedShapeAtom = atom<CagedShape | null>(null);
 export const recenterKeyAtom = atom<number>(0);
 

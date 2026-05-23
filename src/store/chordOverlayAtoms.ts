@@ -39,7 +39,6 @@ import {
 import { currentTuningAtom } from "./layoutAtoms";
 import {
   cagedShapesAtom,
-  cagedOctaveAtom,
   fingeringPatternAtom,
   npsPositionAtom,
 } from "./fingeringAtoms";
@@ -346,8 +345,7 @@ export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | nu
     const shape = [...shapes][0];
     const fullMatches = get(fullVoicingsAtom);
     const matchesOfShape = fullMatches.filter((v) => v.shape === shape);
-    const octave = get(cagedOctaveAtom);
-    const match = matchesOfShape[octave] ?? matchesOfShape[0];
+    const match = matchesOfShape[0];
     if (!match) return null;
     const fretted = match.notes.map((n) => n.fretIndex).filter((f) => f > 0);
     if (fretted.length === 0) return null;

@@ -162,6 +162,5 @@ export const es: Dictionary = {
     qualityGroupSus: "Suspendidos / Quinta",
     qualityGroupSixths: "Acordes de 6ª",
     qualityGroupSevenths: "Acordes de 7ª",
-    cagedOctaveAriaLabel: "Octava CAGED",
   },
 };
