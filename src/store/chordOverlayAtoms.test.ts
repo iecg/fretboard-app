@@ -15,6 +15,7 @@ import {
   chordHighlightPositionsAtom,
   chordOverlayHiddenAtom,
   chordSnapToScaleAtom,
+  stringSetOptionsAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
@@ -786,6 +787,81 @@ describe("voicingStringSetAtom + effectiveStringSetAtom", () => {
     ]);
     store.set(voicingStringSetAtom, "0-1-2-3");
     expect([...store.get(effectiveStringSetAtom)]).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group G8 — stringSetOptionsAtom disabled state (Plan G8)
+// ---------------------------------------------------------------------------
+
+describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("marks string sets with zero candidates in the active scale window as disabled with a reason", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+
+    const options = store.get(stringSetOptionsAtom);
+    // Must have more than just "all" for this to be meaningful
+    expect(options.length).toBeGreaterThan(1);
+
+    const disabled = options.filter((o) => o.disabled);
+    // With a narrow CAGED E window, at least some string-set sub-windows should have no candidates
+    expect(disabled.length).toBeGreaterThan(0);
+    for (const opt of disabled) {
+      expect(opt.disabledReason).toBeTruthy();
+    }
+  });
+
+  it("does not mark any option disabled when snap is off", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, false],
+    ]);
+
+    const options = store.get(stringSetOptionsAtom);
+    expect(options.every((o) => !o.disabled)).toBe(true);
+  });
+
+  it("does not mark any option disabled when fingeringPattern is 'none' (no window to gate against)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [fingeringPatternAtom, "none"],
+      [chordSnapToScaleAtom, true],
+    ]);
+
+    const options = store.get(stringSetOptionsAtom);
+    expect(options.every((o) => !o.disabled)).toBe(true);
+  });
+
+  it("never marks the 'all' option disabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+
+    const options = store.get(stringSetOptionsAtom);
+    const allOpt = options.find((o) => o.id === "all");
+    expect(allOpt).toBeDefined();
+    expect(allOpt?.disabled).toBeFalsy();
   });
 });
 

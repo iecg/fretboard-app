@@ -225,14 +225,66 @@ export const voicingStringSetAtom = atomWithStorage<string>(
 );
 
 /**
+ * All close voicings that pass the snap-to-scale filter but WITHOUT the
+ * string-set filter applied. Used by {@link stringSetOptionsAtom} to probe
+ * each string-set window for availability independently of the user's
+ * current selection.
+ */
+export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  const all = generateVoicings({
+    chordRoot: get(chordRootAtom),
+    chordType,
+    tuning: get(currentTuningAtom),
+    maxFret: 24,
+    voicingType: "close",
+  });
+
+  if (get(chordSnapToScaleAtom)) {
+    const patternKeys = get(activeScalePatternPositionsAtom);
+    if (patternKeys.size > 0) {
+      return all.filter((v) =>
+        v.positionKeys.every((key) => {
+          const dashIdx = key.indexOf("-");
+          const fretStr = dashIdx !== -1 ? key.slice(dashIdx + 1) : "0";
+          return fretStr === "0" || patternKeys.has(key);
+        }),
+      );
+    }
+  }
+  return all;
+});
+
+/**
  * Options the picker offers for the current chord: always "All" + every
- * consecutive-string window for the chord's voice count.
+ * consecutive-string window for the chord's voice count. When snap-to-scale
+ * is on and a scale pattern is active, options with zero fitting voicings are
+ * marked disabled.
  */
 export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return [ALL_STRINGS_OPTION];
   const def = CHORD_DEFINITIONS[chordType];
-  return buildStringSetOptions(def?.members.length ?? 4);
+  const base = buildStringSetOptions(def?.members.length ?? 4);
+
+  const snap = get(chordSnapToScaleAtom);
+  if (!snap) return base;
+  const patternKeys = get(activeScalePatternPositionsAtom);
+  if (patternKeys.size === 0) return base;
+
+  const allCandidates = get(closeCandidatesAllStringSetsAtom);
+
+  return base.map((opt) => {
+    if (opt.id === "all") return opt;
+    const optStringSet = new Set(opt.strings);
+    const hasCandidate = allCandidates.some((v) =>
+      v.notes.every((n) => optStringSet.has(n.stringIndex)),
+    );
+    return hasCandidate
+      ? opt
+      : { ...opt, disabled: true, disabledReason: "No voicing in current scale window" };
+  });
 });
 
 /**

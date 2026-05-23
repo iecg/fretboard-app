@@ -5,6 +5,10 @@ export interface StringSetOption {
   id: string;
   /** String indices (0 = high E, 5 = low E in standard tuning). */
   strings: readonly number[];
+  /** When true, no voicing fits this string set in the active scale window. */
+  disabled?: boolean;
+  /** Human-readable reason shown when the option is disabled. */
+  disabledReason?: string;
 }
 
 export const ALL_STRINGS_OPTION: StringSetOption = {
