@@ -5,7 +5,7 @@ import { Provider, createStore } from "jotai";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import SettingsOverlay from "./SettingsOverlay";
-import { synth } from "../../core/audio";
+import { setGuitarMutePreference } from "../../core/lazyGuitarAudio";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import { settingsOverlayOpenAtom, themeAtom } from "../../store/uiAtoms";
 import styles from "./SettingsOverlay.module.css";
@@ -46,13 +46,12 @@ vi.mock("motion/react", async () => {
   };
 });
 
-// Mock the audio synth singleton — we only care that setMute is called on reset.
-vi.mock("../../core/audio", () => ({
-  synth: {
-    setMute: vi.fn(),
-    init: vi.fn(),
-    playNote: vi.fn(),
-  },
+// Mock the audio lazy facade — we only care that setMute is called on reset.
+vi.mock("../../core/lazyGuitarAudio", () => ({
+  setGuitarMutePreference: vi.fn(),
+  resumeGuitarAudio: vi.fn(),
+  playGuitarNote: vi.fn(),
+  setGuitarAudioErrorHandler: vi.fn(),
 }));
 
 function renderOverlay(store: ReturnType<typeof createStore>) {
@@ -243,7 +242,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     // Zoom back to default (100) and overlay closed.
     expect(store.get(fretZoomAtom)).toBe(100);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
-    expect(synth.setMute).toHaveBeenCalledWith(false);
+    expect(setGuitarMutePreference).toHaveBeenCalledWith(false);
   });
 
   it("reset confirmation auto-cancels after 3 seconds", () => {

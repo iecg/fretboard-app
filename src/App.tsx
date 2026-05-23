@@ -82,10 +82,8 @@ function AppContent() {
 
     const handleGesture = () => {
       void Promise.resolve(resumeGuitarAudio())
-        .then((didResume) => {
-          if (didResume) {
-            removeGestureListeners();
-          }
+        .then(() => {
+          removeGestureListeners();
         })
         .catch(() => {
           // Keep listeners installed so the next gesture can retry resume.

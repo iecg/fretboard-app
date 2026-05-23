@@ -81,7 +81,6 @@ describe("App", () => {
     localStorage.clear();
     vi.clearAllMocks();
     setViewport(1920, 1200);
-    mockResumeGuitarAudio.mockResolvedValue(false);
   });
   afterEach(() => localStorage.clear());
 
@@ -174,21 +173,19 @@ describe("App", () => {
       });
     });
 
-    it("keeps the global gesture listeners installed until resume succeeds on a loaded runtime", async () => {
-      mockResumeGuitarAudio.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+    it("keeps the global gesture listeners installed until resume succeeds", async () => {
+      mockResumeGuitarAudio.mockResolvedValue();
 
       render(<App />);
 
       fireEvent.click(window);
-      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
-
-      fireEvent.click(window);
       await waitFor(() => {
-        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
       });
 
+      // After first success, listeners should be removed.
       fireEvent.click(window);
-      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
     });
 
     it("keeps the global gesture listeners installed when resume fails", async () => {
