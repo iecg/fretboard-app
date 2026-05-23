@@ -2,10 +2,11 @@
 import { beforeEach, describe, it, expect } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { practiceLensAtom, voicingAtom } from "../../store/chordOverlayAtoms";
-import { fingeringPatternAtom } from "../../store/fingeringAtoms";
+import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
@@ -243,7 +244,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
 
     it("renders the lock-to-scale toggle enabled when fingeringPattern is caged", () => {
-      renderManual([[fingeringPatternAtom, "caged"]]);
+      renderManual([
+        [fingeringPatternAtom, "caged"],
+        [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      ]);
       const toggle = screen.getByRole("switch", { name: /lock to scale/i });
       expect(toggle).toBeInTheDocument();
       expect(toggle).not.toBeDisabled();
@@ -297,6 +301,28 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     it.each(["Full Chords", "Show on Board"])("no longer renders the %s switch", (name) => {
       renderManual();
       expect(screen.queryByRole("switch", { name })).toBeNull();
+    });
+  });
+
+  describe("ChordOverlayControls multi-shape CAGED (Plan H-T6)", () => {
+    it("renders Lock-to-scale toggle DISABLED when CAGED with multiple shapes selected", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_SEEDS,
+        [fingeringPatternAtom, "caged"],
+        [cagedShapesAtom, new Set<CagedShape>(["E", "D"])],
+      ]);
+      const toggle = screen.getByRole("switch", { name: /lock to scale/i });
+      expect(toggle).toBeDisabled();
+    });
+
+    it("renders Lock-to-scale toggle ENABLED when CAGED with a single shape", () => {
+      renderWithAtoms(<ChordOverlayControls />, [
+        ...MANUAL_SEEDS,
+        [fingeringPatternAtom, "caged"],
+        [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      ]);
+      const toggle = screen.getByRole("switch", { name: /lock to scale/i });
+      expect(toggle).not.toBeDisabled();
     });
   });
 });

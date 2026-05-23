@@ -7,7 +7,7 @@ import {
   voicingAtom,
 } from "../../store/chordOverlayAtoms";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
-import { fingeringPatternAtom } from "../../store/fingeringAtoms";
+import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
@@ -30,6 +30,7 @@ export function ChordOverlayControls() {
   const chordType = useAtomValue(chordTypeAtom);
   const voicing = useAtomValue(voicingAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
+  const cagedShapes = useAtomValue(cagedShapesAtom);
 
   const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
@@ -93,7 +94,10 @@ export function ChordOverlayControls() {
         {fingeringPattern !== "none" ? (
           <Prop label={t("inspector.chordLockToScaleLabel")} span={2}>
             <ChordSnapToScaleToggle
-              disabled={fingeringPattern !== "caged" && fingeringPattern !== "3nps"}
+              disabled={
+                !((fingeringPattern === "caged" && cagedShapes.size === 1) ||
+                  fingeringPattern === "3nps")
+              }
             />
           </Prop>
         ) : null}
