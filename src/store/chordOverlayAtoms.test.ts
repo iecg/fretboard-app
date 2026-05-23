@@ -555,14 +555,15 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
     expect(window).not.toBeNull();
     const candidates = store.get(closeCandidatesAtom);
     expect(candidates.length).toBeGreaterThan(0);
-    // All fretted notes must lie within [window.lo, window.hi].
+    // Plan I-T6: loosened from ALL-fit to majority-fit (≥ ceil(fretted × 2/3) within window).
     for (const v of candidates) {
       const fretted = v.positionKeys
         .map((k) => Number(k.split("-")[1]))
         .filter((f) => f > 0);
       if (fretted.length === 0) continue;
-      expect(Math.min(...fretted)).toBeGreaterThanOrEqual(window!.lo);
-      expect(Math.max(...fretted)).toBeLessThanOrEqual(window!.hi);
+      const inside = fretted.filter((f) => f >= window!.lo && f <= window!.hi).length;
+      const threshold = Math.ceil(fretted.length * 2 / 3);
+      expect(inside).toBeGreaterThanOrEqual(threshold);
     }
   });
 
@@ -740,19 +741,20 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
 
   it("marks string sets with zero candidates in the active scale window as disabled with a reason", () => {
     // Verify the disabled-option probe mechanism: each string-set option is
-    // disabled iff no fret-bound candidate (closeCandidatesAllStringSetsAtom)
-    // fits that string window. The fret-bound filter (Plan H-T5) replaced the
-    // strict position-key subset filter (Plan G4).
+    // disabled iff no majority-fit candidate (closeCandidatesAllStringSetsAtom)
+    // fits that string window. Plan I-T6: majority-fit (≥ ceil(fretted × 2/3))
+    // replaced the strict ALL-fit filter, admitting voicings with one spilled note.
     //
-    // F# Major Triad at 3NPS position 9 (window [8,12]): 3 voicings exist
-    // in that window covering strings 0-1-2, 1-2-3, and 3-4-5. The 2-3-4
-    // window has no fret-bound candidate and should be marked disabled.
+    // F# Major Triad at 3NPS position 22 (window [21,25], capped at fret 24):
+    // voicings on strings 0-1-2 and 1-2-3 exist in that window, but the
+    // 2-3-4 window has no majority-fit candidate (not enough fret space above 21)
+    // and should be marked disabled.
     const store = makeAtomStore([
       [rootNoteAtom, "F#"],
       [scaleNameAtom, "Major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "F#" })],
       [fingeringPatternAtom, "3nps"],
-      [npsPositionAtom, 9],
+      [npsPositionAtom, 22],
       [chordSnapToScaleAtom, true],
     ]);
 
@@ -777,8 +779,8 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
       }
     }
 
-    // At least some options should be disabled (the 2-3-4 window has no fret-bound
-    // candidate in the [8,12] window for F# Major Triad at position 9).
+    // At least some options should be disabled (the 2-3-4 window has no majority-fit
+    // candidate in the [21,25] window for F# Major Triad at position 22 — fret space runs out).
     const disabled = options.filter((o) => o.disabled);
     expect(disabled.length).toBeGreaterThan(0);
   });
@@ -877,7 +879,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan
   it("accepts voicings whose fretted notes lie within the scale window even when some chord tones are NOT scale-tone positions", () => {
     // Dominant 7th on degree I of C Major includes Bb (b7), which is NOT in C Major.
     // The strict subset filter (Plan G4) would have rejected voicings containing Bb positions.
-    // The fret-bound filter should accept them if they fall within the CAGED E-shape window.
+    // Plan I-T6: loosened from ALL-fit to majority-fit (≥ ceil(fretted × 2/3) within window).
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -898,8 +900,10 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan
         .map((k) => Number(k.split("-")[1]))
         .filter((f) => f > 0);
       if (fretted.length === 0) continue;
-      expect(Math.min(...fretted)).toBeGreaterThanOrEqual(window!.lo);
-      expect(Math.max(...fretted)).toBeLessThanOrEqual(window!.hi);
+      // Plan I-T6: loosened from ALL-fit to majority-fit
+      const inside = fretted.filter((f) => f >= window!.lo && f <= window!.hi).length;
+      const threshold = Math.ceil(fretted.length * 2 / 3);
+      expect(inside).toBeGreaterThanOrEqual(threshold);
     }
   });
 
@@ -960,5 +964,108 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan
     expect(snapOnCount).toBeGreaterThan(0);
     // snap=off gives the widest range, snap=on narrows to the window (still more than 0)
     expect(snapOffCount).toBeGreaterThanOrEqual(snapOnCount);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group I-T6 — closeCandidatesAtom majority-fit predicate (Plan I-T6)
+// ---------------------------------------------------------------------------
+
+describe("closeCandidatesAtom — majority-fit predicate (Plan I-T6)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("every candidate satisfies the majority-fit predicate (≥ ceil(fretted × 2/3) notes within window)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+    const candidates = store.get(closeCandidatesAtom);
+    const window = store.get(activeScaleWindowAtom);
+    expect(window).not.toBeNull();
+    expect(candidates.length).toBeGreaterThan(0);
+    for (const v of candidates) {
+      const fretted = v.positionKeys
+        .map((k) => Number(k.split("-")[1]))
+        .filter((f) => f > 0);
+      if (fretted.length === 0) continue;
+      const inside = fretted.filter((f) => f >= window!.lo && f <= window!.hi).length;
+      const threshold = Math.ceil(fretted.length * 2 / 3);
+      expect(inside).toBeGreaterThanOrEqual(threshold);
+    }
+  });
+
+  it("admits at least as many candidates as the ALL-fit filter would (regression guard)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+    const window = store.get(activeScaleWindowAtom);
+    expect(window).not.toBeNull();
+    const majorityCount = store.get(closeCandidatesAtom).length;
+
+    // Compute what ALL-fit would return by toggling snap off and applying strict filter.
+    const snapOffStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, false],
+    ]);
+    const unfiltered = snapOffStore.get(closeCandidatesAtom);
+    const allFitCount = unfiltered.filter((v) => {
+      const fretted = v.positionKeys.map((k) => Number(k.split("-")[1])).filter((f) => f > 0);
+      if (fretted.length === 0) return true;
+      return Math.min(...fretted) >= window!.lo && Math.max(...fretted) <= window!.hi;
+    }).length;
+
+    expect(majorityCount).toBeGreaterThanOrEqual(allFitCount);
+  });
+
+  it("for a triad chord with A-shape, majority-fit admits MORE candidates than ALL-fit (strictness check)", () => {
+    // C Major triad + CAGED A shape (window ~frets 2-5) often yields voicings
+    // where exactly one note pokes above the window — admitted by majority-fit but
+    // not by ALL-fit. Use Dominant 7th (4 fretted notes) for a stronger test.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["A"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+    const window = store.get(activeScaleWindowAtom);
+    expect(window).not.toBeNull();
+    const majorityCount = store.get(closeCandidatesAtom).length;
+
+    // Compute ALL-fit count using snap=off then filtering strictly.
+    const snapOffStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["A"])],
+      [chordSnapToScaleAtom, false],
+    ]);
+    const unfiltered = snapOffStore.get(closeCandidatesAtom);
+    const allFitCount = unfiltered.filter((v) => {
+      const fretted = v.positionKeys.map((k) => Number(k.split("-")[1])).filter((f) => f > 0);
+      if (fretted.length === 0) return true;
+      return Math.min(...fretted) >= window!.lo && Math.max(...fretted) <= window!.hi;
+    }).length;
+
+    // The majority-fit predicate must admit at least as many candidates as ALL-fit.
+    // For chords where some voicings have exactly one note spilling, it admits MORE.
+    expect(majorityCount).toBeGreaterThanOrEqual(allFitCount);
   });
 });

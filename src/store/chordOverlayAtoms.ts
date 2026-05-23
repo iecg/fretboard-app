@@ -45,6 +45,27 @@ import {
 import { shapeDataAtom } from "./shapeAtoms";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 
+const SCALE_FIT_NUMERATOR = 2;
+const SCALE_FIT_DENOMINATOR = 3;
+
+/** A voicing "majority-fits" the scale window when at least
+ * ceil(frettedCount × 2/3) of its fretted notes lie within [window.lo, window.hi].
+ * Open strings are not bound by the window (playable at any hand position). */
+function majorityFitsInWindow(
+  positionKeys: readonly string[],
+  window: { lo: number; hi: number },
+): boolean {
+  const fretted = positionKeys
+    .map((k) => Number(k.split("-")[1] ?? 0))
+    .filter((f) => f > 0);
+  if (fretted.length === 0) return true;
+  const threshold = Math.ceil(
+    (fretted.length * SCALE_FIT_NUMERATOR) / SCALE_FIT_DENOMINATOR,
+  );
+  const inside = fretted.filter((f) => f >= window.lo && f <= window.hi).length;
+  return inside >= threshold;
+}
+
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
 // Map legacy three-lens IDs to the new two-lens IDs (Task 4.1).
@@ -243,13 +264,7 @@ export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
   if (get(chordSnapToScaleAtom)) {
     const window = get(activeScaleWindowAtom);
     if (window) {
-      return all.filter((v) => {
-        const fretted = v.positionKeys
-          .map((key) => Number(key.split("-")[1] ?? 0))
-          .filter((f) => f > 0);
-        if (fretted.length === 0) return true; // all-open voicing
-        return Math.min(...fretted) >= window.lo && Math.max(...fretted) <= window.hi;
-      });
+      return all.filter((v) => majorityFitsInWindow(v.positionKeys, window));
     }
   }
   return all;
@@ -398,22 +413,15 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
 
   // Apply the fret-bound snap (if enabled and a scale window is active), then
   // the string-set filter. Either step is a no-op when its precondition is
-  // unmet. Fret-bound semantics: every fretted note in the voicing must fall
-  // within [window.lo, window.hi] — open strings are always allowed.
-  // This is less strict than the position-key subset check (Plan G4): chord
-  // tones that aren't scale-pattern positions (e.g. the b7 of a Dominant 7th
-  // in a Major scale) are accepted as long as they're in the hand position.
+  // unmet. Majority-fit semantics: at least ceil(frettedCount × 2/3) of the
+  // voicing's fretted notes must fall within [window.lo, window.hi]. Open
+  // strings are always allowed. This admits voicings where ONE note spills
+  // slightly outside the shape, which players naturally handle. (Plan I-T6)
   let windowed = all;
   if (get(chordSnapToScaleAtom)) {
     const window = get(activeScaleWindowAtom);
     if (window) {
-      windowed = all.filter((v) => {
-        const fretted = v.positionKeys
-          .map((key) => Number(key.split("-")[1] ?? 0))
-          .filter((f) => f > 0);
-        if (fretted.length === 0) return true; // all-open voicing
-        return Math.min(...fretted) >= window.lo && Math.max(...fretted) <= window.hi;
-      });
+      windowed = all.filter((v) => majorityFitsInWindow(v.positionKeys, window));
     }
   }
 
