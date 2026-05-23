@@ -234,4 +234,83 @@ describe("DegreeGrid", () => {
     });
 
   });
+
+  describe("borrowed cell styling (Plan H-T9a)", () => {
+    it("borrowed.selected cell has opacity 1 (selection wins over dim)", () => {
+      const { container } = render(
+        <DegreeGrid
+          {...baseProps}
+          scaleName="Major"
+          tonicNote="C"
+          selectedNote="C#"
+          preferFlats={false}
+        />,
+      );
+      // C# is borrowed (not in C major)
+      const selected = container.querySelector(
+        `button[data-in-key="false"].${styles.selected}`,
+      );
+      expect(selected).toBeTruthy();
+      const computedOpacity = getComputedStyle(selected as Element).opacity;
+      expect(computedOpacity).toBe("1");
+    });
+
+    it("borrowed (unselected) cell has opacity 0.7", () => {
+      const { container } = render(
+        <DegreeGrid
+          {...baseProps}
+          scaleName="Major"
+          tonicNote="C"
+          selectedNote="C"
+          preferFlats={false}
+        />,
+      );
+      // C is in-key, so any other note (e.g., C#) is borrowed and unselected
+      const borrowed = container.querySelector(
+        `button[data-in-key="false"]:not(.${styles.selected})`,
+      );
+      expect(borrowed).toBeTruthy();
+      const computedOpacity = parseFloat(
+        getComputedStyle(borrowed as Element).opacity,
+      );
+      expect(computedOpacity).toBeCloseTo(0.7);
+    });
+
+    it("borrowed.selected cell has solid accent border", () => {
+      const { container } = render(
+        <DegreeGrid
+          {...baseProps}
+          scaleName="Major"
+          tonicNote="C"
+          selectedNote="C#"
+          preferFlats={false}
+        />,
+      );
+      const selected = container.querySelector(
+        `button[data-in-key="false"].${styles.selected}`,
+      );
+      expect(selected).toBeTruthy();
+      const borderStyle = getComputedStyle(selected as Element).borderStyle;
+      // Should be solid, not dashed
+      expect(borderStyle).toBe("solid");
+    });
+
+    it("borrowed (unselected) cell has dashed border", () => {
+      const { container } = render(
+        <DegreeGrid
+          {...baseProps}
+          scaleName="Major"
+          tonicNote="C"
+          selectedNote="C"
+          preferFlats={false}
+        />,
+      );
+      const borrowed = container.querySelector(
+        `button[data-in-key="false"]:not(.${styles.selected})`,
+      );
+      expect(borrowed).toBeTruthy();
+      const borderStyle = getComputedStyle(borrowed as Element).borderStyle;
+      expect(borderStyle).toBe("dashed");
+    });
+  });
 });
