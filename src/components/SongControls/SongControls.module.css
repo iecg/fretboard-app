@@ -33,6 +33,13 @@
   gap: 0.6rem;
 }
 
+.editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  gap: 0.6rem 1rem;
+  align-items: start;
+}
+
 .progression-toolbar {
   display: flex;
   align-items: center;

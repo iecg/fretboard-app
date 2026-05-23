@@ -279,7 +279,7 @@ export function SongControls() {
       >
         {t("inspector.groupProgression")}
       </GroupHeader>
-      <Prop span={3}>
+      <Prop span={6}>
         {activeStep ? (
           <div className={styles["editor-cell"]}>
             <header className={styles["editor-header"]}>
@@ -304,65 +304,68 @@ export function SongControls() {
                 }}
                 onSelectBorrowed={(note) => {
                   updateProgressionStepRoot({ id: activeStep.id, manualRoot: note });
+                  updateProgressionStepQuality({ id: activeStep.id, qualityOverride: null });
                 }}
                 preferFlats={preferFlats}
               />
             </div>
-            <div className={shared["control-section"]}>
-              <span className={styles["field-label"]}>Duration</span>
-              <div className={styles["duration-row"]}>
-                <StepperControl
-                  label="Duration value"
-                  hideLabel
-                  value={activeStep.duration.value}
-                  min={MIN_PROGRESSION_STEP_DURATION_VALUE}
-                  max={MAX_PROGRESSION_STEP_DURATION_VALUE}
-                  step={1}
-                  onChange={(next) =>
-                    updateProgressionStepDuration({
-                      id: activeStep.id,
-                      duration: { ...activeStep.duration, value: next },
-                    })
-                  }
-                />
-                <div className={styles["duration-unit"]}>
-                  <ToggleBar
-                    label="Duration unit"
-                    value={activeStep.duration.unit}
-                    options={[
-                      { value: "beat", label: "Beat" },
-                      { value: "bar", label: "Bar" },
-                    ]}
-                    onChange={(unit) =>
+            <div className={styles["editor-grid"]}>
+              <div className={shared["control-section"]}>
+                <span className={styles["field-label"]}>Duration</span>
+                <div className={styles["duration-row"]}>
+                  <StepperControl
+                    label="Duration value"
+                    hideLabel
+                    value={activeStep.duration.value}
+                    min={MIN_PROGRESSION_STEP_DURATION_VALUE}
+                    max={MAX_PROGRESSION_STEP_DURATION_VALUE}
+                    step={1}
+                    onChange={(next) =>
                       updateProgressionStepDuration({
                         id: activeStep.id,
-                        duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
+                        duration: { ...activeStep.duration, value: next },
                       })
                     }
                   />
+                  <div className={styles["duration-unit"]}>
+                    <ToggleBar
+                      label="Duration unit"
+                      value={activeStep.duration.unit}
+                      options={[
+                        { value: "beat", label: "Beat" },
+                        { value: "bar", label: "Bar" },
+                      ]}
+                      onChange={(unit) =>
+                        updateProgressionStepDuration({
+                          id: activeStep.id,
+                          duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={shared["control-section"]}>
-              <span className={styles["field-label"]}>Quality</span>
-              <LabeledSelect
-                label={t("controls.quality")}
-                hideLabel
-                fit
-                value={
-                  activeStep?.qualityOverride
-                  ?? activeResolvedProgressionStep?.quality
-                  ?? activeResolvedProgressionStep?.diatonicQuality
-                  ?? ""
-                }
-                onChange={(quality) =>
-                  updateProgressionStepQuality({
-                    id: activeStep.id,
-                    qualityOverride: quality,
-                  })
-                }
-                groups={qualityGroups}
-              />
+              <div className={shared["control-section"]}>
+                <span className={styles["field-label"]}>Quality</span>
+                <LabeledSelect
+                  label={t("controls.quality")}
+                  hideLabel
+                  fit
+                  value={
+                    activeStep?.qualityOverride
+                    ?? activeResolvedProgressionStep?.quality
+                    ?? activeResolvedProgressionStep?.diatonicQuality
+                    ?? ""
+                  }
+                  onChange={(quality) =>
+                    updateProgressionStepQuality({
+                      id: activeStep.id,
+                      qualityOverride: quality,
+                    })
+                  }
+                  groups={qualityGroups}
+                />
+              </div>
             </div>
             <p className={shared["field-hint"]}>
               {t("controls.voicingLensCrossRef")}

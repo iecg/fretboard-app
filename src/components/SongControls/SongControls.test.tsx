@@ -400,6 +400,58 @@ describe("SongControls v2.0 chord-edit pane", () => {
   });
 });
 
+describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed quality clear", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("editor pane spans the full Inspector row (span=6)", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    // The editor-cell wrapper sits inside a .prop with data-span="6"
+    const editorCell = container.querySelector("[class*='editor-cell']");
+    expect(editorCell).toBeTruthy();
+    const propWrapper = editorCell?.closest("[data-span]");
+    expect(propWrapper?.getAttribute("data-span")).toBe("6");
+  });
+
+  it("renders Duration and Quality in a 2-column editor-grid", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const editorCell = container.querySelector("[class*='editor-cell']");
+    expect(editorCell).toBeTruthy();
+    const editorGrid = editorCell?.querySelector("[class*='editor-grid']");
+    expect(editorGrid).toBeTruthy();
+  });
+
+  it("selecting a borrowed degree cell clears any existing quality override", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, [
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Diminished Triad", manualRoot: null },
+      ]],
+      [activeProgressionStepIndexAtom, 0],
+    ]);
+    renderWithStore(<SongControls />, store);
+
+    // In C Major, D# / Eb is a borrowed (chromatic) cell — not in key
+    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
+    // Borrowed cells have aria-label pattern: "numeral note" (e.g. "♯ii D#" or "♭iii Eb")
+    const borrowedCells = within(degreeGroup)
+      .getAllByRole("button")
+      .filter((btn) => btn.getAttribute("data-in-key") === "false");
+    // Click the first borrowed cell (D#/Eb, offset 3 from C)
+    const ebCell = borrowedCells.find((btn) =>
+      /d#|eb|d♯|e♭/i.test(btn.getAttribute("aria-label") ?? ""),
+    );
+    expect(ebCell).toBeTruthy();
+    fireEvent.click(ebCell!);
+
+    const step = store.get(progressionStepsAtom)[0];
+    expect(step.qualityOverride).toBeNull();
+    expect(step.manualRoot).toMatch(/d#|eb/i);
+  });
+});
+
 describe("SongControls G11b: step-list removal", () => {
   beforeEach(() => {
     localStorage.clear();
