@@ -1,5 +1,25 @@
 /* FingeringPatternControls component styles */
-/* Layout styles (.control-section, .toggle-group, .toggle-btn) are in shared.module.css */
+
+.shapeToggleBar {
+  display: flex;
+  align-items: stretch;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 32px;
+}
+
+.shapeToggleButton {
+  min-height: 32px;
+  background: var(--dc-bg);
+  border: 1px solid var(--dc-border);
+  border-radius: calc(var(--dc-radius) - 1px);
+}
+
+.shapeToggleButton:hover:not([aria-pressed="true"]) {
+  background-color: var(--dc-bg-hover);
+  color: var(--dc-fg-strong);
+  border-color: var(--dc-border-hover);
+}
 
 /* Visual "charging" feedback while a long press is building up */
 [data-pressing] {

@@ -23,11 +23,10 @@ describe("shared.module.css responsive selectors", () => {
     expect(sharedCSS).not.toMatch(barePattern);
   });
 
-  it("compact density is the default: toggle-btn base min-height is 1.4rem", () => {
-    // Compact is the universal default — the compact DAW-inspector density
-    // sets the baseline toggle-btn height to 1.4rem. Mobile gets a separate
-    // touch-target override; desktop and tablet use this base value.
-    expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*1\.4rem/);
+  it("toggle-btn base min-height is the 32px inspector control row", () => {
+    // Toggle bars align with the inspector's 32px field height. Mobile still
+    // gets a separate touch-target override for accessibility.
+    expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*32px/);
   });
 
   it("note-btn base min-height uses the shared --control-height token", () => {

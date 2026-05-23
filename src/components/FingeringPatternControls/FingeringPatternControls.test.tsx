@@ -534,21 +534,37 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
   });
 
   describe("Pattern select width (Plan I-T2)", () => {
-    it("Pattern select uses fixed 7rem width", () => {
+    it("Pattern select fills its field", () => {
       const { container } = renderWithAtoms(<FingeringPatternControls />);
       const trigger = container.querySelector("[role='combobox']");
       expect(trigger).toBeTruthy();
-      const wrapper = trigger?.closest("[data-width='fixed']");
-      expect(wrapper).toBeTruthy();
-      expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("7rem");
+      expect(trigger?.closest("[data-width='fixed']")).toBeNull();
+      expect(trigger?.closest("[data-width='auto']")).toBeNull();
     });
 
-    it("Pattern Prop cell uses span=2", () => {
+    it("Pattern Prop cell uses span=3", () => {
       const { container } = renderWithAtoms(<FingeringPatternControls />);
-      const propCell = container.querySelector("[data-span='2']");
+      const propCell = container.querySelector("[data-span='3']");
       expect(propCell).toBeTruthy();
       // Pattern dropdown lives in that cell
       expect(propCell?.querySelector("[role='combobox']")).toBeTruthy();
+    });
+  });
+
+  describe("reference design shape controls", () => {
+    it("renders the Shift+click help text in the Shape label row", () => {
+      renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
+      const shapeHelp = screen.getByText("Shift+click to add shapes");
+      const shapeCell = shapeHelp.closest("[data-span='8']");
+      expect(shapeCell).toBeInTheDocument();
+      expect(shapeCell?.querySelector("p")).toBeNull();
+    });
+
+    it("renders CAGED shape controls with separated multi-select chrome", () => {
+      renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
+      const group = screen.getByRole("group", { name: "Shape" });
+      expect(group.className).toMatch(/shapeToggleBar/);
+      expect(group).not.toHaveClass("toggle-group");
     });
   });
 });

@@ -97,6 +97,10 @@ describe("ToggleBar/ToggleBar", () => {
     });
   });
 
+  it("shared toggle buttons keep a 32px minimum control height", () => {
+    expect(sharedCSS).toMatch(/\.toggle-btn\s*\{[^}]*min-height:\s*32px/s);
+  });
+
   it("variant defaults to default when omitted", () => {
     const { container } = render(
       <ToggleBar options={options} value="a" onChange={vi.fn()} />,

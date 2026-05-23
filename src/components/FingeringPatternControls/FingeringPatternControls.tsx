@@ -10,6 +10,7 @@ import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import { StringSetPicker } from "../shared/StringSetPicker";
 import { GroupHeader, Prop } from "../Inspector/InspectorGrid";
 import shared from "../shared/shared.module.css";
+import styles from "./FingeringPatternControls.module.css";
 
 const LONG_PRESS_MS = 500;
 const MOVE_CANCEL_PX = 8;
@@ -76,12 +77,11 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
     <>
       {!hideHeader && <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>}
 
-      <Prop label={t("inspector.fingeringPatternLabel")} span={2}>
+      <Prop label={t("inspector.fingeringPatternLabel")} span={3}>
         <LabeledSelect
           label={t("inspector.fingeringPatternLabel")}
           hideLabel
-          width="fixed"
-          widthValue="7rem"
+          width="fill"
           value={fingeringPattern}
           groups={[
             { options: [{ value: "none", label: t("inspector.none") }] },
@@ -107,14 +107,16 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
       {fingeringPattern === "caged" && (
         <Prop
           label={t("controls.shape")}
-          span={2}
-          hint={isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")}
+          span={8}
+          labelAccessory={
+            isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")
+          }
         >
           <span id={shapeHelpId} className={shared["sr-only"]}>
             {isTouchPrimary ? t("controls.shapeHintTouch") : t("controls.shapeHintPointer")}
           </span>
           <div
-            className={shared["toggle-group"]}
+            className={styles.shapeToggleBar}
             role="group"
             aria-label={t("controls.shape")}
             aria-describedby={shapeHelpId}
@@ -123,6 +125,7 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
               type="button"
               className={clsx(
                 shared["toggle-btn"],
+                styles.shapeToggleButton,
                 cagedShapes.size === CAGED_SHAPES.length && shared.active,
               )}
               aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
@@ -141,7 +144,11 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
                 <motion.button
                   key={s}
                   type="button"
-                  className={clsx(shared["toggle-btn"], isActive && shared.active)}
+                  className={clsx(
+                    shared["toggle-btn"],
+                    styles.shapeToggleButton,
+                    isActive && shared.active,
+                  )}
                   data-pressing={pressingShape === s || undefined}
                   aria-pressed={isActive}
                   title={
