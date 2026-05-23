@@ -34,10 +34,10 @@
 }
 
 .editor-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.6rem 1rem;
-  align-items: start;
+  align-items: flex-start;
 }
 
 .progression-toolbar {

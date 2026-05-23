@@ -458,6 +458,15 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
   });
 });
 
+describe("Editor grid layout (Plan I-T4)", () => {
+  it("editor-grid uses flex (not CSS Grid with 1fr/auto spread)", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const editorGrid = container.querySelector("[class*='editor-grid']");
+    expect(editorGrid).toBeTruthy();
+    expect(getComputedStyle(editorGrid as Element).display).toBe("flex");
+  });
+});
+
 describe("SongControls width sweep (Plan H-T3)", () => {
   beforeEach(() => {
     localStorage.clear();
