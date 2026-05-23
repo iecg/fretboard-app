@@ -201,6 +201,7 @@ export function SongControls() {
           groups={scaleGroups}
           onChange={handleScaleName}
           hideLabel
+          fit
         />
       </Prop>
 
@@ -229,6 +230,7 @@ export function SongControls() {
             <LabeledSelect
               label={t("inspector.progressionPreset")}
               hideLabel
+              fit
               value={currentProgressionPresetId}
               groups={presetGroups}
               onChange={handlePresetChange}

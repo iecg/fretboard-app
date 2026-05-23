@@ -295,6 +295,20 @@ describe("SongControls KEY section layout", () => {
     expect(rootCombos.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("combobox", { name: "Scale" })).toBeInTheDocument();
   });
+
+  it("Scale select uses fit sizing", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const scaleTrigger = screen.getByRole("combobox", { name: "Scale" });
+    const wrapper = scaleTrigger.closest("[data-fit]");
+    expect(wrapper).toBeTruthy();
+  });
+
+  it("Progression Preset select uses fit sizing", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const presetTrigger = screen.getByRole("combobox", { name: "Preset" });
+    const wrapper = presetTrigger.closest("[data-fit]");
+    expect(wrapper).toBeTruthy();
+  });
 });
 
 describe("SongControls ROOT dropdown (KEY section)", () => {
