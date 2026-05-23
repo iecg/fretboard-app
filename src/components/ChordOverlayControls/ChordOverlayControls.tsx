@@ -69,9 +69,9 @@ export function ChordOverlayControls() {
 
   return (
     <div className={panelStyles.root}>
-      <PropGrid columns={7} className={panelStyles.grid}>
+      <PropGrid columns={6} className={panelStyles.grid}>
         {/* ── VOICING ──────────────────────────────────────────────────── */}
-        <Prop label={t("inspector.voicingLabel")} span={3}>
+        <Prop label={t("inspector.voicingLabel")} span={1}>
           <VoicingControl />
         </Prop>
         <Prop label={t("controls.lens")} span={2} hint={t("controls.lensHint")}>
@@ -86,7 +86,7 @@ export function ChordOverlayControls() {
           />
         </Prop>
         {voicing === "close" ? (
-          <Prop label={t("inspector.chordStringSetLabel")} span={2}>
+          <Prop label={t("inspector.chordStringSetLabel")} span={1}>
             <ChordStringSetPicker />
           </Prop>
         ) : null}

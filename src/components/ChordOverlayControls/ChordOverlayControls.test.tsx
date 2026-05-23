@@ -273,6 +273,14 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
+  describe("ChordOverlayControls grid layout (Plan H-T4)", () => {
+    it("renders the chord row as a 6-column PropGrid (not 7)", () => {
+      const { container } = renderDegree();
+      const grid = container.querySelector("[data-columns]");
+      expect(grid?.getAttribute("data-columns")).toBe("6");
+    });
+  });
+
   describe("17. chord-tab design parity", () => {
     it.each(["Tones", "Lead"])("Lens toggle includes the %s option", (name) => {
       renderDegree();
