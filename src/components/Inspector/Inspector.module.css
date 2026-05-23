@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3, 0.75rem);
-  padding-bottom: var(--space-2, 0.5rem);
+  padding-bottom: 0;
   border-bottom: 1px solid var(--faceplate-divider);
 }
 
@@ -28,6 +28,7 @@
   border: 0;
   border-bottom: 2px solid transparent;
   padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  margin-bottom: -1px;
   font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
   font-size: 11px;
   font-weight: 500;
