@@ -52,7 +52,7 @@ describe("StringSetPicker", () => {
     expect(screen.getByRole("combobox", { name: /strings/i })).toHaveTextContent("All");
   });
 
-  it("renders with auto sizing (uses LabeledSelect's fit/auto sizing)", () => {
+  it("renders with fixed sizing (default width='fixed' widthValue='7rem')", () => {
     const { container } = render(
       <StringSetPicker
         label="Strings"
@@ -61,6 +61,24 @@ describe("StringSetPicker", () => {
         options={[{ id: "0", label: "String 1" }]}
       />,
     );
-    expect(container.querySelector("[data-width='auto']")).toBeTruthy();
+    const wrapper = container.querySelector("[data-width='fixed']");
+    expect(wrapper).toBeTruthy();
+    expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("7rem");
+  });
+
+  it("passes through width and widthValue props to LabeledSelect", () => {
+    const { container } = render(
+      <StringSetPicker
+        label="Strings"
+        value="0"
+        onChange={() => {}}
+        options={[{ id: "0", label: "String 1" }]}
+        width="fixed"
+        widthValue="8rem"
+      />,
+    );
+    const wrapper = container.querySelector("[data-width='fixed']");
+    expect(wrapper).toBeTruthy();
+    expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("8rem");
   });
 });

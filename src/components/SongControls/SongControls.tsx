@@ -181,7 +181,8 @@ export function SongControls() {
         <LabeledSelect
           label={t("controls.root")}
           hideLabel
-          fit
+          width="fixed"
+          widthValue="6rem"
           value={rootNote}
           onChange={handleRootNote}
           options={NOTES.map((note) => ({
@@ -197,7 +198,6 @@ export function SongControls() {
           groups={scaleGroups}
           onChange={handleScaleName}
           hideLabel
-          fit
         />
       </Prop>
 
@@ -226,7 +226,6 @@ export function SongControls() {
             <LabeledSelect
               label={t("inspector.progressionPreset")}
               hideLabel
-              fit
               value={currentProgressionPresetId}
               groups={presetGroups}
               onChange={handlePresetChange}
@@ -350,7 +349,8 @@ export function SongControls() {
                 <LabeledSelect
                   label={t("controls.quality")}
                   hideLabel
-                  fit
+                  width="fixed"
+                  widthValue="9rem"
                   value={
                     activeStep?.qualityOverride
                     ?? activeResolvedProgressionStep?.quality

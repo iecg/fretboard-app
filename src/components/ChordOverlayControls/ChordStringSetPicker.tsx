@@ -23,6 +23,8 @@ export function ChordStringSetPicker() {
       value={value}
       onChange={setValue}
       options={options}
+      width="fixed"
+      widthValue="8rem"
     />
   );
 }

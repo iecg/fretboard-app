@@ -22,6 +22,9 @@ export interface StringSetPickerProps {
   options: readonly StringSetOptionInput[];
   /** Override the i18n "All" label when id === "all" and no label given. */
   allLabel?: string;
+  /** Width mode passed through to LabeledSelect. Default "fixed" 7rem. */
+  width?: "fill" | "fixed" | "auto";
+  widthValue?: string;
 }
 
 function formatLabel(opt: StringSetOptionInput, allLabel: string): string {
@@ -39,6 +42,8 @@ export function StringSetPicker({
   onChange,
   options,
   allLabel = "All",
+  width = "fixed",
+  widthValue = "7rem",
 }: StringSetPickerProps) {
   const items = useMemo(
     () =>
@@ -53,7 +58,8 @@ export function StringSetPicker({
     <LabeledSelect
       label={label}
       hideLabel
-      fit
+      width={width}
+      widthValue={widthValue}
       value={value}
       onChange={onChange}
       options={items as Array<{ value: string; label: string; disabled?: boolean }>}

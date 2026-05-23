@@ -82,7 +82,6 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
         <LabeledSelect
           label={t("inspector.fingeringPatternLabel")}
           hideLabel
-          fit
           value={fingeringPattern}
           groups={[
             { options: [{ value: "none", label: t("inspector.none") }] },
@@ -254,6 +253,8 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
                 id: String(i),
                 label: `String ${n}`,
               }))}
+              width="fixed"
+              widthValue="5rem"
             />
           </Prop>
           <Prop

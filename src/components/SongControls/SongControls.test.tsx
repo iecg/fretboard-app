@@ -300,18 +300,24 @@ describe("SongControls KEY section layout", () => {
     expect(screen.getByRole("combobox", { name: "Scale" })).toBeInTheDocument();
   });
 
-  it("Scale select uses fit sizing", () => {
+  it("Scale select uses fill width (no data-width attribute)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const scaleTrigger = screen.getByRole("combobox", { name: "Scale" });
-    const wrapper = scaleTrigger.closest("[data-width='auto']");
-    expect(wrapper).toBeTruthy();
+    // fill mode means no data-width attribute on the wrapper
+    const fixedWrapper = scaleTrigger.closest("[data-width='fixed']");
+    const autoWrapper = scaleTrigger.closest("[data-width='auto']");
+    expect(fixedWrapper).toBeNull();
+    expect(autoWrapper).toBeNull();
   });
 
-  it("Progression Preset select uses fit sizing", () => {
+  it("Progression Preset select uses fill width (no data-width attribute)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const presetTrigger = screen.getByRole("combobox", { name: "Preset" });
-    const wrapper = presetTrigger.closest("[data-width='auto']");
-    expect(wrapper).toBeTruthy();
+    // fill mode means no data-width attribute on the wrapper
+    const fixedWrapper = presetTrigger.closest("[data-width='fixed']");
+    const autoWrapper = presetTrigger.closest("[data-width='auto']");
+    expect(fixedWrapper).toBeNull();
+    expect(autoWrapper).toBeNull();
   });
 });
 
@@ -449,6 +455,70 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
     const step = store.get(progressionStepsAtom)[0];
     expect(step.qualityOverride).toBeNull();
     expect(step.manualRoot).toMatch(/d#|eb/i);
+  });
+});
+
+describe("SongControls width sweep (Plan H-T3)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("Root select uses fixed width 6rem", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const rootCombos = container.querySelectorAll("[role='combobox']");
+    // Root combobox is aria-labelledby a label with text "Root"
+    const rootCombo = Array.from(rootCombos).find((el) => {
+      const labelledBy = el.getAttribute("aria-labelledby");
+      if (!labelledBy) return false;
+      const labelEl = container.querySelector(`#${CSS.escape(labelledBy)}`);
+      return labelEl?.textContent?.trim() === "Root";
+    });
+    expect(rootCombo).toBeTruthy();
+    const wrapper = rootCombo?.closest("[data-width='fixed']");
+    expect(wrapper).toBeTruthy();
+    expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("6rem");
+  });
+
+  it("Quality select uses fixed width 9rem", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    // Quality combobox is aria-labelledby a label with text "Quality"
+    const allCombos = container.querySelectorAll("[role='combobox']");
+    const qualityCombo = Array.from(allCombos).find((el) => {
+      const labelledBy = el.getAttribute("aria-labelledby");
+      if (!labelledBy) return false;
+      const labelEl = container.querySelector(`#${CSS.escape(labelledBy)}`);
+      return labelEl?.textContent?.trim() === "Quality";
+    });
+    expect(qualityCombo).toBeTruthy();
+    const wrapper = qualityCombo?.closest("[data-width='fixed']");
+    expect(wrapper).toBeTruthy();
+    expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("9rem");
+  });
+
+  it("Scale select uses fill width (no data-width='fixed')", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const allCombos = container.querySelectorAll("[role='combobox']");
+    const scaleCombo = Array.from(allCombos).find((el) => {
+      const labelledBy = el.getAttribute("aria-labelledby");
+      if (!labelledBy) return false;
+      const labelEl = container.querySelector(`#${CSS.escape(labelledBy)}`);
+      return labelEl?.textContent?.trim() === "Scale";
+    });
+    expect(scaleCombo).toBeTruthy();
+    expect(scaleCombo?.closest("[data-width='fixed']")).toBeNull();
+  });
+
+  it("Preset select uses fill width (no data-width='fixed')", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const allCombos = container.querySelectorAll("[role='combobox']");
+    const presetCombo = Array.from(allCombos).find((el) => {
+      const labelledBy = el.getAttribute("aria-labelledby");
+      if (!labelledBy) return false;
+      const labelEl = container.querySelector(`#${CSS.escape(labelledBy)}`);
+      return labelEl?.textContent?.trim() === "Preset";
+    });
+    expect(presetCombo).toBeTruthy();
+    expect(presetCombo?.closest("[data-width='fixed']")).toBeNull();
   });
 });
 
