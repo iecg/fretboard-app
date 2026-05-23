@@ -53,28 +53,6 @@
   text-shadow: var(--faceplate-accent-glow);
 }
 
-/* Top-placement tabs are no-fill rounded pills — the active tab is outlined
-   in the accent color rather than filled, replacing the bottom-underline
-   indicator (DAW Shell Phase 13b). The bottom-docked (mobile) tab bar keeps
-   the Phase 7 underline treatment — these rules are scoped to
-   `[data-placement="top"]` so they never reach it. */
-.root[data-placement="top"] .tab {
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
-}
-
-.root[data-placement="top"] .tab:hover:not([data-state="active"]) {
-  border-color: var(--faceplate-divider);
-}
-
-.root[data-placement="top"] .tab[data-state="active"] {
-  color: var(--faceplate-accent);
-  background: transparent;
-  border-color: var(--faceplate-accent);
-  text-shadow: none;
-}
-
 .tabPanel {
   min-height: 80px;
   padding: var(--space-3, 0.75rem) 0;
