@@ -204,3 +204,26 @@ describe("LabeledSelect width prop (Plan H-T1)", () => {
     expect(container.querySelector("[data-width='auto']")).toBeTruthy();
   });
 });
+
+describe("LabeledSelect overflow behavior (Plan H-T2)", () => {
+  it("trigger has overflow:hidden + white-space:nowrap so long values truncate", () => {
+    const { container } = render(
+      <LabeledSelect
+        label="Scale"
+        hideLabel
+        width="fixed"
+        widthValue="4rem"
+        value="acoustic"
+        options={[
+          { value: "acoustic", label: "Acoustic / Mixolydian b6 (very long)" },
+        ]}
+        onChange={() => {}}
+      />,
+    );
+    const trigger = container.querySelector("[role='combobox']");
+    expect(trigger).toBeTruthy();
+    const styles = getComputedStyle(trigger as Element);
+    expect(styles.overflow).toBe("hidden");
+    expect(styles.whiteSpace).toBe("nowrap");
+  });
+});

@@ -33,6 +33,8 @@
   line-height: var(--leading-normal);
   cursor: pointer;
   transition: var(--dc-transition);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 /* Width modes — opt-in via the `width` prop. */
@@ -79,6 +81,13 @@
   transform: rotate(180deg);
 }
 
+.labeled-select-trigger > [data-radix-select-value] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
 .labeled-select--disabled {
   opacity: var(--disabled-opacity);
 }
@@ -104,7 +113,9 @@
 .labeled-select-content {
   z-index: var(--z-dropdown);
   overflow: hidden;
+  width: max-content;
   min-width: var(--radix-select-trigger-width);
+  max-width: min(90vw, 30rem);
   max-height: min(60vh, 480px);
   background:
     radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
