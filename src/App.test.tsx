@@ -191,7 +191,7 @@ describe("App", () => {
     it("keeps the global gesture listeners installed when resume fails", async () => {
       mockResumeGuitarAudio
         .mockRejectedValueOnce(new Error("resume failed"))
-        .mockResolvedValueOnce(true);
+        .mockResolvedValueOnce(undefined);
 
       render(<App />);
 
