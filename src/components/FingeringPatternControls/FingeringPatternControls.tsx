@@ -76,10 +76,12 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
     <>
       {!hideHeader && <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>}
 
-      <Prop label={t("inspector.fingeringPatternLabel")} span={4}>
+      <Prop label={t("inspector.fingeringPatternLabel")} span={2}>
         <LabeledSelect
           label={t("inspector.fingeringPatternLabel")}
           hideLabel
+          width="fixed"
+          widthValue="7rem"
           value={fingeringPattern}
           groups={[
             { options: [{ value: "none", label: t("inspector.none") }] },

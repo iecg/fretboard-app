@@ -532,4 +532,23 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       });
     });
   });
+
+  describe("Pattern select width (Plan I-T2)", () => {
+    it("Pattern select uses fixed 7rem width", () => {
+      const { container } = renderWithAtoms(<FingeringPatternControls />);
+      const trigger = container.querySelector("[role='combobox']");
+      expect(trigger).toBeTruthy();
+      const wrapper = trigger?.closest("[data-width='fixed']");
+      expect(wrapper).toBeTruthy();
+      expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("7rem");
+    });
+
+    it("Pattern Prop cell uses span=2", () => {
+      const { container } = renderWithAtoms(<FingeringPatternControls />);
+      const propCell = container.querySelector("[data-span='2']");
+      expect(propCell).toBeTruthy();
+      // Pattern dropdown lives in that cell
+      expect(propCell?.querySelector("[role='combobox']")).toBeTruthy();
+    });
+  });
 });
