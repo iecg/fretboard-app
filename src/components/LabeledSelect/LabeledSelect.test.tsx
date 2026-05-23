@@ -142,4 +142,24 @@ describe('LabeledSelect/LabeledSelect', () => {
     );
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it("when `fit` is set, the trigger has align-self: flex-start so it does not stretch in flex-column parents", () => {
+    render(
+      <LabeledSelect
+        label="Voicing"
+        hideLabel
+        fit
+        value="close"
+        options={[
+          { value: "off", label: "Off" },
+          { value: "full", label: "Full" },
+          { value: "close", label: "Close" },
+        ]}
+        onChange={vi.fn()}
+      />,
+    );
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toBeTruthy();
+    expect(getComputedStyle(trigger).alignSelf).toBe('flex-start');
+  });
 });
