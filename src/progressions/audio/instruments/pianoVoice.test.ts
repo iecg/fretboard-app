@@ -104,6 +104,26 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     expect(spies.ctorSpy.mock.results[0]?.value.maxPolyphony).toBe(32);
   });
 
+  it("reuses an existing pooled PolySynth for a later future hit in the same scheduling pass", () => {
+    const dest = {} as AudioNode;
+
+    pianoVoice.scheduleChord(dest, ["C3", "E3", "G3"], 4, {
+      velocity: 0.7,
+      style: "staccato",
+    });
+    pianoVoice.scheduleChord(dest, ["E3", "G3", "B3"], 4.5, {
+      velocity: 0.7,
+      style: "staccato",
+    });
+    pianoVoice.scheduleChord(dest, ["G3", "B3", "D4"], 5.7, {
+      velocity: 0.7,
+      style: "staccato",
+    });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(3);
+  });
+
   it("keeps different destinations on different leased synths", async () => {
     const t = await tone;
     const firstDest = {} as AudioNode;

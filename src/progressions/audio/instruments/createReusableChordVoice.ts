@@ -55,10 +55,12 @@ export function createReusableChordVoice(
   const acquireEntry = (
     dest: AudioNode,
     notes: readonly string[],
-    now: number,
+    playbackStartTime: number,
   ): PooledSynthEntry => {
     const entries = synthPool.get(dest) ?? [];
-    const reusableEntry = entries.find((entry) => entry.busyUntil <= now);
+    const reusableEntry = entries.find(
+      (entry) => entry.busyUntil <= playbackStartTime,
+    );
     if (reusableEntry) {
       reusableEntry.synth.maxPolyphony = Math.max(
         notes.length,
@@ -81,10 +83,11 @@ export function createReusableChordVoice(
       const now = Tone.now();
       const scheduledNotes = [...notes];
       const durationSec = config.durationFor(options);
-      const entry = acquireEntry(dest, scheduledNotes, now);
+      const playbackStartTime = Math.max(now, time);
+      const entry = acquireEntry(dest, scheduledNotes, playbackStartTime);
       const leaseGeneration = entry.leaseGeneration + 1;
       entry.leaseGeneration = leaseGeneration;
-      entry.busyUntil = time + durationSec + config.releaseTailSec;
+      entry.busyUntil = playbackStartTime + durationSec + config.releaseTailSec;
       entry.synth.triggerAttackRelease(
         scheduledNotes,
         durationSec,
