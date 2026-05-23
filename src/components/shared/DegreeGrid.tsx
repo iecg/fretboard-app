@@ -8,6 +8,10 @@ import {
 } from "@fretflow/core";
 import clsx from "clsx";
 import styles from "./DegreeGrid.module.css";
+import {
+  guessQualityForBorrowedRoot,
+  qualityShortForm,
+} from "../../progressions/progressionDomain";
 
 export interface DegreeGridProps {
   scaleName: string;
@@ -158,6 +162,12 @@ export function DegreeGrid({
           <span className={styles.numeral} aria-hidden="true">
             {cell.numeral}
           </span>
+          {!cell.inKey && (() => {
+            const q = qualityShortForm(
+              guessQualityForBorrowedRoot(cell.note, scaleName, tonicNote),
+            );
+            return q ? <span className={styles.qualityTag}>{q}</span> : null;
+          })()}
         </button>
       ))}
     </div>

@@ -479,8 +479,31 @@ export function totalProgressionBars(
  * TODO(plan-g11a): refine with a real parallel-scale lookup if/when one
  * exists in @fretflow/core (e.g. getDiatonicChordForNote(root, scale, tonic)).
  */
-function guessQualityForBorrowedRoot(): string {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string, _tonicNote?: string): string {
   return "Major Triad";
+}
+
+/** Compact display string for a chord quality, suitable for inline tags
+ * (e.g. the borrowed-cell quality strip in DegreeGrid). Returns "" if the
+ * quality is unrecognized — callers may choose to suppress in that case. */
+export function qualityShortForm(quality: string): string {
+  switch (quality) {
+    case "Major Triad": return "M";
+    case "Minor Triad": return "m";
+    case "Diminished Triad": return "°";
+    case "Augmented Triad": return "+";
+    case "Power Chord (5)": return "5";
+    case "Major 6th": return "6";
+    case "Minor 6th": return "m6";
+    case "Dominant 7th": return "7";
+    case "Major 7th": return "M7";
+    case "Minor 7th": return "m7";
+    case "Minor-Major 7th": return "mM7";
+    case "Half-Diminished 7th": return "ø7";
+    case "Diminished 7th": return "°7";
+    default: return "";
+  }
 }
 
 export function resolveProgressionStep(
@@ -528,7 +551,7 @@ export function resolveProgressionStep(
   const quality = overrideValid
     ? step.qualityOverride!
     : usingManualRoot
-      ? guessQualityForBorrowedRoot()
+      ? guessQualityForBorrowedRoot(step.manualRoot ?? undefined, scaleName, rootNote)
       : diatonic!.quality;
 
   const diatonicQuality = diatonic?.quality ?? null;

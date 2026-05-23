@@ -21,6 +21,7 @@ import {
   resolveProgressionStep,
   totalProgressionBars,
   transposeManualRootForRootChange,
+  qualityShortForm,
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "./progressionDomain";
@@ -561,5 +562,23 @@ describe("resolveProgressionStep + manualRoot (Plan G11a)", () => {
     );
     const resolved = resolveProgressionStep(step, "Major", "C", 0, false);
     expect(resolved.root).toBe("C");
+  });
+});
+
+describe("qualityShortForm (Plan H-T9b)", () => {
+  it.each([
+    ["Major Triad", "M"],
+    ["Minor Triad", "m"],
+    ["Diminished Triad", "°"],
+    ["Dominant 7th", "7"],
+    ["Major 7th", "M7"],
+    ["Minor 7th", "m7"],
+    ["Half-Diminished 7th", "ø7"],
+  ] as const)("maps %s → %s", (input, expected) => {
+    expect(qualityShortForm(input)).toBe(expected);
+  });
+
+  it("returns empty string for unknown qualities", () => {
+    expect(qualityShortForm("UnknownQuality" as never)).toBe("");
   });
 });

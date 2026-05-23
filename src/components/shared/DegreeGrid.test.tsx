@@ -314,3 +314,44 @@ describe("DegreeGrid", () => {
     });
   });
 });
+
+describe("DegreeGrid quality tag on borrowed cells (Plan H-T9b)", () => {
+  it("renders a quality tag (e.g. 'M') under the note name on borrowed cells", () => {
+    const { container } = render(
+      <DegreeGrid
+        scaleName="Major"
+        tonicNote="C"
+        selectedNote="C"
+        onSelectInKey={() => {}}
+        onSelectBorrowed={() => {}}
+        preferFlats
+      />,
+    );
+    // Find a borrowed cell — Eb in C major.
+    const cells = Array.from(container.querySelectorAll("[class*='cell']"));
+    const ebCell = cells.find((c) => /Eb|E♭/.test(c.textContent ?? ""));
+    expect(ebCell).toBeTruthy();
+    const tag = ebCell?.querySelector("[class*='qualityTag']");
+    expect(tag).toBeTruthy();
+    // Default guess is "Major Triad" → "M". Allow any short form to keep
+    // the test resilient if the resolver changes the default.
+    expect(tag?.textContent).toMatch(/^(M|m|°|7|M7|m7|ø7|°7|sus2|sus4|5|6|m6|mM7|\+)$/);
+  });
+
+  it("does NOT render a quality tag on in-key cells (quality is implicit in the Roman numeral)", () => {
+    const { container } = render(
+      <DegreeGrid
+        scaleName="Major"
+        tonicNote="C"
+        selectedNote="C"
+        onSelectInKey={() => {}}
+        onSelectBorrowed={() => {}}
+        preferFlats
+      />,
+    );
+    // In-key C cell: data-in-key="true" and text contains "C" and "I" (the numeral)
+    const inKeyCCell = container.querySelector('button[data-in-key="true"][aria-label*="C I"]');
+    expect(inKeyCCell).toBeTruthy();
+    expect(inKeyCCell?.querySelector("[class*='qualityTag']")).toBeNull();
+  });
+});

@@ -70,6 +70,21 @@
   color: color-mix(in srgb, var(--text-muted) 75%, transparent);
 }
 
+.qualityTag {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  line-height: 1;
+  font-weight: 600;
+  color: var(--faceplate-accent);
+  letter-spacing: 0.04em;
+}
+
+.cell.selected .qualityTag {
+  color: var(--text-strong);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cell {
     transition: none;
