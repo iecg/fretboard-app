@@ -104,7 +104,7 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
     expect(spies.ctorSpy.mock.results[0]?.value.maxPolyphony).toBe(32);
   });
 
-  it("reuses an existing pooled PolySynth for a later future hit in the same scheduling pass", () => {
+  it("allocates separate PolySynths for future hits scheduled in one pass", () => {
     const dest = {} as AudioNode;
 
     pianoVoice.scheduleChord(dest, ["C3", "E3", "G3"], 4, {
@@ -120,7 +120,7 @@ describe("pianoVoice — Tone.PolySynth backend", () => {
       style: "staccato",
     });
 
-    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(3);
     expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(3);
   });
 
