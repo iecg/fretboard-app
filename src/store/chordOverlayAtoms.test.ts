@@ -16,10 +16,11 @@ import {
   chordOverlayHiddenAtom,
   chordSnapToScaleAtom,
   stringSetOptionsAtom,
+  closeCandidatesAllStringSetsAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import { progressionStepsAtom } from "./progressionAtoms";
-import { cagedShapesAtom, cagedOctaveAtom, fingeringPatternAtom } from "./fingeringAtoms";
+import { cagedShapesAtom, cagedOctaveAtom, fingeringPatternAtom, npsPositionAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import {
   activeChordCachedDegreeAtom,
@@ -589,7 +590,9 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
     expect(store.get(chordSnapToScaleAtom)).toBe(true);
   });
 
-  it("snap=on + scale pattern active: candidates are filtered to the pattern's position-key set", () => {
+  it("snap=on + scale pattern active: candidates are filtered to the fret-bound scale window (Plan H-T5)", () => {
+    // Fret-bound semantics: voicings whose fretted notes span [window.lo, window.hi]
+    // are kept; position-key subset matching is no longer required (Plan G4 reverted).
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -599,25 +602,29 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
       [cagedShapesAtom, new Set<CagedShape>(["E"])],
       [chordSnapToScaleAtom, true],
     ]);
-    const patternKeys = store.get(activeScalePatternPositionsAtom);
-    expect(patternKeys.size).toBeGreaterThan(0);
+    const window = store.get(activeScaleWindowAtom);
+    expect(window).not.toBeNull();
     const candidates = store.get(closeCandidatesAtom);
-    // All fretted notes must lie on the pattern's position-key set.
+    expect(candidates.length).toBeGreaterThan(0);
+    // All fretted notes must lie within [window.lo, window.hi].
     for (const v of candidates) {
-      for (const key of v.positionKeys) {
-        const [, fretStr] = key.split("-");
-        if (fretStr !== "0") {
-          expect(patternKeys.has(key)).toBe(true);
-        }
-      }
+      const fretted = v.positionKeys
+        .map((k) => Number(k.split("-")[1]))
+        .filter((f) => f > 0);
+      if (fretted.length === 0) continue;
+      expect(Math.min(...fretted)).toBeGreaterThanOrEqual(window!.lo);
+      expect(Math.max(...fretted)).toBeLessThanOrEqual(window!.hi);
     }
   });
 
   it("snap=off + scale pattern active: candidates IGNORE the scale window (full hand-filtered set)", () => {
+    // Use a chord with off-scale tones (Dominant 7th, b7 not in C Major) so the
+    // fret-bound filter has something meaningful to narrow. With a diatonic triad,
+    // many voicings naturally stay in the CAGED window anyway.
     const seeds = [
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set<CagedShape>(["E"])],
@@ -629,7 +636,7 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
     const snapOnCount = snapOn.get(closeCandidatesAtom).length;
     const snapOffCount = snapOff.get(closeCandidatesAtom).length;
 
-    // A real window must drop at least one candidate; otherwise this seed
+    // The fret-bound filter must drop at least one candidate; otherwise this seed
     // doesn't exercise the snap toggle and the test isn't meaningful.
     expect(snapOffCount).toBeGreaterThan(snapOnCount);
   });
@@ -662,73 +669,56 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Group G4 — closeCandidatesAtom + chordSnapToScaleAtom (Plan G4)
+// Group G4 — closeCandidatesAtom + chordSnapToScaleAtom (Plan H-T5 update)
+// The strict position-key subset filter from Plan G4 has been reverted to
+// fret-bound semantics. See Group H-T5 for the primary coverage.
+// These tests verify the snap toggle and pattern-type no-ops still hold.
 // ---------------------------------------------------------------------------
 
-describe("closeCandidatesAtom + chordSnapToScaleAtom (Plan G4)", () => {
+describe("closeCandidatesAtom + chordSnapToScaleAtom (snap toggle / no-op cases)", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("filters voicings to those whose fretted notes ALL fall on the active pattern's position-key set", () => {
-    const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set<CagedShape>(["E"])],
-      [chordSnapToScaleAtom, true],
-    ]);
-
-    const candidates = store.get(closeCandidatesAtom);
-    const patternKeys = store.get(activeScalePatternPositionsAtom);
-    expect(patternKeys.size).toBeGreaterThan(0);
-    for (const v of candidates) {
-      for (const key of v.positionKeys) {
-        const [, fretStr] = key.split("-");
-        if (fretStr !== "0") {
-          expect(patternKeys.has(key)).toBe(true);
-        }
-      }
-    }
-  });
-
-  it("does NOT filter when chordSnapToScaleAtom === false", () => {
-    const snapOnStore = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set<CagedShape>(["E"])],
-      [chordSnapToScaleAtom, true],
-    ]);
+  it("does NOT filter when chordSnapToScaleAtom === false (snap=off bypasses fret-bound filter)", () => {
+    // When snap is off, voicings outside the CAGED E fret window are included.
+    // Use Dominant 7th so there are off-window candidates to confirm bypass.
     const snapOffStore = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set<CagedShape>(["E"])],
       [chordSnapToScaleAtom, false],
     ]);
+    const snapOnStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
 
-    const patternKeys = snapOnStore.get(activeScalePatternPositionsAtom);
+    const window = snapOnStore.get(activeScaleWindowAtom);
+    expect(window).not.toBeNull();
     const snapOffCandidates = snapOffStore.get(closeCandidatesAtom);
 
-    // When snap is off, there should be at least one voicing whose fretted notes
-    // include a position NOT on the pattern — confirming the filter was bypassed.
-    const anyOutside = snapOffCandidates.some((v) =>
+    // When snap is off, there should be at least one voicing with a fretted note
+    // outside the window — confirming the fret-bound filter was bypassed.
+    const anyOutsideWindow = snapOffCandidates.some((v) =>
       v.positionKeys.some((k) => {
-        const [, fretStr] = k.split("-");
-        return fretStr !== "0" && !patternKeys.has(k);
+        const fret = Number(k.split("-")[1]);
+        return fret > 0 && (fret < window!.lo || fret > window!.hi);
       }),
     );
-    expect(anyOutside).toBe(true);
+    expect(anyOutsideWindow).toBe(true);
   });
 
   it("returns full hand-filtered candidate set when fingeringPattern is 'none' regardless of snap", () => {
+    // activeScaleWindowAtom returns null for 'none' pattern — filter is a no-op.
     const snapOnStore = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
@@ -800,12 +790,20 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
   });
 
   it("marks string sets with zero candidates in the active scale window as disabled with a reason", () => {
+    // Verify the disabled-option probe mechanism: each string-set option is
+    // disabled iff no fret-bound candidate (closeCandidatesAllStringSetsAtom)
+    // fits that string window. The fret-bound filter (Plan H-T5) replaced the
+    // strict position-key subset filter (Plan G4).
+    //
+    // F# Major Triad at 3NPS position 9 (window [8,12]): 3 voicings exist
+    // in that window covering strings 0-1-2, 1-2-3, and 3-4-5. The 2-3-4
+    // window has no fret-bound candidate and should be marked disabled.
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
+      [rootNoteAtom, "F#"],
       [scaleNameAtom, "Major"],
-      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "F#" })],
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 9],
       [chordSnapToScaleAtom, true],
     ]);
 
@@ -813,12 +811,27 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
     // Must have more than just "all" for this to be meaningful
     expect(options.length).toBeGreaterThan(1);
 
-    const disabled = options.filter((o) => o.disabled);
-    // With a narrow CAGED E window, at least some string-set sub-windows should have no candidates
-    expect(disabled.length).toBeGreaterThan(0);
-    for (const opt of disabled) {
-      expect(opt.disabledReason).toBeTruthy();
+    // Verify the probe logic: each non-"all" option's disabled state must match
+    // whether closeCandidatesAllStringSetsAtom has a candidate for that string set.
+    const allCandidates = store.get(closeCandidatesAllStringSetsAtom);
+    for (const opt of options) {
+      if (opt.id === "all") continue;
+      const optStringSet = new Set(opt.strings);
+      const hasCandidate = allCandidates.some((v) =>
+        v.notes.every((n) => optStringSet.has(n.stringIndex)),
+      );
+      if (hasCandidate) {
+        expect(opt.disabled).toBeFalsy();
+      } else {
+        expect(opt.disabled).toBe(true);
+        expect(opt.disabledReason).toBeTruthy();
+      }
     }
+
+    // At least some options should be disabled (the 2-3-4 window has no fret-bound
+    // candidate in the [8,12] window for F# Major Triad at position 9).
+    const disabled = options.filter((o) => o.disabled);
+    expect(disabled.length).toBeGreaterThan(0);
   });
 
   it("does not mark any option disabled when snap is off", () => {
@@ -899,5 +912,104 @@ describe("closeCandidatesAtom × string set", () => {
         expect([1, 2, 3, 4]).toContain(note.stringIndex);
       }
     }
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// Group H-T5 — closeCandidatesAtom fret-bound filter (Plan H-T5)
+// ---------------------------------------------------------------------------
+
+describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan H-T5)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("accepts voicings whose fretted notes lie within the scale window even when some chord tones are NOT scale-tone positions", () => {
+    // Dominant 7th on degree I of C Major includes Bb (b7), which is NOT in C Major.
+    // The strict subset filter (Plan G4) would have rejected voicings containing Bb positions.
+    // The fret-bound filter should accept them if they fall within the CAGED E-shape window.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+
+    const candidates = store.get(closeCandidatesAtom);
+    const window = store.get(activeScaleWindowAtom);
+    expect(window).not.toBeNull();
+    expect(candidates.length).toBeGreaterThan(0);
+
+    for (const v of candidates) {
+      const fretted = v.positionKeys
+        .map((k) => Number(k.split("-")[1]))
+        .filter((f) => f > 0);
+      if (fretted.length === 0) continue;
+      expect(Math.min(...fretted)).toBeGreaterThanOrEqual(window!.lo);
+      expect(Math.max(...fretted)).toBeLessThanOrEqual(window!.hi);
+    }
+  });
+
+  it("includes at least one candidate with a non-scale note when chord tones extend outside the scale (regression guard vs strict subset filter)", () => {
+    // Dominant 7th on C in C Major: the b7 (Bb) is not a C Major scale tone.
+    // The strict G4 subset filter would have stripped all voicings containing Bb.
+    // The fret-bound filter must let them through if they're in the right hand position.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+
+    const candidates = store.get(closeCandidatesAtom);
+    const patternKeys = store.get(activeScalePatternPositionsAtom);
+
+    // At least one candidate must have a fretted note that isn't on the scale pattern.
+    const anyOffPattern = candidates.some((v) =>
+      v.positionKeys.some((k) => {
+        const [, fretStr] = k.split("-");
+        return Number(fretStr) > 0 && !patternKeys.has(k);
+      }),
+    );
+    expect(anyOffPattern).toBe(true);
+  });
+
+  it("fret-bound filter returns more candidates than the strict subset filter would have", () => {
+    // With snap=on + CAGED E + Dominant 7th (has off-scale tones), the fret-bound
+    // filter should pass voicings the strict subset would have rejected.
+    const snapOnStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+    const snapOffStore = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, false],
+    ]);
+
+    const snapOnCount = snapOnStore.get(closeCandidatesAtom).length;
+    const snapOffCount = snapOffStore.get(closeCandidatesAtom).length;
+
+    // The fret-bound filter is less strict than the subset filter — snap=on should
+    // still narrow the field vs snap=off (uses fret window), but not to zero.
+    expect(snapOnCount).toBeGreaterThan(0);
+    // snap=off gives the widest range, snap=on narrows to the window (still more than 0)
+    expect(snapOffCount).toBeGreaterThanOrEqual(snapOnCount);
   });
 });

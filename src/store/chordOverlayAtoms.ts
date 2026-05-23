@@ -242,15 +242,15 @@ export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
   });
 
   if (get(chordSnapToScaleAtom)) {
-    const patternKeys = get(activeScalePatternPositionsAtom);
-    if (patternKeys.size > 0) {
-      return all.filter((v) =>
-        v.positionKeys.every((key) => {
-          const dashIdx = key.indexOf("-");
-          const fretStr = dashIdx !== -1 ? key.slice(dashIdx + 1) : "0";
-          return fretStr === "0" || patternKeys.has(key);
-        }),
-      );
+    const window = get(activeScaleWindowAtom);
+    if (window) {
+      return all.filter((v) => {
+        const fretted = v.positionKeys
+          .map((key) => Number(key.split("-")[1] ?? 0))
+          .filter((f) => f > 0);
+        if (fretted.length === 0) return true; // all-open voicing
+        return Math.min(...fretted) >= window.lo && Math.max(...fretted) <= window.hi;
+      });
     }
   }
   return all;
@@ -398,21 +398,24 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
     voicingType: "close",
   });
 
-  // Apply the position-key snap (if enabled and a pattern is active), then
+  // Apply the fret-bound snap (if enabled and a scale window is active), then
   // the string-set filter. Either step is a no-op when its precondition is
-  // unmet.
+  // unmet. Fret-bound semantics: every fretted note in the voicing must fall
+  // within [window.lo, window.hi] — open strings are always allowed.
+  // This is less strict than the position-key subset check (Plan G4): chord
+  // tones that aren't scale-pattern positions (e.g. the b7 of a Dominant 7th
+  // in a Major scale) are accepted as long as they're in the hand position.
   let windowed = all;
   if (get(chordSnapToScaleAtom)) {
-    const patternKeys = get(activeScalePatternPositionsAtom);
-    if (patternKeys.size > 0) {
-      windowed = all.filter((v) =>
-        v.positionKeys.every((key) => {
-          const dashIdx = key.indexOf("-");
-          const fretStr = dashIdx !== -1 ? key.slice(dashIdx + 1) : "0";
-          // Open strings (fret 0) are not bound to a pattern position.
-          return fretStr === "0" || patternKeys.has(key);
-        }),
-      );
+    const window = get(activeScaleWindowAtom);
+    if (window) {
+      windowed = all.filter((v) => {
+        const fretted = v.positionKeys
+          .map((key) => Number(key.split("-")[1] ?? 0))
+          .filter((f) => f > 0);
+        if (fretted.length === 0) return true; // all-open voicing
+        return Math.min(...fretted) >= window.lo && Math.max(...fretted) <= window.hi;
+      });
     }
   }
 
