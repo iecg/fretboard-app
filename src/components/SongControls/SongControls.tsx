@@ -1,5 +1,4 @@
 import { startTransition, useMemo } from "react";
-import clsx from "clsx";
 import { useSetAtom } from "jotai";
 import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
 import { SCALE_FAMILIES, NOTES, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
@@ -8,7 +7,6 @@ import {
   MAX_PROGRESSION_STEP_DURATION_VALUE,
   MIN_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
-  formatProgressionDurationLabel,
   getAvailableProgressionPresets,
 } from "../../progressions/progressionDomain";
 import { generateCommonProgressions } from "../../progressions/progressionGeneration";
@@ -111,12 +109,10 @@ export function SongControls() {
 
   const {
     progressionSteps,
-    resolvedProgressionSteps,
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
     loadProgressionPreset,
     loadProgressionSteps,
-    setActiveProgressionStepIndex,
     addProgressionStep,
     duplicateProgressionStep,
     removeProgressionStep,
@@ -283,35 +279,6 @@ export function SongControls() {
       >
         {t("inspector.groupProgression")}
       </GroupHeader>
-      <Prop span={3}>
-        <div className={styles["chords-cell"]}>
-          {resolvedProgressionSteps.length === 0 ? (
-            <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
-          ) : (
-            <ol className={styles["step-list"]}>
-              {resolvedProgressionSteps.map((step, index) => (
-                <li key={step.id}>
-                  <button
-                    type="button"
-                    className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
-                    data-unavailable={step.unavailable ? "true" : undefined}
-                    onClick={() => setActiveProgressionStepIndex(index)}
-                  >
-                    <span className={styles["step-index"]}>{index + 1}</span>
-                    <span className={styles["step-degree"]}>{step.degree}</span>
-                    <span className={styles["step-chord"]}>
-                      {step.resolvedChordLabel ?? step.unavailableReason}
-                    </span>
-                    <span className={styles["step-duration"]}>
-                      {formatProgressionDurationLabel(step.duration)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
-      </Prop>
       <Prop span={3}>
         {activeStep ? (
           <div className={styles["editor-cell"]}>

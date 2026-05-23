@@ -22,12 +22,12 @@ describe("SongControls", () => {
     localStorage.clear();
   });
 
-  it("renders presets, step list, and active step editor without an on/off toggle", () => {
+  it("renders preset selector and active step editor without an on/off toggle", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
 
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^1.*I.*C Major Triad/i })).toBeInTheDocument();
+    // Step list is gone (ProgressionTrack handles navigation); editor pane still present
     expect(screen.getByRole("group", { name: "Chord root" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
@@ -48,11 +48,12 @@ describe("SongControls", () => {
   });
 
   it("selects steps and edits degree, duration, and quality", async () => {
-    const store = makeAtomStore([...BASE_SEEDS]);
+    // Seed with step 2 (V) active — ProgressionTrack handles step navigation,
+    // so we seed the atom directly rather than clicking a removed step list.
+    const store = makeAtomStore([...BASE_SEEDS, [activeProgressionStepIndexAtom, 1]]);
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("button", { name: /^2.*V/i }));
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
     await user.click(within(screen.getByRole("group", { name: "Chord root" })).getByRole("button", { name: "A vi" }));
@@ -220,9 +221,12 @@ describe("SongControls CHORDS list", () => {
     expect(queryByText(/^Step \d/)).toBeNull();
   });
 
-  it("rows show the new duration label ('1 bar', '2 bars' etc.)", () => {
-    const { getAllByText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(getAllByText("1 bar").length).toBeGreaterThan(0);
+  it("the editor pane shows duration controls (step-list rows are gone)", () => {
+    // The step-list rows (which used formatProgressionDurationLabel) are removed.
+    // The editor pane still exposes duration via its stepper + toggle controls.
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
   });
 });
 
@@ -393,6 +397,26 @@ describe("SongControls v2.0 chord-edit pane", () => {
     const standaloneDegreeButtons = screen
       .queryAllByRole("button", { name: /^I$|^II$|^IV$|^V$|^VI$|^VII$/ });
     expect(standaloneDegreeButtons.length).toBe(0);
+  });
+});
+
+describe("SongControls G11b: step-list removal", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("does not render an in-Inspector progression step list (delegated to ProgressionTrack)", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(container.querySelector("[class*='step-list']")).toBeNull();
+  });
+
+  it("does not render the 'Chords' group header inside the Inspector", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const matches = screen.queryAllByText(/^chords$/i);
+    const groupHeaderMatches = matches.filter(
+      (el) => /groupHeader/i.test(el.className) || el.closest("[class*='groupHeader']"),
+    );
+    expect(groupHeaderMatches.length).toBe(0);
   });
 });
 
