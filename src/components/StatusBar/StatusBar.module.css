@@ -3,9 +3,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  width: 100%;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
   min-width: 0;
-  padding: 0.3rem 0;
+  padding: 0.3rem 0.85rem;
+  box-sizing: border-box;
   font-family: var(--font-mono);
   font-size: 0.625rem;
   background: var(--dc-bg);
