@@ -227,6 +227,36 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
+  describe("G7: lock-to-scale toggle disabled for single/double-string patterns", () => {
+    it("renders the lock-to-scale toggle disabled when fingeringPattern is one-string", () => {
+      renderManual([[fingeringPatternAtom, "one-string"]]);
+      const toggle = screen.getByRole("switch", { name: /lock to scale/i });
+      expect(toggle).toBeInTheDocument();
+      expect(toggle).toBeDisabled();
+    });
+
+    it("renders the lock-to-scale toggle disabled when fingeringPattern is two-strings", () => {
+      renderManual([[fingeringPatternAtom, "two-strings"]]);
+      const toggle = screen.getByRole("switch", { name: /lock to scale/i });
+      expect(toggle).toBeInTheDocument();
+      expect(toggle).toBeDisabled();
+    });
+
+    it("renders the lock-to-scale toggle enabled when fingeringPattern is caged", () => {
+      renderManual([[fingeringPatternAtom, "caged"]]);
+      const toggle = screen.getByRole("switch", { name: /lock to scale/i });
+      expect(toggle).toBeInTheDocument();
+      expect(toggle).not.toBeDisabled();
+    });
+
+    it("renders the lock-to-scale toggle enabled when fingeringPattern is 3nps", () => {
+      renderManual([[fingeringPatternAtom, "3nps"]]);
+      const toggle = screen.getByRole("switch", { name: /lock to scale/i });
+      expect(toggle).toBeInTheDocument();
+      expect(toggle).not.toBeDisabled();
+    });
+  });
+
   describe("Task 3.6: per-tab visibility switches", () => {
     it("does not render a visibility switch (moved to ViewTab group header)", () => {
       renderWithAtoms(<ChordOverlayControls />, [...DEGREE_SEEDS]);

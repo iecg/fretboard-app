@@ -92,7 +92,9 @@ export function ChordOverlayControls() {
         ) : null}
         {fingeringPattern !== "none" ? (
           <Prop label={t("inspector.chordLockToScaleLabel")} span={2}>
-            <ChordSnapToScaleToggle />
+            <ChordSnapToScaleToggle
+              disabled={fingeringPattern !== "caged" && fingeringPattern !== "3nps"}
+            />
           </Prop>
         ) : null}
       </PropGrid>
