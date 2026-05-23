@@ -101,7 +101,7 @@ describe('LabeledSelect/LabeledSelect', () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it('emits data-fit on the root when fit prop is true', () => {
+  it('fit prop (deprecated alias) emits data-width="auto" on the root', () => {
     const { container } = render(
       <LabeledSelect
         label="Test"
@@ -113,10 +113,11 @@ describe('LabeledSelect/LabeledSelect', () => {
     );
     const root = container.querySelector('.labeled-select');
     expect(root).not.toBeNull();
-    expect(root).toHaveAttribute('data-fit');
+    expect(root).toHaveAttribute('data-width', 'auto');
+    expect(root).not.toHaveAttribute('data-fit');
   });
 
-  it('omits data-fit when fit is false', () => {
+  it('omits data-width when no width prop (fill default)', () => {
     const { container } = render(
       <LabeledSelect
         label="Test"
@@ -127,6 +128,7 @@ describe('LabeledSelect/LabeledSelect', () => {
     );
     const root = container.querySelector('.labeled-select');
     expect(root).not.toBeNull();
+    expect(root).not.toHaveAttribute('data-width');
     expect(root).not.toHaveAttribute('data-fit');
   });
 
@@ -161,5 +163,44 @@ describe('LabeledSelect/LabeledSelect', () => {
     const trigger = screen.getByRole('combobox');
     expect(trigger).toBeTruthy();
     expect(getComputedStyle(trigger).alignSelf).toBe('flex-start');
+  });
+});
+
+describe("LabeledSelect width prop (Plan H-T1)", () => {
+  const baseProps = {
+    label: "Voicing",
+    hideLabel: true,
+    value: "close",
+    options: [
+      { value: "off", label: "Off" },
+      { value: "full", label: "Full" },
+      { value: "close", label: "Close" },
+    ],
+    onChange: () => {},
+  };
+
+  it("default width='fill' renders no data-width attribute (uses 100% trigger)", () => {
+    const { container } = render(<LabeledSelect {...baseProps} />);
+    const root = container.querySelector("[class*='labeled-select']");
+    expect(root?.getAttribute("data-width")).toBeNull();
+  });
+
+  it("width='fixed' with widthValue emits data-width='fixed' and sets CSS var --labeled-select-width", () => {
+    const { container } = render(
+      <LabeledSelect {...baseProps} width="fixed" widthValue="6rem" />,
+    );
+    const root = container.querySelector("[data-width='fixed']");
+    expect(root).toBeTruthy();
+    expect((root as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("6rem");
+  });
+
+  it("width='auto' emits data-width='auto' for content sizing", () => {
+    const { container } = render(<LabeledSelect {...baseProps} width="auto" />);
+    expect(container.querySelector("[data-width='auto']")).toBeTruthy();
+  });
+
+  it("`fit` prop continues to work as an alias for width='auto'", () => {
+    const { container } = render(<LabeledSelect {...baseProps} fit />);
+    expect(container.querySelector("[data-width='auto']")).toBeTruthy();
   });
 });

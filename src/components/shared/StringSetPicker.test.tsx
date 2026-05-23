@@ -52,7 +52,7 @@ describe("StringSetPicker", () => {
     expect(screen.getByRole("combobox", { name: /strings/i })).toHaveTextContent("All");
   });
 
-  it("renders with data-fit (uses LabeledSelect's fit sizing)", () => {
+  it("renders with auto sizing (uses LabeledSelect's fit/auto sizing)", () => {
     const { container } = render(
       <StringSetPicker
         label="Strings"
@@ -61,6 +61,6 @@ describe("StringSetPicker", () => {
         options={[{ id: "0", label: "String 1" }]}
       />,
     );
-    expect(container.querySelector("[data-fit]")).toBeTruthy();
+    expect(container.querySelector("[data-width='auto']")).toBeTruthy();
   });
 });

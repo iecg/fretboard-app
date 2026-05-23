@@ -1,4 +1,4 @@
-import { Fragment, useId } from 'react';
+import React, { Fragment, useId } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
@@ -26,9 +26,20 @@ interface LabeledSelectBaseProps {
   'aria-describedby'?: string;
   disabled?: boolean;
   hideLabel?: boolean;
-  /** When true, sizes the trigger intrinsically (width: auto with a 5rem
-   * minimum) instead of stretching to its container. Apply to short-value
-   * selects like Root/Quality/Pattern/Voicing/TimeSignature. */
+  /** Sizing mode for the trigger. Defaults to "fill" (100% of parent).
+   *
+   * - "fill" — trigger stretches to fill parent container (most selects)
+   * - "fixed" — caller specifies an exact width via `widthValue` (e.g. "6rem")
+   *             so the trigger is a stable shape regardless of selected option
+   * - "auto" — content-sized (intrinsic), min 5rem
+   */
+  width?: "fill" | "fixed" | "auto";
+  /** Required when width="fixed". CSS length applied to the trigger. */
+  widthValue?: string;
+  /**
+   * @deprecated use `width="auto"`. Kept as an alias for back-compat during
+   * the Plan H sweep.
+   */
   fit?: boolean;
 }
 
@@ -66,11 +77,16 @@ export function LabeledSelect({
   'aria-describedby': ariaDescribedBy,
   disabled,
   hideLabel,
+  width,
+  widthValue,
   fit,
 }: LabeledSelectProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
   const labelId = `${selectId}-label`;
+
+  const resolvedWidth: "fill" | "fixed" | "auto" =
+    width ?? (fit ? "auto" : "fill");
 
   return (
     <div
@@ -82,7 +98,12 @@ export function LabeledSelect({
         },
         className,
       )}
-      data-fit={fit ? '' : undefined}
+      data-width={resolvedWidth === "fill" ? undefined : resolvedWidth}
+      style={
+        resolvedWidth === "fixed" && widthValue
+          ? ({ "--labeled-select-width": widthValue } as React.CSSProperties)
+          : undefined
+      }
     >
       <span id={labelId} className={styles['labeled-select-label-text']}>
         {label}

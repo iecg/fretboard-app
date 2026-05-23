@@ -35,12 +35,17 @@
   transition: var(--dc-transition);
 }
 
-/* Opt-in: size the trigger to its content (e.g., short-value selects like
- * Root, Quality, Pattern, Voicing, TimeSignature). */
-.labeled-select[data-fit] .labeled-select-trigger {
+/* Width modes — opt-in via the `width` prop. */
+.labeled-select[data-width="auto"] .labeled-select-trigger {
   width: auto;
   max-width: 100%;
   min-width: var(--labeled-select-min-width, 5rem);
+  align-self: flex-start;
+}
+
+.labeled-select[data-width="fixed"] .labeled-select-trigger {
+  width: var(--labeled-select-width, 6rem);
+  max-width: 100%;
   align-self: flex-start;
 }
 

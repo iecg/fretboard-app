@@ -303,14 +303,14 @@ describe("SongControls KEY section layout", () => {
   it("Scale select uses fit sizing", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const scaleTrigger = screen.getByRole("combobox", { name: "Scale" });
-    const wrapper = scaleTrigger.closest("[data-fit]");
+    const wrapper = scaleTrigger.closest("[data-width='auto']");
     expect(wrapper).toBeTruthy();
   });
 
   it("Progression Preset select uses fit sizing", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const presetTrigger = screen.getByRole("combobox", { name: "Preset" });
-    const wrapper = presetTrigger.closest("[data-fit]");
+    const wrapper = presetTrigger.closest("[data-width='auto']");
     expect(wrapper).toBeTruthy();
   });
 });
