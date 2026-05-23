@@ -12,11 +12,25 @@ import { vi } from "vitest";
 export interface ToneSynthSpies {
   ctorSpy: Mock;
   triggerAttackRelease: Mock;
+  playbackAttackRelease: Mock;
   triggerRelease: Mock;
   triggerAttack: Mock;
   releaseAll: Mock;
   connect: Mock;
+  disconnect: Mock;
   dispose: Mock;
+}
+
+export interface ToneSynthInstanceSpies {
+  triggerAttackRelease: Mock;
+  triggerRelease: Mock;
+  triggerAttack: Mock;
+  releaseAll: Mock;
+  connect: Mock;
+  disconnect: Mock;
+  dispose: Mock;
+  volume: { value: number };
+  maxPolyphony: number;
 }
 
 /**
@@ -26,40 +40,97 @@ export interface ToneSynthSpies {
  */
 export function createToneSynthSpies(): {
   spies: ToneSynthSpies;
+  instances: ToneSynthInstanceSpies[];
+  now: () => number;
+  setNow: (value: number) => void;
   reset: () => void;
 } {
+  const instances: ToneSynthInstanceSpies[] = [];
+  let currentNow = 0;
   const spies: ToneSynthSpies = {
     ctorSpy: vi.fn(),
     triggerAttackRelease: vi.fn(),
+    playbackAttackRelease: vi.fn(),
     triggerRelease: vi.fn(),
     triggerAttack: vi.fn(),
     releaseAll: vi.fn(),
     connect: vi.fn().mockReturnThis(),
+    disconnect: vi.fn().mockReturnThis(),
     dispose: vi.fn(),
   };
   const install = () => {
     spies.ctorSpy.mockImplementation(function () {
-      return {
-        triggerAttackRelease: spies.triggerAttackRelease,
-        triggerRelease: spies.triggerRelease,
-        triggerAttack: spies.triggerAttack,
-        releaseAll: spies.releaseAll,
-        connect: spies.connect,
-        dispose: spies.dispose,
+      let disposed = false;
+      const playbackTimers = new Set<ReturnType<typeof setTimeout>>();
+      const instance: ToneSynthInstanceSpies = {
+        triggerAttackRelease: vi.fn((...args: unknown[]) => {
+          spies.triggerAttackRelease(...args);
+          const playbackTime =
+            typeof args[2] === "number" ? Math.max(currentNow, args[2]) : currentNow;
+          const delayMs = Math.max(0, (playbackTime - currentNow) * 1000);
+          const playbackTimer = setTimeout(() => {
+            playbackTimers.delete(playbackTimer);
+            if (!disposed) {
+              spies.playbackAttackRelease(...args);
+            }
+          }, delayMs);
+          playbackTimers.add(playbackTimer);
+          return instance;
+        }),
+        triggerRelease: vi.fn((...args: unknown[]) => {
+          spies.triggerRelease(...args);
+          return instance;
+        }),
+        triggerAttack: vi.fn((...args: unknown[]) => {
+          spies.triggerAttack(...args);
+          return instance;
+        }),
+        releaseAll: vi.fn((...args: unknown[]) => {
+          spies.releaseAll(...args);
+          return instance;
+        }),
+        connect: vi.fn((...args: unknown[]) => {
+          spies.connect(...args);
+          return instance;
+        }),
+        disconnect: vi.fn((...args: unknown[]) => {
+          spies.disconnect(...args);
+          return instance;
+        }),
+        dispose: vi.fn((...args: unknown[]) => {
+          disposed = true;
+          for (const playbackTimer of playbackTimers) {
+            clearTimeout(playbackTimer);
+          }
+          playbackTimers.clear();
+          spies.dispose(...args);
+        }),
         volume: { value: 0 },
+        maxPolyphony: 0,
       };
+      instances.push(instance);
+      return instance;
     });
   };
   install();
   return {
     spies,
+    instances,
+    now: () => currentNow,
+    setNow: (value: number) => {
+      currentNow = value;
+    },
     reset: () => {
+      currentNow = 0;
+      instances.length = 0;
       spies.ctorSpy.mockReset();
       spies.triggerAttackRelease.mockReset();
+      spies.playbackAttackRelease.mockReset();
       spies.triggerRelease.mockReset();
       spies.triggerAttack.mockReset();
       spies.releaseAll.mockReset();
       spies.connect.mockReset().mockReturnThis();
+      spies.disconnect.mockReset().mockReturnThis();
       spies.dispose.mockReset();
       install();
     },

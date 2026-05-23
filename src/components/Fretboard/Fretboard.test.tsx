@@ -73,6 +73,12 @@ describe("Fretboard/Fretboard", () => {
       expect(container.firstChild).toBeTruthy();
     });
 
+    it("keeps the fretboard visible before ResizeObserver publishes width", () => {
+      const { container } = render(<Fretboard {...defaultProps} />);
+      const wrapper = container.querySelector('[class*="fretboard-wrapper"]');
+      expect(wrapper).not.toHaveStyle({ visibility: "hidden" });
+    });
+
     it("renders all 6 strings for standard tuning", () => {
       const { container } = render(<Fretboard {...defaultProps} />);
       // Fretboard has 6 rows for standard tuning

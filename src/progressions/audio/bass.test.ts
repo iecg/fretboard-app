@@ -14,20 +14,22 @@ vi.mock("tone", async () => {
   const s = await synth;
   return {
     MonoSynth: s.spies.ctorSpy,
-    now: () => 0,
+    now: () => s.now(),
   };
 });
 
-import { scheduleBassNote } from "./bass";
-
 describe("scheduleBassNote — Tone backend", () => {
   let spies: Awaited<typeof synth>["spies"];
+  let tone: Awaited<typeof synth>;
+  let scheduleBassNote: typeof import("./bass").scheduleBassNote;
 
   beforeEach(async () => {
-    const s = await synth;
-    spies = s.spies;
+    tone = await synth;
+    spies = tone.spies;
     vi.useFakeTimers();
-    s.reset();
+    tone.reset();
+    vi.resetModules();
+    ({ scheduleBassNote } = await import("./bass"));
   });
 
   afterEach(() => {
@@ -57,6 +59,38 @@ describe("scheduleBassNote — Tone backend", () => {
     expect(velocity).toBeCloseTo(0.8, 2);
   });
 
+  it("reuses one MonoSynth for non-overlapping notes on the same destination", () => {
+    const dest = {} as AudioNode;
+    scheduleBassNote(dest, 110, 0, { velocity: 0.8 });
+    tone.setNow(1.2);
+    scheduleBassNote(dest, 146.83, 1.3, { velocity: 0.75 });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+  });
+
+  it("allocates separate MonoSynths for future notes scheduled in one pass", () => {
+    const dest = {} as AudioNode;
+    scheduleBassNote(dest, 110, 2, { velocity: 0.8 });
+    scheduleBassNote(dest, 146.83, 3, { velocity: 0.75 });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps different destinations on different leased synths", () => {
+    const firstDest = {} as AudioNode;
+    const secondDest = {} as AudioNode;
+
+    scheduleBassNote(firstDest, 110, 0, { velocity: 0.8 });
+    tone.setNow(1.2);
+    scheduleBassNote(secondDest, 146.83, 1.3, { velocity: 0.75 });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(tone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
+    expect(tone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
+  });
+
   it("skips zero-velocity notes (no synth constructed)", () => {
     scheduleBassNote(
       {} as AudioNode,
@@ -81,6 +115,19 @@ describe("scheduleBassNote — Tone backend", () => {
     expect(spies.dispose).not.toHaveBeenCalled();
     vi.advanceTimersByTime(60); // matches the dispose-deferral window in production
     expect(spies.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancel() prevents a future-scheduled note from ever being attacked", async () => {
+    const handle = scheduleBassNote({} as AudioNode, 110, 2, { velocity: 0.8 });
+
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+    expect(spies.playbackAttackRelease).not.toHaveBeenCalled();
+
+    handle.cancel();
+    await vi.advanceTimersByTimeAsync(2_500);
+    tone.setNow(2.5);
+
+    expect(spies.playbackAttackRelease).not.toHaveBeenCalled();
   });
 
   it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {

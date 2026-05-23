@@ -7,7 +7,7 @@ import {
   getFretNoteWithOctave,
   getNoteFrequency,
 } from "@fretflow/core";
-import { synth } from "../../core/audio";
+import { playGuitarNote } from "../../core/lazyGuitarAudio";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import type { AutoCenterTarget } from "../../store/shapeAtoms";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
@@ -136,15 +136,18 @@ export function Fretboard(props: FretboardProps) {
     [state.fullChordMatches],
   );
 
-  const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(() => {
+    if (typeof window === "undefined") return 0;
+    return Math.max(window.innerWidth, 320);
+  });
   const totalColumns = endFret - startFret;
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
   const MIN_FRET_WIDTH = Math.max(MIN_FRET_WIDTH_BASE, noteBubblePx + MIN_FRET_WIDTH_OVERFLOW_BUFFER);
   
   const autoFitZoom = Math.max(
     MIN_FRET_WIDTH,
-    containerWidth !== null && containerWidth > 0 && totalColumns > 0 
-      ? containerWidth / totalColumns 
+    containerWidth > 0 && totalColumns > 0
+      ? containerWidth / totalColumns
       : 40,
   );
   const desktopZoom =
@@ -163,11 +166,10 @@ export function Fretboard(props: FretboardProps) {
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    setContainerWidth(el.clientWidth);
+    if (el.clientWidth > 0) setContainerWidth(el.clientWidth);
     const ro = new ResizeObserver((entries) => {
-      if (entries.length === 0) return;
-      const entry = entries[0];
-      if (entry) setContainerWidth(entry.contentRect.width);
+      const width = entries[0]?.contentRect.width ?? 0;
+      if (width > 0) setContainerWidth(width);
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -175,7 +177,7 @@ export function Fretboard(props: FretboardProps) {
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (!el || containerWidth === null) return;
+    if (!el) return;
     const id = requestAnimationFrame(() => {
       setHasOverflow(el.scrollWidth > el.clientWidth + 1);
     });
@@ -261,7 +263,7 @@ export function Fretboard(props: FretboardProps) {
     pendingTarget.current = null;
   }, [updateCursor]);
 
-  const handleFretClick = useCallback((
+  const handleFretClick = useCallback(async (
     stringIndex: number,
     fretIndex: number,
     noteName: string,
@@ -272,7 +274,7 @@ export function Fretboard(props: FretboardProps) {
       fretIndex,
     );
     const frequency = getNoteFrequency(fretNoteWithOctave);
-    synth.playNote(frequency);
+    await playGuitarNote(frequency);
     if (onFretClickProp) onFretClickProp(stringIndex, fretIndex, noteName);
   }, [tuning, onFretClickProp]);
 
@@ -294,9 +296,6 @@ export function Fretboard(props: FretboardProps) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
-        style={{
-          visibility: containerWidth === null ? "hidden" : "visible",
-        }}
       >
         <FretboardSVG
           effectiveZoom={effectiveZoom}

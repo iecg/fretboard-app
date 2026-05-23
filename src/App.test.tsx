@@ -9,7 +9,10 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
-import { synth } from "./core/audio";
+import {
+  resumeGuitarAudio,
+  setGuitarMutePreference,
+} from "./core/lazyGuitarAudio";
 import { get3NPSCoordinates, STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
@@ -60,14 +63,14 @@ vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async 
   };
 });
 
-vi.mock("./core/audio", () => ({
-  synth: {
-    setMute: vi.fn(),
-    init: vi.fn(),
-    playNote: vi.fn(),
-    resume: vi.fn(),
-  },
+vi.mock("./core/lazyGuitarAudio", () => ({
+  setGuitarMutePreference: vi.fn(),
+  setGuitarAudioErrorHandler: vi.fn(),
+  resumeGuitarAudio: vi.fn(),
+  playGuitarNote: vi.fn(),
 }));
+
+const mockResumeGuitarAudio = vi.mocked(resumeGuitarAudio);
 
 const setViewport = (width: number, height: number) => {
   Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: width });
@@ -107,7 +110,7 @@ describe("App", () => {
     it("seeds isMuted in storage and forwards initial mute state to synth", () => {
       localStorage.setItem(k("isMuted"), "true");
       render(<App />);
-      expect(synth.setMute).toHaveBeenCalledWith(true);
+      expect(setGuitarMutePreference).toHaveBeenCalledWith(true);
       expect(localStorage.getItem(k("isMuted"))).toBe("true");
     });
   });
@@ -164,7 +167,7 @@ describe("App", () => {
       fireEvent.click(muteBtn);
       await waitFor(() => {
         expect(localStorage.getItem(k("isMuted"))).toBe("true");
-        expect(synth.setMute).toHaveBeenCalled();
+        expect(setGuitarMutePreference).toHaveBeenCalled();
       });
     });
 
@@ -177,6 +180,42 @@ describe("App", () => {
       await waitFor(() => {
         expect(document.documentElement.getAttribute("data-theme")).toBe("modern-light");
       });
+    });
+
+    it("keeps the global gesture listeners installed until resume succeeds", async () => {
+      mockResumeGuitarAudio.mockResolvedValue();
+
+      render(<App />);
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+      });
+
+      // After first success, listeners should be removed.
+      fireEvent.click(window);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps the global gesture listeners installed when resume fails", async () => {
+      mockResumeGuitarAudio
+        .mockRejectedValueOnce(new Error("resume failed"))
+        .mockResolvedValueOnce(undefined);
+
+      render(<App />);
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+      });
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+      });
+
+      fireEvent.click(window);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
     });
   });
 
