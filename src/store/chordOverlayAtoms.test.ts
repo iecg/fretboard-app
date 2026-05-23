@@ -1069,3 +1069,55 @@ describe("closeCandidatesAtom — majority-fit predicate (Plan I-T6)", () => {
     expect(majorityCount).toBeGreaterThanOrEqual(allFitCount);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Group I-T7 — effectiveStringSetAtom auto-fallback (Plan I-T7)
+// ---------------------------------------------------------------------------
+
+describe("effectiveStringSetAtom — auto-fallback when picked option is disabled (Plan I-T7)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("falls back to the first ENABLED option's strings when the user's pick is disabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "F#"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "F#" })],
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 22],
+      [chordSnapToScaleAtom, true],
+      [voicingAtom, "close"],
+    ]);
+
+    const options = store.get(stringSetOptionsAtom);
+    const disabledOption = options.find((o) => o.disabled && o.id !== "all");
+    expect(disabledOption).toBeTruthy();
+    const firstEnabled = options.find((o) => !o.disabled);
+    expect(firstEnabled).toBeTruthy();
+
+    // User picks the disabled option
+    store.set(voicingStringSetAtom, disabledOption!.id);
+
+    const effective = store.get(effectiveStringSetAtom);
+    expect(effective).toEqual(firstEnabled!.strings);
+  });
+
+  it("keeps the user's pick when it is NOT disabled (regression guard)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [fingeringPatternAtom, "none"],
+      [chordSnapToScaleAtom, true],
+      [voicingAtom, "close"],
+    ]);
+
+    const options = store.get(stringSetOptionsAtom);
+    const enabledOption = options.find((o) => !o.disabled && o.id !== "all");
+    expect(enabledOption).toBeTruthy();
+    store.set(voicingStringSetAtom, enabledOption!.id);
+    const effective = store.get(effectiveStringSetAtom);
+    expect(effective).toEqual(enabledOption!.strings);
+  });
+});

@@ -304,13 +304,17 @@ export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
 /**
  * The string indices the user's stored selection resolves to (falls back to
  * ALL when the stored id doesn't match any current option — e.g. after a
- * chord swap that changes voice count).
+ * chord swap that changes voice count). If the picked option is disabled,
+ * falls back to the first enabled option's strings (Plan I-T7).
  */
 export const effectiveStringSetAtom = atom((get): readonly number[] => {
   const options = get(stringSetOptionsAtom);
   const stored = get(voicingStringSetAtom);
   const match = options.find((o) => o.id === stored);
-  return match ? match.strings : ALL_STRINGS_OPTION.strings;
+  if (match && !match.disabled) return match.strings;
+  // Fallback chain: first enabled option (if any), else ALL.
+  const firstEnabled = options.find((o) => !o.disabled);
+  return firstEnabled ? firstEnabled.strings : ALL_STRINGS_OPTION.strings;
 });
 
 /**
