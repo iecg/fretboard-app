@@ -21,6 +21,7 @@ const metal = vi.hoisted(async () => {
   const { createToneSynthSpies } = await import("../../test-utils/toneMocks");
   return createToneSynthSpies();
 });
+const clock = vi.hoisted(() => ({ now: 0 }));
 
 vi.mock("tone", async () => {
   const m = await membrane;
@@ -30,33 +31,36 @@ vi.mock("tone", async () => {
     MembraneSynth: m.spies.ctorSpy,
     NoiseSynth: n.spies.ctorSpy,
     MetalSynth: mt.spies.ctorSpy,
-    now: () => 0,
+    now: () => clock.now,
   };
 });
-
-import {
-  scheduleKick,
-  scheduleSnare,
-  scheduleHiHat,
-  scheduleRide,
-} from "./drumKit";
 
 describe("drumKit — Tone backend", () => {
   let membraneSpies: Awaited<typeof membrane>["spies"];
   let noiseSpies: Awaited<typeof noise>["spies"];
   let metalSpies: Awaited<typeof metal>["spies"];
+  let membraneTone: Awaited<typeof membrane>;
+  let scheduleKick: typeof import("./drumKit").scheduleKick;
+  let scheduleSnare: typeof import("./drumKit").scheduleSnare;
+  let scheduleHiHat: typeof import("./drumKit").scheduleHiHat;
+  let scheduleRide: typeof import("./drumKit").scheduleRide;
 
   beforeEach(async () => {
     const m = await membrane;
     const n = await noise;
     const mt = await metal;
+    membraneTone = m;
     membraneSpies = m.spies;
     noiseSpies = n.spies;
     metalSpies = mt.spies;
     vi.useFakeTimers();
+    clock.now = 0;
     m.reset();
     n.reset();
     mt.reset();
+    vi.resetModules();
+    ({ scheduleKick, scheduleSnare, scheduleHiHat, scheduleRide } =
+      await import("./drumKit"));
   });
 
   afterEach(() => {
@@ -88,6 +92,38 @@ describe("drumKit — Tone backend", () => {
       expect(velocity).toBeCloseTo(0.8, 2);
     });
 
+    it("reuses one MembraneSynth for non-overlapping hits on the same destination", () => {
+      const dest = {} as AudioNode;
+      scheduleKick(dest, 0, { velocity: 0.8 });
+      clock.now = 1.2;
+      scheduleKick(dest, 1.3, { velocity: 0.75 });
+
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it("allocates separate MembraneSynths for future hits scheduled in one pass", () => {
+      const dest = {} as AudioNode;
+      scheduleKick(dest, 2, { velocity: 0.8 });
+      scheduleKick(dest, 2.6, { velocity: 0.75 });
+
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps different destinations on different leased synths", () => {
+      const firstDest = {} as AudioNode;
+      const secondDest = {} as AudioNode;
+
+      scheduleKick(firstDest, 0, { velocity: 0.8 });
+      clock.now = 1.2;
+      scheduleKick(secondDest, 1.3, { velocity: 0.75 });
+
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneTone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
+      expect(membraneTone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
+    });
+
     it("skips zero-velocity hits (no MembraneSynth constructed)", () => {
       scheduleKick(
         {} as AudioNode,
@@ -107,6 +143,19 @@ describe("drumKit — Tone backend", () => {
       expect(membraneSpies.dispose).not.toHaveBeenCalled();
       vi.advanceTimersByTime(700); // > KICK_DISPOSE_MS (600)
       expect(membraneSpies.dispose).toHaveBeenCalledTimes(1);
+    });
+
+    it("cancel() prevents a future-scheduled kick from ever being attacked", async () => {
+      const handle = scheduleKick({} as AudioNode, 2, { velocity: 0.8 });
+
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+      expect(membraneSpies.playbackAttackRelease).not.toHaveBeenCalled();
+
+      handle.cancel();
+      await vi.advanceTimersByTimeAsync(2_500);
+      clock.now = 2.5;
+
+      expect(membraneSpies.playbackAttackRelease).not.toHaveBeenCalled();
     });
 
     it("cancel() is idempotent — repeated calls dispose only once", () => {
@@ -146,6 +195,16 @@ describe("drumKit — Tone backend", () => {
       expect(args[0]).toBeCloseTo(0.18, 3);
       expect(args[1]).toBeCloseTo(3.25, 3);
       expect(args[2]).toBeCloseTo(0.7, 2);
+    });
+
+    it("reuses one NoiseSynth for non-overlapping hits on the same destination", () => {
+      const dest = {} as AudioNode;
+      scheduleSnare(dest, 0, { velocity: 0.8 });
+      clock.now = 0.6;
+      scheduleSnare(dest, 0.7, { velocity: 0.75 });
+
+      expect(noiseSpies.ctorSpy).toHaveBeenCalledTimes(1);
+      expect(noiseSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
     });
 
     it("skips zero-velocity hits (no NoiseSynth constructed)", () => {
@@ -203,6 +262,16 @@ describe("drumKit — Tone backend", () => {
       expect(duration).toBeCloseTo(0.05, 3);
       expect(time).toBeCloseTo(1.75, 3);
       expect(velocity).toBeCloseTo(0.4, 2);
+    });
+
+    it("reuses one MetalSynth for non-overlapping closed-hat hits on the same destination", () => {
+      const dest = {} as AudioNode;
+      scheduleHiHat(dest, 0, { velocity: 0.4 });
+      clock.now = 0.3;
+      scheduleHiHat(dest, 0.35, { velocity: 0.5 });
+
+      expect(metalSpies.ctorSpy).toHaveBeenCalledTimes(1);
+      expect(metalSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
     });
 
     it("skips zero-velocity hits (no MetalSynth constructed)", () => {
@@ -275,6 +344,16 @@ describe("drumKit — Tone backend", () => {
       expect(duration).toBeCloseTo(1.0, 3);
       expect(time).toBeCloseTo(4.0, 3);
       expect(velocity).toBeCloseTo(0.6, 2);
+    });
+
+    it("reuses one MetalSynth for non-overlapping ride hits on the same destination", () => {
+      const dest = {} as AudioNode;
+      scheduleRide(dest, 0, { velocity: 0.6 });
+      clock.now = 1.6;
+      scheduleRide(dest, 1.7, { velocity: 0.5 });
+
+      expect(metalSpies.ctorSpy).toHaveBeenCalledTimes(1);
+      expect(metalSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
     });
 
     it("skips zero-velocity hits (no MetalSynth constructed)", () => {
