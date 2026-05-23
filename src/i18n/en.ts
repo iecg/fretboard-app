@@ -76,6 +76,7 @@ export const en: Dictionary = {
     btDrumPattern: "Drum Pattern",
     btSwing: "Swing",
     voicingAriaLabel: "Voicing",
+    voicingLabel: "Voicing",
     voicingOff: "Off",
     voicingFull: "Full",
     voicingClose: "Close",

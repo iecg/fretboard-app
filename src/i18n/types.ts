@@ -74,6 +74,7 @@ export interface Dictionary {
     btDrumPattern: string;
     btSwing: string;
     voicingAriaLabel: string;
+    voicingLabel: string;
     voicingOff: string;
     voicingFull: string;
     voicingClose: string;

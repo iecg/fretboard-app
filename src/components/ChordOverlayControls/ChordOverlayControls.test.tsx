@@ -68,18 +68,15 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(headers).toHaveLength(0);
     });
 
-    it("does not render a Prop micro-label above the VoicingControl", () => {
+    it("renders a VOICING label above the Voicing dropdown so the row aligns with Lens", () => {
       renderDegree();
-      // The VoicingControl's LabeledSelect still owns aria-label "Voicing" via a
-      // sr-only span (hideLabel) for assistive tech, but the wrapping Prop cell
-      // must no longer render its own visible micro-label. A Prop with a label
-      // emits a `<span>` as its first child; without a label the first child is
-      // the `propControl` `<div>`. Assert the latter.
-      const combobox = screen.getByRole("combobox", { name: /voicing/i });
-      const propCell = combobox.closest("[data-span]");
-      expect(propCell).not.toBeNull();
-      const firstChild = propCell!.firstElementChild as HTMLElement | null;
-      expect(firstChild?.tagName).toBe("DIV");
+      // The Prop's label renders as a visible micro-label in the DOM.
+      // Look for the text "Voicing" that appears as a propLabel element.
+      const allVoicingLabels = screen.getAllByText("Voicing");
+      // At least one should be the Prop label (the micro-label above the dropdown).
+      // The propLabel has "propLabel" in its className.
+      const propLabel = allVoicingLabels.find((el) => /propLabel/i.test(el.className));
+      expect(propLabel).toBeDefined();
     });
 
     it("does not render Degree picker or Root picker (moved to SongControls)", () => {
