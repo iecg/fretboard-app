@@ -520,3 +520,46 @@ describe("transposeManualRootForRootChange", () => {
     });
   });
 });
+
+describe("resolveProgressionStep + manualRoot (Plan G11a)", () => {
+  it("when manualRoot is set, uses it as the chord root", () => {
+    const step = createProgressionStep(
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: "D#" },
+      "step-manual-root",
+    );
+    const resolved = resolveProgressionStep(step, "Major", "C", 0, false);
+    expect(resolved.root).toBe("D#");
+    // resolvedChordLabel uses formatAccidental which renders # as ♯
+    expect(resolved.resolvedChordLabel).toMatch(/^D[#♯]/);
+  });
+
+  it("when manualRoot + qualityOverride both set, qualityOverride wins", () => {
+    const step = createProgressionStep(
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor Triad", manualRoot: "D#" },
+      "step-manual-override",
+    );
+    const resolved = resolveProgressionStep(step, "Major", "C", 0, false);
+    expect(resolved.root).toBe("D#");
+    expect(resolved.quality).toBe("Minor Triad");
+  });
+
+  it("when manualRoot is set without qualityOverride, picks a sensible default quality", () => {
+    const step = createProgressionStep(
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: "D#" },
+      "step-manual-no-override",
+    );
+    const resolved = resolveProgressionStep(step, "Major", "C", 0, false);
+    // The simplest defensible default is "Major Triad". A smarter helper may
+    // yield a different but coherent quality — both are acceptable.
+    expect(["Major Triad", "Minor Triad", "Diminished Triad"]).toContain(resolved.quality);
+  });
+
+  it("when manualRoot is NULL, falls back to existing degree-derived behavior (regression guard)", () => {
+    const step = createProgressionStep(
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      "step-diatonic",
+    );
+    const resolved = resolveProgressionStep(step, "Major", "C", 0, false);
+    expect(resolved.root).toBe("C");
+  });
+});

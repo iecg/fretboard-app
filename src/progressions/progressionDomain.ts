@@ -472,6 +472,17 @@ export function totalProgressionBars(
   return totalBeats / beatsPerBar;
 }
 
+/**
+ * When a borrowed (out-of-scale) root is picked without a quality override,
+ * fall back to "Major Triad" as the safest audible default.
+ *
+ * TODO(plan-g11a): refine with a real parallel-scale lookup if/when one
+ * exists in @fretflow/core (e.g. getDiatonicChordForNote(root, scale, tonic)).
+ */
+function guessQualityForBorrowedRoot(): string {
+  return "Major Triad";
+}
+
 export function resolveProgressionStep(
   step: ProgressionStep,
   scaleName: string,
@@ -484,7 +495,13 @@ export function resolveProgressionStep(
     getProgressionHarmonyScaleName(scaleName),
     rootNote,
   );
-  if (!diatonic) {
+
+  // When manualRoot is set we bypass the diatonic resolver for root + quality.
+  // The diatonic result is only needed to gate the "unavailable" path when
+  // manualRoot is null, and to supply diatonicQuality when applicable.
+  const usingManualRoot = step.manualRoot != null;
+
+  if (!diatonic && !usingManualRoot) {
     return {
       ...step,
       index,
@@ -503,21 +520,32 @@ export function resolveProgressionStep(
 
   const overrideValid =
     step.qualityOverride !== null && CHORD_DEFINITIONS[step.qualityOverride] !== undefined;
-  const quality = overrideValid ? step.qualityOverride! : diatonic.quality;
-  const rootLabel = formatAccidental(getNoteDisplay(diatonic.root, rootNote, preferFlats));
+
+  // Resolve root: manualRoot takes precedence over the diatonic root.
+  const root = usingManualRoot ? step.manualRoot! : diatonic!.root;
+
+  // Resolve quality: qualityOverride > manualRoot default > diatonic quality.
+  const quality = overrideValid
+    ? step.qualityOverride!
+    : usingManualRoot
+      ? guessQualityForBorrowedRoot()
+      : diatonic!.quality;
+
+  const diatonicQuality = diatonic?.quality ?? null;
+  const rootLabel = formatAccidental(getNoteDisplay(root, rootNote, preferFlats));
 
   return {
     ...step,
     index,
-    root: diatonic.root,
+    root,
     quality,
-    diatonicQuality: diatonic.quality,
+    diatonicQuality,
     label: step.degree,
     resolvedChordLabel: `${rootLabel} ${quality}`,
     shortChordLabel: formatChordShortLabel(rootLabel, quality),
     unavailable: false,
     unavailableReason: null,
-    qualityOverrideApplied: overrideValid && quality !== diatonic.quality,
+    qualityOverrideApplied: overrideValid && quality !== diatonicQuality,
     invalidQualityOverride: step.qualityOverride !== null && !overrideValid,
   };
 }
