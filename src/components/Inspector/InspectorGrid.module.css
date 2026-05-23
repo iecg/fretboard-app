@@ -8,6 +8,10 @@
   align-items: start;
 }
 
+.propGrid[data-columns="12"] {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
 /* Mobile tier — collapse to two columns regardless of the declared column
    count. Wide cells (span >= 2) clamp to the available tracks automatically. */
 :global(.app-container[data-layout-tier="mobile"]) .propGrid {
@@ -34,12 +38,44 @@
   grid-column: span 4;
 }
 
+.prop[data-span="5"] {
+  grid-column: span 5;
+}
+
 .prop[data-span="6"] {
   grid-column: span 6;
 }
 
 .prop[data-span="7"] {
   grid-column: span 7;
+}
+
+.prop[data-span="8"] {
+  grid-column: span 8;
+}
+
+.prop[data-span="9"] {
+  grid-column: span 9;
+}
+
+.prop[data-span="10"] {
+  grid-column: span 10;
+}
+
+.prop[data-span="11"] {
+  grid-column: span 11;
+}
+
+.prop[data-span="12"] {
+  grid-column: span 12;
+}
+
+.propLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 0.75rem;
 }
 
 .propLabel {
@@ -52,8 +88,20 @@
   line-height: 1;
 }
 
+.propLabelAccessory {
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--dc-fg-muted);
+  white-space: nowrap;
+}
+
 .propControl {
   min-width: 0;
+  min-height: 32px;
 }
 
 .propHint {
@@ -119,8 +167,14 @@
    collapsed grid. */
 :global(.app-container[data-layout-tier="mobile"]) .prop[data-span="3"],
 :global(.app-container[data-layout-tier="mobile"]) .prop[data-span="4"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="5"],
 :global(.app-container[data-layout-tier="mobile"]) .prop[data-span="6"],
 :global(.app-container[data-layout-tier="mobile"]) .prop[data-span="7"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="8"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="9"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="10"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="11"],
+:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="12"],
 :global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="3"],
 :global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="4"],
 :global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="6"] {

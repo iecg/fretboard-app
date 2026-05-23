@@ -7,6 +7,25 @@ import { scaleVisibleAtom } from "../../store/scaleAtoms";
 import { chordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
 
 describe("ViewTab", () => {
+  describe("reference design grid alignment", () => {
+    it("renders Scale and Chord control grids on the same 12-column system", () => {
+      renderWithAtoms(<ViewTab />);
+      const grids = document.querySelectorAll("[data-columns]");
+      expect(Array.from(grids).map((grid) => grid.getAttribute("data-columns"))).toEqual([
+        "12",
+        "12",
+      ]);
+    });
+
+    it("uses primary text color for Scale and Chord card names", () => {
+      renderWithAtoms(<ViewTab />);
+      const scaleHeading = document.getElementById("view-fingering-heading");
+      const chordHeading = document.getElementById("view-voicing-heading");
+      expect(scaleHeading?.className).toMatch(/cardName/);
+      expect(chordHeading?.className).toMatch(/cardName/);
+    });
+  });
+
   it("renders the Scale group heading", () => {
     renderWithAtoms(<ViewTab />);
     // Heading text was shortened from "Scale Fingering" to "Scale" in Plan F

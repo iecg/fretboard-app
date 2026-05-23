@@ -70,7 +70,7 @@ export function ChordOverlayControls() {
 
   return (
     <div className={panelStyles.root}>
-      <PropGrid columns={6} className={panelStyles.grid}>
+      <PropGrid columns={12} className={panelStyles.grid}>
         {/* ── VOICING ──────────────────────────────────────────────────── */}
         <Prop label={t("inspector.voicingLabel")} span={1}>
           <VoicingControl />

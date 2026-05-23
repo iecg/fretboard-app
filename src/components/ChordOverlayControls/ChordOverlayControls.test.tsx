@@ -278,10 +278,10 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("ChordOverlayControls grid layout (Plan H-T4)", () => {
-    it("renders the chord row as a 6-column PropGrid (not 7)", () => {
+    it("renders the chord row as a 12-column PropGrid", () => {
       const { container } = renderDegree();
       const grid = container.querySelector("[data-columns]");
-      expect(grid?.getAttribute("data-columns")).toBe("6");
+      expect(grid?.getAttribute("data-columns")).toBe("12");
     });
   });
 

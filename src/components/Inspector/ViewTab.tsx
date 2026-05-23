@@ -40,7 +40,7 @@ export function ViewTab() {
         stateLabel={scaleVisible ? t("inspector.stateShowing") : t("inspector.stateHidden")}
         labelledById="view-fingering-heading"
       >
-        <PropGrid columns={6}>
+        <PropGrid columns={12}>
           <FingeringPatternControls hideHeader />
         </PropGrid>
       </InspectorCard>
