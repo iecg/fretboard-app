@@ -107,7 +107,7 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
       {fingeringPattern === "caged" && (
         <Prop
           label={t("controls.shape")}
-          span={8}
+          span={9}
           labelAccessory={
             isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")
           }
@@ -210,7 +210,7 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
 
       {fingeringPattern === "3nps" && (
         <>
-          <Prop label={t("controls.position")} span={2}>
+          <Prop label={t("controls.position")} span={7}>
             <ToggleBar
               label={t("controls.position")}
               options={[1, 2, 3, 4, 5, 6, 7].map((p) => ({
@@ -237,7 +237,7 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
 
       {fingeringPattern === "one-string" && (
         <>
-          <Prop label={t("controls.string")} span={2}>
+          <Prop label={t("controls.string")} span={3}>
             <StringSetPicker
               label={t("controls.string")}
               value={String(oneStringIndex)}
@@ -246,14 +246,12 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
                 id: String(i),
                 strings: [i],
               }))}
-              width="fixed"
-              widthValue="5rem"
+              width="fill"
             />
           </Prop>
           <Prop
             label={t("controls.connectors")}
-            span={2}
-            hint={oneStringInterval > 0 ? t("controls.showConsecutiveSteps") : undefined}
+            span={6}
           >
             <ToggleBar
               label={t("controls.connectors")}
@@ -270,7 +268,7 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
 
       {fingeringPattern === "two-strings" && (
         <>
-          <Prop label={t("controls.strings")} span={2}>
+          <Prop label={t("controls.strings")} span={3}>
             <StringSetPicker
               label={t("controls.strings")}
               value={String(twoStringsPair)}
@@ -295,8 +293,7 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
           </Prop>
           <Prop
             label={t("controls.interval")}
-            span={2}
-            hint={twoStringsInterval > 0 ? t("controls.pairMembersConnected") : undefined}
+            span={6}
           >
             <ToggleBar
               label={t("controls.interval")}

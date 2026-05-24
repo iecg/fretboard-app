@@ -107,6 +107,10 @@
   min-height: 32px;
 }
 
+.propControl > * {
+  width: 100%;
+}
+
 .propHint {
   margin: 0;
   font-size: 0.625rem;

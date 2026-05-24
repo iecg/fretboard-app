@@ -243,7 +243,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       // "Strings" appears as both a Prop label and the LabeledSelect's hidden label span,
       // so use getAllByText and assert at least one is in the document.
       expect(screen.getAllByText("Strings").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText("Interval")).toBeInTheDocument();
+      expect(screen.getByText("Interval Connectors")).toBeInTheDocument();
     });
 
     it("interval sub-control has 4 options: Off, 3rds, 4ths, 6ths (5ths dropped — UAT-14/R05)", () => {
@@ -261,34 +261,6 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.getByRole("button", { name: "6ths" })).toBeInTheDocument();
       // 5ths dropped; replaced by 6ths with skip-one topology
       expect(screen.queryByRole("button", { name: "5ths" })).toBeNull();
-    });
-
-    it("does not show 'Pair members connected' hint when interval is Off (0)", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "two-strings");
-        store.set(twoStringsIntervalAtom, 0);
-      });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.queryByText("Pair members connected")).toBeNull();
-    });
-
-    it("shows 'Pair members connected' hint when interval is non-Off", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "two-strings");
-        store.set(twoStringsIntervalAtom, 1);
-      });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.getByText("Pair members connected")).toBeInTheDocument();
     });
 
     it("clicking interval button updates twoStringsIntervalAtom", () => {
@@ -357,7 +329,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getByText("Connectors")).toBeInTheDocument();
+      expect(screen.getByText("Interval Connectors")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Off" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "On" })).toBeInTheDocument();
       // Old per-class buttons must be gone
@@ -393,33 +365,6 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(store.get(oneStringIntervalAtom)).toBe(0);
     });
 
-    it("shows connector hint in one-string when interval is On", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "one-string");
-        store.set(oneStringIntervalAtom, 1);
-      });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.getByText("Shows consecutive scale steps (2nds)")).toBeInTheDocument();
-    });
-
-    it("does not show connector hint in one-string when interval is Off", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "one-string");
-        store.set(oneStringIntervalAtom, 0);
-      });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.queryByText("Shows consecutive scale steps (2nds)")).toBeNull();
-    });
 
     describe("Task 6.4 — LabeledSelect string-set UX", () => {
       it("one-string: string chooser is a StringSetPicker (combobox role) with dot-only options 1–6", () => {
@@ -555,7 +500,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     it("renders the Shift+click help text in the Shape label row", () => {
       renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
       const shapeHelp = screen.getByText("Shift+click to add shapes");
-      const shapeCell = shapeHelp.closest("[data-span='8']");
+      const shapeCell = shapeHelp.closest("[data-span='9']");
       expect(shapeCell).toBeInTheDocument();
       expect(shapeCell?.querySelector("p")).toBeNull();
     });
