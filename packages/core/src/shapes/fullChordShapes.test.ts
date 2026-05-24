@@ -145,12 +145,18 @@ describe('getFullChordShapeMatches', () => {
       expect(getMatchPositions('C', 'Dominant 7th', 'C', 0)).toBeUndefined();
       expect(getMatchPositions('G', 'Dominant 7th', 'G', 0)).toBeUndefined();
     });
+
+    it('verifies C and G shapes at rootFret=3', () => {
+      expect(getMatchPositions('G', 'Minor Triad', 'G', 3)).toBe('0-3|1-3|2-0|3-0|4-1|5-3');
+      expect(getMatchPositions('C', 'Minor Triad', 'C', 3)).toBe('1-1|2-0|3-1|4-3');
+      expect(getMatchPositions('G', 'Major Triad', 'G', 3)).toBe('0-3|1-0|2-0|3-0|4-2|5-3');
+      expect(getMatchPositions('C', 'Major Triad', 'C', 3)).toBe('0-0|1-1|2-0|3-2|4-3');
+    });
   });
 
-  it('deduplicates overlapping G and E minor triad shapes to prevent duplicate overlays', () => {
-    // An A minor triad at rootFret 5 has E Minor shape rooted on low E string.
-    // The G minor triad template at rootFret 8 would produce the same fret indices.
-    // Verify that we return exactly one match for these coordinates, and that we prefer the standard E shape.
+  it('does not deduplicate G and E minor triad shapes as they are now distinct physical shapes', () => {
+    // An A minor triad at rootFret 5 has E Minor shape (5 7 7 5 5 5) and G Minor shape (5 3 2 2 5 5).
+    // Verify that we return both matches for these coordinates, and they are distinct physical shapes.
     const matches = getFullChordShapeMatches({
       chordRoot: 'A',
       chordType: 'Minor Triad',
@@ -159,7 +165,7 @@ describe('getFullChordShapeMatches', () => {
     });
 
     const shape5Matches = matches.filter((m) => m.rootFret === 5);
-    expect(shape5Matches.length).toBe(1);
-    expect(shape5Matches[0]!.shape).toBe('E');
+    expect(shape5Matches.length).toBe(2);
+    expect(shape5Matches.map((m) => m.shape).sort()).toEqual(['E', 'G']);
   });
 });

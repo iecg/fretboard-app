@@ -152,11 +152,9 @@ describe("Fretboard wiring", () => {
   });
 
   it("keeps exact full-chord notes outside the selected CAGED scale position when the voicing mostly overlaps", () => {
-    const supertonic = renderGMajorEPositionChord("A", "Minor Triad");
-    expect(supertonic.fullChordVoicings?.some((voicing) => voicing.shape === "E")).toBe(true);
-    expect(supertonic.fullChordPositionKeys?.has("0-5")).toBe(true);
-    expect(supertonic.fullChordPositionKeys?.has("3-7")).toBe(true);
-    expect(supertonic.fullChordPositionKeys?.has("4-7")).toBe(true);
+    const supertonic = renderGMajorEPositionChord("D#", "Minor Triad");
+    expect(supertonic.fullChordVoicings?.some((voicing) => voicing.shape === "C")).toBe(true);
+    expect(supertonic.fullChordPositionKeys?.has("3-1")).toBe(true);
   });
 
   it("narrows full-chord voicings to the best-fitting shape in that fret position", () => {
