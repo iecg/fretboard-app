@@ -411,7 +411,7 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
     expect(store.get(voicingMatchesAtom)).toEqual([]);
   });
 
-  it("narrows 'full' output to the active CAGED shape when exactly one is selected", () => {
+  it("does not narrow 'full' output to the scale shape when exactly one shape is selected and coupling is inactive", () => {
     // Default cagedShapesAtom is the full Set of 5 shapes, so a no-seed store
     // exercises the "all shapes" branch.
     const allShapesStore = makeAtomStore([
@@ -437,10 +437,10 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
     const allShapesSeen = new Set(all.map((v) => v.shape));
     expect(allShapesSeen.size).toBeGreaterThan(1);
 
-    // Narrowed set must be non-empty and contain only the E shape.
-    expect(one.length).toBeGreaterThan(0);
-    expect(one.every((v) => v.shape === "E")).toBe(true);
-    expect(one.length).toBeLessThan(all.length);
+    // With letter-shape filter removed, 'one' should contain all shapes (equal to 'all')
+    expect(one.length).toBe(all.length);
+    const oneShapesSeen = new Set(one.map((v) => v.shape));
+    expect(oneShapesSeen.size).toBeGreaterThan(1);
   });
 
   it("close branch returns ALL fitting candidates (not just the cycle-selected one)", () => {

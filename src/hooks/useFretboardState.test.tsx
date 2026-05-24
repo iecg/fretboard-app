@@ -13,6 +13,8 @@ import {
 import { chordScopeToPositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { progressionStepsAtom } from "../store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
+
 
 beforeEach(() => {
   // atomWithStorage reads from localStorage on init; tests in earlier describe
@@ -176,3 +178,34 @@ describe("useFretboardState — F5c: highlight/selection split", () => {
     expect(result.current.fullChordPositions.size).toBe(0);
   });
 });
+
+describe("ii chord mapping regression test", () => {
+  it("investigates ii chord shape mapping in C Major C shape", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, [
+        {
+          id: "step-1",
+          degree: "ii°",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "Minor Triad",
+          manualRoot: "D",
+        },
+      ]],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set(["C"])],
+      [chordScopeToPositionAtom, true],
+    ] as never);
+
+    const { result } = renderHook(() => useFretboardState(), {
+      wrapper: wrapWithStore(store),
+    });
+
+    const visible = result.current.fullChordMatches;
+    expect(visible.length).toBeGreaterThan(0);
+    expect(visible.every(v => v.shape === "D")).toBe(true);
+  });
+});
+

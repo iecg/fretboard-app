@@ -135,21 +135,20 @@ describe("Fretboard wiring", () => {
   });
 
   it("narrows full-chord voicings to the active CAGED shape per chord", () => {
-    // v2.0: when a single CAGED shape is active, voicingMatchesAtom filters by
-    // literal shape name (every voicing has v.shape === active). The retired
-    // v1 fret-window-overlap selection (which picked A-shape B minor inside
-    // the E-position G-major window, for example) is gone.
+    // Under Diatonic CAGED Chord Shape Alignment, when a single CAGED shape is active,
+    // we dynamically select the chord shape that actually fits that scale shape's fret position
+    // instead of forcing the exact same letter shape, preventing 1-position offsets.
     const tonic = renderGMajorEPositionChord("G", "Major Triad");
     expect(tonic.fullChordVoicings?.length).toBeGreaterThan(0);
     expect(tonic.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
 
     const mediant = renderGMajorEPositionChord("B", "Minor Triad");
     expect(mediant.fullChordVoicings?.length).toBeGreaterThan(0);
-    expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
+    expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "A")).toBe(true);
 
     const subdominant = renderGMajorEPositionChord("C", "Major Triad");
     expect(subdominant.fullChordVoicings?.length).toBeGreaterThan(0);
-    expect(subdominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
+    expect(subdominant.fullChordVoicings?.every((voicing) => voicing.shape === "A")).toBe(true);
   });
 
   it("keeps exact full-chord notes outside the selected CAGED scale position when the voicing mostly overlaps", () => {
@@ -160,13 +159,11 @@ describe("Fretboard wiring", () => {
     expect(supertonic.fullChordPositionKeys?.has("4-7")).toBe(true);
   });
 
-  it("narrows full-chord voicings to the active CAGED shape regardless of fret position", () => {
-    // v2.0: D major's E-shape voicing sits at the 10th-fret area, well outside
-    // the E-position window for G major (~frets 2–6). The v1 engine selected
-    // a C-shape voicing because it overlapped the window; v2.0 returns only
-    // E-shape voicings regardless of overlap.
+  it("narrows full-chord voicings to the best-fitting shape in that fret position", () => {
+    // Under Diatonic CAGED Chord Shape Alignment, D major's C-shape sits at the 2nd-fret area,
+    // perfectly overlapping the E-position window for G major (~frets 2–6).
     const dominant = renderGMajorEPositionChord("D", "Major Triad");
     expect(dominant.fullChordVoicings?.length).toBeGreaterThan(0);
-    expect(dominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
+    expect(dominant.fullChordVoicings?.every((voicing) => voicing.shape === "C")).toBe(true);
   });
 });

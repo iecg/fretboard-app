@@ -215,14 +215,17 @@ export function useFretboardState() {
   }
 
   const visibleFullChordMatches = useMemo(() => {
-    if (!chordScopeToPosition || !activePosition) return fullChordMatches;
     if (fingeringPattern === "caged") {
-      return selectFullChordMatchesForCagedPosition(
-        fullChordMatches,
-        shapePolygons,
-        cagedShapes,
-      );
+      if (activePosition) {
+        return selectFullChordMatchesForCagedPosition(
+          fullChordMatches,
+          shapePolygons,
+          cagedShapes,
+        );
+      }
+      return fullChordMatches;
     }
+    if (!chordScopeToPosition || !activePosition) return fullChordMatches;
     if (fingeringPattern === "3nps") {
       return selectFullChordMatchesForThreeNpsPosition(
         fullChordMatches,
