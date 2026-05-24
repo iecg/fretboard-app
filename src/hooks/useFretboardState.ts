@@ -89,6 +89,11 @@ function selectFullChordMatchesForCagedPosition(
       continue;
     }
 
+    // Skip truncated shapes (off-board / clipped at nut or bridge)
+    if (polygon.truncated) {
+      continue;
+    }
+
     const best = matches
       .map((match) => scoreFullChordForCagedPosition(match, polygon, selectedShapes))
       .filter((score): score is FullChordCandidateScore => score !== null)
