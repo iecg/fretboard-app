@@ -112,7 +112,8 @@
 }
 
 .propControl > :global([role="switch"]) {
-  width: auto;
+  width: 36px;
+  flex-shrink: 0;
 }
 
 .propHint {
