@@ -23,10 +23,10 @@ describe("shared.module.css responsive selectors", () => {
     expect(sharedCSS).not.toMatch(barePattern);
   });
 
-  it("toggle-btn base min-height is the 32px inspector control row", () => {
+  it("toggle-group base height is the 32px inspector control row", () => {
     // Toggle bars align with the inspector's 32px field height. Mobile still
     // gets a separate touch-target override for accessibility.
-    expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*32px/);
+    expect(sharedCSS).toMatch(/\.toggle-group[^{]*\{[^}]*height:\s*32px/);
   });
 
   it("note-btn base min-height uses the shared --control-height token", () => {

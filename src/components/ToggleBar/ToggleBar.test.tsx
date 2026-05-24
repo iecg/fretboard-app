@@ -97,8 +97,8 @@ describe("ToggleBar/ToggleBar", () => {
     });
   });
 
-  it("shared toggle buttons keep a 32px minimum control height", () => {
-    expect(sharedCSS).toMatch(/\.toggle-btn\s*\{[^}]*min-height:\s*32px/s);
+  it("shared toggle group keeps a 32px control height", () => {
+    expect(sharedCSS).toMatch(/\.toggle-group\s*\{[^}]*height:\s*32px/s);
   });
 
   it("variant defaults to default when omitted", () => {

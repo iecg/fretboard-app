@@ -165,11 +165,12 @@
   display: flex;
   align-items: stretch;
   gap: 0.1rem;
-  min-height: 32px;
+  height: 32px;
+  box-sizing: border-box;
   background-color: var(--dc-bg);
   border: 1px solid var(--dc-border);
   border-radius: calc(var(--dc-radius) - 1px);
-  padding: 0.1rem;
+  padding: 2px;
 }
 
 .toggle-group--default {
@@ -179,10 +180,14 @@
 }
 
 .toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 1 1 0;
   min-width: 0;
-  min-height: 32px;
-  padding: 0.1rem 0.4rem;
+  height: 100%;
+  min-height: 0;
+  padding: 0 0.4rem;
   font-size: 0.78rem;
   line-height: 1.1;
   font-weight: 500;
