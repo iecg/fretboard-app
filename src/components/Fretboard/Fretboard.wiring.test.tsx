@@ -143,12 +143,13 @@ describe("Fretboard wiring", () => {
     expect(tonic.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
 
     const mediant = renderGMajorEPositionChord("B", "Minor Triad");
-    expect(mediant.fullChordVoicings?.length).toBeGreaterThan(0);
+<<<<<<< HEAD
     expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
+    expect(mediant.fullChordPositionKeys?.has("4-14")).toBe(true);
 
     const subdominant = renderGMajorEPositionChord("C", "Major Triad");
-    expect(subdominant.fullChordVoicings?.length).toBeGreaterThan(0);
     expect(subdominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
+    expect(subdominant.fullChordPositionKeys?.has("4-15")).toBe(true);
   });
 
   it("keeps exact full-chord notes outside the selected CAGED scale position when the voicing mostly overlaps", () => {
@@ -161,7 +162,9 @@ describe("Fretboard wiring", () => {
     // Under Diatonic CAGED Chord Shape Alignment, D major's C-shape sits at the 2nd-fret area,
     // perfectly overlapping the E-position window for G major (~frets 2–6).
     const dominant = renderGMajorEPositionChord("D", "Major Triad");
-    expect(dominant.fullChordVoicings?.length).toBeGreaterThan(0);
+<<<<<<< HEAD
     expect(dominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
+    expect(dominant.fullChordPositionKeys?.has("4-5")).toBe(true);
+    expect(dominant.fullChordPositionKeys?.has("3-0")).toBe(false);
   });
 });
