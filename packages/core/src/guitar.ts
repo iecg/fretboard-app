@@ -1,5 +1,6 @@
 import { NOTES } from './theory';
-import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
+import { DEFAULT_OCTAVE, A4_FREQUENCY, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
+import * as Note from "@tonaljs/note";
 
 export interface NoteWithOctave {
   noteName: string;
@@ -61,14 +62,12 @@ export function getFretNoteWithOctave(openStringNote: string, fretNumber: number
 
 /**
  * Returns the frequency in Hz for a given note string (e.g. "A4").
+ * Backed by Tonal's `Note.freq` (A4 = 440 Hz equal temperament). Falls
+ * back to A4 when the input cannot be parsed, matching the legacy
+ * behavior that used `{ noteName: "A", octave: DEFAULT_OCTAVE }`.
  */
 export function getNoteFrequency(noteStringWithOctave: string): number {
-  const parsed = parseNote(noteStringWithOctave) ?? { noteName: "A", octave: DEFAULT_OCTAVE };
-  const noteIndex = NOTES.indexOf(parsed.noteName);
-  // C0 is 0. A4 is 57 (since A is index 9).
-  const absoluteDistance = (parsed.octave * 12) + noteIndex;
-  const halfStepsFromA4 = absoluteDistance - A4_ABS_DISTANCE;
-  return A4_FREQUENCY * Math.pow(2, halfStepsFromA4 / 12);
+  return Note.freq(noteStringWithOctave) ?? A4_FREQUENCY;
 }
 
 /**
