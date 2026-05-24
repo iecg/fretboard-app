@@ -64,11 +64,11 @@ function fullVoicings(params: GenerateVoicingsParams): Voicing[] {
 }
 
 /**
- * Maximum fretted-fret span for a close voicing. Capped at 4 so the candidate
- * set stays within playable shapes (typical hand reach around mid-neck). A
- * larger value re-admits spread/spider shapes that don't feel "close".
+ * Maximum fretted-fret span for a close voicing. Capped at 3 so the candidate
+ * set stays within playable shapes (typical hand reach around mid-neck, <= 4 physical frets).
+ * A larger value re-admits spread/spider shapes that don't feel "close".
  */
-export const CLOSE_VOICING_SPAN_LIMIT = 4;
+export const CLOSE_VOICING_SPAN_LIMIT = 3;
 
 /**
  * Generate Close voicings: 3/4/5-note polygons on adjacent strings, where each

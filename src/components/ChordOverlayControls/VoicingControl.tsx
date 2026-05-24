@@ -32,8 +32,7 @@ export function VoicingControl() {
     <LabeledSelect
       label={t("inspector.voicingAriaLabel")}
       hideLabel
-      width="fixed"
-      widthValue="6rem"
+      width="fill"
       value={voicing}
       options={options as Array<{ value: string; label: string }>}
       onChange={(v) => setVoicing(v as VoicingType)}

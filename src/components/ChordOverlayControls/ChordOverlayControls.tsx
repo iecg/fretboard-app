@@ -72,10 +72,10 @@ export function ChordOverlayControls() {
     <div className={panelStyles.root}>
       <PropGrid columns={12} className={panelStyles.grid}>
         {/* ── VOICING ──────────────────────────────────────────────────── */}
-        <Prop label={t("inspector.voicingLabel")} span={1}>
+        <Prop label={t("inspector.voicingLabel")} span={3}>
           <VoicingControl />
         </Prop>
-        <Prop label={t("controls.lens")} span={2} hint={t("controls.lensHint")}>
+        <Prop label={t("controls.lens")} span={5}>
           <ToggleBar
             options={lensOptions.map((o) => ({
               ...o,
@@ -101,6 +101,12 @@ export function ChordOverlayControls() {
             />
           </Prop>
         ) : null}
+        <p className={panelStyles.lensHelp} data-testid="lens-help-text">
+          <strong className={panelStyles.lensHelpStrong}>Tones</strong>{" "}
+          highlights chord notes with guide-tone (3rd/7th) emphasis.{" "}
+          <strong className={panelStyles.lensHelpStrong}>Lead</strong>{" "}
+          anticipates the next chord.
+        </p>
       </PropGrid>
     </div>
   );

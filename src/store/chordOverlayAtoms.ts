@@ -40,30 +40,83 @@ import { currentTuningAtom } from "./layoutAtoms";
 import {
   cagedShapesAtom,
   fingeringPatternAtom,
-  npsPositionAtom,
 } from "./fingeringAtoms";
-import { shapeDataAtom } from "./shapeAtoms";
+import { shapeDataAtom, autoCenterTargetAtom } from "./shapeAtoms";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
-
-const SCALE_FIT_NUMERATOR = 2;
-const SCALE_FIT_DENOMINATOR = 3;
 
 /** A voicing "majority-fits" the scale window when at least
  * ceil(frettedCount × 2/3) of its fretted notes lie within [window.lo, window.hi].
  * Open strings are not bound by the window (playable at any hand position). */
-function majorityFitsInWindow(
+/**
+ * A voicing fits the diagonal scale window when 100% of its fretted notes lie
+ * within the active shape's fret-range on their respective strings.
+ * Open strings are not bound by the shape.
+ */
+function fitsStringSpecificRanges(
   positionKeys: readonly string[],
-  window: { lo: number; hi: number },
+  allowedPositions: Set<string>,
+): boolean {
+  const stringRanges: Record<number, { lo: number; hi: number }> = {};
+  for (const key of allowedPositions) {
+    const [sStr, fStr] = key.split("-");
+    const s = Number(sStr);
+    const f = Number(fStr);
+    if (f > 0) {
+      if (!stringRanges[s]) {
+        stringRanges[s] = { lo: f, hi: f };
+      } else {
+        stringRanges[s].lo = Math.min(stringRanges[s].lo, f);
+        stringRanges[s].hi = Math.max(stringRanges[s].hi, f);
+      }
+    }
+  }
+
+  return positionKeys.every((key) => {
+    const [sStr, fStr] = key.split("-");
+    const s = Number(sStr);
+    const f = Number(fStr);
+    if (f === 0) return true; // open strings always allowed
+    const range = stringRanges[s];
+    if (!range) return false;
+    return f >= range.lo && f <= range.hi;
+  });
+}
+
+export interface ShapeInstanceRange {
+  minFret: number;
+  maxFret: number;
+}
+
+function fitsStringSpecificRangesForAnyInstance(
+  positionKeys: readonly string[],
+  allowedPositions: Set<string>,
+  instances: readonly ShapeInstanceRange[],
 ): boolean {
   const fretted = positionKeys
-    .map((k) => Number(k.split("-")[1] ?? 0))
+    .map((k) => Number(k.split("-")[1]))
     .filter((f) => f > 0);
-  if (fretted.length === 0) return true;
-  const threshold = Math.ceil(
-    (fretted.length * SCALE_FIT_NUMERATOR) / SCALE_FIT_DENOMINATOR,
+  if (fretted.length === 0) return true; // open strings always allowed
+
+  const vMin = Math.min(...fretted);
+  const vMax = Math.max(...fretted);
+
+  // Find the scale shape instance that covers this voicing's fret window (buffered by ±1)
+  const matchingInstance = instances.find(
+    (inst) => vMin >= inst.minFret - 1 && vMax <= inst.maxFret + 1
   );
-  const inside = fretted.filter((f) => f >= window.lo && f <= window.hi).length;
-  return inside >= threshold;
+  if (!matchingInstance) return false;
+
+  // Filter allowed positions strictly to this shape instance
+  const instCoords = new Set<string>();
+  for (const c of allowedPositions) {
+    const f = Number(c.split("-")[1]);
+    if (f >= matchingInstance.minFret && f <= matchingInstance.maxFret) {
+      instCoords.add(c);
+    }
+  }
+
+  // Verify that the voicing fits the string-specific ranges of this instance
+  return fitsStringSpecificRanges(positionKeys, instCoords);
 }
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
@@ -244,6 +297,25 @@ export const voicingStringSetAtom = atomWithStorage<string>(
   GET_ON_INIT,
 );
 
+export const activeScaleInstanceRangesAtom = atom<ShapeInstanceRange[]>((get) => {
+  const pattern = get(fingeringPatternAtom);
+  const { shapePolygons, boxBounds } = get(shapeDataAtom);
+
+  if (pattern === "caged" && shapePolygons.length > 0) {
+    return shapePolygons.map((p) => ({
+      minFret: p.intendedMin,
+      maxFret: p.intendedMax,
+    }));
+  }
+  if (pattern === "3nps" && boxBounds.length > 0) {
+    return boxBounds.map((b) => ({
+      minFret: b.minFret,
+      maxFret: b.maxFret,
+    }));
+  }
+  return [];
+});
+
 /**
  * All close voicings that pass the snap-to-scale filter but WITHOUT the
  * string-set filter applied. Used by {@link stringSetOptionsAtom} to probe
@@ -262,9 +334,10 @@ export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
   });
 
   if (get(chordSnapToScaleAtom)) {
-    const window = get(activeScaleWindowAtom);
-    if (window) {
-      return all.filter((v) => majorityFitsInWindow(v.positionKeys, window));
+    const allowedPositions = get(activeScalePatternPositionsAtom);
+    const instances = get(activeScaleInstanceRangesAtom);
+    if (allowedPositions.size > 0 && instances.length > 0) {
+      return all.filter((v) => fitsStringSpecificRangesForAnyInstance(v.positionKeys, allowedPositions, instances));
     }
   }
   return all;
@@ -361,21 +434,22 @@ export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | nu
   if (pattern === "caged") {
     const shapes = get(cagedShapesAtom);
     if (shapes.size !== 1) return null;
-    const shape = [...shapes][0];
-    const fullMatches = get(fullVoicingsAtom);
-    const matchesOfShape = fullMatches.filter((v) => v.shape === shape);
-    const match = matchesOfShape[0];
-    if (!match) return null;
-    const fretted = match.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+  }
+  if (pattern === "caged" || pattern === "3nps") {
+    const target = get(autoCenterTargetAtom);
+    if (target) {
+      return {
+        lo: Math.max(0, target.minFret - FRET_WINDOW_BUFFER),
+        hi: target.maxFret + FRET_WINDOW_BUFFER,
+      };
+    }
+    const { highlightNotes } = get(shapeDataAtom);
+    const positionKeys = highlightNotes.filter((n) => n.includes("-"));
+    const fretted = positionKeys.map((k) => Number(k.split("-")[1])).filter((f) => f > 0);
     if (fretted.length === 0) return null;
     const lo = Math.max(0, Math.min(...fretted) - FRET_WINDOW_BUFFER);
     const hi = Math.max(...fretted) + FRET_WINDOW_BUFFER;
     return { lo, hi };
-  }
-  if (pattern === "3nps") {
-    const pos = get(npsPositionAtom);
-    if (pos <= 0) return null;
-    return { lo: Math.max(0, pos - FRET_WINDOW_BUFFER), hi: pos + 2 + FRET_WINDOW_BUFFER };
   }
   return null;
 });
@@ -391,9 +465,6 @@ export const activeScalePatternPositionsAtom = atom<Set<string>>((get) => {
   const pattern = get(fingeringPatternAtom);
   if (pattern === "caged" || pattern === "3nps") {
     const { highlightNotes } = get(shapeDataAtom);
-    // highlightNotes for caged/3nps are "string-fret" coordinate strings.
-    // Filter to only coord-shaped entries (contain a dash) to guard against
-    // the "none" fallback which stores bare note names.
     return new Set(highlightNotes.filter((n) => n.includes("-")));
   }
   // none, one-string, two-strings have no positional pattern to lock to.
@@ -415,17 +486,16 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
     voicingType: "close",
   });
 
-  // Apply the fret-bound snap (if enabled and a scale window is active), then
-  // the string-set filter. Either step is a no-op when its precondition is
-  // unmet. Majority-fit semantics: at least ceil(frettedCount × 2/3) of the
-  // voicing's fretted notes must fall within [window.lo, window.hi]. Open
-  // strings are always allowed. This admits voicings where ONE note spills
-  // slightly outside the shape, which players naturally handle. (Plan I-T6)
+  // Apply the diagonal string-specific snap (if enabled and a scale shape is active),
+  // then the string-set filter. String-specific boundaries ensure 100% of the voicing's
+  // fretted notes lie inside the CAGED/3NPS diagonal shape footprint, natively supporting
+  // octave-shifted 3NPS patterns. Open strings are always allowed.
   let windowed = all;
   if (get(chordSnapToScaleAtom)) {
-    const window = get(activeScaleWindowAtom);
-    if (window) {
-      windowed = all.filter((v) => majorityFitsInWindow(v.positionKeys, window));
+    const allowedPositions = get(activeScalePatternPositionsAtom);
+    const instances = get(activeScaleInstanceRangesAtom);
+    if (allowedPositions.size > 0 && instances.length > 0) {
+      windowed = all.filter((v) => fitsStringSpecificRangesForAnyInstance(v.positionKeys, allowedPositions, instances));
     }
   }
 
@@ -481,8 +551,9 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
   if (voicing === "full") {
     return new Set(get(voicingMatchesAtom).flatMap((v) => v.positionKeys));
   }
-  // close: snap-to-scale toggle is already applied inside closeCandidatesAtom.
-  return new Set(get(closeCandidatesAtom).flatMap((v) => v.positionKeys));
+  // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.
+  // Note highlights represent ALL close candidate positions across all strings, decoupled from the string-set filter.
+  return new Set(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
 });
 
 // Migrates from legacy viewMode value on first access.

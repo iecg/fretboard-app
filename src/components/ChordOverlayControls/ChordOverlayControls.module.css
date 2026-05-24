@@ -4,7 +4,11 @@
   gap: 0.75rem;
 }
 
-/* On mobile, collapse the 6-column PropGrid so every child spans full width. */
+.grid {
+  align-items: start;
+}
+
+/* On mobile, collapse the 12-column PropGrid so every child spans full width. */
 :global(.app-container[data-layout-tier="mobile"]) .grid > * {
   grid-column: 1 / -1 !important;
 }
@@ -22,4 +26,17 @@
   font-size: 12px;
   min-width: 3.5em;
   text-align: center;
+}
+
+.lensHelp {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--dc-fg-muted);
+}
+
+.lensHelpStrong {
+  color: var(--faceplate-accent);
+  font-weight: 700;
 }

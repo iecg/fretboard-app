@@ -133,9 +133,14 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("renders the static lens hint", () => {
+    it("renders the static lens hint with highlighted Tones and Lead terms", () => {
       renderDegree();
-      expect(screen.getByText("Tones highlights chord notes with guide-tone (3rd/7th) emphasis · Lead anticipates the next chord.")).toBeInTheDocument();
+      const hint = screen.getByTestId("lens-help-text");
+      expect(hint).toHaveTextContent(
+        "Tones highlights chord notes with guide-tone (3rd/7th) emphasis. Lead anticipates the next chord.",
+      );
+      expect(within(hint).getByText("Tones")).toHaveClass("lensHelpStrong");
+      expect(within(hint).getByText("Lead")).toHaveClass("lensHelpStrong");
     });
 
     it("no legacy lens-hint paragraph remains", () => {

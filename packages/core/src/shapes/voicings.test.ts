@@ -166,8 +166,8 @@ describe("closeVoicings — open-string filter", () => {
 });
 
 describe("closeVoicings span cap", () => {
-  it("exports CLOSE_VOICING_SPAN_LIMIT as 4", () => {
-    expect(CLOSE_VOICING_SPAN_LIMIT).toBe(4);
+  it("exports CLOSE_VOICING_SPAN_LIMIT as 3", () => {
+    expect(CLOSE_VOICING_SPAN_LIMIT).toBe(3);
   });
 
   it("never emits a candidate whose fretted-fret span exceeds the cap", () => {

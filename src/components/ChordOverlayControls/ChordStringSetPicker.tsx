@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
 import {
   voicingStringSetAtom,
@@ -16,6 +17,18 @@ export function ChordStringSetPicker() {
   const [value, setValue] = useAtom(voicingStringSetAtom);
   const options = useAtomValue(stringSetOptionsAtom);
 
+  // Auto-heal/transition: if current selected string set is invalid or disabled,
+  // snap to the first available (enabled) contiguous string window.
+  useEffect(() => {
+    const match = options.find((o) => o.id === value);
+    if (!match || match.disabled) {
+      const firstEnabled = options.find((o) => !o.disabled);
+      if (firstEnabled) {
+        setValue(firstEnabled.id);
+      }
+    }
+  }, [value, options, setValue]);
+
   return (
     <StringSetPicker
       label={t("inspector.chordStringSetLabel")}
@@ -23,8 +36,7 @@ export function ChordStringSetPicker() {
       value={value}
       onChange={setValue}
       options={options}
-      width="fixed"
-      widthValue="8rem"
+      width="fill"
     />
   );
 }

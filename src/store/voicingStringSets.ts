@@ -25,8 +25,8 @@ export const ALL_STRINGS_OPTION: StringSetOption = {
  * dyads and hexads don't carve into meaningful string-set windows.
  */
 export function buildStringSetOptions(voiceCount: number): StringSetOption[] {
-  if (voiceCount < 3 || voiceCount > 5) return [ALL_STRINGS_OPTION];
-  const sets: StringSetOption[] = [ALL_STRINGS_OPTION];
+  if (voiceCount < 3 || voiceCount > 5) return [];
+  const sets: StringSetOption[] = [];
   const windowCount = 6 - voiceCount + 1;
   for (let start = 0; start < windowCount; start += 1) {
     const strings: number[] = [];

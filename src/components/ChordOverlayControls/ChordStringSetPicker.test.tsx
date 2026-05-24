@@ -43,13 +43,12 @@ describe("ChordStringSetPicker", () => {
     ).toBeInTheDocument();
   });
 
-  it("offers 'All' + 3 windows for a 4-note chord", async () => {
+  it("offers 3 windows for a 4-note chord", async () => {
     const store = makeAtomStore([...C7_SEEDS] as never);
     renderWithStore(<ChordStringSetPicker />, store);
     await userEvent.click(screen.getByRole("combobox", { name: /strings/i }));
     const options = await screen.findAllByRole("option");
     expect(options.map((o) => o.textContent)).toEqual([
-      "All",
       "1·2·3·4",
       "2·3·4·5",
       "3·4·5·6",
@@ -62,7 +61,7 @@ describe("ChordStringSetPicker", () => {
     await userEvent.click(screen.getByRole("combobox", { name: /strings/i }));
     const options = await screen.findAllByRole("option");
     // Pick the first window option ("1·2·3·4" → id "0-1-2-3")
-    await userEvent.click(options[1]!);
+    await userEvent.click(options[0]!);
     expect(store.get(voicingStringSetAtom)).toBe("0-1-2-3");
   });
 });
