@@ -192,6 +192,48 @@ describe("getDivergentNotes", () => {
   it("returns empty for invalid root", () => {
     expect(getDivergentNotes("Zz", "Dorian")).toEqual([]);
   });
+
+  it("matches snapshot across all scales × {C, F#, Bb}", () => {
+    const SCALES_TO_PROBE = [
+      "Major",
+      "Natural Minor",
+      "Harmonic Minor",
+      "Melodic Minor",
+      "Major Pentatonic",
+      "Minor Pentatonic",
+      "Blues",
+      "Ionian",
+      "Dorian",
+      "Phrygian",
+      "Lydian",
+      "Mixolydian",
+      "Aeolian",
+      "Locrian",
+      "Locrian Natural 6",
+      "Ionian Augmented",
+      "Dorian Sharp 4",
+      "Phrygian Dominant",
+      "Lydian Sharp 2",
+      "Altered Diminished",
+      "Dorian Flat 2",
+      "Lydian Augmented",
+      "Lydian Dominant",
+      "Mixolydian Flat 6",
+      "Locrian Natural 2",
+      "Altered",
+      "Minor Blues",
+      "Major Blues",
+    ];
+    const ROOTS = ["C", "F#", "Bb"];
+
+    const snapshot: Record<string, string[]> = {};
+    for (const root of ROOTS) {
+      for (const scale of SCALES_TO_PROBE) {
+        snapshot[`${root} ${scale}`] = getDivergentNotes(root, scale);
+      }
+    }
+    expect(snapshot).toMatchSnapshot();
+  });
 });
 
 describe("getKeySignature", () => {

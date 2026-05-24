@@ -1,0 +1,261 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`getDivergentNotes > matches snapshot across all scales × {C, F#, Bb} 1`] = `
+{
+  "Bb Aeolian": [],
+  "Bb Altered": [
+    "B",
+    "C#",
+    "E",
+    "F#",
+    "G#",
+  ],
+  "Bb Altered Diminished": [
+    "B",
+    "C#",
+    "E",
+    "F#",
+  ],
+  "Bb Blues": [],
+  "Bb Dorian": [
+    "G",
+  ],
+  "Bb Dorian Flat 2": [
+    "B",
+    "G",
+  ],
+  "Bb Dorian Sharp 4": [
+    "E",
+    "G",
+  ],
+  "Bb Harmonic Minor": [
+    "A",
+  ],
+  "Bb Ionian": [],
+  "Bb Ionian Augmented": [
+    "F#",
+  ],
+  "Bb Locrian": [
+    "B",
+    "E",
+  ],
+  "Bb Locrian Natural 2": [
+    "E",
+  ],
+  "Bb Locrian Natural 6": [
+    "B",
+    "E",
+    "G",
+  ],
+  "Bb Lydian": [
+    "E",
+  ],
+  "Bb Lydian Augmented": [
+    "E",
+    "F#",
+  ],
+  "Bb Lydian Dominant": [
+    "E",
+    "G#",
+  ],
+  "Bb Lydian Sharp 2": [
+    "C#",
+    "E",
+  ],
+  "Bb Major": [],
+  "Bb Major Blues": [],
+  "Bb Major Pentatonic": [],
+  "Bb Melodic Minor": [
+    "G",
+    "A",
+  ],
+  "Bb Minor Blues": [],
+  "Bb Minor Pentatonic": [],
+  "Bb Mixolydian": [
+    "G#",
+  ],
+  "Bb Mixolydian Flat 6": [
+    "F#",
+    "G#",
+  ],
+  "Bb Natural Minor": [],
+  "Bb Phrygian": [
+    "B",
+  ],
+  "Bb Phrygian Dominant": [
+    "B",
+    "F#",
+    "G#",
+  ],
+  "C Aeolian": [],
+  "C Altered": [
+    "C#",
+    "D#",
+    "F#",
+    "G#",
+    "A#",
+  ],
+  "C Altered Diminished": [
+    "C#",
+    "D#",
+    "F#",
+    "G#",
+  ],
+  "C Blues": [],
+  "C Dorian": [
+    "A",
+  ],
+  "C Dorian Flat 2": [
+    "C#",
+    "A",
+  ],
+  "C Dorian Sharp 4": [
+    "F#",
+    "A",
+  ],
+  "C Harmonic Minor": [
+    "B",
+  ],
+  "C Ionian": [],
+  "C Ionian Augmented": [
+    "G#",
+  ],
+  "C Locrian": [
+    "C#",
+    "F#",
+  ],
+  "C Locrian Natural 2": [
+    "F#",
+  ],
+  "C Locrian Natural 6": [
+    "C#",
+    "F#",
+    "A",
+  ],
+  "C Lydian": [
+    "F#",
+  ],
+  "C Lydian Augmented": [
+    "F#",
+    "G#",
+  ],
+  "C Lydian Dominant": [
+    "F#",
+    "A#",
+  ],
+  "C Lydian Sharp 2": [
+    "D#",
+    "F#",
+  ],
+  "C Major": [],
+  "C Major Blues": [],
+  "C Major Pentatonic": [],
+  "C Melodic Minor": [
+    "A",
+    "B",
+  ],
+  "C Minor Blues": [],
+  "C Minor Pentatonic": [],
+  "C Mixolydian": [
+    "A#",
+  ],
+  "C Mixolydian Flat 6": [
+    "G#",
+    "A#",
+  ],
+  "C Natural Minor": [],
+  "C Phrygian": [
+    "C#",
+  ],
+  "C Phrygian Dominant": [
+    "C#",
+    "G#",
+    "A#",
+  ],
+  "F# Aeolian": [],
+  "F# Altered": [
+    "G",
+    "A",
+    "C",
+    "D",
+    "E",
+  ],
+  "F# Altered Diminished": [
+    "G",
+    "A",
+    "C",
+    "D",
+  ],
+  "F# Blues": [],
+  "F# Dorian": [
+    "D#",
+  ],
+  "F# Dorian Flat 2": [
+    "G",
+    "D#",
+  ],
+  "F# Dorian Sharp 4": [
+    "C",
+    "D#",
+  ],
+  "F# Harmonic Minor": [
+    "F",
+  ],
+  "F# Ionian": [],
+  "F# Ionian Augmented": [
+    "D",
+  ],
+  "F# Locrian": [
+    "G",
+    "C",
+  ],
+  "F# Locrian Natural 2": [
+    "C",
+  ],
+  "F# Locrian Natural 6": [
+    "G",
+    "C",
+    "D#",
+  ],
+  "F# Lydian": [
+    "C",
+  ],
+  "F# Lydian Augmented": [
+    "C",
+    "D",
+  ],
+  "F# Lydian Dominant": [
+    "C",
+    "E",
+  ],
+  "F# Lydian Sharp 2": [
+    "A",
+    "C",
+  ],
+  "F# Major": [],
+  "F# Major Blues": [],
+  "F# Major Pentatonic": [],
+  "F# Melodic Minor": [
+    "D#",
+    "F",
+  ],
+  "F# Minor Blues": [],
+  "F# Minor Pentatonic": [],
+  "F# Mixolydian": [
+    "E",
+  ],
+  "F# Mixolydian Flat 6": [
+    "D",
+    "E",
+  ],
+  "F# Natural Minor": [],
+  "F# Phrygian": [
+    "G",
+  ],
+  "F# Phrygian Dominant": [
+    "G",
+    "D",
+    "E",
+  ],
+}
+`;
