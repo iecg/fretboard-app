@@ -116,6 +116,21 @@ export function transposeNoteToSharps(
   if (!interval) return note;
   const transposed = Note.transpose(note, interval);
   if (!transposed) return note;
-  const simplified = Note.simplify(transposed);
+  return normalizeToSharps(transposed);
+}
+
+/**
+ * Normalize a Tonal note name to FretFlow's sharps-form contract.
+ * Tonal may return flats (e.g. "Eb"); the rest of the app keys on the
+ * sharps array (NOTES). Pass any Tonal-output note name through this
+ * before exposing it.
+ *
+ * Returns the input unchanged when Tonal can't simplify it, preserving
+ * the caller's intent on malformed input.
+ */
+export function normalizeToSharps(note: string): string {
+  if (!note) return note;
+  const simplified = Note.simplify(note);
+  if (!simplified) return note;
   return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
 }

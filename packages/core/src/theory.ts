@@ -8,7 +8,7 @@ import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
 import * as Key from "@tonaljs/key";
-import { scaleNameToTonal, tonalChordSymbol } from "./lib/tonal";
+import { scaleNameToTonal, tonalChordSymbol, normalizeToSharps } from "./lib/tonal";
 import * as Chord from "@tonaljs/chord";
 
 export const NOTES = [
@@ -469,9 +469,7 @@ export function getIntervalNotes(
   if (getNoteIndex(rootNote) === -1) return [];
   return intervals.map((semitones) => {
     const t = Note.transpose(rootNote, Interval.fromSemitones(semitones));
-    // Force sharps-form for chromatic semitone-based operations (matches legacy NOTES contract).
-    const simplified = Note.simplify(t);
-    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+    return normalizeToSharps(t);
   });
 }
 
@@ -482,10 +480,7 @@ export function getScaleNotes(rootNote: string, scaleName: string): string[] {
   const tonalScale = Scale.get(`${rootNote} ${tonalName}`);
   // Tonal returns spelled notes. Normalize to sharps-form to maintain the
   // legacy contract (consumers do NOTES.indexOf on the result).
-  return tonalScale.notes.map((n) => {
-    const simplified = Note.simplify(n);
-    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
-  });
+  return tonalScale.notes.map((n) => normalizeToSharps(n));
 }
 
 /**
@@ -509,10 +504,7 @@ export function getChordNotes(rootNote: string, chordName: string): string[] {
   const tonalChord = Chord.get(symbol);
   if (tonalChord.empty) return [];
   // Same sharps-form normalization as getIntervalNotes.
-  return tonalChord.notes.map((n) => {
-    const simplified = Note.simplify(n);
-    return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
-  });
+  return tonalChord.notes.map((n) => normalizeToSharps(n));
 }
 
 /**
@@ -548,8 +540,7 @@ export function getDivergentNotes(
         rootNote,
         Interval.fromSemitones((semitone - rootChroma + 12) % 12),
       );
-      const simplified = Note.simplify(t);
-      return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+      return normalizeToSharps(t);
     });
 }
 

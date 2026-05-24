@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { chordQualityToTonal, tonalToChordQuality, scaleNameToTonal, tonalToScaleName } from "./tonal";
+import {
+  chordQualityToTonal,
+  tonalToChordQuality,
+  scaleNameToTonal,
+  tonalToScaleName,
+  normalizeToSharps,
+} from "./tonal";
 
 describe("chord-name adapter", () => {
   it("maps Major Triad to M", () => {
@@ -49,5 +55,37 @@ describe("scale-name adapter", () => {
   });
   it("round-trips Major", () => {
     expect(tonalToScaleName("major")).toBe("Major");
+  });
+});
+
+describe("normalizeToSharps", () => {
+  it("converts Bb to A#", () => {
+    expect(normalizeToSharps("Bb")).toBe("A#");
+  });
+  it("converts Eb to D#", () => {
+    expect(normalizeToSharps("Eb")).toBe("D#");
+  });
+  it("converts Db to C#", () => {
+    expect(normalizeToSharps("Db")).toBe("C#");
+  });
+  it("converts Ab to G#", () => {
+    expect(normalizeToSharps("Ab")).toBe("G#");
+  });
+  it("converts Gb to F#", () => {
+    expect(normalizeToSharps("Gb")).toBe("F#");
+  });
+  it("leaves natural notes unchanged", () => {
+    expect(normalizeToSharps("C")).toBe("C");
+    expect(normalizeToSharps("F")).toBe("F");
+  });
+  it("leaves sharps unchanged", () => {
+    expect(normalizeToSharps("C#")).toBe("C#");
+    expect(normalizeToSharps("F#")).toBe("F#");
+  });
+  it("returns empty string for empty input", () => {
+    expect(normalizeToSharps("")).toBe("");
+  });
+  it("returns garbage input unchanged", () => {
+    expect(normalizeToSharps("garbage")).toBe("garbage");
   });
 });
