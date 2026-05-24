@@ -64,3 +64,13 @@
 .stepper-control.mobile .stepper-value {
   padding-inline: 1rem;
 }
+
+.stepper-control--fill {
+  width: 100%;
+  align-self: stretch;
+  flex: 1;
+}
+
+.stepper-control--fill .stepper-group {
+  width: 100%;
+}

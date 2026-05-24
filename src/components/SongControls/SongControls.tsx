@@ -202,8 +202,7 @@ export function SongControls() {
                 <LabeledSelect
                   label={t("controls.root")}
                   hideLabel
-                  width="fixed"
-                  widthValue="6rem"
+                  width="fill"
                   value={rootNote}
                   onChange={handleRootNote}
                   options={NOTES.map((note) => ({
@@ -244,6 +243,7 @@ export function SongControls() {
                   step={5}
                   formatValue={(bpm) => `${bpm} BPM`}
                   onChange={setProgressionTempoBpm}
+                  width="fill"
                 />
               </Prop>
             </PropGrid>

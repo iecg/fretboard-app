@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import clsx from "clsx";
 import { StepperShell } from "../StepperShell/StepperShell";
 import {
   SPRING_TAP,
@@ -39,6 +40,8 @@ export interface StepperControlProps {
   buttonVariant?: StepperControlVariant;
   /** Optional test hook forwarded to the StepperShell group element. */
   testId?: string;
+  /** Sizing mode for the stepper control. Defaults to "auto" (fit-content). */
+  width?: "fill" | "auto";
 }
 
 export function StepperControl({
@@ -52,9 +55,15 @@ export function StepperControl({
   formatValue = String,
   buttonVariant = "toolbar",
   testId,
+  width,
 }: StepperControlProps) {
   return (
-    <div className={stepperControlVariants({ variant: buttonVariant })}>
+    <div
+      className={clsx(
+        stepperControlVariants({ variant: buttonVariant }),
+        { [styles["stepper-control--fill"]]: width === "fill" }
+      )}
+    >
       {label && !hideLabel && <span className={shared["section-label"]}>{label}</span>}
       <StepperShell
         className={styles["stepper-group"]}

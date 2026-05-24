@@ -472,7 +472,7 @@ describe("SongControls width sweep (Plan H-T3)", () => {
     localStorage.clear();
   });
 
-  it("Root select uses fixed width 6rem", () => {
+  it("Root select uses fill width (no data-width='fixed')", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const rootCombos = container.querySelectorAll("[role='combobox']");
     // Root combobox is aria-labelledby a label with text "Root"
@@ -483,9 +483,7 @@ describe("SongControls width sweep (Plan H-T3)", () => {
       return labelEl?.textContent?.trim() === "Root";
     });
     expect(rootCombo).toBeTruthy();
-    const wrapper = rootCombo?.closest("[data-width='fixed']");
-    expect(wrapper).toBeTruthy();
-    expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("6rem");
+    expect(rootCombo?.closest("[data-width='fixed']")).toBeNull();
   });
 
   it("Quality select uses fixed width 9rem", () => {

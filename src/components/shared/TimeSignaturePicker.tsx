@@ -47,8 +47,7 @@ export function TimeSignaturePicker() {
     <LabeledSelect
       label={t("inspector.timeSignatureAriaLabel")}
       hideLabel
-      width="fixed"
-      widthValue="4rem"
+      width="fill"
       value={value}
       options={options}
       onChange={handleChange}
