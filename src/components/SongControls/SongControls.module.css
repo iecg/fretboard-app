@@ -122,3 +122,16 @@
   color: var(--dc-fg);
   line-height: 1;
 }
+
+.progressionHelp {
+  width: 100%;
+  margin: 0.25rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--dc-fg-muted);
+}
+
+.progressionHelpStrong {
+  color: var(--faceplate-accent);
+  font-weight: 700;
+}

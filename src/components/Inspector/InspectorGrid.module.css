@@ -12,6 +12,14 @@
   grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
+.propGrid[data-columns="6"] {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.propGrid[data-columns="5"] {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 /* Mobile tier — collapse to two columns regardless of the declared column
    count. Wide cells (span >= 2) clamp to the available tracks automatically. */
 :global(.app-container[data-layout-tier="mobile"]) .propGrid {

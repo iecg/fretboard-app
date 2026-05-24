@@ -612,4 +612,14 @@ describe("SongControls grid layout", () => {
     expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
     expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
   });
+
+  it("renders the static progression hint with highlighted Voicing and lens terms", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const hint = screen.getByTestId("progression-help-text");
+    expect(hint).toHaveTextContent(
+      "Voicing & lens for this chord live on the Overlay tab.",
+    );
+    expect(within(hint).getByText("Voicing")).toHaveClass("progressionHelpStrong");
+    expect(within(hint).getByText("lens")).toHaveClass("progressionHelpStrong");
+  });
 });

@@ -21,7 +21,7 @@
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--dc-fg);
+  color: var(--text-main);
   margin: 0;
   white-space: nowrap;
 }

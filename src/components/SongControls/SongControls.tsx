@@ -50,6 +50,21 @@ function familyOptions(family: ScaleFamily) {
   }));
 }
 
+function formatProgressionHelp(text: string, strongClass: string) {
+  const parts = text.split(/(voicing|lens|lente)/i);
+  return parts.map((part, index) => {
+    const isMatch = /^(voicing|lens|lente)$/i.test(part);
+    if (isMatch) {
+      return (
+        <strong key={index} className={strongClass}>
+          {part}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
 const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   "pop-rock": "Pop / Rock",
   blues: "Blues",
@@ -182,8 +197,8 @@ export function SongControls() {
             description={t("inspector.groupKeyDesc")}
             labelledById="song-key-heading"
           >
-            <PropGrid columns={6}>
-              <Prop label={t("controls.root")} span={3}>
+            <PropGrid columns={5}>
+              <Prop label={t("controls.root")} span={2}>
                 <LabeledSelect
                   label={t("controls.root")}
                   hideLabel
@@ -215,11 +230,11 @@ export function SongControls() {
             description={t("inspector.groupTimeDesc")}
             labelledById="song-time-heading"
           >
-            <PropGrid columns={6}>
+            <PropGrid columns={5}>
               <Prop label={t("inspector.timeSignature")} span={1}>
                 <TimeSignaturePicker />
               </Prop>
-              <Prop label={t("inspector.meterTempo")} span={5}>
+              <Prop label={t("inspector.meterTempo")} span={4}>
                 <StepperControl
                   label={t("inspector.meterTempo")}
                   hideLabel
@@ -329,6 +344,28 @@ export function SongControls() {
             </div>
             <div className={styles["editor-grid"]}>
               <div className={shared["control-section"]}>
+                <span className={styles["field-label"]}>Quality</span>
+                <LabeledSelect
+                  label={t("controls.quality")}
+                  hideLabel
+                  width="fixed"
+                  widthValue="9rem"
+                  value={
+                    activeStep?.qualityOverride
+                    ?? activeResolvedProgressionStep?.quality
+                    ?? activeResolvedProgressionStep?.diatonicQuality
+                    ?? ""
+                  }
+                  onChange={(quality) =>
+                    updateProgressionStepQuality({
+                      id: activeStep.id,
+                      qualityOverride: quality,
+                    })
+                  }
+                  groups={qualityGroups}
+                />
+              </div>
+              <div className={shared["control-section"]}>
                 <span className={styles["field-label"]}>Duration</span>
                 <div className={styles["duration-row"]}>
                   <StepperControl
@@ -363,32 +400,10 @@ export function SongControls() {
                   </div>
                 </div>
               </div>
-              <div className={shared["control-section"]}>
-                <span className={styles["field-label"]}>Quality</span>
-                <LabeledSelect
-                  label={t("controls.quality")}
-                  hideLabel
-                  width="fixed"
-                  widthValue="9rem"
-                  value={
-                    activeStep?.qualityOverride
-                    ?? activeResolvedProgressionStep?.quality
-                    ?? activeResolvedProgressionStep?.diatonicQuality
-                    ?? ""
-                  }
-                  onChange={(quality) =>
-                    updateProgressionStepQuality({
-                      id: activeStep.id,
-                      qualityOverride: quality,
-                    })
-                  }
-                  groups={qualityGroups}
-                />
-              </div>
+              <p className={styles.progressionHelp} data-testid="progression-help-text">
+                {formatProgressionHelp(t("controls.voicingLensCrossRef"), styles.progressionHelpStrong)}
+              </p>
             </div>
-            <p className={shared["field-hint"]}>
-              {t("controls.voicingLensCrossRef")}
-            </p>
           </div>
         ) : (
           <p className={shared["field-hint"]}>Select a chord to edit its degree, duration, and quality.</p>
