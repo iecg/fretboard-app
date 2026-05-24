@@ -508,6 +508,8 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
   );
 });
 
+import { chordScopeToPositionAtom, activePositionAtom } from "./chordScope";
+
 /**
  * The renderer's voicing source. For Full, returns CAGED matches (optionally
  * narrowed to the active CAGED shape). For Close, returns ALL fitting
@@ -520,12 +522,18 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
   if (voicing === "full") {
     const all = get(fullVoicingsAtom);
     if (all.length === 0) return [];
-    const pattern = get(fingeringPatternAtom);
-    if (pattern === "caged") {
-      const shapes = get(cagedShapesAtom);
-      if (shapes.size === 1) {
-        const shape = [...shapes][0];
-        return all.filter((v) => v.shape === shape);
+
+    // If chord-to-scale position coupling is active, we do not restrict the chord's CAGED shape
+    // to the scale's CAGED shape letter, so it can resolve to the correct shape in that fret window.
+    const couplingActive = get(chordScopeToPositionAtom) && get(activePositionAtom);
+    if (!couplingActive) {
+      const pattern = get(fingeringPatternAtom);
+      if (pattern === "caged") {
+        const shapes = get(cagedShapesAtom);
+        if (shapes.size === 1) {
+          const shape = [...shapes][0];
+          return all.filter((v) => v.shape === shape);
+        }
       }
     }
     return all;

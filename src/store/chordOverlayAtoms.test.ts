@@ -27,6 +27,7 @@ import {
   activeChordCachedDegreeAtom,
   updateActiveChordAtom,
 } from "./songStateAtoms";
+import { chordScopeToPositionAtom } from "./chordScope";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import type { ProgressionStep } from "../progressions/progressionDomain";
 import type { CagedShape, DegreeId } from "@fretflow/core";
@@ -453,6 +454,27 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
     const candidates = store.get(closeCandidatesAtom);
     expect(candidates.length).toBeGreaterThan(1);
     expect(matches).toEqual(candidates);
+  });
+
+  it("does not narrow 'full' output to the scale shape when chordScopeToPosition is active", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, progressionWith({ degree: "V" })], // G Major chord in C Major scale
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])], // Scale in C shape (frets 0-3)
+      [chordScopeToPositionAtom, true], // Snapping/coupling enabled
+    ]);
+
+    const matches = store.get(voicingMatchesAtom);
+    
+    // G major should NOT be narrowed to C shape (since C shape of G major is at frets 7-10).
+    // G major's matching voicings should include G-shape, E-shape, etc.
+    const shapesSeen = new Set(matches.map((v) => v.shape));
+    expect(shapesSeen.size).toBeGreaterThan(1);
+    expect(shapesSeen.has("G")).toBe(true);
+    expect(shapesSeen.has("E")).toBe(true);
   });
 
 });
