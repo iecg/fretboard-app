@@ -119,6 +119,41 @@ function fitsStringSpecificRangesForAnyInstance(
   return fitsStringSpecificRanges(positionKeys, instCoords);
 }
 
+/**
+ * Count how many fretted notes in a voicing fall outside the diagonal bounds
+ * of the closest shape polygon. Uses the same polygon-vertex bounds as
+ * `selectFullChordMatchesForCagedPosition` (≤2 outside tolerance).
+ */
+function countOutsidePolygons(
+  positionKeys: readonly string[],
+  polygons: readonly ShapePolygon[],
+): number {
+  // Per-polygon per-string bounds from vertices
+  let minOutside = Number.POSITIVE_INFINITY;
+  for (const poly of polygons) {
+    if (poly.truncated) continue;
+    let outside = 0;
+    for (const key of positionKeys) {
+      const [sStr, fStr] = key.split("-");
+      const s = Number(sStr);
+      const f = Number(fStr);
+      if (f === 0) continue;
+
+      const leftFret = poly.vertices[s]?.fret;
+      const rightFret = poly.vertices[poly.vertices.length - 1 - s]?.fret;
+      if (leftFret === undefined || rightFret === undefined) {
+        outside++;
+        continue;
+      }
+      const lo = Math.min(leftFret, rightFret);
+      const hi = Math.max(leftFret, rightFret);
+      if (f < lo || f > hi) outside++;
+    }
+    if (outside < minOutside) minOutside = outside;
+  }
+  return minOutside;
+}
+
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
 // Map legacy three-lens IDs to the new two-lens IDs (Task 4.1).
@@ -542,7 +577,18 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
   if (voicing === "off") return new Set<string>();
   if (get(chordOverlayHiddenAtom)) return new Set<string>();
   if (voicing === "full") {
-    return new Set(get(voicingMatchesAtom).flatMap((v) => v.positionKeys));
+    const fullVoicings = get(voicingMatchesAtom);
+    if (get(chordSnapToScaleAtom)) {
+      const { shapePolygons } = get(shapeDataAtom);
+      if (shapePolygons.length > 0) {
+        return new Set(
+          fullVoicings
+            .filter((v) => countOutsidePolygons(v.positionKeys, shapePolygons) <= 2)
+            .flatMap((v) => v.positionKeys),
+        );
+      }
+    }
+    return new Set(fullVoicings.flatMap((v) => v.positionKeys));
   }
   // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.
   // Note highlights represent ALL close candidate positions across all strings, decoupled from the string-set filter.
