@@ -111,6 +111,10 @@
   width: 100%;
 }
 
+.propControl > :global([role="switch"]) {
+  width: auto;
+}
+
 .propHint {
   margin: 0;
   font-size: 0.625rem;

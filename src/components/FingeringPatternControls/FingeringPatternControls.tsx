@@ -289,6 +289,7 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
                       { id: "4", strings: [4, 5] },
                     ]
               }
+              width="fill"
             />
           </Prop>
           <Prop

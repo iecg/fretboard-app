@@ -87,7 +87,7 @@ export function ChordOverlayControls() {
           />
         </Prop>
         {voicing === "close" ? (
-          <Prop label={t("inspector.chordStringSetLabel")} span={1}>
+          <Prop label={t("inspector.chordStringSetLabel")} span={2}>
             <ChordStringSetPicker />
           </Prop>
         ) : null}
