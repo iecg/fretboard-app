@@ -31,6 +31,7 @@
     "@tonaljs/interval": "^5.1.0",
     "@tonaljs/key": "^4.11.2",
     "@tonaljs/note": "^4.12.1",
+    "@tonaljs/pcset": "^4.10.1",
     "@tonaljs/scale": "^4.13.4"
   }
 }

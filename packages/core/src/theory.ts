@@ -10,6 +10,7 @@ import * as Scale from "@tonaljs/scale";
 import * as Key from "@tonaljs/key";
 import { scaleNameToTonal, tonalChordSymbol, normalizeToSharps } from "./lib/tonal";
 import * as Chord from "@tonaljs/chord";
+import * as Pcset from "@tonaljs/pcset";
 
 export const NOTES = [
   "C",
@@ -509,8 +510,12 @@ export function getChordNotes(rootNote: string, chordName: string): string[] {
 
 /**
  * Returns notes in the current scale that diverge from the reference scale.
- * Reference: Major for major-quality modes, Natural Minor for minor-quality modes.
- * Blues scales use their existing blue note logic instead.
+ * Reference: Major for major-quality modes (scale contains a major 3rd),
+ * Natural Minor otherwise.
+ *
+ * Set difference computed via Pcset.chroma() — a 12-bit string where bit i
+ * is "1" iff pitch-class i is present. Iterating the current scale and
+ * filtering by the reference chroma preserves the original note ordering.
  */
 export function getDivergentNotes(
   rootNote: string,
@@ -524,24 +529,25 @@ export function getDivergentNotes(
   const rootChroma = Note.chroma(rootNote);
   if (typeof rootChroma !== "number" || isNaN(rootChroma)) return [];
 
-  const semis = getScaleSemitones(rootNote, scaleName);
-  if (semis.length === 0) return [];
+  const scaleNotes = getScaleNotes(rootNote, scaleName);
+  if (scaleNotes.length === 0) return [];
 
-  // Convert absolute chroma indices to relative semitone intervals from root
-  const relativeIntervals = semis.map((s) => (s - rootChroma + 12) % 12);
-  const isMajorQuality = relativeIntervals.includes(4); // contains major 3rd
+  // Determine reference scale: major-quality if scale contains a major 3rd.
+  const relativeIntervals = scaleNotes
+    .map((n) => Note.chroma(n))
+    .filter((c): c is number => typeof c === "number" && !isNaN(c))
+    .map((c) => (c - rootChroma + 12) % 12);
+  const isMajorQuality = relativeIntervals.includes(4);
   const refName = isMajorQuality ? "Major" : "Natural Minor";
-  const refSemis = new Set(getScaleSemitones(rootNote, refName));
 
-  return semis
-    .filter((semitone) => !refSemis.has(semitone))
-    .map((semitone) => {
-      const t = Note.transpose(
-        rootNote,
-        Interval.fromSemitones((semitone - rootChroma + 12) % 12),
-      );
-      return normalizeToSharps(t);
-    });
+  // 12-bit chroma string: "100010010100" etc. Bit i set iff pitch-class i is present.
+  const refChroma = Pcset.get(getScaleNotes(rootNote, refName)).chroma;
+
+  return scaleNotes.filter((note) => {
+    const c = Note.chroma(note);
+    if (typeof c !== "number" || isNaN(c)) return false;
+    return refChroma[c] === "0";
+  });
 }
 
 // Key signature accidental counts (+ sharps, - flats)
