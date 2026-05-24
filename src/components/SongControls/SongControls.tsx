@@ -1,6 +1,7 @@
 import { startTransition, useMemo } from "react";
 import { useSetAtom } from "jotai";
-import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Info } from "lucide-react";
+import clsx from "clsx";
 import { SCALE_FAMILIES, NOTES, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
   MIN_PROGRESSION_STEP_DURATION_VALUE,
@@ -125,6 +126,7 @@ export function SongControls() {
 
   const {
     progressionSteps,
+    resolvedProgressionSteps,
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
     loadProgressionPreset,
@@ -139,6 +141,7 @@ export function SongControls() {
     progressionTempoBpm,
     setProgressionTempoBpm,
     currentProgressionPresetId,
+    setActiveProgressionStepIndex,
   } = useProgressionState();
 
   const updateProgressionStepRoot = useSetAtom(updateProgressionStepRootAtom);
@@ -265,14 +268,25 @@ export function SongControls() {
               groups={presetGroups}
               onChange={handlePresetChange}
             />
-            <div className={styles["step-actions"]}>
-              <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
-                <Plus size={16} aria-hidden="true" />
-                <span>Add</span>
-              </button>
+
+            <div className={styles["toolbar-divider"]} />
+
+            <button
+              type="button"
+              className={styles["toolbar-button"]}
+              onClick={() => addProgressionStep()}
+              aria-label="Add chord"
+            >
+              <Plus size={16} aria-hidden="true" />
+              <span>Add</span>
+            </button>
+
+            <div className={styles["toolbar-divider"]} />
+
+            <div className={styles["button-group"]}>
               <button
                 type="button"
-                className={shared["control-button"]}
+                className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
                 disabled={!activeStep || activeProgressionStepIndex === 0}
                 aria-label="Move chord up"
@@ -281,7 +295,7 @@ export function SongControls() {
               </button>
               <button
                 type="button"
-                className={shared["control-button"]}
+                className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
                 disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
                 aria-label="Move chord down"
@@ -290,45 +304,73 @@ export function SongControls() {
               </button>
               <button
                 type="button"
-                className={shared["control-button"]}
+                className={styles["grouped-button"]}
                 onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
                 disabled={!activeStep}
                 aria-label="Duplicate chord"
               >
-                <CopyPlus size={16} aria-hidden="true" />
-                <span>Duplicate</span>
-              </button>
-              <button
-                type="button"
-                className={shared["control-button"]}
-                onClick={() => activeStep && removeProgressionStep(activeStep.id)}
-                disabled={!activeStep}
-                aria-label="Remove chord"
-              >
-                <Trash2 size={16} aria-hidden="true" />
+                <Copy size={16} aria-hidden="true" />
               </button>
             </div>
+
+            <div className={styles["toolbar-divider"]} />
+
+            <button
+              type="button"
+              className={styles["delete-button"]}
+              onClick={() => activeStep && removeProgressionStep(activeStep.id)}
+              disabled={!activeStep}
+              aria-label="Remove chord"
+            >
+              <Trash2 size={16} aria-hidden="true" />
+            </button>
           </div>
         }
       >
         <PropGrid columns={6}>
           <Prop span={6}>
-        {activeStep ? (
-          <div className={styles["editor-cell"]}>
-            <header className={styles["editor-header"]}>
-              <span className={styles["editor-degree-pill"]} aria-hidden="true">
-                {activeStep.degree}
-              </span>
-              <span className={styles["editor-chord-label"]}>
-                {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
-              </span>
-              <span className={styles["editor-position"]}>
-                {`${t("controls.chordPositionLabel")} ${activeProgressionStepIndex + 1} / ${progressionSteps.length}`}
-              </span>
-            </header>
-            <div className={shared["control-section"]}>
-              <DegreeGrid
-                scaleName={scaleName}
+            {activeStep ? (
+              <div className={styles["editor-cell"]}>
+                <header className={styles["editor-header"]}>
+                  <div className={styles["chord-identity"]}>
+                    <span className={styles["active-degree-badge"]} aria-hidden="true">
+                      {activeStep.degree}
+                    </span>
+                    <span className={styles["active-chord-label"]}>
+                      {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
+                    </span>
+                    <Info size={14} className={styles["info-icon"]} aria-hidden="true" />
+                  </div>
+
+                  <span className={shared["sr-only"]}>
+                    {`${t("controls.chordPositionLabel")} ${activeProgressionStepIndex + 1} / ${progressionSteps.length}`}
+                  </span>
+
+                  <div className={styles["pip-nav-container"]}>
+                    <span className={styles["chords-label"]}>CHORDS</span>
+                    <div className={styles["pip-row"]} role="tablist" aria-label="Progression navigation">
+                      {resolvedProgressionSteps.map((step, idx) => {
+                        const isActive = idx === activeProgressionStepIndex;
+                        return (
+                          <button
+                            key={step.id}
+                            type="button"
+                            className={clsx(styles["pip"], isActive && styles["active-pip"])}
+                            onClick={() => setActiveProgressionStepIndex(idx)}
+                            aria-label={`Jump to step ${idx + 1}, ${step.degree}`}
+                            aria-selected={isActive}
+                            role="tab"
+                          >
+                            {step.degree}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </header>
+                <div className={shared["control-section"]}>
+                  <DegreeGrid
+                    scaleName={scaleName}
                 tonicNote={rootNote}
                 selectedNote={activeResolvedProgressionStep?.root ?? rootNote}
                 onSelectInKey={(_note, degree) => {

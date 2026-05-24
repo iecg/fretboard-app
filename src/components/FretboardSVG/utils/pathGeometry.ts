@@ -374,11 +374,50 @@ export function offsetOpenPolylinePath(
     const qmpX = q.x - p.x;
     const qmpY = q.y - p.y;
     const t = (qmpX * edgeB.ey - qmpY * edgeB.ex) / det;
-    return {
+    const intersection = {
       x: p.x + t * edgeA.ex,
       y: p.y + t * edgeA.ey,
     };
+
+    // If the miter intersection point is too far from the vertex,
+    // exceed the miter limit and clip it to 1.5 * rr to prevent spikes and loops.
+    const distToVertex = Math.hypot(intersection.x - vertex.x, intersection.y - vertex.y);
+    if (distToVertex > 1.5 * rr) {
+      const scale = (1.5 * rr) / distToVertex;
+      return {
+        x: vertex.x + (intersection.x - vertex.x) * scale,
+        y: vertex.y + (intersection.y - vertex.y) * scale,
+      };
+    }
+
+    return intersection;
   };
+
+  // Pre-calculate inside corner intersection points for Side A and Side B
+  // for all interior vertices so adjacent corners can reference them to prevent overlaps.
+  const joinsA: Array<{ x: number; y: number } | null> = [null]; // padding for index 0 (start cap)
+  const joinsB: Array<{ x: number; y: number } | null> = [null];
+
+  for (let j = 1; j < n - 1; j++) {
+    const e0 = edges[j - 1]!;
+    const e1 = edges[j]!;
+    const cross = e0.ex * e1.ey - e0.ey * e1.ex;
+
+    if (Math.abs(cross) < 1e-9) {
+      joinsA.push(null);
+      joinsB.push(null);
+    } else if (cross > 0) {
+      // Screen-right turn → Side A is outside, Side B is inside
+      joinsA.push(null);
+      joinsB.push(offsetLineIntersection(filtered[j]!, e0, e1, -1));
+    } else {
+      // Screen-left turn → Side A is inside, Side B is outside
+      joinsA.push(offsetLineIntersection(filtered[j]!, e0, e1, 1));
+      joinsB.push(null);
+    }
+  }
+  joinsA.push(null); // padding for index n - 1 (end cap)
+  joinsB.push(null);
 
   // Start point on side A of the first edge.
   const startAx = filtered[0]!.x + rr * edges[0]!.nx;
@@ -411,12 +450,12 @@ export function offsetOpenPolylinePath(
         // Screen-left turn → side A is inside. The boundary of a thick
         // centered stroke is rounded locally around the intersection of the
         // adjacent offset edge lines; drawing an arc here twists through the corner.
-        const join = offsetLineIntersection(filtered[i + 1]!, e0, e1, 1);
-        const inLimit = {
+        const join = joinsA[i + 1];
+        const inLimit = joinsA[i] ?? {
           x: filtered[i]!.x + rr * e0.nx,
           y: filtered[i]!.y + rr * e0.ny,
         };
-        const outLimit = {
+        const outLimit = joinsA[i + 2] ?? {
           x: filtered[i + 2]!.x + rr * e1.nx,
           y: filtered[i + 2]!.y + rr * e1.ny,
         };
@@ -463,12 +502,12 @@ export function offsetOpenPolylinePath(
         // Screen-right turn → side B is inside. Use the offset-line
         // intersection as the local fillet control point so the inner
         // boundary stays centered and does not twist across the bend.
-        const join = offsetLineIntersection(filtered[i]!, e0, e1, -1);
-        const inLimit = {
+        const join = joinsB[i];
+        const inLimit = joinsB[i + 1] ?? {
           x: filtered[i + 1]!.x - rr * e1.nx,
           y: filtered[i + 1]!.y - rr * e1.ny,
         };
-        const outLimit = {
+        const outLimit = joinsB[i - 1] ?? {
           x: filtered[i - 1]!.x - rr * e0.nx,
           y: filtered[i - 1]!.y - rr * e0.ny,
         };

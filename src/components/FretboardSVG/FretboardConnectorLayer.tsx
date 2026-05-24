@@ -53,7 +53,8 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   connectorMotionMode,
   clipPathUrl,
 }: FretboardConnectorLayerProps) {
-  const motionKey = `chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`;
+  const polylinesKey = chordPolylines.map((v) => v.voicingKey).sort().join(",");
+  const motionKey = `chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}-${polylinesKey}`;
   return (
     <g
       className={styles["fretboard-overlays"]}

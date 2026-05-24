@@ -107,5 +107,21 @@ export function getFullChordShapeMatches({
     }
   }
 
-  return matches;
+  // Deduplicate matches that have the exact same set of physical coordinates (positionKeys)
+  const uniqueMatchesMap = new Map<string, FullChordMatch>();
+
+  for (const match of matches) {
+    const key = match.positionKeys.slice().sort().join('|');
+    const existing = uniqueMatchesMap.get(key);
+    if (!existing) {
+      uniqueMatchesMap.set(key, match);
+    } else {
+      // Prefer standard E-shape barre chord over G-shape for minor triads
+      if (match.shape === 'E' && existing.shape === 'G') {
+        uniqueMatchesMap.set(key, match);
+      }
+    }
+  }
+
+  return Array.from(uniqueMatchesMap.values());
 }

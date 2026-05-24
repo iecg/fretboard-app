@@ -146,4 +146,20 @@ describe('getFullChordShapeMatches', () => {
       expect(getMatchPositions('G', 'Dominant 7th', 'G', 0)).toBeUndefined();
     });
   });
+
+  it('deduplicates overlapping G and E minor triad shapes to prevent duplicate overlays', () => {
+    // An A minor triad at rootFret 5 has E Minor shape rooted on low E string.
+    // The G minor triad template at rootFret 8 would produce the same fret indices.
+    // Verify that we return exactly one match for these coordinates, and that we prefer the standard E shape.
+    const matches = getFullChordShapeMatches({
+      chordRoot: 'A',
+      chordType: 'Minor Triad',
+      tuning: STANDARD_TUNING,
+      maxFret: 12,
+    });
+
+    const shape5Matches = matches.filter((m) => m.rootFret === 5);
+    expect(shape5Matches.length).toBe(1);
+    expect(shape5Matches[0]!.shape).toBe('E');
+  });
 });

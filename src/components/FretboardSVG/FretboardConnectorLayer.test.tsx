@@ -66,4 +66,25 @@ describe("FretboardConnectorLayer", () => {
 
     expect(container.querySelector(".chord-connectors")).toBeNull();
   });
+
+  it("updates and replaces the rendered paths in the DOM when chordPolylines change", () => {
+    const polylines1 = [makePolyline("0,5|1,5|2,5", "E")];
+    const polylines2 = [makePolyline("1,7|2,7|3,7", "A")];
+
+    const { rerender, container } = renderInSvg(
+      <FretboardConnectorLayer {...BASE_PROPS} chordPolylines={polylines1} />,
+    );
+
+    expect(container.querySelector("[data-caged-shape='E']")).toBeInTheDocument();
+    expect(container.querySelector("[data-caged-shape='A']")).toBeNull();
+
+    rerender(
+      <svg>
+        <FretboardConnectorLayer {...BASE_PROPS} chordPolylines={polylines2} />
+      </svg>,
+    );
+
+    expect(container.querySelector("[data-caged-shape='E']")).toBeNull();
+    expect(container.querySelector("[data-caged-shape='A']")).toBeInTheDocument();
+  });
 });
