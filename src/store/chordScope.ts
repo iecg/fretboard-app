@@ -25,7 +25,7 @@ export const chordScopeToPositionAtom = atomWithStorage<boolean>(
  */
 export const activePositionAtom = atom((get) => {
   const pattern = get(fingeringPatternAtom);
-  if (pattern === "caged") return get(cagedShapesAtom).size === 1;
+  if (pattern === "caged") return get(cagedShapesAtom).size > 0;
   if (pattern === "3nps") return get(npsPositionAtom) > 0;
   return false;
 });

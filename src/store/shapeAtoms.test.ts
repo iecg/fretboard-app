@@ -282,3 +282,48 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// shapeDataAtom — CAGED minor active chord remapping (bug fix verification)
+// ---------------------------------------------------------------------------
+import { cagedShapesAtom } from "./fingeringAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom } from "./progressionAtoms";
+
+describe("shapeDataAtom — CAGED scale shape remapping under minor active chord", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("remaps Major scale shape C to minor A shape when active chord is minor", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set(["C"])],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [progressionStepsAtom, [
+        {
+          id: "step-1",
+          degree: "I",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "Minor Triad",
+          manualRoot: "C",
+        },
+      ]],
+      [activeProgressionStepIndexAtom, 0],
+    ]);
+
+    const data = store.get(shapeDataAtom);
+    expect(data.shapePolygons).toHaveLength(3); // two main fretboard octaves + 1 clamped at end
+
+    // Verify the remapped polygon properties
+    const poly = data.shapePolygons[0];
+    expect(poly.shape).toBe("C"); // keep select shape name so priority matches!
+    expect(poly.cagedLabel).toBe("C Shape"); // Major scale shape label
+
+    // Verify it actually used the "A" template (scans relative to anchor A)
+    // The "A" shape template has intendedMin = -1, intendedMax = 3 (relative to anchor)
+    // At rootFret=0 (first A), it covers frets 0 to 3
+    expect(poly.intendedMin).toBe(-1);
+    expect(poly.intendedMax).toBe(3);
+  });
+});
+

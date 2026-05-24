@@ -27,10 +27,10 @@ describe("chordScope atoms", () => {
     expect(store.get(activePositionAtom)).toBe(true);
   });
 
-  it("activePositionAtom is false when multiple CAGED shapes are selected", () => {
+  it("activePositionAtom is true when multiple CAGED shapes are selected", () => {
     store.set(fingeringPatternAtom, "caged");
     store.set(cagedShapesAtom, new Set(["C", "A"]));
-    expect(store.get(activePositionAtom)).toBe(false);
+    expect(store.get(activePositionAtom)).toBe(true);
   });
 
   it("activePositionAtom is true when fingering is 3nps and npsPosition > 0", () => {

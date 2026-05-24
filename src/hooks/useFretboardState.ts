@@ -85,6 +85,10 @@ function selectFullChordMatchesForCagedPosition(
 ): Voicing[] {
   const byPosition = new Map<string, Voicing>();
   for (const polygon of activePolygons) {
+    if (polygon.shape !== undefined && !selectedShapes.has(polygon.shape as CagedShape)) {
+      continue;
+    }
+
     const best = matches
       .map((match) => scoreFullChordForCagedPosition(match, polygon, selectedShapes))
       .filter((score): score is FullChordCandidateScore => score !== null)
@@ -93,15 +97,20 @@ function selectFullChordMatchesForCagedPosition(
     if (!best) continue;
 
     const { match } = best;
-    const positionKey = getPositionKey(match);
+    const mappedMatch: Voicing = {
+      ...match,
+      shape: polygon.shape as CagedShape | undefined,
+    };
+
+    const positionKey = getPositionKey(mappedMatch);
     const previous = byPosition.get(positionKey);
     if (
       !previous ||
-      (match.shape !== undefined &&
-        selectedShapes.has(match.shape) &&
+      (mappedMatch.shape !== undefined &&
+        selectedShapes.has(mappedMatch.shape) &&
         !(previous.shape !== undefined && selectedShapes.has(previous.shape)))
     ) {
-      byPosition.set(positionKey, match);
+      byPosition.set(positionKey, mappedMatch);
     }
   }
   return Array.from(byPosition.values());
@@ -204,7 +213,7 @@ export function useFretboardState() {
       activeShape = Array.from(cagedShapes)[0] as CagedShape;
       shapeScope = "single";
     } else {
-      activePattern = "none";
+      activePattern = "caged";
       activeShape = Array.from(cagedShapes) as CagedShape[];
       shapeScope = "multi";
     }

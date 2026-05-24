@@ -5,11 +5,13 @@
   align-items: stretch;
   gap: 0.45rem;
   width: 100%;
-  min-height: 32px;
+  height: 32px;
+  box-sizing: border-box;
 }
 
 .shapeToggleButton {
-  min-height: 32px;
+  height: 32px;
+  box-sizing: border-box;
   background: var(--dc-bg);
   border: 1px solid var(--dc-border);
   border-radius: calc(var(--dc-radius) - 1px);

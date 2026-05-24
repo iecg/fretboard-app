@@ -56,7 +56,7 @@ describe("useFretboardState — chord box bounds gating (Task 7)", () => {
     expect(result.current.chordBoxBounds).toEqual(result.current.boxBounds);
   });
 
-  it("returns null chordBoxBounds when scope is on but no active position (multi CAGED)", () => {
+  it("returns non-null chordBoxBounds when scope is on and multiple CAGED shapes are selected", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C", "A", "G"])],
@@ -65,8 +65,8 @@ describe("useFretboardState — chord box bounds gating (Task 7)", () => {
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    // multiple CAGED shapes => activePositionAtom is false => chordBoxBounds null
-    expect(result.current.chordBoxBounds).toBeNull();
+    // multiple CAGED shapes => activePositionAtom is true => chordBoxBounds should equal boxBounds
+    expect(result.current.chordBoxBounds).toEqual(result.current.boxBounds);
   });
 });
 
@@ -205,7 +205,7 @@ describe("ii chord mapping regression test", () => {
 
     const visible = result.current.fullChordMatches;
     expect(visible.length).toBeGreaterThan(0);
-    expect(visible.every(v => v.shape === "D")).toBe(true);
+    expect(visible.every(v => v.shape === "C")).toBe(true);
   });
 });
 
