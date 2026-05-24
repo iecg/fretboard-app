@@ -286,7 +286,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
 // shapeDataAtom — CAGED minor active chord remapping (bug fix verification)
 // ---------------------------------------------------------------------------
 import { cagedShapesAtom } from "./fingeringAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom } from "./progressionAtoms";
+import { activeChordQualityAtom } from "./songStateAtoms";
 
 describe("shapeDataAtom — CAGED scale shape remapping under minor active chord", () => {
   beforeEach(() => {
@@ -299,16 +299,7 @@ describe("shapeDataAtom — CAGED scale shape remapping under minor active chord
       [cagedShapesAtom, new Set(["C"])],
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [progressionStepsAtom, [
-        {
-          id: "step-1",
-          degree: "I",
-          duration: { value: 1, unit: "bar" },
-          qualityOverride: "Minor Triad",
-          manualRoot: "C",
-        },
-      ]],
-      [activeProgressionStepIndexAtom, 0],
+      [activeChordQualityAtom, "Minor Triad"],
     ]);
 
     const data = store.get(shapeDataAtom);
@@ -317,7 +308,8 @@ describe("shapeDataAtom — CAGED scale shape remapping under minor active chord
     // Verify the remapped polygon properties
     const poly = data.shapePolygons[0];
     expect(poly.shape).toBe("C"); // keep select shape name so priority matches!
-    expect(poly.cagedLabel).toBe("C Shape"); // Major scale shape label
+<<<<<<< HEAD
+    expect(poly.cagedLabel).toBe("Cm Shape"); // minor quality label
 
     // Verify it actually used the "A" template (scans relative to anchor A)
     // The "A" shape template has intendedMin = -1, intendedMax = 3 (relative to anchor)
