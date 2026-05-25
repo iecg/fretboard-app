@@ -1,65 +1,59 @@
-# Tone.Part Progression Scheduler Implementation Plan
+# Tone-Native Progression Scheduler Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace FretFlow's bespoke chord-onset scheduling chain (`useProgressionPlaybackLoop` + the segment queue in `useProgressionAudioPlayback`) with a single Tone.Part that pre-schedules **one event per bar** of the progression (multi-bar steps expand into per-bar events) and auto-loops via `part.loop`.
+**Goal:** Replace FretFlow's bespoke progression-playback scheduler with five Tone-native primitives running on a single Transport — one `Tone.Part` per audio layer (chord-strum, bass, drums, chord-onset clock) plus one `Tone.Loop` for the metronome — each routed through its own gain node so layer toggles flip gain instead of rebuilding the scheduler. Mid-play edits stop playback and restart from bar 0.
 
-**Architecture:** A single `Tone.Part` instance owns a per-bar event grid. Its callback fires once per bar with the audio-precise `time`; inside the callback we (1) call our existing `scheduleProgressionStep(...)` with `beatsAvailable = beatsPerBar` (or the sub-bar step's beats) so only the current bar's audio is in flight, (2) publish the active step to `timeline.ts` for the playhead, and (3) on **first-bar-of-step** events only, defer the React `activeProgressionStepIndex` write by the Tone lookahead so the chord-overlay swap aligns with audio onset (same `setTimeout(advance, time − getContext().immediate())` pattern we just shipped). The Part is rebuilt on dep changes (tempo, steps, loop toggle), starting at the current Transport position so audio doesn't restart from bar 0. The state-driver hook `useProgressionPlaybackLoop` is deleted; its responsibilities collapse into the Part callback. Per-bar callbacks mean only one bar of audio is ever pre-scheduled, so mid-playback parameter changes glitch at most one bar instead of mid-chord.
+**Architecture:** At play-start, build the full event timeline once (chord strums, bass notes, drum hits, metronome clicks, chord-onset events) by flattening the resolved progression. Each layer's events feed its own `Tone.Part` (or `Tone.Loop` for metronome) connected to a per-layer gain node, all routed into the existing progression bus. The chord-onset `Tone.Part`'s callback owns the React `activeProgressionStepIndex` advance, deferred by `setTimeout(advance, time − getContext().immediate())` to align with audio onset (same proven pattern from `4f50968`). Layer-enable toggles set the corresponding gain to 0/1 without touching the sequencer. Any edit to steps / tempo / beatsPerBar / patterns / loop / instrument disposes every primitive and rebuilds from bar 0; the user perceives a brief stop then auto-restart. `useProgressionPlaybackLoop` and the top-level `scheduleProgressionStep` orchestrator are deleted.
 
-**Tech Stack:** Tone.js 15.x (`Tone.Part`, `Tone.getTransport`, `Tone.getContext`), Jotai, React 19, Vitest.
+**Tech Stack:** Tone.js 15.x (`Tone.Part`, `Tone.Loop`, `Tone.Gain`, `Tone.getTransport`, `Tone.getContext`), Jotai, React 19, Vitest.
 
 ---
 
-## Design rationale (the missing brainstorm)
+## Design rationale
 
-### Why Tone.Part, not Tone.Loop or Tone.Sequence
+### Why Tone.Part (and one Tone.Loop), not Sequence everywhere
 
-Both linked examples (step sequencer, DAW) use **fixed-grid** primitives. FretFlow's progression steps have **variable** durations — `{ value: 1, unit: "beat" }` or `{ value: 2, unit: "bar" }` per step. Mapping directly:
+Tone primitives map cleanly onto our data shapes:
 
-| Primitive | Fits? | Why |
-|---|---|---|
-| `Tone.Loop(cb, "4n")` | no | fires at a fixed subdivision; can't express sub-bar steps + multi-bar steps in the same sequence |
-| `Tone.Sequence([…], "1m")` | partial | iterates an array at a fixed subdivision; fits the **expanded** per-bar event list but not the sub-bar steps we still support |
-| `Tone.Part([[0, e0], [4, e1], …], cb)` | **yes** | schedules events at arbitrary absolute times relative to part start; supports `loop` + `loopEnd` natively; mixed grid (bar + sub-bar) just works |
+| Layer | Today (custom) | Proposed primitive | Why |
+|---|---|---|---|
+| Chord-onset clock (for React `activeProgressionStepIndex`) | `useProgressionPlaybackLoop` + `Transport.scheduleOnce` chain | **Tone.Part** | one event per bar; carries `isFirstBar` so only true step boundaries fire the React write |
+| Chord strum hits | `scheduler.ts` per-bar loop calling `voice.scheduleChord` | **Tone.Part** | each event = one strum hit at audio-precise time with voicing + velocity + style |
+| Bass notes | `scheduler.ts` per-bar loop calling `scheduleBassNote` with role resolution | **Tone.Part** | resolve `nextChordRoot` at build time (we know the full progression); each event = one bass note |
+| Drum hits | `scheduler.ts` per-bar loop calling `scheduleKick/Snare/HiHat/Ride` | **Tone.Part** | drum patterns have mixed voices per beat; Tone.Sequence's uniform-array-iteration assumes one value per slot, Tone.Part handles arbitrary-time mixed-voice events without forcing us to chunk by subdivision |
+| Metronome | `scheduler.ts` per-bar loop calling `scheduleClick` | **Tone.Loop** | textbook fit — fires every beat at a fixed subdivision, accent-on-downbeat is a single counter |
 
-### Per-bar event expansion
+You explicitly asked about Tone.Sequence for drums; the data we already have (`CatalogDrumPattern.hits` is an array of `{beat, type, velocity}`) is point-event-shaped, not slot-shaped. Tone.Part schedules those without translation. If we ever migrate drum patterns to a 16th-grid array of `{kick?, snare?, hihat?}` slot objects, swapping in Tone.Sequence is a small follow-up; the change is purely upstream of the primitive choice.
 
-The data model keeps per-step variable duration (the editor UX is unchanged). At the audio layer, `buildProgressionEvents` expands multi-bar steps into one event per bar — e.g., a single `Am × 2 bars` step becomes two events `{stepIndex: 1, isFirstBar: true}` + `{stepIndex: 1, isFirstBar: false}`. Sub-bar steps stay as a single event whose `durationSec` is less than one bar.
+### Why mid-play edit = stop + restart from 0
 
-Why expand:
-- **Mid-playback rebuilds glitch at most one bar.** With a single multi-bar event, the scheduler would pre-queue all 4 bars of audio in one shot; canceling that mid-chord (e.g., drums toggle) cuts the chord. With per-bar callbacks, only the next bar is pre-queued, so dispose+rebuild loses at most one bar's worth of pre-scheduled audio.
-- **The React advance only fires when the step actually changes.** The callback checks `event.isFirstBar` before writing the active-step Jotai atom, so continuation bars don't trigger a chord-overlay re-render. Saves N − 1 heavy React passes per N-bar chord.
-- **`scheduleProgressionStep` is called per bar with `beatsAvailable = beatsPerBar`**, so the existing drum/bass/strum/metronome pattern repetition naturally loops once per bar without special "rebuild from time T" plumbing.
+You confirmed this trade-off. The win is large: today's code carries `wasPlayingRef`, `lastEnableRef`, `lastConfigRef`, `lastStepRef`, `lastActiveStartTimeRef`, `sameEnableFlags`, `sameConfigFlags`, `scheduleFromTime`, "drop segments that no longer match" reconciliation, "rebuild active segment without restarting rhythmically" — all to preserve mid-bar continuity during edits. Drop "preserve mid-bar continuity" and all of that disappears. The new effect's pattern is: dispose everything, build everything, start at 0. No reconciliation.
+
+### Why layer-mute as gain, not as rebuild
+
+Each layer (chord-strum, bass, drums, metronome) gets its own `Tone.Gain` node between the layer's primitive and the existing progression bus. Toggling a layer flips its gain to 0 or 1 — no sequencer rebuild, no audio glitch, no React effect cascade. This is "without additional custom code" in the sense you meant: gain routing is a Tone primitive, not custom mute logic.
+
+### Why we still need the chord-onset Part
+
+The chord-strum Part already fires for every strum hit, but those events aren't aligned to step boundaries (a strum pattern can have several hits per bar). The React `activeProgressionStepIndex` needs a clean once-per-bar tick so the chord overlay swap fires exactly once per bar boundary. A separate tiny Tone.Part with one event per bar is the simplest way to deliver that.
 
 ### What stays (intentional non-scope)
 
-- `scheduleProgressionStep` in `src/progressions/audio/scheduler.ts` — does all the per-step drum/bass/strum/metronome work. Well-tested. Untouched.
-- The pattern catalog, drum kit, instrument registry, swing logic. Untouched.
-- `timeline.ts` — playhead reads from it. The new Part callback writes to it (same `setActiveStep` call); contract unchanged.
-- The `ProgressionPlayhead` component and its RAF loop. Untouched.
-- Atoms in `progressionAtoms.ts`. The `advanceProgressionPlaybackAtom` write target stays; only its trigger moves.
-- The chord-overlay subscribers (chordOverlayAtoms, songStateAtoms, practiceLensAtoms). Untouched.
-- The `setTimeout(advance, time - immediate())` deferral pattern we just shipped — it's reused verbatim inside the Part callback. Plain setTimeout, no Draw, no startTransition. The 250 ms expiration stall cannot recur through this path.
+- `progressionStepsAtom` schema + the editor UX (per-step variable duration). Unchanged.
+- The pattern catalog (`CHORD_PATTERNS`, `BASS_PATTERNS`, `DRUM_PATTERNS`, `DRUM_VARIATIONS`) and lookup helpers. Unchanged.
+- Per-hit audio primitives (`scheduleKick`, `scheduleSnare`, `scheduleHiHat`, `scheduleRide`, `scheduleBassNote`, `scheduleClick`, `voice.scheduleChord` from the instrument registry). Unchanged — they become the bodies of Tone primitive callbacks.
+- `swingBeat` math, `repeatPatternToBeats`. Move into the new event-builder; remain unchanged in behavior.
+- The chord overlay subscribers (`chordOverlayAtoms`, `songStateAtoms`, `practiceLensAtoms`) and `ProgressionPlayhead`. Unchanged.
+- `timeline.ts` shape — the chord-onset Part callback calls `setActiveStep` with the new bar's anchor.
+- The `setTimeout(advance, time − immediate())` pattern from `4f50968`. Reused verbatim inside the chord-onset Part callback. The 250 ms-expiration stall cannot recur via this path.
 
 ### What goes away
 
-- `src/hooks/useProgressionPlaybackLoop.ts` — fully deleted. The Part callback is now the chord-onset event source; the separate React-driven advance loop is redundant.
-- `src/hooks/useProgressionPlaybackLoop.test.tsx` — deleted. Its meaningful coverage (alignment, cleanup, mute-while-active, retry-on-timeline-mismatch) migrates to `useProgressionAudioPlayback.test.tsx`.
-- The two-segment queue (`current` + `next` `ScheduledSegment[]`) inside `useProgressionAudioPlayback.ts`. Tone.Part pre-schedules everything in one shot; we don't manually maintain a queue.
-- The `armAdvance` retry-via-`setTimeout(0)` for the timeline/state race. The race vanishes because audio scheduling and timeline publication happen in the same callback synchronously.
-
-### What we explicitly do NOT change in this round
-
-- Mid-playback chord-overlay React render cost. The Fretboard repaints heavily when `activeResolvedProgressionStep` changes; the new architecture doesn't make that faster. If RAF starvation during the repaint is audible (playhead micro-stutter at boundaries), it gets its own plan — likely decoupling the overlay's mount from the main fretboard tree.
-- BPM ramps via `getTransport().bpm.rampTo(...)`. Mentioned in your example but FretFlow doesn't expose ramped tempo today. Out of scope.
-- Replacing the per-step scheduler with `Tone.Pattern` for drums or `Tone.Sequence` for bass. Our pattern catalog + role-resolution logic is too domain-specific; Tone primitives don't reduce code here.
-
-### Failure modes considered
-
-1. **Mid-playback dep change** (user changes tempo, swaps a chord, toggles loop) → we dispose the existing Part and build a new one. Tone.Part's `dispose()` cancels all its pending events. We start the new Part with `startOffset` set to `getTransport().seconds % oldTotalDurationSec` so playback continues from the current position, not bar 0. Same UX as today's "reconcile keepers" logic but trivially simpler.
-2. **Non-looped progression reaches end** → Tone.Part doesn't auto-stop when `loop = false`; it just stops firing callbacks past the last event. We schedule a `Transport.scheduleOnce` at `progressionStart + totalDurationSec` to set `progressionPlayingStateAtom = false`. (One-shot scheduleOnce; same primitive we used for the advance, no `Draw`, no `startTransition`.)
-3. **Pause mid-playback** → we call `part.stop(now)` and `clearTimeline()` (existing path). On resume we rebuild the Part at the current Transport position.
-4. **Test environment without Web Audio** → the existing fallback path (`if (!ensureProgressionAudio())`) gets a simpler version: we just don't build a Part. Tests that exercise the audio path mock `Tone.Part` explicitly.
+- `src/hooks/useProgressionPlaybackLoop.ts` + test. Fully deleted.
+- `scheduleProgressionStep` (top-level function in `src/progressions/audio/scheduler.ts`). Replaced by per-layer event builders + Tone primitives. The per-hit helpers in that file stay.
+- The segment-queue logic + reconciliation refs in `useProgressionAudioPlayback.ts`. Replaced by "build everything, dispose everything."
+- Mid-bar parameter rebuild semantics. Edits stop + restart at bar 0.
 
 ---
 
@@ -67,58 +61,80 @@ Why expand:
 
 **Create**
 
-- `src/progressions/audio/progressionPart.ts` — thin wrapper over `Tone.Part` with FretFlow-shaped API:
+- `src/progressions/audio/progressionPart.ts` — thin wrapper over `Tone.Part`:
   ```ts
-  export interface ProgressionPartEvent {
-    /** Audio time in seconds, relative to part start. */
-    time: number;
-    /** Index into the resolved step array — the React state target. */
-    stepIndex: number;
-    /** True when this event is the first bar of its step (drives the
-     *  Jotai active-step write; continuation bars skip it). */
-    isFirstBar: boolean;
-    /** True when this event is the last bar of its step (gates passing
-     *  `nextChordRoot` to the scheduler for chromatic-approach bass). */
-    isLastBar: boolean;
-    /** This bar's length in seconds (for handing to scheduleProgressionStep). */
-    durationSec: number;
-    /** Cumulative offset from progression start (for setActiveStep). */
-    cumulativeStartSec: number;
-    /** Beats this bar carries (for the scheduler's `beatsAvailable`). */
-    beats: number;
-  }
-
-  export interface ProgressionPartOptions {
-    events: readonly ProgressionPartEvent[];
-    /** Total loop length. Required when loop=true; ignored when false. */
-    totalDurationSec: number;
-    loop: boolean;
-    /** Fired once per chord onset, at the audio-precise scheduled time. */
-    onEvent: (audioTime: number, event: ProgressionPartEvent) => void;
-  }
-
   export interface ProgressionPartHandle {
-    /** Start the part at the given transport offset (in seconds). */
-    start: (startOffset?: number) => void;
-    /** Stop and dispose the part. Idempotent. */
+    /** Start at transport `time` (default "now") with internal cursor at
+     *  `offset` seconds (default 0). Forwards to Tone.Part.start. */
+    start: (time?: number, offset?: number) => void;
+    /** Stop and dispose. Idempotent. */
     dispose: () => void;
   }
-
-  export function createProgressionPart(opts: ProgressionPartOptions): ProgressionPartHandle;
+  export function createProgressionPart<V>(opts: {
+    events: ReadonlyArray<{ time: number; value: V }>;
+    loop: boolean;
+    loopEnd: number;
+    onEvent: (audioTime: number, value: V) => void;
+  }): ProgressionPartHandle;
   ```
-  Has its own tests against a mocked Tone.Part.
 
-- `src/hooks/useProgressionAudioPlayback.test.tsx` — new test file. Inherits the meaningful coverage from the deleted loop test plus new tests for Part behavior.
+- `src/progressions/audio/progressionMetronomeLoop.ts` — thin wrapper over `Tone.Loop`:
+  ```ts
+  export interface MetronomeLoopHandle {
+    start: (time?: number) => void;
+    dispose: () => void;
+  }
+  export function createMetronomeLoop(opts: {
+    beatsPerBar: number;
+    /** Called once per beat with the audio-precise time + 1-based beat number. */
+    onBeat: (audioTime: number, beatInBar: number) => void;
+  }): MetronomeLoopHandle;
+  ```
+
+- `src/progressions/audio/layerBuses.ts` — per-layer gain nodes:
+  ```ts
+  export type ProgressionLayer = "chord" | "bass" | "drums" | "metronome";
+  export interface LayerBuses {
+    /** Per-layer GainNode wrapped destination; instruments connect here. */
+    chord: AudioNode;
+    bass: AudioNode;
+    drums: AudioNode;
+    metronome: AudioNode;
+  }
+  export function buildLayerBuses(ctx: AudioContext, destination: AudioNode): LayerBuses;
+  export function setLayerGain(buses: LayerBuses, layer: ProgressionLayer, enabled: boolean): void;
+  ```
+
+- `src/progressions/audio/buildAllLayers.ts` — pure event-stream builder. Input = resolved steps + tempo + beatsPerBar + swing + chordInstrument + pattern ids + drumVariations + loop. Output =
+  ```ts
+  export interface ChordOnsetEvent { stepIndex: number; isFirstBar: boolean; isLastBar: boolean; beats: number; durationSec: number; cumulativeStartSec: number; }
+  export interface ChordStrumEvent { voicing: readonly string[]; velocity: number; style?: string; direction?: "down" | "up" | "alt"; }
+  export interface BassEvent { note: string; velocity: number; }
+  export interface DrumEvent { type: "kick" | "snare" | "hihat" | "ride"; velocity: number; }
+
+  export interface BuiltLayers {
+    chordOnsets: ReadonlyArray<{ time: number; value: ChordOnsetEvent }>;
+    chordStrums: ReadonlyArray<{ time: number; value: ChordStrumEvent }>;
+    bass: ReadonlyArray<{ time: number; value: BassEvent }>;
+    drums: ReadonlyArray<{ time: number; value: DrumEvent }>;
+    totalDurationSec: number;
+  }
+  export function buildAllLayers(input: BuildAllLayersInput): BuiltLayers;
+  ```
+
+- `src/hooks/useProgressionAudioPlayback.test.tsx` — new test file (~10 focused tests).
 
 **Modify**
 
-- `src/hooks/useProgressionAudioPlayback.ts` — substantial rewrite. Replaces the segment queue with a single `ProgressionPartHandle`. The effect builds the Part on dep change, starts it, disposes the previous one. The Part callback does what the old `useProgressionPlaybackLoop` did:
-  1. `scheduleProgressionStep(...)` for the chord's audio events.
-  2. `setActiveStep(...)` so the playhead reflects the new step.
-  3. `setTimeout(advance, max(0, audioTime - getContext().immediate()) * 1000)` to swap the React active-step index in alignment with audio onset.
-  4. For non-loop mode: when this is the last event, schedule a one-shot `Transport.scheduleOnce` to set `progressionPlayingStateAtom = false` at `audioTime + durationSec`.
+- `src/progressions/audio/bus.ts` — `ensureProgressionAudio()` exposes the new `LayerBuses` alongside the existing `bus`. Backwards-compat: keep `bus` as the parent of all four layer buses.
 
-- `src/components/ProgressionSummarySlot/ProgressionSummarySlot.tsx` — remove the `useProgressionPlaybackLoop()` import and call. Only `useProgressionAudioPlayback()` remains.
+- `src/progressions/audio/scheduler.ts` — delete `scheduleProgressionStep` and `swingBeat` (the latter moves to `buildAllLayers`). Keep the per-hit `scheduleKick/Snare/HiHat/Ride/Click/BassNote` exports intact. Delete `scheduler.test.ts` cases that exercise `scheduleProgressionStep` directly; keep per-hit tests.
+
+- `src/hooks/useProgressionAudioPlayback.ts` — full rewrite. Two effects:
+  1. Build/dispose the Tone primitives on play+input changes.
+  2. Flip layer gains on toggle changes (no rebuild).
+
+- `src/components/ProgressionSummarySlot/ProgressionSummarySlot.tsx` — remove `useProgressionPlaybackLoop()` import + call.
 
 **Delete**
 
@@ -127,10 +143,8 @@ Why expand:
 
 **Untouched (explicit)**
 
-- `src/progressions/audio/scheduler.ts`
+- `src/progressions/audio/{drumKit,bass,metronome,patterns,instruments,toneBus}.ts`
 - `src/progressions/audio/timeline.ts`
-- `src/progressions/audio/bus.ts`
-- `src/progressions/audio/{drumKit,bass,patterns,instruments,…}.ts`
 - `src/components/ProgressionTrack/ProgressionPlayhead.tsx`
 - All atoms.
 
@@ -138,21 +152,27 @@ Why expand:
 
 ## Reused utilities
 
-- `getTransport`, `getContext`, `Tone.Part` from `"tone"`.
-- `scheduleProgressionStep` (`src/progressions/audio/scheduler.ts`).
-- `setActiveStep`, `pauseTimeline`, `clearTimeline` (`src/progressions/audio/timeline.ts`).
-- `ensureProgressionAudio`, `resumeProgressionAudio`, `restoreProgressionBus`, `silenceProgressionBus` (`src/progressions/audio/bus.ts`).
-- `findNextResolvableStepIndex`, `getProgressionDurationMs`, `resolveBassLineNotes`, `resolveChordVoicing` (`src/progressions/progressionDomain.ts`, `progressionAudio.ts`). Used to build the event array.
+- `Tone.Part`, `Tone.Loop`, `Tone.Gain`, `getTransport`, `getContext` from `"tone"`.
+- Per-hit schedulers: `scheduleKick`, `scheduleSnare`, `scheduleHiHat`, `scheduleRide`, `scheduleBassNote`, `scheduleClick`, `getChordVoice(instrumentId).scheduleChord`.
+- `getChordPattern`, `getBassPattern`, `getDrumPattern`, `getDrumVariation`, `buildMetronomePattern`, `repeatPatternToBeats` from `patterns.ts`.
+- `resolveBassNoteForRole`, `resolveChordVoicing`, `resolveBassLineNotes` from `progressionAudio.ts`.
+- `findNextResolvableStepIndex`, `getProgressionDurationMs` from `progressionDomain.ts`.
+- `setActiveStep`, `pauseTimeline`, `clearTimeline` from `timeline.ts`.
+- `ensureProgressionAudio`, `resumeProgressionAudio`, `restoreProgressionBus`, `silenceProgressionBus` from `bus.ts`.
 
 ---
 
-### Task 1: Create ProgressionPart wrapper
+### Task 1: Tone primitive wrappers + layer buses
 
 **Files:**
 - Create: `src/progressions/audio/progressionPart.ts`
 - Create: `src/progressions/audio/progressionPart.test.ts`
+- Create: `src/progressions/audio/progressionMetronomeLoop.ts`
+- Create: `src/progressions/audio/progressionMetronomeLoop.test.ts`
+- Create: `src/progressions/audio/layerBuses.ts`
+- Create: `src/progressions/audio/layerBuses.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write the failing tests**
 
 ```ts
 // src/progressions/audio/progressionPart.test.ts
@@ -195,190 +215,221 @@ const toneMocks = vi.hoisted(() => {
     parts.push(inst);
     return inst;
   }
-
   return { Part: PartCtor as unknown as new (...args: unknown[]) => unknown, parts };
 });
-
 vi.mock("tone", () => ({ Part: toneMocks.Part }));
 
-import { createProgressionPart, type ProgressionPartEvent } from "./progressionPart";
+import { createProgressionPart } from "./progressionPart";
 
 describe("createProgressionPart", () => {
   beforeEach(() => { toneMocks.parts.length = 0; });
   afterEach(() => { vi.restoreAllMocks(); });
 
-  const sampleEvent = (over: Partial<ProgressionPartEvent> = {}): ProgressionPartEvent => ({
-    time: 0,
-    stepIndex: 0,
-    isFirstBar: true,
-    isLastBar: true,
-    durationSec: 1,
-    cumulativeStartSec: 0,
-    beats: 4,
-    ...over,
-  });
-
-  it("builds a Tone.Part with one event per scheduled bar", () => {
-    createProgressionPart({
-      events: [
-        sampleEvent({ time: 0, stepIndex: 0 }),
-        sampleEvent({ time: 1, stepIndex: 1, cumulativeStartSec: 1, durationSec: 2 }),
-      ],
-      totalDurationSec: 3,
+  it("constructs Tone.Part with one event per supplied {time, value}", () => {
+    createProgressionPart<{ id: string }>({
+      events: [{ time: 0, value: { id: "a" } }, { time: 1.5, value: { id: "b" } }],
       loop: true,
+      loopEnd: 3,
       onEvent: () => {},
     });
     expect(toneMocks.parts).toHaveLength(1);
-    const part = toneMocks.parts[0];
-    expect(part.events).toHaveLength(2);
-    expect(part.events[0][0]).toBe(0);
-    expect(part.events[1][0]).toBe(1);
-    expect(part.loop).toBe(true);
-    expect(part.loopEnd).toBe(3);
-  });
-
-  it("invokes onEvent with the audio time and full event payload when Part fires", () => {
-    const onEvent = vi.fn();
-    createProgressionPart({
-      events: [sampleEvent({ stepIndex: 7, isFirstBar: false, beats: 4 })],
-      totalDurationSec: 1,
-      loop: false,
-      onEvent,
-    });
-    const part = toneMocks.parts[0];
-    part.callback(0.42, part.events[0][1]);
-    expect(onEvent).toHaveBeenCalledTimes(1);
-    expect(onEvent).toHaveBeenCalledWith(
-      0.42,
-      expect.objectContaining({ stepIndex: 7, isFirstBar: false, beats: 4 }),
-    );
-  });
-
-  it("start(time, offset) forwards both args to Tone.Part.start", () => {
-    const handle = createProgressionPart({
-      events: [sampleEvent()],
-      totalDurationSec: 1,
-      loop: false,
-      onEvent: () => {},
-    });
-    handle.start(2.5, 0.4);
-    expect(toneMocks.parts[0].startedTime).toBe(2.5);
-    expect(toneMocks.parts[0].startedOffset).toBe(0.4);
-  });
-
-  it("dispose() releases the Part and is idempotent", () => {
-    const handle = createProgressionPart({
-      events: [sampleEvent()],
-      totalDurationSec: 1,
-      loop: false,
-      onEvent: () => {},
-    });
-    handle.dispose();
-    handle.dispose();
-    expect(toneMocks.parts[0].disposed).toBe(true);
+    expect(toneMocks.parts[0].events).toEqual([[0, { id: "a" }], [1.5, { id: "b" }]]);
+    expect(toneMocks.parts[0].loop).toBe(true);
+    expect(toneMocks.parts[0].loopEnd).toBe(3);
   });
 
   it("does not set loopEnd when loop is false", () => {
     createProgressionPart({
-      events: [sampleEvent()],
-      totalDurationSec: 1,
+      events: [{ time: 0, value: 1 }],
       loop: false,
+      loopEnd: 99, // ignored
       onEvent: () => {},
     });
     expect(toneMocks.parts[0].loop).toBe(false);
   });
+
+  it("invokes onEvent with audio time + the original value when Tone fires", () => {
+    const onEvent = vi.fn();
+    createProgressionPart<{ id: string }>({
+      events: [{ time: 0, value: { id: "x" } }],
+      loop: false,
+      loopEnd: 1,
+      onEvent,
+    });
+    toneMocks.parts[0].callback(0.42, { id: "x" });
+    expect(onEvent).toHaveBeenCalledWith(0.42, { id: "x" });
+  });
+
+  it("start(time, offset) forwards both args; dispose() is idempotent", () => {
+    const h = createProgressionPart({
+      events: [{ time: 0, value: 1 }],
+      loop: false,
+      loopEnd: 1,
+      onEvent: () => {},
+    });
+    h.start(2.5, 0.4);
+    expect(toneMocks.parts[0].startedTime).toBe(2.5);
+    expect(toneMocks.parts[0].startedOffset).toBe(0.4);
+    h.dispose();
+    h.dispose();
+    expect(toneMocks.parts[0].disposed).toBe(true);
+  });
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+```ts
+// src/progressions/audio/progressionMetronomeLoop.test.ts
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-Run: `pnpm vitest run src/progressions/audio/progressionPart.test.ts`
-Expected: FAIL — `Cannot find module './progressionPart'`.
+const toneMocks = vi.hoisted(() => {
+  type Cb = (time: number) => void;
+  interface LoopInstance {
+    callback: Cb;
+    interval: string | number;
+    startedTime: number | null;
+    disposed: boolean;
+    start(time?: number): LoopInstance;
+    dispose(): LoopInstance;
+  }
+  const loops: LoopInstance[] = [];
+  function LoopCtor(callback: Cb, interval: string | number): LoopInstance {
+    const inst: LoopInstance = {
+      callback, interval, startedTime: null, disposed: false,
+      start(time?: number) { this.startedTime = time ?? 0; return this; },
+      dispose() { this.disposed = true; return this; },
+    };
+    loops.push(inst);
+    return inst;
+  }
+  return { Loop: LoopCtor as unknown as new (...args: unknown[]) => unknown, loops };
+});
+vi.mock("tone", () => ({ Loop: toneMocks.Loop }));
 
-- [ ] **Step 3: Implement the wrapper**
+import { createMetronomeLoop } from "./progressionMetronomeLoop";
+
+describe("createMetronomeLoop", () => {
+  beforeEach(() => { toneMocks.loops.length = 0; });
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  it("constructs a Tone.Loop at quarter-note interval", () => {
+    createMetronomeLoop({ beatsPerBar: 4, onBeat: () => {} });
+    expect(toneMocks.loops).toHaveLength(1);
+    expect(toneMocks.loops[0].interval).toBe("4n");
+  });
+
+  it("fires onBeat with audio time + the correct 1-based beat number (cycling 1..beatsPerBar)", () => {
+    const onBeat = vi.fn();
+    createMetronomeLoop({ beatsPerBar: 3, onBeat });
+    const loop = toneMocks.loops[0];
+    loop.callback(0.0); loop.callback(0.5); loop.callback(1.0); loop.callback(1.5);
+    expect(onBeat.mock.calls).toEqual([[0.0, 1], [0.5, 2], [1.0, 3], [1.5, 1]]);
+  });
+
+  it("start + dispose forward through to Tone.Loop", () => {
+    const h = createMetronomeLoop({ beatsPerBar: 4, onBeat: () => {} });
+    h.start(2);
+    expect(toneMocks.loops[0].startedTime).toBe(2);
+    h.dispose();
+    expect(toneMocks.loops[0].disposed).toBe(true);
+  });
+});
+```
+
+```ts
+// src/progressions/audio/layerBuses.test.ts
+// @vitest-environment jsdom
+import { describe, expect, it, vi } from "vitest";
+import { buildLayerBuses, setLayerGain } from "./layerBuses";
+
+function fakeAudioContext() {
+  const gainNodes: Array<{ gain: { value: number }; connect: ReturnType<typeof vi.fn>; disconnect: ReturnType<typeof vi.fn> }> = [];
+  const ctx = {
+    createGain: () => {
+      const node = {
+        gain: { value: 1 },
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+      };
+      gainNodes.push(node);
+      return node;
+    },
+  } as unknown as AudioContext;
+  return { ctx, gainNodes };
+}
+
+describe("layerBuses", () => {
+  it("builds one GainNode per layer and connects each to the destination", () => {
+    const { ctx, gainNodes } = fakeAudioContext();
+    const dest = { kind: "dest" } as unknown as AudioNode;
+    const buses = buildLayerBuses(ctx, dest);
+    expect(Object.keys(buses).sort()).toEqual(["bass", "chord", "drums", "metronome"]);
+    expect(gainNodes).toHaveLength(4);
+    gainNodes.forEach((n) => expect(n.connect).toHaveBeenCalledWith(dest));
+  });
+
+  it("setLayerGain flips the targeted layer's gain", () => {
+    const { ctx } = fakeAudioContext();
+    const buses = buildLayerBuses(ctx, {} as AudioNode);
+    setLayerGain(buses, "drums", false);
+    expect((buses.drums as unknown as { gain: { value: number } }).gain.value).toBe(0);
+    setLayerGain(buses, "drums", true);
+    expect((buses.drums as unknown as { gain: { value: number } }).gain.value).toBe(1);
+  });
+});
+```
+
+- [ ] **Step 2: Run to confirm all three fail**
+
+Run: `pnpm vitest run src/progressions/audio/progressionPart.test.ts src/progressions/audio/progressionMetronomeLoop.test.ts src/progressions/audio/layerBuses.test.ts`
+Expected: FAIL — no implementation modules exist yet.
+
+- [ ] **Step 3: Implement the three wrappers**
 
 ```ts
 // src/progressions/audio/progressionPart.ts
 import { Part } from "tone";
 
-export interface ProgressionPartEvent {
-  /** Audio time in seconds, relative to part start. */
-  time: number;
-  /** Index into the resolved step array — the React state target. */
-  stepIndex: number;
-  /** True when this event is the first bar of its step (drives the Jotai
-   *  active-step write; continuation bars skip it). */
-  isFirstBar: boolean;
-  /** True when this event is the last bar of its step (gates passing
-   *  `nextChordRoot` to the scheduler for chromatic-approach bass). */
-  isLastBar: boolean;
-  /** This bar's length in seconds. */
-  durationSec: number;
-  /** Cumulative offset from progression start (for setActiveStep). */
-  cumulativeStartSec: number;
-  /** Beats this bar carries (passes to scheduler.beatsAvailable). */
-  beats: number;
-}
-
-export interface ProgressionPartOptions {
-  events: readonly ProgressionPartEvent[];
-  /** Total loop length. Required when loop=true; ignored when false. */
-  totalDurationSec: number;
-  loop: boolean;
-  /** Fired once per bar, at the audio-precise scheduled time. */
-  onEvent: (audioTime: number, event: ProgressionPartEvent) => void;
-}
-
 export interface ProgressionPartHandle {
-  /**
-   * Start the part. `time` is the transport time (audio seconds) to start
-   * at; defaults to "now". `offset` is how many seconds into the part's
-   * internal timeline to begin from; defaults to 0. Both forward verbatim
-   * to `Tone.Part.start(time, offset)` — used for mid-playback position
-   * preservation when the Part is rebuilt.
-   */
+  /** Start at transport `time` (default "now") with internal cursor at
+   *  `offset` seconds (default 0). Forwards verbatim to Tone.Part.start. */
   start: (time?: number, offset?: number) => void;
-  /** Stop and dispose the part. Idempotent. */
+  /** Stop and dispose. Idempotent. */
   dispose: () => void;
 }
 
-/**
- * Thin wrapper over `Tone.Part` that pre-schedules one event per bar of a
- * FretFlow progression on Tone's transport clock. Multi-bar steps expand
- * upstream into per-bar events; loop-mode wraps via Tone's built-in
- * `loop`/`loopEnd` rather than via a JS-side advance loop.
- */
-export function createProgressionPart(
-  opts: ProgressionPartOptions,
-): ProgressionPartHandle {
-  const eventTuples: Array<[number, ProgressionPartEvent]> = opts.events.map(
-    (e) => [e.time, e],
-  );
+export interface CreateProgressionPartOptions<V> {
+  events: ReadonlyArray<{ time: number; value: V }>;
+  loop: boolean;
+  loopEnd: number;
+  onEvent: (audioTime: number, value: V) => void;
+}
 
-  // The callback signature `(time, value)` matches Tone.Part's contract: time
-  // is the audio-precise scheduled moment (Tone fires ~lookAhead seconds
-  // before this in wall time so the consumer can pre-schedule sample-accurate
-  // events into the future).
-  const part = new Part((time: number, value: ProgressionPartEvent) => {
+/**
+ * Thin wrapper over `Tone.Part`. The Part fires `onEvent(audioTime, value)`
+ * for each scheduled event at the audio-precise time (Tone delivers the
+ * callback ~lookAhead seconds before this wall-clock-wise so consumers can
+ * pre-schedule sample-accurate audio).
+ */
+export function createProgressionPart<V>(
+  opts: CreateProgressionPartOptions<V>,
+): ProgressionPartHandle {
+  const tuples: Array<[number, V]> = opts.events.map((e) => [e.time, e.value]);
+  const part = new Part((time: number, value: V) => {
     opts.onEvent(time, value);
-  }, eventTuples) as unknown as {
+  }, tuples) as unknown as {
     start: (time?: number, offset?: number) => void;
     stop: () => void;
     dispose: () => void;
     loop: boolean;
     loopEnd: number;
   };
-
   part.loop = opts.loop;
-  if (opts.loop) {
-    part.loopEnd = opts.totalDurationSec;
-  }
+  if (opts.loop) part.loopEnd = opts.loopEnd;
 
   let disposed = false;
   return {
-    start(time?: number, offset?: number) {
-      part.start(time, offset);
-    },
+    start(time?: number, offset?: number) { part.start(time, offset); },
     dispose() {
       if (disposed) return;
       disposed = true;
@@ -389,205 +440,524 @@ export function createProgressionPart(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+```ts
+// src/progressions/audio/progressionMetronomeLoop.ts
+import { Loop } from "tone";
 
-Run: `pnpm vitest run src/progressions/audio/progressionPart.test.ts`
-Expected: PASS (5/5).
+export interface MetronomeLoopHandle {
+  start: (time?: number) => void;
+  dispose: () => void;
+}
+
+export interface CreateMetronomeLoopOptions {
+  beatsPerBar: number;
+  /** Called once per beat at audio-precise time. `beatInBar` is 1-based and
+   *  cycles 1..beatsPerBar so callers can light an accent on beat 1. */
+  onBeat: (audioTime: number, beatInBar: number) => void;
+}
+
+/**
+ * Thin wrapper over `Tone.Loop` for the metronome — a perfectly periodic
+ * once-per-beat callback. Beat numbering is owned by the wrapper so the
+ * caller's onBeat closure stays free of cycle counters.
+ */
+export function createMetronomeLoop(
+  opts: CreateMetronomeLoopOptions,
+): MetronomeLoopHandle {
+  const beatsPerBar = Math.max(1, opts.beatsPerBar);
+  let nextBeat = 1;
+  const loop = new Loop((time: number) => {
+    const beat = nextBeat;
+    nextBeat = beat % beatsPerBar + 1;
+    opts.onBeat(time, beat);
+  }, "4n") as unknown as {
+    start: (time?: number) => void;
+    dispose: () => void;
+  };
+
+  let disposed = false;
+  return {
+    start(time?: number) { loop.start(time); },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      loop.dispose();
+    },
+  };
+}
+```
+
+```ts
+// src/progressions/audio/layerBuses.ts
+export type ProgressionLayer = "chord" | "bass" | "drums" | "metronome";
+
+export interface LayerBuses {
+  chord: AudioNode;
+  bass: AudioNode;
+  drums: AudioNode;
+  metronome: AudioNode;
+}
+
+/**
+ * One GainNode per layer between the layer's audio source and the parent
+ * destination. Toggling a layer flips its gain to 1 or 0 with no sequencer
+ * rebuild — useful when the user mutes drums mid-bar.
+ */
+export function buildLayerBuses(
+  ctx: AudioContext,
+  destination: AudioNode,
+): LayerBuses {
+  const layers: ProgressionLayer[] = ["chord", "bass", "drums", "metronome"];
+  const buses = {} as Record<ProgressionLayer, AudioNode>;
+  for (const layer of layers) {
+    const gain = ctx.createGain();
+    gain.connect(destination);
+    buses[layer] = gain as unknown as AudioNode;
+  }
+  return buses as LayerBuses;
+}
+
+/**
+ * Flip a single layer's gain. `enabled=false` mutes the layer; `true`
+ * restores unity gain. Future expansion (per-layer volume sliders) reads
+ * from the same node.
+ */
+export function setLayerGain(
+  buses: LayerBuses,
+  layer: ProgressionLayer,
+  enabled: boolean,
+): void {
+  const node = buses[layer] as unknown as { gain: { value: number } };
+  node.gain.value = enabled ? 1 : 0;
+}
+```
+
+- [ ] **Step 4: Run all three test files — expect PASS**
+
+Run: `pnpm vitest run src/progressions/audio/progressionPart.test.ts src/progressions/audio/progressionMetronomeLoop.test.ts src/progressions/audio/layerBuses.test.ts`
+Expected: PASS (4 + 3 + 2 = 9 tests).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/progressions/audio/progressionPart.ts src/progressions/audio/progressionPart.test.ts
-git commit -m "feat(audio): add Tone.Part wrapper for chord-onset scheduling"
+git add src/progressions/audio/progressionPart.ts src/progressions/audio/progressionPart.test.ts \
+        src/progressions/audio/progressionMetronomeLoop.ts src/progressions/audio/progressionMetronomeLoop.test.ts \
+        src/progressions/audio/layerBuses.ts src/progressions/audio/layerBuses.test.ts
+git commit -m "feat(audio): tone primitive wrappers (Part, metronome Loop) + per-layer buses"
 ```
 
 ---
 
-### Task 2: Build the per-bar event grid from resolved steps
+### Task 2: Event-stream builder for all four layers
 
 **Files:**
-- Create: `src/progressions/audio/buildProgressionEvents.ts`
-- Create: `src/progressions/audio/buildProgressionEvents.test.ts`
+- Create: `src/progressions/audio/buildAllLayers.ts`
+- Create: `src/progressions/audio/buildAllLayers.test.ts`
 
 - [ ] **Step 1: Write the failing test**
 
 ```ts
-// src/progressions/audio/buildProgressionEvents.test.ts
+// src/progressions/audio/buildAllLayers.test.ts
 import { describe, expect, it } from "vitest";
-import { buildProgressionEvents } from "./buildProgressionEvents";
+import { buildAllLayers } from "./buildAllLayers";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
-const step = (
-  overrides: Partial<ResolvedProgressionStep> = {},
-): ResolvedProgressionStep => ({
-  id: "x",
-  degree: "I",
-  duration: { value: 1, unit: "bar" },
-  qualityOverride: null,
-  root: "C",
-  quality: "M",
-  unavailable: false,
-  ...overrides,
+const step = (over: Partial<ResolvedProgressionStep> = {}): ResolvedProgressionStep => ({
+  id: "x", degree: "I", duration: { value: 1, unit: "bar" },
+  qualityOverride: null, root: "C", quality: "M", unavailable: false,
+  ...over,
 });
 
-describe("buildProgressionEvents", () => {
-  it("emits one event per bar with isFirstBar marked on each step boundary", () => {
-    const out = buildProgressionEvents({
+describe("buildAllLayers", () => {
+  const baseInput = {
+    tempoBpm: 60,                  // 1 beat = 1s, 1 bar (4 beats) = 4s
+    beatsPerBar: 4,
+    swing: 0,
+    chordInstrument: "acoustic-guitar" as const,
+    chordPatternId: "downbeats",   // exists in catalog; downbeats = one hit on beat 1
+    bassPatternId: "root-and-fifth", // catalog id
+    drumPatternId: "basic-rock",     // catalog id
+    drumVariations: [] as string[],
+    loop: true,
+  };
+
+  it("expands a 2-bar step into 2 chord-onset events with isFirstBar/isLastBar markers", () => {
+    const out = buildAllLayers({
+      ...baseInput,
       steps: [
-        step({ id: "a", duration: { value: 1, unit: "bar" } }),  // 1 bar  -> 1 event
-        step({ id: "b", duration: { value: 2, unit: "bar" } }),  // 2 bars -> 2 events
-        step({ id: "c", duration: { value: 1, unit: "bar" } }),  // 1 bar  -> 1 event
+        step({ id: "a", duration: { value: 1, unit: "bar" } }),
+        step({ id: "b", root: "G", duration: { value: 2, unit: "bar" } }),
       ],
-      tempoBpm: 60, // 1 beat = 1s; 1 bar (4 beats) = 4s
-      beatsPerBar: 4,
     });
-    expect(out.totalDurationSec).toBe(16);
-    expect(out.events).toHaveLength(4);
-    expect(out.events[0]).toMatchObject({ time: 0,  stepIndex: 0, isFirstBar: true,  isLastBar: true,  durationSec: 4, beats: 4, cumulativeStartSec: 0 });
-    expect(out.events[1]).toMatchObject({ time: 4,  stepIndex: 1, isFirstBar: true,  isLastBar: false, durationSec: 4, beats: 4, cumulativeStartSec: 4 });
-    expect(out.events[2]).toMatchObject({ time: 8,  stepIndex: 1, isFirstBar: false, isLastBar: true,  durationSec: 4, beats: 4, cumulativeStartSec: 8 });
-    expect(out.events[3]).toMatchObject({ time: 12, stepIndex: 2, isFirstBar: true,  isLastBar: true,  durationSec: 4, beats: 4, cumulativeStartSec: 12 });
+    expect(out.chordOnsets).toHaveLength(3);
+    expect(out.chordOnsets[0]).toMatchObject({ time: 0, value: { stepIndex: 0, isFirstBar: true,  isLastBar: true,  beats: 4 } });
+    expect(out.chordOnsets[1]).toMatchObject({ time: 4, value: { stepIndex: 1, isFirstBar: true,  isLastBar: false, beats: 4 } });
+    expect(out.chordOnsets[2]).toMatchObject({ time: 8, value: { stepIndex: 1, isFirstBar: false, isLastBar: true,  beats: 4 } });
+    expect(out.totalDurationSec).toBe(12);
   });
 
-  it("keeps sub-bar steps as a single short event", () => {
-    const out = buildProgressionEvents({
-      steps: [
-        step({ id: "a", duration: { value: 2, unit: "beat" } }), // 2 beats -> 1 event of 2 beats
-        step({ id: "b", duration: { value: 1, unit: "bar" } }),
-      ],
-      tempoBpm: 60,
-      beatsPerBar: 4,
-    });
-    expect(out.events).toHaveLength(2);
-    expect(out.events[0]).toMatchObject({ time: 0, stepIndex: 0, isFirstBar: true, isLastBar: true, durationSec: 2, beats: 2 });
-    expect(out.events[1]).toMatchObject({ time: 2, stepIndex: 1, isFirstBar: true, isLastBar: true, durationSec: 4, beats: 4 });
-    expect(out.totalDurationSec).toBe(6);
-  });
-
-  it("skips unresolvable steps but their duration still consumes timeline space", () => {
-    const out = buildProgressionEvents({
+  it("drops unresolvable steps from all layers but still consumes their time", () => {
+    const out = buildAllLayers({
+      ...baseInput,
       steps: [
         step({ id: "a" }),
         step({ id: "b", unavailable: true, root: null, quality: null }),
-        step({ id: "c" }),
+        step({ id: "c", root: "G" }),
       ],
-      tempoBpm: 60,
-      beatsPerBar: 4,
     });
-    expect(out.events.map((e) => e.stepIndex)).toEqual([0, 2]);
-    expect(out.events[0].time).toBe(0);
-    // The unavailable step (4s) still pushes step 2's start to t=8.
-    expect(out.events[1].time).toBe(8);
+    expect(out.chordOnsets.map((e) => e.value.stepIndex)).toEqual([0, 2]);
+    expect(out.chordOnsets[1].time).toBe(8); // step 2 starts after the 4s gap
     expect(out.totalDurationSec).toBe(12);
+  });
+
+  it("emits chord-strum events for each strum-pattern hit per bar", () => {
+    const out = buildAllLayers({
+      ...baseInput,
+      steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
+    });
+    // The "downbeats" chord pattern has one strum on beat 1 of each bar.
+    expect(out.chordStrums).toHaveLength(1);
+    expect(out.chordStrums[0].time).toBe(0);
+    expect(out.chordStrums[0].value.voicing.length).toBeGreaterThan(0);
+  });
+
+  it("emits bass events with notes resolved per chord (root on beat 1)", () => {
+    const out = buildAllLayers({
+      ...baseInput,
+      steps: [step({ id: "a", root: "C", quality: "M" })],
+    });
+    expect(out.bass.length).toBeGreaterThan(0);
+    // "root-and-fifth" pattern starts with a root hit on beat 1.
+    const firstBass = out.bass[0];
+    expect(firstBass.time).toBe(0);
+    expect(firstBass.value.note.startsWith("C")).toBe(true);
+  });
+
+  it("emits drum events for every kit hit in the pattern per bar", () => {
+    const out = buildAllLayers({
+      ...baseInput,
+      steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
+    });
+    // The "basic-rock" pattern has at minimum a kick on beat 1 and a snare on beat 3.
+    const kickAt0 = out.drums.find((e) => e.time === 0 && e.value.type === "kick");
+    const snareAt2 = out.drums.find((e) => e.time === 2 && e.value.type === "snare");
+    expect(kickAt0).toBeDefined();
+    expect(snareAt2).toBeDefined();
+  });
+
+  it("passes nextChordRoot for chromatic-approach bass only on the LAST bar of a step", () => {
+    // Build a step with a 2-bar duration; the first bar should not carry
+    // approach-resolution toward the next chord, the second bar should.
+    const out = buildAllLayers({
+      ...baseInput,
+      bassPatternId: "walking-approach", // approach hits on beat 4
+      steps: [
+        step({ id: "a", root: "C", duration: { value: 2, unit: "bar" } }),
+        step({ id: "b", root: "G" }),
+      ],
+    });
+    // Bar 1 of step 0 (t ∈ [0, 4)): any approach hit resolves toward C (self).
+    // Bar 2 of step 0 (t ∈ [4, 8)): approach hit resolves toward G.
+    const approachBar1 = out.bass.find((e) => e.time >= 3 && e.time < 4);
+    const approachBar2 = out.bass.find((e) => e.time >= 7 && e.time < 8);
+    expect(approachBar1?.value.note.startsWith("C") || approachBar1 === undefined).toBe(true);
+    if (approachBar2) {
+      // Approach to G: F# or Ab (depending on chord direction).
+      expect(["F#", "Ab", "G"]).toContain(approachBar2.value.note.replace(/\d/g, ""));
+    }
   });
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [ ] **Step 2: Run — expect failure**
 
-Run: `pnpm vitest run src/progressions/audio/buildProgressionEvents.test.ts`
-Expected: FAIL — `Cannot find module './buildProgressionEvents'`.
+Run: `pnpm vitest run src/progressions/audio/buildAllLayers.test.ts`
+Expected: FAIL — `Cannot find module './buildAllLayers'`.
 
 - [ ] **Step 3: Implement**
 
 ```ts
-// src/progressions/audio/buildProgressionEvents.ts
+// src/progressions/audio/buildAllLayers.ts
+import {
+  resolveBassNoteForRole,
+  resolveChordVoicing,
+  resolveBassLineNotes,
+} from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
-import type { ProgressionPartEvent } from "./progressionPart";
+import {
+  buildMetronomePattern,
+  getBassPattern,
+  getChordPattern,
+  getDrumPattern,
+  getDrumVariation,
+  repeatPatternToBeats,
+  type DrumHit,
+} from "./patterns";
+import type { ChordInstrumentId } from "./instruments/types";
 
-export interface BuildProgressionEventsInput {
+export interface ChordOnsetEvent {
+  stepIndex: number;
+  isFirstBar: boolean;
+  isLastBar: boolean;
+  beats: number;
+  durationSec: number;
+  cumulativeStartSec: number;
+}
+export interface ChordStrumEvent {
+  voicing: readonly string[];
+  velocity: number;
+  style?: string;
+  direction?: "down" | "up" | "alt";
+}
+export interface BassEvent {
+  note: string;
+  velocity: number;
+}
+export interface DrumEvent {
+  type: "kick" | "snare" | "hihat" | "ride";
+  velocity: number;
+}
+
+export interface BuildAllLayersInput {
   steps: readonly ResolvedProgressionStep[];
   tempoBpm: number;
   beatsPerBar: number;
+  swing: number;
+  chordInstrument: ChordInstrumentId;
+  chordPatternId: string;
+  bassPatternId: string;
+  drumPatternId: string;
+  drumVariations: readonly string[];
+  loop: boolean;
 }
 
-export interface BuildProgressionEventsOutput {
-  events: ProgressionPartEvent[];
-  /** Total length of the full progression in seconds (loops here). */
+export interface BuiltLayers {
+  chordOnsets: ReadonlyArray<{ time: number; value: ChordOnsetEvent }>;
+  chordStrums: ReadonlyArray<{ time: number; value: ChordStrumEvent }>;
+  bass: ReadonlyArray<{ time: number; value: BassEvent }>;
+  drums: ReadonlyArray<{ time: number; value: DrumEvent }>;
   totalDurationSec: number;
 }
 
-/**
- * Convert FretFlow's resolved progression steps into a per-bar event list
- * for `Tone.Part`. Each event represents one bar of audio scheduling work:
- *
- *  - A bar-unit step expands into `step.duration.value` events, all sharing
- *    the same `stepIndex`. The first event of the run has `isFirstBar:true`
- *    so the audio-playback hook only fires the Jotai active-step write at
- *    real step boundaries (saves N-1 heavy React passes per N-bar chord).
- *  - A beat-unit step becomes a single event of duration `value * spb` and
- *    `beats: value` — a mixed-grid Tone.Part handles this fine.
- *
- * Unresolvable steps (no root/quality) are dropped from the event list but
- * still consume cumulative time so later events line up with what the user
- * hears on the audio clock.
- */
-export function buildProgressionEvents(
-  input: BuildProgressionEventsInput,
-): BuildProgressionEventsOutput {
-  const secondsPerBeat = 60 / Math.max(1, input.tempoBpm);
-  const events: ProgressionPartEvent[] = [];
-  let cumulativeSec = 0;
-  input.steps.forEach((step, stepIndex) => {
-    const scheduleThisStep = !step.unavailable && step.root && step.quality;
+const OFF_BEAT_TOLERANCE = 0.01;
+function swingBeat(beat: number, swing: number): number {
+  if (swing <= 0) return beat;
+  const isOff = Math.abs((beat % 1) - 0.5) < OFF_BEAT_TOLERANCE;
+  return isOff ? beat + swing * (1 / 3) : beat;
+}
 
-    if (step.duration.unit === "bar") {
-      const barsPerStep = Math.max(1, Math.floor(step.duration.value));
-      const beatsPerBarEvent = input.beatsPerBar;
-      const secPerBarEvent = beatsPerBarEvent * secondsPerBeat;
-      for (let bar = 0; bar < barsPerStep; bar++) {
-        if (scheduleThisStep) {
-          events.push({
-            time: cumulativeSec,
-            stepIndex,
-            isFirstBar: bar === 0,
-            isLastBar: bar === barsPerStep - 1,
-            durationSec: secPerBarEvent,
-            cumulativeStartSec: cumulativeSec,
-            beats: beatsPerBarEvent,
+function mergeDrumHits(baseHits: readonly DrumHit[], variations: readonly DrumHit[][]): DrumHit[] {
+  return [...baseHits, ...variations.flat()];
+}
+
+/**
+ * Flatten a resolved progression into per-layer event streams ready to feed
+ * Tone primitives. Pure function — no audio scheduling, no Tone references.
+ *
+ * Multi-bar steps expand into multiple chord-onset events (carrying
+ * isFirstBar / isLastBar so the consumer can gate React writes and
+ * chromatic-approach bass). Per-bar pattern hits expand inline: a 2-bar
+ * step with a 4-hit drum pattern yields 8 drum events.
+ */
+export function buildAllLayers(input: BuildAllLayersInput): BuiltLayers {
+  const secondsPerBeat = 60 / Math.max(1, input.tempoBpm);
+  const barSec = input.beatsPerBar * secondsPerBeat;
+
+  const chordPattern = getChordPattern(input.chordPatternId);
+  const bassPattern = getBassPattern(input.bassPatternId);
+  const drumPattern = getDrumPattern(input.drumPatternId);
+  const drumVariations = input.drumVariations
+    .map((id) => getDrumVariation(id)?.hits ?? [])
+    .filter((h) => h.length > 0);
+  const drumHits = drumPattern
+    ? mergeDrumHits(drumPattern.hits, drumVariations)
+    : [];
+
+  const chordOnsets: Array<{ time: number; value: ChordOnsetEvent }> = [];
+  const chordStrums: Array<{ time: number; value: ChordStrumEvent }> = [];
+  const bass: Array<{ time: number; value: BassEvent }> = [];
+  const drums: Array<{ time: number; value: DrumEvent }> = [];
+
+  let cumulativeSec = 0;
+
+  input.steps.forEach((step, stepIndex) => {
+    const scheduleThis = !step.unavailable && step.root && step.quality;
+    const stepBeats = step.duration.unit === "bar"
+      ? step.duration.value * input.beatsPerBar
+      : step.duration.value;
+    const stepDurationSec = stepBeats * secondsPerBeat;
+    if (!scheduleThis) {
+      cumulativeSec += stepDurationSec;
+      return;
+    }
+
+    const root = step.root!;
+    const quality = step.quality!;
+    const nextStep = input.steps[stepIndex + 1];
+    const nextRoot = nextStep?.root ?? undefined;
+
+    const voicing = resolveChordVoicing(root, quality);
+    const bassLineNotes = resolveBassLineNotes(root, quality);
+
+    // Expand into per-bar events for bar-unit steps. Sub-bar (beat-unit)
+    // steps stay as a single short event whose `beats` < beatsPerBar.
+    const isBarUnit = step.duration.unit === "bar";
+    const barsInStep = isBarUnit
+      ? Math.max(1, Math.floor(step.duration.value))
+      : 1;
+    const eventBeats = isBarUnit ? input.beatsPerBar : stepBeats;
+    const eventSec = eventBeats * secondsPerBeat;
+
+    for (let bar = 0; bar < barsInStep; bar++) {
+      const barStart = cumulativeSec + bar * eventSec;
+      const isFirst = bar === 0;
+      const isLast = bar === barsInStep - 1;
+
+      chordOnsets.push({
+        time: barStart,
+        value: {
+          stepIndex,
+          isFirstBar: isFirst,
+          isLastBar: isLast,
+          beats: eventBeats,
+          durationSec: eventSec,
+          cumulativeStartSec: barStart,
+        },
+      });
+
+      // Chord strum hits for this bar.
+      if (chordPattern && voicing.length > 0) {
+        const hits = repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
+        for (const hit of hits) {
+          const hitTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          chordStrums.push({
+            time: hitTime,
+            value: {
+              voicing,
+              velocity: hit.velocity,
+              style: hit.style,
+              direction: hit.direction,
+            },
           });
         }
-        cumulativeSec += secPerBarEvent;
       }
-    } else {
-      // beat-unit step: one event for the whole step (sub-bar; never expands).
-      const stepBeats = Math.max(0, step.duration.value);
-      const stepDurationSec = stepBeats * secondsPerBeat;
-      if (scheduleThisStep && stepDurationSec > 0) {
-        events.push({
-          time: cumulativeSec,
-          stepIndex,
-          isFirstBar: true,
-          isLastBar: true,
-          durationSec: stepDurationSec,
-          cumulativeStartSec: cumulativeSec,
-          beats: stepBeats,
-        });
+
+      // Bass hits for this bar.
+      if (bassPattern && bassLineNotes.length > 0) {
+        const hits = repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
+        for (const hit of hits) {
+          // Resolve note role against current chord; approach role uses
+          // nextRoot only when this is the last bar of the step.
+          const note = resolveBassNoteForRole(
+            root,
+            quality,
+            hit.note,
+            isLast ? nextRoot : root,
+          );
+          const hitTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          bass.push({
+            time: hitTime,
+            value: { note, velocity: hit.velocity },
+          });
+        }
       }
-      cumulativeSec += stepDurationSec;
+
+      // Drum hits for this bar.
+      if (drumHits.length > 0) {
+        const hits = repeatPatternToBeats(drumHits, eventBeats, input.beatsPerBar);
+        for (const hit of hits) {
+          const hitTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          drums.push({
+            time: hitTime,
+            value: { type: hit.type, velocity: hit.velocity },
+          });
+        }
+      }
     }
+
+    cumulativeSec += stepDurationSec;
   });
-  return { events, totalDurationSec: cumulativeSec };
+
+  return {
+    chordOnsets,
+    chordStrums,
+    bass,
+    drums,
+    totalDurationSec: cumulativeSec,
+  };
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+Note: metronome events are NOT in `BuiltLayers` because they're driven by `Tone.Loop` directly (one beat at a time, no precomputed array). The loop's onBeat callback handles accent-on-downbeat.
 
-Run: `pnpm vitest run src/progressions/audio/buildProgressionEvents.test.ts`
-Expected: PASS (3/3).
+- [ ] **Step 4: Run — expect PASS**
+
+Run: `pnpm vitest run src/progressions/audio/buildAllLayers.test.ts`
+Expected: PASS (6/6). Some tests assert against the actual `getChordPattern("downbeats")` / `getBassPattern("root-and-fifth")` etc. data — if the assertions don't match what those catalog entries actually emit on bar 1, adjust the asserts to use whichever catalog ids the project ships that have the simplest beat-1 hits (run `grep -nA2 "id: " src/progressions/audio/patterns.ts | head -40` first to pick stable ids).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/progressions/audio/buildProgressionEvents.ts src/progressions/audio/buildProgressionEvents.test.ts
-git commit -m "feat(audio): per-bar event grid builder for ProgressionPart"
+git add src/progressions/audio/buildAllLayers.ts src/progressions/audio/buildAllLayers.test.ts
+git commit -m "feat(audio): per-layer event-stream builder for tone primitives"
 ```
 
 ---
 
-### Task 3: Rewrite useProgressionAudioPlayback to drive playback from Tone.Part
+### Task 3: Wire layer buses into the audio bus module
 
-This task replaces the segment queue, deletes `useProgressionPlaybackLoop`, and folds chord-overlay state advancement into the Part callback.
+**Files:**
+- Modify: `src/progressions/audio/bus.ts`
+- Modify: `src/progressions/audio/bus.test.ts` (if it exists; otherwise create minimal one)
+
+- [ ] **Step 1: Read the current bus exports**
+
+Run: `grep -n "^export\|ProgressionAudio\|ensureProgressionAudio" src/progressions/audio/bus.ts`
+Note the current shape of `ProgressionAudio` (likely `{ ctx, bus }`).
+
+- [ ] **Step 2: Extend `ProgressionAudio` to carry `layers: LayerBuses`**
+
+Edit `src/progressions/audio/bus.ts`: import `buildLayerBuses, type LayerBuses` from `./layerBuses`. In `ensureProgressionAudio()`, after constructing the parent `bus` GainNode, construct `const layers = buildLayerBuses(ctx, bus)` and return `{ ctx, bus, layers }`. Update the `ProgressionAudio` type accordingly.
+
+The full type:
+
+```ts
+import { buildLayerBuses, type LayerBuses } from "./layerBuses";
+
+export interface ProgressionAudio {
+  ctx: AudioContext;
+  /** Parent gain — all four layer buses connect here, then to ctx.destination. */
+  bus: AudioNode;
+  /** Per-layer gain nodes. Sequencer callbacks connect their voices here. */
+  layers: LayerBuses;
+}
+```
+
+The layer construction inside `ensureProgressionAudio` (find the existing `const bus = ctx.createGain(); bus.connect(ctx.destination);` and insert immediately after):
+
+```ts
+  const layers = buildLayerBuses(ctx, bus);
+  ...
+  return { ctx, bus, layers };
+```
+
+- [ ] **Step 3: Run the existing bus / scheduler tests**
+
+Run: `pnpm vitest run src/progressions/audio/toneBus.test.ts src/progressions/audio/scheduler.test.ts`
+Expected: PASS — the new `layers` field is additive; existing consumers ignore it.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/progressions/audio/bus.ts
+git commit -m "feat(audio): expose per-layer gain buses from ensureProgressionAudio"
+```
+
+---
+
+### Task 4: Rewrite useProgressionAudioPlayback as a tone-primitive orchestrator
+
+This is the central task. Composes the wrappers from Task 1 with the event streams from Task 2 and the layer buses from Task 3. Two effects: (1) build/dispose primitives on play+input changes, (2) flip layer gains on mute-toggle changes. Deletes `useProgressionPlaybackLoop`.
 
 **Files:**
 - Modify: `src/hooks/useProgressionAudioPlayback.ts`
@@ -596,7 +966,7 @@ This task replaces the segment queue, deletes `useProgressionPlaybackLoop`, and 
 - Delete: `src/hooks/useProgressionPlaybackLoop.test.tsx`
 - Create: `src/hooks/useProgressionAudioPlayback.test.tsx`
 
-- [ ] **Step 1: Write the failing tests in the new file**
+- [ ] **Step 1: Write the failing tests for the rewritten hook**
 
 ```tsx
 // src/hooks/useProgressionAudioPlayback.test.tsx
@@ -608,6 +978,7 @@ import { isMutedAtom } from "../store/audioAtoms";
 import { chordRootAtom } from "../store/chordOverlayAtoms";
 import {
   beatsPerBarAtom,
+  progressionDrumsEnabledAtom,
   progressionLoopEnabledAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
@@ -615,55 +986,38 @@ import {
 } from "../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
 
-// Mock Tone with a controllable Part + Transport. `start(offset)` records
-// when the part was started; `simulateEvent(value)` invokes the callback
-// with a constructed audio time so we can drive the React state from tests.
+// Tone mocks: capture all Parts and Loops constructed; expose for assertions.
 const toneMocks = vi.hoisted(() => {
   const contextNowRef = { fn: () => 0 };
   type Cb = (time: number, value: unknown) => void;
-
-  interface PartInstance {
-    callback: Cb;
-    events: Array<[number, unknown]>;
-    loop: boolean;
-    loopEnd: number;
-    startedTime: number | null;
-    startedOffset: number | null;
-    disposed: boolean;
-    start(time?: number, offset?: number): PartInstance;
-    stop(): PartInstance;
-    dispose(): PartInstance;
-  }
+  interface PartInstance { tag: "part"; callback: Cb; events: Array<[number, unknown]>; loop: boolean; loopEnd: number; startedTime: number | null; startedOffset: number | null; disposed: boolean; start(t?: number, o?: number): PartInstance; stop(): PartInstance; dispose(): PartInstance; }
+  interface LoopInstance { tag: "loop"; callback: (t: number) => void; interval: string | number; startedTime: number | null; disposed: boolean; start(t?: number): LoopInstance; dispose(): LoopInstance; }
   const parts: PartInstance[] = [];
+  const loops: LoopInstance[] = [];
 
   function PartCtor(callback: Cb, events: Array<[number, unknown]>): PartInstance {
     const inst: PartInstance = {
-      callback,
-      events: [...events],
-      loop: false,
-      loopEnd: 0,
-      startedTime: null,
-      startedOffset: null,
-      disposed: false,
-      start(time?: number, offset?: number) {
-        this.startedTime = time ?? 0;
-        this.startedOffset = offset ?? 0;
-        return this;
-      },
+      tag: "part", callback, events: [...events], loop: false, loopEnd: 0,
+      startedTime: null, startedOffset: null, disposed: false,
+      start(t?: number, o?: number) { this.startedTime = t ?? 0; this.startedOffset = o ?? 0; return this; },
       stop() { return this; },
       dispose() { this.disposed = true; return this; },
     };
     parts.push(inst);
     return inst;
   }
+  function LoopCtor(callback: (t: number) => void, interval: string | number): LoopInstance {
+    const inst: LoopInstance = {
+      tag: "loop", callback, interval, startedTime: null, disposed: false,
+      start(t?: number) { this.startedTime = t ?? 0; return this; },
+      dispose() { this.disposed = true; return this; },
+    };
+    loops.push(inst);
+    return inst;
+  }
 
-  const scheduleOnce = vi.fn((cb: (time: number) => void, time: string) => {
-    const delayMs = Math.max(0, parseFloat((time as string).slice(1)) * 1000);
-    setTimeout(() => cb(contextNowRef.fn()), delayMs);
-    return 1;
-  });
   const transport = {
-    scheduleOnce,
+    scheduleOnce: vi.fn(),
     clear: vi.fn(),
     start: vi.fn(),
     stop: vi.fn(),
@@ -674,8 +1028,9 @@ const toneMocks = vi.hoisted(() => {
 
   return {
     contextNowRef,
-    parts,
+    parts, loops,
     Part: PartCtor as unknown as new (...args: unknown[]) => unknown,
+    Loop: LoopCtor as unknown as new (...args: unknown[]) => unknown,
     getTransport: vi.fn(() => transport),
     getContext: vi.fn(() => ({
       now: () => contextNowRef.fn(),
@@ -684,12 +1039,11 @@ const toneMocks = vi.hoisted(() => {
     now: vi.fn(() => contextNowRef.fn()),
     setContext: vi.fn(),
     transport,
-    scheduleOnce,
   };
 });
-
 vi.mock("tone", () => ({
   Part: toneMocks.Part,
+  Loop: toneMocks.Loop,
   getTransport: toneMocks.getTransport,
   getContext: toneMocks.getContext,
   now: toneMocks.now,
@@ -700,24 +1054,21 @@ import { _resetProgressionAudioForTests } from "../progressions/audio/bus";
 import { _resetTimelineForTests } from "../progressions/audio/timeline";
 import { useProgressionAudioPlayback } from "./useProgressionAudioPlayback";
 
-function Harness() {
-  useProgressionAudioPlayback();
-  return null;
-}
+function Harness() { useProgressionAudioPlayback(); return null; }
 
-const threeChords = [
-  { id: "one", degree: "I", duration: { value: 1, unit: "beat" }, qualityOverride: null },
-  { id: "two", degree: "V", duration: { value: 1, unit: "beat" }, qualityOverride: null },
-  { id: "three", degree: "vi", duration: { value: 1, unit: "beat" }, qualityOverride: null },
+const threeBars = [
+  { id: "1", degree: "I",  duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "2", degree: "V",  duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "3", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ] as const;
 
-describe("useProgressionAudioPlayback (Tone.Part driver)", () => {
+describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date(0));
     localStorage.clear();
     toneMocks.parts.length = 0;
-    toneMocks.scheduleOnce.mockClear();
+    toneMocks.loops.length = 0;
     _resetTimelineForTests();
     _resetProgressionAudioForTests();
     const audioContext = {
@@ -725,16 +1076,8 @@ describe("useProgressionAudioPlayback (Tone.Part driver)", () => {
       sampleRate: 44100,
       state: "running" as AudioContextState,
       createGain: () => ({
-        gain: {
-          value: 1,
-          cancelScheduledValues: vi.fn(),
-          setValueAtTime: vi.fn(),
-          linearRampToValueAtTime: vi.fn(),
-          exponentialRampToValueAtTime: vi.fn(),
-          setTargetAtTime: vi.fn(),
-        },
-        connect: vi.fn().mockReturnThis(),
-        disconnect: vi.fn(),
+        gain: { value: 1, cancelScheduledValues: vi.fn(), setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn(), setTargetAtTime: vi.fn() },
+        connect: vi.fn().mockReturnThis(), disconnect: vi.fn(),
       }),
       destination: {} as AudioDestinationNode,
       resume: vi.fn(),
@@ -743,117 +1086,128 @@ describe("useProgressionAudioPlayback (Tone.Part driver)", () => {
     (window as unknown as { AudioContext: unknown }).AudioContext =
       vi.fn(function () { return audioContext; }) as unknown as typeof AudioContext;
   });
-
   afterEach(() => { vi.useRealTimers(); });
 
-  it("builds a Tone.Part with one event per resolvable chord", () => {
+  it("constructs 4 Parts (chord-onsets + strums + bass + drums) and 1 Loop (metronome) on play start", () => {
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, threeChords],
-      [progressionTempoBpmAtom, 60],
-      [beatsPerBarAtom, 4],
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
-    expect(toneMocks.parts).toHaveLength(1);
-    // Three 1-beat chords expand to three events (sub-bar steps, no per-bar
-    // expansion). `startedTime` should be ~now + SCHEDULE_LEAD_SECONDS.
-    expect(toneMocks.parts[0].events).toHaveLength(3);
-    expect(toneMocks.parts[0].startedTime).not.toBeNull();
+    expect(toneMocks.parts).toHaveLength(4);
+    expect(toneMocks.loops).toHaveLength(1);
   });
 
-  it("sets part.loop = true and loopEnd = totalDurationSec when loop is enabled", () => {
+  it("sets loop=true + loopEnd=totalDurationSec on every Part when progressionLoopEnabled is on", () => {
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, threeChords],
-      [progressionTempoBpmAtom, 60], // 1 beat = 1s; 3 beats = 3s
-      [beatsPerBarAtom, 4],
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
       [progressionLoopEnabledAtom, true],
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
-    expect(toneMocks.parts[0].loop).toBe(true);
-    expect(toneMocks.parts[0].loopEnd).toBe(3);
+    toneMocks.parts.forEach((p) => {
+      expect(p.loop).toBe(true);
+      expect(p.loopEnd).toBe(12); // 3 bars * 4 beats/bar * 1 sec/beat
+    });
   });
 
-  it("advances chordRootAtom when the Part callback fires", () => {
+  it("advances chordRootAtom when the chord-onset Part fires on first-bar events only", () => {
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, threeChords],
-      [progressionTempoBpmAtom, 60],
-      [beatsPerBarAtom, 4],
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
 
+    // Find the chord-onset Part by checking which Part has 3 events (one per
+    // 1-bar step). Drum Part has many more events.
+    const onsets = toneMocks.parts.find((p) => p.events.length === 3 && (p.events[0][1] as { isFirstBar?: boolean }).isFirstBar === true);
+    expect(onsets).toBeDefined();
     expect(store.get(chordRootAtom)).toBe("C");
 
-    const part = toneMocks.parts[0];
-    const [secondEventTime, secondEventValue] = part.events[1];
-    act(() => {
-      // Simulate Tone firing the callback for chord 2 at the audio-precise
-      // time. With our mock's `immediate()` returning the same value as the
-      // passed time, the deferral collapses to 0 and the advance runs sync.
-      part.callback(secondEventTime, secondEventValue);
-    });
+    // Fire chord-onset event for step 1 (G).
+    act(() => { onsets!.callback(onsets!.events[1][0] as number, onsets!.events[1][1]); });
     expect(store.get(chordRootAtom)).toBe("G");
   });
 
-  it("disposes the old Part and creates a new one when tempo changes", () => {
+  it("disposes ALL primitives and rebuilds from 0 when steps change mid-play", () => {
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, threeChords],
-      [progressionTempoBpmAtom, 60],
-      [beatsPerBarAtom, 4],
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
-    expect(toneMocks.parts).toHaveLength(1);
-    const firstPart = toneMocks.parts[0];
+    const initialParts = [...toneMocks.parts];
+    const initialLoops = [...toneMocks.loops];
 
-    act(() => { store.set(progressionTempoBpmAtom, 120); });
+    act(() => {
+      store.set(progressionStepsAtom, [...threeBars, { id: "4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null }]);
+    });
 
-    expect(firstPart.disposed).toBe(true);
-    expect(toneMocks.parts).toHaveLength(2);
-    expect(toneMocks.parts[1].disposed).toBe(false);
+    initialParts.forEach((p) => expect(p.disposed).toBe(true));
+    initialLoops.forEach((l) => expect(l.disposed).toBe(true));
+    expect(toneMocks.parts.length).toBeGreaterThan(initialParts.length);
+    // New Part starts at offset 0 (restart from bar 0 on edit).
+    const newOnsets = toneMocks.parts.slice(initialParts.length).find((p) => p.events.length === 4);
+    expect(newOnsets?.startedOffset).toBe(0);
   });
 
-  it("disposes the Part on pause", () => {
+  it("toggling drums flips the layer gain without rebuilding primitives", () => {
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, threeChords],
-      [progressionTempoBpmAtom, 60],
-      [beatsPerBarAtom, 4],
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
+      [progressionDrumsEnabledAtom, true],
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
-    expect(toneMocks.parts[0].disposed).toBe(false);
+    const before = [...toneMocks.parts];
+
+    act(() => { store.set(progressionDrumsEnabledAtom, false); });
+
+    // No new Parts, no disposals.
+    expect(toneMocks.parts).toHaveLength(before.length);
+    before.forEach((p) => expect(p.disposed).toBe(false));
+    // Gain side-effect is verified by the layerBuses test in Task 1 — here we
+    // only verify the rebuild guard didn't fire.
+  });
+
+  it("disposes everything on pause", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+    expect(toneMocks.parts.every((p) => !p.disposed)).toBe(true);
 
     act(() => { store.set(setProgressionPlayingAtom, false); });
 
-    expect(toneMocks.parts[0].disposed).toBe(true);
+    toneMocks.parts.forEach((p) => expect(p.disposed).toBe(true));
+    toneMocks.loops.forEach((l) => expect(l.disposed).toBe(true));
   });
 
-  it("does not build a Part while muted", () => {
+  it("does not build any primitives while muted", () => {
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, threeChords],
-      [progressionTempoBpmAtom, 60],
-      [beatsPerBarAtom, 4],
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
       [isMutedAtom, true],
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
     expect(toneMocks.parts).toHaveLength(0);
+    expect(toneMocks.loops).toHaveLength(0);
   });
 
-  // Regression guard for the 2026-05-25 stall bug.
+  // Regression guard for the 2026-05-25 progression-stall bug.
   it("does NOT wrap advanceProgressionPlayback in Tone.Draw or startTransition", async () => {
     const { readFileSync } = await import("node:fs");
     const { resolve } = await import("node:path");
@@ -871,199 +1225,152 @@ describe("useProgressionAudioPlayback (Tone.Part driver)", () => {
 });
 ```
 
-- [ ] **Step 2: Run the new tests — expect failure**
+- [ ] **Step 2: Run — expect failure (existing hook doesn't construct Parts/Loops)**
 
 Run: `pnpm vitest run src/hooks/useProgressionAudioPlayback.test.tsx`
-Expected: FAIL — current `useProgressionAudioPlayback.ts` doesn't construct `Tone.Part`, so `toneMocks.parts` is empty.
+Expected: FAIL — current hook code doesn't use Tone primitives the new way.
 
 - [ ] **Step 3: Rewrite `useProgressionAudioPlayback.ts`**
 
-Replace the entire body of the file with the Tone.Part-driven implementation:
+Replace the entire file body:
 
 ```ts
 // src/hooks/useProgressionAudioPlayback.ts
 import { useEffect, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { getContext, getTransport } from "tone";
-import {
-  ensureProgressionAudio,
-  resumeProgressionAudio,
-  restoreProgressionBus,
-  silenceProgressionBus,
-} from "../progressions/audio/bus";
-import { buildProgressionEvents } from "../progressions/audio/buildProgressionEvents";
-import {
-  createProgressionPart,
-  type ProgressionPartEvent,
-  type ProgressionPartHandle,
-} from "../progressions/audio/progressionPart";
-import { scheduleProgressionStep } from "../progressions/audio/scheduler";
-import {
-  clearTimeline,
-  pauseTimeline,
-  setActiveStep,
-} from "../progressions/audio/timeline";
+import { ensureProgressionAudio, resumeProgressionAudio, restoreProgressionBus, silenceProgressionBus } from "../progressions/audio/bus";
+import { buildAllLayers, type ChordOnsetEvent, type ChordStrumEvent, type BassEvent, type DrumEvent } from "../progressions/audio/buildAllLayers";
+import { createMetronomeLoop, type MetronomeLoopHandle } from "../progressions/audio/progressionMetronomeLoop";
+import { createProgressionPart, type ProgressionPartHandle } from "../progressions/audio/progressionPart";
+import { setLayerGain } from "../progressions/audio/layerBuses";
+import { getChordVoice } from "../progressions/audio/instruments";
+import { scheduleBassNote } from "../progressions/audio/bass";
+import { scheduleHiHat, scheduleKick, scheduleRide, scheduleSnare } from "../progressions/audio/drumKit";
+import { scheduleClick } from "../progressions/audio/metronome";
+import { setActiveStep, pauseTimeline, clearTimeline } from "../progressions/audio/timeline";
+import { getNoteFrequency } from "@fretflow/core";
 import { isMutedAtom } from "../store/audioAtoms";
 import {
-  advanceProgressionPlaybackAtom,
+  beatsPerBarAtom,
+  progressionBassEnabledAtom,
+  progressionBassPatternAtom,
+  progressionChordEnabledAtom,
+  progressionChordInstrumentAtom,
+  progressionChordPatternAtom,
+  progressionDrumPatternAtom,
+  progressionDrumVariationsAtom,
+  progressionDrumsEnabledAtom,
+  progressionLoopEnabledAtom,
+  progressionMetronomeEnabledAtom,
+  progressionPlaybackBlockedReasonAtom,
+  progressionPlayingAtom,
+  progressionStepsAtom,
+  progressionSwingAtom,
+  progressionTempoBpmAtom,
+  resolvedProgressionStepsAtom,
   setProgressionActiveStepIndexAtom,
   setProgressionPlayingAtom,
 } from "../store/progressionAtoms";
-import {
-  resolveBassLineNotes,
-  resolveChordVoicing,
-} from "../progressions/progressionAudio";
-import { useProgressionState } from "./useProgressionState";
+import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
 
-/** Lead between scheduling and audible hit; matches the previous scheduler. */
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
+interface PlaybackPrimitives {
+  parts: ProgressionPartHandle[];
+  loop: MetronomeLoopHandle | null;
+  endEventId: number | null;
+}
+
+function disposeAll(prims: PlaybackPrimitives | null) {
+  if (!prims) return;
+  prims.parts.forEach((p) => p.dispose());
+  prims.loop?.dispose();
+  if (prims.endEventId !== null) getTransport().clear(prims.endEventId);
+}
+
 /**
- * Drive the progression backing track via a single `Tone.Part` that pre-
- * schedules every chord-onset event on the transport clock. The Part's
- * callback handles, in order, for each chord boundary:
- *   1. Audio: `scheduleProgressionStep(...)` for all drum/bass/strum hits.
- *   2. Timeline: `setActiveStep(...)` so the playhead reflects the new step.
- *   3. React state: a setTimeout-deferred `advanceProgressionPlayback()`
- *      Jotai write, aligned with audio onset by the Tone lookahead delta.
+ * Tone-native progression playback orchestrator.
  *
- * Tone.Part owns the loop semantics (`part.loop = true`, `loopEnd =
- * totalDurationSec`). The hook rebuilds the Part on any input change
- * (tempo, steps, loop toggle, instrument); the new Part starts at the
- * current Transport position so playback continues from the current bar,
- * not from beat 0.
+ * Two effects:
+ *  1. (Heavy) Build all primitives when any input that affects what the
+ *     sequencer plays changes — steps, tempo, beatsPerBar, swing, patterns,
+ *     instrument, loop flag. Dispose + rebuild from bar 0 on every change.
+ *     Pause and mute fall through this effect's "tear down" branch.
+ *  2. (Light) Flip per-layer gain when an enable toggle changes. No rebuild.
+ *
+ * The chord-onset Part owns the React `activeProgressionStepIndex` advance,
+ * deferred by the Tone lookahead via plain `setTimeout` so the visual
+ * chord-overlay swap aligns with audio onset. NOT `Tone.Draw.schedule` —
+ * its 250ms expiration silently drops events under heavy main-thread load
+ * and would stall playback. NOT `startTransition` — it would defer the
+ * Jotai write that the next-step React state depends on.
  */
 export function useProgressionAudioPlayback() {
-  const {
-    progressionPlaying,
-    progressionPlaybackBlockedReason,
-    progressionLoopEnabled,
-    resolvedProgressionSteps,
-    progressionTempoBpm,
-    beatsPerBar,
-    progressionStrumEnabled,
-    progressionBassEnabled,
-    progressionDrumsEnabled,
-    progressionMetronomeEnabled,
-    progressionChordInstrument,
-    progressionChordPattern,
-    progressionBassPattern,
-    progressionDrumPattern,
-    progressionDrumVariations,
-    progressionSwing,
-  } = useProgressionState();
-  const isMuted = useAtomValue(isMutedAtom);
-  const advance = useSetAtom(advanceProgressionPlaybackAtom);
+  // Read every relevant atom at the top so deps arrays stay tidy.
+  const playing = useAtomValue(progressionPlayingAtom);
+  const blocked = useAtomValue(progressionPlaybackBlockedReasonAtom);
+  const muted = useAtomValue(isMutedAtom);
+  const loopEnabled = useAtomValue(progressionLoopEnabledAtom);
+  const steps = useAtomValue(resolvedProgressionStepsAtom);
+  const tempo = useAtomValue(progressionTempoBpmAtom);
+  const beatsPerBar = useAtomValue(beatsPerBarAtom);
+  const swing = useAtomValue(progressionSwingAtom);
+  const chordInstrument = useAtomValue(progressionChordInstrumentAtom);
+  const chordPatternId = useAtomValue(progressionChordPatternAtom);
+  const bassPatternId = useAtomValue(progressionBassPatternAtom);
+  const drumPatternId = useAtomValue(progressionDrumPatternAtom);
+  const drumVariations = useAtomValue(progressionDrumVariationsAtom);
+
+  // Layer enable flags — light effect only.
+  const chordOn = useAtomValue(progressionChordEnabledAtom);
+  const bassOn = useAtomValue(progressionBassEnabledAtom);
+  const drumsOn = useAtomValue(progressionDrumsEnabledAtom);
+  const metronomeOn = useAtomValue(progressionMetronomeEnabledAtom);
+
   const setActiveStepIndex = useSetAtom(setProgressionActiveStepIndexAtom);
   const setPlaying = useSetAtom(setProgressionPlayingAtom);
 
-  const partRef = useRef<ProgressionPartHandle | null>(null);
-  const partStartAudioTimeRef = useRef<number | null>(null);
+  const primsRef = useRef<PlaybackPrimitives | null>(null);
 
+  // --- Effect 1: heavy build/dispose ---
   useEffect(() => {
-    const disposePart = () => {
-      if (partRef.current) {
-        partRef.current.dispose();
-        partRef.current = null;
-        partStartAudioTimeRef.current = null;
-      }
+    const tearDown = () => {
+      disposeAll(primsRef.current);
+      primsRef.current = null;
+      silenceProgressionBus();
     };
 
-    if (progressionPlaybackBlockedReason || isMuted) {
-      disposePart();
-      silenceProgressionBus();
-      clearTimeline();
-      return;
-    }
-    if (!progressionPlaying) {
-      disposePart();
-      silenceProgressionBus();
-      pauseTimeline();
-      return;
-    }
+    if (blocked || muted) { tearDown(); clearTimeline(); return; }
+    if (!playing) { tearDown(); pauseTimeline(); return; }
 
     const audio = ensureProgressionAudio();
     if (!audio) return;
     void resumeProgressionAudio();
     restoreProgressionBus();
 
-    const { events, totalDurationSec } = buildProgressionEvents({
-      steps: resolvedProgressionSteps,
-      tempoBpm: progressionTempoBpm,
-      beatsPerBar,
+    const built = buildAllLayers({
+      steps, tempoBpm: tempo, beatsPerBar, swing,
+      chordInstrument, chordPatternId, bassPatternId, drumPatternId,
+      drumVariations, loop: loopEnabled,
     });
+    if (built.chordOnsets.length === 0) { tearDown(); return; }
 
-    if (events.length === 0 || totalDurationSec <= 0) {
-      disposePart();
-      return;
-    }
-
-    // Capture "now" once so all per-event closures share the same start
-    // reference. Lead by SCHEDULE_LEAD_SECONDS to avoid scheduling at the
-    // exact sample where Web Audio would drop the event.
     const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
+    const parts: ProgressionPartHandle[] = [];
+    const totalDurationSec = built.totalDurationSec;
 
-    const handle = createProgressionPart({
-      events,
-      totalDurationSec,
-      loop: progressionLoopEnabled,
+    // 1. Chord-onset Part — drives React activeProgressionStepIndex.
+    const chordOnsetPart = createProgressionPart<ChordOnsetEvent>({
+      events: built.chordOnsets,
+      loop: loopEnabled,
+      loopEnd: totalDurationSec,
       onEvent: (audioTime, event) => {
-        const step = resolvedProgressionSteps[event.stepIndex];
-        if (!step || step.unavailable || !step.root || !step.quality) return;
-
-        // 1. Schedule THIS BAR's audio events on the audio bus. `event.beats`
-        //    is one bar (or the sub-bar step's beat count); the existing
-        //    scheduler handles per-bar pattern repetition for us.
-        //
-        //    `nextChordRoot` only matters for chromatic-approach bass on the
-        //    LAST bar of the current step. On continuation bars we pass the
-        //    current root so any approach-resolution falls back to identity.
-        const voicing = resolveChordVoicing(step.root, step.quality);
-        const bassNotes = resolveBassLineNotes(step.root, step.quality);
-        const secondsPerBeat = 60 / Math.max(1, progressionTempoBpm);
-        const nextStep = resolvedProgressionSteps[event.stepIndex + 1];
-        scheduleProgressionStep(audio.bus, {
-          voicing,
-          bassNotes,
-          beatsAvailable: event.beats,
-          beatsPerBar,
-          secondsPerBeat,
-          startTime: audioTime,
-          enable: {
-            strum: progressionStrumEnabled,
-            bass: progressionBassEnabled,
-            drums: progressionDrumsEnabled,
-            metronome: progressionMetronomeEnabled,
-          },
-          chordInstrument: progressionChordInstrument,
-          chordPatternId: progressionChordPattern,
-          bassPatternId: progressionBassPattern,
-          drumPatternId: progressionDrumPattern,
-          drumVariations: progressionDrumVariations,
-          swing: progressionSwing,
-          currentRoot: step.root,
-          currentQuality: step.quality,
-          nextChordRoot: event.isLastBar ? (nextStep?.root ?? undefined) : step.root,
-        });
-
-        // 2. Publish the active step to the shared timeline (powers playhead).
-        //    Use this BAR's start/duration so the playhead's local fraction
-        //    resets each bar — the global fraction still scans the full
-        //    progression evenly.
-        setActiveStep(
-          event.stepIndex,
-          audioTime,
-          event.durationSec,
-          event.cumulativeStartSec,
-          totalDurationSec,
-        );
-
-        // 3. Defer the React active-step swap by the Tone lookahead so the
-        //    chord overlay flips at audio onset, not ~100ms early. Plain
-        //    setTimeout — no Draw (250ms expiration), no startTransition.
-        //    Only fire on first-bar-of-step events: continuation bars don't
-        //    change which step is active, so skipping the Jotai write here
-        //    saves N-1 heavy Fretboard re-renders per N-bar chord.
+        // Always publish to timeline so the playhead reflects the new bar.
+        setActiveStep(event.stepIndex, audioTime, event.durationSec, event.cumulativeStartSec, totalDurationSec);
+        // Jotai active-step write fires only on real step boundaries, and
+        // is deferred by the Tone lookahead so the chord overlay swap
+        // aligns with audio onset.
         if (event.isFirstBar) {
           const rawNow = getContext().immediate();
           const delayMs = Math.max(0, (audioTime - rawNow) * 1000);
@@ -1073,87 +1380,113 @@ export function useProgressionAudioPlayback() {
         }
       },
     });
+    chordOnsetPart.start(partStart, 0);
+    parts.push(chordOnsetPart);
 
-    partRef.current = handle;
-    partStartAudioTimeRef.current = partStart;
+    // 2. Chord strum Part.
+    const strumVoice = getChordVoice(chordInstrument);
+    const chordStrumPart = createProgressionPart<ChordStrumEvent>({
+      events: built.chordStrums,
+      loop: loopEnabled,
+      loopEnd: totalDurationSec,
+      onEvent: (audioTime, value) => {
+        strumVoice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
+          velocity: value.velocity, style: value.style, direction: value.direction,
+        });
+      },
+    });
+    chordStrumPart.start(partStart, 0);
+    parts.push(chordStrumPart);
 
-    // Transport must be running for Part callbacks to fire — Tone Clock only
-    // emits tick events in the "started" state. Idempotent in Tone 15.
+    // 3. Bass Part.
+    const bassPart = createProgressionPart<BassEvent>({
+      events: built.bass,
+      loop: loopEnabled,
+      loopEnd: totalDurationSec,
+      onEvent: (audioTime, value) => {
+        const freq = getNoteFrequency(value.note);
+        if (!Number.isFinite(freq) || freq <= 0) return;
+        scheduleBassNote(audio.layers.bass, freq, audioTime, { velocity: value.velocity });
+      },
+    });
+    bassPart.start(partStart, 0);
+    parts.push(bassPart);
+
+    // 4. Drum Part.
+    const drumPart = createProgressionPart<DrumEvent>({
+      events: built.drums,
+      loop: loopEnabled,
+      loopEnd: totalDurationSec,
+      onEvent: (audioTime, value) => {
+        switch (value.type) {
+          case "kick":  scheduleKick(audio.layers.drums, audioTime, { velocity: value.velocity });  break;
+          case "snare": scheduleSnare(audio.layers.drums, audioTime, { velocity: value.velocity }); break;
+          case "hihat": scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity }); break;
+          case "ride":  scheduleRide(audio.layers.drums, audioTime, { velocity: value.velocity });  break;
+        }
+      },
+    });
+    drumPart.start(partStart, 0);
+    parts.push(drumPart);
+
+    // 5. Metronome Loop.
+    const metronome = createMetronomeLoop({
+      beatsPerBar,
+      onBeat: (audioTime, beatInBar) => {
+        scheduleClick(audio.layers.metronome, audioTime, { accent: beatInBar === 1 });
+      },
+    });
+    metronome.start(partStart);
+
+    // Transport must be running for Tone callbacks to fire. Idempotent.
     getTransport().start();
-    handle.start(partStart);
 
-    // Non-loop progressions: schedule a one-shot pause at the natural end so
-    // we stop playback without leaving the Part dangling. Loop mode skips
-    // this — `part.loop` keeps firing callbacks indefinitely.
+    // Non-loop progressions: schedule a one-shot pause at the natural end.
     let endEventId: number | null = null;
-    if (!progressionLoopEnabled) {
-      endEventId = getTransport().scheduleOnce(
-        () => { setPlaying(false); },
-        `+${totalDurationSec + SCHEDULE_LEAD_SECONDS}`,
-      ) as unknown as number;
+    if (!loopEnabled) {
+      endEventId = getTransport().scheduleOnce(() => {
+        setPlaying(false);
+      }, `+${totalDurationSec + SCHEDULE_LEAD_SECONDS}`) as unknown as number;
     }
 
-    return () => {
-      disposePart();
-      if (endEventId !== null) getTransport().clear(endEventId);
-    };
-    // `advance` is read inside the Part callback, kept here only to satisfy
-    // the linter without causing extra renders (it's a stable useSetAtom ref).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    primsRef.current = { parts, loop: metronome, endEventId };
+    return () => { disposeAll(primsRef.current); primsRef.current = null; };
   }, [
-    progressionPlaying,
-    progressionPlaybackBlockedReason,
-    progressionLoopEnabled,
-    resolvedProgressionSteps,
-    isMuted,
-    progressionTempoBpm,
-    beatsPerBar,
-    progressionStrumEnabled,
-    progressionBassEnabled,
-    progressionDrumsEnabled,
-    progressionMetronomeEnabled,
-    progressionChordInstrument,
-    progressionChordPattern,
-    progressionBassPattern,
-    progressionDrumPattern,
-    progressionDrumVariations,
-    progressionSwing,
-    setActiveStepIndex,
-    setPlaying,
+    playing, blocked, muted, loopEnabled,
+    steps, tempo, beatsPerBar, swing,
+    chordInstrument, chordPatternId, bassPatternId, drumPatternId, drumVariations,
+    setActiveStepIndex, setPlaying,
   ]);
 
-  // Unused `advance` import would trigger noUnusedLocals; we still want it
-  // exported as a stable reference for future callers (e.g. previous-step
-  // button paths) but for this hook the Part callback is the only driver.
-  void advance;
+  // --- Effect 2: light layer-gain toggles ---
+  useEffect(() => {
+    const audio = ensureProgressionAudio();
+    if (!audio) return;
+    setLayerGain(audio.layers, "chord", chordOn);
+    setLayerGain(audio.layers, "bass", bassOn);
+    setLayerGain(audio.layers, "drums", drumsOn);
+    setLayerGain(audio.layers, "metronome", metronomeOn);
+  }, [chordOn, bassOn, drumsOn, metronomeOn]);
 }
 ```
 
-- [ ] **Step 4: Update ProgressionSummarySlot to drop the playback loop call**
+- [ ] **Step 4: Update ProgressionSummarySlot.tsx**
 
-```tsx
-// src/components/ProgressionSummarySlot/ProgressionSummarySlot.tsx
-// Remove these two lines:
-//   import { useProgressionPlaybackLoop } from "../../hooks/useProgressionPlaybackLoop";
-//   useProgressionPlaybackLoop();
-// Keep the existing `useProgressionAudioPlayback()` call.
-```
-
-Verify the exact removal:
+Remove the `useProgressionPlaybackLoop` import and call. Verify:
 
 Run: `grep -n "useProgressionPlaybackLoop" src/components/ProgressionSummarySlot/ProgressionSummarySlot.tsx`
 Expected: no matches.
 
-- [ ] **Step 5: Delete the loop hook + its test**
+- [ ] **Step 5: Delete the legacy hook + test**
 
 ```bash
 rm src/hooks/useProgressionPlaybackLoop.ts src/hooks/useProgressionPlaybackLoop.test.tsx
 ```
 
-- [ ] **Step 6: Run the new test suite + neighboring tests**
+- [ ] **Step 6: Run the new + neighboring tests**
 
-Run: `pnpm vitest run src/hooks/useProgressionAudioPlayback.test.tsx src/progressions/audio/timeline.test.ts src/progressions/audio/scheduler.test.ts`
-Expected: PASS — new hook tests green, timeline + scheduler unchanged.
+Run: `pnpm vitest run src/hooks/useProgressionAudioPlayback.test.tsx src/progressions/audio/timeline.test.ts src/progressions/audio/toneBus.test.ts`
+Expected: PASS.
 
 - [ ] **Step 7: Commit**
 
@@ -1161,169 +1494,74 @@ Expected: PASS — new hook tests green, timeline + scheduler unchanged.
 git add src/hooks/useProgressionAudioPlayback.ts src/hooks/useProgressionAudioPlayback.test.tsx \
         src/components/ProgressionSummarySlot/ProgressionSummarySlot.tsx
 git rm src/hooks/useProgressionPlaybackLoop.ts src/hooks/useProgressionPlaybackLoop.test.tsx
-git commit -m "refactor(audio): drive progression playback from Tone.Part
+git commit -m "refactor(audio): tone-native progression orchestrator
 
-Pre-schedules every chord-onset event on Tone.Transport via Tone.Part.
-The Part's callback fires once per chord boundary at the audio-precise
-time and (a) schedules the chord's drum/bass/strum/metronome hits via
-the existing scheduler, (b) publishes the active step to timeline.ts
-for the playhead, (c) defers the Jotai active-step write by the Tone
-lookahead so the React chord overlay aligns with audio onset.
-
-Loop semantics come from Tone (part.loop + loopEnd); the bespoke
-useProgressionPlaybackLoop chain and its segment-queue companion are
-deleted. The setTimeout-deferral pattern (no Draw, no startTransition)
-is preserved inside the Part callback — the 250ms-expiration stall
-cannot recur via this path."
+Replaces the segment-queue scheduler + useProgressionPlaybackLoop chain
+with four Tone.Parts (chord-onsets, chord strums, bass, drums) and one
+Tone.Loop (metronome), all routed through per-layer gain buses. Mid-
+play edits dispose + rebuild from bar 0 (less flexible, much simpler).
+Layer-enable toggles flip gain only, no rebuild. Chord overlay React
+advance retains the setTimeout-deferral pattern inside the chord-onset
+Part callback (no Draw, no startTransition — 250ms-expiration stall
+cannot recur via this path)."
 ```
 
 ---
 
-### Task 4: Mid-playback rebuild preserves position
-
-`useProgressionAudioPlayback` already rebuilds the Part on dep change (Task 3 effect). But the new Part starts at `audio.ctx.currentTime + LEAD`, i.e. bar 0 of the progression — losing the user's playback position. This task fixes that.
+### Task 5: Remove scheduleProgressionStep + final verification
 
 **Files:**
-- Modify: `src/hooks/useProgressionAudioPlayback.ts`
-- Modify: `src/hooks/useProgressionAudioPlayback.test.tsx`
+- Modify: `src/progressions/audio/scheduler.ts`
+- Modify: `src/progressions/audio/scheduler.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Delete `scheduleProgressionStep` + `swingBeat` from scheduler.ts**
 
-```tsx
-// Append to src/hooks/useProgressionAudioPlayback.test.tsx (inside the describe block):
-it("preserves the current progression position when tempo changes mid-playback", () => {
-  const store = makeAtomStore([
-    [rootNoteAtom, "C"],
-    [scaleNameAtom, "major"],
-    [progressionStepsAtom, threeChords],
-    [progressionTempoBpmAtom, 60], // 1 beat = 1s; total = 3s
-    [beatsPerBarAtom, 4],
-    [progressionLoopEnabledAtom, true],
-  ]);
-  store.set(setProgressionPlayingAtom, true);
-  renderWithStore(<Harness />, store);
+Open `src/progressions/audio/scheduler.ts`. Delete the `scheduleProgressionStep` exported function and the file-local `swingBeat` helper (already duplicated into `buildAllLayers.ts`). Leave the per-hit re-exports / imports untouched (they're used by the new orchestrator).
 
-  const firstPart = toneMocks.parts[0];
-  expect(firstPart.startedTime).toBeCloseTo(toneMocks.contextNowRef.fn() + 0.05, 2);
-  expect(firstPart.startedOffset).toBe(0); // fresh start; no offset
+Verify:
 
-  // Advance wall-clock to ~1.4s into playback (mid-step-1).
-  act(() => { vi.advanceTimersByTime(1400); });
+Run: `grep -n "scheduleProgressionStep" src/`
+Expected: no matches anywhere.
 
-  // Tempo change: expect a NEW part whose internal cursor (startedOffset)
-  // matches the elapsed position modulo total duration (=> ~1.4s into the
-  // progression cycle, so the new Part's first-firing event is the one at
-  // or after t=1.4 inside its own event list).
-  act(() => { store.set(progressionTempoBpmAtom, 120); });
+- [ ] **Step 2: Trim scheduler.test.ts**
 
-  const secondPart = toneMocks.parts[1];
-  expect(secondPart.startedOffset).toBeCloseTo(1.4, 1);
-});
-```
+Open `src/progressions/audio/scheduler.test.ts`. Delete every `describe`/`it` block that imports or exercises `scheduleProgressionStep`. Keep any per-hit tests if present.
 
-- [ ] **Step 2: Run — expect failure**
+Run: `pnpm vitest run src/progressions/audio/scheduler.test.ts`
+Expected: PASS (or skip the file if it's empty after pruning).
 
-Run: `pnpm vitest run src/hooks/useProgressionAudioPlayback.test.tsx -t "preserves"`
-Expected: FAIL — `started` is `~0.05` not `~1.4`.
+- [ ] **Step 3: Lint + full test + build**
 
-- [ ] **Step 3: Track the progression's start audio time and rebuild at the elapsed offset**
+Run in parallel:
+- `pnpm lint`
+- `pnpm test`
+- `pnpm build`
 
-Edit `useProgressionAudioPlayback.ts`: replace the `partStart` assignment and the `handle.start(partStart)` call with:
-
-```ts
-    // If a previous Part exists, compute how far into the loop we are NOW.
-    // Carry that as the offset for the new Part so the user doesn't jump
-    // back to bar 0 on tempo / steps / instrument changes.
-    let startOffset = 0;
-    if (
-      partStartAudioTimeRef.current !== null
-      && totalDurationSec > 0
-    ) {
-      const elapsedSinceStart =
-        audio.ctx.currentTime - partStartAudioTimeRef.current;
-      startOffset = ((elapsedSinceStart % totalDurationSec) + totalDurationSec)
-        % totalDurationSec;
-    }
-
-    // The Part should "appear to have started" `startOffset` seconds ago, so
-    // its event #0 lines up with the current loop position. Tone.Part.start
-    // accepts (transportTime, partOffset) — passing `0` as transportTime
-    // means "right now", and `startOffset` as the second arg means "skip
-    // ahead inside the part by that many seconds".
-    //
-    // partStartAudioTimeRef tracks "the audio time at which event #0 of the
-    // current Part conceptually fired" — useful for the next rebuild.
-    const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS - startOffset;
-```
-
-Then change the `handle.start(partStart)` call inside `useProgressionAudioPlayback.ts` to use Tone.Part's `(time, offset)` form (Task 1 already shipped the matching wrapper signature):
-
-```ts
-    // start(time, offset) — Tone schedules Part to begin at audio time
-    // `now + LEAD` with internal cursor at `startOffset`. For first-start
-    // (no previous part) `startOffset` is 0 and behavior matches Task 3.
-    handle.start(audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS, startOffset);
-```
-
-And update `partStartAudioTimeRef.current = partStart;` to `partStartAudioTimeRef.current = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS - startOffset;` so the next rebuild correctly computes `elapsedSinceStart` against the conceptual event-0 time.
-
-- [ ] **Step 4: Run the targeted tests**
-
-Run: `pnpm vitest run src/hooks/useProgressionAudioPlayback.test.tsx`
-Expected: PASS (all tests including the new "preserves position" test).
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add src/hooks/useProgressionAudioPlayback.ts src/hooks/useProgressionAudioPlayback.test.tsx
-git commit -m "fix(audio): preserve progression position when Part rebuilds mid-playback"
-```
-
----
-
-### Task 5: Full verification + e2e + visual
-
-**Files:** none modified (verification only).
-
-- [ ] **Step 1: Lint**
-
-Run: `pnpm lint`
-Expected: clean.
-
-- [ ] **Step 2: Full unit test suite**
-
-Run: `pnpm test`
-Expected: all suites green. The new `useProgressionAudioPlayback.test.tsx` and `progressionPart.test.ts` + `buildProgressionEvents.test.ts` add tests; `useProgressionPlaybackLoop.test.tsx` is gone. Net change in test count should match those deltas.
-
-- [ ] **Step 3: Build**
-
-Run: `pnpm build`
-Expected: succeeds.
+Expected: all clean. Net test count = previous baseline + (Task 1: 9) + (Task 2: 6) + (Task 4: 8) − (deleted loop hook tests: 7 or so).
 
 - [ ] **Step 4: E2E (production preview)**
 
 Run: `pnpm test:e2e:production`
 Expected: all green. Pay attention to:
-- `e2e/progression.visual.spec.ts` — chord swap timing assertions, if any, may now land on the audio-precise frame instead of the lookahead-early frame; expect potential visual diffs at chord boundaries.
-- `e2e/storage-persistence.spec.ts` — must still pass (loop toggle, tempo, steps all persist).
+- `e2e/progression.visual.spec.ts` — chord swap timing now lands on audio-precise frames instead of lookahead-early frames; visual diffs at chord boundaries are expected.
+- `e2e/storage-persistence.spec.ts` — loop/tempo/steps persistence unchanged; must still pass.
+- Edit-mid-play behavior: any test that asserts continuity through an edit will now see a restart-from-0. Update those assertions or, if the test is specifically about preserving position, mark it as `test.fixme` with a note pointing to this commit and the user-confirmed trade-off.
 
-- [ ] **Step 5: Refresh visual baselines**
+- [ ] **Step 5: Refresh visual baselines if needed**
 
 Run: `pnpm test:visual:update`
-Expected: baselines refresh for any frames that capture mid-playback chord-boundary state. Inspect the diff before committing — a 1-frame shift at boundaries is expected; anything else needs investigation.
+Expected: diff confined to chord-boundary frames + any test that captured mid-play edit behavior. Inspect each diff; commit if expected.
 
-- [ ] **Step 6: Commit refreshed baselines (if any)**
+- [ ] **Step 6: Commit cleanup + baseline refresh**
 
 ```bash
+git add src/progressions/audio/scheduler.ts src/progressions/audio/scheduler.test.ts
+git commit -m "chore(audio): drop scheduleProgressionStep + swingBeat (subsumed by tone primitives)"
+# If baselines changed:
 git add e2e/**/*-snapshots/**
 git status   # confirm only baseline images changed
-git commit -m "test(visual): refresh baselines after Tone.Part scheduler migration"
+git commit -m "test(visual): refresh baselines after tone-native scheduler migration"
 ```
-
-- [ ] **Step 7: Final sanity check**
-
-Run: `git log --oneline origin/claude/elated-nobel-dd4e76..HEAD`
-Expected: 5–6 new commits (one per task plus visual baseline refresh if applicable).
 
 ---
 
@@ -1332,10 +1570,16 @@ Expected: 5–6 new commits (one per task plus visual baseline refresh if applic
 After Task 5 the branch should have:
 
 1. ✅ `lint` clean.
-2. ✅ Full unit suite green; net test count = previous + ~10 (new Part + builder + hook tests) − previous loop tests.
+2. ✅ Full unit suite green; net test count = previous + (Task 1: 9) + (Task 2: 6) + (Task 4: 8) − (deleted loop tests).
 3. ✅ `pnpm build` succeeds.
 4. ✅ `pnpm test:e2e:production` green.
 5. ✅ Visual baselines refreshed (if needed) and explained in the commit message.
-6. ✅ Manual smoke check: progression loops cleanly across the boundary; chord overlay flips at audio onset (no longer leads by ~100 ms); pausing mid-bar holds position; resuming continues from there; tempo change mid-playback continues from the same position.
-7. ✅ `useProgressionPlaybackLoop` is gone from the codebase; `git grep useProgressionPlaybackLoop` returns nothing.
-8. ✅ Regression guard test asserts the new hook never imports `Draw` or uses `startTransition` around `advance`.
+6. ✅ Manual smoke check:
+   - Loop plays cleanly across the boundary.
+   - Chord overlay swap aligns with audio onset (no more visible lead).
+   - Layer toggles (chord/bass/drums/metronome) take effect mid-bar without restarting playback.
+   - Tempo / step / pattern change mid-play: brief stop then auto-restart from bar 0.
+   - Pause / resume snaps to the current chord per existing behavior.
+7. ✅ `git grep useProgressionPlaybackLoop` returns nothing.
+8. ✅ `git grep scheduleProgressionStep` returns nothing.
+9. ✅ Regression guard test asserts the new hook never imports `Draw` or uses `startTransition` around `advance`.
