@@ -128,3 +128,11 @@ describe('STANDARD_FRET_MARKERS', () => {
     expect(STANDARD_FRET_MARKERS).toContain(12);
   });
 });
+
+describe('getFretboardNotes caching', () => {
+  it('returns the same array instance for identical tuning and frets', () => {
+    const layout1 = getFretboardNotes(['E4', 'B3'], 24);
+    const layout2 = getFretboardNotes(['E4', 'B3'], 24);
+    expect(layout1).toBe(layout2); // reference equality
+  });
+});

@@ -69,18 +69,26 @@ export function getNoteFrequency(noteStringWithOctave: string): number {
   return Note.freq(noteStringWithOctave) ?? A4_FREQUENCY;
 }
 
+const fretboardCache = new Map<string, string[][]>();
+
 /**
  * Returns a 2D array representing the fretboard.
  * Array of strings (top/thinnest to bottom/thickest), each containing an array of notes from fret 0 to maxFret.
  */
 export function getFretboardNotes(tuning: string[], frets: number = 24): string[][] {
-  return tuning.map(stringNote => {
-    const stringNotes = [];
-    for (let currentFret = 0; currentFret <= frets; currentFret++) {
-      stringNotes.push(getFretNote(stringNote, currentFret));
-    }
-    return stringNotes;
-  });
+  const key = `${tuning.join(',')}|${frets}`;
+  let cached = fretboardCache.get(key);
+  if (!cached) {
+    cached = tuning.map(stringNote => {
+      const stringNotes = [];
+      for (let currentFret = 0; currentFret <= frets; currentFret++) {
+        stringNotes.push(getFretNote(stringNote, currentFret));
+      }
+      return stringNotes;
+    });
+    fretboardCache.set(key, cached);
+  }
+  return cached;
 }
 
 // Common fret marker positions for rendering dots
