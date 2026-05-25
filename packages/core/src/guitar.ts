@@ -2,6 +2,10 @@ import { NOTES } from './theory';
 import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
 import * as Note from '@tonaljs/note';
 
+// Pre-compute a long master chromatic sequence to allow O(1) slicing for any string length.
+// Length 100 covers MAX_FRET (24) + max openIndex (11) with plenty of buffer.
+const MASTER_CHROMATIC = Array.from({ length: 100 }, (_, i) => NOTES[i % 12]);
+
 export interface NoteWithOctave {
   noteName: string;
   octave: number;
@@ -99,11 +103,8 @@ export function getFretboardNotes(tuning: string[], frets: number = 24): string[
       const noteName = parsed?.noteName ?? "E";
       const openIndex = NOTES.indexOf(noteName);
       
-      // Calculate the 12-note repeating chromatic sequence for this string
-      const chromaticSequence = Array.from({ length: 12 }, (_, i) => NOTES[(openIndex + i) % 12]);
-      
-      // Stamp the sequence across the entire fretboard length geometrically
-      return Array.from({ length: frets + 1 }, (_, fret) => chromaticSequence[fret % 12]);
+      // O(1) slice instead of mapping and modulo math
+      return MASTER_CHROMATIC.slice(openIndex, openIndex + frets + 1);
     });
     fretboardCache.set(key, cached);
   }
