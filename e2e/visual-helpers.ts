@@ -24,7 +24,7 @@ export interface VisualState {
   linkChordRoot?: boolean;
   /** Phase 02: root note for manual-mode chord overlay */
   chordRootOverride?: string;
-  /** Phase 02: chord quality for manual-mode chord overlay (e.g. "Dominant 7th") */
+  /** Phase 02: chord quality for manual-mode chord overlay (Tonal symbol, e.g. "7", "maj7") */
   chordQualityOverride?: string;
   /** Phase 02: "degree" | "manual" */
   chordOverlayMode?: string;
@@ -74,13 +74,85 @@ export async function loadVisualState(
       // Suppress the first-run coach mark so it never appears in snapshots.
       localStorage.setItem(coachmarkKey, "true");
 
+      // Map well-known atom keys to their current storage-version suffix.
+      // Phase N2 bumped baseScaleNameAtom -> scaleName.v2; Phase N5 bumped
+      // progressionStepsAtom -> progressionSteps.v2. Specs use the friendly
+      // base name in their VisualState seed; remap here so we write to the
+      // version the atoms read from at boot.
+      const STORAGE_KEY_RENAMES: Record<string, string> = {
+        scaleName: "scaleName.v2",
+        progressionSteps: "progressionSteps.v2",
+      };
+
+      // Phase N2 (scales) + N3 (chord qualities): the app now stores Tonal
+      // names natively. Translate the legacy verbose vocabulary used in older
+      // specs so seeds keep working without a per-call rewrite.
+      const SCALE_NAME_LEGACY_MAP: Record<string, string> = {
+        "Major": "major",
+        "Natural Minor": "minor",
+        "Minor": "minor",
+        "Harmonic Minor": "harmonic minor",
+        "Melodic Minor": "melodic minor",
+        "Major Pentatonic": "major pentatonic",
+        "Minor Pentatonic": "minor pentatonic",
+        "Major Blues": "major blues",
+        "Minor Blues": "minor blues",
+        "Phrygian Dominant": "phrygian dominant",
+        "Dorian": "dorian",
+        "Phrygian": "phrygian",
+        "Lydian": "lydian",
+        "Mixolydian": "mixolydian",
+        "Locrian": "locrian",
+      };
+
+      const CHORD_QUALITY_LEGACY_MAP: Record<string, string> = {
+        "Major Triad": "M",
+        "Major": "M",
+        "Minor Triad": "m",
+        "Minor": "m",
+        "Diminished Triad": "dim",
+        "Augmented Triad": "aug",
+        "Sus2": "sus2",
+        "Sus4": "sus4",
+        "Major 6th": "6",
+        "Minor 6th": "m6",
+        "Major 7th": "maj7",
+        "Minor 7th": "m7",
+        "Dominant 7th": "7",
+        "Diminished 7th": "dim7",
+        "Half-Diminished 7th": "m7b5",
+        "Minor-Major 7th": "mMaj7",
+        "Power Chord": "5",
+      };
+
+      const translateValue = (key: string, value: unknown): unknown => {
+        if (typeof value === "string") {
+          if (key === "scaleName") return SCALE_NAME_LEGACY_MAP[value] ?? value;
+          if (key === "chordQualityOverride") return CHORD_QUALITY_LEGACY_MAP[value] ?? value;
+        }
+        if (key === "progressionSteps" && Array.isArray(value)) {
+          return value.map((step) => {
+            if (!step || typeof step !== "object") return step;
+            const s = step as { qualityOverride?: string | null };
+            if (typeof s.qualityOverride === "string") {
+              return { ...s, qualityOverride: CHORD_QUALITY_LEGACY_MAP[s.qualityOverride] ?? s.qualityOverride };
+            }
+            return step;
+          });
+        }
+        return value;
+      };
+
       // Write new state
       Object.entries(s).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
 
+        const translated = translateValue(key, value);
+
         // Serialize complex types as JSON, simple types as strings
-        const serialized = typeof value === "object" ? JSON.stringify(value) : String(value);
-        localStorage.setItem(`${prefix}${key}`, serialized);
+        const serialized = typeof translated === "object" ? JSON.stringify(translated) : String(translated);
+        const storageKey = STORAGE_KEY_RENAMES[key] ?? key;
+        localStorage.setItem(`${prefix}${storageKey}`, serialized);
       });
     },
     {

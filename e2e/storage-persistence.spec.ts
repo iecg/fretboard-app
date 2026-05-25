@@ -80,9 +80,11 @@ test.describe("storage persistence", () => {
     // value round-tripped.
     await expect(page.getByTestId("header-tempo")).toHaveText(/132\s*BPM/i);
     // Chord-row state lives directly in the progression timeline now. Verify
-    // the persisted second step (degree V, Dominant 7th, 2 bars) survived.
+    // the persisted second step (degree V, dominant seventh, 2 bars) survived.
+    // Phase N3: chord qualities are stored as Tonal symbols ("7") and rendered
+    // via Tonal's English label ("dominant seventh").
     await expect(
-      page.getByRole("button", { name: /Step 2, V, G Dominant 7th, 2 bars/i }),
+      page.getByRole("button", { name: /Step 2, V, G dominant seventh, 2 bars/i }),
     ).toBeVisible();
   });
 });
