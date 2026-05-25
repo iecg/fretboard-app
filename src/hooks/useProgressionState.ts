@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { activeProgressionStepIndexAtom, activeResolvedProgressionStepAtom, addProgressionStepAtom, duplicateProgressionStepAtom, advanceProgressionPlaybackAtom, applyGenreStyleAtom, beatsPerBarAtom, currentProgressionBarAtom, currentProgressionPresetIdAtom, loadProgressionPresetAtom, loadProgressionStepsAtom, moveProgressionStepAtom, previousProgressionStepAtom, progressionBassEnabledAtom, progressionBassPatternAtom, progressionChordEnabledAtom, progressionChordInstrumentAtom, progressionChordPatternAtom, progressionDrumPatternAtom, progressionDrumsEnabledAtom, progressionDrumVariationsAtom, progressionGenreStyleAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackBlockedReasonAtom, progressionPlayingAtom, progressionStepDurationMsAtom, progressionStepDeadlineAtom, progressionStepsAtom, progressionSwingAtom, progressionTempoBpmAtom, removeProgressionStepAtom, resolvedProgressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, totalProgressionBarsAtom, updateProgressionStepDegreeAtom, updateProgressionStepDurationAtom, updateProgressionStepQualityAtom } from "../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, activeResolvedProgressionStepAtom, addProgressionStepAtom, duplicateProgressionStepAtom, advanceProgressionPlaybackAtom, applyGenreStyleAtom, beatsPerBarAtom, currentProgressionBarAtom, currentProgressionPresetIdAtom, displayedProgressionStepIndexAtom, loadProgressionPresetAtom, loadProgressionStepsAtom, moveProgressionStepAtom, previousProgressionStepAtom, progressionBassEnabledAtom, progressionBassPatternAtom, progressionChordEnabledAtom, progressionChordInstrumentAtom, progressionChordPatternAtom, progressionDrumPatternAtom, progressionDrumsEnabledAtom, progressionDrumVariationsAtom, progressionGenreStyleAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackBlockedReasonAtom, progressionPlayingAtom, progressionStepDurationMsAtom, progressionStepDeadlineAtom, progressionStepsAtom, progressionSwingAtom, progressionTempoBpmAtom, removeProgressionStepAtom, resolvedProgressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, totalProgressionBarsAtom, updateProgressionStepDegreeAtom, updateProgressionStepDurationAtom, updateProgressionStepQualityAtom } from "../store/progressionAtoms";
 
 export function useProgressionState() {
   const [progressionTempoBpm, setProgressionTempoBpm] = useAtom(progressionTempoBpmAtom);
@@ -69,6 +69,7 @@ export function useProgressionState() {
   const progressionSteps = useAtomValue(progressionStepsAtom);
   const resolvedProgressionSteps = useAtomValue(resolvedProgressionStepsAtom);
   const activeProgressionStepIndex = useAtomValue(activeProgressionStepIndexAtom);
+  const displayedProgressionStepIndex = useAtomValue(displayedProgressionStepIndexAtom);
   const activeResolvedProgressionStep = useAtomValue(activeResolvedProgressionStepAtom);
   const progressionPlaying = useAtomValue(progressionPlayingAtom);
   const progressionStepDurationMs = useAtomValue(progressionStepDurationMsAtom);
@@ -83,6 +84,7 @@ export function useProgressionState() {
     progressionSteps,
     resolvedProgressionSteps,
     activeProgressionStepIndex,
+    displayedProgressionStepIndex,
     activeResolvedProgressionStep,
     progressionTempoBpm,
     setProgressionTempoBpm,

@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { createStore, Provider } from "jotai";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, displayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [
@@ -150,6 +151,32 @@ describe("ProgressionTrack", () => {
     fireEvent.click(screen.getByRole("button", { name: /Step 2, V, G dominant seventh, 1 bar/i }));
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+
+  it("active block follows displayedProgressionStepIndexAtom during playback", async () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ] as never);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    store.set(setProgressionPlayingAtom, true);
+
+    render(
+      <Provider store={store}>
+        <ProgressionTrack />
+      </Provider>,
+    );
+
+    // Initial: primitive defaults to 0
+    expect(screen.getAllByRole("button")[0]).toHaveAttribute("data-active", "true");
+
+    await act(async () => {
+      store.set(displayedStepIndexPrimitiveAtom, 1);
+    });
+
+    expect(screen.getAllByRole("button")[1]).toHaveAttribute("data-active", "true");
+    expect(screen.getAllByRole("button")[0]).not.toHaveAttribute("data-active", "true");
   });
 
   it("no longer hosts the transport bar — only the timeline", () => {

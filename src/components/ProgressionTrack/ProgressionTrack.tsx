@@ -37,6 +37,7 @@ export function ProgressionTrack() {
     currentProgressionBar,
     totalProgressionBars,
     activeProgressionStepIndex,
+    displayedProgressionStepIndex,
     resolvedProgressionSteps,
     setActiveProgressionStepIndex,
     beatsPerBar,
@@ -117,7 +118,7 @@ export function ProgressionTrack() {
                   key={step.id}
                   step={step}
                   index={index}
-                  active={index === activeProgressionStepIndex}
+                  active={index === displayedProgressionStepIndex}
                   durationBars={layout.durationBars}
                   startPercent={layout.startPercent}
                   widthPercent={layout.widthPercent}
