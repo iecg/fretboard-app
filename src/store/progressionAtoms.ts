@@ -382,12 +382,12 @@ export const currentProgressionPresetIdAtom = atom<string>((get) => {
 
 export const activeProgressionStepAtom = atom((get) => {
   const steps = get(progressionStepsAtom);
-  return steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
+  return steps[clampProgressionIndex(get(displayedProgressionStepIndexAtom), steps)] ?? null;
 });
 
 export const activeResolvedProgressionStepAtom = atom((get) => {
   const steps = get(resolvedProgressionStepsAtom);
-  return steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
+  return steps[clampProgressionIndex(get(displayedProgressionStepIndexAtom), steps)] ?? null;
 });
 
 export const progressionStepDurationMsAtom = atom((get) => {

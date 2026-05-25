@@ -6,7 +6,7 @@ import { k } from "../utils/storage";
 import { practiceLensAtom, chordHiddenNotesAtom, chordTypeAtom } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { practiceCuesAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom } from "./progressionAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
 import { updateActiveChordAtom } from "./songStateAtoms";
@@ -676,5 +676,30 @@ describe("nextChordGuideTonesAtom (Task 4.5)", () => {
     expect(guideTones.has("E")).toBe(true);
     // C Major Triad: only 3rd (E) is a guide tone (no 7th).
     expect(guideTones.size).toBe(1);
+  });
+});
+
+describe("chord-visual derivations follow displayedProgressionStepIndexAtom during playback", () => {
+  it("activeResolvedProgressionStepAtom mirrors RAF-written index while playing", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ] as never);
+    store.set(setProgressionActiveStepIndexAtom, 0);   // logical = 0
+    store.set(setProgressionPlayingAtom, true);
+    store.set(displayedStepIndexPrimitiveAtom, 1);     // RAF advances to 1
+    expect(store.get(activeResolvedProgressionStepAtom)?.degree).toBe("V");
+  });
+
+  it("activeResolvedProgressionStepAtom falls back to logical when not playing", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ] as never);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    store.set(displayedStepIndexPrimitiveAtom, 1);     // stale RAF write
+    expect(store.get(activeResolvedProgressionStepAtom)?.degree).toBe("I");
   });
 });

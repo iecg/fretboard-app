@@ -44,7 +44,7 @@ import {
 import { activeChordCachedDegreeAtom } from "./songStateAtoms";
 import {
   resolvedProgressionStepsAtom,
-  activeProgressionStepIndexAtom,
+  displayedProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   progressionTempoBpmAtom,
   progressionStepDeadlineAtom,
@@ -356,7 +356,7 @@ export const lensAvailabilityAtom = atom((get) => {
 export const nextChordTonesAtom = atom((get): Set<string> => {
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Set();
-  const active = get(activeProgressionStepIndexAtom);
+  const active = get(displayedProgressionStepIndexAtom);
   const nextIndex = (active + 1) % steps.length;
   const step = steps[nextIndex];
   if (!step || step.unavailable || step.root === null || step.quality === null) {
@@ -407,7 +407,7 @@ export const commonTonesWithNextAtom = atom((get): Set<string> => {
 export const nextChordGuideTonesAtom = atom((get): Set<string> => {
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Set();
-  const active = get(activeProgressionStepIndexAtom);
+  const active = get(displayedProgressionStepIndexAtom);
   const nextIndex = (active + 1) % steps.length;
   const step = steps[nextIndex];
   if (!step || step.unavailable || step.root === null || step.quality === null) {

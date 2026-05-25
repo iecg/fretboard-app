@@ -6,6 +6,7 @@ import { isMutedAtom } from "../store/audioAtoms";
 import { chordRootAtom } from "../store/chordOverlayAtoms";
 import {
   beatsPerBarAtom,
+  displayedStepIndexPrimitiveAtom,
   progressionDrumsEnabledAtom,
   progressionLoopEnabledAtom,
   progressionPlaybackLoadingAtom,
@@ -290,9 +291,12 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     // Fire chord-onset event for step 1 (G). The orchestrator defers the
     // Jotai write through Tone.Draw.schedule(cb, audioTime); the mock fires
     // the callback synchronously so we can observe the state advance here.
+    // Also advance displayedStepIndexPrimitiveAtom to simulate the visual
+    // clock (RAF) that would run in real playback alongside the audio clock.
     const audioTime = toneMocks.contextNowRef.fn() + 0.1;
     act(() => {
       onsets!.callback(audioTime, onsets!.events[1][1]);
+      store.set(displayedStepIndexPrimitiveAtom, 1);
     });
     expect(toneMocks.drawSchedule).toHaveBeenCalledWith(expect.any(Function), audioTime);
     expect(store.get(chordRootAtom)).toBe("G");
