@@ -8,7 +8,13 @@ import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
 import * as Key from "@tonaljs/key";
-import { scaleNameToTonal, tonalChordSymbol, normalizeToSharps } from "./lib/tonal";
+import {
+  scaleNameToTonal,
+  tonalChordSymbol,
+  normalizeToSharps,
+  chordQualityToTonal,
+  getChordSemitonesFromTonal,
+} from "./lib/tonal";
 import * as Chord from "@tonaljs/chord";
 import * as Pcset from "@tonaljs/pcset";
 
@@ -230,134 +236,49 @@ export interface PracticeBarGroup {
   notes: PracticeBarNote[];
 }
 
+/**
+ * Builds a ChordDefinition by deriving member semitones from Tonal
+ * positionally, keeping the hand-coded member names as the contract
+ * for the chord-tone overlay. Throws if Tonal can't resolve the symbol
+ * or if the member count doesn't match Tonal's interval count.
+ */
+function buildChordDef(
+  appQuality: string,
+  quality: ChordQuality,
+  memberNames: readonly ChordMemberName[],
+): ChordDefinition {
+  const symbol = chordQualityToTonal(appQuality);
+  if (symbol === undefined) {
+    throw new Error(`buildChordDef: unknown FretFlow quality "${appQuality}"`);
+  }
+  const semitones = getChordSemitonesFromTonal(symbol);
+  if (semitones.length !== memberNames.length) {
+    throw new Error(
+      `buildChordDef: ${appQuality} expects ${memberNames.length} members, Tonal returned ${semitones.length}`,
+    );
+  }
+  return {
+    quality,
+    members: memberNames.map((name, i) => ({ name, semitone: semitones[i] })),
+  };
+}
+
 export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
-  "Major Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Minor Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Diminished Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "b5", semitone: 6 },
-    ],
-  },
-  "Major 6th": {
-    quality: "sixth",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-      { name: "6", semitone: 9 },
-    ],
-  },
-  "Major 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-      { name: "7", semitone: 11 },
-    ],
-  },
-  "Minor 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-      { name: "b7", semitone: 10 },
-    ],
-  },
-  "Dominant 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-      { name: "b7", semitone: 10 },
-    ],
-  },
-  "Sus4": {
-    quality: "suspended",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "4", semitone: 5 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Power Chord (5)": {
-    quality: "power",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Augmented Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "#5", semitone: 8 },
-    ],
-  },
-  "Sus2": {
-    quality: "suspended",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "2", semitone: 2 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Minor 6th": {
-    quality: "sixth",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-      { name: "6", semitone: 9 },
-    ],
-  },
-  "Diminished 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "b5", semitone: 6 },
-      { name: "bb7", semitone: 9 },
-    ],
-  },
-  "Half-Diminished 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "b5", semitone: 6 },
-      { name: "b7", semitone: 10 },
-    ],
-  },
-  "Minor-Major 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-      { name: "7", semitone: 11 },
-    ],
-  },
+  "Major Triad":         buildChordDef("Major Triad",         "triad",     ["root", "3", "5"]),
+  "Minor Triad":         buildChordDef("Minor Triad",         "triad",     ["root", "b3", "5"]),
+  "Diminished Triad":    buildChordDef("Diminished Triad",    "triad",     ["root", "b3", "b5"]),
+  "Major 6th":           buildChordDef("Major 6th",           "sixth",     ["root", "3", "5", "6"]),
+  "Major 7th":           buildChordDef("Major 7th",           "seventh",   ["root", "3", "5", "7"]),
+  "Minor 7th":           buildChordDef("Minor 7th",           "seventh",   ["root", "b3", "5", "b7"]),
+  "Dominant 7th":        buildChordDef("Dominant 7th",        "seventh",   ["root", "3", "5", "b7"]),
+  "Sus4":                buildChordDef("Sus4",                "suspended", ["root", "4", "5"]),
+  "Power Chord (5)":     buildChordDef("Power Chord (5)",     "power",     ["root", "5"]),
+  "Augmented Triad":     buildChordDef("Augmented Triad",     "triad",     ["root", "3", "#5"]),
+  "Sus2":                buildChordDef("Sus2",                "suspended", ["root", "2", "5"]),
+  "Minor 6th":           buildChordDef("Minor 6th",           "sixth",     ["root", "b3", "5", "6"]),
+  "Diminished 7th":      buildChordDef("Diminished 7th",      "seventh",   ["root", "b3", "b5", "bb7"]),
+  "Half-Diminished 7th": buildChordDef("Half-Diminished 7th", "seventh",   ["root", "b3", "b5", "b7"]),
+  "Minor-Major 7th":     buildChordDef("Minor-Major 7th",     "seventh",   ["root", "b3", "5", "7"]),
 };
 
 // Backward compatibility mapping from CHORD_DEFINITIONS

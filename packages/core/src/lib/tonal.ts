@@ -9,6 +9,7 @@
 import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
+import * as Chord from "@tonaljs/chord";
 
 /**
  * App chord-quality name (e.g., "Major Triad") → Tonal chord symbol suffix
@@ -152,4 +153,24 @@ export function getScaleSemitonesFromTonal(scaleName: string): number[] {
   return tonalScale.notes
     .map((n) => Note.chroma(n))
     .filter((c): c is number => typeof c === "number" && !isNaN(c));
+}
+
+/**
+ * Returns the semitone offsets (0-11) of a chord's intervals, derived
+ * from Tonal. Used as the source of truth for FretFlow's chord-tone
+ * positions in CHORD_DEFINITIONS (theory.ts).
+ *
+ * The order matches Tonal's interval array (root first, then ascending);
+ * callers map this positionally onto members[].name, which stays
+ * hand-coded as the chord-tone-overlay contract.
+ *
+ * Returns an empty array if the chord symbol isn't recognized.
+ */
+export function getChordSemitonesFromTonal(chordSymbol: string): number[] {
+  const tonalChord = Chord.get(`C${chordSymbol}`);
+  if (tonalChord.empty) return [];
+  return tonalChord.intervals
+    .map((iv) => Interval.semitones(iv))
+    .filter((s): s is number => typeof s === "number" && !isNaN(s))
+    .map((s) => ((s % 12) + 12) % 12);
 }

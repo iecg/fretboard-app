@@ -6,6 +6,7 @@ import {
   tonalToScaleName,
   normalizeToSharps,
   getScaleSemitonesFromTonal,
+  getChordSemitonesFromTonal,
 } from "./tonal";
 
 describe("chord-name adapter", () => {
@@ -106,5 +107,26 @@ describe("getScaleSemitonesFromTonal", () => {
   });
   it("returns empty array for unknown scale", () => {
     expect(getScaleSemitonesFromTonal("Bogus Scale")).toEqual([]);
+  });
+});
+
+describe("getChordSemitonesFromTonal", () => {
+  it("returns Major Triad semitones (root, 3, 5)", () => {
+    expect(getChordSemitonesFromTonal("M")).toEqual([0, 4, 7]);
+  });
+  it("returns Minor 7th semitones (root, b3, 5, b7)", () => {
+    expect(getChordSemitonesFromTonal("m7")).toEqual([0, 3, 7, 10]);
+  });
+  it("returns Diminished 7th semitones (root, b3, b5, bb7)", () => {
+    expect(getChordSemitonesFromTonal("dim7")).toEqual([0, 3, 6, 9]);
+  });
+  it("returns Power Chord semitones (root, 5)", () => {
+    expect(getChordSemitonesFromTonal("5")).toEqual([0, 7]);
+  });
+  it("returns Sus2 semitones (root, 2, 5)", () => {
+    expect(getChordSemitonesFromTonal("sus2")).toEqual([0, 2, 7]);
+  });
+  it("returns empty array for unknown symbol", () => {
+    expect(getChordSemitonesFromTonal("ZZZ")).toEqual([]);
   });
 });
