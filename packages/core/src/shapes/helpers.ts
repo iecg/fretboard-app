@@ -1,3 +1,5 @@
+import { NOTES } from '../theory';
+
 /** A vertex in fret/string coordinates. */
 export interface ShapeVertex {
   fret: number;
@@ -106,23 +108,26 @@ export function wrapOvershootNotes(
     for (let s = numStrings - 1; s >= 0; s--) {
       if (perStringNotes[s].length === 0) continue;
       const target = s - 1;
+      if (target < 0) continue;
+      
+      const openS = NOTES.indexOf(layout[s][0]);
+      const openTarget = NOTES.indexOf(layout[target][0]);
+      const offset = (openS - openTarget + 12) % 12;
+
       for (let f = frets + 1; f <= intendedMax; f++) {
         const proxyFret = ((f % 12) + 12) % 12;
         const noteName = layout[s][proxyFret];
         if (!validNotes.includes(noteName)) continue;
-        if (target < 0) continue;
-        let bestFret = -1;
-        let bestDist = Infinity;
-        for (let tf = wrapSearchMin; tf <= wrapSearchMax; tf++) {
-          if (layout[target][tf] === noteName) {
-            const dist = Math.abs(tf - shapeCenter);
-            if (dist < bestDist) {
-              bestDist = dist;
-              bestFret = tf;
-            }
-          }
-        }
-        if (bestFret >= 0) {
+        
+        const rawFret = f + offset;
+        const candidates = [rawFret - 12, rawFret, rawFret + 12]
+          .filter(c => c >= wrapSearchMin && c <= wrapSearchMax);
+          
+        if (candidates.length > 0) {
+          // Find closest to shapeCenter
+          const bestFret = candidates.reduce((a, b) => 
+            Math.abs(b - shapeCenter) < Math.abs(a - shapeCenter) ? b : a
+          );
           perStringNotes[target].push(bestFret);
           wrappedNotes.add(`${target}-${bestFret}`);
         } else {
@@ -137,23 +142,25 @@ export function wrapOvershootNotes(
     for (let s = 0; s < numStrings; s++) {
       if (perStringNotes[s].length === 0) continue;
       const target = s + 1;
+      if (target >= numStrings) continue;
+
+      const openS = NOTES.indexOf(layout[s][0]);
+      const openTarget = NOTES.indexOf(layout[target][0]);
+      const offset = (openS - openTarget + 12) % 12;
+
       for (let f = intendedMin; f < 0; f++) {
         const proxyFret = ((f % 12) + 12) % 12;
         const noteName = layout[s][proxyFret];
         if (!validNotes.includes(noteName)) continue;
-        if (target >= numStrings) continue;
-        let bestFret = -1;
-        let bestDist = Infinity;
-        for (let tf = wrapSearchMin; tf <= wrapSearchMax; tf++) {
-          if (layout[target][tf] === noteName) {
-            const dist = Math.abs(tf - shapeCenter);
-            if (dist < bestDist) {
-              bestDist = dist;
-              bestFret = tf;
-            }
-          }
-        }
-        if (bestFret >= 0) {
+        
+        const rawFret = f + offset;
+        const candidates = [rawFret - 12, rawFret, rawFret + 12]
+          .filter(c => c >= wrapSearchMin && c <= wrapSearchMax);
+          
+        if (candidates.length > 0) {
+          const bestFret = candidates.reduce((a, b) => 
+            Math.abs(b - shapeCenter) < Math.abs(a - shapeCenter) ? b : a
+          );
           perStringNotes[target].push(bestFret);
           wrappedNotes.add(`${target}-${bestFret}`);
         } else {
