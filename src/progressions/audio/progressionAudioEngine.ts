@@ -3,7 +3,7 @@ import type { MetronomeLoopHandle } from "./progressionMetronomeLoop";
 import type { ProgressionPartHandle } from "./progressionPart";
 
 export { ensureProgressionAudio, resumeProgressionAudio, restoreProgressionBus, silenceProgressionBus } from "./bus";
-export { buildAllLayers } from "./buildAllLayers";
+export { buildAllLayersAsync } from "./buildAllLayers";
 export type { BassEvent, ChordOnsetEvent, ChordStrumEvent, DrumEvent } from "./buildAllLayers";
 export { createMetronomeLoop } from "./progressionMetronomeLoop";
 export { createProgressionPart } from "./progressionPart";

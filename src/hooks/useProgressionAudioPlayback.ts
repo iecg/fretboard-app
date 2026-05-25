@@ -149,7 +149,7 @@ export function useProgressionAudioPlayback() {
     const gen = ++genRef.current;
     setLoading(true);
 
-    getEngine().then((eng) => {
+    getEngine().then(async (eng) => {
       if (gen !== genRef.current) return;
       const audio = eng.ensureProgressionAudio();
       if (!audio) { tearDown(); return; }
@@ -170,17 +170,25 @@ export function useProgressionAudioPlayback() {
       eng.setPlaybackSwing(inputs.swing);
       eng.setPlaybackTimeSignature(inputs.beatsPerBar);
 
-      const built = eng.buildAllLayers({
-        steps: inputs.steps,
-        tempoBpm: inputs.tempo,
-        beatsPerBar: inputs.beatsPerBar,
-        swing: inputs.swing,
-        chordPatternId: inputs.chordPatternId,
-        bassPatternId: inputs.bassPatternId,
-        drumPatternId: inputs.drumPatternId,
-        drumVariations: inputs.drumVariations,
-        loop: inputs.loopEnabled,
-      });
+      let built;
+      try {
+        built = await eng.buildAllLayersAsync({
+          steps: inputs.steps,
+          tempoBpm: inputs.tempo,
+          beatsPerBar: inputs.beatsPerBar,
+          swing: inputs.swing,
+          chordPatternId: inputs.chordPatternId,
+          bassPatternId: inputs.bassPatternId,
+          drumPatternId: inputs.drumPatternId,
+          drumVariations: inputs.drumVariations,
+          loop: inputs.loopEnabled,
+        });
+      } catch (err) {
+        console.error("Audio build failed", err);
+        return;
+      }
+      
+      if (gen !== genRef.current) return;
       if (built.chordOnsets.length === 0) { tearDown(); return; }
 
       const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;

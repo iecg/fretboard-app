@@ -95,7 +95,7 @@ function collectDrumHits(pattern: CatalogDrumPattern): VoicedDrumHit[] {
  * chromatic-approach bass). Per-bar pattern hits expand inline: a 2-bar
  * step with a 4-hit drum pattern yields 8 drum events.
  */
-export function buildAllLayers(input: BuildAllLayersInput): BuiltLayers {
+export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<BuiltLayers> {
   const secondsPerBeat = 60 / Math.max(1, input.tempoBpm);
 
   const chordPattern = getChordPattern(input.chordPatternId);
@@ -116,7 +116,14 @@ export function buildAllLayers(input: BuildAllLayersInput): BuiltLayers {
 
   let cumulativeSec = 0;
 
-  input.steps.forEach((step, stepIndex) => {
+  for (let stepIndex = 0; stepIndex < input.steps.length; stepIndex++) {
+    const step = input.steps[stepIndex];
+    
+    // Yield to the event loop every 8 steps to prevent UI lockup
+    if (stepIndex > 0 && stepIndex % 8 === 0) {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
     const stepBeats = step.duration.unit === "bar"
       ? step.duration.value * input.beatsPerBar
       : step.duration.value;
@@ -205,7 +212,7 @@ export function buildAllLayers(input: BuildAllLayersInput): BuiltLayers {
     }
 
     cumulativeSec += stepDurationSec;
-  });
+  }
 
   return {
     chordOnsets,
