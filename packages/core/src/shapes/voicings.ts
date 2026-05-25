@@ -2,6 +2,7 @@ import { NOTES, CHORD_DEFINITIONS } from "../theory";
 import { parseNote } from "../guitar";
 import type { CagedShape } from "./templates";
 import { getFullChordShapeMatches } from "./fullChordShapes";
+import { getCachedVoicings } from "./voicingCache";
 
 export type VoicingType = "off" | "full" | "close";
 
@@ -35,7 +36,8 @@ export interface GenerateVoicingsParams {
   voicingType: VoicingType;
 }
 
-export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
+// Rename the original exported function so the cache can wrap it
+export function generateVoicingsUncached(params: GenerateVoicingsParams): Voicing[] {
   switch (params.voicingType) {
     case "off":
       return [];
@@ -44,6 +46,11 @@ export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
     case "close":
       return closeVoicings(params);
   }
+}
+
+// The public API now routes through the cache
+export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
+  return getCachedVoicings(params);
 }
 
 function fullVoicings(params: GenerateVoicingsParams): Voicing[] {
