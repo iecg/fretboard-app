@@ -63,14 +63,18 @@ export function getFullChordShapeMatches({
     }
 
     const anchorNotes = fretboard[template.anchorString];
-    if (!anchorNotes) {
-      continue;
+    if (!anchorNotes || anchorNotes.length === 0) continue;
+
+    const openIndex = NOTES.indexOf(anchorNotes[0]);
+    if (openIndex < 0) continue;
+
+    const firstRootFret = (rootIndex - openIndex + 12) % 12;
+    const rootFrets: number[] = [];
+    for (let f = firstRootFret; f <= maxFret; f += 12) {
+      rootFrets.push(f);
     }
 
-    for (let anchorFret = 0; anchorFret < anchorNotes.length; anchorFret += 1) {
-      if (anchorNotes[anchorFret] !== chordRoot) {
-        continue;
-      }
+    for (const anchorFret of rootFrets) {
 
       const notes: FullChordMatchNote[] = [];
       const positionKeys: string[] = [];
