@@ -56,3 +56,22 @@
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
+
+.skeleton-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: fretboard-pulse 1.5s infinite ease-in-out;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.skeleton-svg {
+  display: block;
+}
+
+@keyframes fretboard-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
