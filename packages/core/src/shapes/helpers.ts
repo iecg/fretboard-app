@@ -27,54 +27,47 @@ export function deduplicateAdjacentStrings(
     const lower = perStringNotes[s + 1];
     if (!upper.length || !lower.length) continue;
 
-    // Map note names to array indices for fast lookup
-    const upperNotes = new Map<string, number[]>();
-    for (let i = 0; i < upper.length; i++) {
-      const name = layout[s][upper[i]];
-      const arr = upperNotes.get(name);
-      if (arr) arr.push(i);
-      else upperNotes.set(name, [i]);
-    }
+    const openS = NOTES.indexOf(layout[s][0]);
+    const openTarget = NOTES.indexOf(layout[s + 1][0]);
+    const offset = (openS - openTarget + 12) % 12;
+    const blueMod = blueNoteName ? (NOTES.indexOf(blueNoteName) - openTarget + 12) % 12 : -1;
 
     const toRemoveUpper = new Set<number>();
     const toRemoveLower = new Set<number>();
 
     for (let j = 0; j < lower.length; j++) {
-      const name = layout[s + 1][lower[j]];
-      if (name === blueNoteName) continue;
-      const upperIndices = upperNotes.get(name);
-      if (!upperIndices) continue;
+      if (lower[j] % 12 === blueMod) continue;
 
-      for (const i of upperIndices) {
-        if (toRemoveUpper.has(i)) continue;
+      for (let i = 0; i < upper.length; i++) {
+        if ((upper[i] + offset) % 12 === lower[j] % 12) {
+          if (toRemoveUpper.has(i)) continue;
 
-        // Distance to nearest neighbor on upper string
-        const upperDist = Math.min(
-          i > 0 ? upper[i] - upper[i - 1] : Infinity,
-          i < upper.length - 1 ? upper[i + 1] - upper[i] : Infinity,
-        );
-        // Distance to nearest neighbor on lower string
-        const lowerDist = Math.min(
-          j > 0 ? lower[j] - lower[j - 1] : Infinity,
-          j < lower.length - 1 ? lower[j + 1] - lower[j] : Infinity,
-        );
+          // Distance to nearest neighbor on upper string
+          const upperDist = Math.min(
+            i > 0 ? upper[i] - upper[i - 1] : Infinity,
+            i < upper.length - 1 ? upper[i + 1] - upper[i] : Infinity,
+          );
+          // Distance to nearest neighbor on lower string
+          const lowerDist = Math.min(
+            j > 0 ? lower[j] - lower[j - 1] : Infinity,
+            j < lower.length - 1 ? lower[j + 1] - lower[j] : Infinity,
+          );
 
-        if (upperDist >= lowerDist) {
-          toRemoveUpper.add(i);
-        } else {
-          toRemoveLower.add(j);
+          if (upperDist >= lowerDist) {
+            toRemoveUpper.add(i);
+          } else {
+            toRemoveLower.add(j);
+          }
         }
       }
     }
 
     // Remove marked indices
     if (toRemoveUpper.size > 0) {
-      const filtered = upper.filter((_, i) => !toRemoveUpper.has(i));
-      perStringNotes[s] = filtered;
+      perStringNotes[s] = upper.filter((_, i) => !toRemoveUpper.has(i));
     }
     if (toRemoveLower.size > 0) {
-      const filtered = lower.filter((_, i) => !toRemoveLower.has(i));
-      perStringNotes[s + 1] = filtered;
+      perStringNotes[s + 1] = lower.filter((_, i) => !toRemoveLower.has(i));
     }
   }
 }

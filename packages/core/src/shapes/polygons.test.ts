@@ -116,16 +116,16 @@ describe("wrapOvershootNotes", () => {
 describe("deduplicateAdjacentStrings", () => {
   it("removes the note with the greater neighbor-distance when the same note appears on adjacent strings", () => {
     const layout: string[][] = [
-      ["C", "C#", "D", "D#", "A", "F", "A", "G", "G#", "B", "A#", "B", "C"],
-      ["G", "G#", "D", "D#", "E", "A", "F#", "G", "G#", "B", "A#", "B", "C"],
+      ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"],
+      ["G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#"],
     ];
     const perStringNotes: number[][] = [
-      [4, 6], // string 0: "A" at fret 4, "A" at fret 6
-      [5],    // string 1: "A" at fret 5
+      [9, 21], // string 0: "A" at fret 9, "A" at fret 21
+      [14],    // string 1: "A" at fret 14
     ];
     deduplicateAdjacentStrings(perStringNotes, layout, null);
-    expect(perStringNotes[1]).not.toContain(5);
-    expect(perStringNotes[0]).toContain(4);
+    expect(perStringNotes[1]).not.toContain(14);
+    expect(perStringNotes[0]).toContain(9);
   });
 
   it("does NOT remove blue notes from adjacent strings (blue-note exemption)", () => {
