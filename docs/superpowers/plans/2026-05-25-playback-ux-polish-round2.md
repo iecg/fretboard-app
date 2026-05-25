@@ -1,5 +1,7 @@
 # Progression Playback UX Polish — Round 2 Implementation Plan
 
+> **⚠️ SUPERSEDED by [round-3](2026-05-25-playback-ux-polish-round3.md).** This round-2 plan was a snapshot before (a) the deferred Q3 investigation produced concrete root causes in `docs/superpowers/research/2026-05-25-playback-degradation.md`, (b) the voicing engine was rewritten as O(1) (`0e2bd21c`), (c) Tone.js was made lazy-loaded (`b5317b5d`), and (d) the orchestrator received two bug fixes (`191d8222`, `c12b0f34`). Round-3 carries Q1, Q2, Q4 forward unchanged (only metronome wiring details adapted to the lazy engine), replaces Q3-deferred with concrete fix tasks based on the research, and adds two follow-ups from the 2026-05-25 systematic-debugging session. Use round-3 for execution.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Round-2 polish on top of `2026-05-25-playback-ux-polish.md`: replace per-control lock with card-level lock + tooltip, add a Stop button, fix the time-signature-aware loop length so the metronome doesn't continue past the loop, and scope a separate debugging investigation for the loop-degradation + chord-transition stutter (out of plan because root cause is unknown).
