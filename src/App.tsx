@@ -21,7 +21,7 @@ import { HeaderTransportCluster } from "./components/HeaderTransportCluster/Head
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
-import { StatusBar } from "./components/StatusBar/StatusBar";
+
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
@@ -37,6 +37,9 @@ const HelpModal = lazy(() =>
 );
 const Inspector = lazy(() =>
   import("./components/Inspector/Inspector").then((m) => ({ default: m.Inspector }))
+);
+const StatusBar = lazy(() =>
+  import("./components/StatusBar/StatusBar").then((m) => ({ default: m.StatusBar }))
 );
 
 function AppContent() {
@@ -190,7 +193,11 @@ function AppContent() {
         />
       }
       summary={<ProgressionSummarySlot />}
-      statusBar={<StatusBar />}
+      statusBar={
+        <Suspense fallback={null}>
+          <StatusBar />
+        </Suspense>
+      }
       helpModal={
         <Suspense fallback={null}>
           <HelpModal

@@ -7,6 +7,7 @@ import { k } from "./test-utils/storage";
 // Pre-import lazy-loaded components so React.lazy() resolves from the module
 // cache synchronously, allowing Suspense to mount them without async delay.
 import "./components/Inspector/Inspector";
+import "./components/StatusBar/StatusBar";
 
 const lazyAudio = vi.hoisted(() => ({
   playGuitarNote: vi.fn(),
