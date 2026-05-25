@@ -102,13 +102,8 @@ export function SongControls() {
       { groupLabel: t("inspector.scaleGroupMajorModes"), options: familyOptions(majorFamily) },
       { groupLabel: t("inspector.scaleGroupPentatonics"), options: familyOptions(pentatonicFamily) },
       { groupLabel: t("inspector.scaleGroupBlues"), options: familyOptions(bluesFamily) },
-      {
-        groupLabel: t("inspector.scaleGroupHarmonicMelodic"),
-        options: [
-          ...familyOptions(harmonicMinorFamily),
-          ...familyOptions(melodicMinorFamily),
-        ],
-      },
+      { groupLabel: t("inspector.scaleGroupHarmonicMinor"), options: familyOptions(harmonicMinorFamily) },
+      { groupLabel: t("inspector.scaleGroupMelodicMinor"), options: familyOptions(melodicMinorFamily) },
     ],
     [t],
   );

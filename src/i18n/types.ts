@@ -50,7 +50,8 @@ export interface Dictionary {
     scaleGroupMajorModes: string;
     scaleGroupPentatonics: string;
     scaleGroupBlues: string;
-    scaleGroupHarmonicMelodic: string;
+    scaleGroupHarmonicMinor: string;
+    scaleGroupMelodicMinor: string;
     groupSource: string;
     groupChordType: string;
     showOnBoard: string;
