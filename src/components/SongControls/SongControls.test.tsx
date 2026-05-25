@@ -1,21 +1,12 @@
 // @vitest-environment jsdom
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { describe, expect, it, beforeEach } from "vitest";
 import { screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
-import { ensureProgressionAudio } from "../../progressions/audio/bus";
 import { SongControls } from "./SongControls";
-
-vi.mock("../../progressions/audio/bus", async () => {
-  const actual = await vi.importActual<typeof import("../../progressions/audio/bus")>("../../progressions/audio/bus");
-  return {
-    ...actual,
-    ensureProgressionAudio: vi.fn(),
-  };
-});
 
 const BASE_SEEDS = [
   [rootNoteAtom, "C"],
@@ -616,17 +607,6 @@ describe("SongControls width sweep (Plan H-T3)", () => {
     });
     expect(presetCombo).toBeTruthy();
     expect(presetCombo?.closest("[data-width='fixed']")).toBeNull();
-  });
-});
-
-describe("SongControls AudioContext pre-warm (P3-T4)", () => {
-  beforeEach(() => {
-    vi.mocked(ensureProgressionAudio).mockClear();
-  });
-
-  it("calls ensureProgressionAudio on mount to pre-warm the AudioContext", () => {
-    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(ensureProgressionAudio).toHaveBeenCalledTimes(1);
   });
 });
 

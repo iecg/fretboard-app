@@ -1,4 +1,4 @@
-import { startTransition, useEffect, useMemo } from "react";
+import { startTransition, useMemo } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Info } from "lucide-react";
 import clsx from "clsx";
@@ -24,7 +24,6 @@ import { DegreeGrid } from "../shared/DegreeGrid";
 import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { BackingTrackControls } from "./BackingTrackControls";
 import { buildQualitySelectGroups } from "./qualityGroups";
-import { ensureProgressionAudio } from "../../progressions/audio/bus";
 import shared from "../shared/shared.module.css";
 import { CUSTOM_PRESET_ID, progressionPlayingAtom, updateProgressionStepRootAtom } from "../../store/progressionAtoms";
 import styles from "./SongControls.module.css";
@@ -142,13 +141,6 @@ export function SongControls() {
 
   const updateProgressionStepRoot = useSetAtom(updateProgressionStepRootAtom);
   const editsLocked = useAtomValue(progressionPlayingAtom);
-
-  useEffect(() => {
-    // Pre-warm the AudioContext on first Song-tab mount so the first play
-    // click doesn't pay the full AudioContext-construction + Tone-bind
-    // latency. Idempotent; safe to call on every mount.
-    ensureProgressionAudio();
-  }, []);
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
   const availablePresets = getAvailableProgressionPresets(scaleName);
