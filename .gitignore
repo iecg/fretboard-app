@@ -50,4 +50,5 @@ docs/*
 
 .superpowers/
 .pnpm-store/
-.worktrees/
+.antigravity
+.antigravitycli
