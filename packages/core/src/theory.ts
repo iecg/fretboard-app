@@ -58,19 +58,10 @@ export const ENHARMONICS: Record<string, string> = {
   Bb: "A#",
 };
 
-// Keys preferring flats for cleaner display
-export const FLAT_KEYS = [
-  "F",
-  "Bb",
-  "A#",
-  "Eb",
-  "D#",
-  "Ab",
-  "G#",
-  "Db",
-  "C#",
-  "Gb",
-];
+export function isFlatKey(rootNote: string): boolean {
+  const key = Key.majorKey(rootNote);
+  return typeof key.alteration === "number" && key.alteration < 0;
+}
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
@@ -309,7 +300,7 @@ export function getNoteDisplay(
   activeRoot: string,
   useFlats?: boolean,
 ): string {
-  const wantsFlats = useFlats ?? FLAT_KEYS.includes(activeRoot);
+  const wantsFlats = useFlats ?? isFlatKey(activeRoot);
   if (wantsFlats && noteName.includes("#")) {
     return Note.enharmonic(noteName);
   }
@@ -548,7 +539,7 @@ export function resolveAccidentalMode(
   if (mode === "flats") return true;
   // auto
   const isNatural = !rootNote.includes("#") && !rootNote.includes("b");
-  if (isNatural) return FLAT_KEYS.includes(rootNote);
+  if (isNatural) return isFlatKey(rootNote);
 
   const sharpRoot =
     rootNote.includes("b") && ENHARMONICS[rootNote]
@@ -561,7 +552,7 @@ export function resolveAccidentalMode(
 
   const resolvedScaleName = normalizeScaleName(scaleName);
   const intervals = SCALES[resolvedScaleName];
-  if (!intervals) return FLAT_KEYS.includes(rootNote);
+  if (!intervals) return isFlatKey(rootNote);
 
   const countAccidentals = (displays: string[]): number =>
     displays.reduce((sum, s) => {
