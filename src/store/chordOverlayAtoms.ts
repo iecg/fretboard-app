@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { atom, type Atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
@@ -564,8 +564,8 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
  */
 export const chordHighlightPositionsAtom = atom((get): Set<string> => {
   const voicing = get(voicingAtom);
-  if (voicing === "off") return new Set<string>();
   if (get(chordOverlayHiddenAtom)) return new Set<string>();
+
   if (voicing === "full") {
     const fullPositionKeys = get(voicingMatchesAtom).flatMap((v) => v.positionKeys);
     if (get(chordSnapToScaleAtom)) {
@@ -576,30 +576,54 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
         // 2. Also add any chord-tone position inside the polygon,
         //    so chord tones the CAGED voicing engine doesn't generate
         //    (e.g. the 5th on the low E string for C Major) still light up.
-        const tones = get(chordTonesAtom);
-        if (tones.length > 0) {
-          const tuning = get(currentTuningAtom);
-          const layout = getFretboardNotes(tuning, 24);
-          for (let s = 0; s < tuning.length; s++) {
-            for (let f = 0; f <= 24; f++) {
-              if (tones.includes(layout[s][f])) {
-                const key = `${s}-${f}`;
-                if (isInAnyPolygon(key, shapePolygons)) {
-                  result.add(key);
-                }
-              }
-            }
-          }
-        }
+        addChordTonesWithinPolygon(get, result, shapePolygons);
         return result;
       }
     }
     return new Set(fullPositionKeys);
   }
+
   // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.
   // Note highlights represent ALL close candidate positions across all strings, decoupled from the string-set filter.
-  return new Set(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
+  if (voicing === "close") {
+    return new Set(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
+  }
+
+  // voicing === "off": if lock-to-scale is on, still highlight chord tones restricted to the pattern
+  if (voicing === "off" && get(chordSnapToScaleAtom)) {
+    const { shapePolygons } = get(shapeDataAtom);
+    if (shapePolygons.length > 0) {
+      const result = new Set<string>();
+      addChordTonesWithinPolygon(get, result, shapePolygons);
+      return result;
+    }
+  }
+
+  return new Set<string>();
 });
+
+/** Fill `result` with every fretboard position whose note is a chord tone
+ *  and lies within at least one scale-pattern polygon. */
+function addChordTonesWithinPolygon(
+  get: <T>(a: Atom<T>) => T,
+  result: Set<string>,
+  shapePolygons: readonly ShapePolygon[],
+): void {
+  const tones = get(chordTonesAtom);
+  if (tones.length === 0) return;
+  const tuning = get(currentTuningAtom);
+  const layout = getFretboardNotes(tuning, 24);
+  for (let s = 0; s < tuning.length; s++) {
+    for (let f = 0; f <= 24; f++) {
+      if (tones.includes(layout[s][f])) {
+        const key = `${s}-${f}`;
+        if (isInAnyPolygon(key, shapePolygons)) {
+          result.add(key);
+        }
+      }
+    }
+  }
+}
 
 // Migrates from legacy viewMode value on first access.
 export const practiceLensAtom = atomWithStorage<PracticeLens>(
