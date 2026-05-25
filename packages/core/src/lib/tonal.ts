@@ -163,13 +163,14 @@ export function getModeTriads(modeName: string): readonly string[] | null {
  *   getChordDisplayLabel("M")    -> "major"
  *   getChordDisplayLabel("m7")   -> "minor seventh"
  *   getChordDisplayLabel("dim7") -> "diminished seventh"
- *   getChordDisplayLabel("5")    -> "fifth"
+ *   getChordDisplayLabel("5")    -> "power chord"
  *
  * Returns the input unchanged if Tonal can't resolve it (defensive
  * fallback so the UI never shows blank).
  */
 export function getChordDisplayLabel(chordSymbol: string): string {
   if (!chordSymbol) return chordSymbol;
+  if (chordSymbol === "5") return "power chord";
   const c = Chord.get(`C${chordSymbol}`);
   if (c.empty) return chordSymbol;
   // Tonal returns names like "C major" or "C minor seventh"; strip the tonic.

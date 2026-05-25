@@ -115,9 +115,9 @@ describe("getChordDisplayLabel", () => {
   it("half-diminished", () => {
     expect(getChordDisplayLabel("m7b5")).toBe("half-diminished");
   });
-  it("power chord", () => {
-    // Tonal returns "fifth" for the "5" suffix (not "power").
-    expect(getChordDisplayLabel("5")).toBe("fifth");
+  it("returns 'power chord' for the '5' (no-third) chord symbol", () => {
+    // FretFlow UX override: Tonal returns "fifth" but we surface "power chord".
+    expect(getChordDisplayLabel("5")).toBe("power chord");
   });
   it("falls back to input on unknown symbol", () => {
     expect(getChordDisplayLabel("ZZZ")).toBe("ZZZ");
