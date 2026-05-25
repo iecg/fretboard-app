@@ -70,7 +70,18 @@ const toneMocks = vi.hoisted(() => {
 
   const getTransport = vi.fn(() => transport);
   const setContext = vi.fn();
-  const getContext = vi.fn(() => ({ now: () => contextNowRef.fn() }));
+  // `immediate()` returns `rawContext.currentTime` (no lookahead) — see
+  // tone/build/esm/core/context/Context.js:339. The production hook reads
+  // it to compute how long to defer `advanceProgressionPlayback` so the
+  // visual chord swap aligns with the audio onset (`time - immediate()`).
+  // The default mock has both pointing at the same `contextNowRef`, which
+  // models a 0-lookahead scenario (existing tests rely on this). Tests
+  // that want to exercise the lookahead-deferral path can override
+  // `scheduleOnce` to fire early and pass a future `time`.
+  const getContext = vi.fn(() => ({
+    now: () => contextNowRef.fn(),
+    immediate: () => contextNowRef.fn(),
+  }));
   const now = vi.fn(() => contextNowRef.fn());
 
   const _resetEvents = () => {
@@ -98,6 +109,25 @@ vi.mock("tone", () => ({
   getTransport: toneMocks.getTransport,
   now: toneMocks.now,
 }));
+
+// Tone Transport's scheduleOnce callback fires `lookAheadSec` BEFORE the
+// precise audio time (Tone's default lookAhead is 0.1s; the callback's
+// `time` arg is the audio-precise scheduled moment, and `rawContext.
+// currentTime` at call time is `time - lookAhead`). This helper lets a
+// single test swap in that behavior so the lookahead-deferral path can
+// be exercised without changing the other tests' baseline.
+function installToneLookaheadOnce(lookAheadSec: number) {
+  toneMocks.scheduleOnce.mockImplementationOnce((cb, time) => {
+    if (typeof time !== "string" || !time.startsWith("+")) {
+      throw new Error("installToneLookaheadOnce: expected relative-time string");
+    }
+    const delaySec = Math.max(0, parseFloat(time.slice(1)));
+    const earlyFireMs = Math.max(0, (delaySec - lookAheadSec) * 1000);
+    const audioTime = toneMocks.contextNowRef.fn() + delaySec;
+    setTimeout(() => cb(audioTime), earlyFireMs);
+    return 999;
+  });
+}
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -400,6 +430,45 @@ describe("useProgressionPlaybackLoop", () => {
     unmount();
 
     expect(toneMocks.clear).toHaveBeenCalledWith(scheduledId);
+  });
+
+  it("defers the React advance to the audio-precise time so the chord overlay aligns with the audio (Tone lookahead compensation)", () => {
+    // Simulate Tone Transport's lookahead: the callback fires ~100ms BEFORE
+    // the audio time, with `time` arg = the precise audio moment. Without
+    // the deferral, advance() would run immediately and the chord overlay
+    // swap would visibly lead the audio by 100ms. With the deferral, the
+    // Jotai write is delayed until rawContext.currentTime ≈ time.
+    const lookAheadSec = 0.1;
+    const tempoBpm = 60; // 1 beat = 1.0s
+    installToneLookaheadOnce(lookAheadSec);
+
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeChordProgression],
+      [progressionTempoBpmAtom, tempoBpm],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    setActiveStep(0, 0, 1.0, 0, 10);
+
+    renderWithStore(<PlaybackLoopHarness />, store);
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    // Fast-forward to the Tone-early-fire moment (900ms in). The Transport
+    // callback fires, but the advance must STILL be pending — deferred by
+    // the ~100ms lookahead delta.
+    act(() => {
+      vi.advanceTimersByTime(900);
+    });
+    expect(store.get(chordRootAtom)).toBe("C");
+
+    // Fast-forward the remaining 100ms. The deferred setTimeout fires and
+    // the React state finally swaps to the next chord, matching the audio.
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(store.get(chordRootAtom)).toBe("G");
   });
 
   // Regression guard for the 2026-05-25 progression-stall bug. Wrapping the

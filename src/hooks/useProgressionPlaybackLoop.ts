@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { getTransport } from "tone";
+import { getContext, getTransport } from "tone";
 import { ensureProgressionAudio } from "../progressions/audio/bus";
 import { getTimeUntilCurrentStepEndMs, getTimelinePosition } from "../progressions/audio/timeline";
 import { isMutedAtom } from "../store/audioAtoms";
@@ -48,8 +48,11 @@ export function useProgressionPlaybackLoop() {
       // Split event-id refs to keep the two id spaces (Transport vs.
       // window.setTimeout) cleanly disjoint. Each call to `armAdvance` writes
       // to exactly one of these depending on which path it takes.
+      // `lookaheadTimeoutId` tracks the post-callback deferral that aligns
+      // the React state swap with the audio onset (see scheduleOnce body).
       let transportEventId: number | null = null;
       let retryTimeoutId: number | null = null;
+      let lookaheadTimeoutId: number | null = null;
       let cancelled = false;
 
       // Transport must be running for `scheduleOnce` callbacks to fire — its
@@ -83,17 +86,38 @@ export function useProgressionPlaybackLoop() {
         // from transport now", which is unambiguous regardless of whether
         // the numeric form would have been parsed as ticks or seconds.
         //
-        // Do NOT wrap this in `Tone.Draw.schedule(...)` or `startTransition`.
-        // `Draw` silently drops events whose scheduled time is more than
-        // 250ms in the past (Draw's `expiration`), and `startTransition`
-        // gives React explicit permission to deprioritize the Jotai write
-        // that arms the next step — together they can stall the advance
-        // chain mid-progression (one heavy Fretboard re-render past the
-        // 250ms window and Draw drops the next callback, freezing
-        // playback). See PR/commit history for the regression that
-        // motivated removing that wrapper.
-        transportEventId = getTransport().scheduleOnce(() => {
-          advanceProgressionPlayback();
+        // Do NOT wrap the advance in `Tone.Draw.schedule(...)` or
+        // `startTransition`. `Draw` silently drops events whose scheduled
+        // time is more than 250ms in the past (Draw's `expiration`), and
+        // `startTransition` gives React explicit permission to deprioritize
+        // the Jotai write that arms the next step — together they can
+        // stall the advance chain mid-progression (one heavy Fretboard
+        // re-render past the 250ms window and Draw drops the next
+        // callback, freezing playback).
+        //
+        // We DO defer the React state swap by the Tone-lookahead delta
+        // (`time - context.immediate()`) using plain `setTimeout`. Tone's
+        // Transport fires this callback ~lookAhead seconds BEFORE the
+        // audio actually sounds (so audio nodes can be scheduled sample-
+        // accurately into the future). Running `advance` immediately would
+        // flip the React chord overlay ~100ms before you hear the new
+        // chord. `setTimeout` aligns the visual swap with audio onset
+        // without exposing the chain to Draw's silent-drop semantics:
+        // setTimeout always fires (eventually) regardless of main-thread
+        // contention.
+        transportEventId = getTransport().scheduleOnce((time) => {
+          if (cancelled) return;
+          const rawNow = getContext().immediate();
+          const delayMs = Math.max(0, (time - rawNow) * 1000);
+          if (delayMs <= 0) {
+            advanceProgressionPlayback();
+            return;
+          }
+          lookaheadTimeoutId = window.setTimeout(() => {
+            lookaheadTimeoutId = null;
+            if (cancelled) return;
+            advanceProgressionPlayback();
+          }, delayMs) as unknown as number;
         }, `+${remainingSec}`) as unknown as number;
       };
 
@@ -105,6 +129,9 @@ export function useProgressionPlaybackLoop() {
         }
         if (retryTimeoutId !== null) {
           window.clearTimeout(retryTimeoutId);
+        }
+        if (lookaheadTimeoutId !== null) {
+          window.clearTimeout(lookaheadTimeoutId);
         }
       };
     }
