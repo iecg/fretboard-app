@@ -2,11 +2,18 @@ import { describe, it, expect } from "vitest";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "../../test-utils/a11y";
 import { ViewTab } from "./ViewTab";
 import { scaleVisibleAtom } from "../../store/scaleAtoms";
 import { chordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
 
 describe("ViewTab", () => {
+  it("has no accessibility violations", async () => {
+    const { container } = renderWithAtoms(<ViewTab />);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+
   describe("reference design grid alignment", () => {
     it("renders Scale and Chord control grids on the same 12-column system", () => {
       renderWithAtoms(<ViewTab />);

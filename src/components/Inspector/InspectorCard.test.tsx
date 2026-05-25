@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { axe } from "../../test-utils/a11y";
 import { TooltipProvider } from "../Tooltip/Tooltip";
 import { InspectorCard } from "./InspectorCard";
 import type { InspectorCardProps } from "./InspectorCard";
@@ -53,5 +54,25 @@ describe("InspectorCard", () => {
   it("renders stateLabel chip when provided", () => {
     renderCard({ stateLabel: "Showing" });
     expect(screen.getByText("Showing")).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const { container } = renderCard({
+      active: true,
+      onToggle: () => {},
+      toggleLabel: "Enable",
+      stateLabel: "Showing",
+    });
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+
+  it("has no accessibility violations when locked", async () => {
+    const { container } = renderCard({
+      locked: true,
+      lockedHint: "Pause playback to edit",
+    });
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
   });
 });
