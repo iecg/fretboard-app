@@ -44,6 +44,12 @@ export interface DrumEvent {
   velocity: number;
 }
 
+export interface MetronomeEvent {
+  /** 1-based, cycles 1..beatsPerBar. Beat 1 is the bar downbeat (consumer
+   *  switches to accent click). */
+  beatInBar: number;
+}
+
 export interface BuildAllLayersInput {
   steps: readonly ResolvedProgressionStep[];
   tempoBpm: number;
@@ -61,6 +67,7 @@ export interface BuiltLayers {
   chordStrums: ReadonlyArray<{ time: number; value: ChordStrumEvent }>;
   bass: ReadonlyArray<{ time: number; value: BassEvent }>;
   drums: ReadonlyArray<{ time: number; value: DrumEvent }>;
+  metronome: ReadonlyArray<{ time: number; value: MetronomeEvent }>;
   totalDurationSec: number;
 }
 
@@ -113,6 +120,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   const chordStrums: Array<{ time: number; value: ChordStrumEvent }> = [];
   const bass: Array<{ time: number; value: BassEvent }> = [];
   const drums: Array<{ time: number; value: DrumEvent }> = [];
+  const metronome: Array<{ time: number; value: MetronomeEvent }> = [];
 
   let cumulativeSec = 0;
 
@@ -131,7 +139,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
 
     if (step.unavailable || step.root === null || step.quality === null) {
       cumulativeSec += stepDurationSec;
-      return;
+      continue;
     }
 
     const root = step.root;
@@ -214,11 +222,20 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     cumulativeSec += stepDurationSec;
   }
 
+  const totalBeats = Math.round(cumulativeSec / secondsPerBeat);
+  for (let beat = 0; beat < totalBeats; beat++) {
+    metronome.push({
+      time: beat * secondsPerBeat,
+      value: { beatInBar: (beat % input.beatsPerBar) + 1 },
+    });
+  }
+
   return {
     chordOnsets,
     chordStrums,
     bass,
     drums,
+    metronome,
     totalDurationSec: cumulativeSec,
   };
 }

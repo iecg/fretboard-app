@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAllLayers } from "./buildAllLayers";
+import { buildAllLayersAsync } from "./buildAllLayers";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 const step = (over: Partial<ResolvedProgressionStep> = {}): ResolvedProgressionStep => ({
@@ -34,8 +34,8 @@ describe("buildAllLayers", () => {
     loop: true,
   };
 
-  it("expands a 2-bar step into 2 chord-onset events with isFirstBar/isLastBar markers", () => {
-    const out = buildAllLayers({
+  it("expands a 2-bar step into 2 chord-onset events with isFirstBar/isLastBar markers", async () => {
+    const out = await buildAllLayersAsync({
       ...baseInput,
       steps: [
         step({ id: "a", duration: { value: 1, unit: "bar" } }),
@@ -58,8 +58,8 @@ describe("buildAllLayers", () => {
     expect(out.totalDurationSec).toBe(12);
   });
 
-  it("drops unresolvable steps from all layers but still consumes their time", () => {
-    const out = buildAllLayers({
+  it("drops unresolvable steps from all layers but still consumes their time", async () => {
+    const out = await buildAllLayersAsync({
       ...baseInput,
       steps: [
         step({ id: "a" }),
@@ -72,8 +72,8 @@ describe("buildAllLayers", () => {
     expect(out.totalDurationSec).toBe(12);
   });
 
-  it("emits chord-strum events for each strum-pattern hit per bar", () => {
-    const out = buildAllLayers({
+  it("emits chord-strum events for each strum-pattern hit per bar", async () => {
+    const out = await buildAllLayersAsync({
       ...baseInput,
       steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
     });
@@ -82,8 +82,8 @@ describe("buildAllLayers", () => {
     expect(out.chordStrums[0].value.voicing.length).toBeGreaterThan(0);
   });
 
-  it("emits bass events with notes resolved per chord (root on beat 1)", () => {
-    const out = buildAllLayers({
+  it("emits bass events with notes resolved per chord (root on beat 1)", async () => {
+    const out = await buildAllLayersAsync({
       ...baseInput,
       steps: [step({ id: "a", root: "C", quality: "M" })],
     });
@@ -93,8 +93,8 @@ describe("buildAllLayers", () => {
     expect(firstBass.value.note.startsWith("C")).toBe(true);
   });
 
-  it("emits drum events for every kit hit in the pattern per bar (kick on beat 1, snare on beat 2)", () => {
-    const out = buildAllLayers({
+  it("emits drum events for every kit hit in the pattern per bar (kick on beat 1, snare on beat 2)", async () => {
+    const out = await buildAllLayersAsync({
       ...baseInput,
       steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
     });
@@ -106,8 +106,33 @@ describe("buildAllLayers", () => {
     expect(snareAt1).toBeDefined();
   });
 
-  it("passes nextChordRoot for chromatic-approach bass only on the LAST bar of a step", () => {
-    const out = buildAllLayers({
+  it("emits one metronome event per beat across totalDurationSec, with beatInBar 1-based and bar-cyclic (3/4)", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      beatsPerBar: 3,
+      steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
+    });
+
+    // 1 bar of 3/4 at 60 BPM = 3 seconds = 3 beats.
+    expect(out.metronome).toHaveLength(3);
+    expect(out.metronome[0]).toMatchObject({ time: 0, value: { beatInBar: 1 } });
+    expect(out.metronome[1]).toMatchObject({ time: 1, value: { beatInBar: 2 } });
+    expect(out.metronome[2]).toMatchObject({ time: 2, value: { beatInBar: 3 } });
+  });
+
+  it("metronome beatInBar wraps to 1 every beatsPerBar beats across multi-bar progressions", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      beatsPerBar: 3,
+      steps: [step({ id: "a", duration: { value: 2, unit: "bar" } })],
+    });
+
+    expect(out.metronome).toHaveLength(6);
+    expect(out.metronome.map((e) => e.value.beatInBar)).toEqual([1, 2, 3, 1, 2, 3]);
+  });
+
+  it("passes nextChordRoot for chromatic-approach bass only on the LAST bar of a step", async () => {
+    const out = await buildAllLayersAsync({
       ...baseInput,
       bassPatternId: "walking", // has chromatic-approach on beat 3
       steps: [
