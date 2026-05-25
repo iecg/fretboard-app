@@ -25,10 +25,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("C major triad connector — dark", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
     });
     const locator = page.getByTestId("fretboard-svg");
     await locator.scrollIntoViewIfNeeded();
@@ -38,10 +38,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("C major triad connector — light", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
       theme: "light",
     });
     const locator = page.getByTestId("fretboard-svg");
@@ -53,10 +53,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("F major barre connector — dark", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "F",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "F",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
     });
     const locator = page.getByTestId("fretboard-svg");
     await locator.scrollIntoViewIfNeeded();
@@ -66,10 +66,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("F major barre connector — light", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "F",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "F",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
       theme: "light",
     });
     const locator = page.getByTestId("fretboard-svg");
@@ -81,10 +81,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("G7 dominant seventh connector — dark", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "G",
-      chordQualityOverride: "Dominant 7th",
+      chordQualityOverride: "7",
     });
     const locator = page.getByTestId("fretboard-svg");
     await locator.scrollIntoViewIfNeeded();
@@ -94,10 +94,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("G7 dominant seventh connector — light", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "G",
-      chordQualityOverride: "Dominant 7th",
+      chordQualityOverride: "7",
       theme: "light",
     });
     const locator = page.getByTestId("fretboard-svg");
@@ -111,10 +111,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("spread voicing connector — dark", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
       chordFretSpread: 12,
     });
     const locator = page.getByTestId("fretboard-svg");
@@ -125,10 +125,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("spread voicing connector — light", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
       chordFretSpread: 12,
       theme: "light",
     });
@@ -148,10 +148,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("connector-c-major-hover — dark: CSS active-voicing attributes produce ring + dim", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major Triad",
+      chordQualityOverride: "M",
     });
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
@@ -168,10 +168,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("connector-c-major-hover — light: CSS active-voicing attributes produce ring + dim", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major Triad",
+      chordQualityOverride: "M",
       theme: "light",
     });
     const fretboard = page.getByTestId("fretboard-svg");
@@ -190,10 +190,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("connector-c-major-focus — dark: CSS active-voicing attributes (focus semantic)", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major Triad",
+      chordQualityOverride: "M",
     });
     const fretboard = page.getByTestId("fretboard-svg");
     await fretboard.scrollIntoViewIfNeeded();
@@ -209,10 +209,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("connector-c-major-focus — light: CSS active-voicing attributes (focus semantic)", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major Triad",
+      chordQualityOverride: "M",
       theme: "light",
     });
     const fretboard = page.getByTestId("fretboard-svg");
@@ -235,10 +235,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("C major spread connector — edge crossing — dark", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
       chordFretSpread: 12,
     });
     const locator = page.getByTestId("main-fretboard");
@@ -250,10 +250,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("C major spread connector — edge crossing — light", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
       chordFretSpread: 12,
       theme: "light",
     });
@@ -270,10 +270,10 @@ test.describe("Chord Connector Visual Tests", () => {
   test("C major connector with CAGED shape — static wrapper path — dark", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       chordOverlayMode: "manual",
       chordRootOverride: "C",
-      chordQualityOverride: "Major",
+      chordQualityOverride: "M",
       fingeringPattern: "caged",
     });
     const locator = page.getByTestId("fretboard-svg");

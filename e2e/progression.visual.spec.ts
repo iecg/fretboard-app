@@ -11,7 +11,7 @@ test.describe("Progression Visual", () => {
       {
         progressionSteps: [
           { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-          { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+          { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
           { id: "three", degree: "vi", duration: { value: 2, unit: "bar" }, qualityOverride: null },
           { id: "four", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],

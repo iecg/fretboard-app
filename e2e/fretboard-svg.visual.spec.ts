@@ -10,7 +10,7 @@ test.describe("Fretboard SVG Visual Tests", () => {
   test("default C Major", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major"
+      scaleName: "major"
     });
     
     const locator = page.getByTestId("fretboard-svg");
@@ -21,7 +21,7 @@ test.describe("Fretboard SVG Visual Tests", () => {
   test("light mode C Major", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       theme: "light"
     });
     
@@ -33,7 +33,7 @@ test.describe("Fretboard SVG Visual Tests", () => {
   test("C Minor Blues color-note scale", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Minor Blues"
+      scaleName: "minor blues"
     });
     
     const locator = page.getByTestId("fretboard-svg");
@@ -44,11 +44,11 @@ test.describe("Fretboard SVG Visual Tests", () => {
   test("C Major with G Dominant 7th chord overlay", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "C",
-      scaleName: "Major",
+      scaleName: "major",
       // Phase 02 storage keys: manual mode with G Dominant 7th
       chordOverlayMode: "manual",
       chordRootOverride: "G",
-      chordQualityOverride: "Dominant 7th",
+      chordQualityOverride: "7",
     });
     
     const locator = page.getByTestId("fretboard-svg");
@@ -63,7 +63,7 @@ test.describe("Fretboard SVG Visual Tests", () => {
   test("CAGED shape layer — motion policy path — dark", async ({ page }) => {
     await loadVisualState(page, {
       rootNote: "G",
-      scaleName: "Major",
+      scaleName: "major",
       fingeringPattern: "caged",
     });
 

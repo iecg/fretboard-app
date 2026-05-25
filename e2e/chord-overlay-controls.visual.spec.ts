@@ -22,7 +22,7 @@ test.describe("Chord Overlay Controls Visual", () => {
       page,
       {
         chordOverlayMode: "manual",
-        chordQualityOverride: "Major Triad",
+        chordQualityOverride: "M",
         chordRootOverride: "C",
       },
       { width: 1280, height: 900 },
@@ -53,7 +53,7 @@ test.describe("Chord Overlay Controls Visual", () => {
       page,
       {
         chordOverlayMode: "manual",
-        chordQualityOverride: "Major Triad",
+        chordQualityOverride: "M",
         chordRootOverride: "C",
         theme: "light",
       },
@@ -80,7 +80,7 @@ test.describe("Chord Overlay Controls Visual", () => {
       page,
       {
         chordOverlayMode: "manual",
-        chordQualityOverride: "Major Triad",
+        chordQualityOverride: "M",
         chordRootOverride: "C",
       },
       { width: 390, height: 844 },
