@@ -377,7 +377,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 
 
 exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 28 entries 1`] = `
 {
-  "Altered": [
+  "altered": [
     0,
     1,
     3,
@@ -386,16 +386,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     8,
     10,
   ],
-  "Altered Diminished": [
-    0,
-    1,
-    3,
-    4,
-    6,
-    8,
-    9,
-  ],
-  "Dorian": [
+  "dorian": [
     0,
     2,
     3,
@@ -404,16 +395,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     10,
   ],
-  "Dorian Flat 2": [
-    0,
-    1,
-    3,
-    5,
-    7,
-    9,
-    10,
-  ],
-  "Dorian Sharp 4": [
+  "dorian #4": [
     0,
     2,
     3,
@@ -422,7 +404,16 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     10,
   ],
-  "Harmonic Minor": [
+  "dorian b2": [
+    0,
+    1,
+    3,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "harmonic minor": [
     0,
     2,
     3,
@@ -431,7 +422,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     8,
     11,
   ],
-  "Ionian Augmented": [
+  "ionian augmented": [
     0,
     2,
     4,
@@ -440,7 +431,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     11,
   ],
-  "Locrian": [
+  "locrian": [
     0,
     1,
     3,
@@ -449,7 +440,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     8,
     10,
   ],
-  "Locrian Natural 2": [
+  "locrian #2": [
     0,
     2,
     3,
@@ -458,7 +449,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     8,
     10,
   ],
-  "Locrian Natural 6": [
+  "locrian 6": [
     0,
     1,
     3,
@@ -467,7 +458,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     10,
   ],
-  "Lydian": [
+  "lydian": [
     0,
     2,
     4,
@@ -476,7 +467,16 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     11,
   ],
-  "Lydian Augmented": [
+  "lydian #9": [
+    0,
+    3,
+    4,
+    6,
+    7,
+    9,
+    11,
+  ],
+  "lydian augmented": [
     0,
     2,
     4,
@@ -485,7 +485,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     11,
   ],
-  "Lydian Dominant": [
+  "lydian dominant": [
     0,
     2,
     4,
@@ -494,16 +494,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     10,
   ],
-  "Lydian Sharp 2": [
-    0,
-    3,
-    4,
-    6,
-    7,
-    9,
-    11,
-  ],
-  "Major": [
+  "major": [
     0,
     2,
     4,
@@ -512,7 +503,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     11,
   ],
-  "Major Blues": [
+  "major blues": [
     0,
     2,
     3,
@@ -520,14 +511,14 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     7,
     9,
   ],
-  "Major Pentatonic": [
+  "major pentatonic": [
     0,
     2,
     4,
     7,
     9,
   ],
-  "Melodic Minor": [
+  "melodic minor": [
     0,
     2,
     3,
@@ -536,40 +527,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     9,
     11,
   ],
-  "Minor Blues": [
-    0,
-    3,
-    5,
-    6,
-    7,
-    10,
-  ],
-  "Minor Pentatonic": [
-    0,
-    3,
-    5,
-    7,
-    10,
-  ],
-  "Mixolydian": [
-    0,
-    2,
-    4,
-    5,
-    7,
-    9,
-    10,
-  ],
-  "Mixolydian Flat 6": [
-    0,
-    2,
-    4,
-    5,
-    7,
-    8,
-    10,
-  ],
-  "Natural Minor": [
+  "minor": [
     0,
     2,
     3,
@@ -578,7 +536,40 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     8,
     10,
   ],
-  "Phrygian": [
+  "minor blues": [
+    0,
+    3,
+    5,
+    6,
+    7,
+    10,
+  ],
+  "minor pentatonic": [
+    0,
+    3,
+    5,
+    7,
+    10,
+  ],
+  "mixolydian": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "mixolydian b6": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "phrygian": [
     0,
     1,
     3,
@@ -587,7 +578,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     8,
     10,
   ],
-  "Phrygian Dominant": [
+  "phrygian dominant": [
     0,
     1,
     4,
@@ -595,266 +586,275 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 
     7,
     8,
     10,
+  ],
+  "ultralocrian": [
+    0,
+    1,
+    3,
+    4,
+    6,
+    8,
+    9,
   ],
 }
 `;
 
 exports[`getDivergentNotes > matches snapshot across all scales × {C, F#, Bb} 1`] = `
 {
-  "Bb Aeolian": [],
-  "Bb Altered": [
+  "Bb aeolian": [],
+  "Bb altered": [
     "B",
     "C#",
     "E",
     "F#",
     "G#",
   ],
-  "Bb Altered Diminished": [
-    "B",
-    "C#",
-    "E",
-    "F#",
-  ],
-  "Bb Blues": [],
-  "Bb Dorian": [
+  "Bb blues": [],
+  "Bb dorian": [
     "G",
   ],
-  "Bb Dorian Flat 2": [
-    "B",
-    "G",
-  ],
-  "Bb Dorian Sharp 4": [
+  "Bb dorian #4": [
     "E",
     "G",
   ],
-  "Bb Harmonic Minor": [
+  "Bb dorian b2": [
+    "B",
+    "G",
+  ],
+  "Bb harmonic minor": [
     "A",
   ],
-  "Bb Ionian": [],
-  "Bb Ionian Augmented": [
+  "Bb ionian": [],
+  "Bb ionian augmented": [
     "F#",
   ],
-  "Bb Locrian": [
+  "Bb locrian": [
     "B",
     "E",
   ],
-  "Bb Locrian Natural 2": [
+  "Bb locrian #2": [
     "E",
   ],
-  "Bb Locrian Natural 6": [
+  "Bb locrian 6": [
     "B",
     "E",
     "G",
   ],
-  "Bb Lydian": [
+  "Bb lydian": [
     "E",
   ],
-  "Bb Lydian Augmented": [
-    "E",
-    "F#",
-  ],
-  "Bb Lydian Dominant": [
-    "E",
-    "G#",
-  ],
-  "Bb Lydian Sharp 2": [
+  "Bb lydian #9": [
     "C#",
     "E",
   ],
-  "Bb Major": [],
-  "Bb Major Blues": [],
-  "Bb Major Pentatonic": [],
-  "Bb Melodic Minor": [
+  "Bb lydian augmented": [
+    "E",
+    "F#",
+  ],
+  "Bb lydian dominant": [
+    "E",
+    "G#",
+  ],
+  "Bb major": [],
+  "Bb major blues": [],
+  "Bb major pentatonic": [],
+  "Bb melodic minor": [
     "G",
     "A",
   ],
-  "Bb Minor Blues": [],
-  "Bb Minor Pentatonic": [],
-  "Bb Mixolydian": [
+  "Bb minor": [],
+  "Bb minor blues": [],
+  "Bb minor pentatonic": [],
+  "Bb mixolydian": [
     "G#",
   ],
-  "Bb Mixolydian Flat 6": [
+  "Bb mixolydian b6": [
     "F#",
     "G#",
   ],
-  "Bb Natural Minor": [],
-  "Bb Phrygian": [
+  "Bb phrygian": [
     "B",
   ],
-  "Bb Phrygian Dominant": [
+  "Bb phrygian dominant": [
     "B",
     "F#",
     "G#",
   ],
-  "C Aeolian": [],
-  "C Altered": [
+  "Bb ultralocrian": [
+    "B",
+    "C#",
+    "E",
+    "F#",
+  ],
+  "C aeolian": [],
+  "C altered": [
     "C#",
     "D#",
     "F#",
     "G#",
     "A#",
   ],
-  "C Altered Diminished": [
+  "C blues": [],
+  "C dorian": [
+    "A",
+  ],
+  "C dorian #4": [
+    "F#",
+    "A",
+  ],
+  "C dorian b2": [
+    "C#",
+    "A",
+  ],
+  "C harmonic minor": [
+    "B",
+  ],
+  "C ionian": [],
+  "C ionian augmented": [
+    "G#",
+  ],
+  "C locrian": [
+    "C#",
+    "F#",
+  ],
+  "C locrian #2": [
+    "F#",
+  ],
+  "C locrian 6": [
+    "C#",
+    "F#",
+    "A",
+  ],
+  "C lydian": [
+    "F#",
+  ],
+  "C lydian #9": [
+    "D#",
+    "F#",
+  ],
+  "C lydian augmented": [
+    "F#",
+    "G#",
+  ],
+  "C lydian dominant": [
+    "F#",
+    "A#",
+  ],
+  "C major": [],
+  "C major blues": [],
+  "C major pentatonic": [],
+  "C melodic minor": [
+    "A",
+    "B",
+  ],
+  "C minor": [],
+  "C minor blues": [],
+  "C minor pentatonic": [],
+  "C mixolydian": [
+    "A#",
+  ],
+  "C mixolydian b6": [
+    "G#",
+    "A#",
+  ],
+  "C phrygian": [
+    "C#",
+  ],
+  "C phrygian dominant": [
+    "C#",
+    "G#",
+    "A#",
+  ],
+  "C ultralocrian": [
     "C#",
     "D#",
     "F#",
     "G#",
   ],
-  "C Blues": [],
-  "C Dorian": [
-    "A",
-  ],
-  "C Dorian Flat 2": [
-    "C#",
-    "A",
-  ],
-  "C Dorian Sharp 4": [
-    "F#",
-    "A",
-  ],
-  "C Harmonic Minor": [
-    "B",
-  ],
-  "C Ionian": [],
-  "C Ionian Augmented": [
-    "G#",
-  ],
-  "C Locrian": [
-    "C#",
-    "F#",
-  ],
-  "C Locrian Natural 2": [
-    "F#",
-  ],
-  "C Locrian Natural 6": [
-    "C#",
-    "F#",
-    "A",
-  ],
-  "C Lydian": [
-    "F#",
-  ],
-  "C Lydian Augmented": [
-    "F#",
-    "G#",
-  ],
-  "C Lydian Dominant": [
-    "F#",
-    "A#",
-  ],
-  "C Lydian Sharp 2": [
-    "D#",
-    "F#",
-  ],
-  "C Major": [],
-  "C Major Blues": [],
-  "C Major Pentatonic": [],
-  "C Melodic Minor": [
-    "A",
-    "B",
-  ],
-  "C Minor Blues": [],
-  "C Minor Pentatonic": [],
-  "C Mixolydian": [
-    "A#",
-  ],
-  "C Mixolydian Flat 6": [
-    "G#",
-    "A#",
-  ],
-  "C Natural Minor": [],
-  "C Phrygian": [
-    "C#",
-  ],
-  "C Phrygian Dominant": [
-    "C#",
-    "G#",
-    "A#",
-  ],
-  "F# Aeolian": [],
-  "F# Altered": [
+  "F# aeolian": [],
+  "F# altered": [
     "G",
     "A",
     "C",
     "D",
     "E",
   ],
-  "F# Altered Diminished": [
-    "G",
-    "A",
-    "C",
-    "D",
-  ],
-  "F# Blues": [],
-  "F# Dorian": [
+  "F# blues": [],
+  "F# dorian": [
     "D#",
   ],
-  "F# Dorian Flat 2": [
-    "G",
-    "D#",
-  ],
-  "F# Dorian Sharp 4": [
+  "F# dorian #4": [
     "C",
     "D#",
   ],
-  "F# Harmonic Minor": [
+  "F# dorian b2": [
+    "G",
+    "D#",
+  ],
+  "F# harmonic minor": [
     "F",
   ],
-  "F# Ionian": [],
-  "F# Ionian Augmented": [
+  "F# ionian": [],
+  "F# ionian augmented": [
     "D",
   ],
-  "F# Locrian": [
+  "F# locrian": [
     "G",
     "C",
   ],
-  "F# Locrian Natural 2": [
+  "F# locrian #2": [
     "C",
   ],
-  "F# Locrian Natural 6": [
+  "F# locrian 6": [
     "G",
     "C",
     "D#",
   ],
-  "F# Lydian": [
+  "F# lydian": [
     "C",
   ],
-  "F# Lydian Augmented": [
-    "C",
-    "D",
-  ],
-  "F# Lydian Dominant": [
-    "C",
-    "E",
-  ],
-  "F# Lydian Sharp 2": [
+  "F# lydian #9": [
     "A",
     "C",
   ],
-  "F# Major": [],
-  "F# Major Blues": [],
-  "F# Major Pentatonic": [],
-  "F# Melodic Minor": [
+  "F# lydian augmented": [
+    "C",
+    "D",
+  ],
+  "F# lydian dominant": [
+    "C",
+    "E",
+  ],
+  "F# major": [],
+  "F# major blues": [],
+  "F# major pentatonic": [],
+  "F# melodic minor": [
     "D#",
     "F",
   ],
-  "F# Minor Blues": [],
-  "F# Minor Pentatonic": [],
-  "F# Mixolydian": [
+  "F# minor": [],
+  "F# minor blues": [],
+  "F# minor pentatonic": [],
+  "F# mixolydian": [
     "E",
   ],
-  "F# Mixolydian Flat 6": [
+  "F# mixolydian b6": [
     "D",
     "E",
   ],
-  "F# Natural Minor": [],
-  "F# Phrygian": [
+  "F# phrygian": [
     "G",
   ],
-  "F# Phrygian Dominant": [
+  "F# phrygian dominant": [
     "G",
     "D",
     "E",
+  ],
+  "F# ultralocrian": [
+    "G",
+    "A",
+    "C",
+    "D",
   ],
 }
 `;

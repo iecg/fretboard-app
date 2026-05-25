@@ -20,7 +20,7 @@ import { ChordOverlayControls } from "./ChordOverlayControls";
  * `fingeringPatternAtom = "caged"` keeps the overlay enabled.
  */
 const DEGREE_SEEDS = [
-  [scaleNameAtom, "Major"],
+  [scaleNameAtom, "major"],
   [rootNoteAtom, "C"],
   [fingeringPatternAtom, "caged"],
   [progressionStepsAtom, [
@@ -29,7 +29,7 @@ const DEGREE_SEEDS = [
 ] as const;
 
 const MANUAL_SEEDS = [
-  [scaleNameAtom, "Major"],
+  [scaleNameAtom, "major"],
   [rootNoteAtom, "C"],
   [fingeringPatternAtom, "caged"],
   [progressionStepsAtom, [

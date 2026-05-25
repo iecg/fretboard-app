@@ -128,7 +128,7 @@ describe("useFretboardState — CAGED shape filtering and truncation", () => {
       [cagedShapesAtom, new Set(["D"])],
       [chordScopeToPositionAtom, true],
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [voicingAtom, "caged"],
       [chordOverlayHiddenAtom, false],
       [progressionStepsAtom, [
@@ -159,7 +159,7 @@ describe("useFretboardState — CAGED shape filtering and truncation", () => {
       [cagedShapesAtom, new Set(["C"])],
       [chordScopeToPositionAtom, true],
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [voicingAtom, "caged"],
       [chordOverlayHiddenAtom, false],
       [progressionStepsAtom, [

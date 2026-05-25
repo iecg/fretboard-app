@@ -26,7 +26,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, 0],
       [twoStringsIntervalAtom, 1], // 1 = 3rds (4 semitones)
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     expect(data.intervalPairs.length).toBeGreaterThan(0);
@@ -43,7 +43,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, 0],
       [twoStringsIntervalAtom, 0], // 0 = Off
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     expect(data.intervalPairs).toHaveLength(0);
@@ -54,7 +54,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [fingeringPatternAtom, "none"],
       [twoStringsIntervalAtom, 2],
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     expect(data.intervalPairs).toHaveLength(0);
@@ -67,7 +67,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, pairIndex],
       [twoStringsIntervalAtom, 2], // 2 = 4ths (SD distance 3, adjacent pairs)
       [rootNoteAtom, "G"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     expect(data.intervalPairs.length).toBeGreaterThan(0);
@@ -85,7 +85,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, 0],
       [twoStringsIntervalAtom, 3], // 3 = 6ths (skip-one topology)
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     // With skip-one pair[0] = [0,2], highlightNotes should be on strings 0 and 2
@@ -101,7 +101,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, 4], // out-of-range for skip-one, clamped to 3
       [twoStringsIntervalAtom, 3], // 3 = 6ths
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     // Must not throw; should produce notes on strings 3+5
     expect(() => store.get(shapeDataAtom)).not.toThrow();
@@ -122,7 +122,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, 0],
       [twoStringsIntervalAtom, 0], // Off
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     // Build store with interval > 0
     const storeOn = makeAtomStore([
@@ -130,7 +130,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, 0],
       [twoStringsIntervalAtom, 1], // 3rds
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
 
     const offData = storeOff.get(shapeDataAtom);
@@ -149,7 +149,7 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       [twoStringsPairAtom, 0],
       [twoStringsIntervalAtom, 2], // 4ths
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     const highlightSet = new Set(data.highlightNotes);
@@ -176,7 +176,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [oneStringIndexAtom, 5], // low-E string
       [oneStringIntervalAtom, 1], // On
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     expect(data.intervalPairs.length).toBeGreaterThan(0);
@@ -193,7 +193,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [oneStringIndexAtom, 5],
       [oneStringIntervalAtom, 0],
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     // On mode: consecutive scale-tone pairs (2nds)
     const storeOn = makeAtomStore([
@@ -201,7 +201,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [oneStringIndexAtom, 5],
       [oneStringIntervalAtom, 1],
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const offPairs = storeOff.get(shapeDataAtom).intervalPairs;
     const onPairs = storeOn.get(shapeDataAtom).intervalPairs;
@@ -223,7 +223,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [oneStringIndexAtom, 5], // low-E string, E2 open
       [oneStringIntervalAtom, 1], // On
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     // 2 full octaves on frets 0–24 → 14 pairs (7 per octave × 2)
@@ -236,7 +236,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [oneStringIndexAtom, 5],
       [oneStringIntervalAtom, 0], // Off
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     expect(data.intervalPairs).toHaveLength(0);
@@ -248,14 +248,14 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [oneStringIndexAtom, 5],
       [oneStringIntervalAtom, 0], // Off
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const storeOn = makeAtomStore([
       [fingeringPatternAtom, "one-string"],
       [oneStringIndexAtom, 5],
       [oneStringIntervalAtom, 1], // On
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const offData = storeOff.get(shapeDataAtom);
     const onData = storeOn.get(shapeDataAtom);
@@ -271,7 +271,7 @@ describe("shapeDataAtom — one-string intervalPairs", () => {
       [oneStringIndexAtom, stringIdx],
       [oneStringIntervalAtom, 1], // On
       [rootNoteAtom, "G"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     const data = store.get(shapeDataAtom);
     expect(data.intervalPairs.length).toBeGreaterThan(0);
@@ -302,7 +302,7 @@ describe("shapeDataAtom — CAGED scale shape remapping under minor active chord
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C"])],
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, [
         {
           id: "step-1",

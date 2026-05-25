@@ -101,7 +101,7 @@ describe("App", () => {
 
     it("loads persisted root and scale from localStorage", async () => {
       localStorage.setItem(k("rootNote"), "G");
-      localStorage.setItem(k("scaleName"), "Minor");
+      localStorage.setItem(k("scaleName.v2"), "minor");
       render(<App />);
       // The fretboard mock reflects rootNote directly; no tab selection needed.
       expect(await screen.findByTestId("fretboard")).toHaveTextContent("Fretboard: G");
@@ -260,22 +260,22 @@ describe("App", () => {
 
   describe("scale-derived state reaches the fretboard", () => {
     it.each([
-      ["Minor Blues", "F#"],
-      ["Major Blues", "D#"],
+      ["minor blues", "F#"],
+      ["major blues", "D#"],
     ])("%s scale passes blue note %s to the fretboard", (scaleName, blueNote) => {
       localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), scaleName);
+      localStorage.setItem(k("scaleName.v2"), scaleName);
       render(<App />);
       expect(screen.getByTestId("fretboard")).toHaveAttribute("data-color-notes", blueNote);
     });
 
     it("uses 3NPS coordinates when a position is selected", () => {
       localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major");
+      localStorage.setItem(k("scaleName.v2"), "major");
       localStorage.setItem(k("fingeringPattern"), "3nps");
       localStorage.setItem(k("npsPosition"), "2");
       render(<App />);
-      const expectedCount = get3NPSCoordinates("C", "Major", STANDARD_TUNING, 24, 2).coordinates.length;
+      const expectedCount = get3NPSCoordinates("C", "major", STANDARD_TUNING, 24, 2).coordinates.length;
       expect(screen.getByTestId("fretboard")).toHaveTextContent(`Fretboard: C - ${expectedCount} notes`);
     });
   });
@@ -297,7 +297,7 @@ describe("App", () => {
     function setupHiddenPracticeBar() {
       // Dominant 7th over C Major has Bb outside the scale, so the practice bar renders.
       localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major");
+      localStorage.setItem(k("scaleName.v2"), "major");
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: "C" },
       ];

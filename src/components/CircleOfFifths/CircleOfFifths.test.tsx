@@ -52,19 +52,19 @@ describe("CircleOfFifths/CircleOfFifths", () => {
 
   describe("Scale-aware display", () => {
     it.each([
-      { root: "C", scale: "Major" },
-      { root: "A", scale: "Natural Minor" },
-      { root: "F", scale: "Lydian" },
-      { root: "D", scale: "Dorian" },
+      { root: "C", scale: "major" },
+      { root: "A", scale: "minor" },
+      { root: "F", scale: "lydian" },
+      { root: "D", scale: "dorian" },
     ])("renders for $root $scale", ({ root, scale }) => {
       renderCircle({ rootNote: root, scaleName: scale });
       expect(document.querySelector("svg")).toBeTruthy();
     });
 
     it("updates degrees when scale changes", () => {
-      const { rerender } = renderCircle({ scaleName: "Major" });
+      const { rerender } = renderCircle({ scaleName: "major" });
       const before = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
-      rerender(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="Natural Minor" />);
+      rerender(<CircleOfFifths rootNote="C" setRootNote={mockSetRootNote} scaleName="minor" />);
       const after = Array.from(document.querySelectorAll("text")).map((el) => el.textContent).join("|");
       expect(after).not.toBe(before);
     });
@@ -134,7 +134,7 @@ describe("CircleOfFifths/CircleOfFifths", () => {
 
 describe("getCircleNoteLabels mode behavior", () => {
   const labels = (note: string, root: string, preferFlats: boolean, mode: "auto" | "on" | "off") =>
-    getCircleNoteLabels(note, root, preferFlats, SCALES["Major"], mode);
+    getCircleNoteLabels(note, root, preferFlats, SCALES["major"], mode);
 
   it.each<[string, string, string, boolean, "auto" | "on" | "off", string, string | null]>([
     // mode = "auto"

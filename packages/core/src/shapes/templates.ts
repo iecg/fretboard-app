@@ -10,8 +10,8 @@ export const MAJOR_MODE_NAMES = [
 
 /** Mode offset from parent major scale. */
 export const MODE_OFFSETS: Record<string, number> = {
-  'Major': 0, 'Dorian': 1, 'Phrygian': 2, 'Lydian': 3,
-  'Mixolydian': 4, 'Natural Minor': 5, 'Locrian': 6,
+  'major': 0, 'dorian': 1, 'phrygian': 2, 'lydian': 3,
+  'mixolydian': 4, 'minor': 5, 'locrian': 6,
 };
 
 export type CagedShape = "C" | "A" | "G" | "E" | "D";
@@ -134,13 +134,13 @@ const SHAPE_TEMPLATES_HARMONIC_MINOR: Record<CagedShape, ShapeTemplate> = {
 };
 
 const HAND_TUNED_TEMPLATES: Record<string, Record<CagedShape, ShapeTemplate>> = {
-  'Major':          SHAPE_TEMPLATES_7NOTE,
-  'Natural Minor':  SHAPE_TEMPLATES_7NOTE,
-  'Dorian':         SHAPE_TEMPLATES_DORIAN,
-  'Phrygian':       SHAPE_TEMPLATES_PHRYGIAN,
-  'Locrian':        SHAPE_TEMPLATES_LOCRIAN,
-  'Harmonic Minor': SHAPE_TEMPLATES_HARMONIC_MINOR,
-  'Mixolydian':     SHAPE_TEMPLATES_PHRYGIAN,
+  'major':          SHAPE_TEMPLATES_7NOTE,
+  'minor':  SHAPE_TEMPLATES_7NOTE,
+  'dorian':         SHAPE_TEMPLATES_DORIAN,
+  'phrygian':       SHAPE_TEMPLATES_PHRYGIAN,
+  'locrian':        SHAPE_TEMPLATES_LOCRIAN,
+  'harmonic minor': SHAPE_TEMPLATES_HARMONIC_MINOR,
+  'mixolydian':     SHAPE_TEMPLATES_PHRYGIAN,
 };
 
 const derivedTemplateCache = new Map<string, Record<CagedShape, ShapeTemplate>>();
@@ -334,7 +334,7 @@ export function isMajorScale(scaleName: string): boolean {
  * when their intervals contain a major 3rd.
  */
 const RELATIVE_MINOR_REMAP_SCALES = new Set([
-  'Major', 'Lydian', 'Mixolydian', 'Major Pentatonic', 'Major Blues',
+  'major', 'lydian', 'mixolydian', 'major pentatonic', 'major blues',
 ]);
 
 export function shouldUseRelativeMinorAnchor(scaleName: string): boolean {

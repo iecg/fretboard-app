@@ -176,7 +176,7 @@ describe("useProgressionPlaybackLoop", () => {
     const stepDurationMs = 60000 / tempoBpm;
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -201,7 +201,7 @@ describe("useProgressionPlaybackLoop", () => {
     // by a long span here would abort the test if a 0ms hot loop existed.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, 60],
       [beatsPerBarAtom, 4],
@@ -225,7 +225,7 @@ describe("useProgressionPlaybackLoop", () => {
     const tempoBpm = 60; // 1 beat = 1000ms
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -274,7 +274,7 @@ describe("useProgressionPlaybackLoop", () => {
     const tempoBpm = 60; // 1 beat = 1000ms
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -331,7 +331,7 @@ describe("useProgressionPlaybackLoop", () => {
     const stepDurationSec = 1.0;
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -355,7 +355,7 @@ describe("useProgressionPlaybackLoop", () => {
     const tempoBpm = 60;
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],
@@ -382,7 +382,7 @@ describe("useProgressionPlaybackLoop", () => {
     const tempoBpm = 60;
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, threeChordProgression],
       [progressionTempoBpmAtom, tempoBpm],
       [beatsPerBarAtom, 4],

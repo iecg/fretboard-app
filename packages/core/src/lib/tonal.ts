@@ -1,7 +1,7 @@
 /**
  * Adapter between FretFlow's verbose music-theory names and Tonal's symbol names.
  *
- * FretFlow chose verbose names ("Major Triad", "Natural Minor", "Major Pentatonic")
+ * FretFlow chose verbose names ("Major Triad", "minor", "major pentatonic")
  * for user-facing clarity; Tonal uses compact symbols ("M", "minor", "major pentatonic").
  * Every cross-module call into Tonal passes through this file.
  */
@@ -39,37 +39,37 @@ const TONAL_TO_QUALITY: Record<string, string> = Object.fromEntries(
 );
 
 const SCALE_TO_TONAL: Record<string, string> = {
-  "Major": "major",
-  "Natural Minor": "minor",
-  "Harmonic Minor": "harmonic minor",
-  "Melodic Minor": "melodic minor",
-  "Major Pentatonic": "major pentatonic",
-  "Minor Pentatonic": "minor pentatonic",
-  "Blues": "blues",
-  "Ionian": "ionian",
-  "Dorian": "dorian",
-  "Phrygian": "phrygian",
-  "Lydian": "lydian",
-  "Mixolydian": "mixolydian",
-  "Aeolian": "aeolian",
-  "Locrian": "locrian",
+  "major": "major",
+  "minor": "minor",
+  "harmonic minor": "harmonic minor",
+  "melodic minor": "melodic minor",
+  "major pentatonic": "major pentatonic",
+  "minor pentatonic": "minor pentatonic",
+  "blues": "blues",
+  "ionian": "ionian",
+  "dorian": "dorian",
+  "phrygian": "phrygian",
+  "lydian": "lydian",
+  "mixolydian": "mixolydian",
+  "aeolian": "aeolian",
+  "locrian": "locrian",
   // Harmonic Minor modes
-  "Locrian Natural 6": "locrian 6",
-  "Ionian Augmented": "ionian augmented",
-  "Dorian Sharp 4": "dorian #4",
-  "Phrygian Dominant": "phrygian dominant",
-  "Lydian Sharp 2": "lydian #9",
-  "Altered Diminished": "ultralocrian",
+  "locrian 6": "locrian 6",
+  "ionian augmented": "ionian augmented",
+  "dorian #4": "dorian #4",
+  "phrygian dominant": "phrygian dominant",
+  "lydian #9": "lydian #9",
+  "ultralocrian": "ultralocrian",
   // Melodic Minor modes
-  "Dorian Flat 2": "dorian b2",
-  "Lydian Augmented": "lydian augmented",
-  "Lydian Dominant": "lydian dominant",
-  "Mixolydian Flat 6": "mixolydian b6",
-  "Locrian Natural 2": "locrian #2",
-  "Altered": "altered",
+  "dorian b2": "dorian b2",
+  "lydian augmented": "lydian augmented",
+  "lydian dominant": "lydian dominant",
+  "mixolydian b6": "mixolydian b6",
+  "locrian #2": "locrian #2",
+  "altered": "altered",
   // Blues variants
-  "Minor Blues": "minor blues",
-  "Major Blues": "major blues",
+  "minor blues": "minor blues",
+  "major blues": "major blues",
 };
 
 const TONAL_TO_SCALE: Record<string, string> = Object.fromEntries(
@@ -148,8 +148,7 @@ export function normalizeToSharps(note: string): string {
  * FretFlow scale must resolve).
  */
 export function getScaleSemitonesFromTonal(scaleName: string): number[] {
-  const tonalName = scaleNameToTonal(scaleName) ?? scaleName;
-  const tonalScale = Scale.get(`C ${tonalName}`);
+  const tonalScale = Scale.get(`C ${scaleName}`);
   if (tonalScale.empty) return [];
   return tonalScale.notes
     .map((n) => Note.chroma(n))
@@ -224,13 +223,11 @@ function triadSuffixToRoman(suffix: string, step: number): string {
  * we translate to FretFlow's format via {@link triadSuffixToRoman}.
  */
 export function getModeTriads(modeName: string): readonly string[] | null {
-  const tonalName = scaleNameToTonal(modeName);
-  if (!tonalName) return null;
-  const mode = Mode.get(tonalName);
+  const mode = Mode.get(modeName);
   if (mode.empty) return null;
   let suffixes: string[];
   try {
-    suffixes = Mode.triads(tonalName, "");
+    suffixes = Mode.triads(modeName, "");
   } catch {
     return null;
   }

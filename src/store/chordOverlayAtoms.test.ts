@@ -55,7 +55,7 @@ describe("chordRootAtom / chordTypeAtom — derived from active progression step
 
   const C_MAJOR_SEEDS = [
     [rootNoteAtom, "C"],
-    [scaleNameAtom, "Major"],
+    [scaleNameAtom, "major"],
   ] as const;
 
   it.each<{ degree: DegreeId; root: string; type: string }>([
@@ -106,7 +106,7 @@ describe("updateActiveChordAtom — write surface", () => {
   it("setting a manualRoot routes through the active step", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
     ]);
     store.set(updateActiveChordAtom, { root: "F#" });
@@ -117,7 +117,7 @@ describe("updateActiveChordAtom — write surface", () => {
   it("setting a qualityOverride routes through the active step", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "V" })],
     ]);
     store.set(updateActiveChordAtom, { quality: "Dominant 7th" });
@@ -128,7 +128,7 @@ describe("updateActiveChordAtom — write surface", () => {
   it("setting a degree updates the active step's cached degree without clearing the override", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", qualityOverride: "Dominant 7th" })],
     ]);
     store.set(updateActiveChordAtom, { degree: "V" });
@@ -150,7 +150,7 @@ describe("chordSourceIsProgressionAtom", () => {
   it("is true when a step resolves diatonically", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
     ]);
     expect(store.get(chordSourceIsProgressionAtom)).toBe(true);
@@ -169,7 +169,7 @@ describe("allChordMembersAtom — scaleDegree + scaleInterval", () => {
   it("in-scale note E gets scaleDegree 'iii' in C Major I chord", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
     ]);
     const members = store.get(allChordMembersAtom);
@@ -181,7 +181,7 @@ describe("allChordMembersAtom — scaleDegree + scaleInterval", () => {
   it("in-scale root note C gets scaleDegree 'I' in C Major I chord", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
     ]);
     const members = store.get(allChordMembersAtom);
@@ -193,7 +193,7 @@ describe("allChordMembersAtom — scaleDegree + scaleInterval", () => {
   it("out-of-scale chord tone has scaleDegree undefined", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "D", qualityOverride: "Major Triad" })],
     ]);
     const members = store.get(allChordMembersAtom);
@@ -207,7 +207,7 @@ describe("allChordMembersAtom — scaleDegree + scaleInterval", () => {
   it("Case 1: C Major + Eb7 — all four chord tones get correct scale-relative scaleInterval", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "D#", qualityOverride: "Dominant 7th" })],
     ]);
     const members = store.get(allChordMembersAtom);
@@ -232,7 +232,7 @@ describe("allChordMembersAtom — scaleDegree + scaleInterval", () => {
   it("Case 2: A Natural Minor + E7 — G# (only out-of-scale note) gets scaleInterval='7'", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "A"],
-      [scaleNameAtom, "Natural Minor"],
+      [scaleNameAtom, "minor"],
       [progressionStepsAtom, progressionWith({ degree: "i", manualRoot: "E", qualityOverride: "Dominant 7th" })],
     ]);
     const members = store.get(allChordMembersAtom);
@@ -245,7 +245,7 @@ describe("allChordMembersAtom — scaleDegree + scaleInterval", () => {
   it("Case 3: C Major + Augmented Triad — G# is out-of-scale with scaleInterval='b6'", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Augmented Triad" })],
     ]);
     const members = store.get(allChordMembersAtom);
@@ -287,7 +287,7 @@ describe("chord overlay independent of fingering pattern", () => {
   it("progression is the active chord source even with one-string fingering", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "V" })],
       [fingeringPatternAtom, "one-string"],
     ]);
@@ -337,7 +337,7 @@ describe("closeCandidatesAtom — v2.0", () => {
   it("returns >0 close voicings for an active C major (degree I in C Major)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
     ]);
@@ -358,7 +358,7 @@ describe("activeScaleWindowAtom — CAGED octave switching", () => {
   it("returns null when pattern is not caged", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [fingeringPatternAtom, "none"],
     ]);
@@ -368,7 +368,7 @@ describe("activeScaleWindowAtom — CAGED octave switching", () => {
   it("returns null when more than one CAGED shape is active", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set<CagedShape>(["C", "A"])],
@@ -379,7 +379,7 @@ describe("activeScaleWindowAtom — CAGED octave switching", () => {
   it("returns a window when exactly one CAGED shape matches a full voicing", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set<CagedShape>(["E"])],
@@ -404,7 +404,7 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
   it("returns [] when voicing is 'off'", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "off"],
     ]);
@@ -416,7 +416,7 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
     // exercises the "all shapes" branch.
     const allShapesStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "full"],
       [fingeringPatternAtom, "caged"],
@@ -425,7 +425,7 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
 
     const oneShapeStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "full"],
       [fingeringPatternAtom, "caged"],
@@ -446,7 +446,7 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
   it("close branch returns ALL fitting candidates (not just the cycle-selected one)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
     ]);
@@ -459,7 +459,7 @@ describe("voicingMatchesAtom — v2.0 dispatch", () => {
   it("does not narrow 'full' output to the scale shape when chordScopeToPosition is active", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "V" })], // G Major chord in C Major scale
       [voicingAtom, "full"],
       [fingeringPatternAtom, "caged"],
@@ -491,7 +491,7 @@ describe("chordHighlightPositionsAtom", () => {
   it("returns an empty Set when voicing is 'off'", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "off"],
     ]);
@@ -501,7 +501,7 @@ describe("chordHighlightPositionsAtom", () => {
   it("returns an empty Set when chordOverlayHidden is true (regardless of voicing)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "full"],
       [chordOverlayHiddenAtom, true],
@@ -510,7 +510,7 @@ describe("chordHighlightPositionsAtom", () => {
 
     const closeStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
       [chordOverlayHiddenAtom, true],
@@ -521,7 +521,7 @@ describe("chordHighlightPositionsAtom", () => {
   it("voicing=full: returns the union of voicingMatchesAtom positionKeys", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "full"],
     ]);
@@ -534,7 +534,7 @@ describe("chordHighlightPositionsAtom", () => {
   it("voicing=close: returns the union of ALL closeCandidatesAllStringSetsAtom positionKeys (not just one)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
     ]);
@@ -565,7 +565,7 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
   it("snap=on + scale pattern active: candidates are filtered to the fret-bound scale window (Plan H-T5)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -632,7 +632,7 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
     // many voicings naturally stay in the CAGED window anyway.
     const seeds = [
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -653,7 +653,7 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
   it("snap=on + no scale pattern: no window to apply (returns hand-filtered set)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "none"],
@@ -666,7 +666,7 @@ describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
   it("snap=off + no scale pattern: same as snap=on + no pattern (no-op)", () => {
     const seeds = [
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "none"],
@@ -694,7 +694,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom (snap toggle / no-op cases)
     // Use Dominant 7th so there are off-window candidates to confirm bypass.
     const snapOffStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -703,7 +703,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom (snap toggle / no-op cases)
     ]);
     const snapOnStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -730,7 +730,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom (snap toggle / no-op cases)
     // activeScaleWindowAtom returns null for 'none' pattern — filter is a no-op.
     const snapOnStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "none"],
@@ -738,7 +738,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom (snap toggle / no-op cases)
     ]);
     const snapOffStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "none"],
@@ -769,7 +769,7 @@ describe("voicingStringSetAtom + effectiveStringSetAtom", () => {
   it("selecting a window narrows effective strings", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
     ]);
     store.set(voicingStringSetAtom, "1-2-3-4");
@@ -781,7 +781,7 @@ describe("voicingStringSetAtom + effectiveStringSetAtom", () => {
     // "0-1-2-3" (a 4-note window) doesn't appear in triad options.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
     ]);
     store.set(voicingStringSetAtom, "0-1-2-3");
@@ -810,7 +810,7 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
     // and should be marked disabled.
     const store = makeAtomStore([
       [rootNoteAtom, "F#"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "F#" })],
       [fingeringPatternAtom, "3nps"],
       [npsPositionAtom, 22],
@@ -847,7 +847,7 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
   it("does not mark any option disabled when snap is off", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set<CagedShape>(["E"])],
@@ -861,7 +861,7 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
   it("does not mark any option disabled when fingeringPattern is 'none' (no window to gate against)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [fingeringPatternAtom, "none"],
       [chordSnapToScaleAtom, true],
@@ -885,7 +885,7 @@ describe("closeCandidatesAtom × string set", () => {
   it("returns all candidates when string set is 'all'", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
     ]);
@@ -895,7 +895,7 @@ describe("closeCandidatesAtom × string set", () => {
   it("'1-2-3-4' excludes voicings using string 0 or string 5", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
     ]);
@@ -926,7 +926,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan
     // The diagonal scale-locking filter accepts them if they lie within the string-specific ranges.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -974,7 +974,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan
     // The fret-bound filter must let them through if they're in the right hand position.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -1000,7 +1000,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan
     // filter should pass voicings the strict subset would have rejected.
     const snapOnStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -1009,7 +1009,7 @@ describe("closeCandidatesAtom + chordSnapToScaleAtom — fret-bound filter (Plan
     ]);
     const snapOffStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "Dominant 7th" })],
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -1040,7 +1040,7 @@ describe("closeCandidatesAtom — diagonal string-specific scale-locking (Plan I
   it("every candidate satisfies the string-specific range predicate (100% of fretted notes within string-specific bounds of the shape)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set<CagedShape>(["E"])],
@@ -1086,7 +1086,7 @@ describe("closeCandidatesAtom — diagonal string-specific scale-locking (Plan I
     // because diagonal spilling is prevented.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [fingeringPatternAtom, "3nps"],
       [npsPositionAtom, 1], // G Ionian
       [chordSnapToScaleAtom, true],
@@ -1100,7 +1100,7 @@ describe("closeCandidatesAtom — diagonal string-specific scale-locking (Plan I
     // Compute how many candidates would fit inside the flat rectangular window [window.lo, window.hi]
     const snapOffStore = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [fingeringPatternAtom, "3nps"],
       [npsPositionAtom, 1],
       [chordSnapToScaleAtom, false],
@@ -1133,7 +1133,7 @@ describe("closeCandidatesAtom & highlights — multi-octave repeating shapes & d
     // Voicings should be allowed within frets 0-3 and frets 12-15, but rejected in the gap (e.g. frets 5-10).
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C" })], // C Major
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -1169,7 +1169,7 @@ describe("closeCandidatesAtom & highlights — multi-octave repeating shapes & d
   it("decouples note highlights on the neck from the selected string set window", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C" })], // C Major
       [voicingAtom, "close"],
       [fingeringPatternAtom, "caged"],
@@ -1211,7 +1211,7 @@ describe("effectiveStringSetAtom — auto-fallback when picked option is disable
   it("falls back to the first ENABLED option's strings when the user's pick is disabled", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "F#"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "F#" })],
       [fingeringPatternAtom, "3nps"],
       [npsPositionAtom, 22],
@@ -1235,7 +1235,7 @@ describe("effectiveStringSetAtom — auto-fallback when picked option is disable
   it("keeps the user's pick when it is NOT disabled (regression guard)", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [fingeringPatternAtom, "none"],
       [chordSnapToScaleAtom, true],

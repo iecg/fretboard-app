@@ -93,13 +93,13 @@ describe("chordMemberFactsAtom", () => {
     // Otherwise the rootNote-change listener transposes manualRoot.
     const storeA = makeStore();
     storeA.set(rootNoteAtom, "A");
-    storeA.set(scaleNameAtom, "Major");
+    storeA.set(scaleNameAtom, "major");
     setChord(storeA, "C", "Major Triad");
 
     // Scale F# Dorian (very different from A major)
     const storeB = makeStore();
     storeB.set(rootNoteAtom, "F#");
-    storeB.set(scaleNameAtom, "Dorian");
+    storeB.set(scaleNameAtom, "dorian");
     setChord(storeB, "C", "Major Triad");
 
     const factsA = storeA.get(chordMemberFactsAtom);
@@ -137,12 +137,12 @@ describe("Focus removal", () => {
     // premise.
     const storeA = makeStore();
     storeA.set(rootNoteAtom, "A");
-    storeA.set(scaleNameAtom, "Major");
+    storeA.set(scaleNameAtom, "major");
     setChord(storeA, "C", "Major Triad");
 
     const storeB = makeStore();
     storeB.set(rootNoteAtom, "F#");
-    storeB.set(scaleNameAtom, "Dorian");
+    storeB.set(scaleNameAtom, "dorian");
     setChord(storeB, "C", "Major Triad");
 
     const factsA = storeA.get(chordMemberFactsAtom);
@@ -322,7 +322,7 @@ describe("lensAvailabilityContextAtom", () => {
   it("hasColorNotes=false for C Major (reference scale, no divergent notes)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     setChord(store, "C", "Major Triad");
     const ctx = store.get(lensAvailabilityContextAtom);
     expect(ctx.hasColorNotes).toBe(false);
@@ -331,7 +331,7 @@ describe("lensAvailabilityContextAtom", () => {
   it("hasColorNotes=true for D Dorian (B♮ diverges from D Natural Minor)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "D");
-    store.set(scaleNameAtom, "Dorian");
+    store.set(scaleNameAtom, "dorian");
     setChord(store, "D", "Minor 7th");
     const ctx = store.get(lensAvailabilityContextAtom);
     expect(ctx.hasColorNotes).toBe(true);
@@ -340,7 +340,7 @@ describe("lensAvailabilityContextAtom", () => {
   it("hasOutsideTones=true when chord root is outside scale", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     setChord(store, "C#", "Minor Triad");
     const ctx = store.get(lensAvailabilityContextAtom);
     expect(ctx.hasOutsideTones).toBe(true);
@@ -349,7 +349,7 @@ describe("lensAvailabilityContextAtom", () => {
   it("hasOutsideTones=false when chord is fully in-scale", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     setChord(store, "C", "Major Triad");
     const ctx = store.get(lensAvailabilityContextAtom);
     expect(ctx.hasOutsideTones).toBe(false);
@@ -396,7 +396,7 @@ describe("lensAvailabilityAtom", () => {
   it("lead lens available when chord has outside tones", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     setChord(store, "C#", "Minor Triad");
     const entries = store.get(lensAvailabilityAtom);
     const leadEntry = entries.find((e) => e.id === "lead");
@@ -415,7 +415,7 @@ describe("lensAvailabilityAtom", () => {
   it("color and targets-color lenses are absent from resolved availability", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "D");
-    store.set(scaleNameAtom, "Dorian");
+    store.set(scaleNameAtom, "dorian");
     setChord(store, "D", "Minor 7th");
     const entries = store.get(lensAvailabilityAtom);
     expect(entries.find((e) => (e.id as string) === "color")).toBeUndefined();
@@ -425,7 +425,7 @@ describe("lensAvailabilityAtom", () => {
   it("reason is null for available lenses", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     setChord(store, "C", "Major Triad");
     store.set(practiceLensAtom, "tones");
     const entries = store.get(lensAvailabilityAtom);
@@ -437,7 +437,7 @@ describe("lensAvailabilityAtom", () => {
   it("tones lens available for C Major (chord overlay is all that's required)", () => {
     const store = makeStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     setChord(store, "C", "Major Triad");
     const entries = store.get(lensAvailabilityAtom);
     const tEntry = entries.find((e) => e.id === "tones");

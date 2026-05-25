@@ -276,10 +276,10 @@ const ROMAN_ORDINALS: Record<string, number> = {
 };
 
 const PROGRESSION_HARMONY_SCALE: Record<string, string> = {
-  "Major Pentatonic": "Major",
-  "Major Blues": "Major",
-  "Minor Pentatonic": "Natural Minor",
-  "Minor Blues": "Natural Minor",
+  "major pentatonic": "major",
+  "major blues": "major",
+  "minor pentatonic": "minor",
+  "minor blues": "minor",
 };
 
 function getProgressionHarmonyScaleName(scaleName: string): string {

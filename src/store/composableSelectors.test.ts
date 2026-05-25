@@ -51,7 +51,7 @@ describe("pure predicates", () => {
       { name: "3", semitone: 4, note: "E" },
       { name: "5", semitone: 7, note: "G" },
     ];
-    const entries = buildChordRowEntries(members, "C", "C", "Major", false);
+    const entries = buildChordRowEntries(members, "C", "C", "major", false);
     expect(entries).toHaveLength(3);
     expect(entries[0]).toMatchObject({
       internalNote: "C",
@@ -68,7 +68,7 @@ describe("pure predicates", () => {
       { name: "root", semitone: 0, note: "C" },
       { name: "b3", semitone: 3, note: "D#" }, // not in C major
     ];
-    const entries = buildChordRowEntries(members, "C", "C", "Major", false);
+    const entries = buildChordRowEntries(members, "C", "C", "major", false);
     expect(entries[1].inScale).toBe(false);
     expect(entries[1].role).toBe("chord-tone-outside-scale");
     expect(entries[1].scaleDegree).toBeUndefined();
@@ -100,14 +100,14 @@ describe("cross-domain derived atoms", () => {
   it("hasOutsideChordMembersAtom: false for diatonic C major triad in C major", () => {
     const store = setupManualChord("C", "Major Triad");
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     expect(store.get(hasOutsideChordMembersAtom)).toBe(false);
   });
 
   it("hasOutsideChordMembersAtom: true for D major triad in C major (F# is outside)", () => {
     const store = setupManualChord("D", "Major Triad");
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     expect(store.get(hasOutsideChordMembersAtom)).toBe(true);
   });
 
@@ -120,7 +120,7 @@ describe("cross-domain derived atoms", () => {
   it("allChordMembersAtom: returns ChordRowEntry[] composed from chord + scale", () => {
     const store = setupManualChord("C", "Major Triad");
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     const rows = store.get(allChordMembersAtom);
     expect(rows.map((r) => r.internalNote)).toEqual(["C", "E", "G"]);
     expect(rows.every((r) => r.inScale)).toBe(true);

@@ -82,8 +82,8 @@ export const rootNoteAtom = atom(
 );
 
 export const baseScaleNameAtom = atomWithStorage(
-  k("scaleName"),
-  "Major",
+  k("scaleName.v2"),
+  "major",
   scaleNameStorage,
   GET_ON_INIT,
 );
@@ -144,11 +144,11 @@ export const colorNotesAtom = atom((get) => {
   const intervals = SCALES[scaleName];
   if (!intervals) return [];
   // Blue note is b5 in Minor Blues, b3 in Major Blues.
-  if (scaleName === "Minor Blues") {
+  if (scaleName === "minor blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 6) % 12]] : [];
   }
-  if (scaleName === "Major Blues") {
+  if (scaleName === "major blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 3) % 12]] : [];
   }

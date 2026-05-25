@@ -44,22 +44,22 @@ describe("chord-name adapter", () => {
 
 describe("scale-name adapter", () => {
   it("maps Major to major", () => {
-    expect(scaleNameToTonal("Major")).toBe("major");
+    expect(scaleNameToTonal("major")).toBe("major");
   });
   it("maps Natural Minor to minor", () => {
-    expect(scaleNameToTonal("Natural Minor")).toBe("minor");
+    expect(scaleNameToTonal("minor")).toBe("minor");
   });
   it("maps Harmonic Minor to harmonic minor", () => {
-    expect(scaleNameToTonal("Harmonic Minor")).toBe("harmonic minor");
+    expect(scaleNameToTonal("harmonic minor")).toBe("harmonic minor");
   });
   it("maps Major Pentatonic to major pentatonic", () => {
-    expect(scaleNameToTonal("Major Pentatonic")).toBe("major pentatonic");
+    expect(scaleNameToTonal("major pentatonic")).toBe("major pentatonic");
   });
   it("maps Dorian to dorian", () => {
-    expect(scaleNameToTonal("Dorian")).toBe("dorian");
+    expect(scaleNameToTonal("dorian")).toBe("dorian");
   });
   it("round-trips Major", () => {
-    expect(tonalToScaleName("major")).toBe("Major");
+    expect(tonalToScaleName("major")).toBe("major");
   });
 });
 
@@ -97,16 +97,16 @@ describe("normalizeToSharps", () => {
 
 describe("getScaleSemitonesFromTonal", () => {
   it("returns Major scale semitones", () => {
-    expect(getScaleSemitonesFromTonal("Major")).toEqual([0, 2, 4, 5, 7, 9, 11]);
+    expect(getScaleSemitonesFromTonal("major")).toEqual([0, 2, 4, 5, 7, 9, 11]);
   });
   it("returns Natural Minor semitones", () => {
-    expect(getScaleSemitonesFromTonal("Natural Minor")).toEqual([0, 2, 3, 5, 7, 8, 10]);
+    expect(getScaleSemitonesFromTonal("minor")).toEqual([0, 2, 3, 5, 7, 8, 10]);
   });
   it("returns Minor Pentatonic semitones", () => {
-    expect(getScaleSemitonesFromTonal("Minor Pentatonic")).toEqual([0, 3, 5, 7, 10]);
+    expect(getScaleSemitonesFromTonal("minor pentatonic")).toEqual([0, 3, 5, 7, 10]);
   });
   it("returns Lydian Dominant semitones", () => {
-    expect(getScaleSemitonesFromTonal("Lydian Dominant")).toEqual([0, 2, 4, 6, 7, 9, 10]);
+    expect(getScaleSemitonesFromTonal("lydian dominant")).toEqual([0, 2, 4, 6, 7, 9, 10]);
   });
   it("returns empty array for unknown scale", () => {
     expect(getScaleSemitonesFromTonal("Bogus Scale")).toEqual([]);
@@ -136,19 +136,19 @@ describe("getChordSemitonesFromTonal", () => {
 
 describe("getModeTriads", () => {
   it("returns Major mode triads", () => {
-    expect(getModeTriads("Major")).toEqual(["I", "ii", "iii", "IV", "V", "vi", "vii°"]);
+    expect(getModeTriads("major")).toEqual(["I", "ii", "iii", "IV", "V", "vi", "vii°"]);
   });
   it("returns Natural Minor triads", () => {
-    expect(getModeTriads("Natural Minor")).toEqual(["i", "ii°", "III", "iv", "v", "VI", "VII"]);
+    expect(getModeTriads("minor")).toEqual(["i", "ii°", "III", "iv", "v", "VI", "VII"]);
   });
   it("returns Dorian triads", () => {
-    expect(getModeTriads("Dorian")).toEqual(["i", "ii", "III", "IV", "v", "vi°", "VII"]);
+    expect(getModeTriads("dorian")).toEqual(["i", "ii", "III", "IV", "v", "vi°", "VII"]);
   });
   it("returns null for Pentatonic", () => {
-    expect(getModeTriads("Major Pentatonic")).toBeNull();
+    expect(getModeTriads("major pentatonic")).toBeNull();
   });
   it("returns null for Harmonic Minor", () => {
-    expect(getModeTriads("Harmonic Minor")).toBeNull();
+    expect(getModeTriads("harmonic minor")).toBeNull();
   });
   it("returns null for unknown scale", () => {
     expect(getModeTriads("Bogus")).toBeNull();

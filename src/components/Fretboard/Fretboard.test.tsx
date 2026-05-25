@@ -198,7 +198,7 @@ describe("Fretboard/Fretboard", () => {
             {...defaultProps}
             displayFormat="notes"
             rootNote="C"
-            scaleName="Major"
+            scaleName="major"
           />
         </Provider>
       );

@@ -99,14 +99,14 @@ export function getCagedCoordinates(
   const allWrappedNotes = new Set<string>();
 
   // Determine blue note (exempt from deduplication)
-  const blueNoteIntervals: Record<string, number> = { 'Minor Blues': 6, 'Major Blues': 3 };
+  const blueNoteIntervals: Record<string, number> = { 'minor blues': 6, 'major blues': 3 };
   const blueInterval = blueNoteIntervals[scaleName];
   const blueNoteName = blueInterval != null
     ? NOTES[(NOTES.indexOf(rootNote) + blueInterval) % 12]
     : null;
 
   const scaleIntervals = SCALES[scaleName];
-  const isBlues = scaleName.includes('Blues');
+  const isBlues = scaleName.includes('blues');
   const usePentTemplate = isBlues || (scaleIntervals && scaleIntervals.length <= 5);
   const sevenNoteTemplate =
     !usePentTemplate && scaleIntervals?.length === 7

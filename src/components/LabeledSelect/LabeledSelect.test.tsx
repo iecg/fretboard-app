@@ -12,7 +12,7 @@ const scaleOptions: LabeledSelectOption[] = [
   { value: 'major-modes', label: 'Major Modes' },
   { value: 'minor-modes', label: 'Minor Modes' },
   { value: 'pentatonic', label: 'Pentatonic' },
-  { value: 'blues', label: 'Blues' },
+  { value: 'blues', label: 'blues' },
 ];
 
 describe('LabeledSelect/LabeledSelect', () => {
@@ -77,15 +77,15 @@ describe('LabeledSelect/LabeledSelect', () => {
   it('renders grouped options with group headings', async () => {
     const user = userEvent.setup();
     const groups: LabeledSelectGroup[] = [
-      { groupLabel: 'Major', options: [{ value: 'a', label: 'Alpha' }] },
-      { groupLabel: 'Minor', options: [{ value: 'b', label: 'Beta' }] },
+      { groupLabel: 'major', options: [{ value: 'a', label: 'Alpha' }] },
+      { groupLabel: 'minor', options: [{ value: 'b', label: 'Beta' }] },
     ];
     render(
       <LabeledSelect label="Preset" value="a" groups={groups} onChange={vi.fn()} />,
     );
     await user.click(screen.getByRole('combobox', { name: /Preset/i }));
-    expect(screen.getByText('Major')).toBeInTheDocument();
-    expect(screen.getByText('Minor')).toBeInTheDocument();
+    expect(screen.getByText('major')).toBeInTheDocument();
+    expect(screen.getByText('minor')).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Beta' })).toBeInTheDocument();
   });
 

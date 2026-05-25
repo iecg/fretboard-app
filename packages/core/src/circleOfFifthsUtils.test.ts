@@ -7,7 +7,7 @@ const labels = (
   root: string,
   useFlats: boolean,
   mode: "auto" | "on" | "off",
-) => getCircleNoteLabels(note, root, useFlats, SCALES["Major"], mode);
+) => getCircleNoteLabels(note, root, useFlats, SCALES["major"], mode);
 
 describe("getCircleNoteLabels", () => {
   describe("mode = auto (default)", () => {
@@ -113,7 +113,7 @@ describe("getCircleNoteLabels", () => {
 
   describe("default mode (auto)", () => {
     it("uses auto when mode is omitted", () => {
-      const r = getCircleNoteLabels("A#", "C", false, SCALES["Major"]);
+      const r = getCircleNoteLabels("A#", "C", false, SCALES["major"]);
       expect(r.primary).toBe("A♯");
       expect(r.enharmonic).toBe("B♭");
     });

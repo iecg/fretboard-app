@@ -5,14 +5,14 @@ import { STANDARD_TUNING } from '../guitar';
 
 describe('getCagedCoordinates', () => {
   it('returns non-empty coordinates for standard input', () => {
-    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'C', 'major', STANDARD_TUNING, 24);
     expect(result.coordinates.length).toBeGreaterThan(0);
     expect(result.polygons.length).toBeGreaterThan(0);
   });
 
   it('returns coordinates for all CAGED shapes', () => {
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('A', shape, 'Minor Pentatonic', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', shape, 'minor pentatonic', STANDARD_TUNING, 24);
       expect(result.coordinates.length).toBeGreaterThan(0);
     }
   });
@@ -24,8 +24,8 @@ describe('getCagedCoordinates', () => {
   // function twice with identical args must produce identical output regardless
   // of what layoutMode the app is in.
   it('returns identical polygon vertices on repeated calls (layout-mode-independent)', () => {
-    const result1 = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
-    const result2 = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
+    const result1 = getCagedCoordinates('C', 'E', 'major', STANDARD_TUNING, 24);
+    const result2 = getCagedCoordinates('C', 'E', 'major', STANDARD_TUNING, 24);
     expect(result1.polygons.length).toBeGreaterThan(0);
     expect(result1.polygons).toEqual(result2.polygons);
     expect(result1.coordinates).toEqual(result2.coordinates);
@@ -37,7 +37,7 @@ describe('truncation detection', () => {
     // C shape (A effective after major remap), rootStringFocus=4, fretOffsetMin=-1
     // Root A at fret 0 on A string, intendedMin = -1
     // Any overshoot note wraps to adjacent string successfully
-    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'C', 'major', STANDARD_TUNING, 24);
     const nearZero = result.polygons.find(p => {
       const minFret = Math.min(...p.vertices.map(v => v.fret));
       return minFret <= 1;
@@ -47,7 +47,7 @@ describe('truncation detection', () => {
   });
 
   it('C shape at fret 24 in C Major IS truncated', () => {
-    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'C', 'major', STANDARD_TUNING, 24);
     const nearEnd = result.polygons.find(p => {
       const maxFret = Math.max(...p.vertices.map(v => v.fret));
       return maxFret >= 24;
@@ -57,7 +57,7 @@ describe('truncation detection', () => {
   });
 
   it('mid-fretboard shape is NOT truncated', () => {
-    const result = getCagedCoordinates('C', 'C', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'C', 'major', STANDARD_TUNING, 24);
     const midBoard = result.polygons.find(p => {
       const frets = p.vertices.map(v => v.fret);
       const min = Math.min(...frets);
@@ -71,7 +71,7 @@ describe('truncation detection', () => {
   it('D shape at fret 21-24 in C Major is NOT truncated (wrapping recovers notes)', () => {
     // D shape (C effective after major remap), root A at fret 24
     // intendedMin=21, intendedMax=25; visibleSpan=3 out of 4 → NOT truncated
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     const near24 = result.polygons.find(p => p.intendedMin >= 21 && p.intendedMax > 24);
     expect(near24).toBeDefined();
     expect(near24!.truncated).toBe(false);
@@ -83,7 +83,7 @@ describe('note wrapping', () => {
     // D shape in C Major near fret 24
     // The shape extends to intendedMax = rootFret + 4
     // Notes past fret 24 should wrap to the next thinner string
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
 
     // Find coordinates near fret 20-24
     const highFretCoords = result.coordinates.filter(c => {
@@ -100,7 +100,7 @@ describe('note wrapping', () => {
 
   it('does NOT wrap mid-fretboard shapes', () => {
     // A shape rooted at fret 12 - no overshoot in either direction
-    const result = getCagedCoordinates('A', 'A', 'Minor Pentatonic', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'A', 'minor pentatonic', STANDARD_TUNING, 24);
 
     // Find polygon near fret 12
     const midPoly = result.polygons.find(p => {
@@ -114,7 +114,7 @@ describe('note wrapping', () => {
 
   it('coordinates stay within 0..24 range after wrapping', () => {
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('C', shape, 'Major', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('C', shape, 'major', STANDARD_TUNING, 24);
       for (const coord of result.coordinates) {
         const [, fretStr] = coord.split('-');
         const fret = parseInt(fretStr);
@@ -128,7 +128,7 @@ describe('note wrapping', () => {
     // D shape in C# Natural Minor: anchor C# on string 3 (D3) at fret 23
     // fretOffsetMax = 4, so intendedMax = 27, overshoot = 3 > MAX_WRAP_OVERSHOOT
     // The gate should skip wrapping entirely — shape renders truncated
-    const result = getCagedCoordinates('C#', 'D', 'Natural Minor', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C#', 'D', 'minor', STANDARD_TUNING, 24);
     // The truncated high-fret shape polygon has intendedMax > 24
     const overshot = result.polygons.find(p => p.intendedMax > 24);
     expect(overshot).toBeDefined();
@@ -139,7 +139,7 @@ describe('note wrapping', () => {
     // D shape in C Major (remapped to C effective), anchor A at fret 24 on string 4
     // fretOffsetMax = 1, so intendedMax = 25, overshoot = 1 <= MAX_WRAP_OVERSHOOT
     // Wrapping should still recover the note — shape is NOT truncated
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     const near24 = result.polygons.find(p => p.intendedMin >= 21 && p.intendedMax > 24);
     expect(near24).toBeDefined();
     expect(near24!.truncated).toBe(false);
@@ -149,7 +149,7 @@ describe('note wrapping', () => {
 describe('wrappedNotes tracking', () => {
   it('wrappedNotes is always present (empty Set when no wrapping)', () => {
     // Mid-fretboard shape: no overshoot, no wrapping expected
-    const result = getCagedCoordinates('A', 'A', 'Minor Pentatonic', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'A', 'minor pentatonic', STANDARD_TUNING, 24);
     expect(result.wrappedNotes).toBeInstanceOf(Set);
     expect(result.wrappedNotes.size).toBe(0);
   });
@@ -157,7 +157,7 @@ describe('wrappedNotes tracking', () => {
   it('wrappedNotes contains keys added by positive-overshoot wrapping', () => {
     // D shape in C Major (remapped to C effective), anchor A at fret 24 on string 4
     // intendedMax = 25, overshoot = 1 <= MAX_WRAP_OVERSHOOT — wrapping occurs
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     // At least one wrapped note should exist at the high-fret end
     expect(result.wrappedNotes.size).toBeGreaterThan(0);
     // All wrapped note keys must be valid coordinates within the fretboard
@@ -173,7 +173,7 @@ describe('wrappedNotes tracking', () => {
 
   it('wrapped note fret positions do NOT appear as polygon vertices', () => {
     // D shape in C Major: wrapping occurs at fret 24 boundary
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     expect(result.wrappedNotes.size).toBeGreaterThan(0);
 
     for (const key of result.wrappedNotes) {
@@ -195,7 +195,7 @@ describe('wrappedNotes tracking', () => {
     // Run all shapes / scales near boundaries; should never throw
     for (const shape of CAGED_SHAPES) {
       expect(() => {
-        getCagedCoordinates('C', shape, 'Major', STANDARD_TUNING, 24);
+        getCagedCoordinates('C', shape, 'major', STANDARD_TUNING, 24);
       }).not.toThrow();
     }
   });
@@ -203,7 +203,7 @@ describe('wrappedNotes tracking', () => {
 
 describe('labels', () => {
   it('generates modal labels for Major scale', () => {
-    const result = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'E', 'major', STANDARD_TUNING, 24);
     const nonTruncated = result.polygons.filter(p => !p.truncated);
     expect(nonTruncated.length).toBeGreaterThan(0);
     // Modal labels should contain mode names
@@ -214,7 +214,7 @@ describe('labels', () => {
   });
 
   it('generates CAGED labels with minor suffix for minor scales', () => {
-    const result = getCagedCoordinates('A', 'E', 'Natural Minor', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'E', 'minor', STANDARD_TUNING, 24);
     for (const poly of result.polygons) {
       expect(poly.cagedLabel).toContain('m');
       expect(poly.cagedLabel).toMatch(/Em Shape/);
@@ -222,14 +222,14 @@ describe('labels', () => {
   });
 
   it('generates CAGED labels without suffix for major scales', () => {
-    const result = getCagedCoordinates('C', 'E', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'E', 'major', STANDARD_TUNING, 24);
     for (const poly of result.polygons) {
       expect(poly.cagedLabel).toBe('E Shape');
     }
   });
 
   it('returns null modalLabel for pentatonic scales', () => {
-    const result = getCagedCoordinates('A', 'E', 'Minor Pentatonic', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'E', 'minor pentatonic', STANDARD_TUNING, 24);
     for (const poly of result.polygons) {
       expect(poly.modalLabel).toBeNull();
     }
@@ -241,14 +241,14 @@ describe('Natural Minor polygon shapes', () => {
 
   it('produces a polygon for every CAGED shape', () => {
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', shape, 'minor', STANDARD_TUNING, 24);
       expect(result.polygons.length).toBeGreaterThan(0);
     }
   });
 
   it('each mid-board polygon has exactly 2×numStrings vertices', () => {
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', shape, 'minor', STANDARD_TUNING, 24);
       const midBoard = result.polygons.find(p => !p.truncated);
       expect(midBoard).toBeDefined();
       expect(midBoard!.vertices.length).toBe(NUM_STRINGS * 2);
@@ -257,7 +257,7 @@ describe('Natural Minor polygon shapes', () => {
 
   it('left-edge vertices are ordered s0→s5', () => {
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', shape, 'minor', STANDARD_TUNING, 24);
       const poly = result.polygons.find(p => !p.truncated);
       expect(poly).toBeDefined();
       const leftEdge = poly!.vertices.slice(0, NUM_STRINGS);
@@ -269,7 +269,7 @@ describe('Natural Minor polygon shapes', () => {
 
   it('right-edge vertices are ordered s5→s0', () => {
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', shape, 'minor', STANDARD_TUNING, 24);
       const poly = result.polygons.find(p => !p.truncated);
       expect(poly).toBeDefined();
       const rightEdge = poly!.vertices.slice(NUM_STRINGS);
@@ -291,7 +291,7 @@ describe('Natural Minor polygon shapes', () => {
     const anchorStrings: Record<string, number> = { C:4, A:4, G:5, E:5, D:3 };
 
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('A', shape, 'Natural Minor', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', shape, 'minor', STANDARD_TUNING, 24);
       const poly = result.polygons.find(p => !p.truncated);
       expect(poly).toBeDefined();
 
@@ -311,8 +311,8 @@ describe('Natural Minor polygon shapes', () => {
 
   it('Natural Minor polygons use same vertex structure as pentatonic polygons', () => {
     // Both should have 2×numStrings vertices in a non-truncated mid-board position
-    const minor = getCagedCoordinates('A', 'E', 'Natural Minor', STANDARD_TUNING, 24);
-    const pent  = getCagedCoordinates('A', 'E', 'Minor Pentatonic', STANDARD_TUNING, 24);
+    const minor = getCagedCoordinates('A', 'E', 'minor', STANDARD_TUNING, 24);
+    const pent  = getCagedCoordinates('A', 'E', 'minor pentatonic', STANDARD_TUNING, 24);
     const minorPoly = minor.polygons.find(p => !p.truncated);
     const pentPoly  = pent.polygons.find(p => !p.truncated);
     expect(minorPoly).toBeDefined();
@@ -326,7 +326,7 @@ describe('wrap limit (>2 notes reverts wrapping)', () => {
     // D→C remap, anchor A# at fret 1 on A string, intendedMin=-2 (2 frets of negative overshoot).
     // Proxy frets -2 and -1 map to C# Major scale notes on 5+ strings → 7 potential wrapped notes.
     // The limit (>2) should revert ALL wrapping for this instance.
-    const result = getCagedCoordinates('C#', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C#', 'D', 'major', STANDARD_TUNING, 24);
     // After revert, only the second rootFret instance (no overshoot) contributes: 0 wrapped notes
     expect(result.wrappedNotes.size).toBe(0);
   });
@@ -334,20 +334,20 @@ describe('wrap limit (>2 notes reverts wrapping)', () => {
   it('D Major D shape near fret 0 generates exactly 2 wraps — they are kept', () => {
     // D→C remap, anchor B at fret 2 on A string, intendedMin=-1 (1 fret negative overshoot).
     // 2 notes wrap. Size ≤ 2 → kept.
-    const result = getCagedCoordinates('D', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('D', 'D', 'major', STANDARD_TUNING, 24);
     expect(result.wrappedNotes.size).toBe(2);
   });
 
   it('C Major D shape near fret 24 generates ≤2 wraps — they are kept', () => {
     // D→C remap, anchor A at fret 24, intendedMax=25 (1 fret positive overshoot). 1 note wraps.
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     expect(result.wrappedNotes.size).toBeGreaterThan(0);
     expect(result.wrappedNotes.size).toBeLessThanOrEqual(2);
   });
 
   it('reverted shape: no extra-range coordinates after wrap revert', () => {
     // When wrapping is reverted, notes outside clamped shape window should NOT appear
-    const result = getCagedCoordinates('C#', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C#', 'D', 'major', STANDARD_TUNING, 24);
     for (const coord of result.coordinates) {
       const [, fretStr] = coord.split('-');
       expect(parseInt(fretStr)).toBeGreaterThanOrEqual(0);
@@ -360,7 +360,7 @@ describe('truncation boundary', () => {
   it('shape showing exactly 50% of intended span is truncated', () => {
     // C# Major D shape: effectiveShape C, anchor A# at fret 1, intendedMin=-2, intendedMax=2
     // intendedSpan=4, visibleSpan=2 → visibleSpan equals intendedSpan/2 → must be truncated
-    const result = getCagedCoordinates('C#', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C#', 'D', 'major', STANDARD_TUNING, 24);
     const nearZero = result.polygons.find(p => p.intendedMin < 0);
     expect(nearZero).toBeDefined();
     expect(nearZero!.truncated).toBe(true);
@@ -368,7 +368,7 @@ describe('truncation boundary', () => {
 
   it('shape showing 75% of intended span is NOT truncated', () => {
     // C Major D shape near fret 24: intendedMin=21, intendedMax=25 → span=4, visible=3 (75%)
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     const near24 = result.polygons.find(p => p.intendedMax > 24);
     expect(near24).toBeDefined();
     expect(near24!.truncated).toBe(false);
@@ -376,7 +376,7 @@ describe('truncation boundary', () => {
 });
 
 describe('7-note scale polygon templates', () => {
-  const SCALES_TO_TEST = ['Phrygian', 'Mixolydian', 'Locrian', 'Harmonic Minor', 'Dorian'];
+  const SCALES_TO_TEST = ['phrygian', 'mixolydian', 'locrian', 'harmonic minor', 'dorian'];
 
   for (const scale of SCALES_TO_TEST) {
     it(`${scale}: all CAGED shapes produce non-empty polygon vertices (non-edge)`, () => {
@@ -394,13 +394,13 @@ describe('7-note scale polygon templates', () => {
 
   it('Phrygian A-shape polygon does not use Natural Minor template (b2 extends left)', () => {
     // Phrygian A-shape s1 left offset is -1 (b2 on B string), NM has 0
-    const result = getCagedCoordinates('A', 'A', 'Phrygian', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'A', 'phrygian', STANDARD_TUNING, 24);
     const poly = result.polygons.find(p => !p.truncated);
     expect(poly).toBeDefined();
     // halfVerts = vertices.length / 2; left edge for s1 (index 1) should have offset -1 from anchor
     // anchor is on string 4 (A-string), A is at fret 0 on A string
     // For root A, A-shape anchor at fret 0 on s4 → usually wraps, use fret 12 instead
-    const result2 = getCagedCoordinates('A', 'A', 'Phrygian', STANDARD_TUNING, 24);
+    const result2 = getCagedCoordinates('A', 'A', 'phrygian', STANDARD_TUNING, 24);
     const poly2 = result2.polygons.find(p => p.intendedMin >= 0 && p.intendedMax <= 24 && !p.truncated);
     expect(poly2).toBeDefined();
     expect(poly2!.vertices.length).toBeGreaterThan(0);
@@ -408,7 +408,7 @@ describe('7-note scale polygon templates', () => {
 
   it('Harmonic Minor: all shapes produce polygons for root A', () => {
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('A', shape, 'Harmonic Minor', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', shape, 'harmonic minor', STANDARD_TUNING, 24);
       const hasPolygon = result.polygons.some(p => p.vertices.length > 0);
       expect(hasPolygon).toBe(true);
     }
@@ -419,7 +419,7 @@ describe('7-note scale polygon templates', () => {
       const result = getCagedCoordinates(
         'E',
         shape,
-        'Phrygian Dominant',
+        'phrygian dominant',
         STANDARD_TUNING,
         24,
       );
@@ -436,7 +436,7 @@ describe('7-note scale polygon templates', () => {
       const result = getCagedCoordinates(
         'C',
         shape,
-        'Lydian Dominant',
+        'lydian dominant',
         STANDARD_TUNING,
         24,
       );
@@ -451,7 +451,7 @@ describe('7-note scale polygon templates', () => {
   it('Locrian: all shapes produce polygons (non-edge shapes)', () => {
     // Locrian was reported broken for non-edge shapes too
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('E', shape, 'Locrian', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('E', shape, 'locrian', STANDARD_TUNING, 24);
       expect(result.polygons.length).toBeGreaterThan(0);
     }
   });
@@ -462,7 +462,7 @@ describe('Lydian and Mixolydian use relative-minor templates', () => {
     // C Lydian → relative Dorian root = A (C-3). Dorian D-shape s1 left offset = 0 (NM has 1).
     // If NM templates were used, a Dorian-only note at rootFret+0 on s1 would fall outside.
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('C', shape, 'Lydian', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('C', shape, 'lydian', STANDARD_TUNING, 24);
       const nonTruncated = result.polygons.filter(p => !p.truncated);
       expect(nonTruncated.length).toBeGreaterThan(0);
       for (const poly of nonTruncated) {
@@ -476,7 +476,7 @@ describe('Lydian and Mixolydian use relative-minor templates', () => {
   it('Mixolydian uses Phrygian templates (not Natural Minor)', () => {
     // G Mixolydian → relative Phrygian root = E (G-3). Phrygian A-shape s1 left offset = -1 (NM has 0).
     for (const shape of CAGED_SHAPES) {
-      const result = getCagedCoordinates('G', shape, 'Mixolydian', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('G', shape, 'mixolydian', STANDARD_TUNING, 24);
       const nonTruncated = result.polygons.filter(p => !p.truncated);
       expect(nonTruncated.length).toBeGreaterThan(0);
       for (const poly of nonTruncated) {
@@ -495,7 +495,7 @@ describe('findMainShape', () => {
 
   it('returns null when all shapes are truncated', () => {
     // Get shapes that extend beyond fret 24
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     const truncatedPolys = result.polygons.filter(p => p.truncated);
     expect(truncatedPolys.length).toBeGreaterThan(0);
 
@@ -505,7 +505,7 @@ describe('findMainShape', () => {
 
   it('returns null when shapes have wrapped notes', () => {
     // D shape in C Major has wrapped notes at high frets
-    const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
     expect(result.wrappedNotes.size).toBeGreaterThan(0);
 
     // With wrapped notes and no complete shapes, should return null
@@ -516,7 +516,7 @@ describe('findMainShape', () => {
   });
 
   it('returns shape with lowest intendedMin when multiple complete shapes', () => {
-    const result = getCagedCoordinates('A', 'E', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'E', 'major', STANDARD_TUNING, 24);
     // E shape produces multiple polygons at different positions
     const nonTruncated = result.polygons.filter(p => !p.truncated);
     expect(nonTruncated.length).toBeGreaterThan(1);
@@ -530,7 +530,7 @@ describe('findMainShape', () => {
   });
 
   it('filters shapes outside visible fret range', () => {
-    const result = getCagedCoordinates('A', 'E', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'E', 'major', STANDARD_TUNING, 24);
     // Narrow visible range that excludes high fret shapes
     const main = findMainShape(result.polygons, result.wrappedNotes, 0, 10);
     if (main) {
@@ -539,7 +539,7 @@ describe('findMainShape', () => {
   });
 
   it('filters shapes that start before visible range', () => {
-    const result = getCagedCoordinates('A', 'E', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'E', 'major', STANDARD_TUNING, 24);
     // Visible range starting at fret 5
     const main = findMainShape(result.polygons, result.wrappedNotes, 5, 24);
     if (main) {
@@ -550,7 +550,7 @@ describe('findMainShape', () => {
 
 describe('getShapeCenterFret', () => {
   it('calculates center of polygon correctly', () => {
-    const result = getCagedCoordinates('A', 'E', 'Major', STANDARD_TUNING, 24);
+    const result = getCagedCoordinates('A', 'E', 'major', STANDARD_TUNING, 24);
     const poly = result.polygons.find(p => !p.truncated);
     expect(poly).toBeDefined();
 
@@ -583,7 +583,7 @@ describe('Phase 4: Extended Boundary Conditions', () => {
       // D Major D shape near fret 0 (remapped to C effective)
       // anchor B at fret 2 on A string, intendedMin = 2 - 3 = -1
       // negative overshoot = 1, should wrap.
-      const result = getCagedCoordinates('D', 'D', 'Major', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('D', 'D', 'major', STANDARD_TUNING, 24);
       // Wrapping should recover at least one note from the negative overshoot
       expect(result.wrappedNotes.size).toBeGreaterThan(0);
       
@@ -599,7 +599,7 @@ describe('Phase 4: Extended Boundary Conditions', () => {
       // C Major D shape near fret 24 (remapped to C effective)
       // anchor A at fret 24 on string 4, intendedMax = 24 + 1 = 25
       // positive overshoot = 1, should wrap.
-      const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
       expect(result.wrappedNotes.size).toBeGreaterThan(0);
     });
 
@@ -610,7 +610,7 @@ describe('Phase 4: Extended Boundary Conditions', () => {
       // Wait, D shape offsets for s0: [0, 3] relative to anchor rootFret.
       // If rootFret=24, s0 notes are at 24 and 27 (if they exist in scale). 27 > 24.
       // wrapOvershootNotes should skip s=0 for target = s-1 = -1.
-      const result = getCagedCoordinates('C', 'D', 'Major', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('C', 'D', 'major', STANDARD_TUNING, 24);
       const wrappedOnInvalidString = Array.from(result.wrappedNotes).some(k => k.startsWith('-1-'));
       expect(wrappedOnInvalidString).toBe(false);
     });
@@ -629,7 +629,7 @@ describe('Phase 4: Extended Boundary Conditions', () => {
       // Root A at fret 17 on s5.
       
       // Let's force it: root at fret 1, fretOffsetMin = -3 => intendedMin = -2.
-      const result = getCagedCoordinates('F#', 'G', 'Minor Pentatonic', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('F#', 'G', 'minor pentatonic', STANDARD_TUNING, 24);
       // F# at fret 2 on s5. intendedMin = 2 - 3 = -1.
       // negative overshoot = 1.
       // But s=5 is the bottom string, can't wrap to s+1 = 6.
@@ -642,14 +642,14 @@ describe('Phase 4: Extended Boundary Conditions', () => {
     it('truncates shape on 5-fret board if it spans 6 frets', () => {
       // E shape spans roughly 4 frets [0, 3].
       // On a 2-fret board, it should be truncated.
-      const result = getCagedCoordinates('A', 'E', 'Major', STANDARD_TUNING, 2);
+      const result = getCagedCoordinates('A', 'E', 'major', STANDARD_TUNING, 2);
       for (const p of result.polygons) {
         expect(p.truncated).toBe(true);
       }
     });
 
     it('strictly follows 50% span rule for truncation', () => {
-      const result2 = getCagedCoordinates('G', 'A', 'Major', STANDARD_TUNING, 24);
+      const result2 = getCagedCoordinates('G', 'A', 'major', STANDARD_TUNING, 24);
       const poly2 = result2.polygons.find(p => p.intendedMin < 0);
       if (poly2) {
         const visibleSpan = Math.min(24, poly2.intendedMax) - Math.max(0, poly2.intendedMin);
@@ -662,18 +662,18 @@ describe('Phase 4: Extended Boundary Conditions', () => {
   describe('Chromatic and Non-Diatonic Overshoot', () => {
     it('handles "busy" scales without crashing (e.g. Altered scale)', () => {
       expect(() => {
-        getCagedCoordinates('C', 'E', 'Altered', STANDARD_TUNING, 24);
+        getCagedCoordinates('C', 'E', 'altered', STANDARD_TUNING, 24);
       }).not.toThrow();
     });
 
     it('omits notes that are not in the scale even if they are within the shape boundaries', () => {
-      const result = getCagedCoordinates('A', 'E', 'Minor Pentatonic', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', 'E', 'minor pentatonic', STANDARD_TUNING, 24);
       expect(result.coordinates.length).toBeGreaterThan(0);
     });
 
     it('wrapping logic handles non-diatonic notes correctly', () => {
       // Blues scale has the "blue note".
-      const result = getCagedCoordinates('A', 'E', 'Minor Blues', STANDARD_TUNING, 24);
+      const result = getCagedCoordinates('A', 'E', 'minor blues', STANDARD_TUNING, 24);
       // Verify blue note (Eb if root is A) is present if it's in range
       // Eb on A string is fret 6.
       const hasBlueNote = result.coordinates.some(c => {
@@ -687,7 +687,7 @@ describe('Phase 4: Extended Boundary Conditions', () => {
 
 describe('get3NPSCoordinates', () => {
   it('position 1 returns non-empty coordinates in the first octave register', () => {
-    const result = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1);
+    const result = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 1);
     expect(result.coordinates.length).toBeGreaterThan(0);
     expect(result.bounds.length).toBe(1);
     // C major position 1 starts on low E at fret 8 (first C); notes stay low on neck
@@ -695,8 +695,8 @@ describe('get3NPSCoordinates', () => {
   });
 
   it('octave=1 lands in the second register, higher than octave=0 for the same position', () => {
-    const low = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1, 0);
-    const high = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1, 1);
+    const low = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 1, 0);
+    const high = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 1, 1);
     expect(high.coordinates.length).toBeGreaterThan(0);
     // Second register should start at or above fret 12
     expect(high.bounds[0].minFret).toBeGreaterThan(low.bounds[0].minFret);
@@ -706,7 +706,7 @@ describe('get3NPSCoordinates', () => {
   it('octave=1 falls back to highest available register when second occurrence is out of range', () => {
     // Requesting octave=1 when the note only appears once within 0-24 frets should
     // fall back to the first (only) occurrence rather than returning empty.
-    const result = get3NPSCoordinates('C', 'Major', STANDARD_TUNING, 24, 1, 5);
+    const result = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 1, 5);
     expect(result.coordinates.length).toBeGreaterThan(0);
     for (const coord of result.coordinates) {
       const fret = parseInt(coord.split('-')[1]);
@@ -718,7 +718,7 @@ describe('get3NPSCoordinates', () => {
   it('all positions (both octaves) return coordinates within the fretboard range', () => {
     for (let pos = 1; pos <= 7; pos++) {
       for (const oct of [0, 1]) {
-        const result = get3NPSCoordinates('G', 'Natural Minor', STANDARD_TUNING, 24, pos, oct);
+        const result = get3NPSCoordinates('G', 'minor', STANDARD_TUNING, 24, pos, oct);
         expect(result.coordinates.length).toBeGreaterThan(0);
         for (const coord of result.coordinates) {
           const fret = parseInt(coord.split('-')[1]);
@@ -732,7 +732,7 @@ describe('get3NPSCoordinates', () => {
   it('wrappedNotes is always an empty Set (3NPS does not wrap notes)', () => {
     for (let pos = 1; pos <= 7; pos++) {
       for (const oct of [0, 1]) {
-        const result = get3NPSCoordinates('A', 'Minor Pentatonic', STANDARD_TUNING, 24, pos, oct);
+        const result = get3NPSCoordinates('A', 'minor pentatonic', STANDARD_TUNING, 24, pos, oct);
         expect(result.wrappedNotes).toBeInstanceOf(Set);
         expect(result.wrappedNotes.size).toBe(0);
       }

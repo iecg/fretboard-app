@@ -14,7 +14,7 @@ describe("songStateAtoms read", () => {
   it("activeChordRoot reads from the active step's resolved root by default", () => {
     const store = createStore();
     store.set(rootNoteAtom, "A");
-    // scaleNameAtom defaults to "Major"; default progression first step is I → root "A"
+    // scaleNameAtom defaults to "major"; default progression first step is I → root "A"
     expect(store.get(activeChordRootAtom)).toBe("A");
   });
 
@@ -34,7 +34,7 @@ describe("updateActiveChordAtom write", () => {
   it("setting root makes the step manual and flips activeChordIsManual to true", () => {
     const store = createStore();
     store.set(rootNoteAtom, "A");
-    store.set(scaleNameAtom, "Minor");
+    store.set(scaleNameAtom, "minor");
     store.set(updateActiveChordAtom, { root: "F#" });
     expect(store.get(activeChordIsManualAtom)).toBe(true);
     expect(store.get(activeChordRootAtom)).toBe("F#");
@@ -43,7 +43,7 @@ describe("updateActiveChordAtom write", () => {
   it("setting root=null clears manualRoot and reverts to diatonic", () => {
     const store = createStore();
     store.set(rootNoteAtom, "A");
-    store.set(scaleNameAtom, "Minor");
+    store.set(scaleNameAtom, "minor");
     store.set(updateActiveChordAtom, { root: "F#" });
     store.set(updateActiveChordAtom, { root: null });
     expect(store.get(activeChordIsManualAtom)).toBe(false);

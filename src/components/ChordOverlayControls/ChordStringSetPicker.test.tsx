@@ -15,7 +15,7 @@ import { ChordStringSetPicker } from "./ChordStringSetPicker";
 
 const C7_SEEDS = [
   [rootNoteAtom, "C"],
-  [scaleNameAtom, "Major"],
+  [scaleNameAtom, "major"],
   [
     progressionStepsAtom,
     [

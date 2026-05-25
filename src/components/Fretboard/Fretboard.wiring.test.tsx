@@ -23,7 +23,7 @@ function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
   // Set scale root + scale BEFORE seeding the progression step so the
   // root-change listener doesn't transpose manualRoot from the default key.
   store.set(rootNoteAtom, "G");
-  store.set(scaleNameAtom, "Major");
+  store.set(scaleNameAtom, "major");
   store.set(progressionStepsAtom, [
     {
       id: "step-1",

@@ -25,7 +25,7 @@ function rowCells(row: HTMLLIElement) {
 describe("DegreeChordList", () => {
   it("renders all seven Major-key Roman numerals with correct case + ° suffix", () => {
     const { container } = renderWithAtoms(
-      <DegreeChordList rootNote="C" scaleName="Major" />,
+      <DegreeChordList rootNote="C" scaleName="major" />,
     );
     const rows = getRows(container);
     expect(rows).toHaveLength(7);
@@ -50,7 +50,7 @@ describe("DegreeChordList", () => {
 
   it("resolves flat-key display for F Major (IV = B♭, V = C)", () => {
     const { container } = renderWithAtoms(
-      <DegreeChordList rootNote="F" scaleName="Major" preferFlats={true} />,
+      <DegreeChordList rootNote="F" scaleName="major" preferFlats={true} />,
     );
     const rows = getRows(container);
     const cells = rows.map(rowCells);
@@ -62,7 +62,7 @@ describe("DegreeChordList", () => {
 
   it("renders Phrygian mode degrees in scale-step order", () => {
     const { container } = renderWithAtoms(
-      <DegreeChordList rootNote="E" scaleName="Phrygian" />,
+      <DegreeChordList rootNote="E" scaleName="phrygian" />,
     );
     const rows = getRows(container);
     expect(rows).toHaveLength(7);
@@ -79,7 +79,7 @@ describe("DegreeChordList", () => {
   it("invokes onSelect with the DegreeId when a row button is clicked", () => {
     const onSelect = vi.fn();
     const { container } = renderWithAtoms(
-      <DegreeChordList rootNote="C" scaleName="Major" onSelect={onSelect} />,
+      <DegreeChordList rootNote="C" scaleName="major" onSelect={onSelect} />,
     );
     const rows = getRows(container);
     const vRow = rows.find((r) => rowCells(r).numeral === "V")!;
@@ -92,7 +92,7 @@ describe("DegreeChordList", () => {
     const { container } = renderWithAtoms(
       <DegreeChordList
         rootNote="C"
-        scaleName="Major"
+        scaleName="major"
         activeDegreeId="IV"
         onSelect={() => {}}
       />,
@@ -114,7 +114,7 @@ describe("DegreeChordList", () => {
     const { container } = renderWithAtoms(
       <DegreeChordList
         rootNote="C"
-        scaleName="Major"
+        scaleName="major"
         activeDegreeId="V"
         onSelect={() => {}}
       />,

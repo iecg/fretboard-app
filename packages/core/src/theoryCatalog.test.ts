@@ -36,57 +36,57 @@ describe("chord catalog — new chord types round-trip", () => {
 
 describe("theory catalog", () => {
   it("resolves every persisted scaleName to the correct family and member", () => {
-    expect(resolveScaleCatalogEntry("Major").family.id).toBe("major");
-    expect(resolveScaleCatalogEntry("Natural Minor").member.shortLabel).toBe(
+    expect(resolveScaleCatalogEntry("major").family.id).toBe("major");
+    expect(resolveScaleCatalogEntry("minor").member.shortLabel).toBe(
       "Aeolian",
     );
-    expect(resolveScaleCatalogEntry("Harmonic Minor").family.id).toBe(
+    expect(resolveScaleCatalogEntry("harmonic minor").family.id).toBe(
       "harmonic-minor",
     );
-    expect(resolveScaleCatalogEntry("Melodic Minor").family.id).toBe(
+    expect(resolveScaleCatalogEntry("melodic minor").family.id).toBe(
       "melodic-minor",
     );
-    expect(resolveScaleCatalogEntry("Minor Pentatonic").family.id).toBe(
+    expect(resolveScaleCatalogEntry("minor pentatonic").family.id).toBe(
       "pentatonic",
     );
-    expect(resolveScaleCatalogEntry("Minor Blues").family.id).toBe("blues");
+    expect(resolveScaleCatalogEntry("minor blues").family.id).toBe("blues");
   });
 
   it("wraps family stepping in both directions", () => {
-    expect(getAdjacentScaleName("Major", -1)).toBe("Locrian");
-    expect(getAdjacentScaleName("Locrian", 1)).toBe("Major");
-    expect(getAdjacentScaleName("Minor Blues", 1)).toBe("Major Blues");
-    expect(getAdjacentScaleName("Major Blues", 1)).toBe("Minor Blues");
+    expect(getAdjacentScaleName("major", -1)).toBe("locrian");
+    expect(getAdjacentScaleName("locrian", 1)).toBe("major");
+    expect(getAdjacentScaleName("minor blues", 1)).toBe("major blues");
+    expect(getAdjacentScaleName("major blues", 1)).toBe("minor blues");
   });
 
   it("exposes the new harmonic minor and melodic minor interval sets", () => {
-    expect(SCALES["Locrian Natural 6"]).toEqual([0, 1, 3, 5, 6, 9, 10]);
-    expect(SCALES["Lydian Dominant"]).toEqual([0, 2, 4, 6, 7, 9, 10]);
-    expect(SCALES["Altered"]).toEqual([0, 1, 3, 4, 6, 8, 10]);
+    expect(SCALES["locrian 6"]).toEqual([0, 1, 3, 5, 6, 9, 10]);
+    expect(SCALES["lydian dominant"]).toEqual([0, 2, 4, 6, 7, 9, 10]);
+    expect(SCALES["altered"]).toEqual([0, 1, 3, 4, 6, 8, 10]);
   });
 
   it("exposes parent major offsets for the new families", () => {
-    expect(SCALE_TO_PARENT_MAJOR_OFFSET["Harmonic Minor"]).toBe(3);
-    expect(SCALE_TO_PARENT_MAJOR_OFFSET["Phrygian Dominant"]).toBe(8);
-    expect(SCALE_TO_PARENT_MAJOR_OFFSET["Melodic Minor"]).toBe(3);
-    expect(SCALE_TO_PARENT_MAJOR_OFFSET["Locrian Natural 2"]).toBe(6);
+    expect(SCALE_TO_PARENT_MAJOR_OFFSET["harmonic minor"]).toBe(3);
+    expect(SCALE_TO_PARENT_MAJOR_OFFSET["phrygian dominant"]).toBe(8);
+    expect(SCALE_TO_PARENT_MAJOR_OFFSET["melodic minor"]).toBe(3);
+    expect(SCALE_TO_PARENT_MAJOR_OFFSET["locrian #2"]).toBe(6);
   });
 
   it("uses alias-friendly display labels and hybrid terminology", () => {
-    expect(getScaleDisplayLabel("Major")).toBe("Major (Ionian)");
-    expect(getScaleDisplayLabel("Natural Minor")).toBe(
+    expect(getScaleDisplayLabel("major")).toBe("Major (Ionian)");
+    expect(getScaleDisplayLabel("minor")).toBe(
       "Natural Minor (Aeolian)",
     );
-    expect(getScaleDisplayLabel("Melodic Minor")).toBe(
+    expect(getScaleDisplayLabel("melodic minor")).toBe(
       "Melodic Minor (Jazz Minor)",
     );
-    expect(getScaleMemberTerm("Dorian")).toBe("Mode");
-    expect(getScaleMemberTerm("Minor Pentatonic")).toBe("Variant");
+    expect(getScaleMemberTerm("dorian")).toBe("Mode");
+    expect(getScaleMemberTerm("minor pentatonic")).toBe("Variant");
   });
 
   it("builds parallel browse options with a fixed root", () => {
     expect(
-      getScaleBrowseOptions("C", "Major", "parallel").map(
+      getScaleBrowseOptions("C", "major", "parallel").map(
         (option) => option.label,
       ),
     ).toEqual([
@@ -102,7 +102,7 @@ describe("theory catalog", () => {
 
   it("builds relative browse options with ordinal mode labels", () => {
     expect(
-      getScaleBrowseOptions("C", "Major", "relative").map(
+      getScaleBrowseOptions("C", "major", "relative").map(
         (option) => option.label,
       ),
     ).toEqual([
@@ -118,10 +118,10 @@ describe("theory catalog", () => {
 
   it("infers the family context for non-tonic modal selections", () => {
     expect(
-      getActiveScaleBrowseOption("D", "Dorian", "relative").label,
+      getActiveScaleBrowseOption("D", "dorian", "relative").label,
     ).toBe("D Dorian (2nd Mode)");
     expect(
-      getScaleBrowseOptions("E", "Phrygian Dominant", "relative").map(
+      getScaleBrowseOptions("E", "phrygian dominant", "relative").map(
         (option) => option.label,
       ),
     ).toEqual([
@@ -137,19 +137,19 @@ describe("theory catalog", () => {
 
   it("steps through the computed browse order", () => {
     expect(
-      getAdjacentScaleBrowseOption("C", "Major", "relative", 1).label,
+      getAdjacentScaleBrowseOption("C", "major", "relative", 1).label,
     ).toBe("D Dorian (2nd Mode)");
     expect(
-      getAdjacentScaleBrowseOption("C", "Major", "parallel", 1).label,
+      getAdjacentScaleBrowseOption("C", "major", "parallel", 1).label,
     ).toBe("C Dorian");
   });
 
   it("falls back to parallel browsing for pentatonic and blues families", () => {
-    expect(getEffectiveScaleBrowseMode("Minor Pentatonic", "relative")).toBe(
+    expect(getEffectiveScaleBrowseMode("minor pentatonic", "relative")).toBe(
       "parallel",
     );
     expect(
-      getScaleBrowseOptions("C", "Minor Pentatonic", "relative").map(
+      getScaleBrowseOptions("C", "minor pentatonic", "relative").map(
         (option) => option.label,
       ),
     ).toEqual(["C Minor Pentatonic", "C Major Pentatonic"]);

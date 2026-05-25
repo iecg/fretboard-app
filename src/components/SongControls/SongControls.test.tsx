@@ -10,7 +10,7 @@ import { SongControls } from "./SongControls";
 
 const BASE_SEEDS = [
   [rootNoteAtom, "C"],
-  [scaleNameAtom, "Major"],
+  [scaleNameAtom, "major"],
   [progressionStepsAtom, [
     { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
     { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
@@ -148,7 +148,7 @@ describe("SongControls PRESET", () => {
   it("renders a LabeledSelect with the default preset value", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
     const trigger = screen.getByRole("combobox", { name: "Preset" });
@@ -159,7 +159,7 @@ describe("SongControls PRESET", () => {
   it("renders preset selector with category groups", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
@@ -171,7 +171,7 @@ describe("SongControls PRESET", () => {
   it("renders a suggested presets group for the current scale", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
@@ -183,7 +183,7 @@ describe("SongControls PRESET", () => {
   it("only lists presets that are available for the selected scale", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Minor Blues"],
+      [scaleNameAtom, "minor blues"],
     ]);
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
@@ -431,7 +431,7 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
   it("selecting a borrowed degree cell clears any existing quality override", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
+      [scaleNameAtom, "major"],
       [progressionStepsAtom, [
         { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Diminished Triad", manualRoot: null },
       ]],

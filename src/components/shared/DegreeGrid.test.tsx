@@ -5,7 +5,7 @@ import styles from "./DegreeGrid.module.css";
 
 describe("DegreeGrid", () => {
   const baseProps = {
-    scaleName: "Major",
+    scaleName: "major",
     tonicNote: "C",
     selectedNote: "C",
     onSelectInKey: vi.fn(),
@@ -54,7 +54,7 @@ describe("DegreeGrid", () => {
       render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Natural Minor"
+          scaleName="minor"
           tonicNote="A"
           selectedNote="A"
           onSelectBorrowed={onSelectBorrowed}
@@ -87,7 +87,7 @@ describe("DegreeGrid", () => {
       render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Dorian"
+          scaleName="dorian"
           tonicNote="D"
           selectedNote="D"
         />,
@@ -117,7 +117,7 @@ describe("DegreeGrid", () => {
       const { container } = render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Major"
+          scaleName="major"
           tonicNote="G"
           selectedNote="G"
           preferFlats={true}
@@ -149,7 +149,7 @@ describe("DegreeGrid", () => {
       render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Natural Minor"
+          scaleName="minor"
           tonicNote="A"
           selectedNote="A"
         />,
@@ -240,7 +240,7 @@ describe("DegreeGrid", () => {
       const { container } = render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Major"
+          scaleName="major"
           tonicNote="C"
           selectedNote="C#"
           preferFlats={false}
@@ -259,7 +259,7 @@ describe("DegreeGrid", () => {
       const { container } = render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Major"
+          scaleName="major"
           tonicNote="C"
           selectedNote="C"
           preferFlats={false}
@@ -280,7 +280,7 @@ describe("DegreeGrid", () => {
       const { container } = render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Major"
+          scaleName="major"
           tonicNote="C"
           selectedNote="C#"
           preferFlats={false}
@@ -299,7 +299,7 @@ describe("DegreeGrid", () => {
       const { container } = render(
         <DegreeGrid
           {...baseProps}
-          scaleName="Major"
+          scaleName="major"
           tonicNote="C"
           selectedNote="C"
           preferFlats={false}
@@ -319,7 +319,7 @@ describe("DegreeGrid quality tag on borrowed cells (Plan H-T9b)", () => {
   it("renders a quality tag (e.g. 'M') under the note name on borrowed cells", () => {
     const { container } = render(
       <DegreeGrid
-        scaleName="Major"
+        scaleName="major"
         tonicNote="C"
         selectedNote="C"
         onSelectInKey={() => {}}
@@ -341,7 +341,7 @@ describe("DegreeGrid quality tag on borrowed cells (Plan H-T9b)", () => {
   it("does NOT render a quality tag on in-key cells (quality is implicit in the Roman numeral)", () => {
     const { container } = render(
       <DegreeGrid
-        scaleName="Major"
+        scaleName="major"
         tonicNote="C"
         selectedNote="C"
         onSelectInKey={() => {}}

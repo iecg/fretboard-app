@@ -53,7 +53,7 @@ interface CircleOfFifthsProps {
 export const CircleOfFifths = memo(function CircleOfFifths({
   rootNote,
   setRootNote,
-  scaleName = "Major",
+  scaleName = "major",
   preferFlats = false,
   enharmonicDisplay = "auto",
   variant = "card",

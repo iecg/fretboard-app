@@ -46,7 +46,7 @@ describe("Integration: real-component user workflows", () => {
 
   it("changing accidental mode in Settings re-renders the scale label without persisting", async () => {
     localStorage.setItem(k("rootNote"), "A#");
-    localStorage.setItem(k("scaleName"), "Major");
+    localStorage.setItem(k("scaleName.v2"), "major");
     render(<App />);
 
     // Initial render: flats spelling for A# Major.

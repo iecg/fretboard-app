@@ -53,7 +53,7 @@ describe("getIntervalNotes", () => {
 
 describe("getScaleNotes", () => {
   it("returns C Major notes", () => {
-    expect(getScaleNotes("C", "Major")).toEqual([
+    expect(getScaleNotes("C", "major")).toEqual([
       "C",
       "D",
       "E",
@@ -65,7 +65,7 @@ describe("getScaleNotes", () => {
   });
 
   it("returns A Minor Pentatonic notes", () => {
-    expect(getScaleNotes("A", "Minor Pentatonic")).toEqual([
+    expect(getScaleNotes("A", "minor pentatonic")).toEqual([
       "A",
       "C",
       "D",
@@ -79,7 +79,7 @@ describe("getScaleNotes", () => {
   });
 
   it("returns empty array for invalid root note", () => {
-    expect(getScaleNotes("X", "Major")).toEqual([]);
+    expect(getScaleNotes("X", "major")).toEqual([]);
   });
 
   it("returns empty array for invalid scale name", () => {
@@ -87,7 +87,7 @@ describe("getScaleNotes", () => {
   });
 
   it("returns A Melodic Minor notes", () => {
-    expect(getScaleNotes("A", "Melodic Minor")).toEqual([
+    expect(getScaleNotes("A", "melodic minor")).toEqual([
       "A",
       "B",
       "C",
@@ -102,12 +102,12 @@ describe("getScaleNotes", () => {
 describe("getScaleSemitones", () => {
   it("returns chromatic semitone offsets for C Major", () => {
     // C=0, D=2, E=4, F=5, G=7, A=9, B=11
-    expect(getScaleSemitones("C", "Major")).toEqual([0, 2, 4, 5, 7, 9, 11]);
+    expect(getScaleSemitones("C", "major")).toEqual([0, 2, 4, 5, 7, 9, 11]);
   });
 
   it("returns chromatic semitone offsets for A Minor Pentatonic", () => {
     // A=9, C=0, D=2, E=4, G=7
-    expect(getScaleSemitones("A", "Minor Pentatonic")).toEqual([9, 0, 2, 4, 7]);
+    expect(getScaleSemitones("A", "minor pentatonic")).toEqual([9, 0, 2, 4, 7]);
   });
 
   it("returns empty array for unknown scale", () => {
@@ -115,8 +115,8 @@ describe("getScaleSemitones", () => {
   });
 
   it("matches getScaleNotes ordering (root first)", () => {
-    const notes = getScaleNotes("D", "Major");
-    const semis = getScaleSemitones("D", "Major");
+    const notes = getScaleNotes("D", "major");
+    const semis = getScaleSemitones("D", "major");
     expect(semis).toHaveLength(notes.length);
     // First entry is the root
     expect(semis[0]).toBe(2); // D = index 2 in NOTES
@@ -151,78 +151,78 @@ describe("getChordNotes", () => {
 
 describe("getDivergentNotes", () => {
   it("returns empty for Major scale (reference itself)", () => {
-    expect(getDivergentNotes("C", "Major")).toEqual([]);
+    expect(getDivergentNotes("C", "major")).toEqual([]);
   });
 
   it("returns empty for Natural Minor (reference itself)", () => {
-    expect(getDivergentNotes("A", "Natural Minor")).toEqual([]);
+    expect(getDivergentNotes("A", "minor")).toEqual([]);
   });
 
   it("returns raised 6th for Dorian (vs Natural Minor)", () => {
     // Dorian has interval 9 (major 6th), Natural Minor has 8 (minor 6th)
-    const divergent = getDivergentNotes("D", "Dorian");
+    const divergent = getDivergentNotes("D", "dorian");
     expect(divergent).toEqual(["B"]); // B is the raised 6th in D Dorian
   });
 
   it("returns raised 4th for Lydian (vs Major)", () => {
-    const divergent = getDivergentNotes("F", "Lydian");
+    const divergent = getDivergentNotes("F", "lydian");
     expect(divergent).toEqual(["B"]); // B is the raised 4th in F Lydian
   });
 
   it("returns lowered 7th for Mixolydian (vs Major)", () => {
-    const divergent = getDivergentNotes("G", "Mixolydian");
+    const divergent = getDivergentNotes("G", "mixolydian");
     expect(divergent).toEqual(["F"]); // F is the lowered 7th in G Mixolydian
   });
 
   it("returns empty for pentatonic scales", () => {
-    expect(getDivergentNotes("C", "Minor Pentatonic")).toEqual([]);
-    expect(getDivergentNotes("C", "Major Pentatonic")).toEqual([]);
+    expect(getDivergentNotes("C", "minor pentatonic")).toEqual([]);
+    expect(getDivergentNotes("C", "major pentatonic")).toEqual([]);
   });
 
   it("returns empty for blues scales", () => {
-    expect(getDivergentNotes("A", "Minor Blues")).toEqual([]);
+    expect(getDivergentNotes("A", "minor blues")).toEqual([]);
   });
 
   it("returns raised 6th for Bb Dorian (vs Natural Minor) — flat root", () => {
     // Bb Dorian: Bb C Db Eb F G Ab; Bb Natural Minor: Bb C Db Eb F Gb Ab
     // Divergent semitone = G (chroma 7) → sharps-form "G"
-    expect(getDivergentNotes("Bb", "Dorian")).toEqual(["G"]);
+    expect(getDivergentNotes("Bb", "dorian")).toEqual(["G"]);
   });
 
   it("returns empty for invalid root", () => {
-    expect(getDivergentNotes("Zz", "Dorian")).toEqual([]);
+    expect(getDivergentNotes("Zz", "dorian")).toEqual([]);
   });
 
   it("matches snapshot across all scales × {C, F#, Bb}", () => {
     const SCALES_TO_PROBE = [
-      "Major",
-      "Natural Minor",
-      "Harmonic Minor",
-      "Melodic Minor",
-      "Major Pentatonic",
-      "Minor Pentatonic",
-      "Blues",
-      "Ionian",
-      "Dorian",
-      "Phrygian",
-      "Lydian",
-      "Mixolydian",
-      "Aeolian",
-      "Locrian",
-      "Locrian Natural 6",
-      "Ionian Augmented",
-      "Dorian Sharp 4",
-      "Phrygian Dominant",
-      "Lydian Sharp 2",
-      "Altered Diminished",
-      "Dorian Flat 2",
-      "Lydian Augmented",
-      "Lydian Dominant",
-      "Mixolydian Flat 6",
-      "Locrian Natural 2",
-      "Altered",
-      "Minor Blues",
-      "Major Blues",
+      "major",
+      "minor",
+      "harmonic minor",
+      "melodic minor",
+      "major pentatonic",
+      "minor pentatonic",
+      "blues",
+      "ionian",
+      "dorian",
+      "phrygian",
+      "lydian",
+      "mixolydian",
+      "aeolian",
+      "locrian",
+      "locrian 6",
+      "ionian augmented",
+      "dorian #4",
+      "phrygian dominant",
+      "lydian #9",
+      "ultralocrian",
+      "dorian b2",
+      "lydian augmented",
+      "lydian dominant",
+      "mixolydian b6",
+      "locrian #2",
+      "altered",
+      "minor blues",
+      "major blues",
     ];
     const ROOTS = ["C", "F#", "Bb"];
 
@@ -255,139 +255,139 @@ describe("getKeySignature", () => {
 describe("resolveAccidentalMode", () => {
   describe("explicit mode pass-through", () => {
     it("sharps → false regardless of root", () => {
-      expect(resolveAccidentalMode("C#", "Major", "sharps")).toBe(false);
-      expect(resolveAccidentalMode("Bb", "Major", "sharps")).toBe(false);
+      expect(resolveAccidentalMode("C#", "major", "sharps")).toBe(false);
+      expect(resolveAccidentalMode("Bb", "major", "sharps")).toBe(false);
     });
     it("flats → true regardless of root", () => {
-      expect(resolveAccidentalMode("C#", "Major", "flats")).toBe(true);
-      expect(resolveAccidentalMode("C", "Major", "flats")).toBe(true);
+      expect(resolveAccidentalMode("C#", "major", "flats")).toBe(true);
+      expect(resolveAccidentalMode("C", "major", "flats")).toBe(true);
     });
   });
 
   describe("natural root no-op (auto falls back to FLAT_KEYS)", () => {
     it("C Major → false", () => {
-      expect(resolveAccidentalMode("C", "Major", "auto")).toBe(false);
+      expect(resolveAccidentalMode("C", "major", "auto")).toBe(false);
     });
     it("F Major → true (F in FLAT_KEYS)", () => {
-      expect(resolveAccidentalMode("F", "Major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("F", "major", "auto")).toBe(true);
     });
     it("A Natural Minor → false", () => {
-      expect(resolveAccidentalMode("A", "Natural Minor", "auto")).toBe(false);
+      expect(resolveAccidentalMode("A", "minor", "auto")).toBe(false);
     });
   });
 
   describe("enharmonic roots — auto picks fewer accidentals", () => {
     it("A#/Bb Major → true (Bb wins)", () => {
-      expect(resolveAccidentalMode("A#", "Major", "auto")).toBe(true);
-      expect(resolveAccidentalMode("Bb", "Major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("A#", "major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("Bb", "major", "auto")).toBe(true);
     });
     it("C#/Db Major → true (Db wins)", () => {
-      expect(resolveAccidentalMode("C#", "Major", "auto")).toBe(true);
-      expect(resolveAccidentalMode("Db", "Major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("C#", "major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("Db", "major", "auto")).toBe(true);
     });
     it("D#/Eb Major → true (Eb wins)", () => {
-      expect(resolveAccidentalMode("D#", "Major", "auto")).toBe(true);
-      expect(resolveAccidentalMode("Eb", "Major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("D#", "major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("Eb", "major", "auto")).toBe(true);
     });
     it("G#/Ab Major → true (Ab wins)", () => {
-      expect(resolveAccidentalMode("G#", "Major", "auto")).toBe(true);
-      expect(resolveAccidentalMode("Ab", "Major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("G#", "major", "auto")).toBe(true);
+      expect(resolveAccidentalMode("Ab", "major", "auto")).toBe(true);
     });
     it("F#/Gb Major → false (tie breaks to sharps)", () => {
-      expect(resolveAccidentalMode("F#", "Major", "auto")).toBe(false);
-      expect(resolveAccidentalMode("Gb", "Major", "auto")).toBe(false);
+      expect(resolveAccidentalMode("F#", "major", "auto")).toBe(false);
+      expect(resolveAccidentalMode("Gb", "major", "auto")).toBe(false);
     });
     it("A# Natural Minor in auto mode", () => {
       // A# Natural Minor vs Bb Natural Minor — Bb should win (fewer accidentals)
-      expect(resolveAccidentalMode("A#", "Natural Minor", "auto")).toBe(true);
+      expect(resolveAccidentalMode("A#", "minor", "auto")).toBe(true);
     });
   });
 });
 
 describe("getKeySignatureForDisplay (scale-aware)", () => {
   it("A Natural Minor → 0 (parent = C Major)", () => {
-    expect(getKeySignatureForDisplay("A", "Natural Minor", false)).toBe(0);
+    expect(getKeySignatureForDisplay("A", "minor", false)).toBe(0);
   });
   it("E Dorian → 2 (parent = D Major)", () => {
-    expect(getKeySignatureForDisplay("E", "Dorian", false)).toBe(2);
+    expect(getKeySignatureForDisplay("E", "dorian", false)).toBe(2);
   });
   it("D Phrygian → -2 (parent = Bb Major; useFlats=false still resolves to the Bb enharmonic key sig)", () => {
-    expect(getKeySignatureForDisplay("D", "Phrygian", false)).toBe(-2);
+    expect(getKeySignatureForDisplay("D", "phrygian", false)).toBe(-2);
   });
   it("Bb Lydian → -1 (parent = F Major, useFlats=true)", () => {
-    expect(getKeySignatureForDisplay("Bb", "Lydian", true)).toBe(-1);
+    expect(getKeySignatureForDisplay("Bb", "lydian", true)).toBe(-1);
   });
   it("G Mixolydian → 0 (parent = C Major)", () => {
-    expect(getKeySignatureForDisplay("G", "Mixolydian", false)).toBe(0);
+    expect(getKeySignatureForDisplay("G", "mixolydian", false)).toBe(0);
   });
   it("B Locrian → 0 (parent = C Major)", () => {
-    expect(getKeySignatureForDisplay("B", "Locrian", false)).toBe(0);
+    expect(getKeySignatureForDisplay("B", "locrian", false)).toBe(0);
   });
   it("C Major → 0 (sanity regression)", () => {
-    expect(getKeySignatureForDisplay("C", "Major", false)).toBe(0);
+    expect(getKeySignatureForDisplay("C", "major", false)).toBe(0);
   });
   it("A Minor Pentatonic → 0 (parent = C Major)", () => {
-    expect(getKeySignatureForDisplay("A", "Minor Pentatonic", false)).toBe(0);
+    expect(getKeySignatureForDisplay("A", "minor pentatonic", false)).toBe(0);
   });
   it("A Harmonic Minor → 0 (Natural Minor parent)", () => {
-    expect(getKeySignatureForDisplay("A", "Harmonic Minor", false)).toBe(0);
+    expect(getKeySignatureForDisplay("A", "harmonic minor", false)).toBe(0);
   });
   it("A Melodic Minor → 0 (Natural Minor parent)", () => {
-    expect(getKeySignatureForDisplay("A", "Melodic Minor", false)).toBe(0);
+    expect(getKeySignatureForDisplay("A", "melodic minor", false)).toBe(0);
   });
   it("E Phrygian Dominant → 0 (parent = C Major)", () => {
-    expect(getKeySignatureForDisplay("E", "Phrygian Dominant", false)).toBe(0);
+    expect(getKeySignatureForDisplay("E", "phrygian dominant", false)).toBe(0);
   });
   it("F# Locrian Natural 2 → 0 (parent = C Major)", () => {
-    expect(getKeySignatureForDisplay("F#", "Locrian Natural 2", false)).toBe(0);
+    expect(getKeySignatureForDisplay("F#", "locrian #2", false)).toBe(0);
   });
 });
 
 describe("getKeySignatureForDisplay — sharp root preservation", () => {
   it("G# Major with useFlats=true returns enharmonic sharp count (8)", () => {
-    expect(getKeySignatureForDisplay("G#", "Major", true)).toBe(8);
+    expect(getKeySignatureForDisplay("G#", "major", true)).toBe(8);
   });
   it("Ab Major with useFlats=true returns flat-side sig", () => {
-    expect(getKeySignatureForDisplay("Ab", "Major", true)).toBe(-4);
+    expect(getKeySignatureForDisplay("Ab", "major", true)).toBe(-4);
   });
   it("D# Major with useFlats=true returns enharmonic sharp count (9)", () => {
-    expect(getKeySignatureForDisplay("D#", "Major", true)).toBe(9);
+    expect(getKeySignatureForDisplay("D#", "major", true)).toBe(9);
   });
   it("Eb Major with useFlats=true returns flat-side sig", () => {
-    expect(getKeySignatureForDisplay("Eb", "Major", true)).toBe(-3);
+    expect(getKeySignatureForDisplay("Eb", "major", true)).toBe(-3);
   });
   it("C# Major with useFlats=false returns sharp sig (7)", () => {
-    expect(getKeySignatureForDisplay("C#", "Major", false)).toBe(7);
+    expect(getKeySignatureForDisplay("C#", "major", false)).toBe(7);
   });
   it("G# Major with useFlats=false returns 8 (8 sharps)", () => {
-    expect(getKeySignatureForDisplay("G#", "Major", false)).toBe(8);
+    expect(getKeySignatureForDisplay("G#", "major", false)).toBe(8);
   });
   it("Ab Major with useFlats=false returns -4 (4 flats)", () => {
-    expect(getKeySignatureForDisplay("Ab", "Major", false)).toBe(-4);
+    expect(getKeySignatureForDisplay("Ab", "major", false)).toBe(-4);
   });
   it("A# Major with useFlats=false returns 10 (10 sharps)", () => {
-    expect(getKeySignatureForDisplay("A#", "Major", false)).toBe(10);
+    expect(getKeySignatureForDisplay("A#", "major", false)).toBe(10);
   });
   it("Bb Major with useFlats=true returns -2 (2 flats)", () => {
-    expect(getKeySignatureForDisplay("Bb", "Major", true)).toBe(-2);
+    expect(getKeySignatureForDisplay("Bb", "major", true)).toBe(-2);
   });
 });
 
 describe("resolver + key signature integration", () => {
   it("A# Major auto → sharp-spelled root stays sharp → key sig = 10", () => {
-    const useFlats = resolveAccidentalMode("A#", "Major", "auto");
+    const useFlats = resolveAccidentalMode("A#", "major", "auto");
     // A# is sharp-spelled so getKeySignatureForDisplay returns enharmonic sharp count
-    expect(getKeySignatureForDisplay("A#", "Major", useFlats)).toBe(10);
+    expect(getKeySignatureForDisplay("A#", "major", useFlats)).toBe(10);
   });
   it("A Natural Minor auto → sharps → key sig = 0", () => {
-    const useFlats = resolveAccidentalMode("A", "Natural Minor", "auto");
+    const useFlats = resolveAccidentalMode("A", "minor", "auto");
     expect(useFlats).toBe(false);
-    expect(getKeySignatureForDisplay("A", "Natural Minor", useFlats)).toBe(0);
+    expect(getKeySignatureForDisplay("A", "minor", useFlats)).toBe(0);
   });
   it("E Dorian auto → sharps → key sig = 2", () => {
-    const useFlats = resolveAccidentalMode("E", "Dorian", "auto");
+    const useFlats = resolveAccidentalMode("E", "dorian", "auto");
     expect(useFlats).toBe(false);
-    expect(getKeySignatureForDisplay("E", "Dorian", useFlats)).toBe(2);
+    expect(getKeySignatureForDisplay("E", "dorian", useFlats)).toBe(2);
   });
 });
 
@@ -484,67 +484,67 @@ describe("SCALES constant", () => {
   });
 
   it("Major scale has 7 intervals starting from 0", () => {
-    expect(SCALES["Major"]).toHaveLength(7);
-    expect(SCALES["Major"][0]).toBe(0);
+    expect(SCALES["major"]).toHaveLength(7);
+    expect(SCALES["major"][0]).toBe(0);
   });
 });
 
 describe("getDiatonicChord", () => {
   describe("Major scale", () => {
     it("I in C Major → { root: C, quality: Major Triad }", () => {
-      expect(getDiatonicChord("I", "Major", "C")).toEqual({ root: "C", quality: "Major Triad" });
+      expect(getDiatonicChord("I", "major", "C")).toEqual({ root: "C", quality: "Major Triad" });
     });
 
     it("ii in C Major → { root: D, quality: Minor Triad }", () => {
-      expect(getDiatonicChord("ii", "Major", "C")).toEqual({ root: "D", quality: "Minor Triad" });
+      expect(getDiatonicChord("ii", "major", "C")).toEqual({ root: "D", quality: "Minor Triad" });
     });
 
     it("vii° in C Major → { root: B, quality: Diminished Triad }", () => {
-      expect(getDiatonicChord("vii°", "Major", "C")).toEqual({ root: "B", quality: "Diminished Triad" });
+      expect(getDiatonicChord("vii°", "major", "C")).toEqual({ root: "B", quality: "Diminished Triad" });
     });
 
     it("V in G Major → { root: D, quality: Major Triad } (non-C tonic)", () => {
-      expect(getDiatonicChord("V", "Major", "G")).toEqual({ root: "D", quality: "Major Triad" });
+      expect(getDiatonicChord("V", "major", "G")).toEqual({ root: "D", quality: "Major Triad" });
     });
   });
 
   describe("Natural Minor scale", () => {
     it("i in A Natural Minor → { root: A, quality: Minor Triad }", () => {
-      expect(getDiatonicChord("i", "Natural Minor", "A")).toEqual({ root: "A", quality: "Minor Triad" });
+      expect(getDiatonicChord("i", "minor", "A")).toEqual({ root: "A", quality: "Minor Triad" });
     });
 
     it("ii° in A Natural Minor → { root: B, quality: Diminished Triad }", () => {
-      expect(getDiatonicChord("ii°", "Natural Minor", "A")).toEqual({ root: "B", quality: "Diminished Triad" });
+      expect(getDiatonicChord("ii°", "minor", "A")).toEqual({ root: "B", quality: "Diminished Triad" });
     });
   });
 
   describe("Harmonic Minor — critical edge case", () => {
     it("V in A Harmonic Minor → { root: E, quality: Major Triad } (raised 7th makes dominant major)", () => {
-      expect(getDiatonicChord("V", "Harmonic Minor", "A")).toEqual({ root: "E", quality: "Major Triad" });
+      expect(getDiatonicChord("V", "harmonic minor", "A")).toEqual({ root: "E", quality: "Major Triad" });
     });
   });
 
   describe("Blues scales", () => {
     it("v in C Minor Blues resolves to G Minor Triad", () => {
-      expect(getDiatonicChord("v", "Minor Blues", "C")).toEqual({ root: "G", quality: "Minor Triad" });
+      expect(getDiatonicChord("v", "minor blues", "C")).toEqual({ root: "G", quality: "Minor Triad" });
     });
 
     it("b5 in C Minor Blues is a color tone, not a chord degree", () => {
-      expect(getDiatonicChord("b5", "Minor Blues", "C")).toBeUndefined();
+      expect(getDiatonicChord("b5", "minor blues", "C")).toBeUndefined();
     });
 
     it("V in C Major Blues resolves to G Major Triad", () => {
-      expect(getDiatonicChord("V", "Major Blues", "C")).toEqual({ root: "G", quality: "Major Triad" });
+      expect(getDiatonicChord("V", "major blues", "C")).toEqual({ root: "G", quality: "Major Triad" });
     });
 
     it("b3 in C Major Blues is a color tone, not a chord degree", () => {
-      expect(getDiatonicChord("b3", "Major Blues", "C")).toBeUndefined();
+      expect(getDiatonicChord("b3", "major blues", "C")).toBeUndefined();
     });
   });
 
   describe("Unknown degree guard", () => {
     it("i is not a degree in Major scale — returns undefined", () => {
-      expect(getDiatonicChord("i", "Major", "C#")).toBeUndefined();
+      expect(getDiatonicChord("i", "major", "C#")).toBeUndefined();
     });
   });
 
@@ -554,7 +554,7 @@ describe("getDiatonicChord", () => {
     });
 
     it("returns undefined for an invalid tonic note", () => {
-      expect(getDiatonicChord("I", "Major", "X")).toBeUndefined();
+      expect(getDiatonicChord("I", "major", "X")).toBeUndefined();
     });
   });
 });

@@ -37,9 +37,7 @@ export interface ScaleBrowseOption {
   ordinal: number;
 }
 
-const SCALE_NAME_ALIASES: Record<string, string> = {
-  Minor: "Natural Minor",
-};
+const SCALE_NAME_ALIASES: Record<string, string> = {};
 
 const CHROMATIC_NOTES = [
   "C",
@@ -79,46 +77,46 @@ const SCALE_FAMILY_DEFINITIONS = [
     id: "major",
     label: "Major",
     selectorLabel: "Major Modes",
-    defaultScaleName: "Major",
+    defaultScaleName: "major",
     members: [
       {
-        scaleName: "Major",
+        scaleName: "major",
         displayLabel: "Major (Ionian)",
         shortLabel: "Ionian",
         parentMajorOffset: 0,
       },
       {
-        scaleName: "Dorian",
+        scaleName: "dorian",
         displayLabel: "Dorian",
         shortLabel: "Dorian",
         parentMajorOffset: 10,
       },
       {
-        scaleName: "Phrygian",
+        scaleName: "phrygian",
         displayLabel: "Phrygian",
         shortLabel: "Phrygian",
         parentMajorOffset: 8,
       },
       {
-        scaleName: "Lydian",
+        scaleName: "lydian",
         displayLabel: "Lydian",
         shortLabel: "Lydian",
         parentMajorOffset: 7,
       },
       {
-        scaleName: "Mixolydian",
+        scaleName: "mixolydian",
         displayLabel: "Mixolydian",
         shortLabel: "Mixolydian",
         parentMajorOffset: 5,
       },
       {
-        scaleName: "Natural Minor",
+        scaleName: "minor",
         displayLabel: "Natural Minor (Aeolian)",
         shortLabel: "Aeolian",
         parentMajorOffset: 3,
       },
       {
-        scaleName: "Locrian",
+        scaleName: "locrian",
         displayLabel: "Locrian",
         shortLabel: "Locrian",
         parentMajorOffset: 1,
@@ -129,46 +127,46 @@ const SCALE_FAMILY_DEFINITIONS = [
     id: "harmonic-minor",
     label: "Harmonic Minor",
     selectorLabel: "Harmonic Minor",
-    defaultScaleName: "Harmonic Minor",
+    defaultScaleName: "harmonic minor",
     members: [
       {
-        scaleName: "Harmonic Minor",
+        scaleName: "harmonic minor",
         displayLabel: "Harmonic Minor",
         shortLabel: "Harmonic Minor",
         parentMajorOffset: 3,
       },
       {
-        scaleName: "Locrian Natural 6",
+        scaleName: "locrian 6",
         displayLabel: "Locrian Natural 6",
         shortLabel: "Locrian Natural 6",
         parentMajorOffset: 1,
       },
       {
-        scaleName: "Ionian Augmented",
+        scaleName: "ionian augmented",
         displayLabel: "Ionian Augmented",
         shortLabel: "Ionian Augmented",
         parentMajorOffset: 0,
       },
       {
-        scaleName: "Dorian Sharp 4",
+        scaleName: "dorian #4",
         displayLabel: "Dorian Sharp 4",
         shortLabel: "Dorian #4",
         parentMajorOffset: 10,
       },
       {
-        scaleName: "Phrygian Dominant",
+        scaleName: "phrygian dominant",
         displayLabel: "Phrygian Dominant",
         shortLabel: "Phrygian Dominant",
         parentMajorOffset: 8,
       },
       {
-        scaleName: "Lydian Sharp 2",
+        scaleName: "lydian #9",
         displayLabel: "Lydian Sharp 2",
         shortLabel: "Lydian #2",
         parentMajorOffset: 7,
       },
       {
-        scaleName: "Altered Diminished",
+        scaleName: "ultralocrian",
         displayLabel: "Altered Diminished",
         shortLabel: "Altered Dim.",
         parentMajorOffset: 5,
@@ -179,46 +177,46 @@ const SCALE_FAMILY_DEFINITIONS = [
     id: "melodic-minor",
     label: "Melodic Minor",
     selectorLabel: "Melodic Minor",
-    defaultScaleName: "Melodic Minor",
+    defaultScaleName: "melodic minor",
     members: [
       {
-        scaleName: "Melodic Minor",
+        scaleName: "melodic minor",
         displayLabel: "Melodic Minor (Jazz Minor)",
         shortLabel: "Jazz Minor",
         parentMajorOffset: 3,
       },
       {
-        scaleName: "Dorian Flat 2",
+        scaleName: "dorian b2",
         displayLabel: "Dorian Flat 2",
         shortLabel: "Dorian b2",
         parentMajorOffset: 1,
       },
       {
-        scaleName: "Lydian Augmented",
+        scaleName: "lydian augmented",
         displayLabel: "Lydian Augmented",
         shortLabel: "Lydian Aug.",
         parentMajorOffset: 0,
       },
       {
-        scaleName: "Lydian Dominant",
+        scaleName: "lydian dominant",
         displayLabel: "Lydian Dominant",
         shortLabel: "Lydian Dom.",
         parentMajorOffset: 10,
       },
       {
-        scaleName: "Mixolydian Flat 6",
+        scaleName: "mixolydian b6",
         displayLabel: "Mixolydian Flat 6",
         shortLabel: "Mixolydian b6",
         parentMajorOffset: 8,
       },
       {
-        scaleName: "Locrian Natural 2",
+        scaleName: "locrian #2",
         displayLabel: "Locrian Natural 2",
         shortLabel: "Locrian Nat. 2",
         parentMajorOffset: 6,
       },
       {
-        scaleName: "Altered",
+        scaleName: "altered",
         displayLabel: "Altered",
         shortLabel: "Altered",
         parentMajorOffset: 4,
@@ -229,16 +227,16 @@ const SCALE_FAMILY_DEFINITIONS = [
     id: "pentatonic",
     label: "Pentatonic",
     selectorLabel: "Pentatonic",
-    defaultScaleName: "Minor Pentatonic",
+    defaultScaleName: "minor pentatonic",
     members: [
       {
-        scaleName: "Minor Pentatonic",
+        scaleName: "minor pentatonic",
         displayLabel: "Minor Pentatonic",
         shortLabel: "Minor",
         parentMajorOffset: 3,
       },
       {
-        scaleName: "Major Pentatonic",
+        scaleName: "major pentatonic",
         displayLabel: "Major Pentatonic",
         shortLabel: "Major",
         parentMajorOffset: 0,
@@ -249,16 +247,16 @@ const SCALE_FAMILY_DEFINITIONS = [
     id: "blues",
     label: "Blues",
     selectorLabel: "Blues",
-    defaultScaleName: "Minor Blues",
+    defaultScaleName: "minor blues",
     members: [
       {
-        scaleName: "Minor Blues",
+        scaleName: "minor blues",
         displayLabel: "Minor Blues",
         shortLabel: "Minor",
         parentMajorOffset: 3,
       },
       {
-        scaleName: "Major Blues",
+        scaleName: "major blues",
         displayLabel: "Major Blues",
         shortLabel: "Major",
         parentMajorOffset: 0,
@@ -327,7 +325,7 @@ for (const family of SCALE_FAMILIES) {
 }
 
 function getDefaultScaleEntry(): ScaleCatalogEntry {
-  return scaleEntryByName.get("Major")!;
+  return scaleEntryByName.get("major")!;
 }
 
 function normalizePitchClass(note: string): string {
@@ -454,11 +452,11 @@ export function getScaleMemberOptions(scaleName: string): string[] {
 }
 
 export function getDefaultScaleNameForFamily(familyId: ScaleFamilyId): string {
-  return getScaleFamilyById(familyId)?.defaultScaleName ?? "Major";
+  return getScaleFamilyById(familyId)?.defaultScaleName ?? "major";
 }
 
 export function getScaleNameForFamilySelector(selectorLabel: string): string {
-  return getScaleFamilyBySelectorLabel(selectorLabel)?.defaultScaleName ?? "Major";
+  return getScaleFamilyBySelectorLabel(selectorLabel)?.defaultScaleName ?? "major";
 }
 
 export function getScaleNameForMemberDisplayLabel(

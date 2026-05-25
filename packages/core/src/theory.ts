@@ -443,9 +443,9 @@ export function getDivergentNotes(
   scaleName: string,
 ): string[] {
   const resolvedScaleName = normalizeScaleName(scaleName);
-  if (resolvedScaleName.includes("Blues")) return [];
-  if (resolvedScaleName === "Major Pentatonic" || resolvedScaleName === "Minor Pentatonic") return [];
-  if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor") return [];
+  if (resolvedScaleName.includes("blues")) return [];
+  if (resolvedScaleName === "major pentatonic" || resolvedScaleName === "minor pentatonic") return [];
+  if (resolvedScaleName === "major" || resolvedScaleName === "minor") return [];
 
   const rootChroma = Note.chroma(rootNote);
   if (typeof rootChroma !== "number" || isNaN(rootChroma)) return [];
@@ -459,7 +459,7 @@ export function getDivergentNotes(
     .filter((c): c is number => typeof c === "number" && !isNaN(c))
     .map((c) => (c - rootChroma + 12) % 12);
   const isMajorQuality = relativeIntervals.includes(4);
-  const refName = isMajorQuality ? "Major" : "Natural Minor";
+  const refName = isMajorQuality ? "major" : "minor";
 
   // 12-bit chroma string: "100010010100" etc. Bit i set iff pitch-class i is present.
   const refChroma = Pcset.get(getScaleNotes(rootNote, refName)).chroma;
@@ -614,7 +614,7 @@ export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
  * Returns the absolute root note and diatonic triad quality for a given scale degree.
  *
  * @param degreeId   - Roman numeral string (e.g., "I", "ii", "vii°")
- * @param scaleName  - Scale name (e.g., "Major", "Harmonic Minor")
+ * @param scaleName  - Scale name (e.g., "Major", "harmonic minor")
  * @param tonicNote  - The tonic note of the scale in sharps-form (e.g., "C", "A", "C#")
  * @returns `{ root, quality }` where root is always a sharps-form note and quality is a
  *          chord-name key (e.g., "Major Triad"), or undefined for any unrecognised input.

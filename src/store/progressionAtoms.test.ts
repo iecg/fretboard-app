@@ -42,7 +42,7 @@ describe("progressionAtoms", () => {
   it("resolves the active step from the current key and scale", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     store.set(progressionStepsAtom, [
       { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
@@ -56,7 +56,7 @@ describe("progressionAtoms", () => {
 
   it("loads a preset and remaps labels to the active scale", () => {
     const store = createStore();
-    store.set(scaleNameAtom, "Natural Minor");
+    store.set(scaleNameAtom, "minor");
 
     store.set(loadProgressionPresetAtom, "one-five-six-four");
 
@@ -277,7 +277,7 @@ describe("derived progression atoms", () => {
 
   it("currentProgressionPresetIdAtom ignores presets unavailable for the active scale", () => {
     const store = createStore();
-    store.set(scaleNameAtom, "Minor Blues");
+    store.set(scaleNameAtom, "minor blues");
     expect(store.get(currentProgressionPresetIdAtom)).toBe("custom");
   });
 
@@ -394,10 +394,10 @@ describe("derived progression atoms", () => {
     it("does NOT transpose manualRoot on scale-name change (only root change)", () => {
       const store = createStore();
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
+      store.set(scaleNameAtom, "major");
       const id = store.get(progressionStepsAtom)[0]!.id;
       store.set(updateProgressionStepRootAtom, { id, manualRoot: "F#" });
-      store.set(scaleNameAtom, "Natural Minor");
+      store.set(scaleNameAtom, "minor");
       expect(
         store.get(progressionStepsAtom).find((s) => s.id === id)?.manualRoot,
       ).toBe("F#");
@@ -424,7 +424,7 @@ describe("addProgressionStepAtom — v2.0 smart default", () => {
   it("seeds new step's qualityOverride with diatonic quality (not null)", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     store.set(progressionStepsAtom, []);
     store.set(addProgressionStepAtom);
     const steps = store.get(progressionStepsAtom);
@@ -435,7 +435,7 @@ describe("addProgressionStepAtom — v2.0 smart default", () => {
   it("uses the next ascending in-key degree for subsequent steps", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     store.set(progressionStepsAtom, [
       {
         id: "1",
@@ -457,7 +457,7 @@ describe("updateProgressionStepDegreeAtom — v2.0 independence", () => {
   it("does NOT reset qualityOverride when the degree changes", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     store.set(progressionStepsAtom, [
       {
         id: "1",
