@@ -150,12 +150,18 @@ importers:
       '@tonaljs/key':
         specifier: ^4.11.2
         version: 4.11.2
+      '@tonaljs/mode':
+        specifier: ^4.9.2
+        version: 4.9.2
       '@tonaljs/note':
         specifier: ^4.12.1
         version: 4.12.1
       '@tonaljs/pcset':
         specifier: ^4.10.1
         version: 4.10.1
+      '@tonaljs/roman-numeral':
+        specifier: ^4.9.1
+        version: 4.9.1
       '@tonaljs/scale':
         specifier: ^4.13.4
         version: 4.13.4
@@ -1170,6 +1176,9 @@ packages:
 
   '@tonaljs/midi@4.10.2':
     resolution: {integrity: sha512-MPamXhEwPL7L1udLfYMm3Ft8mLYtHr62Zi2w5zYHM2P7YwIvNoiX0+dvAN5is1Wvq4iVRa8AjFHerjOW/SZhGg==}
+
+  '@tonaljs/mode@4.9.2':
+    resolution: {integrity: sha512-Il48fWX9SnGMzwNFVbizkWkr/SJ+aCIIHhjWfSf1agrQAoq81536qBXEyEyvia6aqEXC4OaXAQ5rSoBcmQRj1Q==}
 
   '@tonaljs/note@4.12.1':
     resolution: {integrity: sha512-yh6cnhu21bUb0VuIQWxObSbWBVp2cHIkJj4zZ4qsNOW4jSqn74+wHpSbOTDF8q+2hl6upz7TtBRavtqwPtLUCQ==}
@@ -4432,6 +4441,15 @@ snapshots:
   '@tonaljs/midi@4.10.2':
     dependencies:
       '@tonaljs/pitch-note': 6.1.0
+
+  '@tonaljs/mode@4.9.2':
+    dependencies:
+      '@tonaljs/collection': 4.9.0
+      '@tonaljs/interval': 5.1.0
+      '@tonaljs/pcset': 4.10.1
+      '@tonaljs/pitch-distance': 5.0.5
+      '@tonaljs/pitch-note': 6.1.0
+      '@tonaljs/scale-type': 4.9.2
 
   '@tonaljs/note@4.12.1':
     dependencies:

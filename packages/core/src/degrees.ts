@@ -1,4 +1,5 @@
 import { SCALES } from "./theoryCatalog";
+import { getModeTriads } from "./lib/tonal";
 import * as Key from "@tonaljs/key";
 
 /**
@@ -50,17 +51,37 @@ function buildDegreesFromIntervals(intervals: number[]): Record<number, string> 
   return result;
 }
 
-// Pre-computed degree maps for the canonical 7-note scales.
-// Mirrors what buildDegreesFromIntervals returns; kept as a fast-path
-// and as documentation of expected output for the named modes.
+/**
+ * Diatonic-degree maps per scale. Built by deriving Tonal triads for
+ * the 7 standard modes; Harmonic Minor is kept hand-coded because
+ * Tonal's harmonic-minor model uses different naming conventions and
+ * FretFlow's table has been stable.
+ */
+function buildModeDegrees(scaleName: string): Record<number, string> {
+  const triads = getModeTriads(scaleName);
+  const semitones = SCALES[scaleName];
+  if (!triads || !semitones || triads.length !== semitones.length) {
+    throw new Error(
+      `buildModeDegrees: ${scaleName} not derivable from Tonal (triads=${triads?.length}, semitones=${semitones?.length})`,
+    );
+  }
+  const result: Record<number, string> = {};
+  for (let i = 0; i < semitones.length; i++) {
+    result[semitones[i]] = triads[i];
+  }
+  return result;
+}
+
 const MODE_DEGREES: Record<string, Record<number, string>> = {
-  Major:           { 0: "I",  2: "ii", 4: "iii",  5: "IV", 7: "V", 9: "vi", 11: "vii°" },
-  Lydian:          { 0: "I",  2: "II", 4: "iii",  6: "iv°", 7: "V", 9: "vi", 11: "vii" },
-  Mixolydian:      { 0: "I",  2: "ii", 4: "iii°", 5: "IV", 7: "v", 9: "vi", 10: "VII" },
-  "Natural Minor": { 0: "i",  2: "ii°", 3: "III", 5: "iv", 7: "v", 8: "VI", 10: "VII" },
-  Dorian:          { 0: "i",  2: "ii", 3: "III",  5: "IV", 7: "v", 9: "vi°", 10: "VII" },
-  Phrygian:        { 0: "i",  1: "II", 3: "III",  5: "iv", 7: "v°", 8: "VI", 10: "vii" },
-  Locrian:         { 0: "i°", 1: "II", 3: "iii",  5: "iv", 6: "V", 8: "VI", 10: "vii" },
+  Major:           buildModeDegrees("Major"),
+  Lydian:          buildModeDegrees("Lydian"),
+  Mixolydian:      buildModeDegrees("Mixolydian"),
+  "Natural Minor": buildModeDegrees("Natural Minor"),
+  Dorian:          buildModeDegrees("Dorian"),
+  Phrygian:        buildModeDegrees("Phrygian"),
+  Locrian:         buildModeDegrees("Locrian"),
+  // Harmonic Minor stays hand-coded — Tonal models it with different
+  // suffix conventions and the table below has been stable.
   "Harmonic Minor":{ 0: "i",  2: "ii°", 3: "III+", 5: "iv", 7: "V", 8: "VI", 11: "vii°" },
 };
 

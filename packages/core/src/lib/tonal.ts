@@ -10,6 +10,7 @@ import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
 import * as Chord from "@tonaljs/chord";
+import * as Mode from "@tonaljs/mode";
 
 /**
  * App chord-quality name (e.g., "Major Triad") → Tonal chord symbol suffix
@@ -166,6 +167,72 @@ export function getScaleSemitonesFromTonal(scaleName: string): number[] {
  *
  * Returns an empty array if the chord symbol isn't recognized.
  */
+/**
+ * Roman numerals for scale-degrees 1..7. Used to translate Tonal's
+ * triad-suffix output (e.g. ["", "m", "m", "", "", "m", "dim"]) into
+ * FretFlow's roman-numeral degree-quality strings (e.g. "I", "ii", "vii°").
+ */
+const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
+
+/**
+ * Translate one Tonal triad-suffix into a FretFlow roman-numeral degree string.
+ *
+ * Tonal's `Mode.triads(name)` returns suffixes:
+ *   "" = major, "m" = minor, "dim" = diminished, "aug" = augmented.
+ *
+ * FretFlow's degree-string contract:
+ *   Major → uppercase roman ("I"),
+ *   Minor → lowercase roman ("ii"),
+ *   Diminished → lowercase + "°" ("vii°"),
+ *   Augmented → uppercase + "+" ("III+").
+ */
+function triadSuffixToRoman(suffix: string, step: number): string {
+  const roman = ROMAN_NUMERALS[step];
+  switch (suffix) {
+    case "":
+      return roman;
+    case "m":
+      return roman.toLowerCase();
+    case "dim":
+      return `${roman.toLowerCase()}°`;
+    case "aug":
+      return `${roman}+`;
+    default:
+      throw new Error(`triadSuffixToRoman: unknown suffix "${suffix}"`);
+  }
+}
+
+/**
+ * Returns the diatonic triad qualities of a mode as Roman-numeral
+ * strings (e.g. ["i", "ii°", "III+", ...]). Tonal models the 7 standard
+ * diatonic modes (ionian/major, dorian, phrygian, lydian, mixolydian,
+ * aeolian/minor, locrian). Other FretFlow scales (pentatonics, blues,
+ * harmonic/melodic minor and their modes) return null and must use
+ * FretFlow's hand-coded tables.
+ *
+ * Tonal's `Mode.triads(name)` returns chord-quality suffixes
+ * (`["", "m", "m", "", "", "m", "dim"]` for ionian), not romans —
+ * we translate to FretFlow's format via {@link triadSuffixToRoman}.
+ */
+export function getModeTriads(modeName: string): readonly string[] | null {
+  const tonalName = scaleNameToTonal(modeName);
+  if (!tonalName) return null;
+  const mode = Mode.get(tonalName);
+  if (mode.empty) return null;
+  let suffixes: string[];
+  try {
+    suffixes = Mode.triads(tonalName);
+  } catch {
+    return null;
+  }
+  if (!suffixes || suffixes.length !== 7) return null;
+  try {
+    return suffixes.map((s, i) => triadSuffixToRoman(s, i));
+  } catch {
+    return null;
+  }
+}
+
 export function getChordSemitonesFromTonal(chordSymbol: string): number[] {
   const tonalChord = Chord.get(`C${chordSymbol}`);
   if (tonalChord.empty) return [];

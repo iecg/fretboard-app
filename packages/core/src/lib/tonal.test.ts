@@ -7,6 +7,7 @@ import {
   normalizeToSharps,
   getScaleSemitonesFromTonal,
   getChordSemitonesFromTonal,
+  getModeTriads,
 } from "./tonal";
 
 describe("chord-name adapter", () => {
@@ -128,5 +129,26 @@ describe("getChordSemitonesFromTonal", () => {
   });
   it("returns empty array for unknown symbol", () => {
     expect(getChordSemitonesFromTonal("ZZZ")).toEqual([]);
+  });
+});
+
+describe("getModeTriads", () => {
+  it("returns Major mode triads", () => {
+    expect(getModeTriads("Major")).toEqual(["I", "ii", "iii", "IV", "V", "vi", "vii°"]);
+  });
+  it("returns Natural Minor triads", () => {
+    expect(getModeTriads("Natural Minor")).toEqual(["i", "ii°", "III", "iv", "v", "VI", "VII"]);
+  });
+  it("returns Dorian triads", () => {
+    expect(getModeTriads("Dorian")).toEqual(["i", "ii", "III", "IV", "v", "vi°", "VII"]);
+  });
+  it("returns null for Pentatonic", () => {
+    expect(getModeTriads("Major Pentatonic")).toBeNull();
+  });
+  it("returns null for Harmonic Minor", () => {
+    expect(getModeTriads("Harmonic Minor")).toBeNull();
+  });
+  it("returns null for unknown scale", () => {
+    expect(getModeTriads("Bogus")).toBeNull();
   });
 });
