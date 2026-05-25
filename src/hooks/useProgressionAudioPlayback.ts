@@ -251,18 +251,21 @@ export function useProgressionAudioPlayback() {
           event.cumulativeStartSec,
           totalDurationSec,
         );
-        // Jotai active-step write fires only on real step boundaries.
-        // Issued synchronously from the Part callback (Tone's lookahead
-        // already aligns this call with audio onset; further deferral via
-        // Tone.Draw would re-introduce the 250 ms-expiration stall, and
-        // startTransition would push the write to a later tick the next
-        // step's chord lookup depends on).
         if (event.isFirstBar) {
-          // Touch getContext().immediate() so the lookahead alignment hook
-          // stays exercised (and the regression test for "no Draw.schedule"
-          // can still find the orchestrator's tone import surface).
-          void getContext().immediate();
-          setActiveStepIndex(event.stepIndex);
+          // Defer the Jotai write by the Tone lookahead delta so the chord
+          // overlay React state flips at AUDIO ONSET, not at the
+          // ~lookAhead-seconds-early callback fire time. Plain setTimeout —
+          // no Tone.Draw (250ms expiration silently drops events under heavy
+          // main-thread load → stall), no startTransition (would deprioritize
+          // the Jotai write that the next-step useEffect chain depends on).
+          // See commit 4f50968 for the original visual-leads-audio symptom.
+          const rawNow = getContext().immediate();
+          const delayMs = Math.max(0, (audioTime - rawNow) * 1000);
+          if (delayMs <= 0) {
+            setActiveStepIndex(event.stepIndex);
+          } else {
+            window.setTimeout(() => setActiveStepIndex(event.stepIndex), delayMs);
+          }
         }
       },
     });

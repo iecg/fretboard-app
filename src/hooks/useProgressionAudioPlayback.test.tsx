@@ -233,9 +233,13 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(onsets).toBeDefined();
     expect(store.get(chordRootAtom)).toBe("C");
 
-    // Fire chord-onset event for step 1 (G).
+    // Fire chord-onset event for step 1 (G). Pass audioTime = "now" so the
+    // production code's lookahead delta `audioTime - immediate()` collapses
+    // to 0 and the Jotai write isn't deferred behind fake timers. This
+    // mirrors what Tone does in real playback when context.currentTime
+    // catches up to the scheduled event's time.
     act(() => {
-      onsets!.callback(onsets!.events[1][0] as number, onsets!.events[1][1]);
+      onsets!.callback(toneMocks.contextNowRef.fn(), onsets!.events[1][1]);
     });
     expect(store.get(chordRootAtom)).toBe("G");
   });
