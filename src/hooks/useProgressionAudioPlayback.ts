@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom, useStore } from "jotai";
+import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 import { getNoteFrequency } from "@fretflow/core";
 import { isMutedAtom } from "../store/audioAtoms";
 import {
@@ -95,6 +96,7 @@ export function useProgressionAudioPlayback() {
   const setActiveStepIndex = useSetAtom(setProgressionActiveStepIndexAtom);
   const setPlaying = useSetAtom(setProgressionPlayingAtom);
   const setLoading = useSetAtom(progressionPlaybackLoadingAtom);
+  const store = useStore();
 
   const primsRef = useRef<PlaybackPrimitives | null>(null);
   const buildKey = useMemo(
@@ -150,6 +152,7 @@ export function useProgressionAudioPlayback() {
 
   useEffect(() => {
     const tearDown = () => {
+      stopVisualClock();
       engine?.disposeAll(primsRef.current);
       primsRef.current = null;
       if (engine) engine.silenceProgressionBus();
@@ -159,6 +162,7 @@ export function useProgressionAudioPlayback() {
 
     if (blocked || muted) { tearDown(); return; }
     if (!playing) { tearDown(); engine?.pauseTimeline(); return; }
+    startVisualClock(store);
 
     const gen = ++genRef.current;
     setLoading(true);
@@ -296,6 +300,7 @@ export function useProgressionAudioPlayback() {
 
     const genRefSnapshot = genRef;
     return () => {
+      stopVisualClock();
       // Bumping genRef in cleanup IS the point — it invalidates any still-
       // pending `getEngine().then(...)` so it bails instead of building Parts
       // after teardown. The snapshot variable above captures the ref object
@@ -314,6 +319,7 @@ export function useProgressionAudioPlayback() {
     setActiveStepIndex,
     setPlaying,
     setLoading,
+    store,
   ]);
 
   useEffect(() => {
