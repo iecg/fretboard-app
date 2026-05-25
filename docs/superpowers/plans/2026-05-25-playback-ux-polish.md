@@ -15,7 +15,7 @@
 | **Style switches** | Chord/Bass/Drum pattern, Drum variations, Genre style, Chord instrument | **Allowed** (rebuild from bar 0 today; useful for "audition this drum pattern" — acceptable for now) |
 | **Live updates** | BPM, Swing, Time signature, Layer mutes, Loop toggle (Phase P5) | **Allowed, smooth** (no rebuild) |
 
-**Deferred (feasibility noted, not in this plan):** A future enhancement could replace the rebuild-from-bar-0 path with a rebuild-then-resume-at-next-bar path via `Tone.Part.start(time, offset)`, where `time = ceil(Transport.seconds / barLen) * barLen` and `offset` is the matching offset into the new event timeline. Confirmed feasible with existing Tone APIs (~50–100 lines); not adopted here per scope decision.
+**On the "restart from bar 0" behavior:** Tone has no out-of-the-box "swap event list mid-play, keep position" — the closest is `Part.clear() + Part.add(...)` per event, but the timing math (what's in the past vs. future relative to now) is exactly the work we're trying to avoid. For style switches, current restart-from-bar-0 is the simplest answer and the user has accepted that scope. Loop toggle is the exception — `Tone.Part.loop = boolean` IS a live setter (Phase P5), so we can make it transparent without any bar math.
 
 **Tech Stack:** React 19 + Jotai atoms (`useAtomValue`, `useSetAtom`), Tone.js v15 (`Tone.Draw`, `Tone.Part`, `Transport`), lucide-react icons, vitest + jsdom.
 
@@ -223,25 +223,36 @@ git add src/components/ProgressionTrack/ProgressionTrack.tsx src/components/Prog
 git commit -m "fix(progression-track): ignore timeline-block clicks while playing"
 ```
 
-### Task P1-T3: Disable destructive edit controls in SongControls while playing
+### Task P1-T3: Disable structural-edit controls in SongControls while playing
 
 **Files:**
 - Modify: `src/components/SongControls/SongControls.tsx`
 - Test: `src/components/SongControls/SongControls.test.tsx`
 
-The targets in `SongControls.tsx` (locations from current grep):
-- Line 286: Move-left button
-- Line 295: Move-right button
-- Line 304: Duplicate button
-- Line 317: Delete button
-- The editor-grid (around line 382): DegreeGrid cells + Quality select + Duration stepper
+The lock list (everything that mutates step content or the diatonic context — anything that would change WHICH chords play):
+
+| Control | Location | Atom it mutates |
+|---|---|---|
+| Move-left button | `SongControls.tsx:286` | step order |
+| Move-right button | `SongControls.tsx:295` | step order |
+| Duplicate button | `SongControls.tsx:304` | step count |
+| Delete button | `SongControls.tsx:317` | step count |
+| Add-chord button | SongControls header | step count |
+| DegreeGrid cells | editor-grid (~line 382) | `steps[].root` |
+| Quality select | editor-grid | `steps[].quality` |
+| Duration stepper | editor-grid | `steps[].duration` |
+| Preset select | progression card header | full `steps` replacement |
+| Key Root select | KEY InspectorCard | scale root → `remapProgressionStepsForScale` |
+| Scale select | KEY InspectorCard | scale name → `remapProgressionStepsForScale` |
+
+**Explicitly NOT locked (style switches — allowed mid-play despite rebuild):** Chord pattern, Bass pattern, Drum pattern, Drum variations, Genre style, Chord instrument. These also live in `buildKey` and will still cause a brief restart on change — that's accepted scope.
 
 - [ ] **Step 1: Write the failing test**
 
 Add to `src/components/SongControls/SongControls.test.tsx`:
 
 ```tsx
-it("disables step-edit controls while progression is playing", () => {
+it("disables structural-edit controls while progression is playing", () => {
   const store = createStore();
   store.set(progressionStepsAtom, [
     { id: "a", root: "C", quality: "maj", duration: "1" },
@@ -256,12 +267,41 @@ it("disables step-edit controls while progression is playing", () => {
     </Provider>,
   );
 
+  // Step-mutating controls
   expect(screen.getByRole("button", { name: /move left/i })).toBeDisabled();
   expect(screen.getByRole("button", { name: /move right/i })).toBeDisabled();
   expect(screen.getByRole("button", { name: /duplicate/i })).toBeDisabled();
   expect(screen.getByRole("button", { name: /delete/i })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /add chord/i })).toBeDisabled();
+
+  // Diatonic-context selects (Preset / Key Root / Scale) — locked because
+  // they trigger a rebuild via remapProgressionStepsForScale / preset load.
+  expect(screen.getByLabelText(/preset/i)).toBeDisabled();
+  expect(screen.getByLabelText(/key root|root note/i)).toBeDisabled();
+  expect(screen.getByLabelText(/scale/i)).toBeDisabled();
+});
+
+it("keeps style-switch controls enabled while progression is playing", () => {
+  const store = createStore();
+  store.set(progressionStepsAtom, [{ id: "a", root: "C", quality: "maj", duration: "1" }]);
+  store.set(progressionPlayingStateAtom, true);
+
+  render(
+    <Provider store={store}>
+      <SongControls />
+    </Provider>,
+  );
+
+  // Style switches — rebuild today but useful mid-jam, intentionally allowed.
+  expect(screen.getByLabelText(/chord pattern|strum pattern/i)).toBeEnabled();
+  expect(screen.getByLabelText(/bass pattern/i)).toBeEnabled();
+  expect(screen.getByLabelText(/drum pattern/i)).toBeEnabled();
+  expect(screen.getByLabelText(/genre/i)).toBeEnabled();
+  expect(screen.getByLabelText(/chord instrument/i)).toBeEnabled();
 });
 ```
+
+(If specific `aria-label` strings differ in your codebase, adjust the regexes during execution — keep the spirit: locked group is Preset/Key/Scale + step-mutators; allowed group is the four style/instrument controls.)
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -279,13 +319,17 @@ const progressionPlaying = useAtomValue(progressionPlayingStateAtom);
 const editsLocked = progressionPlaying;
 ```
 
-Then OR `editsLocked` into the four button `disabled` predicates and any select / stepper / DegreeGrid that mutates steps. For example the Move-left button becomes:
+Apply `editsLocked` to every control in the "locked" list above:
 
-```tsx
-disabled={!activeStep || activeProgressionStepIndex === 0 || editsLocked}
-```
+- Move-left button: `disabled={!activeStep || activeProgressionStepIndex === 0 || editsLocked}`
+- Move-right button: `disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1 || editsLocked}`
+- Duplicate / Delete / Add-chord buttons: OR `editsLocked` into their existing `disabled` predicate.
+- DegreeGrid: pass `disabled={editsLocked}` (extend the component's prop API if it doesn't accept one — verify during execution).
+- Quality select + Duration stepper: pass `disabled={editsLocked}`.
+- Preset select: pass `disabled={editsLocked}`.
+- Key Root select + Scale select (in the KEY InspectorCard): pass `disabled={editsLocked}`.
 
-And for the DegreeGrid + Quality select + Duration stepper inside the editor grid, pass `disabled={editsLocked}` (or `readOnly` for the inputs that don't support `disabled` cleanly — verify per control during execution).
+Do **NOT** apply `editsLocked` to: Chord pattern, Bass pattern, Drum pattern, Drum variations, Genre style, Chord instrument — these stay live per scope decision.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -817,6 +861,188 @@ Expected: PASS.
 ```bash
 git add src/components/SongControls/SongControls.tsx src/components/SongControls/SongControls.test.tsx
 git commit -m "perf(audio): pre-warm AudioContext when SongControls mounts"
+```
+
+---
+
+## Phase P5 — Transparent Loop Toggle
+
+Today the Loop button is in `buildKey` (commit `b6e76429`), so flipping it mid-play disposes everything and restarts from bar 0 — bad UX, as user noted. `Tone.Part.loop` is a live boolean setter; the only thing that doesn't auto-rebalance is the end-event lifecycle (`Transport.scheduleOnce(...)` that flips `playing=false` at the natural end of a non-looped pass). We can handle that with one live effect: when loop flips, mutate every Part's `.loop` and reconcile the end-event.
+
+**Semantics user picked:**
+- **OFF → ON mid-play:** Cancel any pending end-event; set `part.loop = true` on all four chord/strum/bass/drum Parts. Current iteration plays to its end, then wraps. Transparent.
+- **ON → OFF mid-play:** Set `part.loop = false` on all four Parts. Schedule a new end-event at "natural end of current iteration" = `(barLenSec * totalBars) - (Transport.seconds % (barLenSec * totalBars))` seconds from now. Playback continues to the loop's natural end, then stops cleanly.
+
+### Task P5-T1: Expose `setLoop` on `ProgressionPartHandle` and remove `loopEnabled` from `buildKey`
+
+**Files:**
+- Modify: `src/progressions/audio/progressionPart.ts` (verify `setLoop` exists with the right signature — per the summary, `setLoop: (loop: boolean, loopEnd?: number) => void` already does)
+- Modify: `src/hooks/useProgressionAudioPlayback.ts`
+- Test: `src/hooks/useProgressionAudioPlayback.test.tsx`
+
+- [ ] **Step 1: Verify `setLoop` signature**
+
+Run: `grep -n "setLoop" src/progressions/audio/progressionPart.ts`
+Expected: `setLoop: (loop: boolean, loopEnd?: number) => void;` already on the handle (per session summary). If it's not, add it — the implementation is just `part.loop = loop; if (loopEnd !== undefined) part.loopEnd = loopEnd;`.
+
+- [ ] **Step 2: Write the failing test**
+
+Add to `src/hooks/useProgressionAudioPlayback.test.tsx`:
+
+```tsx
+it("loop toggle is a LIVE update (no rebuild) while playing", () => {
+  const store = createStore();
+  store.set(progressionStepsAtom, [{ id: "a", root: "C", quality: "maj", duration: "1" }]);
+  store.set(progressionLoopEnabledAtom, false);
+  store.set(progressionPlayingStateAtom, true);
+
+  renderHook(() => useProgressionAudioPlayback(), {
+    wrapper: ({ children }) => <Provider store={store}>{children}</Provider>,
+  });
+
+  const partsBefore = capturedPartHandles.slice();
+  expect(partsBefore.length).toBe(4); // chord/strum/bass/drum
+
+  // Flip loop ON mid-play.
+  act(() => store.set(progressionLoopEnabledAtom, true));
+
+  // No new Parts created — same handles.
+  expect(capturedPartHandles.length).toBe(4);
+  expect(capturedPartHandles[0]).toBe(partsBefore[0]);
+
+  // setLoop was called with true on every Part.
+  partsBefore.forEach((p) => {
+    expect(p.setLoop).toHaveBeenCalledWith(true, expect.any(Number));
+  });
+});
+
+it("loop OFF → ON cancels the pending end-event", () => {
+  // ... set loop=false initial, playing=true → end-event scheduled ...
+  // Flip to loop=true; assert getTransport().clear was called with the end-event id.
+});
+
+it("loop ON → OFF schedules a new end-event at the natural loop end", () => {
+  // ... set loop=true initial, playing=true → no end-event ...
+  // Flip to loop=false; assert Transport.scheduleOnce was called with
+  // a positive remaining-time string like "+N.NNN".
+});
+```
+
+(`capturedPartHandles` — wherever the existing test file captures handles from the `createProgressionPart` mock. Mirror that pattern.)
+
+- [ ] **Step 3: Run tests to verify they fail**
+
+Run: `pnpm vitest run src/hooks/useProgressionAudioPlayback.test.tsx -t "loop"`
+Expected: FAIL (Parts are still being recreated on loop toggle).
+
+- [ ] **Step 4: Implement — remove `loopEnabled` from `buildKey`**
+
+In `src/hooks/useProgressionAudioPlayback.ts`:
+
+(a) Drop `loopEnabled` from the `buildKey` `useMemo`:
+
+```ts
+const buildKey = useMemo(
+  () =>
+    JSON.stringify({
+      steps: steps.map((s) => ({
+        root: s.root,
+        quality: s.quality,
+        dur: s.duration,
+        unavailable: s.unavailable ?? false,
+      })),
+      chordPatternId,
+      bassPatternId,
+      drumPatternId,
+      drumVariations,
+    }),
+  [steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
+);
+```
+
+(`loopEnabled` stays in `buildInputsRef` because the initial-build still needs to know whether to schedule the end-event.)
+
+- [ ] **Step 5: Implement — add Effect 7: live loop toggle**
+
+After Effect 6 (`// --- Effect 6: live layer-gain toggles ---`), add:
+
+```ts
+// --- Effect 7: live loop toggle ---
+// Tone.Part.loop is a live setter — flipping it mid-play is transparent.
+// The only thing that doesn't auto-rebalance is the end-event (a
+// Transport.scheduleOnce that flips playing=false at the natural end of
+// a non-looped pass). Manage it explicitly here.
+useEffect(() => {
+  const prims = primsRef.current;
+  if (!prims) return;
+  const inputs = buildInputsRef.current;
+  const totalDurationSec = /* derive from inputs.steps + inputs.tempo + inputs.beatsPerBar — extract helper */;
+
+  // 1. Flip every Part to the new loop state.
+  prims.parts.forEach((p) => p.setLoop(loopEnabled, totalDurationSec));
+
+  // 2. Reconcile the end-event.
+  if (loopEnabled) {
+    // OFF → ON: cancel any pending stop. Current iteration wraps naturally.
+    if (prims.endEventId !== null) {
+      getTransport().clear(prims.endEventId);
+      prims.endEventId = null;
+    }
+  } else {
+    // ON → OFF: schedule a stop at the natural end of the current iteration.
+    if (prims.endEventId === null) {
+      const transportSec = (getTransport() as unknown as { seconds: number }).seconds;
+      const elapsedInLoop = transportSec % totalDurationSec;
+      const remaining = totalDurationSec - elapsedInLoop;
+      prims.endEventId = getTransport().scheduleOnce(() => {
+        setPlaying(false);
+      }, `+${remaining + SCHEDULE_LEAD_SECONDS}`);
+    }
+  }
+}, [loopEnabled, setPlaying]);
+```
+
+(For `totalDurationSec` — extract a tiny pure helper in `buildAllLayers.ts` so the orchestrator and Effect 7 share the same formula. Or compute it from `inputs.steps.reduce((sum, s) => sum + parseDuration(s.duration), 0) * beatsPerBar * 60 / tempo`. Pick one during execution.)
+
+- [ ] **Step 6: Run tests to verify they pass**
+
+Run: `pnpm vitest run src/hooks/useProgressionAudioPlayback.test.tsx`
+Expected: PASS (all loop-related cases plus the existing suite).
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add src/progressions/audio/progressionPart.ts src/hooks/useProgressionAudioPlayback.ts src/hooks/useProgressionAudioPlayback.test.tsx
+git commit -m "feat(audio): transparent loop toggle via Tone.Part.loop setter"
+```
+
+### Task P5-T2: Re-enable the Loop button mid-play
+
+**Files:**
+- Modify: `src/components/TransportBar/TransportBar.tsx`
+- Test: `src/components/TransportBar/TransportBar.test.tsx`
+
+The Loop button currently uses `disabled={!canPlay}` — that's already correct (no `progressionPlaying` clause was added in P1-T1). So this is just a regression-guard test to lock in the policy.
+
+- [ ] **Step 1: Add the regression-guard test**
+
+```tsx
+it("keeps the loop toggle enabled while playing (transparent live update)", () => {
+  renderWith(true); // playing=true
+  expect(screen.getByLabelText(/loop progression/i)).toBeEnabled();
+});
+```
+
+- [ ] **Step 2: Run test to verify it passes**
+
+Run: `pnpm vitest run src/components/TransportBar/TransportBar.test.tsx -t "loop toggle enabled while playing"`
+Expected: PASS (no implementation change — just lock the contract).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/components/TransportBar/TransportBar.test.tsx
+git commit -m "test(transport): lock loop-toggle-enabled-while-playing contract"
 ```
 
 ---
