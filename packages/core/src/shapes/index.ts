@@ -18,4 +18,3 @@ export type {
 export {
   generateVoicings, openStringMidi,
 } from "./voicings";
-export { getCachedVoicings, prewarmVoicings, clearVoicingCache } from "./voicingCache";
