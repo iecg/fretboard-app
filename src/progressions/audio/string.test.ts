@@ -13,7 +13,7 @@ vi.mock("tone", async () => {
   return {
     PluckSynth: t.spies.ctorSpy,
     gainToDb: (v: number) => 20 * Math.log10(Math.max(1e-6, v)),
-    now: () => 0,
+    now: () => t.now(),
   };
 });
 
@@ -79,41 +79,44 @@ describe("pluckString — Tone.PluckSynth backend", () => {
     expect(t.spies.ctorSpy).not.toHaveBeenCalled();
   });
 
-  it("cancel() defers dispose to let the comb-filter ring out", async () => {
-    vi.useFakeTimers();
-    try {
-      const t = await tone;
-      const h = pluckString(
-        {} as AudioNode,
-        220,
-        0,
-      );
-      h.cancel();
-      // PluckSynth has no triggerRelease — the comb filter decays naturally.
-      // Dispose should be deferred so the ring-out isn't truncated.
-      expect(t.spies.dispose).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(1100); // PluckSynth release default is ~1s
-      expect(t.spies.dispose).toHaveBeenCalledTimes(1);
-    } finally {
-      vi.useRealTimers();
+  it("pool reuses PluckSynth instances across non-overlapping plucks against the same dest", async () => {
+    const t = await tone;
+    const dest = {} as AudioNode;
+
+    // 5 plucks at well-separated times, all against the same dest.
+    // RELEASE_TAIL is ~1.1s; spacing plucks 5s apart guarantees the prior
+    // voice's busy window has passed, so the pool can reuse the same entry.
+    // We must advance Tone.now() between plucks so the pool's
+    // `busyUntil <= now` check sees prior voices as available.
+    for (let i = 0; i < 5; i++) {
+      t.setNow(i * 5);
+      pluckString(dest, 220, i * 5);
     }
+
+    // triggerAttack fires 5 times (once per pluck) regardless of pooling.
+    expect(t.spies.triggerAttack).toHaveBeenCalledTimes(5);
+    // But the constructor should fire FAR fewer than 5 times — ideally 1
+    // (single reused voice). Strict bound: less than 5 = the pool worked.
+    expect(t.spies.ctorSpy.mock.calls.length).toBeLessThan(5);
   });
 
-  it("cancel() is idempotent", async () => {
-    vi.useFakeTimers();
-    try {
-      const t = await tone;
-      const h = pluckString(
-        {} as AudioNode,
-        220,
-        0,
-      );
-      h.cancel();
-      h.cancel();
-      vi.advanceTimersByTime(1100);
-      expect(t.spies.dispose).toHaveBeenCalledTimes(1);
-    } finally {
-      vi.useRealTimers();
-    }
+  it("cancel() releases the voice back to the pool (no dispose at cancel time)", async () => {
+    const t = await tone;
+    const h = pluckString({} as AudioNode, 220, 0);
+    h.cancel();
+    // With pooling, cancel does NOT call synth.dispose() — the voice stays
+    // leased until busyUntil passes, then becomes available for reuse.
+    expect(t.spies.dispose).not.toHaveBeenCalled();
+  });
+
+  it("cancel() is idempotent (second call is a no-op)", async () => {
+    const t = await tone;
+    const h = pluckString({} as AudioNode, 220, 0);
+    // First cancel: returns cleanly
+    expect(() => h.cancel()).not.toThrow();
+    // Second cancel: also returns cleanly, no exception
+    expect(() => h.cancel()).not.toThrow();
+    // No dispose was called (voice is pooled).
+    expect(t.spies.dispose).not.toHaveBeenCalled();
   });
 });
