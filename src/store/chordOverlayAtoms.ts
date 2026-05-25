@@ -9,11 +9,13 @@ import {
   getNoteDisplay,
   formatAccidental,
   generateVoicings,
+  getFretboardNotes,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
+  ShapePolygon,
   Voicing,
   VoicingType,
 } from "@fretflow/core";
@@ -120,38 +122,26 @@ function fitsStringSpecificRangesForAnyInstance(
 }
 
 /**
- * Count how many fretted notes in a voicing fall outside the diagonal bounds
- * of the closest shape polygon. Uses the same polygon-vertex bounds as
- * `selectFullChordMatchesForCagedPosition` (≤2 outside tolerance).
+ * True when a single `"string-fret"` position key falls within any
+ * non-truncated polygon's diagonal vertex bounds.
  */
-function countOutsidePolygons(
-  positionKeys: readonly string[],
+function isInAnyPolygon(
+  positionKey: string,
   polygons: readonly ShapePolygon[],
-): number {
-  // Per-polygon per-string bounds from vertices
-  let minOutside = Number.POSITIVE_INFINITY;
-  for (const poly of polygons) {
-    if (poly.truncated) continue;
-    let outside = 0;
-    for (const key of positionKeys) {
-      const [sStr, fStr] = key.split("-");
-      const s = Number(sStr);
-      const f = Number(fStr);
-      if (f === 0) continue;
+): boolean {
+  const [sStr, fStr] = positionKey.split("-");
+  const s = Number(sStr);
+  const f = Number(fStr);
 
-      const leftFret = poly.vertices[s]?.fret;
-      const rightFret = poly.vertices[poly.vertices.length - 1 - s]?.fret;
-      if (leftFret === undefined || rightFret === undefined) {
-        outside++;
-        continue;
-      }
-      const lo = Math.min(leftFret, rightFret);
-      const hi = Math.max(leftFret, rightFret);
-      if (f < lo || f > hi) outside++;
-    }
-    if (outside < minOutside) minOutside = outside;
+  for (const poly of polygons) {
+    const leftFret = poly.vertices[s]?.fret;
+    const rightFret = poly.vertices[poly.vertices.length - 1 - s]?.fret;
+    if (leftFret === undefined || rightFret === undefined) continue;
+    const lo = Math.min(leftFret, rightFret);
+    const hi = Math.max(leftFret, rightFret);
+    if (f >= lo && f <= hi) return true;
   }
-  return minOutside;
+  return false;
 }
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
@@ -577,18 +567,34 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
   if (voicing === "off") return new Set<string>();
   if (get(chordOverlayHiddenAtom)) return new Set<string>();
   if (voicing === "full") {
-    const fullVoicings = get(voicingMatchesAtom);
+    const fullPositionKeys = get(voicingMatchesAtom).flatMap((v) => v.positionKeys);
     if (get(chordSnapToScaleAtom)) {
       const { shapePolygons } = get(shapeDataAtom);
       if (shapePolygons.length > 0) {
-        return new Set(
-          fullVoicings
-            .filter((v) => countOutsidePolygons(v.positionKeys, shapePolygons) <= 2)
-            .flatMap((v) => v.positionKeys),
-        );
+        // 1. Start with voicing positions inside the polygon
+        const result = new Set(fullPositionKeys.filter((k) => isInAnyPolygon(k, shapePolygons)));
+        // 2. Also add any chord-tone position inside the polygon,
+        //    so chord tones the CAGED voicing engine doesn't generate
+        //    (e.g. the 5th on the low E string for C Major) still light up.
+        const tones = get(chordTonesAtom);
+        if (tones.length > 0) {
+          const tuning = get(currentTuningAtom);
+          const layout = getFretboardNotes(tuning, 24);
+          for (let s = 0; s < tuning.length; s++) {
+            for (let f = 0; f <= 24; f++) {
+              if (tones.includes(layout[s][f])) {
+                const key = `${s}-${f}`;
+                if (isInAnyPolygon(key, shapePolygons)) {
+                  result.add(key);
+                }
+              }
+            }
+          }
+        }
+        return result;
       }
     }
-    return new Set(fullVoicings.flatMap((v) => v.positionKeys));
+    return new Set(fullPositionKeys);
   }
   // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.
   // Note highlights represent ALL close candidate positions across all strings, decoupled from the string-set filter.

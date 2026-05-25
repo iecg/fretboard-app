@@ -144,6 +144,8 @@ describe("Fretboard wiring", () => {
 
     const mediant = renderGMajorEPositionChord("B", "Minor Triad");
     expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
+    // Bm root at string 4 fret 14 is inside the remapped D-shape polygon
+    // (relative minor anchor for G Major maps E→D, so roots are at fret 2 and 14).
     expect(mediant.fullChordPositionKeys?.has("4-14")).toBe(true);
 
     const subdominant = renderGMajorEPositionChord("C", "Major Triad");
@@ -151,10 +153,11 @@ describe("Fretboard wiring", () => {
     expect(subdominant.fullChordPositionKeys?.has("4-15")).toBe(true);
   });
 
-  it("keeps exact full-chord notes outside the selected CAGED scale position when the voicing mostly overlaps", () => {
+  it("filters out full-chord notes outside the selected CAGED scale position when lock-to-scale is on", () => {
     const supertonic = renderGMajorEPositionChord("D#", "Minor Triad");
     expect(supertonic.fullChordVoicings?.some((voicing) => voicing.shape === "E")).toBe(true);
-    expect(supertonic.fullChordPositionKeys?.has("3-1")).toBe(true);
+    // D#m root at string 3 fret 1 is outside the E-shape's diagonal bounds at fret 3.
+    expect(supertonic.fullChordPositionKeys?.has("3-1")).toBe(false);
   });
 
   it("narrows full-chord voicings to the best-fitting shape in that fret position", () => {
