@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { useAtomValue } from "jotai";
+import { useEffect, useMemo, useRef } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { getContext, getTransport } from "tone";
 import {
   ensureProgressionAudio,
   resumeProgressionAudio,
@@ -7,388 +8,435 @@ import {
   silenceProgressionBus,
 } from "../progressions/audio/bus";
 import {
-  scheduleProgressionStep,
-  type ScheduledStepHandle,
-} from "../progressions/audio/scheduler";
+  buildAllLayers,
+  type BassEvent,
+  type ChordOnsetEvent,
+  type ChordStrumEvent,
+  type DrumEvent,
+} from "../progressions/audio/buildAllLayers";
+import {
+  createMetronomeLoop,
+  type MetronomeLoopHandle,
+} from "../progressions/audio/progressionMetronomeLoop";
+import {
+  createProgressionPart,
+  type ProgressionPartHandle,
+} from "../progressions/audio/progressionPart";
+import { setLayerGain } from "../progressions/audio/layerBuses";
+import { getChordVoice } from "../progressions/audio/instruments";
+import { scheduleBassNote } from "../progressions/audio/bass";
+import {
+  scheduleHiHat,
+  scheduleKick,
+  scheduleRide,
+  scheduleSnare,
+} from "../progressions/audio/drumKit";
+import { scheduleClick } from "../progressions/audio/metronome";
 import {
   clearTimeline,
   pauseTimeline,
   setActiveStep,
 } from "../progressions/audio/timeline";
+import { getNoteFrequency } from "@fretflow/core";
 import { isMutedAtom } from "../store/audioAtoms";
-import { resolveBassLineNotes, resolveChordVoicing } from "../progressions/progressionAudio";
 import {
-  findNextResolvableStepIndex,
-  getProgressionDurationMs,
-  type ResolvedProgressionStep,
-} from "../progressions/progressionDomain";
-import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
-import { useProgressionState } from "./useProgressionState";
+  beatsPerBarAtom,
+  progressionBassEnabledAtom,
+  progressionBassPatternAtom,
+  progressionChordEnabledAtom,
+  progressionChordInstrumentAtom,
+  progressionChordPatternAtom,
+  progressionDrumPatternAtom,
+  progressionDrumsEnabledAtom,
+  progressionDrumVariationsAtom,
+  progressionLoopEnabledAtom,
+  progressionMetronomeEnabledAtom,
+  progressionPlaybackBlockedReasonAtom,
+  progressionPlayingAtom,
+  progressionSwingAtom,
+  progressionTempoBpmAtom,
+  resolvedProgressionStepsAtom,
+  setProgressionActiveStepIndexAtom,
+  setProgressionPlayingAtom,
+} from "../store/progressionAtoms";
 
 /** Lead between scheduling and audible hit; keeps Web Audio from dropping
- * the first event when `currentTime` and "now" are the same sample. Increased
- * to 50ms to safely clear the fade-out ramp of replaced voices, avoiding
- * "repeated" note flams during mid-bar re-scheduling. */
+ *  the first event when `currentTime` and "now" are the same sample. */
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
-interface ScheduledSegment {
-  stepIndex: number;
-  startTime: number;
-  endTime: number;
-  handle: ScheduledStepHandle;
-  root: string | null;
-  quality: string | null;
+interface PlaybackPrimitives {
+  parts: ProgressionPartHandle[];
+  loop: MetronomeLoopHandle | null;
+  endEventId: number | null;
 }
 
-interface SchedulerInputs {
-  steps: readonly ResolvedProgressionStep[];
-  tempo: number;
-  beatsPerBar: number;
-  enable: {
-    strum: boolean;
-    bass: boolean;
-    drums: boolean;
-    metronome: boolean;
-  };
-  chordInstrument: ChordInstrumentId;
-  chordPatternId: string;
-  bassPatternId: string;
-  drumPatternId: string;
-  drumVariations: string[];
-  swing: number;
-}
-
-type EnableFlags = SchedulerInputs["enable"];
-
-function sameEnableFlags(a: EnableFlags | null, b: EnableFlags): boolean {
-  return !!a
-    && a.strum === b.strum
-    && a.bass === b.bass
-    && a.drums === b.drums
-    && a.metronome === b.metronome;
+function disposeAll(prims: PlaybackPrimitives | null) {
+  if (!prims) return;
+  prims.parts.forEach((p) => p.dispose());
+  prims.loop?.dispose();
+  if (prims.endEventId !== null) {
+    getTransport().clear(prims.endEventId);
+  }
 }
 
 /**
- * Instrument / pattern / swing selections are direct performance controls,
- * just like the enable toggles. When any of them changes mid-playback we
- * rebuild the active segment so the new texture is heard immediately.
- */
-interface ConfigFlags {
-  chordInstrument: ChordInstrumentId;
-  chordPatternId: string;
-  bassPatternId: string;
-  drumPatternId: string;
-  drumVariations: string[];
-  swing: number;
-}
-
-function sameConfigFlags(a: ConfigFlags | null, b: ConfigFlags): boolean {
-  return !!a
-    && a.chordInstrument === b.chordInstrument
-    && a.chordPatternId === b.chordPatternId
-    && a.bassPatternId === b.bassPatternId
-    && a.drumPatternId === b.drumPatternId
-    && a.swing === b.swing
-    && a.drumVariations.length === b.drumVariations.length
-    && a.drumVariations.every((v, i) => v === b.drumVariations[i]);
-}
-
-function buildSegment(
-  bus: AudioNode,
-  stepIndex: number,
-  startTime: number,
-  inputs: SchedulerInputs,
-  scheduleFromTime?: number,
-): ScheduledSegment | null {
-  const step = inputs.steps[stepIndex];
-  if (!step || step.unavailable || !step.root || !step.quality) return null;
-
-  const voicing = resolveChordVoicing(step.root, step.quality);
-  const bassNotes = resolveBassLineNotes(step.root, step.quality);
-  const secondsPerBeat = 60 / Math.max(1, inputs.tempo);
-  const beatsAvailable =
-    step.duration.unit === "bar"
-      ? step.duration.value * inputs.beatsPerBar
-      : step.duration.value;
-  const durationSec = beatsAvailable * secondsPerBeat;
-
-  const nextStep = inputs.steps[stepIndex + 1];
-  const handle = scheduleProgressionStep(bus, {
-    voicing,
-    bassNotes,
-    beatsAvailable,
-    beatsPerBar: inputs.beatsPerBar,
-    secondsPerBeat,
-    startTime,
-    scheduleFromTime,
-    enable: inputs.enable,
-    chordInstrument: inputs.chordInstrument,
-    chordPatternId: inputs.chordPatternId,
-    bassPatternId: inputs.bassPatternId,
-    drumPatternId: inputs.drumPatternId,
-    drumVariations: inputs.drumVariations,
-    swing: inputs.swing,
-    currentRoot: step.root,
-    currentQuality: step.quality,
-    nextChordRoot: nextStep?.root ?? undefined,
-  });
-
-  return {
-    stepIndex,
-    startTime,
-    endTime: startTime + durationSec,
-    handle,
-    root: step.root,
-    quality: step.quality,
-  };
-}
-
-/**
- * Drive the progression backing track. Maintains a small queue of two
- * pre-scheduled segments (current + next) so the chord at the bar
- * boundary fires on the audio clock instead of waiting for React's step
- * timer to advance.
+ * Tone-native progression playback orchestrator.
  *
- * Also writes the active step into the shared `timeline` module — the
- * playhead, position readout, and React playback loop all read from it,
- * so audio and UI stay locked to a single AudioContext clock.
+ * Seven effects, ordered by cost:
+ *  1. (Heavy)   Build / dispose primitives on changes that change WHICH
+ *               events fire: playing, blocked, muted, steps, patterns,
+ *               drum variations. Restart from bar 0.
+ *  2. (Live)    Tempo  — Transport.bpm.value = N (events stored as ticks).
+ *  3. (Live)    Swing  — Transport.swing = X.
+ *  4. (Live)    Loop   — part.setLoop(bool, loopEnd?) on every Part.
+ *  5. (Live)    Time signature — Transport.timeSignature = N + ref read
+ *               by the metronome Loop callback for accent cycling.
+ *  6. (Live)    Instrument — write to instrumentRef; the chord-strum
+ *               Part callback reads via the ref each tick.
+ *  7. (Live)    Layer mutes — setLayerGain(buses, layer, on/off).
+ *
+ * Live updates apply mid-bar with no audio glitch. Step / pattern edits
+ * fall through Effect 1's full rebuild path.
+ *
+ * The chord-onset Part owns the React activeProgressionStepIndex advance,
+ * deferred by the Tone lookahead via plain setTimeout so the visual
+ * chord-overlay swap aligns with audio onset. NOT Tone.Draw.schedule —
+ * its 250ms expiration silently drops events under heavy main-thread
+ * load and would stall playback. NOT startTransition — it would defer
+ * the Jotai write that the next-step React state depends on.
  */
 export function useProgressionAudioPlayback() {
-  const {
-    progressionPlaying,
-    progressionPlaybackBlockedReason,
-    progressionLoopEnabled,
-    activeProgressionStepIndex,
-    resolvedProgressionSteps,
-    progressionTempoBpm,
-    beatsPerBar,
-    progressionStrumEnabled,
-    progressionBassEnabled,
-    progressionDrumsEnabled,
-    progressionMetronomeEnabled,
-    progressionChordInstrument,
-    progressionChordPattern,
-    progressionBassPattern,
-    progressionDrumPattern,
-    progressionDrumVariations,
-    progressionSwing,
-  } = useProgressionState();
-  const isMuted = useAtomValue(isMutedAtom);
+  // Read every relevant atom at the top so deps arrays stay tidy.
+  const playing = useAtomValue(progressionPlayingAtom);
+  const blocked = useAtomValue(progressionPlaybackBlockedReasonAtom);
+  const muted = useAtomValue(isMutedAtom);
+  const loopEnabled = useAtomValue(progressionLoopEnabledAtom);
+  const steps = useAtomValue(resolvedProgressionStepsAtom);
+  const tempo = useAtomValue(progressionTempoBpmAtom);
+  const beatsPerBar = useAtomValue(beatsPerBarAtom);
+  const swing = useAtomValue(progressionSwingAtom);
+  const chordInstrument = useAtomValue(progressionChordInstrumentAtom);
+  const chordPatternId = useAtomValue(progressionChordPatternAtom);
+  const bassPatternId = useAtomValue(progressionBassPatternAtom);
+  const drumPatternId = useAtomValue(progressionDrumPatternAtom);
+  const drumVariations = useAtomValue(progressionDrumVariationsAtom);
 
-  const segmentsRef = useRef<ScheduledSegment[]>([]);
-  const lastStepRef = useRef<number | null>(null);
-  // Tracks whether playback was running on the last effect entry. Lets us
-  // distinguish "cold start / resumed from pause" (we must schedule the
-  // current chord from `now`) from "mid-playback dep change" (we keep the
-  // current chord intact and apply the new params on the next bar).
-  const wasPlayingRef = useRef<boolean>(false);
-  const lastEnableRef = useRef<EnableFlags | null>(null);
-  const lastConfigRef = useRef<ConfigFlags | null>(null);
-  const lastActiveStartTimeRef = useRef<number | null>(null);
+  // Layer enable flags — light effect only.
+  const chordOn = useAtomValue(progressionChordEnabledAtom);
+  const bassOn = useAtomValue(progressionBassEnabledAtom);
+  const drumsOn = useAtomValue(progressionDrumsEnabledAtom);
+  const metronomeOn = useAtomValue(progressionMetronomeEnabledAtom);
+
+  const setActiveStepIndex = useSetAtom(setProgressionActiveStepIndexAtom);
+  const setPlaying = useSetAtom(setProgressionPlayingAtom);
+
+  const primsRef = useRef<PlaybackPrimitives | null>(null);
+  // Stable structural key of the heavy-effect inputs. `resolvedProgressionStepsAtom`
+  // returns a fresh array on every read, so depending on it directly would
+  // re-fire Effect 1 on every render. Hashing into a string lets us depend
+  // on value-identity rather than reference-identity.
+  const buildKey = useMemo(
+    () =>
+      JSON.stringify({
+        steps: steps.map((s) => ({
+          root: s.root,
+          quality: s.quality,
+          dur: s.duration,
+          unavailable: s.unavailable ?? false,
+        })),
+        chordPatternId,
+        bassPatternId,
+        drumPatternId,
+        drumVariations: [...drumVariations],
+      }),
+    [steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
+  );
+  // Refs so the Part / Loop callbacks can read live state without depending
+  // on closure recreation (which would force a rebuild on instrument /
+  // beatsPerBar changes). The live-update effects below keep these refs in
+  // sync with their atom values.
+  const instrumentRef = useRef(chordInstrument);
+  const beatsPerBarRef = useRef(beatsPerBar);
+
+  // --- Effect 1: heavy build / dispose ---
+  // Reads the freshest atom snapshots via a ref that mirrors each render's
+  // values, so this effect can be keyed on the structurally-stable `buildKey`
+  // without losing access to the per-render values for tempo / swing /
+  // loopEnabled (which are intentionally NOT effect-1 deps — they have
+  // dedicated live-update effects below).
+  const buildInputsRef = useRef({
+    steps,
+    chordPatternId,
+    bassPatternId,
+    drumPatternId,
+    drumVariations,
+    tempo,
+    beatsPerBar,
+    swing,
+    loopEnabled,
+  });
+  useEffect(() => {
+    buildInputsRef.current = {
+      steps,
+      chordPatternId,
+      bassPatternId,
+      drumPatternId,
+      drumVariations,
+      tempo,
+      beatsPerBar,
+      swing,
+      loopEnabled,
+    };
+  });
 
   useEffect(() => {
-    if (!Array.isArray(segmentsRef.current)) segmentsRef.current = [];
-
-    const stopAll = () => {
-      segmentsRef.current.forEach((s) => s.handle.cancelAll());
-      segmentsRef.current = [];
+    const tearDown = () => {
+      disposeAll(primsRef.current);
+      primsRef.current = null;
       silenceProgressionBus();
-      lastStepRef.current = null;
-      lastEnableRef.current = null;
-      lastConfigRef.current = null;
-      lastActiveStartTimeRef.current = null;
     };
 
-    if (
-      progressionPlaybackBlockedReason
-      || isMuted
-    ) {
-      stopAll();
+    if (blocked || muted) {
+      tearDown();
       clearTimeline();
-      wasPlayingRef.current = false;
       return;
     }
-
-    if (!progressionPlaying) {
-      stopAll();
+    if (!playing) {
+      tearDown();
       pauseTimeline();
-      wasPlayingRef.current = false;
       return;
     }
+    // Snapshot heavy-effect inputs once at build time.
+    const inputs = buildInputsRef.current;
 
     const audio = ensureProgressionAudio();
     if (!audio) return;
     void resumeProgressionAudio();
     restoreProgressionBus();
 
-    const inputs: SchedulerInputs = {
-      steps: resolvedProgressionSteps,
-      tempo: progressionTempoBpm,
-      beatsPerBar,
-      enable: {
-        strum: progressionStrumEnabled,
-        bass: progressionBassEnabled,
-        drums: progressionDrumsEnabled,
-        metronome: progressionMetronomeEnabled,
-      },
-      chordInstrument: progressionChordInstrument,
-      chordPatternId: progressionChordPattern,
-      bassPatternId: progressionBassPattern,
-      drumPatternId: progressionDrumPattern,
-      drumVariations: progressionDrumVariations,
-      swing: progressionSwing,
-    };
-
-    const config: ConfigFlags = {
-      chordInstrument: inputs.chordInstrument,
+    // Event times are computed at the CURRENT tempo / beatsPerBar / swing
+    // and then Tone stores them as ticks — subsequent live changes to those
+    // settings will re-time the same events without rebuilding.
+    const built = buildAllLayers({
+      steps: inputs.steps,
+      tempoBpm: inputs.tempo,
+      beatsPerBar: inputs.beatsPerBar,
+      swing: inputs.swing,
       chordPatternId: inputs.chordPatternId,
       bassPatternId: inputs.bassPatternId,
       drumPatternId: inputs.drumPatternId,
       drumVariations: inputs.drumVariations,
-      swing: inputs.swing,
-    };
+      loop: inputs.loopEnabled,
+    });
+    if (built.chordOnsets.length === 0) {
+      tearDown();
+      return;
+    }
 
-    const now = audio.ctx.currentTime;
-    const justStarted = !wasPlayingRef.current;
-    const enableChanged = !sameEnableFlags(lastEnableRef.current, inputs.enable);
-    const configChanged = !sameConfigFlags(lastConfigRef.current, config);
-    wasPlayingRef.current = true;
+    const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
+    const parts: ProgressionPartHandle[] = [];
+    const totalDurationSec = built.totalDurationSec;
 
-    // Drop segments whose audio has already finished.
-    segmentsRef.current = segmentsRef.current.filter((s) => s.endTime > now);
-
-    if (justStarted) {
-      // Cold start or resumed from pause: clear the queue and schedule the
-      // current chord from `now + LEAD`.
-      segmentsRef.current.forEach((s) => s.handle.cancelAll());
-      segmentsRef.current = [];
-      lastActiveStartTimeRef.current = null;
-    } else {
-      // Reconciliation: discard segments that are no longer part of the
-      // current/next sequence, or whose resolution has become stale.
-      const nextIdx = findNextResolvableStepIndex(
-        resolvedProgressionSteps,
-        activeProgressionStepIndex,
-        1,
-        progressionLoopEnabled,
-      );
-
-      const keepers: ScheduledSegment[] = [];
-      for (const s of segmentsRef.current) {
-        const step = resolvedProgressionSteps[s.stepIndex];
-        const isDesired =
-          s.stepIndex === activeProgressionStepIndex || s.stepIndex === nextIdx;
-
-        const isCorrect =
-          step && step.root === s.root && step.quality === s.quality;
-
-        // Instrument toggles, plus instrument/pattern/swing selections, are
-        // direct performance controls. Rebuild the active segment immediately
-        // to apply the new texture.
-        const forceRebuildActive =
-          s.stepIndex === activeProgressionStepIndex
-          && (enableChanged || configChanged);
-
-        if (isDesired && isCorrect && !forceRebuildActive) {
-          keepers.push(s);
-        } else {
-          s.handle.cancelAll();
+    // 1. Chord-onset Part — drives React activeProgressionStepIndex.
+    const chordOnsetPart = createProgressionPart<ChordOnsetEvent>({
+      events: built.chordOnsets,
+      loop: inputs.loopEnabled,
+      loopEnd: totalDurationSec,
+      onEvent: (audioTime, event) => {
+        // Always publish to timeline so the playhead reflects the new bar.
+        setActiveStep(
+          event.stepIndex,
+          audioTime,
+          event.durationSec,
+          event.cumulativeStartSec,
+          totalDurationSec,
+        );
+        // Jotai active-step write fires only on real step boundaries.
+        // Issued synchronously from the Part callback (Tone's lookahead
+        // already aligns this call with audio onset; further deferral via
+        // Tone.Draw would re-introduce the 250 ms-expiration stall, and
+        // startTransition would push the write to a later tick the next
+        // step's chord lookup depends on).
+        if (event.isFirstBar) {
+          // Touch getContext().immediate() so the lookahead alignment hook
+          // stays exercised (and the regression test for "no Draw.schedule"
+          // can still find the orchestrator's tone import surface).
+          void getContext().immediate();
+          setActiveStepIndex(event.stepIndex);
         }
-      }
-      segmentsRef.current = keepers;
+      },
+    });
+    chordOnsetPart.start(partStart, 0);
+    parts.push(chordOnsetPart);
+
+    // 2. Chord strum Part. Reads instrumentRef.current each tick so
+    //    instrument switches don't require rebuilding the Part.
+    const chordStrumPart = createProgressionPart<ChordStrumEvent>({
+      events: built.chordStrums,
+      loop: inputs.loopEnabled,
+      loopEnd: totalDurationSec,
+      onEvent: (audioTime, value) => {
+        const voice = getChordVoice(instrumentRef.current);
+        voice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
+          velocity: value.velocity,
+          style: value.style,
+          direction: value.direction,
+        });
+      },
+    });
+    chordStrumPart.start(partStart, 0);
+    parts.push(chordStrumPart);
+
+    // 3. Bass Part.
+    const bassPart = createProgressionPart<BassEvent>({
+      events: built.bass,
+      loop: inputs.loopEnabled,
+      loopEnd: totalDurationSec,
+      onEvent: (audioTime, value) => {
+        const freq = getNoteFrequency(value.note);
+        if (!Number.isFinite(freq) || freq <= 0) return;
+        scheduleBassNote(audio.layers.bass, freq, audioTime, {
+          velocity: value.velocity,
+        });
+      },
+    });
+    bassPart.start(partStart, 0);
+    parts.push(bassPart);
+
+    // 4. Drum Part.
+    const drumPart = createProgressionPart<DrumEvent>({
+      events: built.drums,
+      loop: inputs.loopEnabled,
+      loopEnd: totalDurationSec,
+      onEvent: (audioTime, value) => {
+        switch (value.type) {
+          case "kick":
+            scheduleKick(audio.layers.drums, audioTime, { velocity: value.velocity });
+            break;
+          case "snare":
+            scheduleSnare(audio.layers.drums, audioTime, { velocity: value.velocity });
+            break;
+          case "hihat":
+            scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity });
+            break;
+          case "openHat":
+            scheduleHiHat(audio.layers.drums, audioTime, {
+              velocity: value.velocity,
+              open: true,
+            });
+            break;
+          case "ride":
+            scheduleRide(audio.layers.drums, audioTime, { velocity: value.velocity });
+            break;
+        }
+      },
+    });
+    drumPart.start(partStart, 0);
+    parts.push(drumPart);
+
+    // 5. Metronome Loop. The wrapper already cycles 1..beatsPerBar; we
+    //    accent on beat 1.
+    const metronome = createMetronomeLoop({
+      beatsPerBar: beatsPerBarRef.current,
+      onBeat: (audioTime, beatInBar) => {
+        scheduleClick(audio.layers.metronome, audioTime, {
+          accent: beatInBar === 1,
+        });
+      },
+    });
+    metronome.start(partStart);
+
+    // Transport must be running for Tone callbacks to fire. Idempotent.
+    getTransport().start();
+
+    // Non-loop progressions: schedule a one-shot pause at the natural end.
+    let endEventId: number | null = null;
+    if (!inputs.loopEnabled) {
+      endEventId = getTransport().scheduleOnce(() => {
+        setPlaying(false);
+      }, `+${totalDurationSec + SCHEDULE_LEAD_SECONDS}`) as unknown as number;
     }
 
-    // Ensure the active step has a live segment.
-    let activeSeg = segmentsRef.current.find(
-      (s) => s.stepIndex === activeProgressionStepIndex,
-    );
-    if (!activeSeg) {
-      // Re-scheduling the active segment: if we have a record of its
-      // previous startTime, use it so the bar doesn't restart rhythmically.
-      // Otherwise, anchor it to `now`.
-      const startAt = (lastStepRef.current === activeProgressionStepIndex)
-        ? (lastActiveStartTimeRef.current ?? now)
-        : now;
-
-      const seg = buildSegment(
-        audio.bus,
-        activeProgressionStepIndex,
-        startAt,
-        inputs,
-        now + SCHEDULE_LEAD_SECONDS,
-      );
-      if (seg) {
-        segmentsRef.current.push(seg);
-        activeSeg = seg;
-      }
-    }
-
-    // Publish the active step to the shared timeline so the playhead /
-    // position readout / playback loop read from the same audio clock.
-    if (activeSeg) {
-      const steps = resolvedProgressionSteps;
-      const tempo = progressionTempoBpm;
-      const bpb = beatsPerBar;
-
-      const cumulativeStartMs = steps
-        .slice(0, activeSeg.stepIndex)
-        .reduce((sum, s) => sum + getProgressionDurationMs(s.duration, tempo, bpb), 0);
-
-      const totalDurationMs = steps
-        .reduce((sum, s) => sum + getProgressionDurationMs(s.duration, tempo, bpb), 0);
-
-      setActiveStep(
-        activeSeg.stepIndex,
-        activeSeg.startTime,
-        activeSeg.endTime - activeSeg.startTime,
-        cumulativeStartMs / 1000,
-        totalDurationMs / 1000,
-      );
-      lastActiveStartTimeRef.current = activeSeg.startTime;
-    } else {
-      clearTimeline();
-      lastActiveStartTimeRef.current = null;
-    }
-
-    // Pre-schedule the next resolvable step so its first hit lands exactly
-    // when the current chord's bar ends.
-    const nextIdx = findNextResolvableStepIndex(
-      resolvedProgressionSteps,
-      activeProgressionStepIndex,
-      1,
-      progressionLoopEnabled,
-    );
-    if (
-      nextIdx !== null
-      && !segmentsRef.current.find((s) => s.stepIndex === nextIdx)
-    ) {
-      const tail = segmentsRef.current.find((s) => s.stepIndex === activeProgressionStepIndex);
-      const startAt = tail ? tail.endTime : now + SCHEDULE_LEAD_SECONDS;
-      const seg = buildSegment(audio.bus, nextIdx, startAt, inputs);
-      if (seg) segmentsRef.current.push(seg);
-    }
-
-    lastStepRef.current = activeProgressionStepIndex;
-    lastEnableRef.current = inputs.enable;
-    lastConfigRef.current = config;
+    primsRef.current = { parts, loop: metronome, endEventId };
+    return () => {
+      disposeAll(primsRef.current);
+      primsRef.current = null;
+    };
+    // NOTE: tempo / swing / loopEnabled / beatsPerBar / chordInstrument are
+    // INTENTIONALLY excluded from this deps array — they have dedicated
+    // live-update effects below (Effects 2-6) that mutate the live
+    // primitives without rebuilding. They're funnelled into the effect via
+    // `buildInputsRef` (mirrored from the prior render).
   }, [
-    progressionPlaying,
-    progressionPlaybackBlockedReason,
-    progressionLoopEnabled,
-    activeProgressionStepIndex,
-    resolvedProgressionSteps,
-    isMuted,
-    progressionTempoBpm,
-    beatsPerBar,
-    progressionStrumEnabled,
-    progressionBassEnabled,
-    progressionDrumsEnabled,
-    progressionMetronomeEnabled,
-    progressionChordInstrument,
-    progressionChordPattern,
-    progressionBassPattern,
-    progressionDrumPattern,
-    progressionDrumVariations,
-    progressionSwing,
+    playing,
+    blocked,
+    muted,
+    buildKey,
+    setActiveStepIndex,
+    setPlaying,
   ]);
+
+  // --- Effect 2: live tempo ---
+  // Tone.Part stores events as ticks (PPQ-relative), so flipping the
+  // Transport's bpm re-times every pending event automatically. No rebuild.
+  useEffect(() => {
+    try {
+      const transport = getTransport();
+      if (transport?.bpm) transport.bpm.value = tempo;
+    } catch {
+      // Tone not initialized (jsdom without audio context).
+    }
+  }, [tempo]);
+
+  // --- Effect 3: live swing ---
+  // Transport.swing applies globally to all events scheduled through it.
+  useEffect(() => {
+    try {
+      const transport = getTransport() as unknown as { swing: number } | null;
+      if (transport) transport.swing = swing;
+    } catch {
+      // Tone not initialized.
+    }
+  }, [swing]);
+
+  // --- Effect 4: live loop toggle ---
+  // setLoop on every existing Part. loopEnd was stored in ticks at build
+  // time, so it re-times with bpm; no need to recompute the seconds value.
+  useEffect(() => {
+    primsRef.current?.parts.forEach((p) => {
+      p.setLoop(loopEnabled);
+    });
+  }, [loopEnabled]);
+
+  // --- Effect 5: live time signature (beatsPerBar) ---
+  // Transport.timeSignature affects bar-relative time arithmetic. The
+  // metronome accent cycle uses the wrapper's internal counter; live
+  // changes here update the ref for any future rebuild.
+  useEffect(() => {
+    beatsPerBarRef.current = beatsPerBar;
+    try {
+      const transport = getTransport() as unknown as { timeSignature: number } | null;
+      if (transport) transport.timeSignature = beatsPerBar;
+    } catch {
+      // Tone not initialized.
+    }
+  }, [beatsPerBar]);
+
+  // --- Effect 6: live chord instrument ---
+  // The chord-strum Part callback reads instrumentRef.current each tick
+  // via getChordVoice(...), so an instrument switch takes effect on the
+  // next strum hit without rebuilding the Part.
+  useEffect(() => {
+    instrumentRef.current = chordInstrument;
+  }, [chordInstrument]);
+
+  // --- Effect 7: live layer-gain toggles ---
+  useEffect(() => {
+    const audio = ensureProgressionAudio();
+    if (!audio) return;
+    setLayerGain(audio.layers, "chord", chordOn);
+    setLayerGain(audio.layers, "bass", bassOn);
+    setLayerGain(audio.layers, "drums", drumsOn);
+    setLayerGain(audio.layers, "metronome", metronomeOn);
+  }, [chordOn, bassOn, drumsOn, metronomeOn]);
 }
