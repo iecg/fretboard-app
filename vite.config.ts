@@ -52,6 +52,16 @@ export default defineConfig({
               priority: 3,
             },
             {
+              name: 'vendor-state',
+              test: /node_modules[\\/]jotai[\\/]/,
+              priority: 3,
+            },
+            {
+              name: 'app-shared',
+              test: (id: string) => id.includes('src/components/SongControls') || id.includes('src/hooks/useProgressionAudioPlayback') || id.includes('src/components/StatusBar'),
+              priority: 3,
+            },
+            {
               name: 'vendor-motion',
               test: /node_modules[\\/](framer-motion|motion-dom|motion-utils|motion)[\\/]/,
               priority: 2,
