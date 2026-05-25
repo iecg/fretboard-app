@@ -572,3 +572,23 @@ describe("catalog snapshots (pre-Tonal-migration lock)", () => {
     expect(CHORD_DEFINITIONS).toMatchSnapshot();
   });
 });
+
+describe("getDiatonicChord — Tonal Progression agreement (major mode)", () => {
+  // Documents that for major-mode resolution, FretFlow's getDiatonicChord
+  // agrees with Tonal's @tonaljs/progression. This is a guard rail: if our
+  // bespoke transpose+enharmonic path ever drifts from Tonal's major-key
+  // resolution, this test surfaces it.
+  //
+  // KNOWN DIVERGENCE: Tonal's Progression.fromRomanNumerals always treats
+  // the second argument as the tonic of a MAJOR key — so it cannot resolve
+  // minor-mode degrees correctly (e.g. minor's VI ≠ major's VI). We retain
+  // the existing semitone-table path in getDiatonicChord precisely to handle
+  // non-major modes. This test only covers the major case.
+  it.each([
+    ["I",   "C"], ["ii", "D"], ["iii", "E"],
+    ["IV",  "F"], ["V",  "G"], ["vi",  "A"],
+  ])('major degree %s in C agrees with Tonal Progression (expected root %s)', (degree, expectedRoot) => {
+    const ours = getDiatonicChord(degree, "major", "C");
+    expect(ours?.root).toBe(expectedRoot);
+  });
+});

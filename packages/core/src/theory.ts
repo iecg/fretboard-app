@@ -625,6 +625,13 @@ export function getDiatonicChord(
   const semitone = Number(semitoneEntry[0]);
 
   // Compute the absolute root note via Tonal transposition.
+  //
+  // Note: Tonal's @tonaljs/progression module is available and tempting here,
+  // but `Progression.fromRomanNumerals(tonic, [degree])` always treats the
+  // tonic as the root of a MAJOR key — so "VI" in a minor-key context returns
+  // the major-key VI (A in C-minor) instead of the minor-key VI (Ab/G#). Our
+  // degree table already encodes the correct semitone offset per mode, so we
+  // transpose by that offset and normalize enharmonics.
   const tonicChroma = Note.chroma(tonicNote);
   if (typeof tonicChroma !== "number" || isNaN(tonicChroma)) return undefined;
   const transposed = Note.transpose(tonicNote, Interval.fromSemitones(semitone));
