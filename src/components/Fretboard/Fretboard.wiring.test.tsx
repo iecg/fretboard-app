@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { STANDARD_TUNING } from "@fretflow/core";
 import { fullChordsEnabledAtom } from "../../store/chordOverlayAtoms";
@@ -8,6 +8,14 @@ import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtom
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { Fretboard } from "./Fretboard";
+// Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
+import "../FretboardSVG/FretboardSVG";
+
+async function flushSuspense() {
+  await act(async () => {
+    await Promise.resolve();
+  });
+}
 
 const fretboardSvgSpy = vi.fn();
 
@@ -18,7 +26,7 @@ vi.mock("../FretboardSVG/FretboardSVG", () => ({
   },
 }));
 
-function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
+async function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
   const store = createStore();
   // Set scale root + scale BEFORE seeding the progression step so the
   // root-change listener doesn't transpose manualRoot from the default key.
@@ -53,6 +61,7 @@ function renderGMajorEPositionChord(chordRoot: string, chordType: string) {
       />
     </Provider>,
   );
+  await flushSuspense();
 
   const lastCall = fretboardSvgSpy.mock.calls.at(-1)?.[0] as {
     fullChordPositionKeys?: Set<string>;
@@ -70,7 +79,7 @@ describe("Fretboard wiring", () => {
     fretboardSvgSpy.mockClear();
   });
 
-  it("passes full chord positions and voicings from state into FretboardSVG", () => {
+  it("passes full chord positions and voicings from state into FretboardSVG", async () => {
     const store = createStore();
     store.set(progressionStepsAtom, [
       {
@@ -94,6 +103,7 @@ describe("Fretboard wiring", () => {
         />
       </Provider>,
     );
+    await flushSuspense();
 
     const lastCall = fretboardSvgSpy.mock.calls.at(-1)?.[0] as {
       fullChordPositionKeys?: Set<string>;
@@ -134,36 +144,36 @@ describe("Fretboard wiring", () => {
     );
   });
 
-  it("narrows full-chord voicings to the active CAGED shape per chord", () => {
+  it("narrows full-chord voicings to the active CAGED shape per chord", async () => {
     // Under Diatonic CAGED Chord Shape Alignment, when a single CAGED shape is active,
     // we dynamically select the chord shape that actually fits that scale shape's fret position
     // instead of forcing the exact same letter shape, preventing 1-position offsets.
-    const tonic = renderGMajorEPositionChord("G", "M");
+    const tonic = await renderGMajorEPositionChord("G", "M");
     expect(tonic.fullChordVoicings?.length).toBeGreaterThan(0);
     expect(tonic.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
 
-    const mediant = renderGMajorEPositionChord("B", "m");
+    const mediant = await renderGMajorEPositionChord("B", "m");
     expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
     // Bm root at string 4 fret 14 is inside the remapped D-shape polygon
     // (relative minor anchor for G Major maps E→D, so roots are at fret 2 and 14).
     expect(mediant.fullChordPositionKeys?.has("4-14")).toBe(true);
 
-    const subdominant = renderGMajorEPositionChord("C", "M");
+    const subdominant = await renderGMajorEPositionChord("C", "M");
     expect(subdominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
     expect(subdominant.fullChordPositionKeys?.has("4-15")).toBe(true);
   });
 
-  it("filters out full-chord notes outside the selected CAGED scale position when lock-to-scale is on", () => {
-    const supertonic = renderGMajorEPositionChord("D#", "m");
+  it("filters out full-chord notes outside the selected CAGED scale position when lock-to-scale is on", async () => {
+    const supertonic = await renderGMajorEPositionChord("D#", "m");
     expect(supertonic.fullChordVoicings?.some((voicing) => voicing.shape === "E")).toBe(true);
     // D#m root at string 3 fret 1 is outside the E-shape's diagonal bounds at fret 3.
     expect(supertonic.fullChordPositionKeys?.has("3-1")).toBe(false);
   });
 
-  it("narrows full-chord voicings to the best-fitting shape in that fret position", () => {
+  it("narrows full-chord voicings to the best-fitting shape in that fret position", async () => {
     // Under Diatonic CAGED Chord Shape Alignment, D major's C-shape sits at the 2nd-fret area,
     // perfectly overlapping the E-position window for G major (~frets 2–6).
-    const dominant = renderGMajorEPositionChord("D", "M");
+    const dominant = await renderGMajorEPositionChord("D", "M");
     expect(dominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
     expect(dominant.fullChordPositionKeys?.has("4-5")).toBe(true);
     expect(dominant.fullChordPositionKeys?.has("3-0")).toBe(false);

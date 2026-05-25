@@ -9,6 +9,7 @@ import { k } from "./test-utils/storage";
 import "./components/Inspector/Inspector";
 import "./components/StatusBar/StatusBar";
 import "./components/ProgressionSummarySlot/ProgressionSummarySlot";
+import "./components/FretboardSVG/FretboardSVG";
 
 const lazyAudio = vi.hoisted(() => ({
   playGuitarNote: vi.fn(),
@@ -35,11 +36,20 @@ describe("Integration: real-component user workflows", () => {
     localStorage.setItem(k("isMuted"), "false");
     render(<App />);
 
-    const allButtons = await screen.findAllByRole("button");
+    // Wait until the lazy FretboardSVG resolves and renders note buttons (aria-label
+     // contains "on string"). Suspense fallback may already expose other buttons, so
+     // we explicitly poll for a note button before asserting.
+    await waitFor(() => {
+      const buttons = screen.queryAllByRole("button");
+      const notes = buttons.filter((btn) =>
+        btn.getAttribute("aria-label")?.includes("on string"),
+      );
+      expect(notes.length).toBeGreaterThan(0);
+    });
+    const allButtons = screen.getAllByRole("button");
     const noteButtons = allButtons.filter((btn) =>
       btn.getAttribute("aria-label")?.includes("on string"),
     );
-    expect(noteButtons.length).toBeGreaterThan(0);
 
     fireEvent.click(noteButtons[0]);
     expect(playGuitarNote).toHaveBeenCalledTimes(1);

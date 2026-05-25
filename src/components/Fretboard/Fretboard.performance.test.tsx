@@ -5,6 +5,14 @@ import { Provider, createStore } from "jotai";
 import { Fretboard } from "./Fretboard";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { fretZoomAtom } from "../../store/layoutAtoms";
+// Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
+import "../FretboardSVG/FretboardSVG";
+
+async function flushSuspense() {
+  await act(async () => {
+    await Promise.resolve();
+  });
+}
 
 const received: Array<Record<string, unknown>> = [];
 
@@ -24,7 +32,7 @@ describe("Fretboard performance wiring", () => {
     received.length = 0;
   });
 
-  it("reuses expensive derived props when zoom changes", () => {
+  it("reuses expensive derived props when zoom changes", async () => {
     const store = createStore();
 
     render(
@@ -32,6 +40,7 @@ describe("Fretboard performance wiring", () => {
         <Fretboard stringRowPx={40} />
       </Provider>,
     );
+    await flushSuspense();
 
     const first = received.at(-1)!;
 
@@ -47,7 +56,7 @@ describe("Fretboard performance wiring", () => {
     expect(second.fullChordVoicings).toBe(first.fullChordVoicings);
   });
 
-  it("reuses expensive derived props when zoom changes in CAGED mode", () => {
+  it("reuses expensive derived props when zoom changes in CAGED mode", async () => {
     const store = createStore();
 
     // Seed CAGED mode with a non-empty shape selection so the
@@ -60,6 +69,7 @@ describe("Fretboard performance wiring", () => {
         <Fretboard stringRowPx={40} />
       </Provider>,
     );
+    await flushSuspense();
 
     const first = received.at(-1)!;
 
@@ -75,7 +85,7 @@ describe("Fretboard performance wiring", () => {
     expect(second.fullChordVoicings).toBe(first.fullChordVoicings);
   });
 
-  it("still reuses expensive derived props when zoom changes after width fallback", () => {
+  it("still reuses expensive derived props when zoom changes after width fallback", async () => {
     const store = createStore();
 
     render(
@@ -83,6 +93,7 @@ describe("Fretboard performance wiring", () => {
         <Fretboard stringRowPx={40} />
       </Provider>,
     );
+    await flushSuspense();
 
     const first = received.at(-1)!;
 
