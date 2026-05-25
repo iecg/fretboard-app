@@ -9,8 +9,7 @@ import {
   setGuitarMutePreference,
 } from "./core/lazyGuitarAudio";
 import { isMutedAtom, toggleMuteAtom, audioErrorAtom } from "./store/audioAtoms";
-import { chordRootAtom, chordTypeAtom, chordOverlayHiddenAtom } from "./store/chordOverlayAtoms";
-import { rootNoteAtom, scaleNameAtom } from "./store/scaleAtoms";
+import { chordTypeAtom } from "./store/chordOverlayAtoms";
 import { settingsOverlayOpenAtom, themeAtom } from "./store/uiAtoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
@@ -45,10 +44,6 @@ function AppContent() {
   const isMuted = useAtomValue(isMutedAtom);
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
-  const chordRoot = useAtomValue(chordRootAtom);
-  const rootNote = useAtomValue(rootNoteAtom);
-  const scaleName = useAtomValue(scaleNameAtom);
-  const setChordOverlayHidden = useSetAtom(chordOverlayHiddenAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const setTheme = useSetAtom(themeAtom);
 
@@ -96,22 +91,10 @@ function AppContent() {
     };
   }, []);
 
-  // Reset chord overlay visibility whenever chord or scale identity changes.
-  // Skip resets that fire during the initial mount + atom hydration cycle so
-  // that persisted hidden=true is honoured on reload. A one-tick defer via
-  // setTimeout(0) lets all atomWithStorage onMount callbacks settle first;
-  // only after that does the dep-change effect actually call setChordOverlayHidden.
-  const overlayResetReadyRef = useRef(false);
-  useEffect(() => {
-    const id = setTimeout(() => {
-      overlayResetReadyRef.current = true;
-    }, 0);
-    return () => clearTimeout(id);
-  }, []);
-  useEffect(() => {
-    if (!overlayResetReadyRef.current) return;
-    setChordOverlayHidden(false);
-  }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden]);
+  // v2.3: Removed automatic chord-overlay reset on identity change.
+  // Persisted user preference for chord overlay visibility is now honoured
+  // across chord/scale transitions. The one-tick overlayResetReadyRef that
+  // previously guarded the reset effect is also removed.
 
   return (
   <TooltipProvider>
