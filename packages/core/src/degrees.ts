@@ -183,7 +183,7 @@ export function remapDegreeForScale(
  * Returns the diatonic triad quality (chord-name key) for a given scale degree.
  *
  * @param degreeId - Roman numeral string (e.g., "I", "ii", "vii°", "III+")
- * @param scaleName - Scale name (e.g., "Major", "minor", "melodic minor")
+ * @param scaleName - Scale name (e.g., "major", "minor", "melodic minor")
  * @returns The chord-name key (Tonal symbol, e.g. "M", "m", "dim"),
  *          or undefined if the scale or degree is not recognised.
  */
@@ -233,7 +233,7 @@ export function getQualityForDegree(
  * Null input: returns the first degree of the scale (activates overlay at sensible default).
  *
  * @param degreeId  Current Roman numeral (e.g. "I", "ii", "vii°") or null when overlay is off.
- * @param scaleName Scale name (e.g. "Major", "minor").
+ * @param scaleName Scale name (e.g. "major", "minor").
  * @param direction +1 for next, -1 for previous.
  * @returns Adjacent DegreeId string, wrapping at boundaries.
  */
@@ -257,7 +257,7 @@ export function getAdjacentDegree(
  * Returns an ordered array of DegreeIds for the given scale, sorted ascending by semitone.
  * Safer than Object.values(getDegreesForScale(...)) which relies on JS integer-key ordering.
  *
- * @param scaleName - Scale name (e.g., "Major", "minor").
+ * @param scaleName - Scale name (e.g., "major", "minor").
  * @returns Ordered array of DegreeIds from lowest semitone to highest (e.g. ["I","ii","iii","IV","V","vi","vii°"]).
  */
 export function getDegreeSequence(scaleName: string): DegreeId[] {
