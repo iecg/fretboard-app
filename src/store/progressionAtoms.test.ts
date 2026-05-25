@@ -9,6 +9,8 @@ import {
   beatsPerBarAtom,
   currentProgressionBarAtom,
   currentProgressionPresetIdAtom,
+  displayedProgressionStepIndexAtom,
+  displayedStepIndexPrimitiveAtom,
   duplicateProgressionStepAtom,
   loadProgressionPresetAtom,
   moveProgressionStepAtom,
@@ -508,5 +510,40 @@ describe("stopProgressionPlaybackAtom", () => {
     store.set(stopProgressionPlaybackAtom);
     expect(store.get(progressionPlayingAtom)).toBe(false);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+});
+
+describe("displayedProgressionStepIndexAtom", () => {
+  it("returns logical index when not playing", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 1);
+    expect(store.get(displayedProgressionStepIndexAtom)).toBe(1);
+  });
+
+  it("returns RAF-written primitive when playing", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    store.set(setProgressionPlayingAtom, true);
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+    expect(store.get(displayedProgressionStepIndexAtom)).toBe(1);
+  });
+
+  it("ignores stale primitive after playback stops", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+    expect(store.get(displayedProgressionStepIndexAtom)).toBe(0);
   });
 });

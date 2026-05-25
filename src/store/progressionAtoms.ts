@@ -284,6 +284,38 @@ export const applyGenreStyleAtom = atom(null, (_get, set, genreId: string) => {
 });
 
 export const activeProgressionStepIndexAtom = atom(0);
+
+/**
+ * Primitive RAF-written mirror of the active step index. Written by
+ * `visualClock.ts` every animation frame during playback whenever the audio
+ * clock crosses into a new step. Stays whatever value it last held when
+ * playback stops — consumers should read `displayedProgressionStepIndexAtom`
+ * instead, which routes to the logical atom when paused/stopped.
+ *
+ * Exported for tests and for the visual clock module; UI code should NOT
+ * read this directly.
+ */
+export const displayedStepIndexPrimitiveAtom = atom(0);
+
+/**
+ * The step index every chord-visual derivation should read.
+ *
+ * - During playback: returns the RAF-written primitive, which advances on the
+ *   exact frame the audio clock crosses into the next step (same source the
+ *   playhead pulls from). Eliminates the `Tone.Draw` scheduling lag that
+ *   caused the highlight to trail the playhead by 1-2 frames per chord
+ *   transition.
+ * - When stopped/paused: returns the canonical logical index, so editor
+ *   selection and chord overlays reflect whichever step the user has
+ *   clicked on.
+ */
+export const displayedProgressionStepIndexAtom = atom((get) => {
+  if (get(progressionPlayingAtom)) {
+    return get(displayedStepIndexPrimitiveAtom);
+  }
+  return get(activeProgressionStepIndexAtom);
+});
+
 const progressionPlayingStateAtom = atom(false);
 export const progressionStepDeadlineAtom = atom<number | null>(null);
 
