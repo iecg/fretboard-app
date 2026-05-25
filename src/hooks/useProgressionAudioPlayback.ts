@@ -52,6 +52,7 @@ import {
   progressionLoopEnabledAtom,
   progressionMetronomeEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
+  progressionPlaybackLoadingAtom,
   progressionPlayingAtom,
   progressionSwingAtom,
   progressionTempoBpmAtom,
@@ -132,6 +133,7 @@ export function useProgressionAudioPlayback() {
 
   const setActiveStepIndex = useSetAtom(setProgressionActiveStepIndexAtom);
   const setPlaying = useSetAtom(setProgressionPlayingAtom);
+  const setLoading = useSetAtom(progressionPlaybackLoadingAtom);
 
   const primsRef = useRef<PlaybackPrimitives | null>(null);
   // Stable structural key of the heavy-effect inputs. `resolvedProgressionStepsAtom`
@@ -203,6 +205,7 @@ export function useProgressionAudioPlayback() {
       disposeAll(primsRef.current);
       primsRef.current = null;
       silenceProgressionBus();
+      setLoading(false);
     };
 
     if (blocked || muted) {
@@ -218,8 +221,17 @@ export function useProgressionAudioPlayback() {
     // Snapshot heavy-effect inputs once at build time.
     const inputs = buildInputsRef.current;
 
+    // Flip the spinner on BEFORE any heavy work; the chord-onset callback
+    // below clears it on the first audible event. Every tear-down path
+    // (tearDown helper, null-audio, no-onsets, cleanup return) also clears
+    // it so stopping mid-load doesn't leave a stuck spinner.
+    setLoading(true);
+
     const audio = ensureProgressionAudio();
-    if (!audio) return;
+    if (!audio) {
+      setLoading(false);
+      return;
+    }
     void resumeProgressionAudio();
     restoreProgressionBus();
 
@@ -247,11 +259,19 @@ export function useProgressionAudioPlayback() {
     const totalDurationSec = built.totalDurationSec;
 
     // 1. Chord-onset Part — drives React activeProgressionStepIndex.
+    // `hasFiredOnce` is closure-local to THIS Part build so the spinner-
+    // clear only fires on the genuine first audible onset of this playback
+    // session, not on every loop wrap.
+    let hasFiredOnce = false;
     const chordOnsetPart = createProgressionPart<ChordOnsetEvent>({
       events: built.chordOnsets,
       loop: inputs.loopEnabled,
       loopEnd: totalDurationSec,
       onEvent: (audioTime, event) => {
+        if (!hasFiredOnce) {
+          hasFiredOnce = true;
+          setLoading(false);
+        }
         // Always publish to timeline so the playhead reflects the new bar.
         setActiveStep(
           event.stepIndex,
@@ -373,6 +393,9 @@ export function useProgressionAudioPlayback() {
       getDraw().cancel();
       disposeAll(primsRef.current);
       primsRef.current = null;
+      // Cover unmount-while-loading: if React tears the hook down before
+      // the chord-onset has fired, the spinner would otherwise stay on.
+      setLoading(false);
     };
     // NOTE: tempo / swing / beatsPerBar / chordInstrument are INTENTIONALLY
     // excluded from this deps array — they have dedicated live-update
@@ -389,6 +412,7 @@ export function useProgressionAudioPlayback() {
     buildKey,
     setActiveStepIndex,
     setPlaying,
+    setLoading,
   ]);
 
   // --- Effect 2: live tempo ---

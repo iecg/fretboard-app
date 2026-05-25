@@ -10,6 +10,7 @@ import {
   beatsPerBarAtom,
   progressionDrumsEnabledAtom,
   progressionLoopEnabledAtom,
+  progressionPlaybackLoadingAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
   setProgressionPlayingAtom,
@@ -425,6 +426,82 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     renderWithStore(<Harness />, store);
     expect(toneMocks.parts).toHaveLength(0);
     expect(toneMocks.loops).toHaveLength(0);
+  });
+
+  describe("progressionPlaybackLoadingAtom integration", () => {
+    it("flips loading true at Effect 1 build entry, false on first chord-onset", () => {
+      const store = makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, threeBars],
+        [progressionTempoBpmAtom, 60],
+        [beatsPerBarAtom, 4],
+      ]);
+      store.set(setProgressionPlayingAtom, true);
+      renderWithStore(<Harness />, store);
+
+      // After Effect 1 builds Parts but before any audio callback fires: loading is true.
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
+
+      const onsets = toneMocks.parts.find(
+        (p) =>
+          p.events.length === 3
+          && (p.events[0][1] as { isFirstBar?: boolean }).isFirstBar === true,
+      );
+      expect(onsets).toBeDefined();
+
+      // Fire first chord-onset — loading should flip to false.
+      const audioTime = toneMocks.contextNowRef.fn() + 0.1;
+      act(() => {
+        onsets!.callback(audioTime, onsets!.events[0][1]);
+      });
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+
+      // Subsequent callbacks should keep it false (no flip back).
+      act(() => {
+        onsets!.callback(audioTime + 4, onsets!.events[1][1]);
+      });
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+    });
+
+    it("clears loading when playback stops mid-load", () => {
+      const store = makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, threeBars],
+        [progressionTempoBpmAtom, 60],
+        [beatsPerBarAtom, 4],
+      ]);
+      store.set(setProgressionPlayingAtom, true);
+      renderWithStore(<Harness />, store);
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
+
+      // Stop without ever firing the chord-onset callback.
+      act(() => {
+        store.set(setProgressionPlayingAtom, false);
+      });
+
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+    });
+
+    it("clears loading when muted toggles true while loading", () => {
+      const store = makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, threeBars],
+        [progressionTempoBpmAtom, 60],
+        [beatsPerBarAtom, 4],
+      ]);
+      store.set(setProgressionPlayingAtom, true);
+      renderWithStore(<Harness />, store);
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
+
+      act(() => {
+        store.set(isMutedAtom, true);
+      });
+
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+    });
   });
 
 });
