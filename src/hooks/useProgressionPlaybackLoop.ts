@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, startTransition } from "react";
 import { useAtomValue } from "jotai";
-import { getTransport } from "tone";
+import { getTransport, Draw } from "tone";
 import { ensureProgressionAudio } from "../progressions/audio/bus";
 import { getTimeUntilCurrentStepEndMs, getTimelinePosition } from "../progressions/audio/timeline";
 import { isMutedAtom } from "../store/audioAtoms";
@@ -82,8 +82,12 @@ export function useProgressionPlaybackLoop() {
         // Relative-time string syntax: Tone interprets `"+x"` as "x seconds
         // from transport now", which is unambiguous regardless of whether
         // the numeric form would have been parsed as ticks or seconds.
-        transportEventId = getTransport().scheduleOnce(() => {
-          advanceProgressionPlayback();
+        transportEventId = getTransport().scheduleOnce((time) => {
+          Draw.schedule(() => {
+            startTransition(() => {
+              advanceProgressionPlayback();
+            });
+          }, time);
         }, `+${remainingSec}`) as unknown as number;
       };
 
