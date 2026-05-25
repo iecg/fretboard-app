@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Refresh of [round-2](2026-05-25-playback-ux-polish-round2.md) after the deferred Q3 investigation produced concrete findings (`docs/superpowers/research/2026-05-25-playback-degradation.md`) AND after several large in-flight changes landed between drafts: O(1) voicing engine (`0e2bd21c`), voicing geometry memoization + pre-warm (`3d6c350d`, `4bc85d2a`), lazy Tone.js loading (`382c3977`/`b5317b5d`), removal of the round-1 AudioContext pre-warm (`fcd8c137`), and two playback-orchestrator bug fixes (`191d8222`, `c12b0f34`). This round converts the research findings into fix tasks, picks up Q1/Q2/Q4 from round-2 unchanged, and adds two quality follow-ups from the just-finished systematic-debugging session.
+**Goal:** Refresh of [round-2](2026-05-25-playback-ux-polish-round2.md) after the deferred Q3 investigation produced concrete findings (`docs/superpowers/research/2026-05-25-playback-degradation.md`) AND after several large in-flight changes landed between drafts: O(1) voicing engine (`0e2bd21c`), voicing geometry memoization + pre-warm (`3d6c350d`, `4bc85d2a`), lazy Tone.js loading (`382c3977`/`b5317b5d`), removal of the round-1 AudioContext pre-warm (`fcd8c137`), two playback-orchestrator bug fixes (`191d8222`, `c12b0f34`), and an async builder refactor (`buildAllLayers` → `buildAllLayersAsync` with internal `setTimeout(0)` yields every 8 steps to keep the UI responsive during long-progression builds). This round converts the research findings into fix tasks, picks up Q1/Q2/Q4 from round-2 (adapted to the async builder + lazy engine), and adds two quality follow-ups from the just-finished systematic-debugging session.
 
 **Architecture:** Five phases.
 - **R1 (was Q1)**: card-level lock + tooltip — replaces per-control disabled props with a single `locked={editsLocked}` on the KEY + PROGRESSION `InspectorCard`s, with a Radix tooltip on the locked body.
 - **R2 (was Q2)**: Stop button + tooltips on play/pause/stop — `stopProgressionPlaybackAtom` atomically sets playing=false + activeIndex=0; lucide `Square` icon next to Play.
 - **R3 (new — Q3 research findings)**: stabilize `chordHighlightPositionsAtom`'s `Set` return by value-fingerprint, drop the now-anachronistic manual `memo()` on `FretboardSVG`, and pool `Tone.PluckSynth` in `string.ts` so the strum chord instrument stops leaking audio nodes every loop.
-- **R4 (was Q4)**: replace `Tone.Loop("4n", ...)` metronome with a `Tone.Part`-driven event stream from `buildAllLayers`, so the metronome wraps in lock-step with the chord/bass/drum parts. The 2026-05-25 first-play tempo-init fix (`191d8222`) handled a *different* metronome bug (Transport at default 120 BPM until the user nudged tempo); this round handles the loop-length symptom the user originally reported ("metronome keeps clicking past the loop end").
+- **R4 (was Q4)**: replace `Tone.Loop("4n", ...)` metronome with a `Tone.Part`-driven event stream from `buildAllLayersAsync`, so the metronome wraps in lock-step with the chord/bass/drum parts. The 2026-05-25 first-play tempo-init fix (`191d8222`) handled a *different* metronome bug (Transport at default 120 BPM until the user nudged tempo); this round handles the loop-length symptom the user originally reported ("metronome keeps clicking past the loop end").
 - **R5 (new — investigation follow-ups + verification)**: dev-mode `console.warn` on the silent catch in `bus.ts` so future regressions like the one investigated 2026-05-25 surface immediately; suppress the `EnvironmentTeardownError` from the lazy `import()` firing after vitest teardown; final lint/test/build/e2e/visual refresh.
 
 **Tech Stack:** React 19 + Jotai (`useAtomValue`, `useSetAtom`), Tone.js v15 (`Tone.Part`, `Transport`, `getDraw`), `@radix-ui/react-tooltip` (already mounted at app root via `src/components/Tooltip/Tooltip.tsx`), lucide-react (`Square` for Stop), vitest + jsdom.
@@ -33,7 +33,7 @@
 - `src/progressions/audio/string.test.ts` — assert pool reuse + bounded `live` count under repeated invocation.
 - `src/progressions/audio/buildAllLayers.ts` — emit a `metronome` event stream (one event per beat across `totalDurationSec`, with `beatInBar: 1..beatsPerBar`).
 - `src/progressions/audio/buildAllLayers.test.ts` — extend with metronome event count + per-bar accent assertions.
-- `src/progressions/audio/progressionAudioEngine.ts` — re-export `MetronomeEvent` from `buildAllLayers`; drop the `createMetronomeLoop` / `MetronomeLoopHandle` re-exports (no longer used after R4).
+- `src/progressions/audio/progressionAudioEngine.ts` — re-export `MetronomeEvent` from `./buildAllLayers`; drop the `createMetronomeLoop` / `MetronomeLoopHandle` re-exports (no longer used after R4). The barrel already re-exports `buildAllLayersAsync` (the async build helper that yields every 8 steps).
 - `src/hooks/useProgressionAudioPlayback.ts` — swap the `createMetronomeLoop` call for a 5th `Tone.Part` consuming `built.metronome`; drop `beatsPerBarRef` (Part owns the beat number via event payload); add `beatsPerBar` to `buildKey`.
 - `src/hooks/useProgressionAudioPlayback.test.tsx` — replace Loop assertion with 5-Part assertion.
 - `src/progressions/audio/bus.ts` — dev-mode `console.warn` in the silent catch so unexpected init failures surface in development without polluting production logs.
@@ -953,11 +953,11 @@ git commit -m "perf(audio): pool Tone.PluckSynth to stop audio-graph churn over 
 
 **The bug (user-reported in round-2):** the metronome `Tone.Loop("4n", ...)` fires on its own quarter-note schedule, independent of the chord/bass/drum Parts' `loopEnd`. So when the time signature is anything other than 4/4 — or when `totalDurationSec` doesn't fall on a quarter-note boundary — the metronome keeps clicking past the natural loop end before its own next iteration.
 
-**The fix:** treat the metronome like the bass/drum layers — generate explicit per-beat events in `buildAllLayers`, schedule via a 5th `Tone.Part`. The Part loops at the same `loopEnd = totalDurationSec` boundary, so the metronome wraps to beat 1 in lock-step with the chord onsets. The metronome's beat-in-bar accent comes from the event payload (`beatInBar: 1..beatsPerBar`), not from an orchestrator-owned counter.
+**The fix:** treat the metronome like the bass/drum layers — generate explicit per-beat events in `buildAllLayersAsync`, schedule via a 5th `Tone.Part`. The Part loops at the same `loopEnd = totalDurationSec` boundary, so the metronome wraps to beat 1 in lock-step with the chord onsets. The metronome's beat-in-bar accent comes from the event payload (`beatInBar: 1..beatsPerBar`), not from an orchestrator-owned counter.
 
 **Caveat:** with metronome events baked into the Part, the metronome event stream depends on `beatsPerBar`. So R4 adds `beatsPerBar` to `buildKey`, which makes live time-signature changes rebuild the Parts. That regresses round-1's P5 live-time-signature setter — accepted tradeoff: correctness over smoothness. A future round could rebuild ONLY the metronome Part on `beatsPerBar` change (a dedicated effect) if the rebuild glitch is noticeable in practice.
 
-### Task R4-T1: Emit a `metronome` event stream from `buildAllLayers`
+### Task R4-T1: Emit a `metronome` event stream from `buildAllLayersAsync`
 
 **Files:**
 - Modify: `src/progressions/audio/buildAllLayers.ts`
@@ -968,8 +968,8 @@ git commit -m "perf(audio): pool Tone.PluckSynth to stop audio-graph churn over 
 Add to `src/progressions/audio/buildAllLayers.test.ts`:
 
 ```ts
-it("emits one metronome event per beat across totalDurationSec, with beatInBar 1-based and bar-cyclic (3/4)", () => {
-  const built = buildAllLayers({
+it("emits one metronome event per beat across totalDurationSec, with beatInBar 1-based and bar-cyclic (3/4)", async () => {
+  const built = await buildAllLayersAsync({
     steps: [{ id: "a", root: "C", quality: "M", duration: { value: 1, unit: "bar" } }],
     tempoBpm: 60,
     beatsPerBar: 3,
@@ -988,8 +988,8 @@ it("emits one metronome event per beat across totalDurationSec, with beatInBar 1
   expect(built.metronome[2]).toMatchObject({ time: 2, value: { beatInBar: 3 } });
 });
 
-it("metronome beatInBar wraps to 1 every beatsPerBar beats across multi-bar progressions", () => {
-  const built = buildAllLayers({
+it("metronome beatInBar wraps to 1 every beatsPerBar beats across multi-bar progressions", async () => {
+  const built = await buildAllLayersAsync({
     steps: [{ id: "a", root: "C", quality: "M", duration: { value: 2, unit: "bar" } }],
     tempoBpm: 60,
     beatsPerBar: 3,
@@ -1006,6 +1006,8 @@ it("metronome beatInBar wraps to 1 every beatsPerBar beats across multi-bar prog
   expect(built.metronome.map((e) => e.value.beatInBar)).toEqual([1, 2, 3, 1, 2, 3]);
 });
 ```
+
+(`buildAllLayersAsync` returns `Promise<BuiltLayers>` — internally it yields to the event loop every 8 steps via `await new Promise(r => setTimeout(r, 0))` to keep the UI responsive during long-progression builds. Tests must `await` it.)
 
 - [ ] **Step 2: Run tests to verify they fail**
 
@@ -1039,7 +1041,7 @@ export interface BuiltLayers {
 }
 ```
 
-(c) Inside `buildAllLayers`, after declaring `const drums = ...`:
+(c) Inside `buildAllLayersAsync`, after declaring `const drums = ...`:
 
 ```ts
 const metronome: Array<{ time: number; value: MetronomeEvent }> = [];
@@ -1079,7 +1081,7 @@ Expected: all green.
 
 ```bash
 git add src/progressions/audio/buildAllLayers.ts src/progressions/audio/buildAllLayers.test.ts
-git commit -m "feat(audio): emit per-beat metronome event stream from buildAllLayers"
+git commit -m "feat(audio): emit per-beat metronome event stream from buildAllLayersAsync"
 ```
 
 ### Task R4-T2: Schedule the metronome as a `Tone.Part`; delete the Loop wrapper
@@ -1204,7 +1206,7 @@ useEffect(() => {
 }, [beatsPerBar]);
 ```
 
-(c) Inside Effect 1's `.then(eng => { ... })`, replace the `createMetronomeLoop` block (around lines 224-233) with a 5th Part:
+(c) Inside Effect 1's `.then(async eng => { ... })` block (note: the `.then` callback is now `async` because `buildAllLayersAsync` is awaited inside it, per the in-flight async-builder refactor — also note the duplicate `if (gen !== genRef.current) return;` after the `await`, which guards against rebuild invalidation mid-build), replace the `createMetronomeLoop` block (around lines 240-249 in the current file — find via `grep -n createMetronomeLoop src/hooks/useProgressionAudioPlayback.ts`) with a 5th Part:
 
 ```ts
 // 5. Metronome Part — explicit per-beat events spanning totalDurationSec
@@ -1521,7 +1523,8 @@ git commit -m "test(visual): refresh baselines after stop button + card-level lo
 **Changes from round-2 that this refresh accounts for:**
 - O(1) voicing engine (`0e2bd21c`) — kills H7 from the research; R3-T1 + R3-T2 still relevant because reference freshness is the structural root cause regardless of compute cost. Updated R3 prose to note the partial mitigation.
 - AudioContext pre-warm removed (`fcd8c137`) — no round-2 task referenced it; no changes needed.
-- Lazy Tone.js loading — orchestrator is now async; R4-T2's metronome Part scheduling lands inside the existing `.then(eng => ...)` flow; updated the implementation snippets accordingly.
+- Lazy Tone.js loading — orchestrator is now async; R4-T2's metronome Part scheduling lands inside the existing `.then(async eng => ...)` flow; updated the implementation snippets accordingly.
+- **Async builder refactor** — `buildAllLayers` was renamed to `buildAllLayersAsync` (returns `Promise<BuiltLayers>`; yields every 8 steps via `await new Promise(r => setTimeout(r, 0))`). R4-T1 extends THIS function (still pure aside from the yield); R4-T1 test snippets are `async` + `await`. R4-T2's orchestrator snippet works on top of the existing `await eng.buildAllLayersAsync(...)` + `try/catch` wrapper the user already added, with the duplicate `gen !== genRef.current` bail check preserved on both sides of the await.
 - Bus.ts Tone.Draw guard (`c12b0f34`) — already in place; R5-T1 builds on top with the warn.
 - Metronome sync fix (`191d8222`) — addressed a different bug (first-play tempo init); R4 still needed.
 
