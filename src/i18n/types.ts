@@ -140,6 +140,7 @@ export interface Dictionary {
     strings: string;
     connectors: string;
     interval: string;
+    lockedHint: string;
     noteLabels: string;
     longPressToAdd: string;
     shiftClickToAdd: string;

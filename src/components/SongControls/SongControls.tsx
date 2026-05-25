@@ -195,6 +195,8 @@ export function SongControls() {
             name={t("inspector.groupKey")}
             description={t("inspector.groupKeyDesc")}
             labelledById="song-key-heading"
+            locked={editsLocked}
+            lockedHint={t("controls.lockedHint")}
           >
             <PropGrid columns={5}>
               <Prop label={t("controls.root")} span={2}>
@@ -204,7 +206,6 @@ export function SongControls() {
                   width="fill"
                   value={rootNote}
                   onChange={handleRootNote}
-                  disabled={editsLocked}
                   options={NOTES.map((note) => ({
                     value: note,
                     label: getNoteDisplay(note, rootNote, preferFlats),
@@ -218,7 +219,6 @@ export function SongControls() {
                   groups={scaleGroups}
                   onChange={handleScaleName}
                   hideLabel
-                  disabled={editsLocked}
                 />
               </Prop>
             </PropGrid>
@@ -257,6 +257,8 @@ export function SongControls() {
         name={t("inspector.groupProgression")}
         description={t("inspector.groupProgressionDesc")}
         labelledById="song-progression-heading"
+        locked={editsLocked}
+        lockedHint={t("controls.lockedHint")}
         actions={
           <div className={styles["progression-toolbar"]}>
             <LabeledSelect
@@ -265,7 +267,6 @@ export function SongControls() {
               value={currentProgressionPresetId}
               groups={presetGroups}
               onChange={handlePresetChange}
-              disabled={editsLocked}
             />
 
             <div className={styles["toolbar-divider"]} />
@@ -274,7 +275,6 @@ export function SongControls() {
               type="button"
               className={styles["toolbar-button"]}
               onClick={() => addProgressionStep()}
-              disabled={editsLocked}
               aria-label="Add chord"
             >
               <Plus size={16} aria-hidden="true" />
@@ -288,7 +288,7 @@ export function SongControls() {
                 type="button"
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
-                disabled={!activeStep || activeProgressionStepIndex === 0 || editsLocked}
+                disabled={!activeStep || activeProgressionStepIndex === 0}
                 aria-label="Move chord up"
               >
                 <ArrowUp size={16} aria-hidden="true" />
@@ -297,7 +297,7 @@ export function SongControls() {
                 type="button"
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
-                disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1 || editsLocked}
+                disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
                 aria-label="Move chord down"
               >
                 <ArrowDown size={16} aria-hidden="true" />
@@ -306,7 +306,7 @@ export function SongControls() {
                 type="button"
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
-                disabled={!activeStep || editsLocked}
+                disabled={!activeStep}
                 aria-label="Duplicate chord"
               >
                 <Copy size={16} aria-hidden="true" />
@@ -319,7 +319,7 @@ export function SongControls() {
               type="button"
               className={styles["delete-button"]}
               onClick={() => activeStep && removeProgressionStep(activeStep.id)}
-              disabled={!activeStep || editsLocked}
+              disabled={!activeStep}
               aria-label="Remove chord"
             >
               <Trash2 size={16} aria-hidden="true" />
@@ -357,7 +357,6 @@ export function SongControls() {
                             type="button"
                             className={clsx(styles["pip"], isActive && styles["active-pip"])}
                             onClick={() => setActiveProgressionStepIndex(idx)}
-                            disabled={editsLocked}
                             aria-label={`Jump to step ${idx + 1}, ${step.degree}`}
                             aria-selected={isActive}
                             role="tab"
@@ -383,7 +382,6 @@ export function SongControls() {
                   updateProgressionStepQuality({ id: activeStep.id, qualityOverride: null });
                 }}
                 preferFlats={preferFlats}
-                disabled={editsLocked}
               />
             </div>
             <div className={styles["editor-grid"]}>
@@ -407,7 +405,6 @@ export function SongControls() {
                     })
                   }
                   groups={qualityGroups}
-                  disabled={editsLocked}
                 />
               </div>
               <div className={shared["control-section"]}>
@@ -426,7 +423,6 @@ export function SongControls() {
                         duration: { ...activeStep.duration, value: next },
                       })
                     }
-                    disabled={editsLocked}
                   />
                   <div className={styles["duration-unit"]}>
                     <ToggleBar
@@ -442,7 +438,6 @@ export function SongControls() {
                           duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
                         })
                       }
-                      disabled={editsLocked}
                     />
                   </div>
                 </div>

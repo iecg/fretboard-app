@@ -6,6 +6,7 @@ import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
+import { TooltipProvider } from "../Tooltip/Tooltip";
 import { SongControls } from "./SongControls";
 
 const BASE_SEEDS = [
@@ -127,84 +128,39 @@ describe("SongControls", () => {
   });
 });
 
-describe("SongControls playback lock (P1-T3)", () => {
+describe("SongControls playback lock (R1-T2)", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("disables structural-edit controls while progression is playing", () => {
+  it("locks the KEY and PROGRESSION cards while progression is playing", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     store.set(setProgressionPlayingAtom, true);
-    renderWithStore(<SongControls />, store);
+    renderWithStore(
+      <TooltipProvider><SongControls /></TooltipProvider>,
+      store,
+    );
 
-    // Toolbar chord-management buttons
-    expect(screen.getByRole("button", { name: "Add chord" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Move chord up" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Move chord down" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /duplicate chord/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Remove chord" })).toBeDisabled();
+    const keyCard = screen.getByRole("region", { name: /key/i });
+    const progressionCard = screen.getByRole("region", { name: /progression/i });
 
-    // KEY-section selects
-    const rootCombos = screen.getAllByRole("combobox", { name: "Root" });
-    expect(rootCombos[0]).toHaveAttribute("data-disabled");
-    expect(screen.getByRole("combobox", { name: "Scale" })).toHaveAttribute("data-disabled");
-
-    // Preset
-    expect(screen.getByRole("combobox", { name: "Preset" })).toHaveAttribute("data-disabled");
-
-    // Quality
-    expect(screen.getByRole("combobox", { name: "Quality" })).toHaveAttribute("data-disabled");
-
-    // Duration stepper buttons (both +/-)
-    const durationGroup = screen.getByRole("group", { name: /Duration value/i });
-    for (const btn of within(durationGroup).getAllByRole("button")) {
-      expect(btn).toBeDisabled();
-    }
-
-    // Duration unit ToggleBar buttons
-    const unitGroup = screen.getByRole("group", { name: "Duration unit" });
-    for (const btn of within(unitGroup).getAllByRole("button")) {
-      expect(btn).toBeDisabled();
-    }
-
-    // DegreeGrid cells
-    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
-    const degreeCells = within(degreeGroup).getAllByRole("button");
-    expect(degreeCells.length).toBe(12);
-    for (const cell of degreeCells) {
-      expect(cell).toBeDisabled();
-    }
-
-    // Pip-row tabs
-    const pipTabs = screen.getAllByRole("tab");
-    expect(pipTabs.length).toBeGreaterThan(0);
-    for (const tab of pipTabs) {
-      expect(tab).toBeDisabled();
-    }
+    expect(keyCard.querySelector("[data-locked='true']")).toBeInTheDocument();
+    expect(progressionCard.querySelector("[data-locked='true']")).toBeInTheDocument();
   });
 
-  it("keeps backing-track + tempo + time-signature controls enabled while playing", () => {
+  it("does NOT lock the TIME or BACKING TRACK cards while playing", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     store.set(setProgressionPlayingAtom, true);
-    renderWithStore(<SongControls />, store);
-
-    // Tempo stepper (label "Tempo" from i18n meterTempo key)
-    const tempoGroup = screen.getByRole("group", { name: /^Tempo$/i });
-    for (const btn of within(tempoGroup).getAllByRole("button")) {
-      expect(btn).not.toBeDisabled();
-    }
-
-    // Time signature combobox stays interactive
-    const timeSig = screen.getByLabelText(/time signature/i);
-    expect(timeSig).not.toHaveAttribute("data-disabled");
-
-    // Backing-track style switches stay interactive
-    expect(screen.getByRole("combobox", { name: "Genre style" })).not.toHaveAttribute(
-      "data-disabled",
+    renderWithStore(
+      <TooltipProvider><SongControls /></TooltipProvider>,
+      store,
     );
-    expect(screen.getByRole("combobox", { name: "Chord instrument" })).not.toHaveAttribute(
-      "data-disabled",
-    );
+
+    const timeCard = screen.getByRole("region", { name: /time/i });
+    const backingCard = screen.getByRole("region", { name: /backing/i });
+
+    expect(timeCard.querySelector("[data-locked='true']")).toBeNull();
+    expect(backingCard.querySelector("[data-locked='true']")).toBeNull();
   });
 });
 

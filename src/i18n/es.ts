@@ -143,6 +143,7 @@ export const es: Dictionary = {
     strings: "Cuerdas",
     connectors: "Conectores de intervalo",
     interval: "Conectores de intervalo",
+    lockedHint: "Pausa la reproducción para editar",
     noteLabels: "Etiquetas de nota",
     longPressToAdd: "Mantén presionado para añadir formas",
     shiftClickToAdd: "Shift+clic para añadir formas",
