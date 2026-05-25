@@ -147,7 +147,7 @@ export function useProgressionAudioPlayback() {
         chordPatternId,
         bassPatternId,
         drumPatternId,
-        drumVariations: [...drumVariations],
+        drumVariations,
       }),
     [steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
   );
@@ -175,6 +175,11 @@ export function useProgressionAudioPlayback() {
     swing,
     loopEnabled,
   });
+  // IMPORTANT: this effect has no deps array on purpose. React commits no-deps
+  // effects before keyed effects in the same render, which guarantees Effect 1
+  // reads up-to-date inputs via buildInputsRef even when `buildKey` doesn't
+  // include all of them (tempo / swing / loop / beatsPerBar / instrument live
+  // outside buildKey). Do not add deps here.
   useEffect(() => {
     buildInputsRef.current = {
       steps,
@@ -236,6 +241,10 @@ export function useProgressionAudioPlayback() {
     const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
     const parts: ProgressionPartHandle[] = [];
     const totalDurationSec = built.totalDurationSec;
+    // Pending chord-overlay advance timeouts. Cleared on tear-down so a
+    // pause during the lookahead window doesn't write a stale active-step
+    // index after the orchestrator has torn down.
+    const pendingAdvanceTimeouts = new Set<number>();
 
     // 1. Chord-onset Part — drives React activeProgressionStepIndex.
     const chordOnsetPart = createProgressionPart<ChordOnsetEvent>({
@@ -264,7 +273,11 @@ export function useProgressionAudioPlayback() {
           if (delayMs <= 0) {
             setActiveStepIndex(event.stepIndex);
           } else {
-            window.setTimeout(() => setActiveStepIndex(event.stepIndex), delayMs);
+            const id = window.setTimeout(() => {
+              pendingAdvanceTimeouts.delete(id);
+              setActiveStepIndex(event.stepIndex);
+            }, delayMs);
+            pendingAdvanceTimeouts.add(id);
           }
         }
       },
@@ -337,13 +350,18 @@ export function useProgressionAudioPlayback() {
     drumPart.start(partStart, 0);
     parts.push(drumPart);
 
-    // 5. Metronome Loop. The wrapper already cycles 1..beatsPerBar; we
-    //    accent on beat 1.
+    // 5. Metronome Loop. The wrapper's `beatInBar` arg closes over its
+    //    construction-time `beatsPerBar`, so we override with an
+    //    orchestrator-owned counter that reads `beatsPerBarRef.current` —
+    //    that way a live time-signature change (Effect 5) updates the
+    //    accent cycle without rebuilding the Loop.
+    let beatCounter = 0;
     const metronome = createMetronomeLoop({
       beatsPerBar: beatsPerBarRef.current,
-      onBeat: (audioTime, beatInBar) => {
+      onBeat: (audioTime) => {
+        beatCounter = (beatCounter % beatsPerBarRef.current) + 1;
         scheduleClick(audio.layers.metronome, audioTime, {
-          accent: beatInBar === 1,
+          accent: beatCounter === 1,
         });
       },
     });
@@ -357,11 +375,13 @@ export function useProgressionAudioPlayback() {
     if (!inputs.loopEnabled) {
       endEventId = getTransport().scheduleOnce(() => {
         setPlaying(false);
-      }, `+${totalDurationSec + SCHEDULE_LEAD_SECONDS}`) as unknown as number;
+      }, `+${totalDurationSec + SCHEDULE_LEAD_SECONDS}`);
     }
 
     primsRef.current = { parts, loop: metronome, endEventId };
     return () => {
+      pendingAdvanceTimeouts.forEach((id) => window.clearTimeout(id));
+      pendingAdvanceTimeouts.clear();
       disposeAll(primsRef.current);
       primsRef.current = null;
     };
@@ -383,22 +403,18 @@ export function useProgressionAudioPlayback() {
   // Tone.Part stores events as ticks (PPQ-relative), so flipping the
   // Transport's bpm re-times every pending event automatically. No rebuild.
   useEffect(() => {
-    try {
-      const transport = getTransport();
-      if (transport?.bpm) transport.bpm.value = tempo;
-    } catch {
-      // Tone not initialized (jsdom without audio context).
+    const transport = getTransport() as unknown as { bpm?: { value: number } } | null;
+    if (transport?.bpm) {
+      transport.bpm.value = tempo;
     }
   }, [tempo]);
 
   // --- Effect 3: live swing ---
   // Transport.swing applies globally to all events scheduled through it.
   useEffect(() => {
-    try {
-      const transport = getTransport() as unknown as { swing: number } | null;
-      if (transport) transport.swing = swing;
-    } catch {
-      // Tone not initialized.
+    const transport = getTransport() as unknown as { swing?: number } | null;
+    if (transport && transport.swing !== undefined) {
+      transport.swing = swing;
     }
   }, [swing]);
 
@@ -417,11 +433,9 @@ export function useProgressionAudioPlayback() {
   // changes here update the ref for any future rebuild.
   useEffect(() => {
     beatsPerBarRef.current = beatsPerBar;
-    try {
-      const transport = getTransport() as unknown as { timeSignature: number } | null;
-      if (transport) transport.timeSignature = beatsPerBar;
-    } catch {
-      // Tone not initialized.
+    const transport = getTransport() as unknown as { timeSignature?: number } | null;
+    if (transport && transport.timeSignature !== undefined) {
+      transport.timeSignature = beatsPerBar;
     }
   }, [beatsPerBar]);
 

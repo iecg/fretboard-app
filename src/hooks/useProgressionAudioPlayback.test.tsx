@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act } from "@testing-library/react";
 import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
@@ -385,9 +387,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
   });
 
   // Regression guard for the 2026-05-25 progression-stall bug.
-  it("does NOT wrap advanceProgressionPlayback in Tone.Draw or startTransition", async () => {
-    const { readFileSync } = await import("node:fs");
-    const { resolve } = await import("node:path");
+  it("does NOT wrap advanceProgressionPlayback in Tone.Draw or startTransition", () => {
     const raw = readFileSync(
       resolve(process.cwd(), "src/hooks/useProgressionAudioPlayback.ts"),
       "utf8",
