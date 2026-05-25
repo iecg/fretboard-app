@@ -13,7 +13,7 @@ import styles from "./DegreeChordList.module.css";
 export interface DegreeChordListProps {
   /** Tonic note in sharps-form (e.g., "C", "F", "C#"). */
   rootNote: string;
-  /** Scale name (e.g., "Major", "Phrygian", "minor"). */
+  /** Scale name (e.g., "major", "phrygian", "minor"). */
   scaleName: string;
   /** Force flat-display when true; sharp-display when false. Auto-detected from FLAT_KEYS when omitted. */
   preferFlats?: boolean;
