@@ -108,6 +108,17 @@ describe("TransportBar", () => {
     expect(screen.getByLabelText(/pause progression/i)).not.toBeDisabled();
   });
 
+  it("keeps the loop toggle enabled while playing (transparent live update)", () => {
+    const store = makeAtomStore([...playableAtoms]);
+    renderWithStore(<TransportBar />, store);
+
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    expect(screen.getByLabelText(/loop progression/i)).toBeEnabled();
+  });
+
   it("no longer renders an inline tempo stepper — tempo moved to the Song tab", () => {
     renderWithAtoms(<TransportBar />, [...playableAtoms]);
     expect(screen.queryByRole("button", { name: /Increase Tempo/ })).toBeNull();
