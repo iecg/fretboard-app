@@ -37,7 +37,8 @@ import {
   pauseTimeline,
   setActiveStep,
 } from "../progressions/audio/timeline";
-import { getNoteFrequency } from "@fretflow/core";
+import { getNoteFrequency, prewarmVoicings } from "@fretflow/core";
+import { currentTuningAtom } from "../store/layoutAtoms";
 import { isMutedAtom } from "../store/audioAtoms";
 import {
   beatsPerBarAtom,
@@ -123,6 +124,7 @@ export function useProgressionAudioPlayback() {
   const tempo = useAtomValue(progressionTempoBpmAtom);
   const beatsPerBar = useAtomValue(beatsPerBarAtom);
   const swing = useAtomValue(progressionSwingAtom);
+  const tuning = useAtomValue(currentTuningAtom);
   const chordInstrument = useAtomValue(progressionChordInstrumentAtom);
   const chordPatternId = useAtomValue(progressionChordPatternAtom);
   const bassPatternId = useAtomValue(progressionBassPatternAtom);
@@ -183,6 +185,7 @@ export function useProgressionAudioPlayback() {
     beatsPerBar,
     swing,
     loopEnabled,
+    tuning,
   });
   // IMPORTANT: this effect has no deps array on purpose. React commits no-deps
   // effects before keyed effects in the same render, which guarantees Effect 1
@@ -200,6 +203,7 @@ export function useProgressionAudioPlayback() {
       beatsPerBar,
       swing,
       loopEnabled,
+      tuning,
     };
   });
 
@@ -237,6 +241,15 @@ export function useProgressionAudioPlayback() {
     }
     void resumeProgressionAudio();
     restoreProgressionBus();
+
+    // Pre-calculate the fretboard geometry for every chord in the progression.
+    // This runs synchronously behind the loading spinner, converting the heavy DFS 
+    // visual search into an O(1) cache lookup to prevent stuttering on transitions.
+    prewarmVoicings(
+      inputs.steps.map(s => ({ chordRoot: s.root, chordType: s.quality })),
+      inputs.tuning,
+      24
+    );
 
     // Event times are computed at the CURRENT tempo / beatsPerBar / swing
     // and then Tone stores them as ticks — subsequent live changes to those
