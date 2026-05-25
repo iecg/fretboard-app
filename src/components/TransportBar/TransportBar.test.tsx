@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it, beforeEach } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import { beatsPerBarAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlayingAtom, progressionStepsAtom } from "../../store/progressionAtoms";
+import { beatsPerBarAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { TransportBar } from "./TransportBar";
 
 const fourStepProgression = [
@@ -91,6 +91,21 @@ describe("TransportBar", () => {
   it("has no accessibility violations", async () => {
     const { container } = renderWithAtoms(<TransportBar />, [...playableAtoms]);
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("disables prev/next while playing but keeps the pause button enabled", () => {
+    const store = makeAtomStore([...playableAtoms]);
+    renderWithStore(<TransportBar />, store);
+
+    // Seed the playing state via the write atom (requires a playable progression).
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    expect(screen.getByLabelText(/previous chord/i)).toBeDisabled();
+    expect(screen.getByLabelText(/next chord/i)).toBeDisabled();
+    // The play/pause button must remain interactive so the user can stop playback.
+    expect(screen.getByLabelText(/pause progression/i)).not.toBeDisabled();
   });
 
   it("no longer renders an inline tempo stepper — tempo moved to the Song tab", () => {

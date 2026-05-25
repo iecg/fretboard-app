@@ -56,7 +56,7 @@ export function TransportBar() {
           type="button"
           className={styles.transportButton}
           onClick={() => previousProgressionStep()}
-          disabled={!canPlay}
+          disabled={!canPlay || progressionPlaying}
           aria-label="Previous chord"
         >
           <SkipBack size={13} strokeWidth={2.4} aria-hidden="true" />
@@ -78,7 +78,7 @@ export function TransportBar() {
           type="button"
           className={styles.transportButton}
           onClick={() => advanceProgressionPlayback()}
-          disabled={!canPlay}
+          disabled={!canPlay || progressionPlaying}
           aria-label="Next chord"
         >
           <SkipForward size={13} strokeWidth={2.4} aria-hidden="true" />
