@@ -58,19 +58,10 @@ export const ENHARMONICS: Record<string, string> = {
   Bb: "A#",
 };
 
-// Keys preferring flats for cleaner display
-export const FLAT_KEYS = [
-  "F",
-  "Bb",
-  "A#",
-  "Eb",
-  "D#",
-  "Ab",
-  "G#",
-  "Db",
-  "C#",
-  "Gb",
-];
+export function isFlatKey(rootNote: string): boolean {
+  const key = Key.majorKey(rootNote);
+  return typeof key.alteration === "number" && key.alteration < 0;
+}
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
@@ -309,7 +300,7 @@ export function getNoteDisplay(
   activeRoot: string,
   useFlats?: boolean,
 ): string {
-  const wantsFlats = useFlats ?? FLAT_KEYS.includes(activeRoot);
+  const wantsFlats = useFlats ?? isFlatKey(activeRoot);
   if (wantsFlats && noteName.includes("#")) {
     return Note.enharmonic(noteName);
   }
@@ -462,33 +453,10 @@ export function getDivergentNotes(
   });
 }
 
-// Key signature accidental counts (+ sharps, - flats)
-export const KEY_SIGNATURES: Record<string, number> = {
-  C: 0,
-  G: 1,
-  D: 2,
-  A: 3,
-  E: 4,
-  B: 5,
-  "F#": 6,
-  F: -1,
-  Bb: -2,
-  "A#": -2,
-  Eb: -3,
-  "D#": -3,
-  Ab: -4,
-  "G#": -4,
-  Db: -5,
-  "C#": 7,
-  Gb: -6,
-};
-
 export function getKeySignature(rootNote: string): number {
   const tonalKey = Key.majorKey(rootNote);
-  // Tonal returns `alteration` as a positive integer for sharps, negative for flats.
   if (typeof tonalKey.alteration === "number") return tonalKey.alteration;
-  // Fallback for inputs Tonal does not recognize (rare; preserves legacy behavior).
-  return KEY_SIGNATURES[rootNote] ?? 0;
+  return 0;
 }
 
 export function getKeySignatureForDisplay(
@@ -499,7 +467,7 @@ export function getKeySignatureForDisplay(
   const offset = SCALE_TO_PARENT_MAJOR_OFFSET[normalizeScaleName(scaleName)] ?? 0;
   const rootChroma = Note.chroma(rootNote);
   if (typeof rootChroma !== "number" || isNaN(rootChroma)) {
-    return KEY_SIGNATURES[rootNote] ?? 0;
+    return getKeySignature(rootNote);
   }
 
   // The "parent major" is the major key whose tonic is `offset` semitones above the current root.
@@ -526,7 +494,7 @@ export function getKeySignatureForDisplay(
   }
 
   const tonalKey = Key.majorKey(parentSharp);
-  const sig = typeof tonalKey.alteration === "number" ? tonalKey.alteration : (KEY_SIGNATURES[parentSharp] ?? 0);
+  const sig = typeof tonalKey.alteration === "number" ? tonalKey.alteration : getKeySignature(parentSharp);
 
   if (originalIsSharp && sig < 0) {
     return 12 + sig;
@@ -548,7 +516,7 @@ export function resolveAccidentalMode(
   if (mode === "flats") return true;
   // auto
   const isNatural = !rootNote.includes("#") && !rootNote.includes("b");
-  if (isNatural) return FLAT_KEYS.includes(rootNote);
+  if (isNatural) return isFlatKey(rootNote);
 
   const sharpRoot =
     rootNote.includes("b") && ENHARMONICS[rootNote]
@@ -561,7 +529,7 @@ export function resolveAccidentalMode(
 
   const resolvedScaleName = normalizeScaleName(scaleName);
   const intervals = SCALES[resolvedScaleName];
-  if (!intervals) return FLAT_KEYS.includes(rootNote);
+  if (!intervals) return isFlatKey(rootNote);
 
   const countAccidentals = (displays: string[]): number =>
     displays.reduce((sum, s) => {
@@ -586,20 +554,12 @@ export function resolveAccidentalMode(
   return flatCount < sharpCount; // tie → sharps (false)
 }
 
-export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
-  C: "C",
-  G: "G",
-  D: "D",
-  A: "A",
-  E: "E",
-  B: "B",
-  "F#": "F#/Gb",
-  "C#": "Db",
-  "G#": "Ab",
-  "D#": "Eb",
-  "A#": "Bb",
-  F: "F",
-};
+export function getCircleDisplayLabel(noteName: string): string {
+  if (!noteName.includes("#") && !noteName.includes("b")) return noteName;
+  if (noteName === "F#") return "F#/Gb";
+  const flatName = Note.enharmonic(noteName);
+  return flatName !== noteName ? flatName : noteName;
+}
 
 /**
  * Returns the absolute root note and diatonic triad quality for a given scale degree.
