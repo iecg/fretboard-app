@@ -167,6 +167,15 @@ export function getScaleSemitonesFromTonal(scaleName: string): number[] {
  *
  * Returns an empty array if the chord symbol isn't recognized.
  */
+export function getChordSemitonesFromTonal(chordSymbol: string): number[] {
+  const tonalChord = Chord.get(`C${chordSymbol}`);
+  if (tonalChord.empty) return [];
+  return tonalChord.intervals
+    .map((iv) => Interval.semitones(iv))
+    .filter((s): s is number => typeof s === "number" && !isNaN(s))
+    .map((s) => ((s % 12) + 12) % 12);
+}
+
 /**
  * Roman numerals for scale-degrees 1..7. Used to translate Tonal's
  * triad-suffix output (e.g. ["", "m", "m", "", "", "m", "dim"]) into
@@ -231,13 +240,4 @@ export function getModeTriads(modeName: string): readonly string[] | null {
   } catch {
     return null;
   }
-}
-
-export function getChordSemitonesFromTonal(chordSymbol: string): number[] {
-  const tonalChord = Chord.get(`C${chordSymbol}`);
-  if (tonalChord.empty) return [];
-  return tonalChord.intervals
-    .map((iv) => Interval.semitones(iv))
-    .filter((s): s is number => typeof s === "number" && !isNaN(s))
-    .map((s) => ((s % 12) + 12) % 12);
 }
