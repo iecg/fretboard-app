@@ -240,7 +240,11 @@ export async function prepareVisualPage(
   }, COACHMARK_SETTINGS_DISMISSED_KEY);
 
   if (options.goto !== false) {
-    await page.goto("/");
+    // Wait for "load" (not just navigation commit) so the document is fully
+    // parsed before addStyleTag injects into it. Without this, cold Docker
+    // containers can time out because the page is still loading when the
+    // style injection runs.
+    await page.goto("/", { waitUntil: "load" });
   } else {
     await page.evaluate((key: string) => {
       localStorage.setItem(key, "true");
