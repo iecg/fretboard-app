@@ -37,8 +37,6 @@ export interface ScaleBrowseOption {
   ordinal: number;
 }
 
-const SCALE_NAME_ALIASES: Record<string, string> = {};
-
 const CHROMATIC_NOTES = [
   "C",
   "C#",
@@ -368,13 +366,12 @@ function getFamilyDefinition(scaleName: string): ScaleFamilyDefinition {
 
 /**
  * Defensive pass-through. As of N5 (tonal-native migration), scale names are
- * stored natively as Tonal names so `SCALE_NAME_ALIASES` is empty and this
- * function returns its input unchanged. Kept as a single seam so future
- * legacy-name aliases (e.g. renaming a scale) can be added in one place
- * without touching every consumer.
+ * stored natively as Tonal names — this function returns its input unchanged.
+ * Kept as a single seam so future legacy-name aliases (e.g. renaming a scale)
+ * can be added in one place without touching every consumer.
  */
 export function normalizeScaleName(scaleName: string): string {
-  return SCALE_NAME_ALIASES[scaleName] ?? scaleName;
+  return scaleName;
 }
 
 export function getScaleCatalogEntry(
