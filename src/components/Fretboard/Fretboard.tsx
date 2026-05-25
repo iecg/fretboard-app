@@ -163,7 +163,7 @@ export function Fretboard(props: FretboardProps) {
   const offsetLeftRef = useRef(0);
   const [hasOverflow, setHasOverflow] = useState(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     if (el.clientWidth > 0) setContainerWidth(el.clientWidth);
@@ -190,7 +190,7 @@ export function Fretboard(props: FretboardProps) {
     geometryRef.current = { effectiveZoom, totalColumns, stringRowPx, startFret, endFret };
   });
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!autoCenterTarget) return;
     const el = scrollRef.current;
     if (!el) return;
