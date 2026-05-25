@@ -15,10 +15,10 @@ interface ProgressionPositionReadoutProps {
   beatsPerBar: number;
 }
 
-/** Position-write interval. Matches a 60 Hz refresh and is short enough that
- *  the subdivision digit's ~1ms resolution stays smooth. `setInterval` (not
- *  rAF) keeps the headless preview ticking; rAF is paused there. */
-const TICK_MS = 16;
+/** Position-write interval. Reduced to ~30 Hz refresh to prevent main thread
+ *  thrashing while keeping the subdivision digit's resolution reasonably smooth.
+ *  `setInterval` (not rAF) keeps the headless preview ticking; rAF is paused there. */
+const TICK_MS = 32;
 
 function PositionDigits({
   parts,
@@ -76,6 +76,7 @@ export function ProgressionPositionReadout({
   const lastBarRef = useRef<string>("");
   const lastBeatRef = useRef<string>("");
   const lastSubRef = useRef<string>("");
+  const lastAriaLabelRef = useRef<string>("");
 
   // Store chord-boundary props in refs so the animation loop can access
   // the latest values without needing to be cleared and restarted
@@ -117,11 +118,13 @@ export function ProgressionPositionReadout({
 
       // Update aria-label imperatively so screen readers stay in sync with
       // the high-frequency visual updates.
-      if (containerRef.current) {
+      const currentAriaLabel = `Position ${p.current} of ${p.total}`;
+      if (currentAriaLabel !== lastAriaLabelRef.current && containerRef.current) {
         containerRef.current.setAttribute(
           "aria-label",
-          `Position ${p.current} of ${p.total}`,
+          currentAriaLabel,
         );
+        lastAriaLabelRef.current = currentAriaLabel;
       }
     };
 
@@ -150,6 +153,7 @@ export function ProgressionPositionReadout({
     lastBarRef.current = "";
     lastBeatRef.current = "";
     lastSubRef.current = "";
+    lastAriaLabelRef.current = "";
     tick();
 
     if (!playing) return;
