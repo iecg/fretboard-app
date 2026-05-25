@@ -1,4 +1,4 @@
-import { useId, useMemo, useCallback, memo, type CSSProperties } from "react";
+import { useId, useMemo, useCallback, type CSSProperties } from "react";
 import { useAtomValue } from "jotai";
 import { useReducedMotion } from "motion/react";
 import {
@@ -138,7 +138,7 @@ interface FretboardSVGProps {
   ) => void;
 }
 
-export const FretboardSVG = memo(function FretboardSVG({
+export function FretboardSVG({
   effectiveZoom,
   neckWidthPx,
   startFret,
@@ -603,4 +603,4 @@ export const FretboardSVG = memo(function FretboardSVG({
       />
     </div>
   );
-});
+}
