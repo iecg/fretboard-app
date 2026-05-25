@@ -1,5 +1,604 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapshot — full structure including member names 1`] = `
+{
+  "Augmented Triad": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "#5",
+        "semitone": 8,
+      },
+    ],
+    "quality": "triad",
+  },
+  "Diminished 7th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "b5",
+        "semitone": 6,
+      },
+      {
+        "name": "bb7",
+        "semitone": 9,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "Diminished Triad": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "b5",
+        "semitone": 6,
+      },
+    ],
+    "quality": "triad",
+  },
+  "Dominant 7th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "Half-Diminished 7th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "b5",
+        "semitone": 6,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "Major 6th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "6",
+        "semitone": 9,
+      },
+    ],
+    "quality": "sixth",
+  },
+  "Major 7th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "7",
+        "semitone": 11,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "Major Triad": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "triad",
+  },
+  "Minor 6th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "6",
+        "semitone": 9,
+      },
+    ],
+    "quality": "sixth",
+  },
+  "Minor 7th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "Minor Triad": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "triad",
+  },
+  "Minor-Major 7th": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "7",
+        "semitone": 11,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "Power Chord (5)": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "power",
+  },
+  "Sus2": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "2",
+        "semitone": 2,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "suspended",
+  },
+  "Sus4": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "4",
+        "semitone": 5,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "suspended",
+  },
+}
+`;
+
+exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 15 entries 1`] = `
+{
+  "Augmented Triad": [
+    0,
+    4,
+    8,
+  ],
+  "Diminished 7th": [
+    0,
+    3,
+    6,
+    9,
+  ],
+  "Diminished Triad": [
+    0,
+    3,
+    6,
+  ],
+  "Dominant 7th": [
+    0,
+    4,
+    7,
+    10,
+  ],
+  "Half-Diminished 7th": [
+    0,
+    3,
+    6,
+    10,
+  ],
+  "Major 6th": [
+    0,
+    4,
+    7,
+    9,
+  ],
+  "Major 7th": [
+    0,
+    4,
+    7,
+    11,
+  ],
+  "Major Triad": [
+    0,
+    4,
+    7,
+  ],
+  "Minor 6th": [
+    0,
+    3,
+    7,
+    9,
+  ],
+  "Minor 7th": [
+    0,
+    3,
+    7,
+    10,
+  ],
+  "Minor Triad": [
+    0,
+    3,
+    7,
+  ],
+  "Minor-Major 7th": [
+    0,
+    3,
+    7,
+    11,
+  ],
+  "Power Chord (5)": [
+    0,
+    7,
+  ],
+  "Sus2": [
+    0,
+    2,
+    7,
+  ],
+  "Sus4": [
+    0,
+    5,
+    7,
+  ],
+}
+`;
+
+exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 28 entries 1`] = `
+{
+  "Altered": [
+    0,
+    1,
+    3,
+    4,
+    6,
+    8,
+    10,
+  ],
+  "Altered Diminished": [
+    0,
+    1,
+    3,
+    4,
+    6,
+    8,
+    9,
+  ],
+  "Dorian": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "Dorian Flat 2": [
+    0,
+    1,
+    3,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "Dorian Sharp 4": [
+    0,
+    2,
+    3,
+    6,
+    7,
+    9,
+    10,
+  ],
+  "Harmonic Minor": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    11,
+  ],
+  "Ionian Augmented": [
+    0,
+    2,
+    4,
+    5,
+    8,
+    9,
+    11,
+  ],
+  "Locrian": [
+    0,
+    1,
+    3,
+    5,
+    6,
+    8,
+    10,
+  ],
+  "Locrian Natural 2": [
+    0,
+    2,
+    3,
+    5,
+    6,
+    8,
+    10,
+  ],
+  "Locrian Natural 6": [
+    0,
+    1,
+    3,
+    5,
+    6,
+    9,
+    10,
+  ],
+  "Lydian": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+  ],
+  "Lydian Augmented": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    9,
+    11,
+  ],
+  "Lydian Dominant": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    10,
+  ],
+  "Lydian Sharp 2": [
+    0,
+    3,
+    4,
+    6,
+    7,
+    9,
+    11,
+  ],
+  "Major": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+  ],
+  "Major Blues": [
+    0,
+    2,
+    3,
+    4,
+    7,
+    9,
+  ],
+  "Major Pentatonic": [
+    0,
+    2,
+    4,
+    7,
+    9,
+  ],
+  "Melodic Minor": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+  ],
+  "Minor Blues": [
+    0,
+    3,
+    5,
+    6,
+    7,
+    10,
+  ],
+  "Minor Pentatonic": [
+    0,
+    3,
+    5,
+    7,
+    10,
+  ],
+  "Mixolydian": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "Mixolydian Flat 6": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "Natural Minor": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "Phrygian": [
+    0,
+    1,
+    3,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "Phrygian Dominant": [
+    0,
+    1,
+    4,
+    5,
+    7,
+    8,
+    10,
+  ],
+}
+`;
+
 exports[`getDivergentNotes > matches snapshot across all scales × {C, F#, Bb} 1`] = `
 {
   "Bb Aeolian": [],

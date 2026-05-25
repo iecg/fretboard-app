@@ -4,10 +4,12 @@ import {
   DEGREE_COLORS,
   getAdjacentDegree,
   getDegreesForScale,
+  getDegreeSequence,
   getQualityForDegree,
   remapDegreeForScale,
   _validateDiatonicQualitiesAgainstTonal,
 } from './degrees';
+import { SCALES } from './theoryCatalog';
 
 const BASE_DEGREE_COLOR_KEYS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
 
@@ -768,5 +770,36 @@ describe("diatonic-quality alignment with Tonal (drift detection)", () => {
   });
   it("Natural Minor diatonic triads match Tonal", () => {
     expect(_validateDiatonicQualitiesAgainstTonal("Natural Minor")).toBe(true);
+  });
+});
+
+describe("degree outputs snapshot (pre-Tonal-migration lock)", () => {
+  it("getDegreesForScale across all 28 scales", () => {
+    const snapshot: Record<string, Record<number, string>> = {};
+    for (const scaleName of Object.keys(SCALES)) {
+      snapshot[scaleName] = getDegreesForScale(scaleName);
+    }
+    expect(snapshot).toMatchSnapshot();
+  });
+
+  it("getDegreeSequence across all 28 scales", () => {
+    const snapshot: Record<string, string[]> = {};
+    for (const scaleName of Object.keys(SCALES)) {
+      snapshot[scaleName] = getDegreeSequence(scaleName);
+    }
+    expect(snapshot).toMatchSnapshot();
+  });
+
+  it("getQualityForDegree for every (scale, degree) pair the catalog produces", () => {
+    const snapshot: Record<string, Record<string, string | undefined>> = {};
+    for (const scaleName of Object.keys(SCALES)) {
+      const degrees = getDegreeSequence(scaleName);
+      const inner: Record<string, string | undefined> = {};
+      for (const degree of degrees) {
+        inner[degree] = getQualityForDegree(degree, scaleName);
+      }
+      snapshot[scaleName] = inner;
+    }
+    expect(snapshot).toMatchSnapshot();
   });
 });

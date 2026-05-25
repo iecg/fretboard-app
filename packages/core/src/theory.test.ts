@@ -558,3 +558,17 @@ describe("getDiatonicChord", () => {
     });
   });
 });
+
+describe("catalog snapshots (pre-Tonal-migration lock)", () => {
+  it("SCALES snapshot — all 28 entries", () => {
+    expect(SCALES).toMatchSnapshot();
+  });
+
+  it("CHORDS snapshot — all 15 entries", () => {
+    expect(CHORDS).toMatchSnapshot();
+  });
+
+  it("CHORD_DEFINITIONS snapshot — full structure including member names", () => {
+    expect(CHORD_DEFINITIONS).toMatchSnapshot();
+  });
+});
