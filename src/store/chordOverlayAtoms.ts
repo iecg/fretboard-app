@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { atom, type Atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
@@ -9,11 +9,13 @@ import {
   getNoteDisplay,
   formatAccidental,
   generateVoicings,
+  getFretboardNotes,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
   ResolvedChordMember,
   PracticeLens,
+  ShapePolygon,
   Voicing,
   VoicingType,
 } from "@fretflow/core";
@@ -117,6 +119,29 @@ function fitsStringSpecificRangesForAnyInstance(
 
   // Verify that the voicing fits the string-specific ranges of this instance
   return fitsStringSpecificRanges(positionKeys, instCoords);
+}
+
+/**
+ * True when a single `"string-fret"` position key falls within any
+ * non-truncated polygon's diagonal vertex bounds.
+ */
+function isInAnyPolygon(
+  positionKey: string,
+  polygons: readonly ShapePolygon[],
+): boolean {
+  const [sStr, fStr] = positionKey.split("-");
+  const s = Number(sStr);
+  const f = Number(fStr);
+
+  for (const poly of polygons) {
+    const leftFret = poly.vertices[s]?.fret;
+    const rightFret = poly.vertices[poly.vertices.length - 1 - s]?.fret;
+    if (leftFret === undefined || rightFret === undefined) continue;
+    const lo = Math.min(leftFret, rightFret);
+    const hi = Math.max(leftFret, rightFret);
+    if (f >= lo && f <= hi) return true;
+  }
+  return false;
 }
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
@@ -539,15 +564,66 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
  */
 export const chordHighlightPositionsAtom = atom((get): Set<string> => {
   const voicing = get(voicingAtom);
-  if (voicing === "off") return new Set<string>();
   if (get(chordOverlayHiddenAtom)) return new Set<string>();
+
   if (voicing === "full") {
-    return new Set(get(voicingMatchesAtom).flatMap((v) => v.positionKeys));
+    const fullPositionKeys = get(voicingMatchesAtom).flatMap((v) => v.positionKeys);
+    if (get(chordSnapToScaleAtom)) {
+      const { shapePolygons } = get(shapeDataAtom);
+      if (shapePolygons.length > 0) {
+        // 1. Start with voicing positions inside the polygon
+        const result = new Set(fullPositionKeys.filter((k) => isInAnyPolygon(k, shapePolygons)));
+        // 2. Also add any chord-tone position inside the polygon,
+        //    so chord tones the CAGED voicing engine doesn't generate
+        //    (e.g. the 5th on the low E string for C Major) still light up.
+        addChordTonesWithinPolygon(get, result, shapePolygons);
+        return result;
+      }
+    }
+    return new Set(fullPositionKeys);
   }
+
   // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.
   // Note highlights represent ALL close candidate positions across all strings, decoupled from the string-set filter.
-  return new Set(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
+  if (voicing === "close") {
+    return new Set(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
+  }
+
+  // voicing === "off": if lock-to-scale is on, still highlight chord tones restricted to the pattern
+  if (voicing === "off" && get(chordSnapToScaleAtom)) {
+    const { shapePolygons } = get(shapeDataAtom);
+    if (shapePolygons.length > 0) {
+      const result = new Set<string>();
+      addChordTonesWithinPolygon(get, result, shapePolygons);
+      return result;
+    }
+  }
+
+  return new Set<string>();
 });
+
+/** Fill `result` with every fretboard position whose note is a chord tone
+ *  and lies within at least one scale-pattern polygon. */
+function addChordTonesWithinPolygon(
+  get: <T>(a: Atom<T>) => T,
+  result: Set<string>,
+  shapePolygons: readonly ShapePolygon[],
+): void {
+  const tones = get(chordTonesAtom);
+  if (tones.length === 0) return;
+  const tuning = get(currentTuningAtom);
+  const layout = getFretboardNotes(tuning, 24);
+  for (let s = 0; s < tuning.length; s++) {
+    for (let f = 0; f <= 24; f++) {
+      if (tones.includes(layout[s][f])) {
+        const key = `${s}-${f}`;
+        if (isInAnyPolygon(key, shapePolygons)) {
+          result.add(key);
+        }
+      }
+    }
+  }
+}
 
 // Migrates from legacy viewMode value on first access.
 export const practiceLensAtom = atomWithStorage<PracticeLens>(

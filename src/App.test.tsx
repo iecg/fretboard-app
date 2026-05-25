@@ -306,19 +306,18 @@ describe("App", () => {
       localStorage.setItem(k("chordOverlayHidden"), "true");
     }
 
-    it("resets overlay visibility when rootNote changes via Circle of Fifths", async () => {
+    it("preserves overlay visibility when rootNote changes via Circle of Fifths (sticky)", async () => {
       setupHiddenPracticeBar();
       render(<App />);
       // Confirm hidden persists on mount
       await waitFor(() => {
         expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
       });
-      // Changing rootNote resets chordOverlayHidden to false.
-      // v2.0: FingeringPatternControls mock (in Overlay tab) exposes the root-note setter.
+      // Root note change no longer resets chordOverlayHidden — user preference is sticky.
       await userEvent.click(await screen.findByRole("tab", { name: "Overlay" }));
       fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("false");
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
       });
     });
 

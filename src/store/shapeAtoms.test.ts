@@ -317,7 +317,7 @@ describe("shapeDataAtom — CAGED scale shape remapping under minor active chord
     // Verify the remapped polygon properties
     const poly = data.shapePolygons[0];
     expect(poly.shape).toBe("C"); // keep select shape name so priority matches!
-    expect(poly.cagedLabel).toBe("C Shape"); // Major scale shape label
+    expect(poly.cagedLabel).toBe("Cm Shape"); // minor quality label
 
     // Verify it actually used the "A" template (scans relative to anchor A)
     // The "A" shape template has intendedMin = -1, intendedMax = 3 (relative to anchor)

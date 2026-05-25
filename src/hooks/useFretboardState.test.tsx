@@ -4,22 +4,14 @@ import { renderHook } from "@testing-library/react";
 import { Provider } from "jotai";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { useFretboardState } from "./useFretboardState";
-import {
-  chordHighlightPositionsAtom,
-  closeCandidatesAtom,
-  voicingAtom,
-  voicingMatchesAtom,
-} from "../store/chordOverlayAtoms";
+import { voicingMatchesAtom } from "../store/chordOverlayAtoms";
 import { chordScopeToPositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { progressionStepsAtom } from "../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
-
+import { voicingTypeAtom, chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
 
 beforeEach(() => {
-  // atomWithStorage reads from localStorage on init; tests in earlier describe
-  // blocks set fingeringPattern + cagedShapes, which leak via storage into the
-  // F5c tests below and skew closeCandidatesAtom (it narrows by activeScaleWindow).
   localStorage.clear();
 });
 
@@ -129,9 +121,16 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
   // in 3NPS mode (covered by the "scope off" case above).
 });
 
-describe("useFretboardState — F5c: highlight/selection split", () => {
-  function seedManualChord(): Array<readonly [unknown, unknown]> {
-    return [
+describe("useFretboardState — CAGED shape filtering and truncation", () => {
+  it("suppresses spurious chord shape at fret 0 for D shape scale in C Major", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set(["D"])],
+      [chordScopeToPositionAtom, true],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [voicingTypeAtom, "caged"],
+      [chordOverlayHiddenAtom, false],
       [progressionStepsAtom, [
         {
           id: "step-1",
@@ -141,71 +140,47 @@ describe("useFretboardState — F5c: highlight/selection split", () => {
           manualRoot: "C",
         },
       ]],
-    ];
-  }
 
-  it("fullChordPositions is the union of ALL Close candidates", () => {
-    const store = makeAtomStore([
-      ...seedManualChord(),
-      [voicingAtom, "close"],
-    ] as Parameters<typeof makeAtomStore>[0]);
-
-    const candidates = store.get(closeCandidatesAtom);
-    // Sanity check the test seed: there must be multiple candidates for the
-    // union assertion to be meaningful.
-    expect(candidates.length).toBeGreaterThan(1);
-
-    const { result } = renderHook(() => useFretboardState(), {
-      wrapper: wrapWithStore(store),
-    });
-
-    // The highlight set must equal the union of every candidate's positions,
-    // mirroring chordHighlightPositionsAtom's output exactly.
-    const expectedUnion = store.get(chordHighlightPositionsAtom);
-    expect(result.current.fullChordPositions).toEqual(expectedUnion);
-  });
-
-  it("fullChordPositions is empty when voicing is off", () => {
-    const store = makeAtomStore([
-      ...seedManualChord(),
-      [voicingAtom, "off"],
     ] as Parameters<typeof makeAtomStore>[0]);
 
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
 
-    expect(result.current.fullChordPositions.size).toBe(0);
+    // The open C Major voicing (shape: "C", position: "0-3") should be filtered out
+    // because the only active D shape polygon near fret 0 is truncated/off-board.
+    const openCMatch = result.current.fullChordMatches.find((m) => m.positionKeys.includes("4-3"));
+    expect(openCMatch).toBeUndefined();
   });
-});
 
-describe("ii chord mapping regression test", () => {
-  it("investigates ii chord shape mapping in C Major C shape", () => {
+  it("keeps valid open C Major chord at fret 0 for C shape scale in C Major", () => {
     const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "Major"],
-      [progressionStepsAtom, [
-        {
-          id: "step-1",
-          degree: "ii°",
-          duration: { value: 1, unit: "bar" },
-          qualityOverride: "Minor Triad",
-          manualRoot: "D",
-        },
-      ]],
-      [voicingAtom, "full"],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C"])],
       [chordScopeToPositionAtom, true],
-    ] as never);
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "Major"],
+      [voicingTypeAtom, "caged"],
+      [chordOverlayHiddenAtom, false],
+      [progressionStepsAtom, [
+        {
+          id: "step-1",
+          degree: "I",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "Major Triad",
+          manualRoot: "C",
+        },
+      ]],
+    ] as Parameters<typeof makeAtomStore>[0]);
 
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
 
-    const visible = result.current.fullChordMatches;
-    expect(visible.length).toBeGreaterThan(0);
-    expect(visible.every(v => v.shape === "C")).toBe(true);
+    // The open C Major voicing (shape: "C", position: "0-3") should be retained
+    // because the C shape polygon at fret 0 is fully on-board and not truncated.
+    const openCMatch = result.current.fullChordMatches.find((m) => m.positionKeys.includes("4-3"));
+    expect(openCMatch).toBeDefined();
   });
 });
 

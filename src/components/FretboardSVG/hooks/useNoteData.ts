@@ -189,6 +189,7 @@ export function useNoteData({
         ));
 
         const isInsideAnyPolygon = shapePolygons.some((poly) => {
+          if (poly.truncated) return false;
           const leftFret = poly.vertices[stringIndex]?.fret;
           const rightFret =
             poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
@@ -244,6 +245,7 @@ export function useNoteData({
           if (shapePolygons.length === 0 || !activePattern) return true;
           if (shapeScope === "global") return true;
           return shapePolygons.some((poly) => {
+            if (poly.truncated) return false;
             if (shapeScope === "single") {
               if (activePattern === "caged" && poly.shape !== activeShape) return false;
               if (activePattern === "3nps" && poly.shape !== activeShape) return false;
