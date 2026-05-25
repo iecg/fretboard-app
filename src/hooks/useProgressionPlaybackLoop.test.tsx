@@ -73,13 +73,6 @@ const toneMocks = vi.hoisted(() => {
   const getContext = vi.fn(() => ({ now: () => contextNowRef.fn() }));
   const now = vi.fn(() => contextNowRef.fn());
 
-  const Draw = {
-    schedule: vi.fn((cb: () => void) => {
-      cb();
-      return Draw;
-    }),
-  };
-
   const _resetEvents = () => {
     for (const timerId of events.values()) clearTimeout(timerId);
     events.clear();
@@ -95,7 +88,6 @@ const toneMocks = vi.hoisted(() => {
     setContext,
     getContext,
     now,
-    Draw,
     _resetEvents,
   };
 });
@@ -105,9 +97,10 @@ vi.mock("tone", () => ({
   getContext: toneMocks.getContext,
   getTransport: toneMocks.getTransport,
   now: toneMocks.now,
-  Draw: toneMocks.Draw,
 }));
 
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   _resetTimelineForTests,
   pauseTimeline,
@@ -407,5 +400,33 @@ describe("useProgressionPlaybackLoop", () => {
     unmount();
 
     expect(toneMocks.clear).toHaveBeenCalledWith(scheduledId);
+  });
+
+  // Regression guard for the 2026-05-25 progression-stall bug. Wrapping the
+  // advance in `Tone.Draw.schedule(...)` or `startTransition(...)` re-creates
+  // the failure mode where the chain dies after a couple of bars: Draw
+  // silently drops events whose scheduled time is >250ms in the past, and
+  // `startTransition` gives React explicit permission to deprioritize the
+  // Jotai write that arms the next step. Together they stall playback as
+  // soon as one heavy Fretboard render slips past the 250ms window.
+  it("does NOT wrap advanceProgressionPlayback in Tone.Draw or startTransition", () => {
+    const rawSource = readFileSync(
+      resolve(process.cwd(), "src/hooks/useProgressionPlaybackLoop.ts"),
+      "utf8",
+    );
+    // Strip comments so the regression-warning comment block in the source
+    // (which mentions Draw and startTransition by name) doesn't trip the
+    // checks below. We only want to catch real imports / call sites.
+    const code = rawSource
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split("\n")
+      .map((line) => line.replace(/\/\/.*$/, ""))
+      .join("\n");
+    expect(code, "Draw.schedule wrapper around advance re-introduces 250ms-expiration stall")
+      .not.toMatch(/Draw\.schedule/);
+    expect(code, "startTransition around advance defers Jotai write that arms next step")
+      .not.toMatch(/\bstartTransition\b/);
+    expect(code, "Tone's Draw import implies intent to use the dropped-when-stale path")
+      .not.toMatch(/from\s+["']tone["'][^;]*\bDraw\b/);
   });
 });

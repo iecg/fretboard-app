@@ -1,6 +1,6 @@
-import { useEffect, startTransition } from "react";
+import { useEffect } from "react";
 import { useAtomValue } from "jotai";
-import { getTransport, Draw } from "tone";
+import { getTransport } from "tone";
 import { ensureProgressionAudio } from "../progressions/audio/bus";
 import { getTimeUntilCurrentStepEndMs, getTimelinePosition } from "../progressions/audio/timeline";
 import { isMutedAtom } from "../store/audioAtoms";
@@ -82,12 +82,18 @@ export function useProgressionPlaybackLoop() {
         // Relative-time string syntax: Tone interprets `"+x"` as "x seconds
         // from transport now", which is unambiguous regardless of whether
         // the numeric form would have been parsed as ticks or seconds.
-        transportEventId = getTransport().scheduleOnce((time) => {
-          Draw.schedule(() => {
-            startTransition(() => {
-              advanceProgressionPlayback();
-            });
-          }, time);
+        //
+        // Do NOT wrap this in `Tone.Draw.schedule(...)` or `startTransition`.
+        // `Draw` silently drops events whose scheduled time is more than
+        // 250ms in the past (Draw's `expiration`), and `startTransition`
+        // gives React explicit permission to deprioritize the Jotai write
+        // that arms the next step — together they can stall the advance
+        // chain mid-progression (one heavy Fretboard re-render past the
+        // 250ms window and Draw drops the next callback, freezing
+        // playback). See PR/commit history for the regression that
+        // motivated removing that wrapper.
+        transportEventId = getTransport().scheduleOnce(() => {
+          advanceProgressionPlayback();
         }, `+${remainingSec}`) as unknown as number;
       };
 
