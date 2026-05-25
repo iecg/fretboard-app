@@ -5,7 +5,6 @@ import {
   getChordSemitonesFromTonal,
   getModeTriads,
   getChordDisplayLabel,
-  getScaleDisplayLabel,
 } from "./tonal";
 
 describe("normalizeToSharps", () => {
@@ -130,23 +129,5 @@ describe("getChordDisplayLabel", () => {
   });
   it("empty string passes through (does not resolve to major triad)", () => {
     expect(getChordDisplayLabel("")).toBe("");
-  });
-});
-
-describe("getScaleDisplayLabel", () => {
-  it("major", () => {
-    expect(getScaleDisplayLabel("major")).toBe("major");
-  });
-  it("phrygian dominant", () => {
-    expect(getScaleDisplayLabel("phrygian dominant")).toBe("phrygian dominant");
-  });
-  it("ultralocrian", () => {
-    expect(getScaleDisplayLabel("ultralocrian")).toBe("ultralocrian");
-  });
-  it("falls back to input on unknown scale", () => {
-    expect(getScaleDisplayLabel("bogus scale")).toBe("bogus scale");
-  });
-  it("empty string passes through", () => {
-    expect(getScaleDisplayLabel("")).toBe("");
   });
 });

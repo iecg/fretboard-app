@@ -9,8 +9,8 @@
  *   source-of-truth interval extraction for FretFlow's SCALES + CHORD_DEFINITIONS.
  * - `getModeTriads(name)` — diatonic-triad Roman-numeral table per mode
  *   (Tonal's modal vocabulary translated to FretFlow's case+suffix conventions).
- * - `getChordDisplayLabel(symbol)` / `getScaleDisplayLabel(name)` —
- *   user-facing English labels derived from Tonal's chord/scale name dictionaries.
+ * - `getChordDisplayLabel(symbol)` —
+ *   user-facing English label derived from Tonal's chord name dictionary.
  */
 
 import * as Note from "@tonaljs/note";
@@ -176,18 +176,3 @@ export function getChordDisplayLabel(chordSymbol: string): string {
   return c.name.replace(/^C\s*/, "").trim() || chordSymbol;
 }
 
-/**
- * Returns the English display label for a Tonal scale name, suitable
- * for rendering in user-facing UI. Examples:
- *   getScaleDisplayLabel("major")              -> "major"
- *   getScaleDisplayLabel("phrygian dominant")  -> "phrygian dominant"
- *   getScaleDisplayLabel("locrian 6")          -> "locrian 6"
- *
- * Returns the input unchanged if Tonal can't resolve it.
- */
-export function getScaleDisplayLabel(scaleName: string): string {
-  if (!scaleName) return scaleName;
-  const s = Scale.get(`C ${scaleName}`);
-  if (s.empty) return scaleName;
-  return s.name.replace(/^C\s*/, "").trim() || scaleName;
-}
