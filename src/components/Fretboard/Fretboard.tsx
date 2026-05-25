@@ -184,7 +184,7 @@ export function Fretboard(props: FretboardProps) {
     return () => cancelAnimationFrame(id);
   }, [effectiveZoom, totalColumns, containerWidth]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!autoCenterTarget) return;
     const el = scrollRef.current;
     if (!el) return;
