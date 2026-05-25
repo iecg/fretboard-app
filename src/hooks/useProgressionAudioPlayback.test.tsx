@@ -1,6 +1,4 @@
 // @vitest-environment jsdom
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act } from "@testing-library/react";
 import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
@@ -294,20 +292,47 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
   // Pairs with the bus.ts guard that locks Draw.expiration to 5s; together
   // they prevent a regression to the 3fa9ce5 stall (0.25s default expiration
   // silently dropping the advance under heavy main-thread load).
-  it("source defers chord-overlay advance via Tone.Draw, not setTimeout", () => {
-    const raw = readFileSync(
-      resolve(process.cwd(), "src/hooks/useProgressionAudioPlayback.ts"),
-      "utf8",
+  it("defers chord-overlay advance via Tone.Draw.schedule", async () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+
+    // Wait for Parts to be built.
+    await vi.waitFor(() => {
+      expect(toneMocks.parts).toHaveLength(5);
+    });
+
+    // Find the chord-onset Part — the one whose events carry `isFirstBar`.
+    const onsetPart = toneMocks.parts.find(
+      (p) =>
+        p.events.length > 0
+        && (p.events[0][1] as { isFirstBar?: boolean }).isFirstBar !== undefined,
     );
-    const code = raw
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .split("\n")
-      .map((l) => l.replace(/\/\/.*$/, ""))
-      .join("\n");
-    expect(code).not.toMatch(/setTimeout/);
-    expect(code).not.toMatch(/pendingAdvanceTimeouts/);
-    expect(code).not.toMatch(/\bstartTransition\b/);
-    expect(code).toMatch(/getDraw\(\)\.schedule/);
+    expect(onsetPart).toBeDefined();
+
+    toneMocks.drawSchedule.mockClear();
+
+    // Invoke the chord-onset callback for a first-bar event.
+    const firstBar = onsetPart!.events.find(
+      ([, v]) => (v as { isFirstBar?: boolean }).isFirstBar === true,
+    );
+    expect(firstBar).toBeDefined();
+    const audioTime = toneMocks.contextNowRef.fn() + 0.1;
+    act(() => {
+      onsetPart!.callback(audioTime, firstBar![1]);
+    });
+
+    // The chord-overlay advance should have been deferred through Draw.schedule.
+    expect(toneMocks.drawSchedule).toHaveBeenCalledWith(
+      expect.any(Function),
+      audioTime,
+    );
   });
 
   it("disposes ALL primitives and rebuilds from 0 when steps change mid-play", async () => {
