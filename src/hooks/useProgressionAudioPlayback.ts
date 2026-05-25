@@ -82,21 +82,23 @@ function disposeAll(prims: PlaybackPrimitives | null) {
 /**
  * Tone-native progression playback orchestrator.
  *
- * Seven effects, ordered by cost:
+ * Six effects, ordered by cost:
  *  1. (Heavy)   Build / dispose primitives on changes that change WHICH
- *               events fire: playing, blocked, muted, steps, patterns,
- *               drum variations. Restart from bar 0.
+ *               events fire OR how the playback completes: playing,
+ *               blocked, muted, steps, patterns, drum variations, AND
+ *               loopEnabled (the end-event lifecycle is tied to the loop
+ *               flag, so we rebuild rather than juggle two effects).
+ *               Restart from bar 0.
  *  2. (Live)    Tempo  — Transport.bpm.value = N (events stored as ticks).
  *  3. (Live)    Swing  — Transport.swing = X.
- *  4. (Live)    Loop   — part.setLoop(bool, loopEnd?) on every Part.
- *  5. (Live)    Time signature — Transport.timeSignature = N + ref read
+ *  4. (Live)    Time signature — Transport.timeSignature = N + ref read
  *               by the metronome Loop callback for accent cycling.
- *  6. (Live)    Instrument — write to instrumentRef; the chord-strum
+ *  5. (Live)    Instrument — write to instrumentRef; the chord-strum
  *               Part callback reads via the ref each tick.
- *  7. (Live)    Layer mutes — setLayerGain(buses, layer, on/off).
+ *  6. (Live)    Layer mutes — setLayerGain(buses, layer, on/off).
  *
- * Live updates apply mid-bar with no audio glitch. Step / pattern edits
- * fall through Effect 1's full rebuild path.
+ * Live updates apply mid-bar with no audio glitch. Step / pattern / loop
+ * edits fall through Effect 1's full rebuild path.
  *
  * The chord-onset Part owns the React activeProgressionStepIndex advance,
  * deferred by the Tone lookahead via plain setTimeout so the visual
@@ -138,6 +140,7 @@ export function useProgressionAudioPlayback() {
   const buildKey = useMemo(
     () =>
       JSON.stringify({
+        loopEnabled,
         steps: steps.map((s) => ({
           root: s.root,
           quality: s.quality,
@@ -149,7 +152,7 @@ export function useProgressionAudioPlayback() {
         drumPatternId,
         drumVariations,
       }),
-    [steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
+    [loopEnabled, steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
   );
   // Refs so the Part / Loop callbacks can read live state without depending
   // on closure recreation (which would force a rebuild on instrument /
@@ -385,11 +388,14 @@ export function useProgressionAudioPlayback() {
       disposeAll(primsRef.current);
       primsRef.current = null;
     };
-    // NOTE: tempo / swing / loopEnabled / beatsPerBar / chordInstrument are
-    // INTENTIONALLY excluded from this deps array — they have dedicated
-    // live-update effects below (Effects 2-6) that mutate the live
-    // primitives without rebuilding. They're funnelled into the effect via
-    // `buildInputsRef` (mirrored from the prior render).
+    // NOTE: tempo / swing / beatsPerBar / chordInstrument are INTENTIONALLY
+    // excluded from this deps array — they have dedicated live-update
+    // effects below (Effects 2-5) that mutate the live primitives without
+    // rebuilding. They're funnelled into the effect via `buildInputsRef`
+    // (mirrored from the prior render). loopEnabled is part of `buildKey`
+    // because the end-event lifecycle (`Transport.scheduleOnce` for non-
+    // loop playback) is tied to the loop flag — re-scheduling it from a
+    // separate live effect was fragile, so we rebuild instead.
   }, [
     playing,
     blocked,
@@ -418,16 +424,7 @@ export function useProgressionAudioPlayback() {
     }
   }, [swing]);
 
-  // --- Effect 4: live loop toggle ---
-  // setLoop on every existing Part. loopEnd was stored in ticks at build
-  // time, so it re-times with bpm; no need to recompute the seconds value.
-  useEffect(() => {
-    primsRef.current?.parts.forEach((p) => {
-      p.setLoop(loopEnabled);
-    });
-  }, [loopEnabled]);
-
-  // --- Effect 5: live time signature (beatsPerBar) ---
+  // --- Effect 4: live time signature (beatsPerBar) ---
   // Transport.timeSignature affects bar-relative time arithmetic. The
   // metronome accent cycle uses the wrapper's internal counter; live
   // changes here update the ref for any future rebuild.
@@ -439,7 +436,7 @@ export function useProgressionAudioPlayback() {
     }
   }, [beatsPerBar]);
 
-  // --- Effect 6: live chord instrument ---
+  // --- Effect 5: live chord instrument ---
   // The chord-strum Part callback reads instrumentRef.current each tick
   // via getChordVoice(...), so an instrument switch takes effect on the
   // next strum hit without rebuilding the Part.
@@ -447,7 +444,7 @@ export function useProgressionAudioPlayback() {
     instrumentRef.current = chordInstrument;
   }, [chordInstrument]);
 
-  // --- Effect 7: live layer-gain toggles ---
+  // --- Effect 6: live layer-gain toggles ---
   useEffect(() => {
     const audio = ensureProgressionAudio();
     if (!audio) return;

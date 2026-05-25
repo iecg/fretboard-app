@@ -305,7 +305,11 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     toneMocks.parts.forEach((p) => expect(p.disposed).toBe(false));
   });
 
-  it("loop toggle is a LIVE update (part.setLoop); no new Parts constructed", () => {
+  it("loop toggle triggers a rebuild from bar 0 with the new loop flag", () => {
+    // Loop is a rebuild dep, not a live update: the end-event lifecycle
+    // (Transport.scheduleOnce for non-loop playback) is tied to the loop
+    // flag, and re-juggling it from a live effect was fragile. Rebuilding
+    // is a tolerable trade-off for correctness given loop toggle is rare.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -316,15 +320,18 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
-    const before = toneMocks.parts.length;
-    toneMocks.parts.forEach((p) => expect(p.loop).toBe(false));
+    const initialParts = [...toneMocks.parts];
+    initialParts.forEach((p) => expect(p.loop).toBe(false));
 
     act(() => {
       store.set(progressionLoopEnabledAtom, true);
     });
 
-    expect(toneMocks.parts.length).toBe(before);
-    toneMocks.parts.forEach((p) => expect(p.loop).toBe(true));
+    // Rebuild: old parts disposed, new ones constructed with loop=true.
+    initialParts.forEach((p) => expect(p.disposed).toBe(true));
+    const newParts = toneMocks.parts.slice(initialParts.length);
+    expect(newParts.length).toBeGreaterThan(0);
+    newParts.forEach((p) => expect(p.loop).toBe(true));
   });
 
   it("toggling drums flips the layer gain without rebuilding primitives", () => {
