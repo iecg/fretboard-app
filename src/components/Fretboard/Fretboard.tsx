@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { clsx } from "clsx";
 import { useAtomValue } from "jotai";
 import styles from "./Fretboard.module.css";
@@ -10,7 +10,9 @@ import {
 import { playGuitarNote } from "../../core/lazyGuitarAudio";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import type { AutoCenterTarget } from "../../store/shapeAtoms";
-import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
+const LazyFretboardSVG = lazy(() => 
+  import("../FretboardSVG/FretboardSVG").then((m) => ({ default: m.FretboardSVG }))
+);
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardState";
 import {
@@ -299,39 +301,41 @@ export function Fretboard(props: FretboardProps) {
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        <FretboardSVG
-          effectiveZoom={effectiveZoom}
-          neckWidthPx={neckWidth}
-          startFret={startFret}
-          endFret={endFret}
-          stringRowPx={stringRowPx}
-          fretboardLayout={fretboardLayout}
-          tuning={tuning}
-          maxFret={maxFret}
-          highlightNotes={highlightNotes}
-          rootNote={rootNote}
-          displayFormat={displayFormat}
-          chordBoxBounds={chordBoxBounds}
-          chordTones={chordTones}
-          chordRoot={chordRoot}
-          chordFretSpread={chordFretSpread}
-          practiceLens={state.practiceLens}
-          colorNotes={colorNotes}
-          shapePolygons={shapePolygons}
-          wrappedNotes={wrappedNotes}
-          hiddenNotes={hiddenNotes}
-          preferFlats={preferFlats}
-          scaleName={scaleName}
-          activePattern={activePattern}
-          activeShape={activeShape}
-          shapeScope={shapeScope}
-          noteSemantics={noteSemantics}
-          fullChordPositionKeys={fullChordPositionKeys}
-          fullChordVoicings={fullChordVoicings}
-          showChordConnectors={state.showChordConnectors}
-          id={id}
-          onNoteClick={handleFretClick}
-        />
+        <Suspense fallback={<div style={{ height: `${tuning.length * stringRowPx}px`, width: "100%" }} />}>
+          <LazyFretboardSVG
+            effectiveZoom={effectiveZoom}
+            neckWidthPx={neckWidth}
+            startFret={startFret}
+            endFret={endFret}
+            stringRowPx={stringRowPx}
+            fretboardLayout={fretboardLayout}
+            tuning={tuning}
+            maxFret={maxFret}
+            highlightNotes={highlightNotes}
+            rootNote={rootNote}
+            displayFormat={displayFormat}
+            chordBoxBounds={chordBoxBounds}
+            chordTones={chordTones}
+            chordRoot={chordRoot}
+            chordFretSpread={chordFretSpread}
+            practiceLens={state.practiceLens}
+            colorNotes={colorNotes}
+            shapePolygons={shapePolygons}
+            wrappedNotes={wrappedNotes}
+            hiddenNotes={hiddenNotes}
+            preferFlats={preferFlats}
+            scaleName={scaleName}
+            activePattern={activePattern}
+            activeShape={activeShape}
+            shapeScope={shapeScope}
+            noteSemantics={noteSemantics}
+            fullChordPositionKeys={fullChordPositionKeys}
+            fullChordVoicings={fullChordVoicings}
+            showChordConnectors={state.showChordConnectors}
+            id={id}
+            onNoteClick={handleFretClick}
+          />
+        </Suspense>
       </div>
     </div>
   );
