@@ -20,6 +20,8 @@ export interface DegreeGridProps {
   onSelectInKey: (note: string, degree: string) => void;
   onSelectBorrowed: (note: string, degreeLabel: string) => void;
   preferFlats: boolean;
+  /** When true, every cell button is disabled (e.g. during progression playback). */
+  disabled?: boolean;
 }
 
 interface CellInfo {
@@ -78,6 +80,7 @@ export function DegreeGrid({
   onSelectInKey,
   onSelectBorrowed,
   preferFlats,
+  disabled = false,
 }: DegreeGridProps) {
   const cells: CellInfo[] = useMemo(() => {
     const diatonic = getDiatonicNotes(scaleName, tonicNote);
@@ -147,6 +150,7 @@ export function DegreeGrid({
             cell.note === selectedNote && styles.selected,
           )}
           data-in-key={cell.inKey ? "true" : "false"}
+          disabled={disabled}
           aria-pressed={cell.note === selectedNote}
           aria-label={cell.inKey ? `${cell.display} ${cell.numeral}` : `${cell.numeral} ${cell.display}`}
           tabIndex={index === focusIndex ? 0 : -1}

@@ -42,6 +42,8 @@ export interface StepperControlProps {
   testId?: string;
   /** Sizing mode for the stepper control. Defaults to "auto" (fit-content). */
   width?: "fill" | "auto";
+  /** When true, both stepper buttons are disabled regardless of value bounds. */
+  disabled?: boolean;
 }
 
 export function StepperControl({
@@ -56,6 +58,7 @@ export function StepperControl({
   buttonVariant = "toolbar",
   testId,
   width,
+  disabled = false,
 }: StepperControlProps) {
   return (
     <div
@@ -76,7 +79,7 @@ export function StepperControl({
           className={styles["stepper-btn"]}
           aria-label={`Decrease ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.max(min, value - step))}
-          disabled={value <= min}
+          disabled={disabled || value <= min}
           whileTap={WHILE_TAP_BTN}
           transition={SPRING_TAP}
         >
@@ -101,7 +104,7 @@ export function StepperControl({
           className={styles["stepper-btn"]}
           aria-label={`Increase ${label ?? "value"} (current: ${value})`}
           onClick={() => onChange(Math.min(max, value + step))}
-          disabled={value >= max}
+          disabled={disabled || value >= max}
           whileTap={WHILE_TAP_BTN}
           transition={SPRING_TAP}
         >

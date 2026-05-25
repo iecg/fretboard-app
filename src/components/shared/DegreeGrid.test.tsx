@@ -32,6 +32,25 @@ describe("DegreeGrid", () => {
     expect(cSharp.textContent).toMatch(/[♭♯]/);
   });
 
+  it("disables every cell when disabled=true and does not fire handlers on click", () => {
+    const onSelectInKey = vi.fn();
+    const onSelectBorrowed = vi.fn();
+    render(
+      <DegreeGrid
+        {...baseProps}
+        onSelectInKey={onSelectInKey}
+        onSelectBorrowed={onSelectBorrowed}
+        disabled
+      />,
+    );
+    const cells = screen.getAllByRole("button");
+    expect(cells.length).toBe(12);
+    for (const c of cells) expect(c).toBeDisabled();
+    fireEvent.click(cells[0]);
+    expect(onSelectInKey).not.toHaveBeenCalled();
+    expect(onSelectBorrowed).not.toHaveBeenCalled();
+  });
+
   it("calls onSelectInKey when an in-key cell is clicked", () => {
     const onSelectInKey = vi.fn();
     render(<DegreeGrid {...baseProps} onSelectInKey={onSelectInKey} />);

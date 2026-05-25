@@ -1,5 +1,5 @@
 import { startTransition, useMemo } from "react";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Info } from "lucide-react";
 import clsx from "clsx";
 import { SCALE_FAMILIES, NOTES, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
@@ -25,7 +25,7 @@ import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { BackingTrackControls } from "./BackingTrackControls";
 import { buildQualitySelectGroups } from "./qualityGroups";
 import shared from "../shared/shared.module.css";
-import { CUSTOM_PRESET_ID, updateProgressionStepRootAtom } from "../../store/progressionAtoms";
+import { CUSTOM_PRESET_ID, progressionPlayingAtom, updateProgressionStepRootAtom } from "../../store/progressionAtoms";
 import styles from "./SongControls.module.css";
 
 // Look up a scale family by id; fail loudly at module init if the catalog id
@@ -140,6 +140,7 @@ export function SongControls() {
   } = useProgressionState();
 
   const updateProgressionStepRoot = useSetAtom(updateProgressionStepRootAtom);
+  const editsLocked = useAtomValue(progressionPlayingAtom);
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
   const availablePresets = getAvailableProgressionPresets(scaleName);
@@ -203,6 +204,7 @@ export function SongControls() {
                   width="fill"
                   value={rootNote}
                   onChange={handleRootNote}
+                  disabled={editsLocked}
                   options={NOTES.map((note) => ({
                     value: note,
                     label: getNoteDisplay(note, rootNote, preferFlats),
@@ -216,6 +218,7 @@ export function SongControls() {
                   groups={scaleGroups}
                   onChange={handleScaleName}
                   hideLabel
+                  disabled={editsLocked}
                 />
               </Prop>
             </PropGrid>
@@ -262,6 +265,7 @@ export function SongControls() {
               value={currentProgressionPresetId}
               groups={presetGroups}
               onChange={handlePresetChange}
+              disabled={editsLocked}
             />
 
             <div className={styles["toolbar-divider"]} />
@@ -270,6 +274,7 @@ export function SongControls() {
               type="button"
               className={styles["toolbar-button"]}
               onClick={() => addProgressionStep()}
+              disabled={editsLocked}
               aria-label="Add chord"
             >
               <Plus size={16} aria-hidden="true" />
@@ -283,7 +288,7 @@ export function SongControls() {
                 type="button"
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
-                disabled={!activeStep || activeProgressionStepIndex === 0}
+                disabled={!activeStep || activeProgressionStepIndex === 0 || editsLocked}
                 aria-label="Move chord up"
               >
                 <ArrowUp size={16} aria-hidden="true" />
@@ -292,7 +297,7 @@ export function SongControls() {
                 type="button"
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
-                disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
+                disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1 || editsLocked}
                 aria-label="Move chord down"
               >
                 <ArrowDown size={16} aria-hidden="true" />
@@ -301,7 +306,7 @@ export function SongControls() {
                 type="button"
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
-                disabled={!activeStep}
+                disabled={!activeStep || editsLocked}
                 aria-label="Duplicate chord"
               >
                 <Copy size={16} aria-hidden="true" />
@@ -314,7 +319,7 @@ export function SongControls() {
               type="button"
               className={styles["delete-button"]}
               onClick={() => activeStep && removeProgressionStep(activeStep.id)}
-              disabled={!activeStep}
+              disabled={!activeStep || editsLocked}
               aria-label="Remove chord"
             >
               <Trash2 size={16} aria-hidden="true" />
@@ -352,6 +357,7 @@ export function SongControls() {
                             type="button"
                             className={clsx(styles["pip"], isActive && styles["active-pip"])}
                             onClick={() => setActiveProgressionStepIndex(idx)}
+                            disabled={editsLocked}
                             aria-label={`Jump to step ${idx + 1}, ${step.degree}`}
                             aria-selected={isActive}
                             role="tab"
@@ -377,6 +383,7 @@ export function SongControls() {
                   updateProgressionStepQuality({ id: activeStep.id, qualityOverride: null });
                 }}
                 preferFlats={preferFlats}
+                disabled={editsLocked}
               />
             </div>
             <div className={styles["editor-grid"]}>
@@ -400,6 +407,7 @@ export function SongControls() {
                     })
                   }
                   groups={qualityGroups}
+                  disabled={editsLocked}
                 />
               </div>
               <div className={shared["control-section"]}>
@@ -418,6 +426,7 @@ export function SongControls() {
                         duration: { ...activeStep.duration, value: next },
                       })
                     }
+                    disabled={editsLocked}
                   />
                   <div className={styles["duration-unit"]}>
                     <ToggleBar
@@ -433,6 +442,7 @@ export function SongControls() {
                           duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
                         })
                       }
+                      disabled={editsLocked}
                     />
                   </div>
                 </div>

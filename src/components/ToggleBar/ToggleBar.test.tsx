@@ -216,4 +216,22 @@ describe("ToggleBar/ToggleBar", () => {
       expect(btn.getAttribute("aria-pressed")).toBe("false");
     }
   });
+
+  it("disables every option button when top-level disabled=true", () => {
+    const onChange = vi.fn();
+    render(
+      <ToggleBar
+        value="a"
+        onChange={onChange}
+        options={options}
+        disabled
+      />,
+    );
+    for (const opt of options) {
+      const btn = screen.getByRole("button", { name: opt.label });
+      expect(btn).toBeDisabled();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Option B" }));
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });

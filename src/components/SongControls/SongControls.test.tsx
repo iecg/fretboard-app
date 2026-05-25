@@ -4,7 +4,7 @@ import { screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { SongControls } from "./SongControls";
 
@@ -124,6 +124,87 @@ describe("SongControls", () => {
   it("has no accessibility violations", async () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("SongControls playback lock (P1-T3)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("disables structural-edit controls while progression is playing", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<SongControls />, store);
+
+    // Toolbar chord-management buttons
+    expect(screen.getByRole("button", { name: "Add chord" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Move chord up" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Move chord down" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /duplicate chord/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Remove chord" })).toBeDisabled();
+
+    // KEY-section selects
+    const rootCombos = screen.getAllByRole("combobox", { name: "Root" });
+    expect(rootCombos[0]).toHaveAttribute("data-disabled");
+    expect(screen.getByRole("combobox", { name: "Scale" })).toHaveAttribute("data-disabled");
+
+    // Preset
+    expect(screen.getByRole("combobox", { name: "Preset" })).toHaveAttribute("data-disabled");
+
+    // Quality
+    expect(screen.getByRole("combobox", { name: "Quality" })).toHaveAttribute("data-disabled");
+
+    // Duration stepper buttons (both +/-)
+    const durationGroup = screen.getByRole("group", { name: /Duration value/i });
+    for (const btn of within(durationGroup).getAllByRole("button")) {
+      expect(btn).toBeDisabled();
+    }
+
+    // Duration unit ToggleBar buttons
+    const unitGroup = screen.getByRole("group", { name: "Duration unit" });
+    for (const btn of within(unitGroup).getAllByRole("button")) {
+      expect(btn).toBeDisabled();
+    }
+
+    // DegreeGrid cells
+    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
+    const degreeCells = within(degreeGroup).getAllByRole("button");
+    expect(degreeCells.length).toBe(12);
+    for (const cell of degreeCells) {
+      expect(cell).toBeDisabled();
+    }
+
+    // Pip-row tabs
+    const pipTabs = screen.getAllByRole("tab");
+    expect(pipTabs.length).toBeGreaterThan(0);
+    for (const tab of pipTabs) {
+      expect(tab).toBeDisabled();
+    }
+  });
+
+  it("keeps backing-track + tempo + time-signature controls enabled while playing", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<SongControls />, store);
+
+    // Tempo stepper (label "Tempo" from i18n meterTempo key)
+    const tempoGroup = screen.getByRole("group", { name: /^Tempo$/i });
+    for (const btn of within(tempoGroup).getAllByRole("button")) {
+      expect(btn).not.toBeDisabled();
+    }
+
+    // Time signature combobox stays interactive
+    const timeSig = screen.getByLabelText(/time signature/i);
+    expect(timeSig).not.toHaveAttribute("data-disabled");
+
+    // Backing-track style switches stay interactive
+    expect(screen.getByRole("combobox", { name: "Genre style" })).not.toHaveAttribute(
+      "data-disabled",
+    );
+    expect(screen.getByRole("combobox", { name: "Chord instrument" })).not.toHaveAttribute(
+      "data-disabled",
+    );
   });
 });
 
