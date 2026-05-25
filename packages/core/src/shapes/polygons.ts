@@ -84,13 +84,14 @@ export function getCagedCoordinates(
   const { rootStringFocus, fretOffsetMin, fretOffsetMax, maxNotesPerString = {} } =
     SHAPE_CONFIGS[effectiveShape];
 
+  // Find roots using math instead of array scanning
   const rootFrets: number[] = [];
-  let searchFret = 0;
-  while (searchFret <= frets) {
-    const rf = layout[rootStringFocus].indexOf(anchorNote, searchFret);
-    if (rf === -1) break;
-    rootFrets.push(rf);
-    searchFret = rf + 1;
+  const openIdx = NOTES.indexOf(layout[rootStringFocus][0]);
+  const anchorIdx = NOTES.indexOf(anchorNote);
+  const firstFret = (anchorIdx - openIdx + 12) % 12;
+  
+  for (let f = firstFret; f <= frets; f += 12) {
+    rootFrets.push(f);
   }
 
   const validNoteSet = new Set(validNotes);
