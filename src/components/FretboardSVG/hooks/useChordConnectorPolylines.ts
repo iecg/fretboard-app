@@ -43,7 +43,7 @@ function voicingFrettedPositionCount(combo: NoteData[]): number {
  */
 const V2_PALETTE_INDEX = 0;
 
-export interface ChordConnectorVertex {
+interface ChordConnectorVertex {
   x: number;
   y: number;
 }
@@ -88,7 +88,7 @@ interface ExplicitChordConnectorVoicing {
  * Maximum fret span (inclusive) for the cluster candidate-gathering window.
  * Notes further than this from the cluster anchor are excluded from candidates.
  */
-export const MAX_FRET_SPAN = 5;
+const MAX_FRET_SPAN = 5;
 
 /**
  * Maximum number of distinct fret positions (inclusive) allowed across the

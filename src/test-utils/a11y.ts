@@ -9,4 +9,4 @@ export const axe = configureAxe({
   },
 });
 
-export { configureAxe };
+

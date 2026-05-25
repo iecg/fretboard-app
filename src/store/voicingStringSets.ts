@@ -1,4 +1,4 @@
-export const ALL_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];
+const ALL_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];
 
 export interface StringSetOption {
   /** Stable identifier — "all" or "0-1-2-3" style. */

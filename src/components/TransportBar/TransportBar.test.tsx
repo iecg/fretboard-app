@@ -3,7 +3,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import { beatsPerBarAtom, progressionBassEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlayingAtom, progressionStepsAtom, progressionStrumEnabledAtom } from "../../store/progressionAtoms";
+import { beatsPerBarAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlayingAtom, progressionStepsAtom } from "../../store/progressionAtoms";
 import { TransportBar } from "./TransportBar";
 
 const fourStepProgression = [
@@ -72,7 +72,7 @@ describe("TransportBar", () => {
 
   it("toggles each backing-instrument atom when its button is clicked", () => {
     const cases = [
-      ["Chord strum", progressionStrumEnabledAtom],
+      ["Chord strum", progressionChordEnabledAtom],
       ["Bassline", progressionBassEnabledAtom],
       ["Drums", progressionDrumsEnabledAtom],
       ["Metronome", progressionMetronomeEnabledAtom],

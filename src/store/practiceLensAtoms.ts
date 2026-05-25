@@ -31,12 +31,10 @@ import {
   scaleNotesAtom,
   colorNotesAtom,
   preferFlatsAtom,
-  practiceBarColorNotesAtom,
 } from "./scaleAtoms";
 import {
   chordRootAtom,
   chordTypeAtom,
-  chordTonesAtom,
   chordMembersAtom,
   practiceLensAtom,
   chordOverlayHiddenAtom,
@@ -85,13 +83,6 @@ function findNearestScaleResolution(
   }
   return undefined;
 }
-
-export const practiceBarColorNotesFilteredAtom = atom((get) => {
-  const chordTones = get(chordTonesAtom);
-  const practiceBarColorNotes = get(practiceBarColorNotesAtom);
-  const chordToneSet = new Set(chordTones);
-  return practiceBarColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
-});
 
 const getDisplayLabel = (e: ChordRowEntry): string =>
   e.scaleInterval ?? e.memberName;

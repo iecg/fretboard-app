@@ -258,26 +258,6 @@ export const chordHiddenNotesAtom = atom(
   },
 );
 
-export const toggleChordHiddenNoteAtom = atom(null, (_get, set, note: string) => {
-  set(chordHiddenNotesAtom, (prev) => {
-    const next = new Set(prev);
-    if (next.has(note)) next.delete(note);
-    else next.add(note);
-    return next;
-  });
-});
-
-// Mirrors toggleScaleVisibleAtom — collapsing clears per-note hides for a clean re-expand.
-export const toggleChordOverlayHiddenAtom = atom(null, (get, set) => {
-  const hidden = get(chordOverlayHiddenAtom);
-  if (!hidden) {
-    set(chordHiddenNotesAtom, new Set<string>());
-    set(chordOverlayHiddenAtom, true);
-  } else {
-    set(chordOverlayHiddenAtom, false);
-  }
-});
-
 export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   k("fullChordsEnabled"),
   false,
@@ -657,15 +637,6 @@ export const chordMembersAtom = atom((get) => {
     note: NOTES[(rootIndex + m.semitone) % 12],
   }));
 });
-
-export const chordLabelAtom = atom((get) => {
-  const chordRoot = get(chordRootAtom);
-  const chordType = get(chordTypeAtom);
-  const preferFlats = get(preferFlatsAtom);
-  if (!chordType) return null;
-  return `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, preferFlats))} ${chordType}`;
-});
-
 /** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
 export const chordShortLabelAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
@@ -675,19 +646,6 @@ export const chordShortLabelAtom = atom((get) => {
   const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, preferFlats));
   return formatChordShortLabel(rootLabel, chordType);
 });
-
-export const chordSummaryNotesAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const chordTones = get(chordTonesAtom);
-  const chordRoot = get(chordRootAtom);
-  if (!chordType || chordTones.length === 0) return [] as string[];
-  const chordRootIdx = NOTES.indexOf(chordRoot);
-  const chordToneSet = new Set(chordTones);
-  return NOTES.slice(chordRootIdx)
-    .concat(NOTES.slice(0, chordRootIdx))
-    .filter((n) => chordToneSet.has(n));
-});
-
 /**
  * Scale-independent chord facts.
  * displayNote uses chord-root-relative accidentals, NOT scale-derived accidentals.

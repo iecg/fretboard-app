@@ -7,7 +7,7 @@ import {
   getShapeCenterFret,
   type ShapePolygon,
 } from "@fretflow/core";
-import { getFretNote, getFretboardNotes } from "@fretflow/core";
+import { getFretboardNotes } from "@fretflow/core";
 import { getScaleNotes, NOTES } from "@fretflow/core";
 import {
   getOneStringCoordinates,
@@ -248,20 +248,3 @@ export const autoCenterTargetAtom = atom((get) => {
 
 export const intervalPairsAtom = atom((get) => get(effectiveShapeDataAtom).intervalPairs);
 
-export const shapeHighlightedNoteSetAtom = atom((get) => {
-  const fingeringPattern = get(fingeringPatternAtom);
-  const { highlightNotes } = get(shapeDataAtom);
-  const currentTuning = get(currentTuningAtom);
-
-  if (fingeringPattern === "none") return null;
-  const noteSet = new Set<string>();
-  for (const coord of highlightNotes) {
-    const dashIdx = coord.indexOf("-");
-    if (dashIdx === -1) continue; // note name, not a coord
-    const stringIdx = parseInt(coord.slice(0, dashIdx), 10);
-    const fretIdx = parseInt(coord.slice(dashIdx + 1), 10);
-    const openNote = currentTuning[stringIdx];
-    if (openNote) noteSet.add(getFretNote(openNote, fretIdx));
-  }
-  return noteSet;
-});

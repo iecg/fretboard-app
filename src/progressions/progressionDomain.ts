@@ -435,7 +435,7 @@ export function getAvailableProgressionPresets(
 }
 
 export const DEFAULT_BEATS_PER_BAR = 4 as const;
-export const BEATS_PER_BAR_OPTIONS = [3, 4, 6, 8] as const;
+const BEATS_PER_BAR_OPTIONS = [3, 4, 6, 8] as const;
 export type BeatsPerBar = (typeof BEATS_PER_BAR_OPTIONS)[number];
 
 export function isBeatsPerBar(value: unknown): value is BeatsPerBar {

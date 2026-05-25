@@ -169,9 +169,6 @@ export const progressionChordEnabledAtom = atomWithStorage<boolean>(
   chordEnabledStorage,
   GET_ON_INIT,
 );
-// Backwards-compatibility alias — existing consumers still reference progressionStrumEnabledAtom.
-export const progressionStrumEnabledAtom = progressionChordEnabledAtom;
-
 export const progressionBassEnabledAtom = atomWithStorage<boolean>(
   k("progressionBassEnabled"),
   true,

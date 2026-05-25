@@ -35,11 +35,3 @@ export function ControlsPanelSkeleton({ mode }: { mode: "3col" | "split" | "stac
   );
 }
 
-export function CircleOfFifthsSkeleton() {
-  return (
-    <div className={styles["cof-skeleton"]} aria-label="Loading circle of fifths" role="status">
-      <div className={styles.circle} style={{ width: "min(14rem, 100%)" }} />
-    </div>
-  );
-}
-

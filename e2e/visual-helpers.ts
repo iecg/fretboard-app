@@ -238,10 +238,7 @@ export async function waitForStableLayout(page: Page, timeout = 2000) {
   }, timeout);
 }
 
-/**
- * Waits for a specific locator to have a stable bounding box.
- */
-export async function waitForStable(locator: Locator, timeout = 2000) {
+async function waitForStable(locator: Locator, timeout = 2000) {
   const page = locator.page();
   const element = await locator.elementHandle();
   if (!element) return;
@@ -408,22 +405,4 @@ export async function openHelp(page: Page) {
   await waitForStableLayout(page);
 }
 
-/**
- * Reads a single computed-style property from a pseudo-element of the matched
- * locator. The host element is sometimes intentionally transparent while the
- * visual treatment lives on `::before` / `::after`, so plain
- * `getComputedStyle(el)[prop]` returns the wrong value.
- */
-export function getPseudoStyle(
-  locator: Locator,
-  pseudo: "::before" | "::after",
-  property: string,
-): Promise<string> {
-  return locator.evaluate(
-    (el, [p, prop]) => {
-      const styles = getComputedStyle(el, p) as unknown as Record<string, string>;
-      return styles[prop] ?? "";
-    },
-    [pseudo, property] as const,
-  );
-}
+
