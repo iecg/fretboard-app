@@ -4,7 +4,7 @@
 
 **Goal:** Replace FretFlow's bespoke progression-playback scheduler with five Tone-native primitives running on a single Transport — one `Tone.Part` per audio layer (chord-strum, bass, drums, chord-onset clock) plus one `Tone.Loop` for the metronome — each routed through its own gain node so layer toggles flip gain instead of rebuilding the scheduler. Mid-play edits stop playback and restart from bar 0.
 
-**Architecture:** At play-start, build the full event timeline once (chord strums, bass notes, drum hits, metronome clicks, chord-onset events) by flattening the resolved progression. Each layer's events feed its own `Tone.Part` (or `Tone.Loop` for metronome) connected to a per-layer gain node, all routed into the existing progression bus. The chord-onset `Tone.Part`'s callback owns the React `activeProgressionStepIndex` advance, deferred by `setTimeout(advance, time − getContext().immediate())` to align with audio onset (same proven pattern from `4f50968`). Layer-enable toggles set the corresponding gain to 0/1 without touching the sequencer. Any edit to steps / tempo / beatsPerBar / patterns / loop / instrument disposes every primitive and rebuilds from bar 0; the user perceives a brief stop then auto-restart. `useProgressionPlaybackLoop` and the top-level `scheduleProgressionStep` orchestrator are deleted.
+**Architecture:** At play-start, build the full event timeline once (chord strums, bass notes, drum hits, metronome clicks, chord-onset events) by flattening the resolved progression. Each layer's events feed its own `Tone.Part` (or `Tone.Loop` for metronome) connected to a per-layer gain node, all routed into the existing progression bus. Tone stores Part events internally as ticks (PPQ-relative, not seconds), so tempo / swing / loop / beatsPerBar changes apply in-place via `Transport.bpm.value`, `Transport.swing`, `Part.loop`, `Transport.timeSignature` — no rebuild. Layer-enable toggles set the corresponding gain to 0/1. Instrument changes route through a ref the Part callback reads dynamically. Only **edits that change WHICH events fire** — step content, pattern ids, drum variations — trigger a full dispose + rebuild from bar 0. The chord-onset Part callback owns the React `activeProgressionStepIndex` advance, deferred by `setTimeout(advance, time − getContext().immediate())` to align with audio onset (same proven pattern from `4f50968`). `useProgressionPlaybackLoop` and the top-level `scheduleProgressionStep` orchestrator are deleted.
 
 **Tech Stack:** Tone.js 15.x (`Tone.Part`, `Tone.Loop`, `Tone.Gain`, `Tone.getTransport`, `Tone.getContext`), Jotai, React 19, Vitest.
 
@@ -26,9 +26,22 @@ Tone primitives map cleanly onto our data shapes:
 
 You explicitly asked about Tone.Sequence for drums; the data we already have (`CatalogDrumPattern.hits` is an array of `{beat, type, velocity}`) is point-event-shaped, not slot-shaped. Tone.Part schedules those without translation. If we ever migrate drum patterns to a 16th-grid array of `{kick?, snare?, hihat?}` slot objects, swapping in Tone.Sequence is a small follow-up; the change is purely upstream of the primitive choice.
 
-### Why mid-play edit = stop + restart from 0
+### Mid-play edit policy — split by Tone support
 
-You confirmed this trade-off. The win is large: today's code carries `wasPlayingRef`, `lastEnableRef`, `lastConfigRef`, `lastStepRef`, `lastActiveStartTimeRef`, `sameEnableFlags`, `sameConfigFlags`, `scheduleFromTime`, "drop segments that no longer match" reconciliation, "rebuild active segment without restarting rhythmically" — all to preserve mid-bar continuity during edits. Drop "preserve mid-bar continuity" and all of that disappears. The new effect's pattern is: dispose everything, build everything, start at 0. No reconciliation.
+| Edit | Tone-native in-place mechanism | Plan does it in-place? |
+|---|---|---|
+| Tempo | `Transport.bpm.value = N` (events stored as ticks → re-time automatically) | **yes** |
+| Swing | `Transport.swing = X` | **yes** |
+| Loop toggle | `part.loop = X` (loopEnd in ticks re-times with bpm) | **yes** |
+| Time signature (beatsPerBar) | `Transport.timeSignature = N` + metronome callback reads beatsPerBar via ref for accent cycle | **yes** |
+| Chord instrument | closure reads `instrumentRef.current` each Part tick | **yes** (React-side; no Tone complexity) |
+| Layer mute (chord/bass/drums/metronome) | `gain.value = 0 \| 1` on the per-layer GainNode | **yes** |
+| Step content (add / remove / change chord) | `part.clear() + part.add()` per affected Part with newly-computed events | **no — rebuild from 0** |
+| Pattern ids (chord/bass/drum) or drum variations | same as above (clear + re-add) | **no — rebuild from 0** |
+
+The "no" rows aren't "Tone can't do it" — they're "Tone can do it via `part.clear() + part.add()`, but every affected layer's event array has to be recomputed and the chord-strum/bass closures need re-mapping per chord. That's not a single setter; it's effectively a rebuild with extra entanglement risk." Per your "out-of-the-box-only" rule, those drop to restart-from-0. Today's `wasPlayingRef`, `lastEnableRef`, `lastConfigRef`, `lastStepRef`, `lastActiveStartTimeRef`, `sameEnableFlags`, `sameConfigFlags`, `scheduleFromTime`, segment-keepers reconciliation — all still go away, because the rebuild path is "dispose everything, build everything, start at 0" with zero reconciliation.
+
+The user-visible result: tempo slider, swing slider, loop toggle, time-signature picker, instrument selector, and mute toggles **all** apply mid-bar with no audio glitch. Step edits and pattern switches cause a brief stop + auto-restart at bar 0.
 
 ### Why layer-mute as gain, not as rebuild
 
@@ -67,6 +80,9 @@ The chord-strum Part already fires for every strum hit, but those events aren't 
     /** Start at transport `time` (default "now") with internal cursor at
      *  `offset` seconds (default 0). Forwards to Tone.Part.start. */
     start: (time?: number, offset?: number) => void;
+    /** Live-toggle the Part's loop flag without disposing — used by the
+     *  orchestrator's loop-toggle effect. Updates loopEnd too if provided. */
+    setLoop: (loop: boolean, loopEnd?: number) => void;
     /** Stop and dispose. Idempotent. */
     dispose: () => void;
   }
@@ -274,6 +290,22 @@ describe("createProgressionPart", () => {
     h.dispose();
     expect(toneMocks.parts[0].disposed).toBe(true);
   });
+
+  it("setLoop(true, end) live-flips part.loop + part.loopEnd without rebuilding", () => {
+    const h = createProgressionPart({
+      events: [{ time: 0, value: 1 }],
+      loop: false,
+      loopEnd: 0,
+      onEvent: () => {},
+    });
+    h.setLoop(true, 8);
+    expect(toneMocks.parts[0].loop).toBe(true);
+    expect(toneMocks.parts[0].loopEnd).toBe(8);
+    h.setLoop(false);
+    expect(toneMocks.parts[0].loop).toBe(false);
+    // loopEnd unchanged when not supplied:
+    expect(toneMocks.parts[0].loopEnd).toBe(8);
+  });
 });
 ```
 
@@ -394,6 +426,9 @@ export interface ProgressionPartHandle {
   /** Start at transport `time` (default "now") with internal cursor at
    *  `offset` seconds (default 0). Forwards verbatim to Tone.Part.start. */
   start: (time?: number, offset?: number) => void;
+  /** Live-toggle loop without disposing. Optionally updates loopEnd at the
+   *  same time. Used by the orchestrator's loop-toggle effect. */
+  setLoop: (loop: boolean, loopEnd?: number) => void;
   /** Stop and dispose. Idempotent. */
   dispose: () => void;
 }
@@ -430,6 +465,10 @@ export function createProgressionPart<V>(
   let disposed = false;
   return {
     start(time?: number, offset?: number) { part.start(time, offset); },
+    setLoop(loop: boolean, loopEnd?: number) {
+      part.loop = loop;
+      if (loopEnd !== undefined) part.loopEnd = loopEnd;
+    },
     dispose() {
       if (disposed) return;
       disposed = true;
@@ -535,7 +574,7 @@ export function setLayerGain(
 - [ ] **Step 4: Run all three test files — expect PASS**
 
 Run: `pnpm vitest run src/progressions/audio/progressionPart.test.ts src/progressions/audio/progressionMetronomeLoop.test.ts src/progressions/audio/layerBuses.test.ts`
-Expected: PASS (4 + 3 + 2 = 9 tests).
+Expected: PASS (5 + 3 + 2 = 10 tests).
 
 - [ ] **Step 5: Commit**
 
@@ -1158,6 +1197,49 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(newOnsets?.startedOffset).toBe(0);
   });
 
+  it("tempo change is a LIVE update (Transport.bpm.value); no new Parts constructed", () => {
+    // Sentinel: pre-load mock bpm to a value neither effect should leave
+    // behind, so we can prove BOTH the initial-render AND the post-change
+    // settings of bpm.value came from the live effect.
+    toneMocks.transport.bpm.value = 999;
+
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+
+    // After initial render: live effect should have applied the atom value.
+    expect(toneMocks.transport.bpm.value).toBe(60);
+    const before = toneMocks.parts.length;
+
+    act(() => { store.set(progressionTempoBpmAtom, 120); });
+
+    expect(toneMocks.parts.length).toBe(before);             // no new Parts
+    expect(toneMocks.transport.bpm.value).toBe(120);         // setter fired again
+    toneMocks.parts.forEach((p) => expect(p.disposed).toBe(false));
+  });
+
+  it("loop toggle is a LIVE update (part.setLoop); no new Parts constructed", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"], [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60], [beatsPerBarAtom, 4],
+      [progressionLoopEnabledAtom, false],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+    const before = toneMocks.parts.length;
+    toneMocks.parts.forEach((p) => expect(p.loop).toBe(false));
+
+    act(() => { store.set(progressionLoopEnabledAtom, true); });
+
+    expect(toneMocks.parts.length).toBe(before);
+    toneMocks.parts.forEach((p) => expect(p.loop).toBe(true));
+  });
+
   it("toggling drums flips the layer gain without rebuilding primitives", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"], [scaleNameAtom, "major"],
@@ -1292,12 +1374,21 @@ function disposeAll(prims: PlaybackPrimitives | null) {
 /**
  * Tone-native progression playback orchestrator.
  *
- * Two effects:
- *  1. (Heavy) Build all primitives when any input that affects what the
- *     sequencer plays changes — steps, tempo, beatsPerBar, swing, patterns,
- *     instrument, loop flag. Dispose + rebuild from bar 0 on every change.
- *     Pause and mute fall through this effect's "tear down" branch.
- *  2. (Light) Flip per-layer gain when an enable toggle changes. No rebuild.
+ * Seven effects, ordered by cost:
+ *  1. (Heavy)   Build / dispose primitives on changes that change WHICH
+ *               events fire: playing, blocked, muted, steps, patterns,
+ *               drum variations. Restart from bar 0.
+ *  2. (Live)    Tempo  — `Transport.bpm.value = N` (events stored as ticks).
+ *  3. (Live)    Swing  — `Transport.swing = X`.
+ *  4. (Live)    Loop   — `part.setLoop(bool, loopEnd?)` on every Part.
+ *  5. (Live)    Time signature — `Transport.timeSignature = N` + ref read
+ *               by the metronome Loop callback for accent cycling.
+ *  6. (Live)    Instrument — write to `instrumentRef`; the chord-strum
+ *               Part callback reads via the ref each tick.
+ *  7. (Live)    Layer mutes — `setLayerGain(buses, layer, on/off)`.
+ *
+ * Live updates apply mid-bar with no audio glitch. Step / pattern edits
+ * fall through Effect 1's full rebuild path.
  *
  * The chord-onset Part owns the React `activeProgressionStepIndex` advance,
  * deferred by the Tone lookahead via plain `setTimeout` so the visual
@@ -1332,6 +1423,12 @@ export function useProgressionAudioPlayback() {
   const setPlaying = useSetAtom(setProgressionPlayingAtom);
 
   const primsRef = useRef<PlaybackPrimitives | null>(null);
+  // Refs so the Part / Loop callbacks can read live state without depending
+  // on closure recreation (which would force a rebuild on instrument /
+  // beatsPerBar changes). The orchestrator's "live" effects below keep
+  // these refs in sync with their atom values.
+  const instrumentRef = useRef(chordInstrument);
+  const beatsPerBarRef = useRef(beatsPerBar);
 
   // --- Effect 1: heavy build/dispose ---
   useEffect(() => {
@@ -1349,6 +1446,9 @@ export function useProgressionAudioPlayback() {
     void resumeProgressionAudio();
     restoreProgressionBus();
 
+    // Event times are computed at the CURRENT tempo / beatsPerBar / swing
+    // and then Tone stores them as ticks — subsequent live changes to those
+    // settings will re-time the same events without rebuilding.
     const built = buildAllLayers({
       steps, tempoBpm: tempo, beatsPerBar, swing,
       chordInstrument, chordPatternId, bassPatternId, drumPatternId,
@@ -1383,14 +1483,15 @@ export function useProgressionAudioPlayback() {
     chordOnsetPart.start(partStart, 0);
     parts.push(chordOnsetPart);
 
-    // 2. Chord strum Part.
-    const strumVoice = getChordVoice(chordInstrument);
+    // 2. Chord strum Part. Reads `instrumentRef.current` each tick so
+    //    instrument switches don't require rebuilding the Part.
     const chordStrumPart = createProgressionPart<ChordStrumEvent>({
       events: built.chordStrums,
       loop: loopEnabled,
       loopEnd: totalDurationSec,
       onEvent: (audioTime, value) => {
-        strumVoice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
+        const voice = getChordVoice(instrumentRef.current);
+        voice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
           velocity: value.velocity, style: value.style, direction: value.direction,
         });
       },
@@ -1429,11 +1530,16 @@ export function useProgressionAudioPlayback() {
     drumPart.start(partStart, 0);
     parts.push(drumPart);
 
-    // 5. Metronome Loop.
+    // 5. Metronome Loop. The accent-on-beat-1 logic reads beatsPerBarRef
+    //    so a live time-signature change doesn't require rebuilding the
+    //    Loop. The wrapper's internal counter still increments by 1 each
+    //    tick; we compare against the current ref to decide accent.
+    let beatCounter = 0;
     const metronome = createMetronomeLoop({
-      beatsPerBar,
-      onBeat: (audioTime, beatInBar) => {
-        scheduleClick(audio.layers.metronome, audioTime, { accent: beatInBar === 1 });
+      beatsPerBar, // wrapper uses this for its initial cycle; we override below
+      onBeat: (audioTime) => {
+        beatCounter = (beatCounter % beatsPerBarRef.current) + 1;
+        scheduleClick(audio.layers.metronome, audioTime, { accent: beatCounter === 1 });
       },
     });
     metronome.start(partStart);
@@ -1451,14 +1557,57 @@ export function useProgressionAudioPlayback() {
 
     primsRef.current = { parts, loop: metronome, endEventId };
     return () => { disposeAll(primsRef.current); primsRef.current = null; };
+    // NOTE: tempo / swing / loopEnabled / beatsPerBar / chordInstrument are
+    // INTENTIONALLY excluded from this deps array — they have dedicated
+    // live-update effects below (Effects 2-6) that mutate the live
+    // primitives without rebuilding. Re-adding them here would defeat the
+    // whole point of the split.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    playing, blocked, muted, loopEnabled,
-    steps, tempo, beatsPerBar, swing,
-    chordInstrument, chordPatternId, bassPatternId, drumPatternId, drumVariations,
+    playing, blocked, muted,
+    steps, chordPatternId, bassPatternId, drumPatternId, drumVariations,
     setActiveStepIndex, setPlaying,
   ]);
 
-  // --- Effect 2: light layer-gain toggles ---
+  // --- Effect 2: live tempo ---
+  // Tone.Part stores events as ticks (PPQ-relative), so flipping the
+  // Transport's bpm re-times every pending event automatically. No rebuild.
+  useEffect(() => {
+    getTransport().bpm.value = tempo;
+  }, [tempo]);
+
+  // --- Effect 3: live swing ---
+  // Transport.swing applies globally to all events scheduled through it.
+  useEffect(() => {
+    (getTransport() as unknown as { swing: number }).swing = swing;
+  }, [swing]);
+
+  // --- Effect 4: live loop toggle ---
+  // setLoop on every existing Part. loopEnd was stored in ticks at build
+  // time, so it re-times with bpm; no need to recompute the seconds value.
+  useEffect(() => {
+    primsRef.current?.parts.forEach((p) => {
+      p.setLoop(loopEnabled);
+    });
+  }, [loopEnabled]);
+
+  // --- Effect 5: live time signature (beatsPerBar) ---
+  // Transport.timeSignature affects bar-relative time arithmetic. The
+  // metronome accent cycle reads beatsPerBarRef inside its callback.
+  useEffect(() => {
+    beatsPerBarRef.current = beatsPerBar;
+    (getTransport() as unknown as { timeSignature: number }).timeSignature = beatsPerBar;
+  }, [beatsPerBar]);
+
+  // --- Effect 6: live chord instrument ---
+  // The chord-strum Part callback reads `instrumentRef.current` each tick
+  // via `getChordVoice(...)`, so an instrument switch takes effect on the
+  // next strum hit without rebuilding the Part.
+  useEffect(() => {
+    instrumentRef.current = chordInstrument;
+  }, [chordInstrument]);
+
+  // --- Effect 7: live layer-gain toggles ---
   useEffect(() => {
     const audio = ensureProgressionAudio();
     if (!audio) return;
@@ -1577,8 +1726,8 @@ After Task 5 the branch should have:
 6. ✅ Manual smoke check:
    - Loop plays cleanly across the boundary.
    - Chord overlay swap aligns with audio onset (no more visible lead).
-   - Layer toggles (chord/bass/drums/metronome) take effect mid-bar without restarting playback.
-   - Tempo / step / pattern change mid-play: brief stop then auto-restart from bar 0.
+   - **Live (no restart) mid-play:** layer toggles (chord/bass/drums/metronome), tempo slider, swing slider, loop toggle, time-signature picker, instrument selector. All apply mid-bar with no audio glitch.
+   - **Restart-from-0 mid-play:** step content edits (add/remove/change chord), pattern switches (chord/bass/drum), drum variations. Brief stop then auto-restart at bar 0.
    - Pause / resume snaps to the current chord per existing behavior.
 7. ✅ `git grep useProgressionPlaybackLoop` returns nothing.
 8. ✅ `git grep scheduleProgressionStep` returns nothing.
