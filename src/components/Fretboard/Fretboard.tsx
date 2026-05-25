@@ -14,6 +14,7 @@ const LazyFretboardSVG = lazy(() =>
   import("../FretboardSVG/FretboardSVG").then((m) => ({ default: m.FretboardSVG }))
 );
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
+import { FretboardSkeleton } from "./FretboardSkeleton";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardState";
 import {
   STRING_ROW_PX_DEFAULT,
@@ -301,7 +302,16 @@ export function Fretboard(props: FretboardProps) {
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        <Suspense fallback={<div style={{ height: `${tuning.length * stringRowPx}px`, width: "100%" }} />}>
+        <Suspense 
+          fallback={
+            <FretboardSkeleton 
+              neckWidthPx={neckWidth} 
+              neckHeight={tuning.length * stringRowPx} 
+              numStrings={tuning.length} 
+              stringRowPx={stringRowPx} 
+            />
+          }
+        >
           <LazyFretboardSVG
             effectiveZoom={effectiveZoom}
             neckWidthPx={neckWidth}
