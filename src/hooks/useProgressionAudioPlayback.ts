@@ -200,6 +200,7 @@ export function useProgressionAudioPlayback() {
         });
       } catch (err) {
         console.error("Audio build failed", err);
+        setLoading(false);
         return;
       }
       

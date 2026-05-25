@@ -547,6 +547,38 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(toneMocks.loops).toHaveLength(0);
   });
 
+  describe("error handling", () => {
+    it("clears loading state when buildAllLayersAsync throws", async () => {
+      // Force buildAllLayersAsync to reject by spying on the shared module
+      // instance (Vitest module registry is shared between host and dynamic
+      // imports, so the spy affects the hook's internal call).
+      const buildMod = await import("../progressions/audio/buildAllLayers");
+      const spy = vi
+        .spyOn(buildMod, "buildAllLayersAsync")
+        .mockRejectedValueOnce(new Error("build failed (test-injected)"));
+
+      const store = makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, threeBars],
+        [progressionTempoBpmAtom, 60],
+        [beatsPerBarAtom, 4],
+      ]);
+      store.set(setProgressionPlayingAtom, true);
+      renderWithStore(<Harness />, store);
+
+      // loading goes true synchronously when the effect fires.
+      expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
+
+      // After buildAllLayersAsync rejects, loading must return to false.
+      await vi.waitFor(() => {
+        expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+      });
+
+      spy.mockRestore();
+    });
+  });
+
   describe("progressionPlaybackLoadingAtom integration", () => {
     it("flips loading true at Effect 1 build entry, false on first chord-onset", async () => {
       const store = makeAtomStore([
