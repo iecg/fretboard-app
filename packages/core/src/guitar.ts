@@ -13,13 +13,12 @@ export interface NoteWithOctave {
  */
 export function parseNote(noteString: string): NoteWithOctave | null {
   if (!noteString) return null;
-  const match = noteString.match(/^([A-G]#?)(\d)$/);
-  if (!match) return null;
-  const noteName = match[1];
-  const octave = parseInt(match[2], 10);
-  if (!NOTES.includes(noteName)) return null;
-  if (!Number.isFinite(octave)) return null;
-  return { noteName, octave };
+  const tonalNote = Note.get(noteString);
+  if (tonalNote.empty || tonalNote.oct === undefined) return null;
+  return {
+    noteName: tonalNote.letter + (tonalNote.acc || ""),
+    octave: tonalNote.oct,
+  };
 }
 
 // Standard Tuning from highest string (1st, thinnest) to lowest string (6th, thickest)
