@@ -178,6 +178,14 @@ describe("getChordDisplayLabel", () => {
   it("falls back to input on unknown symbol", () => {
     expect(getChordDisplayLabel("ZZZ")).toBe("ZZZ");
   });
+  it("falls back to input when Tonal name reduces to empty after stripping tonic", () => {
+    // Chord.get("Cadd9").name returns "C " (tonic with trailing space).
+    // After ^C\s* strip + trim, the result is "" — guarded by `|| chordSymbol`.
+    expect(getChordDisplayLabel("add9")).toBe("add9");
+  });
+  it("empty string passes through (does not resolve to major triad)", () => {
+    expect(getChordDisplayLabel("")).toBe("");
+  });
 });
 
 describe("getScaleDisplayLabel", () => {
@@ -192,5 +200,8 @@ describe("getScaleDisplayLabel", () => {
   });
   it("falls back to input on unknown scale", () => {
     expect(getScaleDisplayLabel("bogus scale")).toBe("bogus scale");
+  });
+  it("empty string passes through", () => {
+    expect(getScaleDisplayLabel("")).toBe("");
   });
 });

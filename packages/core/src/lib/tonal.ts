@@ -254,6 +254,7 @@ export function getModeTriads(modeName: string): readonly string[] | null {
  * fallback so the UI never shows blank).
  */
 export function getChordDisplayLabel(chordSymbol: string): string {
+  if (!chordSymbol) return chordSymbol;
   const c = Chord.get(`C${chordSymbol}`);
   if (c.empty) return chordSymbol;
   // Tonal returns names like "C major" or "C minor seventh"; strip the tonic.
@@ -270,6 +271,7 @@ export function getChordDisplayLabel(chordSymbol: string): string {
  * Returns the input unchanged if Tonal can't resolve it.
  */
 export function getScaleDisplayLabel(scaleName: string): string {
+  if (!scaleName) return scaleName;
   const s = Scale.get(`C ${scaleName}`);
   if (s.empty) return scaleName;
   return s.name.replace(/^C\s*/, "").trim() || scaleName;
