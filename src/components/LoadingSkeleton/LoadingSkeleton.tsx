@@ -21,16 +21,21 @@ function CardSkeleton({ rows = 3, children }: { rows?: number; children?: React.
   );
 }
 
+export function TimelineSkeleton() {
+  return (
+    <div className={styles["timeline-skeleton"]} aria-hidden="true">
+      <SkeletonBar size="sm" width="100%" />
+      <SkeletonBar size="md" width="100%" />
+    </div>
+  );
+}
+
 export function ControlsPanelSkeleton({ mode }: { mode: "3col" | "split" | "stacked" }) {
   return (
     <div className={styles["controls-skeleton"]} data-mode={mode} aria-label="Loading controls" role="status">
       <CardSkeleton rows={4} />
       <CardSkeleton rows={5} />
-      <CardSkeleton>
-        <div className={styles["cof-skeleton"]}>
-          <div className={clsx(styles.circle)} style={{ width: "min(14rem, 100%)" }} />
-        </div>
-      </CardSkeleton>
+      {mode === "3col" && <CardSkeleton rows={4} />}
     </div>
   );
 }

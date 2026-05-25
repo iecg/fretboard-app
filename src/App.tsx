@@ -25,7 +25,7 @@ import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrap
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
-import { ControlsPanelSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
+import { ControlsPanelSkeleton, TimelineSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
 import "./styles/App.css";
@@ -195,7 +195,7 @@ function AppContent() {
         />
       }
       summary={
-        <Suspense fallback={null}>
+        <Suspense fallback={<TimelineSkeleton />}>
           <ProgressionSummarySlot />
         </Suspense>
       }

@@ -39,6 +39,15 @@
   aspect-ratio: 1;
 }
 
+.timeline-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  height: 4.2rem;
+  width: 100%;
+}
+
 /* Card-shaped skeleton matching the app's Card component */
 .card-skeleton {
   background: var(--surface-card-top);
