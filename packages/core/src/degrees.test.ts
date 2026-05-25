@@ -10,6 +10,7 @@ import {
   _validateDiatonicQualitiesAgainstTonal,
 } from './degrees';
 import { SCALES } from './theoryCatalog';
+import * as RomanNumeral from '@tonaljs/roman-numeral';
 
 const BASE_DEGREE_COLOR_KEYS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
 
@@ -801,5 +802,29 @@ describe("degree outputs snapshot (pre-Tonal-migration lock)", () => {
       snapshot[scaleName] = inner;
     }
     expect(snapshot).toMatchSnapshot();
+  });
+});
+
+describe('Tonal round-trip — degree labels parse via RomanNumeral.get', () => {
+  // Every Roman-numeral label produced by getDegreesForScale should be parseable
+  // by Tonal's @tonaljs/roman-numeral. This is a guard rail: if we ever emit a
+  // label Tonal can't understand (e.g. an exotic suffix), it surfaces here so
+  // we can either align our notation or document the divergence.
+  //
+  // KNOWN DIVERGENCE: Tonal does not parse the unicode degree suffix "°"
+  // (diminished triad marker). RomanNumeral.get("vii°") returns an empty
+  // entry. We keep "°" in our labels for display, so we strip it before
+  // round-tripping. This is intentional — see degrees.ts buildDegreeLabel.
+  it('every degree label parses via Tonal RomanNumeral.get (with "°" stripped)', () => {
+    for (const scaleName of Object.keys(SCALES)) {
+      const degrees = getDegreesForScale(scaleName);
+      for (const label of Object.values(degrees)) {
+        const canonical = label.replace(/°/g, '');
+        const parsed = RomanNumeral.get(canonical);
+        expect(parsed.empty,
+          `RomanNumeral failed to parse "${canonical}" (original "${label}") in scale "${scaleName}"`
+        ).toBe(false);
+      }
+    }
   });
 });
