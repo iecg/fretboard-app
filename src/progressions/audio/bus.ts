@@ -62,7 +62,15 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     bus.connect(ctx.destination);
     layers = buildLayerBuses(ctx, bus);
     bindToneToProgressionContext({ ctx, bus, layers });
-  } catch {
+  } catch (err) {
+    // Dev-mode diagnostic — silent in production. The 2026-05-25 P2-T1
+    // regression (Tone.Draw.expiration assignment on undefined) hid in
+    // this try/catch for the entire round-1 plan because the catch logged
+    // nothing. The console.warn flips a known-recoverable failure into an
+    // observable one during development without polluting production logs.
+    if (import.meta.env.DEV) {
+      console.warn("[progression-audio] ensureProgressionAudio init failed:", err);
+    }
     unsupported = true;
     ctx = null;
     bus = null;
