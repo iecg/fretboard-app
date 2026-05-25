@@ -13,7 +13,6 @@ import {
   type CatalogDrumPattern,
   type DrumHit,
 } from "./patterns";
-import type { ChordInstrumentId } from "./instruments/types";
 
 export type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride";
 export type StrumStyle = "staccato" | "sustained";
@@ -50,7 +49,6 @@ export interface BuildAllLayersInput {
   tempoBpm: number;
   beatsPerBar: number;
   swing: number;
-  chordInstrument: ChordInstrumentId;
   chordPatternId: string;
   bassPatternId: string;
   drumPatternId: string;
@@ -124,14 +122,13 @@ export function buildAllLayers(input: BuildAllLayersInput): BuiltLayers {
       : step.duration.value;
     const stepDurationSec = stepBeats * secondsPerBeat;
 
-    const scheduleThis = !step.unavailable && step.root !== null && step.quality !== null;
-    if (!scheduleThis) {
+    if (step.unavailable || step.root === null || step.quality === null) {
       cumulativeSec += stepDurationSec;
       return;
     }
 
-    const root = step.root as string;
-    const quality = step.quality as string;
+    const root = step.root;
+    const quality = step.quality;
     const nextStep = input.steps[stepIndex + 1];
     const nextRoot = nextStep?.root ?? undefined;
 

@@ -27,7 +27,6 @@ describe("buildAllLayers", () => {
     tempoBpm: 60, // 1 beat = 1s, 1 bar (4 beats) = 4s
     beatsPerBar: 4,
     swing: 0,
-    chordInstrument: "strum" as const,
     chordPatternId: "ballad-whole", // single sustained hit on beat 0
     bassPatternId: "root-fifth",
     drumPatternId: "rock",
