@@ -159,6 +159,12 @@ importers:
       '@tonaljs/pcset':
         specifier: ^4.10.1
         version: 4.10.1
+      '@tonaljs/progression':
+        specifier: ^4.9.2
+        version: 4.9.2
+      '@tonaljs/roman-numeral':
+        specifier: ^4.9.1
+        version: 4.9.1
       '@tonaljs/scale':
         specifier: ^4.13.4
         version: 4.13.4
@@ -171,7 +177,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.7
-        version: 4.1.7(@types/node@25.6.0)(@vitest/coverage-v8@4.1.6)(jsdom@29.1.1)(vite@8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
+        version: 4.1.7(@types/node@25.6.0)(@vitest/coverage-v8@4.1.6(vitest@4.1.7))(jsdom@29.1.1)(vite@8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
 
 packages:
 
@@ -1194,6 +1200,9 @@ packages:
 
   '@tonaljs/pitch@5.0.2':
     resolution: {integrity: sha512-mxaXJPPe+LIJdjzpZEl8I8Wx3dEvlzkBbsr2Ltwc2dTAdnErAZ5R0TxVq2egF27lMvQN2QPQPWI9iDPPdVUmrg==}
+
+  '@tonaljs/progression@4.9.2':
+    resolution: {integrity: sha512-1Pmau5tKoWmY2H/fp9WVJ5Qm4c+xlu7IEZb3R3uLbc26kJq97DbuSnfArIAQoZTum2V6lOEN/Dt34E9OrGKnoA==}
 
   '@tonaljs/roman-numeral@4.9.1':
     resolution: {integrity: sha512-dJGKBNHdPrNTE97ZDk4t6wpNmgYcpHyLkAvWkRP9I/HsDkeTFFQqNXosYIvspPWrFySlRpeqqFwcqV74MYoOag==}
@@ -4480,6 +4489,14 @@ snapshots:
 
   '@tonaljs/pitch@5.0.2': {}
 
+  '@tonaljs/progression@4.9.2':
+    dependencies:
+      '@tonaljs/chord': 6.1.2
+      '@tonaljs/pitch-distance': 5.0.5
+      '@tonaljs/pitch-interval': 6.1.0
+      '@tonaljs/pitch-note': 6.1.0
+      '@tonaljs/roman-numeral': 4.9.1
+
   '@tonaljs/roman-numeral@4.9.1':
     dependencies:
       '@tonaljs/pitch': 5.0.2
@@ -6718,6 +6735,35 @@ snapshots:
       redent: 3.0.0
       vitest: 4.1.7(@types/node@25.6.0)(@vitest/coverage-v8@4.1.6)(jsdom@29.1.1)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
 
+  vitest@4.1.7(@types/node@25.6.0)(@vitest/coverage-v8@4.1.6(vitest@4.1.7))(jsdom@29.1.1)(vite@8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)):
+    dependencies:
+      '@vitest/expect': 4.1.7
+      '@vitest/mocker': 4.1.7(vite@8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
+      '@vitest/pretty-format': 4.1.7
+      '@vitest/runner': 4.1.7
+      '@vitest/snapshot': 4.1.7
+      '@vitest/spy': 4.1.7
+      '@vitest/utils': 4.1.7
+      es-module-lexer: 2.1.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.4
+      std-env: 4.1.0
+      tinybench: 2.9.0
+      tinyexec: 1.1.2
+      tinyglobby: 0.2.16
+      tinyrainbow: 3.1.0
+      vite: 8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 25.6.0
+      '@vitest/coverage-v8': 4.1.6(vitest@4.1.7)
+      jsdom: 29.1.1
+    transitivePeerDependencies:
+      - msw
+
   vitest@4.1.7(@types/node@25.6.0)(@vitest/coverage-v8@4.1.6)(jsdom@29.1.1)(vite@8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)):
     dependencies:
       '@vitest/expect': 4.1.7
@@ -6739,35 +6785,6 @@ snapshots:
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
       vite: 8.0.10(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 25.6.0
-      '@vitest/coverage-v8': 4.1.6(vitest@4.1.7)
-      jsdom: 29.1.1
-    transitivePeerDependencies:
-      - msw
-
-  vitest@4.1.7(@types/node@25.6.0)(@vitest/coverage-v8@4.1.6)(jsdom@29.1.1)(vite@8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)):
-    dependencies:
-      '@vitest/expect': 4.1.7
-      '@vitest/mocker': 4.1.7(vite@8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3))
-      '@vitest/pretty-format': 4.1.7
-      '@vitest/runner': 4.1.7
-      '@vitest/snapshot': 4.1.7
-      '@vitest/spy': 4.1.7
-      '@vitest/utils': 4.1.7
-      es-module-lexer: 2.1.0
-      expect-type: 1.3.0
-      magic-string: 0.30.21
-      obug: 2.1.1
-      pathe: 2.0.3
-      picomatch: 4.0.4
-      std-env: 4.1.0
-      tinybench: 2.9.0
-      tinyexec: 1.1.2
-      tinyglobby: 0.2.16
-      tinyrainbow: 3.1.0
-      vite: 8.0.13(@types/node@25.6.0)(jiti@2.6.1)(yaml@2.8.3)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 25.6.0
