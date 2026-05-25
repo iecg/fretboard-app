@@ -210,17 +210,24 @@ export function getTwoStringsIntervalPairs(
 
   const pairs: Array<{ a: string; b: string }> = [];
 
+  const offset = absolutePitch(openA, 0) - absolutePitch(openB, 0);
+
   for (let fretA = 0; fretA < rowA.length; fretA++) {
     const noteA = rowA[fretA];
     if (!noteA || !scaleNoteSet.has(noteA)) continue;
     const pitchA = absolutePitch(openA, fretA);
 
-    for (let fretB = 0; fretB < rowB.length; fretB++) {
+    // Instead of checking all frets on string B, we only check up to 12 semitones below pitchA.
+    // pitchA - pitchB = diff
+    // fretA + offset - fretB = diff  =>  fretB = fretA + offset - diff
+    for (let diff = 1; diff <= 12; diff++) {
+      const fretB = fretA + offset - diff;
+      if (fretB < 0 || fretB >= rowB.length) continue;
+      
       const noteB = rowB[fretB];
       if (!noteB || !scaleNoteSet.has(noteB)) continue;
-      const pitchB = absolutePitch(openB, fretB);
-      // Directional: higher string (sA, lower index) must have higher absolute pitch.
-      if (pitchA <= pitchB) continue;
+      
+      const pitchB = pitchA - diff;
       const dist = sdStepsBetween(pitchB, pitchA, scaleDegreeSet);
       if (dist === targetSdDistance) {
         pairs.push({ a: `${sA}-${fretA}`, b: `${sB}-${fretB}` });
@@ -271,10 +278,15 @@ export function getOneStringIntervalPairs(
     if (!noteLow || !scaleNoteSet.has(noteLow)) continue;
     const pitchLow = absolutePitch(openNote, fLow);
 
-    for (let fHigh = fLow + 1; fHigh < row.length; fHigh++) {
+    // Instead of scanning the rest of the string, only check up to 12 frets (semitones) higher
+    for (let diff = 1; diff <= 12; diff++) {
+      const fHigh = fLow + diff;
+      if (fHigh >= row.length) break;
+
       const noteHigh = row[fHigh];
       if (!noteHigh || !scaleNoteSet.has(noteHigh)) continue;
-      const pitchHigh = absolutePitch(openNote, fHigh);
+      
+      const pitchHigh = pitchLow + diff;
       const dist = sdStepsBetween(pitchLow, pitchHigh, scaleDegreeSet);
       if (dist === targetSdDistance) {
         // a = higher-fret (higher-pitched), b = lower-fret (lower-pitched)
