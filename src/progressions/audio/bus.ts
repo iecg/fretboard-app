@@ -62,13 +62,6 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     bus.connect(ctx.destination);
     layers = buildLayerBuses(ctx, bus);
     bindToneToProgressionContext({ ctx, bus, layers });
-    // Default Draw.expiration is 250ms — under heavy main-thread load
-    // (e.g. a chord-boundary Fretboard re-render) that window is too tight
-    // and the visual advance is silently dropped. Chord boundaries are
-    // >=0.5s at sane tempos; 5s gives a 10x margin for stalls without
-    // ever firing stale.
-    getDraw().expiration = 5;
-    return { ctx, bus, layers };
   } catch {
     unsupported = true;
     ctx = null;
@@ -76,6 +69,27 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     layers = null;
     return null;
   }
+
+  // Best-effort: raise Draw.expiration so heavy main-thread renders don't
+  // silently drop chord-overlay advances. Default is 250ms; chord
+  // boundaries are >=0.5s at sane tempos so 5s gives a 10x margin without
+  // ever firing stale.
+  //
+  // This is an OPTIMIZATION ON TOP of the working bus — kept outside the
+  // setup try/catch so a failure here doesn't poison `ensureProgressionAudio`
+  // and return null to every caller. In jsdom test environments, the mock
+  // AudioContext doesn't satisfy Tone's Draw class, so `getDraw()` returns
+  // undefined and assigning `.expiration` would throw; before this guard
+  // moved out of the main try, that silent throw broke the timeline tests
+  // (regression introduced in commit 183caeb9, found 2026-05-25).
+  try {
+    getDraw().expiration = 5;
+  } catch {
+    // Non-fatal — playback works without it; only the chord-overlay React
+    // advance loses its under-load safety margin.
+  }
+
+  return { ctx, bus, layers };
 }
 
 /** Best-effort resume; safe to call repeatedly. */
