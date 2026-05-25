@@ -248,7 +248,7 @@ export function getModeTriads(modeName: string): readonly string[] | null {
  *   getChordDisplayLabel("M")    -> "major"
  *   getChordDisplayLabel("m7")   -> "minor seventh"
  *   getChordDisplayLabel("dim7") -> "diminished seventh"
- *   getChordDisplayLabel("5")    -> "power"
+ *   getChordDisplayLabel("5")    -> "fifth"
  *
  * Returns the input unchanged if Tonal can't resolve it (defensive
  * fallback so the UI never shows blank).
