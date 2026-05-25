@@ -554,20 +554,12 @@ export function resolveAccidentalMode(
   return flatCount < sharpCount; // tie → sharps (false)
 }
 
-export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
-  C: "C",
-  G: "G",
-  D: "D",
-  A: "A",
-  E: "E",
-  B: "B",
-  "F#": "F#/Gb",
-  "C#": "Db",
-  "G#": "Ab",
-  "D#": "Eb",
-  "A#": "Bb",
-  F: "F",
-};
+export function getCircleDisplayLabel(noteName: string): string {
+  if (!noteName.includes("#") && !noteName.includes("b")) return noteName;
+  if (noteName === "F#") return "F#/Gb";
+  const flatName = Note.enharmonic(noteName);
+  return flatName !== noteName ? flatName : noteName;
+}
 
 /**
  * Returns the absolute root note and diatonic triad quality for a given scale degree.
