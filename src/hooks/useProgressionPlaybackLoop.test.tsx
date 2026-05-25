@@ -73,6 +73,13 @@ const toneMocks = vi.hoisted(() => {
   const getContext = vi.fn(() => ({ now: () => contextNowRef.fn() }));
   const now = vi.fn(() => contextNowRef.fn());
 
+  const Draw = {
+    schedule: vi.fn((cb: () => void) => {
+      cb();
+      return Draw;
+    }),
+  };
+
   const _resetEvents = () => {
     for (const timerId of events.values()) clearTimeout(timerId);
     events.clear();
@@ -88,6 +95,7 @@ const toneMocks = vi.hoisted(() => {
     setContext,
     getContext,
     now,
+    Draw,
     _resetEvents,
   };
 });
@@ -97,6 +105,7 @@ vi.mock("tone", () => ({
   getContext: toneMocks.getContext,
   getTransport: toneMocks.getTransport,
   now: toneMocks.now,
+  Draw: toneMocks.Draw,
 }));
 
 import {
