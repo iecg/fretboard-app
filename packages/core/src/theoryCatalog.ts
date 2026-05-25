@@ -1,3 +1,5 @@
+import { getScaleSemitonesFromTonal } from "./lib/tonal";
+
 export type ScaleFamilyId =
   | "major"
   | "harmonic-minor"
@@ -22,9 +24,7 @@ export interface ScaleFamily {
   members: readonly ScaleMember[];
 }
 
-interface ScaleMemberDefinition extends ScaleMember {
-  intervals: readonly number[];
-}
+type ScaleMemberDefinition = ScaleMember;
 
 interface ScaleFamilyDefinition extends Omit<ScaleFamily, "members"> {
   members: readonly ScaleMemberDefinition[];
@@ -86,49 +86,42 @@ const SCALE_FAMILY_DEFINITIONS = [
         displayLabel: "Major (Ionian)",
         shortLabel: "Ionian",
         parentMajorOffset: 0,
-        intervals: [0, 2, 4, 5, 7, 9, 11],
       },
       {
         scaleName: "Dorian",
         displayLabel: "Dorian",
         shortLabel: "Dorian",
         parentMajorOffset: 10,
-        intervals: [0, 2, 3, 5, 7, 9, 10],
       },
       {
         scaleName: "Phrygian",
         displayLabel: "Phrygian",
         shortLabel: "Phrygian",
         parentMajorOffset: 8,
-        intervals: [0, 1, 3, 5, 7, 8, 10],
       },
       {
         scaleName: "Lydian",
         displayLabel: "Lydian",
         shortLabel: "Lydian",
         parentMajorOffset: 7,
-        intervals: [0, 2, 4, 6, 7, 9, 11],
       },
       {
         scaleName: "Mixolydian",
         displayLabel: "Mixolydian",
         shortLabel: "Mixolydian",
         parentMajorOffset: 5,
-        intervals: [0, 2, 4, 5, 7, 9, 10],
       },
       {
         scaleName: "Natural Minor",
         displayLabel: "Natural Minor (Aeolian)",
         shortLabel: "Aeolian",
         parentMajorOffset: 3,
-        intervals: [0, 2, 3, 5, 7, 8, 10],
       },
       {
         scaleName: "Locrian",
         displayLabel: "Locrian",
         shortLabel: "Locrian",
         parentMajorOffset: 1,
-        intervals: [0, 1, 3, 5, 6, 8, 10],
       },
     ],
   },
@@ -143,49 +136,42 @@ const SCALE_FAMILY_DEFINITIONS = [
         displayLabel: "Harmonic Minor",
         shortLabel: "Harmonic Minor",
         parentMajorOffset: 3,
-        intervals: [0, 2, 3, 5, 7, 8, 11],
       },
       {
         scaleName: "Locrian Natural 6",
         displayLabel: "Locrian Natural 6",
         shortLabel: "Locrian Natural 6",
         parentMajorOffset: 1,
-        intervals: [0, 1, 3, 5, 6, 9, 10],
       },
       {
         scaleName: "Ionian Augmented",
         displayLabel: "Ionian Augmented",
         shortLabel: "Ionian Augmented",
         parentMajorOffset: 0,
-        intervals: [0, 2, 4, 5, 8, 9, 11],
       },
       {
         scaleName: "Dorian Sharp 4",
         displayLabel: "Dorian Sharp 4",
         shortLabel: "Dorian #4",
         parentMajorOffset: 10,
-        intervals: [0, 2, 3, 6, 7, 9, 10],
       },
       {
         scaleName: "Phrygian Dominant",
         displayLabel: "Phrygian Dominant",
         shortLabel: "Phrygian Dominant",
         parentMajorOffset: 8,
-        intervals: [0, 1, 4, 5, 7, 8, 10],
       },
       {
         scaleName: "Lydian Sharp 2",
         displayLabel: "Lydian Sharp 2",
         shortLabel: "Lydian #2",
         parentMajorOffset: 7,
-        intervals: [0, 3, 4, 6, 7, 9, 11],
       },
       {
         scaleName: "Altered Diminished",
         displayLabel: "Altered Diminished",
         shortLabel: "Altered Dim.",
         parentMajorOffset: 5,
-        intervals: [0, 1, 3, 4, 6, 8, 9],
       },
     ],
   },
@@ -200,49 +186,42 @@ const SCALE_FAMILY_DEFINITIONS = [
         displayLabel: "Melodic Minor (Jazz Minor)",
         shortLabel: "Jazz Minor",
         parentMajorOffset: 3,
-        intervals: [0, 2, 3, 5, 7, 9, 11],
       },
       {
         scaleName: "Dorian Flat 2",
         displayLabel: "Dorian Flat 2",
         shortLabel: "Dorian b2",
         parentMajorOffset: 1,
-        intervals: [0, 1, 3, 5, 7, 9, 10],
       },
       {
         scaleName: "Lydian Augmented",
         displayLabel: "Lydian Augmented",
         shortLabel: "Lydian Aug.",
         parentMajorOffset: 0,
-        intervals: [0, 2, 4, 6, 8, 9, 11],
       },
       {
         scaleName: "Lydian Dominant",
         displayLabel: "Lydian Dominant",
         shortLabel: "Lydian Dom.",
         parentMajorOffset: 10,
-        intervals: [0, 2, 4, 6, 7, 9, 10],
       },
       {
         scaleName: "Mixolydian Flat 6",
         displayLabel: "Mixolydian Flat 6",
         shortLabel: "Mixolydian b6",
         parentMajorOffset: 8,
-        intervals: [0, 2, 4, 5, 7, 8, 10],
       },
       {
         scaleName: "Locrian Natural 2",
         displayLabel: "Locrian Natural 2",
         shortLabel: "Locrian Nat. 2",
         parentMajorOffset: 6,
-        intervals: [0, 2, 3, 5, 6, 8, 10],
       },
       {
         scaleName: "Altered",
         displayLabel: "Altered",
         shortLabel: "Altered",
         parentMajorOffset: 4,
-        intervals: [0, 1, 3, 4, 6, 8, 10],
       },
     ],
   },
@@ -257,14 +236,12 @@ const SCALE_FAMILY_DEFINITIONS = [
         displayLabel: "Minor Pentatonic",
         shortLabel: "Minor",
         parentMajorOffset: 3,
-        intervals: [0, 3, 5, 7, 10],
       },
       {
         scaleName: "Major Pentatonic",
         displayLabel: "Major Pentatonic",
         shortLabel: "Major",
         parentMajorOffset: 0,
-        intervals: [0, 2, 4, 7, 9],
       },
     ],
   },
@@ -279,14 +256,12 @@ const SCALE_FAMILY_DEFINITIONS = [
         displayLabel: "Minor Blues",
         shortLabel: "Minor",
         parentMajorOffset: 3,
-        intervals: [0, 3, 5, 6, 7, 10],
       },
       {
         scaleName: "Major Blues",
         displayLabel: "Major Blues",
         shortLabel: "Major",
         parentMajorOffset: 0,
-        intervals: [0, 2, 3, 4, 7, 9],
       },
     ],
   },
@@ -312,7 +287,15 @@ export const SCALE_FAMILIES: readonly ScaleFamily[] = SCALE_FAMILY_DEFINITIONS.m
 
 export const SCALES: Record<string, number[]> = Object.fromEntries(
   SCALE_FAMILY_DEFINITIONS.flatMap((family) =>
-    family.members.map((member) => [member.scaleName, [...member.intervals]]),
+    family.members.map((member) => {
+      const intervals = getScaleSemitonesFromTonal(member.scaleName);
+      if (intervals.length === 0) {
+        throw new Error(
+          `theoryCatalog: scale "${member.scaleName}" not resolvable via Tonal`,
+        );
+      }
+      return [member.scaleName, intervals];
+    }),
   ),
 );
 
@@ -441,7 +424,8 @@ export function getScaleBrowseReferenceRoot(
   scaleName: string,
 ): string {
   const entry = resolveScaleCatalogEntry(scaleName);
-  const baseIntervals = getFamilyDefinition(scaleName).members[0]?.intervals;
+  const baseScaleName = getFamilyDefinition(scaleName).members[0]?.scaleName;
+  const baseIntervals = baseScaleName ? SCALES[baseScaleName] : undefined;
   const degreeOffset = baseIntervals?.[entry.index] ?? 0;
   return transposePitchClass(rootNote, -degreeOffset);
 }
@@ -512,7 +496,8 @@ export function getScaleBrowseOptions(
     effectiveBrowseMode === "relative"
       ? getScaleBrowseReferenceRoot(rootNote, scaleName)
       : rootNote;
-  const baseIntervals = familyDefinition.members[0]?.intervals ?? [];
+  const baseScaleName = familyDefinition.members[0]?.scaleName;
+  const baseIntervals = (baseScaleName ? SCALES[baseScaleName] : undefined) ?? [];
 
   return entry.family.members.map((member, index) => {
     const browseRoot =

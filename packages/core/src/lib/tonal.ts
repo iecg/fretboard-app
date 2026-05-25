@@ -8,6 +8,7 @@
 
 import * as Note from "@tonaljs/note";
 import * as Interval from "@tonaljs/interval";
+import * as Scale from "@tonaljs/scale";
 
 /**
  * App chord-quality name (e.g., "Major Triad") → Tonal chord symbol suffix
@@ -133,4 +134,22 @@ export function normalizeToSharps(note: string): string {
   const simplified = Note.simplify(note);
   if (!simplified) return note;
   return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
+}
+
+/**
+ * Returns the semitone offsets (0-11) of a scale, derived from Tonal.
+ * Used as the source of truth for FretFlow's interval data in
+ * SCALES (theoryCatalog.ts) and downstream consumers.
+ *
+ * Returns an empty array if the scale name isn't recognized — callers
+ * must treat empty as a hard error during catalog construction (every
+ * FretFlow scale must resolve).
+ */
+export function getScaleSemitonesFromTonal(scaleName: string): number[] {
+  const tonalName = scaleNameToTonal(scaleName) ?? scaleName;
+  const tonalScale = Scale.get(`C ${tonalName}`);
+  if (tonalScale.empty) return [];
+  return tonalScale.notes
+    .map((n) => Note.chroma(n))
+    .filter((c): c is number => typeof c === "number" && !isNaN(c));
 }

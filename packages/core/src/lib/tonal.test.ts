@@ -5,6 +5,7 @@ import {
   scaleNameToTonal,
   tonalToScaleName,
   normalizeToSharps,
+  getScaleSemitonesFromTonal,
 } from "./tonal";
 
 describe("chord-name adapter", () => {
@@ -87,5 +88,23 @@ describe("normalizeToSharps", () => {
   });
   it("returns garbage input unchanged", () => {
     expect(normalizeToSharps("garbage")).toBe("garbage");
+  });
+});
+
+describe("getScaleSemitonesFromTonal", () => {
+  it("returns Major scale semitones", () => {
+    expect(getScaleSemitonesFromTonal("Major")).toEqual([0, 2, 4, 5, 7, 9, 11]);
+  });
+  it("returns Natural Minor semitones", () => {
+    expect(getScaleSemitonesFromTonal("Natural Minor")).toEqual([0, 2, 3, 5, 7, 8, 10]);
+  });
+  it("returns Minor Pentatonic semitones", () => {
+    expect(getScaleSemitonesFromTonal("Minor Pentatonic")).toEqual([0, 3, 5, 7, 10]);
+  });
+  it("returns Lydian Dominant semitones", () => {
+    expect(getScaleSemitonesFromTonal("Lydian Dominant")).toEqual([0, 2, 4, 6, 7, 9, 10]);
+  });
+  it("returns empty array for unknown scale", () => {
+    expect(getScaleSemitonesFromTonal("Bogus Scale")).toEqual([]);
   });
 });
