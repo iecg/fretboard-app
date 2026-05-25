@@ -542,9 +542,31 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
  * For Close: union of every fitting candidate's positions (so users see all
  * the available voicing options highlighted in the active window).
  */
+// Module-scoped cache: holds the last computed Set + a fingerprint of its
+// position-key content. Returning the cached reference (instead of a fresh
+// Set each evaluation) lets React Compiler's auto-memoization actually
+// short-circuit downstream consumers (FretboardSVG, useChordConnectorPolylines,
+// useNoteData) when the chord highlight set is value-equal across Jotai
+// re-evaluations triggered by upstream dep churn. Diagnosed in
+// docs/superpowers/research/2026-05-25-playback-degradation.md as the primary
+// root cause of chord-transition visual stutter.
+let cachedHighlightSet: Set<string> = new Set();
+let cachedHighlightKey = "<uninitialized>";
+
+function memoizedHighlightSet(positionKeys: Iterable<string>): Set<string> {
+  const sorted = [...new Set(positionKeys)].sort();
+  const fingerprint = sorted.join("|");
+  if (fingerprint === cachedHighlightKey) {
+    return cachedHighlightSet;
+  }
+  cachedHighlightKey = fingerprint;
+  cachedHighlightSet = new Set(sorted);
+  return cachedHighlightSet;
+}
+
 export const chordHighlightPositionsAtom = atom((get): Set<string> => {
   const voicing = get(voicingAtom);
-  if (get(chordOverlayHiddenAtom)) return new Set<string>();
+  if (get(chordOverlayHiddenAtom)) return memoizedHighlightSet([]);
 
   if (voicing === "full") {
     const fullPositionKeys = get(voicingMatchesAtom).flatMap((v) => v.positionKeys);
@@ -557,16 +579,16 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
         //    so chord tones the CAGED voicing engine doesn't generate
         //    (e.g. the 5th on the low E string for C Major) still light up.
         addChordTonesWithinPolygon(get, result, shapePolygons);
-        return result;
+        return memoizedHighlightSet(result);
       }
     }
-    return new Set(fullPositionKeys);
+    return memoizedHighlightSet(fullPositionKeys);
   }
 
   // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.
   // Note highlights represent ALL close candidate positions across all strings, decoupled from the string-set filter.
   if (voicing === "close") {
-    return new Set(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
+    return memoizedHighlightSet(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
   }
 
   // voicing === "off": if lock-to-scale is on, still highlight chord tones restricted to the pattern
@@ -575,11 +597,11 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
     if (shapePolygons.length > 0) {
       const result = new Set<string>();
       addChordTonesWithinPolygon(get, result, shapePolygons);
-      return result;
+      return memoizedHighlightSet(result);
     }
   }
 
-  return new Set<string>();
+  return memoizedHighlightSet([]);
 });
 
 /** Fill `result` with every fretboard position whose note is a chord tone

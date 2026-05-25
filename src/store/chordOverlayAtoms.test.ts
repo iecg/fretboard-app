@@ -1250,3 +1250,73 @@ describe("effectiveStringSetAtom — auto-fallback when picked option is disable
     expect(effective).toEqual(enabledOption!.strings);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Group G — chordHighlightPositionsAtom referential stability
+// Diagnosed in docs/superpowers/research/2026-05-25-playback-degradation.md
+// as primary root cause of chord-transition visual stutter: reference-fresh
+// Set returns defeat React Compiler's auto-memoization downstream.
+// ---------------------------------------------------------------------------
+
+describe("chordHighlightPositionsAtom referential stability", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns the SAME Set reference on consecutive reads with no atom changes", () => {
+    // Sanity baseline: even without memoization, Jotai caches derived-atom
+    // reads when no dependency has changed. With the content-fingerprint
+    // cache in place, identity stability is preserved through that path too.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+    ]);
+    const first = store.get(chordHighlightPositionsAtom);
+    const second = store.get(chordHighlightPositionsAtom);
+    expect(second).toBe(first);
+  });
+
+  it("returns the SAME Set reference when a dep changes but the resulting content is value-equal (non-empty)", () => {
+    // Seed C Major with degree I, voicing=full, no shape pattern (fingering=none),
+    // and snap=false. Toggling snap to true while no shape polygons exist takes
+    // a different code branch but produces the same `new Set(fullPositionKeys)`
+    // content — downstream consumers must receive the same Set reference.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [fingeringPatternAtom, "none"],
+      [voicingAtom, "full"],
+      [chordSnapToScaleAtom, false],
+      [chordOverlayHiddenAtom, false],
+    ]);
+    const first = store.get(chordHighlightPositionsAtom);
+    expect(first.size).toBeGreaterThan(0);
+    // Flip snap — Jotai re-evaluates the derived atom, but with no shape
+    // polygons present the "snap" branch falls through to the same
+    // `new Set(fullPositionKeys)` result. Memoization must return the
+    // SAME reference because the content fingerprint is unchanged.
+    store.set(chordSnapToScaleAtom, true);
+    const second = store.get(chordHighlightPositionsAtom);
+    expect(second).toBe(first);
+  });
+
+  it("returns a DIFFERENT Set reference when the underlying highlight content changes", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [chordOverlayHiddenAtom, false],
+    ]);
+    const first = store.get(chordHighlightPositionsAtom);
+    expect(first.size).toBeGreaterThan(0);
+    // Hiding the overlay collapses the Set to empty — content genuinely changed.
+    store.set(chordOverlayHiddenAtom, true);
+    const second = store.get(chordHighlightPositionsAtom);
+    expect(second).not.toBe(first);
+    expect(second.size).toBe(0);
+  });
+});
