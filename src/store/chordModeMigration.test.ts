@@ -10,7 +10,7 @@ describe("runChordModeMigration", () => {
   it('"off" sets chordOverlayHidden to "true" and clears overrides + mode key', () => {
     localStorage.setItem(k("chordOverlayMode"), JSON.stringify("off"));
     localStorage.setItem(k("chordRootOverride"), JSON.stringify("G"));
-    localStorage.setItem(k("chordQualityOverride"), JSON.stringify("Major Triad"));
+    localStorage.setItem(k("chordQualityOverride"), JSON.stringify("M"));
     runChordModeMigration();
     expect(localStorage.getItem(k("chordOverlayHidden"))).toBe(JSON.stringify(true));
     expect(localStorage.getItem(k("chordOverlayMode"))).toBeNull();

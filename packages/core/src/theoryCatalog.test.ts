@@ -15,12 +15,12 @@ import { CHORD_DEFINITIONS } from "./theory";
 
 describe("chord catalog — new chord types round-trip", () => {
   const NEW_CHORD_TYPES: Array<{ key: string; intervals: number[] }> = [
-    { key: "Augmented Triad", intervals: [0, 4, 8] },
-    { key: "Sus2", intervals: [0, 2, 7] },
-    { key: "Minor 6th", intervals: [0, 3, 7, 9] },
-    { key: "Diminished 7th", intervals: [0, 3, 6, 9] },
-    { key: "Half-Diminished 7th", intervals: [0, 3, 6, 10] },
-    { key: "Minor-Major 7th", intervals: [0, 3, 7, 11] },
+    { key: "aug", intervals: [0, 4, 8] },
+    { key: "sus2", intervals: [0, 2, 7] },
+    { key: "m6", intervals: [0, 3, 7, 9] },
+    { key: "dim7", intervals: [0, 3, 6, 9] },
+    { key: "m7b5", intervals: [0, 3, 6, 10] },
+    { key: "mMaj7", intervals: [0, 3, 7, 11] },
   ];
 
   for (const { key, intervals } of NEW_CHORD_TYPES) {

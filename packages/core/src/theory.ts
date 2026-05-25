@@ -10,9 +10,7 @@ import * as Scale from "@tonaljs/scale";
 import * as Key from "@tonaljs/key";
 import {
   scaleNameToTonal,
-  tonalChordSymbol,
   normalizeToSharps,
-  chordQualityToTonal,
   getChordSemitonesFromTonal,
 } from "./lib/tonal";
 import * as Chord from "@tonaljs/chord";
@@ -243,18 +241,14 @@ export interface PracticeBarGroup {
  * or if the member count doesn't match Tonal's interval count.
  */
 function buildChordDef(
-  appQuality: string,
+  tonalSymbol: string,
   quality: ChordQuality,
   memberNames: readonly ChordMemberName[],
 ): ChordDefinition {
-  const symbol = chordQualityToTonal(appQuality);
-  if (symbol === undefined) {
-    throw new Error(`buildChordDef: unknown FretFlow quality "${appQuality}"`);
-  }
-  const semitones = getChordSemitonesFromTonal(symbol);
+  const semitones = getChordSemitonesFromTonal(tonalSymbol);
   if (semitones.length !== memberNames.length) {
     throw new Error(
-      `buildChordDef: ${appQuality} expects ${memberNames.length} members, Tonal returned ${semitones.length}`,
+      `buildChordDef: ${tonalSymbol} expects ${memberNames.length} members, Tonal returned ${semitones.length}`,
     );
   }
   return {
@@ -264,21 +258,21 @@ function buildChordDef(
 }
 
 export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
-  "Major Triad":         buildChordDef("Major Triad",         "triad",     ["root", "3", "5"]),
-  "Minor Triad":         buildChordDef("Minor Triad",         "triad",     ["root", "b3", "5"]),
-  "Diminished Triad":    buildChordDef("Diminished Triad",    "triad",     ["root", "b3", "b5"]),
-  "Major 6th":           buildChordDef("Major 6th",           "sixth",     ["root", "3", "5", "6"]),
-  "Major 7th":           buildChordDef("Major 7th",           "seventh",   ["root", "3", "5", "7"]),
-  "Minor 7th":           buildChordDef("Minor 7th",           "seventh",   ["root", "b3", "5", "b7"]),
-  "Dominant 7th":        buildChordDef("Dominant 7th",        "seventh",   ["root", "3", "5", "b7"]),
-  "Sus4":                buildChordDef("Sus4",                "suspended", ["root", "4", "5"]),
-  "Power Chord (5)":     buildChordDef("Power Chord (5)",     "power",     ["root", "5"]),
-  "Augmented Triad":     buildChordDef("Augmented Triad",     "triad",     ["root", "3", "#5"]),
-  "Sus2":                buildChordDef("Sus2",                "suspended", ["root", "2", "5"]),
-  "Minor 6th":           buildChordDef("Minor 6th",           "sixth",     ["root", "b3", "5", "6"]),
-  "Diminished 7th":      buildChordDef("Diminished 7th",      "seventh",   ["root", "b3", "b5", "bb7"]),
-  "Half-Diminished 7th": buildChordDef("Half-Diminished 7th", "seventh",   ["root", "b3", "b5", "b7"]),
-  "Minor-Major 7th":     buildChordDef("Minor-Major 7th",     "seventh",   ["root", "b3", "5", "7"]),
+  M:     buildChordDef("M",     "triad",     ["root", "3", "5"]),
+  m:     buildChordDef("m",     "triad",     ["root", "b3", "5"]),
+  dim:   buildChordDef("dim",   "triad",     ["root", "b3", "b5"]),
+  aug:   buildChordDef("aug",   "triad",     ["root", "3", "#5"]),
+  sus2:  buildChordDef("sus2",  "suspended", ["root", "2", "5"]),
+  sus4:  buildChordDef("sus4",  "suspended", ["root", "4", "5"]),
+  "6":   buildChordDef("6",     "sixth",     ["root", "3", "5", "6"]),
+  m6:    buildChordDef("m6",    "sixth",     ["root", "b3", "5", "6"]),
+  maj7:  buildChordDef("maj7",  "seventh",   ["root", "3", "5", "7"]),
+  m7:    buildChordDef("m7",    "seventh",   ["root", "b3", "5", "b7"]),
+  "7":   buildChordDef("7",     "seventh",   ["root", "3", "5", "b7"]),
+  dim7:  buildChordDef("dim7",  "seventh",   ["root", "b3", "b5", "bb7"]),
+  m7b5:  buildChordDef("m7b5",  "seventh",   ["root", "b3", "b5", "b7"]),
+  mMaj7: buildChordDef("mMaj7", "seventh",   ["root", "b3", "5", "7"]),
+  "5":   buildChordDef("5",     "power",     ["root", "5"]),
 };
 
 // Backward compatibility mapping from CHORD_DEFINITIONS
@@ -421,9 +415,7 @@ export function getScaleSemitones(rootNote: string, scaleName: string): number[]
 export function getChordNotes(rootNote: string, chordName: string): string[] {
   const chroma = Note.chroma(rootNote);
   if (typeof chroma !== "number" || isNaN(chroma)) return [];
-  const symbol = tonalChordSymbol(rootNote, chordName);
-  if (!symbol) return [];
-  const tonalChord = Chord.get(symbol);
+  const tonalChord = Chord.get(`${rootNote}${chordName}`);
   if (tonalChord.empty) return [];
   // Same sharps-form normalization as getIntervalNotes.
   return tonalChord.notes.map((n) => normalizeToSharps(n));
@@ -617,7 +609,7 @@ export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
  * @param scaleName  - Scale name (e.g., "Major", "harmonic minor")
  * @param tonicNote  - The tonic note of the scale in sharps-form (e.g., "C", "A", "C#")
  * @returns `{ root, quality }` where root is always a sharps-form note and quality is a
- *          chord-name key (e.g., "Major Triad"), or undefined for any unrecognised input.
+ *          chord-name key (Tonal symbol, e.g. "M"), or undefined for any unrecognised input.
  */
 export function getDiatonicChord(
   degreeId: string,

@@ -33,7 +33,7 @@ describe("progressionDomain", () => {
       id: "step-v",
       degree: "V",
       root: "G",
-      quality: "Major Triad",
+      quality: "M",
       unavailable: false,
       qualityOverrideApplied: false,
     });
@@ -41,13 +41,13 @@ describe("progressionDomain", () => {
 
   it("applies a valid quality override without changing the degree-derived root", () => {
     const step = createProgressionStep(
-      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+      { degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
       "step-v7",
     );
     expect(resolveProgressionStep(step, "major", "C")).toMatchObject({
       root: "G",
-      quality: "Dominant 7th",
-      diatonicQuality: "Major Triad",
+      quality: "7",
+      diatonicQuality: "M",
       qualityOverrideApplied: true,
     });
   });
@@ -59,8 +59,8 @@ describe("progressionDomain", () => {
     );
     expect(resolveProgressionStep(step, "major", "C")).toMatchObject({
       root: "G",
-      quality: "Major Triad",
-      diatonicQuality: "Major Triad",
+      quality: "M",
+      diatonicQuality: "M",
       qualityOverrideApplied: false,
       invalidQualityOverride: true,
     });
@@ -74,12 +74,12 @@ describe("progressionDomain", () => {
 
     expect(resolveProgressionStep(step, "major pentatonic", "C")).toMatchObject({
       root: "F",
-      quality: "Major Triad",
+      quality: "M",
       unavailable: false,
     });
     expect(resolveProgressionStep(step, "major blues", "C")).toMatchObject({
       root: "F",
-      quality: "Major Triad",
+      quality: "M",
       unavailable: false,
     });
   });
@@ -92,12 +92,12 @@ describe("progressionDomain", () => {
 
     expect(resolveProgressionStep(step, "minor pentatonic", "C")).toMatchObject({
       root: "G#",
-      quality: "Major Triad",
+      quality: "M",
       unavailable: false,
     });
     expect(resolveProgressionStep(step, "minor blues", "C")).toMatchObject({
       root: "G#",
-      quality: "Major Triad",
+      quality: "M",
       unavailable: false,
     });
   });
@@ -120,13 +120,13 @@ describe("progressionDomain", () => {
   it("remaps all progression steps while preserving ids, durations, and overrides", () => {
     const steps = [
       createProgressionStep({ degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "one"),
-      createProgressionStep({ degree: "V", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th" }, "two"),
+      createProgressionStep({ degree: "V", duration: { value: 2, unit: "bar" }, qualityOverride: "7" }, "two"),
       createProgressionStep({ degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null }, "three"),
     ];
 
     expect(remapProgressionStepsForScale(steps, "minor")).toEqual([
       { id: "one", degree: "i", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
-      { id: "two", degree: "v", duration: { value: 2, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+      { id: "two", degree: "v", duration: { value: 2, unit: "bar" }, qualityOverride: "7", manualRoot: null },
       { id: "three", degree: "VI", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
   });
@@ -165,7 +165,7 @@ describe("progressionDomain", () => {
     );
     const blues = PROGRESSION_PRESETS.find((preset) => preset.id === "twelve-bar-blues");
     expect(blues?.steps).toHaveLength(7);
-    expect(blues?.steps.every((step) => step.qualityOverride === "Dominant 7th")).toBe(true);
+    expect(blues?.steps.every((step) => step.qualityOverride === "7")).toBe(true);
   });
 
   it("filters presets to scales where every preset degree can resolve", () => {
@@ -228,7 +228,7 @@ describe("twelve-bar-blues preset", () => {
 
   it("applies Dominant 7th to all steps", () => {
     for (const step of blues.steps) {
-      expect(step.qualityOverride).toBe("Dominant 7th");
+      expect(step.qualityOverride).toBe("7");
     }
   });
 });
@@ -283,17 +283,17 @@ describe("formatProgressionDurationLabel", () => {
 
 describe("formatChordShortLabel", () => {
   it("renders bare root for major triads", () => {
-    expect(formatChordShortLabel("C", "Major Triad")).toBe("C");
-    expect(formatChordShortLabel("F♯", "Major Triad")).toBe("F♯");
+    expect(formatChordShortLabel("C", "M")).toBe("C");
+    expect(formatChordShortLabel("F♯", "M")).toBe("F♯");
   });
 
   it("appends idiomatic suffixes for common qualities", () => {
-    expect(formatChordShortLabel("A", "Minor Triad")).toBe("Am");
-    expect(formatChordShortLabel("G", "Dominant 7th")).toBe("G7");
-    expect(formatChordShortLabel("C", "Major 7th")).toBe("Cmaj7");
-    expect(formatChordShortLabel("D", "Minor 7th")).toBe("Dm7");
-    expect(formatChordShortLabel("B", "Diminished Triad")).toBe("B°");
-    expect(formatChordShortLabel("F", "Half-Diminished 7th")).toBe("Fø7");
+    expect(formatChordShortLabel("A", "m")).toBe("Am");
+    expect(formatChordShortLabel("G", "7")).toBe("G7");
+    expect(formatChordShortLabel("C", "maj7")).toBe("Cmaj7");
+    expect(formatChordShortLabel("D", "m7")).toBe("Dm7");
+    expect(formatChordShortLabel("B", "dim")).toBe("B°");
+    expect(formatChordShortLabel("F", "m7b5")).toBe("Fø7");
   });
 
   it("falls back to 'root quality' for unknown qualities", () => {
@@ -391,7 +391,7 @@ describe("progression duration math", () => {
       const step = createProgressionStep({
         degree: "i",
         duration: { value: 1, unit: "bar" },
-        qualityOverride: "Major Triad",
+        qualityOverride: "M",
         manualRoot: "F#",
       });
       expect(step.manualRoot).toBe("F#");
@@ -451,7 +451,7 @@ describe("transposeManualRootForRootChange", () => {
         id: "x",
         degree: "I",
         duration: { value: 1, unit: "bar" },
-        qualityOverride: "Major Triad",
+        qualityOverride: "M",
         manualRoot: "F#",
       },
     ];
@@ -493,7 +493,7 @@ describe("transposeManualRootForRootChange", () => {
         id: "x",
         degree: "I",
         duration: { value: 1, unit: "bar" },
-        qualityOverride: "Major Triad",
+        qualityOverride: "M",
         manualRoot: "C",
       },
     ];
@@ -508,7 +508,7 @@ describe("transposeManualRootForRootChange", () => {
         id: "alpha",
         degree: "V",
         duration: { value: 2, unit: "beat" },
-        qualityOverride: "Dominant 7th",
+        qualityOverride: "7",
         manualRoot: "F#",
       },
     ];
@@ -517,7 +517,7 @@ describe("transposeManualRootForRootChange", () => {
       id: "alpha",
       degree: "V",
       duration: { value: 2, unit: "beat" },
-      qualityOverride: "Dominant 7th",
+      qualityOverride: "7",
     });
   });
 });
@@ -536,12 +536,12 @@ describe("resolveProgressionStep + manualRoot (Plan G11a)", () => {
 
   it("when manualRoot + qualityOverride both set, qualityOverride wins", () => {
     const step = createProgressionStep(
-      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor Triad", manualRoot: "D#" },
+      { degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "m", manualRoot: "D#" },
       "step-manual-override",
     );
     const resolved = resolveProgressionStep(step, "major", "C", 0, false);
     expect(resolved.root).toBe("D#");
-    expect(resolved.quality).toBe("Minor Triad");
+    expect(resolved.quality).toBe("m");
   });
 
   it("when manualRoot is set without qualityOverride, picks a sensible default quality", () => {
@@ -550,9 +550,9 @@ describe("resolveProgressionStep + manualRoot (Plan G11a)", () => {
       "step-manual-no-override",
     );
     const resolved = resolveProgressionStep(step, "major", "C", 0, false);
-    // The simplest defensible default is "Major Triad". A smarter helper may
+    // The simplest defensible default is "M". A smarter helper may
     // yield a different but coherent quality — both are acceptable.
-    expect(["Major Triad", "Minor Triad", "Diminished Triad"]).toContain(resolved.quality);
+    expect(["M", "m", "dim"]).toContain(resolved.quality);
   });
 
   it("when manualRoot is NULL, falls back to existing degree-derived behavior (regression guard)", () => {
@@ -567,13 +567,13 @@ describe("resolveProgressionStep + manualRoot (Plan G11a)", () => {
 
 describe("qualityShortForm (Plan H-T9b)", () => {
   it.each([
-    ["Major Triad", "M"],
-    ["Minor Triad", "m"],
-    ["Diminished Triad", "°"],
-    ["Dominant 7th", "7"],
-    ["Major 7th", "M7"],
-    ["Minor 7th", "m7"],
-    ["Half-Diminished 7th", "ø7"],
+    ["M", "M"],
+    ["m", "m"],
+    ["dim", "°"],
+    ["7", "7"],
+    ["maj7", "M7"],
+    ["m7", "m7"],
+    ["m7b5", "ø7"],
   ] as const)("maps %s → %s", (input, expected) => {
     expect(qualityShortForm(input)).toBe(expected);
   });

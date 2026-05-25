@@ -130,7 +130,7 @@ describe("App", () => {
       // Seed a single-step progression with manualRoot=C; changing the scale
       // root to G must transpose manualRoot to G via the root-change listener.
       const steps = [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       render(<App />);
@@ -242,7 +242,7 @@ describe("App", () => {
       await user.click(minOption);
       await waitFor(() => {
         const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ qualityOverride: string | null }>;
-        expect(persisted[0]?.qualityOverride).toBe("Minor Triad");
+        expect(persisted[0]?.qualityOverride).toBe("m");
       });
     });
   });
@@ -299,7 +299,7 @@ describe("App", () => {
       localStorage.setItem(k("rootNote"), "C");
       localStorage.setItem(k("scaleName.v2"), "major");
       const steps = [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "7", manualRoot: "C" },
       ];
       localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
       localStorage.setItem(k("practiceLens"), "tones");

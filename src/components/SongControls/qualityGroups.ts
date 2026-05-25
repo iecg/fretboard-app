@@ -12,30 +12,30 @@ export interface QualityGroupLabels {
 }
 
 const TRIAD_KEYS: readonly string[] = [
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-  "Augmented Triad",
+  "M",
+  "m",
+  "dim",
+  "aug",
 ];
 
 const SUS_KEYS: readonly string[] = [
-  "Sus2",
-  "Sus4",
-  "Power Chord (5)",
+  "sus2",
+  "sus4",
+  "5",
 ];
 
 const SIXTH_KEYS: readonly string[] = [
-  "Major 6th",
-  "Minor 6th",
+  "6",
+  "m6",
 ];
 
 const SEVENTH_KEYS: readonly string[] = [
-  "Major 7th",
-  "Minor 7th",
-  "Dominant 7th",
-  "Diminished 7th",
-  "Half-Diminished 7th",
-  "Minor-Major 7th",
+  "maj7",
+  "m7",
+  "7",
+  "dim7",
+  "m7b5",
+  "mMaj7",
 ];
 
 function toOptions(keys: readonly string[]) {

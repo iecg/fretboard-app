@@ -98,14 +98,14 @@ describe("cross-domain derived atoms", () => {
   }
 
   it("hasOutsideChordMembersAtom: false for diatonic C major triad in C major", () => {
-    const store = setupManualChord("C", "Major Triad");
+    const store = setupManualChord("C", "M");
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "major");
     expect(store.get(hasOutsideChordMembersAtom)).toBe(false);
   });
 
   it("hasOutsideChordMembersAtom: true for D major triad in C major (F# is outside)", () => {
-    const store = setupManualChord("D", "Major Triad");
+    const store = setupManualChord("D", "M");
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "major");
     expect(store.get(hasOutsideChordMembersAtom)).toBe(true);
@@ -118,7 +118,7 @@ describe("cross-domain derived atoms", () => {
   });
 
   it("allChordMembersAtom: returns ChordRowEntry[] composed from chord + scale", () => {
-    const store = setupManualChord("C", "Major Triad");
+    const store = setupManualChord("C", "M");
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "major");
     const rows = store.get(allChordMembersAtom);

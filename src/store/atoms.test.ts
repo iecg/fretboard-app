@@ -164,9 +164,9 @@ describe("atoms", () => {
     it("reads the active step's qualityOverride", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor 7th", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "m7", manualRoot: "C" },
       ]);
-      expect(store.get(chordTypeAtom)).toBe("Minor 7th");
+      expect(store.get(chordTypeAtom)).toBe("m7");
     });
 
     it("falls back to the diatonic default when no override is set", () => {
@@ -176,7 +176,7 @@ describe("atoms", () => {
       ]);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "major");
-      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      expect(store.get(chordTypeAtom)).toBe("M");
     });
 
     it("returns null when the progression is empty (overlay off)", () => {
@@ -190,7 +190,7 @@ describe("atoms", () => {
     it("transposes manualRoot when the scale root changes (was: link-sync)", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ]);
       store.set(rootNoteAtom, "C");
       store.set(setRootNoteAtom, "G");
@@ -199,8 +199,8 @@ describe("atoms", () => {
     });
 
     it.each([
-      ["I", "G", "Major Triad"],
-      ["vi", "E", "Minor Triad"],
+      ["I", "G", "M"],
+      ["vi", "E", "m"],
     ])("preserves diatonic resolution on scale-root change (degree %s → root %s, %s)", (degree, expectedRoot, expectedType) => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
@@ -224,7 +224,7 @@ describe("atoms", () => {
       store.set(scaleNameAtom, "major");
       store.set(scaleNameAtom, "mixolydian");
       expect(store.get(chordRootAtom)).toBe("D");
-      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+      expect(store.get(chordTypeAtom)).toBe("m");
     });
 
     it("simultaneous root + scale write re-resolves the diatonic chord", () => {
@@ -237,18 +237,18 @@ describe("atoms", () => {
       store.set(rootNoteAtom, "G");
       store.set(scaleNameAtom, "mixolydian");
       expect(store.get(chordRootAtom)).toBe("G");
-      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      expect(store.get(chordTypeAtom)).toBe("M");
     });
   });
 
   describe("setScaleNameAtom — progression degree remap on mode change", () => {
     it.each([
       // Major → Dorian: I (semitone 0) remaps to i (Minor Triad on A).
-      ["major", "dorian", "I", "A", "i", "A", "Minor Triad"],
+      ["major", "dorian", "I", "A", "i", "A", "m"],
       // Major → Mixolydian: V (semitone 7) remaps to v (Minor Triad on G).
-      ["major", "mixolydian", "V", "C", "v", "G", "Minor Triad"],
+      ["major", "mixolydian", "V", "C", "v", "G", "m"],
       // Major → Lydian: V stays V (both have Major Triad on semitone 7).
-      ["major", "lydian", "V", "C", "V", "G", "Major Triad"],
+      ["major", "lydian", "V", "C", "V", "G", "M"],
     ])("%s → %s: degree %s remaps to %s on root %s", (
       fromScale, toScale, fromDegree, root, toDegree, expectedRoot, expectedType,
     ) => {
@@ -274,19 +274,19 @@ describe("atoms", () => {
       store.set(setScaleNameAtom, "phrygian");
       // Phrygian's ordinal-1 degree is "II" (semitone 1, Major Triad on Db).
       expect(store.get(progressionStepsAtom)[0]!.degree).toBe("II");
-      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      expect(store.get(chordTypeAtom)).toBe("M");
     });
 
     it("preserves chord-quality override across scale changes (sticky)", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+        { id: "x", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7", manualRoot: null },
       ]);
       store.set(rootNoteAtom, "C");
       store.set(scaleNameAtom, "major");
       store.set(setScaleNameAtom, "lydian");
-      expect(store.get(progressionStepsAtom)[0]!.qualityOverride).toBe("Dominant 7th");
-      expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+      expect(store.get(progressionStepsAtom)[0]!.qualityOverride).toBe("7");
+      expect(store.get(chordTypeAtom)).toBe("7");
     });
   });
 
@@ -299,7 +299,7 @@ describe("atoms", () => {
       const store = makeStore();
       // Mutate a broad cross-section so the reset has to cover every category.
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor Triad", manualRoot: "F#" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "m", manualRoot: "F#" },
       ]);
       store.set(rootNoteAtom, "G");
       store.set(scaleNameAtom, "dorian");
@@ -402,7 +402,7 @@ describe("atoms", () => {
     it("re-derives when the active step's manualRoot changes", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ]);
       expect(store.get(chordTonesAtom)).toEqual(["C", "E", "G"]);
       store.set(updateActiveChordAtom, { root: "G" });

@@ -172,7 +172,7 @@ describe("practiceCuesAtom", () => {
 
   describe("tones lens", () => {
     it("returns land-on + guide-tones cues for a seventh chord (3rd + 7th)", () => {
-      const store = makeChordStore("major", "G", "Dominant 7th", "tones");
+      const store = makeChordStore("major", "G", "7", "tones");
       const cues = store.get(practiceCuesAtom);
       expect(cues.length).toBe(2);
       expect(cues[0]!.kind).toBe("land-on");
@@ -185,7 +185,7 @@ describe("practiceCuesAtom", () => {
     });
 
     it("uses scale degrees for in-scale note labels", () => {
-      const cues = makeChordStore("major", "C", "Major Triad", "tones").get(practiceCuesAtom);
+      const cues = makeChordStore("major", "C", "M", "tones").get(practiceCuesAtom);
       expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["1", "3", "5"]);
     });
 
@@ -195,7 +195,7 @@ describe("practiceCuesAtom", () => {
     });
 
     it("guide tone notes have role=guide-tone", () => {
-      const store = makeChordStore("major", "G", "Dominant 7th", "tones");
+      const store = makeChordStore("major", "G", "7", "tones");
       const cues = store.get(practiceCuesAtom);
       const guideToneCue = cues.find((c) => c.kind === "guide-tones");
       expect(guideToneCue).toBeDefined();
@@ -205,12 +205,12 @@ describe("practiceCuesAtom", () => {
 
   describe("lead lens", () => {
     it("returns land-on + tension cues when chord has outside-scale tones", () => {
-      const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C#", chordType: "Minor Triad", lens: "lead" });
+      const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C#", chordType: "m", lens: "lead" });
       expect(store.get(practiceCuesAtom).map((c) => c.kind)).toEqual(["land-on", "tension"]);
     });
 
     it("tension notes include outside chord root and have resolvesTo targets", () => {
-      const store = makeChordStore("major", "C", "Minor Triad", "lead");
+      const store = makeChordStore("major", "C", "m", "lead");
       setChordViaProgression(store, { root: "C#" }); // outside the C major scale
       const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue).toBeDefined();
@@ -219,13 +219,13 @@ describe("practiceCuesAtom", () => {
     });
 
     it("returns only land-on when chord is fully in-scale (no outside tones)", () => {
-      const kinds = makeChordStore("major", "C", "Major Triad", "lead").get(practiceCuesAtom).map((c) => c.kind);
+      const kinds = makeChordStore("major", "C", "M", "lead").get(practiceCuesAtom).map((c) => c.kind);
       expect(kinds).toContain("land-on");
       expect(kinds).not.toContain("tension");
     });
 
     it("finds resolution target within 2 semitones for pentatonic scale", () => {
-      const store = setUp({ scaleRoot: "C", scale: "minor pentatonic", chordRoot: "D", chordType: "Minor Triad", lens: "lead" });
+      const store = setUp({ scaleRoot: "C", scale: "minor pentatonic", chordRoot: "D", chordType: "m", lens: "lead" });
       const tensionCue = store.get(practiceCuesAtom).find((c) => c.kind === "tension");
       expect(tensionCue!.notes.find((n) => n.internalNote === "D")?.resolvesTo).toBeDefined();
     });
@@ -233,14 +233,14 @@ describe("practiceCuesAtom", () => {
 
   describe("LENS_REGISTRY — chord-overlay lens model", () => {
     it("does not include targets-color or color lenses", () => {
-      const store = setUp({ chordRoot: "C", chordType: "Major Triad" });
+      const store = setUp({ chordRoot: "C", chordType: "M" });
       const ids = store.get(lensAvailabilityAtom).map((l) => l.id);
       expect(ids).not.toContain("targets-color");
       expect(ids).not.toContain("color");
     });
 
     it("contains exactly tones and lead lenses", () => {
-      const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C", chordType: "Major 7th" });
+      const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C", chordType: "maj7" });
       const ids = store.get(lensAvailabilityAtom).map((l) => l.id);
       expect(ids).toEqual(expect.arrayContaining(["tones", "lead"]));
       expect(ids).toHaveLength(2);
@@ -254,7 +254,7 @@ describe("noteSemanticMapAtom", () => {
   });
 
   it("correctly identifies outside chord root as both isChordRoot and isTension", () => {
-    const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C#", chordType: "Minor Triad" });
+    const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C#", chordType: "m" });
     const s = store.get(noteSemanticMapAtom).get("C#");
     expect(s).toBeDefined();
     expect(s!.isChordRoot).toBe(true);
@@ -263,14 +263,14 @@ describe("noteSemanticMapAtom", () => {
   });
 
   it("identifies guide tones (3rd and 7th) correctly", () => {
-    const map = setUp({ scaleRoot: "G", scale: "major", chordRoot: "G", chordType: "Dominant 7th" }).get(noteSemanticMapAtom);
+    const map = setUp({ scaleRoot: "G", scale: "major", chordRoot: "G", chordType: "7" }).get(noteSemanticMapAtom);
     expect(map.get("B")?.isGuideTone).toBe(true);
     expect(map.get("F")?.isGuideTone).toBe(true);
     expect(map.get("D")?.isGuideTone).toBe(false);
   });
 
   it("a note can be both color tone and chord tone", () => {
-    const f = setUp({ scaleRoot: "G", scale: "mixolydian", chordRoot: "G", chordType: "Dominant 7th" })
+    const f = setUp({ scaleRoot: "G", scale: "mixolydian", chordRoot: "G", chordType: "7" })
       .get(noteSemanticMapAtom).get("F");
     expect(f?.isColorTone).toBe(true);
     expect(f?.isChordTone).toBe(true);
@@ -281,7 +281,7 @@ describe("noteSemanticMapAtom", () => {
   });
 
   it("hidden chord root no longer carries chord-root semantics", () => {
-    const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C", chordType: "Major Triad" });
+    const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C", chordType: "M" });
     const before = store.get(noteSemanticMapAtom).get("C");
     expect(before?.isChordRoot).toBe(true);
     expect(before?.isChordTone).toBe(true);
@@ -323,13 +323,13 @@ describe("chord overlay does not control scale visibility", () => {
     const store = setUp({ scaleRoot: "C", scale: "major", scaleVisible: true, overlayMode: "off" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
     store.set(progressionStepsAtom, [
-      { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+      { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
     ]);
     expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
   });
 
   it("disabling chord overlay does not change scale highlight notes", () => {
-    const store = setUp({ scaleRoot: "C", scale: "major", scaleVisible: true, chordType: "Major Triad" });
+    const store = setUp({ scaleRoot: "C", scale: "major", scaleVisible: true, chordType: "M" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
     disableChordOverlay(store);
     expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
@@ -342,7 +342,7 @@ describe("Chord Tones lens does not hide scale notes", () => {
   });
 
   it("effectiveShapeDataAtom highlightNotes unchanged when switching between lenses", () => {
-    const store = setUp({ scaleRoot: "C", scale: "major", scaleVisible: true, chordType: "Major Triad", lens: "tones" });
+    const store = setUp({ scaleRoot: "C", scale: "major", scaleVisible: true, chordType: "M", lens: "tones" });
     const before = store.get(effectiveShapeDataAtom).highlightNotes.length;
     store.set(practiceLensAtom, "lead");
     expect(store.get(effectiveShapeDataAtom).highlightNotes.length).toBe(before);
@@ -361,12 +361,12 @@ describe("color notes are scale-owned — independent of chord overlay", () => {
   it("colorNotesAtom is unaffected by chord type changes", () => {
     const store = setUp({ scaleRoot: "C", scale: "minor blues" });
     const before = store.get(colorNotesAtom);
-    setChordViaProgression(store, { quality: "Dominant 7th" });
+    setChordViaProgression(store, { quality: "7" });
     expect(store.get(colorNotesAtom)).toEqual(before);
   });
 
   it("effectiveColorNotesAtom is cleared by scaleVisible=false, not by chord overlay", () => {
-    const store = setUp({ scaleRoot: "C", scale: "minor blues", chordType: "Dominant 7th", scaleVisible: true });
+    const store = setUp({ scaleRoot: "C", scale: "minor blues", chordType: "7", scaleVisible: true });
     expect(store.get(effectiveColorNotesAtom).length).toBeGreaterThan(0);
     store.set(toggleScaleVisibleAtom);
     expect(store.get(effectiveColorNotesAtom)).toHaveLength(0);
@@ -383,7 +383,7 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
   });
 
   it("every in-scale note in C Major has a non-undefined scaleDegree", () => {
-    const map = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C", chordType: "Major Triad" }).get(noteSemanticMapAtom);
+    const map = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C", chordType: "M" }).get(noteSemanticMapAtom);
     for (const note of ["C", "D", "E", "F", "G", "A", "B"]) {
       expect(map.get(note), `expected semantics for ${note}`).toBeDefined();
       expect(map.get(note)!.scaleDegree, `expected scaleDegree for ${note}`).toBeDefined();
@@ -391,7 +391,7 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
   });
 
   it("out-of-scale notes have scaleDegree undefined", () => {
-    const map = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C#", chordType: "Minor Triad" }).get(noteSemanticMapAtom);
+    const map = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C#", chordType: "m" }).get(noteSemanticMapAtom);
     const cSharp = map.get("C#");
     expect(cSharp).toBeDefined();
     expect(cSharp!.isInScale).toBe(false);
@@ -411,7 +411,7 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
   it("isDiatonicChord is false when the quality override does not match the diatonic chord", () => {
     // Degree=I in C Major's diatonic chord is Major Triad; overriding to
     // Minor Triad produces a non-diatonic chord.
-    const map = setUp({ scaleRoot: "C", scale: "major", chordDegree: "I", chordType: "Minor Triad" }).get(noteSemanticMapAtom);
+    const map = setUp({ scaleRoot: "C", scale: "major", chordDegree: "I", chordType: "m" }).get(noteSemanticMapAtom);
     for (const note of ["C", "E", "G"]) {
       const s = map.get(note);
       if (s?.isChordTone) expect(s.isDiatonicChord).toBeFalsy();
@@ -420,12 +420,12 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
 
   it("isDiatonicChord is false when a non-diatonic quality override is set in degree mode", () => {
     // The chord is owned by the active progression step. Seed a step at
-    // degree=I with a qualityOverride of "Minor Triad" — the diatonic
+    // degree=I with a qualityOverride of "m" — the diatonic
     // quality at I in C Major is Major Triad, so the override produces a
     // non-diatonic chord even though the cached degree is "I".
-    const store = setUp({ scaleRoot: "C", scale: "major", chordDegree: "I", chordType: "Minor Triad" });
+    const store = setUp({ scaleRoot: "C", scale: "major", chordDegree: "I", chordType: "m" });
 
-    expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+    expect(store.get(chordTypeAtom)).toBe("m");
 
     const map = store.get(noteSemanticMapAtom);
     expect(map.size).toBeGreaterThan(0);
@@ -639,7 +639,7 @@ describe("nextChordGuideTonesAtom (Task 4.5)", () => {
     // G Dominant 7th: G(root), B(3), D(5), F(b7). Guide tones: B (3rd) and F (b7).
     const steps = store.get(progressionStepsAtom);
     const updatedSteps = steps.map((s, i) =>
-      i === 1 ? { ...s, qualityOverride: "Dominant 7th" } : s
+      i === 1 ? { ...s, qualityOverride: "7" } : s
     );
     store.set(progressionStepsAtom, updatedSteps);
     const guideTones = store.get(nextChordGuideTonesAtom);
@@ -655,7 +655,7 @@ describe("nextChordGuideTonesAtom (Task 4.5)", () => {
     // Power Chord (5): root + 5th only — no 3rd or 7th → no guide tones.
     const steps = store.get(progressionStepsAtom);
     const updatedSteps = steps.map((s, i) =>
-      i === 1 ? { ...s, qualityOverride: "Power Chord (5)" } : s
+      i === 1 ? { ...s, qualityOverride: "5" } : s
     );
     store.set(progressionStepsAtom, updatedSteps);
     expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());

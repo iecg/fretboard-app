@@ -21,26 +21,26 @@ function getMatchPositions(
 
 describe('getFullChordShapeMatches', () => {
   it('matches the open E-shape E major chord', () => {
-    expect(getMatchPositions('E', 'Major Triad', 'E', 0)).toBe('0-0|1-0|2-1|3-2|4-2|5-0');
+    expect(getMatchPositions('E', 'M', 'E', 0)).toBe('0-0|1-0|2-1|3-2|4-2|5-0');
   });
 
   it('matches the open A-shape A minor chord', () => {
-    expect(getMatchPositions('A', 'Minor Triad', 'A', 0)).toBe('0-0|1-1|2-2|3-2|4-0');
+    expect(getMatchPositions('A', 'm', 'A', 0)).toBe('0-0|1-1|2-2|3-2|4-0');
   });
 
   it('matches the open C7 chord', () => {
-    expect(getMatchPositions('C', 'Dominant 7th', 'C', 3)).toBe('0-0|1-1|2-3|3-2|4-3');
+    expect(getMatchPositions('C', '7', 'C', 3)).toBe('0-0|1-1|2-3|3-2|4-3');
   });
 
   it('supports the 4-note open D major chord', () => {
-    expect(getMatchPositions('D', 'Major Triad', 'D', 0)).toBe('0-2|1-3|2-2|3-0');
+    expect(getMatchPositions('D', 'M', 'D', 0)).toBe('0-2|1-3|2-2|3-0');
   });
 
   it('returns no matches for unsupported chord qualities', () => {
     expect(
       getFullChordShapeMatches({
         chordRoot: 'C',
-        chordType: 'Major 7th',
+        chordType: 'maj7',
         tuning: STANDARD_TUNING,
         maxFret: 12,
       }),
@@ -51,7 +51,7 @@ describe('getFullChordShapeMatches', () => {
     expect(
       getFullChordShapeMatches({
         chordRoot: 'E',
-        chordType: 'Major Triad',
+        chordType: 'M',
         tuning: STANDARD_TUNING.slice(0, 5),
         maxFret: 12,
       }),
@@ -69,7 +69,7 @@ describe('getFullChordShapeMatches', () => {
     //  string 5: 0 + 11 = 11 ✓
     // Result: 4 valid notes remain ([11, 11, 12, 11] on strings [0, 1, 2, 5]).
     // All 4 are D# Major Triad notes → match accepted.
-    expect(getMatchPositions('D#', 'Major Triad', 'E', 11)).toBe('0-11|1-11|2-12|5-11');
+    expect(getMatchPositions('D#', 'M', 'E', 11)).toBe('0-11|1-11|2-12|5-11');
   });
 
   describe('canonical open-shape templates', () => {
@@ -86,25 +86,25 @@ describe('getFullChordShapeMatches', () => {
       // matches, and documenting the 6 that do not.
       const cases: Array<[string, string, string, string | null]> = [
         // Major Triad (3 open, 2 non-open)
-        ['C', 'Major Triad', 'C', null], // C shape matches C Major at rootFret=3, not 0
-        ['A', 'Major Triad', 'A', '0-0|1-2|2-2|3-2|4-0'],
-        ['G', 'Major Triad', 'G', null], // G shape matches G Major at rootFret=3, not 0
-        ['E', 'Major Triad', 'E', '0-0|1-0|2-1|3-2|4-2|5-0'],
-        ['D', 'Major Triad', 'D', '0-2|1-3|2-2|3-0'],
+        ['C', 'M', 'C', null], // C shape matches C Major at rootFret=3, not 0
+        ['A', 'M', 'A', '0-0|1-2|2-2|3-2|4-0'],
+        ['G', 'M', 'G', null], // G shape matches G Major at rootFret=3, not 0
+        ['E', 'M', 'E', '0-0|1-0|2-1|3-2|4-2|5-0'],
+        ['D', 'M', 'D', '0-2|1-3|2-2|3-0'],
 
         // Minor Triad (3 open, 2 non-open)
-        ['C', 'Minor Triad', 'C', null], // C shape matches C Minor at rootFret=3, not 0
-        ['A', 'Minor Triad', 'A', '0-0|1-1|2-2|3-2|4-0'],
-        ['G', 'Minor Triad', 'G', null], // G shape matches G Minor at rootFret=3, not 0
-        ['E', 'Minor Triad', 'E', '0-0|1-0|2-0|3-2|4-2|5-0'],
-        ['D', 'Minor Triad', 'D', '0-1|1-3|2-2|3-0'],
+        ['C', 'm', 'C', null], // C shape matches C Minor at rootFret=3, not 0
+        ['A', 'm', 'A', '0-0|1-1|2-2|3-2|4-0'],
+        ['G', 'm', 'G', null], // G shape matches G Minor at rootFret=3, not 0
+        ['E', 'm', 'E', '0-0|1-0|2-0|3-2|4-2|5-0'],
+        ['D', 'm', 'D', '0-1|1-3|2-2|3-0'],
 
         // Dominant 7th (3 open, 2 non-open)
-        ['C', 'Dominant 7th', 'C', null], // C shape matches C7 at rootFret=3, not 0
-        ['A', 'Dominant 7th', 'A', '0-0|1-2|2-0|3-2|4-0'],
-        ['G', 'Dominant 7th', 'G', null], // G shape matches G7 at rootFret=3, not 0
-        ['E', 'Dominant 7th', 'E', '0-0|1-0|2-1|3-0|4-2|5-0'],
-        ['D', 'Dominant 7th', 'D', '0-2|1-1|2-2|3-0'],
+        ['C', '7', 'C', null], // C shape matches C7 at rootFret=3, not 0
+        ['A', '7', 'A', '0-0|1-2|2-0|3-2|4-0'],
+        ['G', '7', 'G', null], // G shape matches G7 at rootFret=3, not 0
+        ['E', '7', 'E', '0-0|1-0|2-1|3-0|4-2|5-0'],
+        ['D', '7', 'D', '0-2|1-1|2-2|3-0'],
       ];
 
       for (const [root, quality, shape, expectedKeys] of cases) {
@@ -121,36 +121,36 @@ describe('getFullChordShapeMatches', () => {
     it('validates the 9 canonical templates that produce open matches', () => {
       // Expanded individual assertions for the 9 templates that match at rootFret=0.
       // Major Triads (A, E, D)
-      expect(getMatchPositions('A', 'Major Triad', 'A', 0)).toBe('0-0|1-2|2-2|3-2|4-0');
-      expect(getMatchPositions('E', 'Major Triad', 'E', 0)).toBe('0-0|1-0|2-1|3-2|4-2|5-0');
-      expect(getMatchPositions('D', 'Major Triad', 'D', 0)).toBe('0-2|1-3|2-2|3-0');
+      expect(getMatchPositions('A', 'M', 'A', 0)).toBe('0-0|1-2|2-2|3-2|4-0');
+      expect(getMatchPositions('E', 'M', 'E', 0)).toBe('0-0|1-0|2-1|3-2|4-2|5-0');
+      expect(getMatchPositions('D', 'M', 'D', 0)).toBe('0-2|1-3|2-2|3-0');
 
       // Minor Triads (A, E, D)
-      expect(getMatchPositions('A', 'Minor Triad', 'A', 0)).toBe('0-0|1-1|2-2|3-2|4-0');
-      expect(getMatchPositions('E', 'Minor Triad', 'E', 0)).toBe('0-0|1-0|2-0|3-2|4-2|5-0');
-      expect(getMatchPositions('D', 'Minor Triad', 'D', 0)).toBe('0-1|1-3|2-2|3-0');
+      expect(getMatchPositions('A', 'm', 'A', 0)).toBe('0-0|1-1|2-2|3-2|4-0');
+      expect(getMatchPositions('E', 'm', 'E', 0)).toBe('0-0|1-0|2-0|3-2|4-2|5-0');
+      expect(getMatchPositions('D', 'm', 'D', 0)).toBe('0-1|1-3|2-2|3-0');
 
       // Dominant 7ths (A, E, D)
-      expect(getMatchPositions('A', 'Dominant 7th', 'A', 0)).toBe('0-0|1-2|2-0|3-2|4-0');
-      expect(getMatchPositions('E', 'Dominant 7th', 'E', 0)).toBe('0-0|1-0|2-1|3-0|4-2|5-0');
-      expect(getMatchPositions('D', 'Dominant 7th', 'D', 0)).toBe('0-2|1-1|2-2|3-0');
+      expect(getMatchPositions('A', '7', 'A', 0)).toBe('0-0|1-2|2-0|3-2|4-0');
+      expect(getMatchPositions('E', '7', 'E', 0)).toBe('0-0|1-0|2-1|3-0|4-2|5-0');
+      expect(getMatchPositions('D', '7', 'D', 0)).toBe('0-2|1-1|2-2|3-0');
     });
 
     it('documents the 6 canonical templates that do not produce open matches', () => {
       // C and G shapes for all 3 qualities match at rootFret=3, not 0
-      expect(getMatchPositions('C', 'Major Triad', 'C', 0)).toBeUndefined();
-      expect(getMatchPositions('G', 'Major Triad', 'G', 0)).toBeUndefined();
-      expect(getMatchPositions('C', 'Minor Triad', 'C', 0)).toBeUndefined();
-      expect(getMatchPositions('G', 'Minor Triad', 'G', 0)).toBeUndefined();
-      expect(getMatchPositions('C', 'Dominant 7th', 'C', 0)).toBeUndefined();
-      expect(getMatchPositions('G', 'Dominant 7th', 'G', 0)).toBeUndefined();
+      expect(getMatchPositions('C', 'M', 'C', 0)).toBeUndefined();
+      expect(getMatchPositions('G', 'M', 'G', 0)).toBeUndefined();
+      expect(getMatchPositions('C', 'm', 'C', 0)).toBeUndefined();
+      expect(getMatchPositions('G', 'm', 'G', 0)).toBeUndefined();
+      expect(getMatchPositions('C', '7', 'C', 0)).toBeUndefined();
+      expect(getMatchPositions('G', '7', 'G', 0)).toBeUndefined();
     });
 
     it('verifies C and G shapes at rootFret=3', () => {
-      expect(getMatchPositions('G', 'Minor Triad', 'G', 3)).toBe('0-3|1-3|2-0|3-0|4-1|5-3');
-      expect(getMatchPositions('C', 'Minor Triad', 'C', 3)).toBe('1-1|2-0|3-1|4-3');
-      expect(getMatchPositions('G', 'Major Triad', 'G', 3)).toBe('0-3|1-0|2-0|3-0|4-2|5-3');
-      expect(getMatchPositions('C', 'Major Triad', 'C', 3)).toBe('0-0|1-1|2-0|3-2|4-3');
+      expect(getMatchPositions('G', 'm', 'G', 3)).toBe('0-3|1-3|2-0|3-0|4-1|5-3');
+      expect(getMatchPositions('C', 'm', 'C', 3)).toBe('1-1|2-0|3-1|4-3');
+      expect(getMatchPositions('G', 'M', 'G', 3)).toBe('0-3|1-0|2-0|3-0|4-2|5-3');
+      expect(getMatchPositions('C', 'M', 'C', 3)).toBe('0-0|1-1|2-0|3-2|4-3');
     });
   });
 
@@ -159,7 +159,7 @@ describe('getFullChordShapeMatches', () => {
     // Verify that we return both matches for these coordinates, and they are distinct physical shapes.
     const matches = getFullChordShapeMatches({
       chordRoot: 'A',
-      chordType: 'Minor Triad',
+      chordType: 'm',
       tuning: STANDARD_TUNING,
       maxFret: 12,
     });

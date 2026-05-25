@@ -23,7 +23,7 @@ const C7_SEEDS = [
         id: "step-1",
         degree: "I",
         duration: { value: 1, unit: "bar" },
-        qualityOverride: "Dominant 7th",
+        qualityOverride: "7",
         manualRoot: "C",
       },
     ],

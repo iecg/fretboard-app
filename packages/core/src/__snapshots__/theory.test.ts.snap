@@ -2,7 +2,79 @@
 
 exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapshot — full structure including member names 1`] = `
 {
-  "Augmented Triad": {
+  "5": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "power",
+  },
+  "6": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "6",
+        "semitone": 9,
+      },
+    ],
+    "quality": "sixth",
+  },
+  "7": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "M": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "triad",
+  },
+  "aug": {
     "members": [
       {
         "name": "root",
@@ -19,7 +91,24 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "triad",
   },
-  "Diminished 7th": {
+  "dim": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "b5",
+        "semitone": 6,
+      },
+    ],
+    "quality": "triad",
+  },
+  "dim7": {
     "members": [
       {
         "name": "root",
@@ -40,7 +129,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "seventh",
   },
-  "Diminished Triad": {
+  "m": {
     "members": [
       {
         "name": "root",
@@ -51,114 +140,13 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
         "semitone": 3,
       },
       {
-        "name": "b5",
-        "semitone": 6,
-      },
-    ],
-    "quality": "triad",
-  },
-  "Dominant 7th": {
-    "members": [
-      {
-        "name": "root",
-        "semitone": 0,
-      },
-      {
-        "name": "3",
-        "semitone": 4,
-      },
-      {
-        "name": "5",
-        "semitone": 7,
-      },
-      {
-        "name": "b7",
-        "semitone": 10,
-      },
-    ],
-    "quality": "seventh",
-  },
-  "Half-Diminished 7th": {
-    "members": [
-      {
-        "name": "root",
-        "semitone": 0,
-      },
-      {
-        "name": "b3",
-        "semitone": 3,
-      },
-      {
-        "name": "b5",
-        "semitone": 6,
-      },
-      {
-        "name": "b7",
-        "semitone": 10,
-      },
-    ],
-    "quality": "seventh",
-  },
-  "Major 6th": {
-    "members": [
-      {
-        "name": "root",
-        "semitone": 0,
-      },
-      {
-        "name": "3",
-        "semitone": 4,
-      },
-      {
-        "name": "5",
-        "semitone": 7,
-      },
-      {
-        "name": "6",
-        "semitone": 9,
-      },
-    ],
-    "quality": "sixth",
-  },
-  "Major 7th": {
-    "members": [
-      {
-        "name": "root",
-        "semitone": 0,
-      },
-      {
-        "name": "3",
-        "semitone": 4,
-      },
-      {
-        "name": "5",
-        "semitone": 7,
-      },
-      {
-        "name": "7",
-        "semitone": 11,
-      },
-    ],
-    "quality": "seventh",
-  },
-  "Major Triad": {
-    "members": [
-      {
-        "name": "root",
-        "semitone": 0,
-      },
-      {
-        "name": "3",
-        "semitone": 4,
-      },
-      {
         "name": "5",
         "semitone": 7,
       },
     ],
     "quality": "triad",
   },
-  "Minor 6th": {
+  "m6": {
     "members": [
       {
         "name": "root",
@@ -179,7 +167,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "sixth",
   },
-  "Minor 7th": {
+  "m7": {
     "members": [
       {
         "name": "root",
@@ -200,7 +188,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "seventh",
   },
-  "Minor Triad": {
+  "m7b5": {
     "members": [
       {
         "name": "root",
@@ -211,13 +199,17 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
         "semitone": 3,
       },
       {
-        "name": "5",
-        "semitone": 7,
+        "name": "b5",
+        "semitone": 6,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
       },
     ],
-    "quality": "triad",
+    "quality": "seventh",
   },
-  "Minor-Major 7th": {
+  "mMaj7": {
     "members": [
       {
         "name": "root",
@@ -238,20 +230,28 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "seventh",
   },
-  "Power Chord (5)": {
+  "maj7": {
     "members": [
       {
         "name": "root",
         "semitone": 0,
       },
       {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
         "name": "5",
         "semitone": 7,
       },
+      {
+        "name": "7",
+        "semitone": 11,
+      },
     ],
-    "quality": "power",
+    "quality": "seventh",
   },
-  "Sus2": {
+  "sus2": {
     "members": [
       {
         "name": "root",
@@ -268,7 +268,7 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "suspended",
   },
-  "Sus4": {
+  "sus4": {
     "members": [
       {
         "name": "root",
@@ -290,84 +290,84 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
 
 exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 15 entries 1`] = `
 {
-  "Augmented Triad": [
+  "5": [
+    0,
+    7,
+  ],
+  "6": [
+    0,
+    4,
+    7,
+    9,
+  ],
+  "7": [
+    0,
+    4,
+    7,
+    10,
+  ],
+  "M": [
+    0,
+    4,
+    7,
+  ],
+  "aug": [
     0,
     4,
     8,
   ],
-  "Diminished 7th": [
+  "dim": [
+    0,
+    3,
+    6,
+  ],
+  "dim7": [
     0,
     3,
     6,
     9,
   ],
-  "Diminished Triad": [
+  "m": [
     0,
     3,
-    6,
-  ],
-  "Dominant 7th": [
-    0,
-    4,
-    7,
-    10,
-  ],
-  "Half-Diminished 7th": [
-    0,
-    3,
-    6,
-    10,
-  ],
-  "Major 6th": [
-    0,
-    4,
-    7,
-    9,
-  ],
-  "Major 7th": [
-    0,
-    4,
-    7,
-    11,
-  ],
-  "Major Triad": [
-    0,
-    4,
     7,
   ],
-  "Minor 6th": [
+  "m6": [
     0,
     3,
     7,
     9,
   ],
-  "Minor 7th": [
+  "m7": [
     0,
     3,
     7,
     10,
   ],
-  "Minor Triad": [
+  "m7b5": [
     0,
     3,
-    7,
+    6,
+    10,
   ],
-  "Minor-Major 7th": [
+  "mMaj7": [
     0,
     3,
     7,
     11,
   ],
-  "Power Chord (5)": [
+  "maj7": [
     0,
+    4,
     7,
+    11,
   ],
-  "Sus2": [
+  "sus2": [
     0,
     2,
     7,
   ],
-  "Sus4": [
+  "sus4": [
     0,
     5,
     7,

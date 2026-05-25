@@ -308,7 +308,7 @@ describe("shapeDataAtom — CAGED scale shape remapping under minor active chord
           id: "step-1",
           degree: "I",
           duration: { value: 1, unit: "bar" },
-          qualityOverride: "Minor Triad",
+          qualityOverride: "m",
           manualRoot: "C",
         },
       ]],

@@ -33,7 +33,7 @@ const MANUAL_SEEDS = [
   [rootNoteAtom, "C"],
   [fingeringPatternAtom, "caged"],
   [progressionStepsAtom, [
-    { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+    { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
   ]],
 ] as const;
 

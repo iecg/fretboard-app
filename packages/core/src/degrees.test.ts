@@ -224,36 +224,36 @@ describe('getDegreesForScale', () => {
 
   describe('non-7-note scale fallback strategy', () => {
     it('returns Major-family chord qualities for Major Pentatonic degrees', () => {
-      expect(getQualityForDegree("I", "major pentatonic")).toBe("Major Triad");
-      expect(getQualityForDegree("ii", "major pentatonic")).toBe("Minor Triad");
-      expect(getQualityForDegree("iii", "major pentatonic")).toBe("Minor Triad");
-      expect(getQualityForDegree("V", "major pentatonic")).toBe("Major Triad");
-      expect(getQualityForDegree("vi", "major pentatonic")).toBe("Minor Triad");
+      expect(getQualityForDegree("I", "major pentatonic")).toBe("M");
+      expect(getQualityForDegree("ii", "major pentatonic")).toBe("m");
+      expect(getQualityForDegree("iii", "major pentatonic")).toBe("m");
+      expect(getQualityForDegree("V", "major pentatonic")).toBe("M");
+      expect(getQualityForDegree("vi", "major pentatonic")).toBe("m");
     });
 
     it('returns Natural-Minor-family chord qualities for Minor Pentatonic degrees', () => {
-      expect(getQualityForDegree("i", "minor pentatonic")).toBe("Minor Triad");
-      expect(getQualityForDegree("III", "minor pentatonic")).toBe("Major Triad");
-      expect(getQualityForDegree("iv", "minor pentatonic")).toBe("Minor Triad");
-      expect(getQualityForDegree("v", "minor pentatonic")).toBe("Minor Triad");
-      expect(getQualityForDegree("VII", "minor pentatonic")).toBe("Major Triad");
+      expect(getQualityForDegree("i", "minor pentatonic")).toBe("m");
+      expect(getQualityForDegree("III", "minor pentatonic")).toBe("M");
+      expect(getQualityForDegree("iv", "minor pentatonic")).toBe("m");
+      expect(getQualityForDegree("v", "minor pentatonic")).toBe("m");
+      expect(getQualityForDegree("VII", "minor pentatonic")).toBe("M");
     });
 
     it('returns chord qualities for Major Blues degrees', () => {
-      expect(getQualityForDegree("I", "major blues")).toBe("Major Triad");
-      expect(getQualityForDegree("ii", "major blues")).toBe("Minor Triad");
-      expect(getQualityForDegree("iii", "major blues")).toBe("Minor Triad");
-      expect(getQualityForDegree("V", "major blues")).toBe("Major Triad");
-      expect(getQualityForDegree("vi", "major blues")).toBe("Minor Triad");
+      expect(getQualityForDegree("I", "major blues")).toBe("M");
+      expect(getQualityForDegree("ii", "major blues")).toBe("m");
+      expect(getQualityForDegree("iii", "major blues")).toBe("m");
+      expect(getQualityForDegree("V", "major blues")).toBe("M");
+      expect(getQualityForDegree("vi", "major blues")).toBe("m");
       expect(getQualityForDegree("b3", "major blues")).toBeUndefined();
     });
 
     it('returns chord qualities for Minor Blues degrees', () => {
-      expect(getQualityForDegree("i", "minor blues")).toBe("Minor Triad");
-      expect(getQualityForDegree("III", "minor blues")).toBe("Major Triad");
-      expect(getQualityForDegree("iv", "minor blues")).toBe("Minor Triad");
-      expect(getQualityForDegree("v", "minor blues")).toBe("Minor Triad");
-      expect(getQualityForDegree("VII", "minor blues")).toBe("Major Triad");
+      expect(getQualityForDegree("i", "minor blues")).toBe("m");
+      expect(getQualityForDegree("III", "minor blues")).toBe("M");
+      expect(getQualityForDegree("iv", "minor blues")).toBe("m");
+      expect(getQualityForDegree("v", "minor blues")).toBe("m");
+      expect(getQualityForDegree("VII", "minor blues")).toBe("M");
       expect(getQualityForDegree("b5", "minor blues")).toBeUndefined();
     });
   });
@@ -343,91 +343,91 @@ describe('DEGREE_COLORS', () => {
 describe('getQualityForDegree', () => {
   describe('Major scale — all 7 degrees', () => {
     it('I → Major Triad', () => {
-      expect(getQualityForDegree('I', 'major')).toBe('Major Triad');
+      expect(getQualityForDegree('I', 'major')).toBe('M');
     });
 
     it('ii → Minor Triad', () => {
-      expect(getQualityForDegree('ii', 'major')).toBe('Minor Triad');
+      expect(getQualityForDegree('ii', 'major')).toBe('m');
     });
 
     it('iii → Minor Triad', () => {
-      expect(getQualityForDegree('iii', 'major')).toBe('Minor Triad');
+      expect(getQualityForDegree('iii', 'major')).toBe('m');
     });
 
     it('IV → Major Triad', () => {
-      expect(getQualityForDegree('IV', 'major')).toBe('Major Triad');
+      expect(getQualityForDegree('IV', 'major')).toBe('M');
     });
 
     it('V → Major Triad', () => {
-      expect(getQualityForDegree('V', 'major')).toBe('Major Triad');
+      expect(getQualityForDegree('V', 'major')).toBe('M');
     });
 
     it('vi → Minor Triad', () => {
-      expect(getQualityForDegree('vi', 'major')).toBe('Minor Triad');
+      expect(getQualityForDegree('vi', 'major')).toBe('m');
     });
 
     it('vii° → Diminished Triad', () => {
-      expect(getQualityForDegree('vii°', 'major')).toBe('Diminished Triad');
+      expect(getQualityForDegree('vii°', 'major')).toBe('dim');
     });
   });
 
   describe('Natural Minor scale — all 7 degrees', () => {
     it('i → Minor Triad', () => {
-      expect(getQualityForDegree('i', 'minor')).toBe('Minor Triad');
+      expect(getQualityForDegree('i', 'minor')).toBe('m');
     });
 
     it('ii° → Diminished Triad', () => {
-      expect(getQualityForDegree('ii°', 'minor')).toBe('Diminished Triad');
+      expect(getQualityForDegree('ii°', 'minor')).toBe('dim');
     });
 
     it('III → Major Triad', () => {
-      expect(getQualityForDegree('III', 'minor')).toBe('Major Triad');
+      expect(getQualityForDegree('III', 'minor')).toBe('M');
     });
 
     it('iv → Minor Triad', () => {
-      expect(getQualityForDegree('iv', 'minor')).toBe('Minor Triad');
+      expect(getQualityForDegree('iv', 'minor')).toBe('m');
     });
 
     it('v → Minor Triad', () => {
-      expect(getQualityForDegree('v', 'minor')).toBe('Minor Triad');
+      expect(getQualityForDegree('v', 'minor')).toBe('m');
     });
 
     it('VI → Major Triad', () => {
-      expect(getQualityForDegree('VI', 'minor')).toBe('Major Triad');
+      expect(getQualityForDegree('VI', 'minor')).toBe('M');
     });
 
     it('VII → Major Triad', () => {
-      expect(getQualityForDegree('VII', 'minor')).toBe('Major Triad');
+      expect(getQualityForDegree('VII', 'minor')).toBe('M');
     });
   });
 
   describe('Dorian — spot checks', () => {
     it('i → Minor Triad', () => {
-      expect(getQualityForDegree('i', 'dorian')).toBe('Minor Triad');
+      expect(getQualityForDegree('i', 'dorian')).toBe('m');
     });
 
     it('IV → Major Triad', () => {
-      expect(getQualityForDegree('IV', 'dorian')).toBe('Major Triad');
+      expect(getQualityForDegree('IV', 'dorian')).toBe('M');
     });
 
     it('vi° → Diminished Triad', () => {
-      expect(getQualityForDegree('vi°', 'dorian')).toBe('Diminished Triad');
+      expect(getQualityForDegree('vi°', 'dorian')).toBe('dim');
     });
   });
 
   describe('Harmonic Minor — edge cases', () => {
     it('V at semitone 7 → Major Triad (raised 7th makes dominant major)', () => {
-      expect(getQualityForDegree('V', 'harmonic minor')).toBe('Major Triad');
+      expect(getQualityForDegree('V', 'harmonic minor')).toBe('M');
     });
 
     it('III+ at semitone 3 → Major Triad (pragmatic fallback: CHORD_DEFINITIONS has no Augmented Triad)', () => {
-      expect(getQualityForDegree('III+', 'harmonic minor')).toBe('Major Triad');
+      expect(getQualityForDegree('III+', 'harmonic minor')).toBe('M');
     });
   });
 
   describe('Lydian — raised 4th edge case', () => {
     it('iv° at semitone 6 → Diminished Triad (F#-A-C: minor 3rd + diminished 5th)', () => {
-      expect(getQualityForDegree('iv°', 'lydian')).toBe('Diminished Triad');
+      expect(getQualityForDegree('iv°', 'lydian')).toBe('dim');
     });
   });
 
@@ -446,31 +446,31 @@ describe('getQualityForDegree', () => {
     // Degrees: i ii III+ IV V vi° vii°
     describe('Melodic Minor (Jazz Minor)', () => {
       it('i → Minor Triad', () => {
-        expect(getQualityForDegree('i', 'melodic minor')).toBe('Minor Triad');
+        expect(getQualityForDegree('i', 'melodic minor')).toBe('m');
       });
 
       it('ii → Minor Triad', () => {
-        expect(getQualityForDegree('ii', 'melodic minor')).toBe('Minor Triad');
+        expect(getQualityForDegree('ii', 'melodic minor')).toBe('m');
       });
 
       it('III+ → Major Triad (augmented collapses to Major: no Augmented Triad in chord definitions)', () => {
-        expect(getQualityForDegree('III+', 'melodic minor')).toBe('Major Triad');
+        expect(getQualityForDegree('III+', 'melodic minor')).toBe('M');
       });
 
       it('IV → Major Triad', () => {
-        expect(getQualityForDegree('IV', 'melodic minor')).toBe('Major Triad');
+        expect(getQualityForDegree('IV', 'melodic minor')).toBe('M');
       });
 
       it('V → Major Triad', () => {
-        expect(getQualityForDegree('V', 'melodic minor')).toBe('Major Triad');
+        expect(getQualityForDegree('V', 'melodic minor')).toBe('M');
       });
 
       it('vi° → Diminished Triad', () => {
-        expect(getQualityForDegree('vi°', 'melodic minor')).toBe('Diminished Triad');
+        expect(getQualityForDegree('vi°', 'melodic minor')).toBe('dim');
       });
 
       it('vii° → Diminished Triad', () => {
-        expect(getQualityForDegree('vii°', 'melodic minor')).toBe('Diminished Triad');
+        expect(getQualityForDegree('vii°', 'melodic minor')).toBe('dim');
       });
     });
 
@@ -478,31 +478,31 @@ describe('getQualityForDegree', () => {
     // Degrees: i II+ III IV v° vi° vii
     describe('Dorian Flat 2 (2nd mode)', () => {
       it('i → Minor Triad', () => {
-        expect(getQualityForDegree('i', 'dorian b2')).toBe('Minor Triad');
+        expect(getQualityForDegree('i', 'dorian b2')).toBe('m');
       });
 
       it('II+ → Major Triad (augmented collapses to Major)', () => {
-        expect(getQualityForDegree('II+', 'dorian b2')).toBe('Major Triad');
+        expect(getQualityForDegree('II+', 'dorian b2')).toBe('M');
       });
 
       it('III → Major Triad', () => {
-        expect(getQualityForDegree('III', 'dorian b2')).toBe('Major Triad');
+        expect(getQualityForDegree('III', 'dorian b2')).toBe('M');
       });
 
       it('IV → Major Triad', () => {
-        expect(getQualityForDegree('IV', 'dorian b2')).toBe('Major Triad');
+        expect(getQualityForDegree('IV', 'dorian b2')).toBe('M');
       });
 
       it('v° → Diminished Triad', () => {
-        expect(getQualityForDegree('v°', 'dorian b2')).toBe('Diminished Triad');
+        expect(getQualityForDegree('v°', 'dorian b2')).toBe('dim');
       });
 
       it('vi° → Diminished Triad', () => {
-        expect(getQualityForDegree('vi°', 'dorian b2')).toBe('Diminished Triad');
+        expect(getQualityForDegree('vi°', 'dorian b2')).toBe('dim');
       });
 
       it('vii → Minor Triad', () => {
-        expect(getQualityForDegree('vii', 'dorian b2')).toBe('Minor Triad');
+        expect(getQualityForDegree('vii', 'dorian b2')).toBe('m');
       });
     });
 
@@ -510,31 +510,31 @@ describe('getQualityForDegree', () => {
     // Degrees: I+ II III iv° v° vi vii
     describe('Lydian Augmented (3rd mode)', () => {
       it('I+ → Major Triad (augmented collapses to Major)', () => {
-        expect(getQualityForDegree('I+', 'lydian augmented')).toBe('Major Triad');
+        expect(getQualityForDegree('I+', 'lydian augmented')).toBe('M');
       });
 
       it('II → Major Triad', () => {
-        expect(getQualityForDegree('II', 'lydian augmented')).toBe('Major Triad');
+        expect(getQualityForDegree('II', 'lydian augmented')).toBe('M');
       });
 
       it('III → Major Triad', () => {
-        expect(getQualityForDegree('III', 'lydian augmented')).toBe('Major Triad');
+        expect(getQualityForDegree('III', 'lydian augmented')).toBe('M');
       });
 
       it('iv° → Diminished Triad', () => {
-        expect(getQualityForDegree('iv°', 'lydian augmented')).toBe('Diminished Triad');
+        expect(getQualityForDegree('iv°', 'lydian augmented')).toBe('dim');
       });
 
       it('v° → Diminished Triad', () => {
-        expect(getQualityForDegree('v°', 'lydian augmented')).toBe('Diminished Triad');
+        expect(getQualityForDegree('v°', 'lydian augmented')).toBe('dim');
       });
 
       it('vi → Minor Triad', () => {
-        expect(getQualityForDegree('vi', 'lydian augmented')).toBe('Minor Triad');
+        expect(getQualityForDegree('vi', 'lydian augmented')).toBe('m');
       });
 
       it('vii → Minor Triad', () => {
-        expect(getQualityForDegree('vii', 'lydian augmented')).toBe('Minor Triad');
+        expect(getQualityForDegree('vii', 'lydian augmented')).toBe('m');
       });
     });
 
@@ -542,31 +542,31 @@ describe('getQualityForDegree', () => {
     // Degrees: I II iii° iv° v vi VII+
     describe('Lydian Dominant (4th mode)', () => {
       it('I → Major Triad', () => {
-        expect(getQualityForDegree('I', 'lydian dominant')).toBe('Major Triad');
+        expect(getQualityForDegree('I', 'lydian dominant')).toBe('M');
       });
 
       it('II → Major Triad', () => {
-        expect(getQualityForDegree('II', 'lydian dominant')).toBe('Major Triad');
+        expect(getQualityForDegree('II', 'lydian dominant')).toBe('M');
       });
 
       it('iii° → Diminished Triad', () => {
-        expect(getQualityForDegree('iii°', 'lydian dominant')).toBe('Diminished Triad');
+        expect(getQualityForDegree('iii°', 'lydian dominant')).toBe('dim');
       });
 
       it('iv° → Diminished Triad', () => {
-        expect(getQualityForDegree('iv°', 'lydian dominant')).toBe('Diminished Triad');
+        expect(getQualityForDegree('iv°', 'lydian dominant')).toBe('dim');
       });
 
       it('v → Minor Triad', () => {
-        expect(getQualityForDegree('v', 'lydian dominant')).toBe('Minor Triad');
+        expect(getQualityForDegree('v', 'lydian dominant')).toBe('m');
       });
 
       it('vi → Minor Triad', () => {
-        expect(getQualityForDegree('vi', 'lydian dominant')).toBe('Minor Triad');
+        expect(getQualityForDegree('vi', 'lydian dominant')).toBe('m');
       });
 
       it('VII+ → Major Triad (augmented collapses to Major)', () => {
-        expect(getQualityForDegree('VII+', 'lydian dominant')).toBe('Major Triad');
+        expect(getQualityForDegree('VII+', 'lydian dominant')).toBe('M');
       });
     });
 
@@ -574,31 +574,31 @@ describe('getQualityForDegree', () => {
     // Degrees: I ii° iii° iv v VI+ VII
     describe('Mixolydian Flat 6 (5th mode)', () => {
       it('I → Major Triad', () => {
-        expect(getQualityForDegree('I', 'mixolydian b6')).toBe('Major Triad');
+        expect(getQualityForDegree('I', 'mixolydian b6')).toBe('M');
       });
 
       it('ii° → Diminished Triad', () => {
-        expect(getQualityForDegree('ii°', 'mixolydian b6')).toBe('Diminished Triad');
+        expect(getQualityForDegree('ii°', 'mixolydian b6')).toBe('dim');
       });
 
       it('iii° → Diminished Triad', () => {
-        expect(getQualityForDegree('iii°', 'mixolydian b6')).toBe('Diminished Triad');
+        expect(getQualityForDegree('iii°', 'mixolydian b6')).toBe('dim');
       });
 
       it('iv → Minor Triad', () => {
-        expect(getQualityForDegree('iv', 'mixolydian b6')).toBe('Minor Triad');
+        expect(getQualityForDegree('iv', 'mixolydian b6')).toBe('m');
       });
 
       it('v → Minor Triad', () => {
-        expect(getQualityForDegree('v', 'mixolydian b6')).toBe('Minor Triad');
+        expect(getQualityForDegree('v', 'mixolydian b6')).toBe('m');
       });
 
       it('VI+ → Major Triad (augmented collapses to Major)', () => {
-        expect(getQualityForDegree('VI+', 'mixolydian b6')).toBe('Major Triad');
+        expect(getQualityForDegree('VI+', 'mixolydian b6')).toBe('M');
       });
 
       it('VII → Major Triad', () => {
-        expect(getQualityForDegree('VII', 'mixolydian b6')).toBe('Major Triad');
+        expect(getQualityForDegree('VII', 'mixolydian b6')).toBe('M');
       });
     });
 
@@ -606,31 +606,31 @@ describe('getQualityForDegree', () => {
     // Degrees: i° ii° iii iv V+ VI VII
     describe('Locrian Natural 2 (6th mode)', () => {
       it('i° → Diminished Triad', () => {
-        expect(getQualityForDegree('i°', 'locrian #2')).toBe('Diminished Triad');
+        expect(getQualityForDegree('i°', 'locrian #2')).toBe('dim');
       });
 
       it('ii° → Diminished Triad', () => {
-        expect(getQualityForDegree('ii°', 'locrian #2')).toBe('Diminished Triad');
+        expect(getQualityForDegree('ii°', 'locrian #2')).toBe('dim');
       });
 
       it('iii → Minor Triad', () => {
-        expect(getQualityForDegree('iii', 'locrian #2')).toBe('Minor Triad');
+        expect(getQualityForDegree('iii', 'locrian #2')).toBe('m');
       });
 
       it('iv → Minor Triad', () => {
-        expect(getQualityForDegree('iv', 'locrian #2')).toBe('Minor Triad');
+        expect(getQualityForDegree('iv', 'locrian #2')).toBe('m');
       });
 
       it('V+ → Major Triad (augmented collapses to Major)', () => {
-        expect(getQualityForDegree('V+', 'locrian #2')).toBe('Major Triad');
+        expect(getQualityForDegree('V+', 'locrian #2')).toBe('M');
       });
 
       it('VI → Major Triad', () => {
-        expect(getQualityForDegree('VI', 'locrian #2')).toBe('Major Triad');
+        expect(getQualityForDegree('VI', 'locrian #2')).toBe('M');
       });
 
       it('VII → Major Triad', () => {
-        expect(getQualityForDegree('VII', 'locrian #2')).toBe('Major Triad');
+        expect(getQualityForDegree('VII', 'locrian #2')).toBe('M');
       });
     });
 
@@ -638,31 +638,31 @@ describe('getQualityForDegree', () => {
     // Degrees: i° ii iii IV+ V VI vii°
     describe('Altered (7th mode)', () => {
       it('i° → Diminished Triad', () => {
-        expect(getQualityForDegree('i°', 'altered')).toBe('Diminished Triad');
+        expect(getQualityForDegree('i°', 'altered')).toBe('dim');
       });
 
       it('ii → Minor Triad', () => {
-        expect(getQualityForDegree('ii', 'altered')).toBe('Minor Triad');
+        expect(getQualityForDegree('ii', 'altered')).toBe('m');
       });
 
       it('iii → Minor Triad', () => {
-        expect(getQualityForDegree('iii', 'altered')).toBe('Minor Triad');
+        expect(getQualityForDegree('iii', 'altered')).toBe('m');
       });
 
       it('IV+ → Major Triad (augmented collapses to Major)', () => {
-        expect(getQualityForDegree('IV+', 'altered')).toBe('Major Triad');
+        expect(getQualityForDegree('IV+', 'altered')).toBe('M');
       });
 
       it('V → Major Triad', () => {
-        expect(getQualityForDegree('V', 'altered')).toBe('Major Triad');
+        expect(getQualityForDegree('V', 'altered')).toBe('M');
       });
 
       it('VI → Major Triad', () => {
-        expect(getQualityForDegree('VI', 'altered')).toBe('Major Triad');
+        expect(getQualityForDegree('VI', 'altered')).toBe('M');
       });
 
       it('vii° → Diminished Triad', () => {
-        expect(getQualityForDegree('vii°', 'altered')).toBe('Diminished Triad');
+        expect(getQualityForDegree('vii°', 'altered')).toBe('dim');
       });
     });
   });

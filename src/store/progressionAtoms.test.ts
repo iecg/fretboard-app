@@ -49,7 +49,7 @@ describe("progressionAtoms", () => {
 
     expect(store.get(activeResolvedProgressionStepAtom)).toMatchObject({
       root: "G",
-      quality: "Major Triad",
+      quality: "M",
       unavailable: false,
     });
   });
@@ -78,13 +78,13 @@ describe("progressionAtoms", () => {
 
     store.set(updateProgressionStepDegreeAtom, { id: "one", degree: "V" });
     store.set(updateProgressionStepDurationAtom, { id: "one", duration: { value: 2, unit: "bar" } });
-    store.set(updateProgressionStepQualityAtom, { id: "one", qualityOverride: "Dominant 7th" });
+    store.set(updateProgressionStepQualityAtom, { id: "one", qualityOverride: "7" });
 
     expect(store.get(progressionStepsAtom)[0]).toEqual({
       id: "one",
       degree: "V",
       duration: { value: 2, unit: "bar" },
-      qualityOverride: "Dominant 7th",
+      qualityOverride: "7",
       manualRoot: null,
     });
   });
@@ -293,7 +293,7 @@ describe("derived progression atoms", () => {
       const store = createStore();
       store.set(progressionStepsAtom, [
         { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
-        { id: "b", degree: "V", duration: { value: 2, unit: "beat" }, qualityOverride: "Dominant 7th", manualRoot: null },
+        { id: "b", degree: "V", duration: { value: 2, unit: "beat" }, qualityOverride: "7", manualRoot: null },
       ]);
 
       store.set(duplicateProgressionStepAtom, "b");
@@ -303,7 +303,7 @@ describe("derived progression atoms", () => {
       expect(steps.map((s) => s.degree)).toEqual(["I", "V", "V"]);
       expect(steps[2].id).not.toBe("b");
       expect(steps[2].duration).toEqual({ value: 2, unit: "beat" });
-      expect(steps[2].qualityOverride).toBe("Dominant 7th");
+      expect(steps[2].qualityOverride).toBe("7");
       expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
     });
 
@@ -359,12 +359,12 @@ describe("derived progression atoms", () => {
     it("does not clear qualityOverride", () => {
       const store = createStore();
       store.set(progressionStepsAtom, [
-        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "7", manualRoot: null },
       ]);
       store.set(updateProgressionStepCachedDegreeAtom, { id: "a", degree: "V" });
       expect(store.get(progressionStepsAtom)[0]).toMatchObject({
         degree: "V",
-        qualityOverride: "Dominant 7th",
+        qualityOverride: "7",
       });
     });
   });
@@ -429,7 +429,7 @@ describe("addProgressionStepAtom — v2.0 smart default", () => {
     store.set(addProgressionStepAtom);
     const steps = store.get(progressionStepsAtom);
     expect(steps).toHaveLength(1);
-    expect(steps[0].qualityOverride).toBe("Major Triad");
+    expect(steps[0].qualityOverride).toBe("M");
   });
 
   it("uses the next ascending in-key degree for subsequent steps", () => {
@@ -441,7 +441,7 @@ describe("addProgressionStepAtom — v2.0 smart default", () => {
         id: "1",
         degree: "I",
         duration: { value: 1, unit: "bar" },
-        qualityOverride: "Major Triad",
+        qualityOverride: "M",
         manualRoot: null,
       },
     ]);
@@ -449,7 +449,7 @@ describe("addProgressionStepAtom — v2.0 smart default", () => {
     const steps = store.get(progressionStepsAtom);
     expect(steps).toHaveLength(2);
     expect(steps[1].degree).toBe("ii");
-    expect(steps[1].qualityOverride).toBe("Minor Triad");
+    expect(steps[1].qualityOverride).toBe("m");
   });
 });
 

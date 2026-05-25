@@ -133,18 +133,18 @@ export const DEGREE_COLORS: Record<string, string> = {
 // Diatonic triad quality for each scale degree (semitone offset → chord-name key).
 // Covers the 8 scales explicitly listed in MODE_DEGREES.
 const DEGREE_DIATONIC_QUALITY: Record<string, Record<number, string>> = {
-  'major':            { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 5: "Major Triad", 7: "Major Triad", 9: "Minor Triad", 11: "Diminished Triad" },
-  'minor':            { 0: "Minor Triad", 2: "Diminished Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 8: "Major Triad", 10: "Major Triad" },
-  'dorian':           { 0: "Minor Triad", 2: "Minor Triad", 3: "Major Triad", 5: "Major Triad", 7: "Minor Triad", 9: "Diminished Triad", 10: "Major Triad" },
-  'phrygian':         { 0: "Minor Triad", 1: "Major Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Diminished Triad", 8: "Major Triad", 10: "Minor Triad" },
-  'lydian':           { 0: "Major Triad", 2: "Major Triad", 4: "Minor Triad", 6: "Diminished Triad", 7: "Major Triad", 9: "Minor Triad", 11: "Minor Triad" },
-  'mixolydian':       { 0: "Major Triad", 2: "Minor Triad", 4: "Diminished Triad", 5: "Major Triad", 7: "Minor Triad", 9: "Minor Triad", 10: "Major Triad" },
-  'locrian':          { 0: "Diminished Triad", 1: "Major Triad", 3: "Minor Triad", 5: "Minor Triad", 6: "Major Triad", 8: "Major Triad", 10: "Minor Triad" },
-  'harmonic minor':   { 0: "Minor Triad", 2: "Diminished Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Major Triad", 8: "Major Triad", 11: "Diminished Triad" },
-  'major pentatonic': { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 7: "Major Triad", 9: "Minor Triad" },
-  'minor pentatonic': { 0: "Minor Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 10: "Major Triad" },
-  'major blues':      { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 7: "Major Triad", 9: "Minor Triad" },
-  'minor blues':      { 0: "Minor Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 10: "Major Triad" },
+  'major':            { 0: "M", 2: "m", 4: "m", 5: "M", 7: "M", 9: "m", 11: "dim" },
+  'minor':            { 0: "m", 2: "dim", 3: "M", 5: "m", 7: "m", 8: "M", 10: "M" },
+  'dorian':           { 0: "m", 2: "m", 3: "M", 5: "M", 7: "m", 9: "dim", 10: "M" },
+  'phrygian':         { 0: "m", 1: "M", 3: "M", 5: "m", 7: "dim", 8: "M", 10: "m" },
+  'lydian':           { 0: "M", 2: "M", 4: "m", 6: "dim", 7: "M", 9: "m", 11: "m" },
+  'mixolydian':       { 0: "M", 2: "m", 4: "dim", 5: "M", 7: "m", 9: "m", 10: "M" },
+  'locrian':          { 0: "dim", 1: "M", 3: "m", 5: "m", 6: "M", 8: "M", 10: "m" },
+  'harmonic minor':   { 0: "m", 2: "dim", 3: "M", 5: "m", 7: "M", 8: "M", 11: "dim" },
+  'major pentatonic': { 0: "M", 2: "m", 4: "m", 7: "M", 9: "m" },
+  'minor pentatonic': { 0: "m", 3: "M", 5: "m", 7: "m", 10: "M" },
+  'major blues':      { 0: "M", 2: "m", 4: "m", 7: "M", 9: "m" },
+  'minor blues':      { 0: "m", 3: "M", 5: "m", 7: "m", 10: "M" },
 };
 
 /**
@@ -184,7 +184,7 @@ export function remapDegreeForScale(
  *
  * @param degreeId - Roman numeral string (e.g., "I", "ii", "vii°", "III+")
  * @param scaleName - Scale name (e.g., "Major", "minor", "melodic minor")
- * @returns The chord-name key (e.g., "Major Triad", "Minor Triad", "Diminished Triad"),
+ * @returns The chord-name key (Tonal symbol, e.g. "M", "m", "dim"),
  *          or undefined if the scale or degree is not recognised.
  */
 export function getQualityForDegree(
@@ -207,8 +207,8 @@ export function getQualityForDegree(
 
   // Algorithmic fallback for 7-note scales not in DEGREE_DIATONIC_QUALITY
   // (e.g. Melodic Minor and its derived modes, harmonic-minor non-tonic modes).
-  // CHORD_DEFINITIONS has no Augmented Triad, so augmented degrees collapse to
-  // Major Triad here (pragmatic — the visible chord overlay drops the #5).
+  // Augmented degrees collapse to "M" here (pragmatic — the visible chord
+  // overlay drops the #5).
   const intervals = SCALES[scaleName];
   if (!intervals || intervals.length !== 7) return undefined;
 
@@ -220,9 +220,9 @@ export function getQualityForDegree(
   const fifthInterval =
     ((intervals[(degreeIdx + 4) % 7] - semitone + 12) % 12);
 
-  if (thirdInterval === 3 && fifthInterval === 6) return "Diminished Triad";
-  if (thirdInterval === 3) return "Minor Triad";
-  if (thirdInterval === 4) return "Major Triad";
+  if (thirdInterval === 3 && fifthInterval === 6) return "dim";
+  if (thirdInterval === 3) return "m";
+  if (thirdInterval === 4) return "M";
   return undefined;
 }
 

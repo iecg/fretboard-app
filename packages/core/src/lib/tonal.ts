@@ -16,22 +16,25 @@ import * as Mode from "@tonaljs/mode";
  * App chord-quality name (e.g., "Major Triad") → Tonal chord symbol suffix
  * (e.g., "M"). Suffix is what Tonal.Chord.get() consumes after the root.
  */
+// Transitional identity map (N3): chord-quality keys are now Tonal symbols
+// natively. The adapter is deleted in N5; kept as identity here so any
+// straggler caller continues to work.
 const QUALITY_TO_TONAL: Record<string, string> = {
-  "Major Triad": "M",
-  "Minor Triad": "m",
-  "Diminished Triad": "dim",
-  "Augmented Triad": "aug",
-  "Sus2": "sus2",
-  "Sus4": "sus4",
-  "Major 6th": "6",
-  "Minor 6th": "m6",
-  "Major 7th": "maj7",
-  "Minor 7th": "m7",
-  "Dominant 7th": "7",
-  "Diminished 7th": "dim7",
-  "Half-Diminished 7th": "m7b5",
-  "Minor-Major 7th": "mMaj7",
-  "Power Chord (5)": "5",
+  M: "M",
+  m: "m",
+  dim: "dim",
+  aug: "aug",
+  sus2: "sus2",
+  sus4: "sus4",
+  "6": "6",
+  m6: "m6",
+  maj7: "maj7",
+  m7: "m7",
+  "7": "7",
+  dim7: "dim7",
+  m7b5: "m7b5",
+  mMaj7: "mMaj7",
+  "5": "5",
 };
 
 const TONAL_TO_QUALITY: Record<string, string> = Object.fromEntries(

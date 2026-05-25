@@ -68,7 +68,7 @@ describe("SongControls", () => {
     expect(store.get(progressionStepsAtom)[1]).toMatchObject({
       degree: "vi",
       duration: { value: 2, unit: "bar" },
-      qualityOverride: "Dominant 7th",
+      qualityOverride: "7",
     });
   });
 
@@ -76,7 +76,7 @@ describe("SongControls", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
-        { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+        { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
       ]],
     ]);
     renderWithStore(<SongControls />, store);
@@ -85,7 +85,7 @@ describe("SongControls", () => {
     // Re-selecting the already-active quality via the combobox should keep the override, not null it.
     await user.click(screen.getByRole("combobox", { name: "Quality" }));
     await user.click(screen.getByRole("option", { name: "7" }));
-    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Dominant 7th");
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("7");
   });
 
   it("duplicates the active step via the Duplicate button", async () => {
@@ -262,14 +262,14 @@ describe("SongControls QUALITY dropdown", () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole("combobox", { name: "Quality" }));
     await user.click(screen.getByRole("option", { name: "M7" }));
-    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("Major 7th");
+    expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("maj7");
   });
 
   it("shows the selected root in the DegreeGrid when a quality override is set", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
-        { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+        { id: "one", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
       ]],
     ]);
     renderWithStore(<SongControls />, store);
@@ -433,7 +433,7 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
       [progressionStepsAtom, [
-        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Diminished Triad", manualRoot: null },
+        { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "dim", manualRoot: null },
       ]],
       [activeProgressionStepIndexAtom, 0],
     ]);
@@ -595,7 +595,7 @@ describe("SongControls grid layout", () => {
       .querySelector('[class*="editor-header"]') as HTMLElement | null;
     expect(editorHeader).toBeInTheDocument();
     // Chord label shows the resolved chord name
-    expect(within(editorHeader!).getByText("C Major Triad")).toBeInTheDocument();
+    expect(within(editorHeader!).getByText("C M")).toBeInTheDocument();
     // Counter shows "Chord 1 / 2" (BASE_SEEDS has 2 steps, index 0 active)
     expect(within(editorHeader!).getByText(/Chord 1 \/ 2/i)).toBeInTheDocument();
     // Pill is present (aria-hidden, so not queryable by accessible name)

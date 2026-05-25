@@ -14,31 +14,31 @@ import {
 
 describe("chord-name adapter", () => {
   it("maps Major Triad to M", () => {
-    expect(chordQualityToTonal("Major Triad")).toBe("M");
+    expect(chordQualityToTonal("M")).toBe("M");
   });
   it("maps Minor Triad to m", () => {
-    expect(chordQualityToTonal("Minor Triad")).toBe("m");
+    expect(chordQualityToTonal("m")).toBe("m");
   });
   it("maps Dominant 7th to 7", () => {
-    expect(chordQualityToTonal("Dominant 7th")).toBe("7");
+    expect(chordQualityToTonal("7")).toBe("7");
   });
   it("maps Diminished 7th to dim7", () => {
-    expect(chordQualityToTonal("Diminished 7th")).toBe("dim7");
+    expect(chordQualityToTonal("dim7")).toBe("dim7");
   });
   it("maps Half-Diminished 7th to m7b5", () => {
-    expect(chordQualityToTonal("Half-Diminished 7th")).toBe("m7b5");
+    expect(chordQualityToTonal("m7b5")).toBe("m7b5");
   });
   it("maps Power Chord (5) to 5", () => {
-    expect(chordQualityToTonal("Power Chord (5)")).toBe("5");
+    expect(chordQualityToTonal("5")).toBe("5");
   });
   it("returns undefined for unknown quality", () => {
     expect(chordQualityToTonal("Bogus Chord")).toBeUndefined();
   });
   it("round-trips Major Triad", () => {
-    expect(tonalToChordQuality("M")).toBe("Major Triad");
+    expect(tonalToChordQuality("M")).toBe("M");
   });
   it("round-trips Minor 7th", () => {
-    expect(tonalToChordQuality("m7")).toBe("Minor 7th");
+    expect(tonalToChordQuality("m7")).toBe("m7");
   });
 });
 

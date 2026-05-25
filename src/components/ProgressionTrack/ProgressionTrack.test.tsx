@@ -7,7 +7,7 @@ import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [
   { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
   { id: "three", degree: "vi", duration: { value: 2, unit: "bar" }, qualityOverride: null },
   { id: "four", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ] as const;
@@ -33,8 +33,8 @@ describe("ProgressionTrack", () => {
 
     expect(screen.getByRole("group", { name: "Progression track" })).toBeTruthy();
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Step 1, I, C Major Triad, 1 bar, active/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Step 1, I, C M, 1 bar, active/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Step 3, vi, A m, 2 bars/i })).toBeTruthy();
     // Transport, status lights, and the position/tempo/scale readouts moved
     // to the header transport cluster (Always-On DAW Phase A).
     expect(screen.queryByRole("button", { name: "Play progression" })).toBeNull();
@@ -62,7 +62,7 @@ describe("ProgressionTrack", () => {
     ]);
     renderWithStore(<ProgressionTrack />, store);
 
-    fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A m, 2 bars/i }));
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
   });
@@ -76,7 +76,7 @@ describe("ProgressionTrack", () => {
     expect(container.querySelector<HTMLElement>("[aria-label='Progression timeline']")?.style.getPropertyValue("--bar-count")).toBe("2");
     expect(
       screen
-        .getByRole("button", { name: /Step 1, I, C Major Triad, 2 beats, active/i })
+        .getByRole("button", { name: /Step 1, I, C M, 2 beats, active/i })
         .style.getPropertyValue("--duration-bars"),
     ).toBe("0.25");
   });
@@ -97,10 +97,10 @@ describe("ProgressionTrack", () => {
       [beatsPerBarAtom, 4],
     ]);
 
-    const first = screen.getByRole("button", { name: /Step 1, I, C Major Triad, 2 bars, active/i });
-    const second = screen.getByRole("button", { name: /Step 2, V, G Major Triad, 1 bar/i });
-    const third = screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 1 bar/i });
-    const fourth = screen.getByRole("button", { name: /Step 4, IV, F Major Triad, 1 bar/i });
+    const first = screen.getByRole("button", { name: /Step 1, I, C M, 2 bars, active/i });
+    const second = screen.getByRole("button", { name: /Step 2, V, G M, 1 bar/i });
+    const third = screen.getByRole("button", { name: /Step 3, vi, A m, 1 bar/i });
+    const fourth = screen.getByRole("button", { name: /Step 4, IV, F M, 1 bar/i });
 
     expect(first.style.left).toBe("0%");
     expect(first.style.width).toBe("calc(40% - 3px)");

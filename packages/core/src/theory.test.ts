@@ -125,23 +125,23 @@ describe("getScaleSemitones", () => {
 
 describe("getChordNotes", () => {
   it("returns C Major Triad", () => {
-    expect(getChordNotes("C", "Major Triad")).toEqual(["C", "E", "G"]);
+    expect(getChordNotes("C", "M")).toEqual(["C", "E", "G"]);
   });
 
   it("returns A Minor 7th", () => {
-    expect(getChordNotes("A", "Minor 7th")).toEqual(["A", "C", "E", "G"]);
+    expect(getChordNotes("A", "m7")).toEqual(["A", "C", "E", "G"]);
   });
 
   it("returns C Major 6th", () => {
-    expect(getChordNotes("C", "Major 6th")).toEqual(["C", "E", "G", "A"]);
+    expect(getChordNotes("C", "6")).toEqual(["C", "E", "G", "A"]);
   });
 
   it("returns D Sus4", () => {
-    expect(getChordNotes("D", "Sus4")).toEqual(["D", "G", "A"]);
+    expect(getChordNotes("D", "sus4")).toEqual(["D", "G", "A"]);
   });
 
   it("returns empty array for invalid root note", () => {
-    expect(getChordNotes("X", "Major Triad")).toEqual([]);
+    expect(getChordNotes("X", "M")).toEqual([]);
   });
 
   it("returns empty array for invalid chord name", () => {
@@ -397,32 +397,32 @@ describe("CHORD_DEFINITIONS — new chord types", () => {
   });
 
   it("original keys are still present", () => {
-    expect("Major Triad" in CHORD_DEFINITIONS).toBe(true);
-    expect("Power Chord (5)" in CHORD_DEFINITIONS).toBe(true);
+    expect("M" in CHORD_DEFINITIONS).toBe(true);
+    expect("5" in CHORD_DEFINITIONS).toBe(true);
   });
 
   it("Augmented Triad has intervals [0, 4, 8]", () => {
-    expect(CHORD_DEFINITIONS["Augmented Triad"].members.map((m) => m.semitone)).toEqual([0, 4, 8]);
+    expect(CHORD_DEFINITIONS["aug"].members.map((m) => m.semitone)).toEqual([0, 4, 8]);
   });
 
   it("Sus2 has intervals [0, 2, 7]", () => {
-    expect(CHORD_DEFINITIONS["Sus2"].members.map((m) => m.semitone)).toEqual([0, 2, 7]);
+    expect(CHORD_DEFINITIONS["sus2"].members.map((m) => m.semitone)).toEqual([0, 2, 7]);
   });
 
   it("Minor 6th has intervals [0, 3, 7, 9]", () => {
-    expect(CHORD_DEFINITIONS["Minor 6th"].members.map((m) => m.semitone)).toEqual([0, 3, 7, 9]);
+    expect(CHORD_DEFINITIONS["m6"].members.map((m) => m.semitone)).toEqual([0, 3, 7, 9]);
   });
 
   it("Diminished 7th has intervals [0, 3, 6, 9]", () => {
-    expect(CHORD_DEFINITIONS["Diminished 7th"].members.map((m) => m.semitone)).toEqual([0, 3, 6, 9]);
+    expect(CHORD_DEFINITIONS["dim7"].members.map((m) => m.semitone)).toEqual([0, 3, 6, 9]);
   });
 
   it("Half-Diminished 7th has intervals [0, 3, 6, 10]", () => {
-    expect(CHORD_DEFINITIONS["Half-Diminished 7th"].members.map((m) => m.semitone)).toEqual([0, 3, 6, 10]);
+    expect(CHORD_DEFINITIONS["m7b5"].members.map((m) => m.semitone)).toEqual([0, 3, 6, 10]);
   });
 
   it("Minor-Major 7th has intervals [0, 3, 7, 11]", () => {
-    expect(CHORD_DEFINITIONS["Minor-Major 7th"].members.map((m) => m.semitone)).toEqual([0, 3, 7, 11]);
+    expect(CHORD_DEFINITIONS["mMaj7"].members.map((m) => m.semitone)).toEqual([0, 3, 7, 11]);
   });
 });
 
@@ -437,40 +437,40 @@ describe("CHORD_DEFINITIONS", () => {
   });
 
   it("CHORDS derived from CHORD_DEFINITIONS preserves intervals", () => {
-    expect(CHORDS["Major Triad"]).toEqual([0, 4, 7]);
-    expect(CHORDS["Minor 7th"]).toEqual([0, 3, 7, 10]);
-    expect(CHORDS["Power Chord (5)"]).toEqual([0, 7]);
-    expect(CHORDS["Major 6th"]).toEqual([0, 4, 7, 9]);
-    expect(CHORDS["Sus4"]).toEqual([0, 5, 7]);
+    expect(CHORDS["M"]).toEqual([0, 4, 7]);
+    expect(CHORDS["m7"]).toEqual([0, 3, 7, 10]);
+    expect(CHORDS["5"]).toEqual([0, 7]);
+    expect(CHORDS["6"]).toEqual([0, 4, 7, 9]);
+    expect(CHORDS["sus4"]).toEqual([0, 5, 7]);
   });
 
   it("Major Triad has triad quality with root, 3, 5 members", () => {
-    const def = CHORD_DEFINITIONS["Major Triad"];
+    const def = CHORD_DEFINITIONS["M"];
     expect(def.quality).toBe("triad");
     expect(def.members.map((m) => m.name)).toEqual(["root", "3", "5"]);
   });
 
   it("Minor 7th has seventh quality with root, b3, 5, b7 members", () => {
-    const def = CHORD_DEFINITIONS["Minor 7th"];
+    const def = CHORD_DEFINITIONS["m7"];
     expect(def.quality).toBe("seventh");
     expect(def.members.map((m) => m.name)).toEqual(["root", "b3", "5", "b7"]);
   });
 
   it("Power Chord has power quality with root and 5 only", () => {
-    const def = CHORD_DEFINITIONS["Power Chord (5)"];
+    const def = CHORD_DEFINITIONS["5"];
     expect(def.quality).toBe("power");
     expect(def.members.map((m) => m.name)).toEqual(["root", "5"]);
   });
 
   it("Major 6th has sixth quality with root, 3, 5, 6 members", () => {
-    const def = CHORD_DEFINITIONS["Major 6th"];
+    const def = CHORD_DEFINITIONS["6"];
     expect(def.quality).toBe("sixth");
     expect(def.members.map((m) => m.name)).toEqual(["root", "3", "5", "6"]);
     expect(def.members.map((m) => m.semitone)).toEqual([0, 4, 7, 9]);
   });
 
   it("Sus4 has suspended quality with root, 4, 5 members", () => {
-    const def = CHORD_DEFINITIONS["Sus4"];
+    const def = CHORD_DEFINITIONS["sus4"];
     expect(def.quality).toBe("suspended");
     expect(def.members.map((m) => m.name)).toEqual(["root", "4", "5"]);
     expect(def.members.map((m) => m.semitone)).toEqual([0, 5, 7]);
@@ -492,41 +492,41 @@ describe("SCALES constant", () => {
 describe("getDiatonicChord", () => {
   describe("Major scale", () => {
     it("I in C Major → { root: C, quality: Major Triad }", () => {
-      expect(getDiatonicChord("I", "major", "C")).toEqual({ root: "C", quality: "Major Triad" });
+      expect(getDiatonicChord("I", "major", "C")).toEqual({ root: "C", quality: "M" });
     });
 
     it("ii in C Major → { root: D, quality: Minor Triad }", () => {
-      expect(getDiatonicChord("ii", "major", "C")).toEqual({ root: "D", quality: "Minor Triad" });
+      expect(getDiatonicChord("ii", "major", "C")).toEqual({ root: "D", quality: "m" });
     });
 
     it("vii° in C Major → { root: B, quality: Diminished Triad }", () => {
-      expect(getDiatonicChord("vii°", "major", "C")).toEqual({ root: "B", quality: "Diminished Triad" });
+      expect(getDiatonicChord("vii°", "major", "C")).toEqual({ root: "B", quality: "dim" });
     });
 
     it("V in G Major → { root: D, quality: Major Triad } (non-C tonic)", () => {
-      expect(getDiatonicChord("V", "major", "G")).toEqual({ root: "D", quality: "Major Triad" });
+      expect(getDiatonicChord("V", "major", "G")).toEqual({ root: "D", quality: "M" });
     });
   });
 
   describe("Natural Minor scale", () => {
     it("i in A Natural Minor → { root: A, quality: Minor Triad }", () => {
-      expect(getDiatonicChord("i", "minor", "A")).toEqual({ root: "A", quality: "Minor Triad" });
+      expect(getDiatonicChord("i", "minor", "A")).toEqual({ root: "A", quality: "m" });
     });
 
     it("ii° in A Natural Minor → { root: B, quality: Diminished Triad }", () => {
-      expect(getDiatonicChord("ii°", "minor", "A")).toEqual({ root: "B", quality: "Diminished Triad" });
+      expect(getDiatonicChord("ii°", "minor", "A")).toEqual({ root: "B", quality: "dim" });
     });
   });
 
   describe("Harmonic Minor — critical edge case", () => {
     it("V in A Harmonic Minor → { root: E, quality: Major Triad } (raised 7th makes dominant major)", () => {
-      expect(getDiatonicChord("V", "harmonic minor", "A")).toEqual({ root: "E", quality: "Major Triad" });
+      expect(getDiatonicChord("V", "harmonic minor", "A")).toEqual({ root: "E", quality: "M" });
     });
   });
 
   describe("Blues scales", () => {
     it("v in C Minor Blues resolves to G Minor Triad", () => {
-      expect(getDiatonicChord("v", "minor blues", "C")).toEqual({ root: "G", quality: "Minor Triad" });
+      expect(getDiatonicChord("v", "minor blues", "C")).toEqual({ root: "G", quality: "m" });
     });
 
     it("b5 in C Minor Blues is a color tone, not a chord degree", () => {
@@ -534,7 +534,7 @@ describe("getDiatonicChord", () => {
     });
 
     it("V in C Major Blues resolves to G Major Triad", () => {
-      expect(getDiatonicChord("V", "major blues", "C")).toEqual({ root: "G", quality: "Major Triad" });
+      expect(getDiatonicChord("V", "major blues", "C")).toEqual({ root: "G", quality: "M" });
     });
 
     it("b3 in C Major Blues is a color tone, not a chord degree", () => {

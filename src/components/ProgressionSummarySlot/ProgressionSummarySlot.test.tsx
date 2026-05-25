@@ -18,7 +18,7 @@ describe("ProgressionSummarySlot", () => {
   it("always renders the progression track", () => {
     renderWithAtoms(<ProgressionSummarySlot />, [
       [progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ]],
     ]);
 

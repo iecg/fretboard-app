@@ -19,9 +19,9 @@ const PROGRESSION_BASS_ROOT_OCTAVE = 2;
  * recognised note. Callers should treat empty as "no audible chord" and
  * skip playback rather than attempt a partial voicing.
  *
- * @example resolveChordVoicing("C", "Major Triad")
+ * @example resolveChordVoicing("C", "M")
  *   → ["C3", "E3", "G3"]
- * @example resolveChordVoicing("A", "Minor 7th", 3)
+ * @example resolveChordVoicing("A", "m7", 3)
  *   → ["A3", "C4", "E4", "G4"]
  */
 export function resolveChordVoicing(

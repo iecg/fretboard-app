@@ -25,9 +25,9 @@ interface GetFullChordShapeMatchesParams {
 }
 
 const FULL_CHORD_QUALITIES = new Set<FullChordQuality>([
-  'Major Triad',
-  'Minor Triad',
-  'Dominant 7th',
+  'M',
+  'm',
+  '7',
 ]);
 
 export function getFullChordShapeMatches({

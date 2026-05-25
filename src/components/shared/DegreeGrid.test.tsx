@@ -333,7 +333,7 @@ describe("DegreeGrid quality tag on borrowed cells (Plan H-T9b)", () => {
     expect(ebCell).toBeTruthy();
     const tag = ebCell?.querySelector("[class*='qualityTag']");
     expect(tag).toBeTruthy();
-    // Default guess is "Major Triad" → "M". Allow any short form to keep
+    // Default guess is "M" → "M". Allow any short form to keep
     // the test resilient if the resolver changes the default.
     expect(tag?.textContent).toMatch(/^(M|m|°|7|M7|m7|ø7|°7|sus2|sus4|5|6|m6|mM7|\+)$/);
   });

@@ -37,15 +37,15 @@ export interface DegreeChordListProps {
  * to short human-readable labels suitable for a tabular row.
  */
 const QUALITY_SHORT_LABELS: Record<string, string> = {
-  "Major Triad": "Maj",
-  "Minor Triad": "min",
-  "Diminished Triad": "dim",
-  "Augmented Triad": "aug",
-  "Dominant 7th": "Dom7",
-  "Major 7th": "Maj7",
-  "Minor 7th": "min7",
-  "Half-Diminished 7th": "m7♭5",
-  "Diminished 7th": "dim7",
+  M: "Maj",
+  m: "min",
+  dim: "dim",
+  aug: "aug",
+  "7": "Dom7",
+  maj7: "Maj7",
+  m7: "min7",
+  m7b5: "m7♭5",
+  dim7: "dim7",
 };
 
 function shortQuality(quality: string): string {

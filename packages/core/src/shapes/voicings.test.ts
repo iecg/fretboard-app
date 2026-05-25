@@ -25,7 +25,7 @@ describe("generateVoicings — v2.0", () => {
   it("returns [] when voicingType is 'off'", () => {
     const result = generateVoicings({
       chordRoot: "C",
-      chordType: "Major Triad",
+      chordType: "M",
       tuning: STD_TUNING,
       maxFret: 24,
       voicingType: "off",
@@ -36,7 +36,7 @@ describe("generateVoicings — v2.0", () => {
   it("'full' returns the CAGED-style full-chord matches (renamed from v1 'caged')", () => {
     const result = generateVoicings({
       chordRoot: "C",
-      chordType: "Major Triad",
+      chordType: "M",
       tuning: STD_TUNING,
       maxFret: 24,
       voicingType: "full",
@@ -50,7 +50,7 @@ describe("generateVoicings — v2.0", () => {
   it("'close' returns 3-string adjacent polygons for a triad", () => {
     const result = generateVoicings({
       chordRoot: "C",
-      chordType: "Major Triad",
+      chordType: "M",
       tuning: STD_TUNING,
       maxFret: 24,
       voicingType: "close",
@@ -68,7 +68,7 @@ describe("generateVoicings — v2.0", () => {
   it("'close' returns 4-string adjacent polygons for a tetrad (Maj7)", () => {
     const result = generateVoicings({
       chordRoot: "C",
-      chordType: "Major 7th",
+      chordType: "maj7",
       tuning: STD_TUNING,
       maxFret: 24,
       voicingType: "close",
@@ -84,7 +84,7 @@ describe("generateVoicings — v2.0", () => {
   it("'close' returns [] for chord types with <3 members (dyad: Power Chord)", () => {
     const result = generateVoicings({
       chordRoot: "C",
-      chordType: "Power Chord (5)",
+      chordType: "5",
       tuning: STD_TUNING,
       maxFret: 24,
       voicingType: "close",
@@ -95,7 +95,7 @@ describe("generateVoicings — v2.0", () => {
   it("'close' returns [] when tuning.length !== 6", () => {
     const result = generateVoicings({
       chordRoot: "C",
-      chordType: "Major Triad",
+      chordType: "M",
       tuning: ["E4", "B3", "G3", "D3", "A2"], // 5-string tuning
       maxFret: 24,
       voicingType: "close",
@@ -117,7 +117,7 @@ describe("generateVoicings — v2.0", () => {
   it("'close' triad contains all three chord pitch classes (C major: {0, 4, 7})", () => {
     const result = generateVoicings({
       chordRoot: "C",
-      chordType: "Major Triad",
+      chordType: "M",
       tuning: STD_TUNING,
       maxFret: 24,
       voicingType: "close",
@@ -137,7 +137,7 @@ describe("closeVoicings — open-string filter", () => {
     // STD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"]; G3 is stringIndex 2.
     const voicings = generateVoicings({
       chordRoot: "G",
-      chordType: "Major Triad",
+      chordType: "M",
       tuning: STD_TUNING,
       maxFret: 12,
       voicingType: "close",
@@ -151,7 +151,7 @@ describe("closeVoicings — open-string filter", () => {
   it("does not produce voicings mixing open strings with frets >= 5", () => {
     const voicings = generateVoicings({
       chordRoot: "G",
-      chordType: "Major Triad",
+      chordType: "M",
       tuning: STD_TUNING,
       maxFret: 15,
       voicingType: "close",
@@ -172,10 +172,10 @@ describe("closeVoicings span cap", () => {
 
   it("never emits a candidate whose fretted-fret span exceeds the cap", () => {
     const allChords = [
-      "Major Triad",
-      "Minor Triad",
-      "Dominant 7th",
-      "Major 7th",
+      "M",
+      "m",
+      "7",
+      "maj7",
     ] as const;
     for (const chordType of allChords) {
       for (const chordRoot of NOTES) {
@@ -204,7 +204,7 @@ describe("closeVoicings span cap", () => {
   it("emits at least one close voicing for C7 standard tuning", () => {
     const voicings = generateVoicings({
       chordRoot: "C",
-      chordType: "Dominant 7th",
+      chordType: "7",
       tuning: STD_TUNING,
       maxFret: 24,
       voicingType: "close",

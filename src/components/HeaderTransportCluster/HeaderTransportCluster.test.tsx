@@ -8,7 +8,7 @@ import { HeaderTransportCluster } from "./HeaderTransportCluster";
 
 const fourStepProgression = [
   { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
 ] as const;
 
 describe("HeaderTransportCluster", () => {

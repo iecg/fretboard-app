@@ -51,24 +51,24 @@ describe("updateActiveChordAtom write", () => {
 
   it("setting quality writes qualityOverride without altering manualRoot", () => {
     const store = createStore();
-    store.set(updateActiveChordAtom, { quality: "Major Triad" });
-    expect(store.get(activeChordQualityAtom)).toBe("Major Triad");
+    store.set(updateActiveChordAtom, { quality: "M" });
+    expect(store.get(activeChordQualityAtom)).toBe("M");
     expect(store.get(activeChordIsManualAtom)).toBe(false);
   });
 
   it("setting degree updates cachedDegree and does NOT clear qualityOverride", () => {
     const store = createStore();
-    store.set(updateActiveChordAtom, { quality: "Major Triad" });
+    store.set(updateActiveChordAtom, { quality: "M" });
     store.set(updateActiveChordAtom, { degree: "IV" });
     expect(store.get(activeChordCachedDegreeAtom)).toBe("IV");
-    expect(store.get(activeChordQualityAtom)).toBe("Major Triad");
+    expect(store.get(activeChordQualityAtom)).toBe("M");
   });
 
   it("combined patch applies all fields in one call", () => {
     const store = createStore();
-    store.set(updateActiveChordAtom, { root: "G", quality: "Minor Triad" });
+    store.set(updateActiveChordAtom, { root: "G", quality: "m" });
     expect(store.get(activeChordRootAtom)).toBe("G");
-    expect(store.get(activeChordQualityAtom)).toBe("Minor Triad");
+    expect(store.get(activeChordQualityAtom)).toBe("m");
     expect(store.get(activeChordIsManualAtom)).toBe(true);
   });
 });

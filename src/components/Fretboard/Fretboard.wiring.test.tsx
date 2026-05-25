@@ -77,7 +77,7 @@ describe("Fretboard wiring", () => {
         id: "step-1",
         degree: "I",
         duration: { value: 1, unit: "bar" },
-        qualityOverride: "Major Triad",
+        qualityOverride: "M",
         manualRoot: "E",
       },
     ]);
@@ -138,23 +138,23 @@ describe("Fretboard wiring", () => {
     // Under Diatonic CAGED Chord Shape Alignment, when a single CAGED shape is active,
     // we dynamically select the chord shape that actually fits that scale shape's fret position
     // instead of forcing the exact same letter shape, preventing 1-position offsets.
-    const tonic = renderGMajorEPositionChord("G", "Major Triad");
+    const tonic = renderGMajorEPositionChord("G", "M");
     expect(tonic.fullChordVoicings?.length).toBeGreaterThan(0);
     expect(tonic.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
 
-    const mediant = renderGMajorEPositionChord("B", "Minor Triad");
+    const mediant = renderGMajorEPositionChord("B", "m");
     expect(mediant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
     // Bm root at string 4 fret 14 is inside the remapped D-shape polygon
     // (relative minor anchor for G Major maps E→D, so roots are at fret 2 and 14).
     expect(mediant.fullChordPositionKeys?.has("4-14")).toBe(true);
 
-    const subdominant = renderGMajorEPositionChord("C", "Major Triad");
+    const subdominant = renderGMajorEPositionChord("C", "M");
     expect(subdominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
     expect(subdominant.fullChordPositionKeys?.has("4-15")).toBe(true);
   });
 
   it("filters out full-chord notes outside the selected CAGED scale position when lock-to-scale is on", () => {
-    const supertonic = renderGMajorEPositionChord("D#", "Minor Triad");
+    const supertonic = renderGMajorEPositionChord("D#", "m");
     expect(supertonic.fullChordVoicings?.some((voicing) => voicing.shape === "E")).toBe(true);
     // D#m root at string 3 fret 1 is outside the E-shape's diagonal bounds at fret 3.
     expect(supertonic.fullChordPositionKeys?.has("3-1")).toBe(false);
@@ -163,7 +163,7 @@ describe("Fretboard wiring", () => {
   it("narrows full-chord voicings to the best-fitting shape in that fret position", () => {
     // Under Diatonic CAGED Chord Shape Alignment, D major's C-shape sits at the 2nd-fret area,
     // perfectly overlapping the E-position window for G major (~frets 2–6).
-    const dominant = renderGMajorEPositionChord("D", "Major Triad");
+    const dominant = renderGMajorEPositionChord("D", "M");
     expect(dominant.fullChordVoicings?.every((voicing) => voicing.shape === "E")).toBe(true);
     expect(dominant.fullChordPositionKeys?.has("4-5")).toBe(true);
     expect(dominant.fullChordPositionKeys?.has("3-0")).toBe(false);

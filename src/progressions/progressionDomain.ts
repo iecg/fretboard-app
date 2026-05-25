@@ -59,18 +59,18 @@ export function formatProgressionDurationLabel(duration: ProgressionStepDuration
 }
 
 const CHORD_QUALITY_SUFFIX: Record<string, string> = {
-  "Major Triad": "",
-  "Minor Triad": "m",
-  "Diminished Triad": "°",
-  "Augmented Triad": "+",
-  "Major 6th": "6",
-  "Minor 6th": "m6",
-  "Major 7th": "maj7",
-  "Minor 7th": "m7",
-  "Dominant 7th": "7",
-  "Diminished 7th": "°7",
-  "Half-Diminished 7th": "ø7",
-  "Minor-Major 7th": "mMaj7",
+  M: "",
+  m: "m",
+  dim: "°",
+  aug: "+",
+  "6": "6",
+  m6: "m6",
+  maj7: "maj7",
+  m7: "m7",
+  "7": "7",
+  dim7: "°7",
+  m7b5: "ø7",
+  mMaj7: "mMaj7",
 };
 
 /**
@@ -206,7 +206,7 @@ export const MAX_PROGRESSION_TEMPO_BPM = 240;
 // Preset steps are stored as a compact DSL string of space-separated tokens.
 // Token grammar: DEGREE[*BARS][:7]
 //   *N  → step lasts N bars (default 1)
-//   :7  → quality override is "Dominant 7th"
+//   :7  → quality override is "7" (dominant seventh)
 // Examples: "I V vi IV"  ·  "I*4:7 IV*2:7 V:7"
 function parseSteps(spec: string): Array<Omit<ProgressionStep, "id">> {
   return spec.split(/\s+/).filter(Boolean).map((tok) => {
@@ -216,7 +216,7 @@ function parseSteps(spec: string): Array<Omit<ProgressionStep, "id">> {
     return {
       degree: degree as DegreeId,
       duration: { value: value ? Number(value) : 1, unit: "bar" as const },
-      qualityOverride: q === "7" ? "Dominant 7th" : null,
+      qualityOverride: q === "7" ? "7" : null,
       manualRoot: null,
     };
   });
@@ -474,14 +474,14 @@ export function totalProgressionBars(
 
 /**
  * When a borrowed (out-of-scale) root is picked without a quality override,
- * fall back to "Major Triad" as the safest audible default.
+ * fall back to "M" (major triad) as the safest audible default.
  *
  * TODO(plan-g11a): refine with a real parallel-scale lookup if/when one
  * exists in @fretflow/core (e.g. getDiatonicChordForNote(root, scale, tonic)).
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string, _tonicNote?: string): string {
-  return "Major Triad";
+  return "M";
 }
 
 /** Compact display string for a chord quality, suitable for inline tags
@@ -489,19 +489,19 @@ export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string,
  * quality is unrecognized — callers may choose to suppress in that case. */
 export function qualityShortForm(quality: string): string {
   switch (quality) {
-    case "Major Triad": return "M";
-    case "Minor Triad": return "m";
-    case "Diminished Triad": return "°";
-    case "Augmented Triad": return "+";
-    case "Power Chord (5)": return "5";
-    case "Major 6th": return "6";
-    case "Minor 6th": return "m6";
-    case "Dominant 7th": return "7";
-    case "Major 7th": return "M7";
-    case "Minor 7th": return "m7";
-    case "Minor-Major 7th": return "mM7";
-    case "Half-Diminished 7th": return "ø7";
-    case "Diminished 7th": return "°7";
+    case "M": return "M";
+    case "m": return "m";
+    case "dim": return "°";
+    case "aug": return "+";
+    case "5": return "5";
+    case "6": return "6";
+    case "m6": return "m6";
+    case "7": return "7";
+    case "maj7": return "M7";
+    case "m7": return "m7";
+    case "mMaj7": return "mM7";
+    case "m7b5": return "ø7";
+    case "dim7": return "°7";
     default: return "";
   }
 }
