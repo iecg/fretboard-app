@@ -1,5 +1,6 @@
 import { NOTES } from './theory';
 import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
+import { normalizeToSharps } from './lib/tonal';
 import * as Note from '@tonaljs/note';
 
 // Pre-compute a long master chromatic sequence to allow O(1) slicing for any string length.
@@ -29,8 +30,9 @@ export function parseNote(noteString: string): NoteWithOctave | null {
     return null;
   }
   
-  const result = {
-    noteName: tonalNote.letter + (tonalNote.acc || ""),
+  const rawName = tonalNote.letter + (tonalNote.acc || "");
+  const result: NoteWithOctave = {
+    noteName: normalizeToSharps(rawName),
     octave: tonalNote.oct,
   };
   
@@ -100,9 +102,14 @@ export function getFretboardNotes(tuning: string[], frets: number = 24): string[
   if (!cached) {
     cached = tuning.map(stringNote => {
       const parsed = parseNote(stringNote);
-      const noteName = parsed?.noteName ?? "E";
-      const openIndex = NOTES.indexOf(noteName);
-      
+      let openIndex = parsed ? NOTES.indexOf(parsed.noteName) : -1;
+      if (openIndex === -1) {
+        if (typeof console !== "undefined" && console.warn) {
+          console.warn(`[guitar] invalid tuning note "${stringNote}", falling back to E`);
+        }
+        openIndex = NOTES.indexOf("E");
+      }
+
       // O(1) slice instead of mapping and modulo math
       return MASTER_CHROMATIC.slice(openIndex, openIndex + frets + 1);
     });
