@@ -287,6 +287,14 @@ export const activeProgressionStepIndexAtom = atom(0);
 const progressionPlayingStateAtom = atom(false);
 export const progressionStepDeadlineAtom = atom<number | null>(null);
 
+/**
+ * True from the moment `setProgressionPlaying(true)` is honored until the
+ * first audio callback fires. Drives the spinner overlay on the play button
+ * so the user gets feedback during the AudioContext warm-up + buildAllLayers
+ * window (typically 100–800ms on a cold context). Transient — not persisted.
+ */
+export const progressionPlaybackLoadingAtom = atom<boolean>(false);
+
 export const resolvedProgressionStepsAtom = atom((get) => {
   const scaleName = get(scaleNameAtom);
   const rootNote = get(rootNoteAtom);

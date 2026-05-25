@@ -29,6 +29,7 @@ import {
   updateProgressionStepQualityAtom,
   timeSignatureDenominatorAtom,
   updateProgressionStepRootAtom,
+  progressionPlaybackLoadingAtom,
 } from "./progressionAtoms";
 import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
@@ -471,5 +472,20 @@ describe("updateProgressionStepDegreeAtom — v2.0 independence", () => {
     const steps = store.get(progressionStepsAtom);
     expect(steps[0].degree).toBe("ii");
     expect(steps[0].qualityOverride).toBe("Major 7");
+  });
+});
+
+describe("progressionPlaybackLoadingAtom", () => {
+  it("defaults to false", () => {
+    const store = createStore();
+    expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+  });
+
+  it("is a writable boolean", () => {
+    const store = createStore();
+    store.set(progressionPlaybackLoadingAtom, true);
+    expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
+    store.set(progressionPlaybackLoadingAtom, false);
+    expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
   });
 });
