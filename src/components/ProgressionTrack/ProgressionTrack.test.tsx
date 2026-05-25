@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [
@@ -136,6 +136,20 @@ describe("ProgressionTrack", () => {
     expect(screen.queryByLabelText("Bass pattern")).toBeNull();
     expect(screen.queryByLabelText("Drum pattern")).toBeNull();
     expect(screen.queryByLabelText("Swing amount")).toBeNull();
+  });
+
+  it("ignores timeline-block clicks while progression is playing", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, fourStepProgression],
+      [activeProgressionStepIndexAtom, 0],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    expect(store.get(progressionPlayingAtom)).toBe(true);
+    renderWithStore(<ProgressionTrack />, store);
+
+    fireEvent.click(screen.getByRole("button", { name: /Step 2, V, G dominant seventh, 1 bar/i }));
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
   });
 
   it("no longer hosts the transport bar — only the timeline", () => {

@@ -56,8 +56,11 @@ export function ProgressionTrack() {
   // Stable callback so memoized ProgressionBlock children don't re-render on
   // every parent render of this component.
   const selectStep = useCallback(
-    (index: number) => setActiveProgressionStepIndex(index),
-    [setActiveProgressionStepIndex],
+    (index: number) => {
+      if (progressionPlaying) return;
+      setActiveProgressionStepIndex(index);
+    },
+    [setActiveProgressionStepIndex, progressionPlaying],
   );
 
   return (
