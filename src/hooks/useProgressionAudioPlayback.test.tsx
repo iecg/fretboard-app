@@ -165,6 +165,9 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     toneMocks.loops.length = 0;
     toneMocks.drawSchedule.mockClear();
     toneMocks.drawCancel.mockClear();
+    toneMocks.transport.scheduleOnce.mockReset();
+    toneMocks.transport.clear.mockReset();
+    toneMocks.transport.seconds = 0;
     _resetTimelineForTests();
     _resetProgressionAudioForTests();
     const audioContext = {
@@ -340,11 +343,10 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     toneMocks.parts.forEach((p) => expect(p.disposed).toBe(false));
   });
 
-  it("loop toggle triggers a rebuild from bar 0 with the new loop flag", () => {
-    // Loop is a rebuild dep, not a live update: the end-event lifecycle
-    // (Transport.scheduleOnce for non-loop playback) is tied to the loop
-    // flag, and re-juggling it from a live effect was fragile. Rebuilding
-    // is a tolerable trade-off for correctness given loop toggle is rare.
+  it("loop toggle is a LIVE update (no rebuild) — flips every Part's loop flag in place", () => {
+    // Tone.Part.loop is a live setter, exposed via our handle's setLoop.
+    // Toggling loop mid-play must NOT dispose Parts (which would restart
+    // playback at bar 0 with an audible glitch).
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -356,17 +358,82 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
     const initialParts = [...toneMocks.parts];
+    expect(initialParts).toHaveLength(4);
     initialParts.forEach((p) => expect(p.loop).toBe(false));
 
     act(() => {
       store.set(progressionLoopEnabledAtom, true);
     });
 
-    // Rebuild: old parts disposed, new ones constructed with loop=true.
-    initialParts.forEach((p) => expect(p.disposed).toBe(true));
-    const newParts = toneMocks.parts.slice(initialParts.length);
-    expect(newParts.length).toBeGreaterThan(0);
-    newParts.forEach((p) => expect(p.loop).toBe(true));
+    // No rebuild: same Part instances, none disposed, no new constructions.
+    expect(toneMocks.parts).toHaveLength(initialParts.length);
+    initialParts.forEach((p) => expect(p.disposed).toBe(false));
+    // All Parts now report loop=true with loopEnd = total duration (12s).
+    initialParts.forEach((p) => {
+      expect(p.loop).toBe(true);
+      expect(p.loopEnd).toBe(12);
+    });
+  });
+
+  it("loop OFF → ON cancels the pending end-event scheduled at build time", () => {
+    // Build-time end-event id sentinel.
+    toneMocks.transport.scheduleOnce.mockReturnValueOnce(7777);
+    toneMocks.transport.clear.mockClear();
+
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+      [progressionLoopEnabledAtom, false],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+
+    // Build path scheduled the end-event since loop=false.
+    expect(toneMocks.transport.scheduleOnce).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      store.set(progressionLoopEnabledAtom, true);
+    });
+
+    // Effect 7 must clear the pending end-event so playback doesn't stop
+    // at the original natural end.
+    expect(toneMocks.transport.clear).toHaveBeenCalledWith(7777);
+  });
+
+  it("loop ON → OFF schedules a new end-event at the natural loop end", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+      [progressionLoopEnabledAtom, true],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+
+    // Loop=true at build time: no end-event scheduled.
+    expect(toneMocks.transport.scheduleOnce).not.toHaveBeenCalled();
+
+    // Simulate transport mid-loop (3s into a 12s loop → 9s remaining).
+    toneMocks.transport.seconds = 3;
+
+    act(() => {
+      store.set(progressionLoopEnabledAtom, false);
+    });
+
+    // Effect 7 schedules a new end-event for the remaining loop time.
+    expect(toneMocks.transport.scheduleOnce).toHaveBeenCalledTimes(1);
+    const [, when] = toneMocks.transport.scheduleOnce.mock.calls[0];
+    expect(typeof when).toBe("string");
+    // "+<positive number>" — 9s remaining + 0.05s lead = 9.05s.
+    expect(when).toMatch(/^\+\d+(\.\d+)?$/);
+    const seconds = Number(String(when).slice(1));
+    expect(seconds).toBeGreaterThan(0);
+    expect(seconds).toBeLessThanOrEqual(12 + 0.1);
   });
 
   it("toggling drums flips the layer gain without rebuilding primitives", () => {

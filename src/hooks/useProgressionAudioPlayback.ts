@@ -69,6 +69,9 @@ interface PlaybackPrimitives {
   parts: ProgressionPartHandle[];
   loop: MetronomeLoopHandle | null;
   endEventId: number | null;
+  /** Cached so Effect 7's loop-toggle can compute the natural-end timestamp
+   *  without rebuilding. Set once at build time; immutable thereafter. */
+  totalDurationSec: number;
 }
 
 function disposeAll(prims: PlaybackPrimitives | null) {
@@ -83,13 +86,10 @@ function disposeAll(prims: PlaybackPrimitives | null) {
 /**
  * Tone-native progression playback orchestrator.
  *
- * Six effects, ordered by cost:
+ * Seven effects, ordered by cost:
  *  1. (Heavy)   Build / dispose primitives on changes that change WHICH
- *               events fire OR how the playback completes: playing,
- *               blocked, muted, steps, patterns, drum variations, AND
- *               loopEnabled (the end-event lifecycle is tied to the loop
- *               flag, so we rebuild rather than juggle two effects).
- *               Restart from bar 0.
+ *               events fire: playing, blocked, muted, steps, patterns,
+ *               drum variations. Restart from bar 0.
  *  2. (Live)    Tempo  — Transport.bpm.value = N (events stored as ticks).
  *  3. (Live)    Swing  — Transport.swing = X.
  *  4. (Live)    Time signature — Transport.timeSignature = N + ref read
@@ -97,9 +97,13 @@ function disposeAll(prims: PlaybackPrimitives | null) {
  *  5. (Live)    Instrument — write to instrumentRef; the chord-strum
  *               Part callback reads via the ref each tick.
  *  6. (Live)    Layer mutes — setLayerGain(buses, layer, on/off).
+ *  7. (Live)    Loop toggle — Tone.Part.loop is a live setter, flipped via
+ *               ProgressionPartHandle.setLoop on every Part; reconciles the
+ *               end-event (OFF→ON cancels pending, ON→OFF schedules new
+ *               one at the end of the current loop iteration).
  *
- * Live updates apply mid-bar with no audio glitch. Step / pattern / loop
- * edits fall through Effect 1's full rebuild path.
+ * Live updates apply mid-bar with no audio glitch. Step / pattern edits
+ * fall through Effect 1's full rebuild path.
  *
  * The chord-onset Part owns the React activeProgressionStepIndex advance,
  * deferred via Tone.Draw.schedule so the visual chord-overlay swap aligns
@@ -143,7 +147,6 @@ export function useProgressionAudioPlayback() {
   const buildKey = useMemo(
     () =>
       JSON.stringify({
-        loopEnabled,
         steps: steps.map((s) => ({
           root: s.root,
           quality: s.quality,
@@ -155,7 +158,7 @@ export function useProgressionAudioPlayback() {
         drumPatternId,
         drumVariations,
       }),
-    [loopEnabled, steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
+    [steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
   );
   // Refs so the Part / Loop callbacks can read live state without depending
   // on closure recreation (which would force a rebuild on instrument /
@@ -386,7 +389,7 @@ export function useProgressionAudioPlayback() {
       }, `+${totalDurationSec + SCHEDULE_LEAD_SECONDS}`);
     }
 
-    primsRef.current = { parts, loop: metronome, endEventId };
+    primsRef.current = { parts, loop: metronome, endEventId, totalDurationSec };
     return () => {
       // Cancel any queued Draw callbacks so a paused-mid-lookahead advance
       // doesn't write a stale active-step index after dispose.
@@ -397,14 +400,11 @@ export function useProgressionAudioPlayback() {
       // the chord-onset has fired, the spinner would otherwise stay on.
       setLoading(false);
     };
-    // NOTE: tempo / swing / beatsPerBar / chordInstrument are INTENTIONALLY
-    // excluded from this deps array — they have dedicated live-update
-    // effects below (Effects 2-5) that mutate the live primitives without
-    // rebuilding. They're funnelled into the effect via `buildInputsRef`
-    // (mirrored from the prior render). loopEnabled is part of `buildKey`
-    // because the end-event lifecycle (`Transport.scheduleOnce` for non-
-    // loop playback) is tied to the loop flag — re-scheduling it from a
-    // separate live effect was fragile, so we rebuild instead.
+    // NOTE: tempo / swing / beatsPerBar / chordInstrument / loopEnabled are
+    // INTENTIONALLY excluded from this deps array — they have dedicated
+    // live-update effects below (Effects 2-5, 7) that mutate the live
+    // primitives without rebuilding. They're funnelled into the effect via
+    // `buildInputsRef` (mirrored from the prior render).
   }, [
     playing,
     blocked,
@@ -463,4 +463,40 @@ export function useProgressionAudioPlayback() {
     setLayerGain(audio.layers, "drums", drumsOn);
     setLayerGain(audio.layers, "metronome", metronomeOn);
   }, [chordOn, bassOn, drumsOn, metronomeOn]);
+
+  // --- Effect 7: live loop toggle ---
+  // Tone.Part.loop is a live setter, exposed via our handle. Flipping it
+  // mid-play has no rebuild and no audible glitch. The only thing that
+  // doesn't auto-rebalance is the end-event (a Transport.scheduleOnce that
+  // flips playing=false at the natural end of a non-looped pass).
+  // Reconcile it explicitly here:
+  //   OFF → ON: cancel the pending end-event; Parts wrap naturally.
+  //   ON → OFF: schedule a new end-event at the natural end of the current
+  //             loop iteration so playback stops cleanly after one more pass.
+  useEffect(() => {
+    const prims = primsRef.current;
+    if (!prims) return;
+    const { totalDurationSec } = prims;
+
+    // 1. Flip every Part to the new loop state. `loopEnd` matches the
+    //    original build value (loopEnd has no effect when loop=false).
+    prims.parts.forEach((p) => p.setLoop(loopEnabled, totalDurationSec));
+
+    // 2. Reconcile the end-event.
+    if (loopEnabled) {
+      if (prims.endEventId !== null) {
+        getTransport().clear(prims.endEventId);
+        prims.endEventId = null;
+      }
+    } else {
+      if (prims.endEventId === null && totalDurationSec > 0) {
+        const transportSec = (getTransport() as unknown as { seconds: number }).seconds;
+        const elapsedInLoop = transportSec % totalDurationSec;
+        const remaining = totalDurationSec - elapsedInLoop;
+        prims.endEventId = getTransport().scheduleOnce(() => {
+          setPlaying(false);
+        }, `+${remaining + SCHEDULE_LEAD_SECONDS}`);
+      }
+    }
+  }, [loopEnabled, setPlaying]);
 }
