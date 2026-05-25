@@ -172,5 +172,9 @@ export const en: Dictionary = {
     qualityGroupSus: "Suspended / Power",
     qualityGroupSixths: "6th Chords",
     qualityGroupSevenths: "7th Chords",
+    pauseProgressionTooltip: "Pause",
+    playProgressionTooltip: "Play",
+    stopProgression: "Stop",
+    stopProgressionTooltip: "Stop and return to bar 1",
   },
 };

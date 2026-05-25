@@ -169,6 +169,10 @@ export interface Dictionary {
     qualityGroupSus: string;
     qualityGroupSixths: string;
     qualityGroupSevenths: string;
+    pauseProgressionTooltip: string;
+    playProgressionTooltip: string;
+    stopProgression: string;
+    stopProgressionTooltip: string;
   };
 }
 

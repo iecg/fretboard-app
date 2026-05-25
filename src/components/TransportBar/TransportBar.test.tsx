@@ -3,7 +3,8 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import { beatsPerBarAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackLoadingAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackLoadingAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { TooltipProvider } from "../Tooltip/Tooltip";
 import { TransportBar } from "./TransportBar";
 
 const fourStepProgression = [
@@ -26,7 +27,7 @@ describe("TransportBar", () => {
   });
 
   it("renders the transport and instrument buttons", () => {
-    renderWithAtoms(<TransportBar />, [...playableAtoms]);
+    renderWithAtoms(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>,[...playableAtoms]);
 
     expect(screen.getByRole("button", { name: "Previous chord" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Play progression" })).toBeTruthy();
@@ -44,7 +45,7 @@ describe("TransportBar", () => {
     // progressionPlayingAtom is a read-only derived atom (defaults to false);
     // it cannot be seeded, so assert the transition from its false default.
     const store = makeAtomStore([...playableAtoms]);
-    renderWithStore(<TransportBar />, store);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
     expect(store.get(progressionPlayingAtom)).toBe(false);
 
     fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
@@ -54,7 +55,7 @@ describe("TransportBar", () => {
 
   it("disables the transport buttons when playback is blocked", () => {
     // Empty progression steps → playback blocked.
-    renderWithAtoms(<TransportBar />, [[progressionStepsAtom, []]]);
+    renderWithAtoms(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>,[[progressionStepsAtom, []]]);
 
     expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Previous chord" })).toBeDisabled();
@@ -63,7 +64,7 @@ describe("TransportBar", () => {
 
   it("toggles the loop atom when the loop button is clicked", () => {
     const store = makeAtomStore([...playableAtoms, [progressionLoopEnabledAtom, false]]);
-    renderWithStore(<TransportBar />, store);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
     fireEvent.click(screen.getByRole("button", { name: "Loop progression" }));
 
@@ -81,7 +82,7 @@ describe("TransportBar", () => {
     for (const [label, atom] of cases) {
       localStorage.clear();
       const store = makeAtomStore([...playableAtoms, [atom, false]]);
-      const { unmount } = renderWithStore(<TransportBar />, store);
+      const { unmount } = renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
       fireEvent.click(screen.getByRole("button", { name: label }));
       expect(store.get(atom)).toBe(true);
       unmount();
@@ -89,13 +90,13 @@ describe("TransportBar", () => {
   });
 
   it("has no accessibility violations", async () => {
-    const { container } = renderWithAtoms(<TransportBar />, [...playableAtoms]);
+    const { container } = renderWithAtoms(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>,[...playableAtoms]);
     expect(await axe(container)).toHaveNoViolations();
   });
 
   it("disables prev/next while playing but keeps the pause button enabled", () => {
     const store = makeAtomStore([...playableAtoms]);
-    renderWithStore(<TransportBar />, store);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
     // Seed the playing state via the write atom (requires a playable progression).
     act(() => {
@@ -110,7 +111,7 @@ describe("TransportBar", () => {
 
   it("keeps the loop toggle enabled while playing (transparent live update)", () => {
     const store = makeAtomStore([...playableAtoms]);
-    renderWithStore(<TransportBar />, store);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
     act(() => {
       store.set(setProgressionPlayingAtom, true);
@@ -120,7 +121,7 @@ describe("TransportBar", () => {
   });
 
   it("no longer renders an inline tempo stepper — tempo moved to the Song tab", () => {
-    renderWithAtoms(<TransportBar />, [...playableAtoms]);
+    renderWithAtoms(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>,[...playableAtoms]);
     expect(screen.queryByRole("button", { name: /Increase Tempo/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Decrease Tempo/ })).toBeNull();
   });
@@ -128,14 +129,52 @@ describe("TransportBar", () => {
   it("shows a spinner in the play button while progression is loading", () => {
     const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
     act(() => { store.set(setProgressionPlayingAtom, true); });
-    renderWithStore(<TransportBar />, store);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
     expect(screen.getByTestId("transport-play-spinner")).toBeInTheDocument();
   });
 
   it("hides the spinner once loading clears", () => {
     const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, false]]);
     act(() => { store.set(setProgressionPlayingAtom, true); });
-    renderWithStore(<TransportBar />, store);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
     expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
+  });
+
+  it("renders a Stop button next to Play", () => {
+    const store = makeAtomStore([...playableAtoms]);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+    expect(screen.getByLabelText(/^stop$/i)).toBeInTheDocument();
+  });
+
+  it("Stop button is disabled when not playing AND activeIndex is already 0", () => {
+    const store = makeAtomStore([
+      ...playableAtoms,
+      [activeProgressionStepIndexAtom, 0],
+    ]);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+    expect(screen.getByLabelText(/^stop$/i)).toBeDisabled();
+  });
+
+  it("Stop button is enabled when activeIndex > 0 even if paused", () => {
+    const store = makeAtomStore([
+      ...playableAtoms,
+      [activeProgressionStepIndexAtom, 1],
+    ]);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+    expect(screen.getByLabelText(/^stop$/i)).toBeEnabled();
+  });
+
+  it("clicking Stop sets playing=false and activeIndex=0", () => {
+    const store = makeAtomStore([
+      ...playableAtoms,
+      [activeProgressionStepIndexAtom, 1],
+    ]);
+    act(() => { store.set(setProgressionPlayingAtom, true); });
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+
+    fireEvent.click(screen.getByLabelText(/^stop$/i));
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
   });
 });

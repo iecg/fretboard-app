@@ -4,6 +4,7 @@ import { fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
 import { beatsPerBarAtom, progressionLoopEnabledAtom, progressionPlayingAtom, progressionStepsAtom, progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { TooltipProvider } from "../Tooltip/Tooltip";
 import { HeaderTransportCluster } from "./HeaderTransportCluster";
 
 const fourStepProgression = [
@@ -13,7 +14,7 @@ const fourStepProgression = [
 
 describe("HeaderTransportCluster", () => {
   it("renders transport controls, status lights, and the position/tempo/scale readouts", async () => {
-    const { container } = renderWithAtoms(<HeaderTransportCluster />, [
+    const { container } = renderWithAtoms(<TooltipProvider delayDuration={0}><HeaderTransportCluster /></TooltipProvider>, [
       [progressionStepsAtom, fourStepProgression],
       [progressionTempoBpmAtom, 90],
       [beatsPerBarAtom, 4],
@@ -42,7 +43,7 @@ describe("HeaderTransportCluster", () => {
       [progressionStepsAtom, fourStepProgression],
       [progressionLoopEnabledAtom, false],
     ]);
-    renderWithStore(<HeaderTransportCluster />, store);
+    renderWithStore(<TooltipProvider delayDuration={0}><HeaderTransportCluster /></TooltipProvider>, store);
 
     fireEvent.click(screen.getByRole("button", { name: "Loop progression" }));
     expect(store.get(progressionLoopEnabledAtom)).toBe(true);

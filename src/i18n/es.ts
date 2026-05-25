@@ -172,5 +172,9 @@ export const es: Dictionary = {
     qualityGroupSus: "Suspendidos / Quinta",
     qualityGroupSixths: "Acordes de 6ª",
     qualityGroupSevenths: "Acordes de 7ª",
+    pauseProgressionTooltip: "Pausar",
+    playProgressionTooltip: "Reproducir",
+    stopProgression: "Detener",
+    stopProgressionTooltip: "Detener y volver al compás 1",
   },
 };

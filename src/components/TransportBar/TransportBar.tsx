@@ -9,11 +9,18 @@ import {
   Repeat,
   SkipBack,
   SkipForward,
+  Square,
   Timer,
 } from "lucide-react";
-import { useAtomValue } from "jotai";
-import { progressionPlaybackLoadingAtom } from "../../store/progressionAtoms";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  activeProgressionStepIndexAtom,
+  progressionPlaybackLoadingAtom,
+  stopProgressionPlaybackAtom,
+} from "../../store/progressionAtoms";
 import { useProgressionState } from "../../hooks/useProgressionState";
+import { useTranslation } from "../../hooks/useTranslation";
+import { Tooltip } from "../Tooltip/Tooltip";
 import styles from "./TransportBar.module.css";
 
 /**
@@ -40,7 +47,11 @@ export function TransportBar() {
   } = useProgressionState();
 
   const progressionPlaybackLoading = useAtomValue(progressionPlaybackLoadingAtom);
+  const activeIndex = useAtomValue(activeProgressionStepIndexAtom);
+  const stopProgressionPlayback = useSetAtom(stopProgressionPlaybackAtom);
+  const { t } = useTranslation();
   const canPlay = !progressionPlaybackBlockedReason;
+  const stopDisabled = !canPlay || (!progressionPlaying && activeIndex === 0);
 
   return (
     <div className={styles.transportBar} data-testid="transport-bar">
@@ -65,28 +76,47 @@ export function TransportBar() {
         >
           <SkipBack size={13} strokeWidth={2.4} aria-hidden="true" />
         </button>
-        <button
-          type="button"
-          className={clsx(styles.transportButton, styles.playButton, progressionPlaying && styles["transportButton--accent"])}
-          onClick={() => setProgressionPlaying(!progressionPlaying)}
-          disabled={!canPlay}
-          aria-label={progressionPlaying ? "Pause progression" : "Play progression"}
-          aria-busy={progressionPlaybackLoading || undefined}
+        <Tooltip content={t("controls.stopProgressionTooltip")}>
+          <button
+            type="button"
+            className={styles.transportButton}
+            onClick={() => stopProgressionPlayback()}
+            disabled={stopDisabled}
+            aria-label={t("controls.stopProgression")}
+          >
+            <Square size={13} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
+          </button>
+        </Tooltip>
+        <Tooltip
+          content={
+            progressionPlaying
+              ? t("controls.pauseProgressionTooltip")
+              : t("controls.playProgressionTooltip")
+          }
         >
-          {progressionPlaybackLoading ? (
-            <Loader2
-              size={14}
-              strokeWidth={2.4}
-              aria-hidden="true"
-              className={styles.spinner}
-              data-testid="transport-play-spinner"
-            />
-          ) : progressionPlaying ? (
-            <Pause size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
-          ) : (
-            <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
-          )}
-        </button>
+          <button
+            type="button"
+            className={clsx(styles.transportButton, styles.playButton, progressionPlaying && styles["transportButton--accent"])}
+            onClick={() => setProgressionPlaying(!progressionPlaying)}
+            disabled={!canPlay}
+            aria-label={progressionPlaying ? "Pause progression" : "Play progression"}
+            aria-busy={progressionPlaybackLoading || undefined}
+          >
+            {progressionPlaybackLoading ? (
+              <Loader2
+                size={14}
+                strokeWidth={2.4}
+                aria-hidden="true"
+                className={styles.spinner}
+                data-testid="transport-play-spinner"
+              />
+            ) : progressionPlaying ? (
+              <Pause size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
+            ) : (
+              <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
+            )}
+          </button>
+        </Tooltip>
         <button
           type="button"
           className={styles.transportButton}
