@@ -1,3 +1,5 @@
+import * as Note from "@tonaljs/note";
+import * as Interval from "@tonaljs/interval";
 import { getScaleSemitonesFromTonal } from "./lib/tonal";
 
 export type ScaleFamilyId =
@@ -36,33 +38,6 @@ export interface ScaleBrowseOption {
   label: string;
   ordinal: number;
 }
-
-const CHROMATIC_NOTES = [
-  "C",
-  "C#",
-  "D",
-  "D#",
-  "E",
-  "F",
-  "F#",
-  "G",
-  "G#",
-  "A",
-  "A#",
-  "B",
-] as const;
-
-const ENHARMONIC_TO_SHARP: Record<string, string> = {
-  Db: "C#",
-  Eb: "D#",
-  Gb: "F#",
-  Ab: "G#",
-  Bb: "A#",
-};
-
-const SHARP_TO_FLAT: Record<string, string> = Object.fromEntries(
-  Object.entries(ENHARMONIC_TO_SHARP).map(([flat, sharp]) => [sharp, flat]),
-);
 
 const RELATIVE_BROWSE_FAMILIES = new Set<ScaleFamilyId>([
   "major",
@@ -327,27 +302,28 @@ function getDefaultScaleEntry(): ScaleCatalogEntry {
 }
 
 function normalizePitchClass(note: string): string {
-  return ENHARMONIC_TO_SHARP[note] ?? note;
+  const simplified = Note.simplify(note);
+  if (!simplified) return note;
+  return simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
 }
 
 function getPitchClassIndex(note: string): number {
-  return CHROMATIC_NOTES.indexOf(
-    normalizePitchClass(note) as (typeof CHROMATIC_NOTES)[number],
-  );
+  const chroma = Note.chroma(normalizePitchClass(note));
+  return typeof chroma === "number" && !isNaN(chroma) ? chroma : -1;
 }
 
 function transposePitchClass(note: string, semitoneDelta: number): string {
-  const noteIndex = getPitchClassIndex(note);
-  if (noteIndex === -1) return note;
-  const nextIndex =
-    (noteIndex + semitoneDelta + CHROMATIC_NOTES.length) %
-    CHROMATIC_NOTES.length;
-  return CHROMATIC_NOTES[nextIndex];
+  const idx = getPitchClassIndex(note);
+  if (idx === -1) return note;
+  const transposed = Note.transpose("C", Interval.fromSemitones(semitoneDelta + idx));
+  return normalizePitchClass(transposed);
 }
 
 function formatPitchClass(note: string, useFlats = false): string {
   const normalized = normalizePitchClass(note);
-  return useFlats ? SHARP_TO_FLAT[normalized] ?? normalized : normalized;
+  if (!useFlats) return normalized;
+  const flatVersion = Note.enharmonic(normalized);
+  return flatVersion.includes("b") ? flatVersion : normalized;
 }
 
 function formatOrdinalMode(ordinal: number): string {
