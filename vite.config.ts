@@ -57,8 +57,13 @@ export default defineConfig({
               priority: 2,
             },
             {
+              name: 'vendor-tone',
+              test: /node_modules[\\/]tone[\\/]/,
+              priority: 2,
+            },
+            {
               name: 'vendor',
-              test: /node_modules[\\/]/,
+              test: (id: string) => id.includes('node_modules'),
               priority: 1,
             },
           ],

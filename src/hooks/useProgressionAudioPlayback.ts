@@ -44,9 +44,18 @@ async function getEngine(): Promise<AudioEngine> {
     enginePromise = import("../progressions/audio/progressionAudioEngine").then((mod) => {
       engine = mod;
       return mod;
+    }).catch((err) => {
+      console.error("getEngine import failed:", err);
+      throw err;
     });
   }
   return enginePromise;
+}
+
+/** Test-only: reset the lazy loader cache so each test starts fresh. */
+export function __resetProgressionAudioPlaybackForTests(): void {
+  enginePromise = null;
+  engine = null;
 }
 
 export function useProgressionAudioPlayback() {
@@ -105,8 +114,13 @@ export function useProgressionAudioPlayback() {
     swing,
     loopEnabled,
   });
+  // Mirror the freshest input snapshot into a ref so Effect 1's `.then()`
+  // closure reads up-to-date values when the dynamic import resolves.
+  // IMPORTANT: do NOT bump `genRef` here. genRef is the bail token for the
+  // in-flight import; bumping it on every render (including the re-render
+  // caused by setLoading(true) inside Effect 1) makes the still-pending
+  // `.then()` always see gen !== genRef.current and silently abort.
   useEffect(() => {
-    genRef.current++;
     buildInputsRef.current = {
       steps,
       chordPatternId,
@@ -143,6 +157,19 @@ export function useProgressionAudioPlayback() {
       eng.restoreProgressionBus();
 
       const inputs = buildInputsRef.current;
+
+      // Apply tempo/swing/time-signature BEFORE constructing Parts so
+      // Tone.Part's seconds→ticks conversion uses the user-selected BPM, not
+      // Tone's default (120 BPM). On first play, Effects 2-4 fire while the
+      // engine is still loading (`if (!engine) return;`), so the Transport
+      // sits at its defaults until the user nudges any of these values.
+      // Initializing them here closes that gap — the metronome Loop("4n")
+      // and the chord/bass/drum Parts then share the same tick rate from
+      // beat 1, eliminating the desync the user reported.
+      eng.setPlaybackTempo(inputs.tempo);
+      eng.setPlaybackSwing(inputs.swing);
+      eng.setPlaybackTimeSignature(inputs.beatsPerBar);
+
       const built = eng.buildAllLayers({
         steps: inputs.steps,
         tempoBpm: inputs.tempo,
@@ -235,8 +262,13 @@ export function useProgressionAudioPlayback() {
       primsRef.current = { parts, loop: metronome, endEventId, totalDurationSec };
     });
 
+    const genRefSnapshot = genRef;
     return () => {
-      genRef.current++;
+      // Bumping genRef in cleanup IS the point — it invalidates any still-
+      // pending `getEngine().then(...)` so it bails instead of building Parts
+      // after teardown. The snapshot variable above captures the ref object
+      // for lint's exhaustive-deps check (which would otherwise warn).
+      genRefSnapshot.current++;
       if (engine) engine.getDraw().cancel();
       engine?.disposeAll(primsRef.current);
       primsRef.current = null;

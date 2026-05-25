@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act } from "@testing-library/react";
 import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
 import { isMutedAtom } from "../store/audioAtoms";
@@ -143,7 +143,10 @@ vi.mock("tone", () => ({
 
 import { _resetProgressionAudioForTests } from "../progressions/audio/bus";
 import { _resetTimelineForTests } from "../progressions/audio/timeline";
-import { useProgressionAudioPlayback } from "./useProgressionAudioPlayback";
+import {
+  __resetProgressionAudioPlaybackForTests,
+  useProgressionAudioPlayback,
+} from "./useProgressionAudioPlayback";
 
 function Harness() {
   useProgressionAudioPlayback();
@@ -158,8 +161,7 @@ const threeBars = [
 
 describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
   beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date(0));
+    __resetProgressionAudioPlaybackForTests();
     localStorage.clear();
     toneMocks.parts.length = 0;
     toneMocks.loops.length = 0;
@@ -171,9 +173,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     _resetTimelineForTests();
     _resetProgressionAudioForTests();
     const audioContext = {
-      get currentTime() {
-        return Date.now() / 1000;
-      },
+      currentTime: 0,
       sampleRate: 44100,
       state: "running" as AudioContextState,
       createGain: () => ({
@@ -197,11 +197,8 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
         return audioContext;
       }) as unknown as typeof AudioContext;
   });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
 
-  it("constructs 4 Parts (chord-onsets + strums + bass + drums) and 1 Loop (metronome) on play start", () => {
+  it("constructs 4 Parts (chord-onsets + strums + bass + drums) and 1 Loop (metronome) on play start", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -211,11 +208,15 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
-    expect(toneMocks.parts).toHaveLength(4);
-    expect(toneMocks.loops).toHaveLength(1);
+    // Effect 1 dispatches `getEngine()` (dynamic import); waitFor lets the
+    // microtasks resolve before we assert.
+    await vi.waitFor(() => {
+      expect(toneMocks.parts).toHaveLength(4);
+      expect(toneMocks.loops).toHaveLength(1);
+    });
   });
 
-  it("sets loop=true + loopEnd=totalDurationSec on every Part when progressionLoopEnabled is on", () => {
+  it("sets loop=true + loopEnd=totalDurationSec on every Part when progressionLoopEnabled is on", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -226,13 +227,16 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
     toneMocks.parts.forEach((p) => {
       expect(p.loop).toBe(true);
       expect(p.loopEnd).toBe(12); // 3 bars * 4 beats/bar * 1 sec/beat
     });
   });
 
-  it("advances chordRootAtom when the chord-onset Part fires on first-bar events only", () => {
+  it("advances chordRootAtom when the chord-onset Part fires on first-bar events only", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -243,14 +247,16 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
 
-    // Find the chord-onset Part by checking which Part has 3 events (one per
-    // 1-bar step). Drum Part has many more events.
-    const onsets = toneMocks.parts.find(
-      (p) =>
-        p.events.length === 3
-        && (p.events[0][1] as { isFirstBar?: boolean }).isFirstBar === true,
-    );
-    expect(onsets).toBeDefined();
+    // Wait for the dynamic import to resolve and Parts to be built.
+    let onsets: (typeof toneMocks.parts)[number] | undefined;
+    await vi.waitFor(() => {
+      onsets = toneMocks.parts.find(
+        (p) =>
+          p.events.length === 3
+          && (p.events[0][1] as { isFirstBar?: boolean }).isFirstBar === true,
+      );
+      expect(onsets).toBeDefined();
+    });
     expect(store.get(chordRootAtom)).toBe("C");
 
     // Fire chord-onset event for step 1 (G). The orchestrator defers the
@@ -284,7 +290,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(code).toMatch(/getDraw\(\)\.schedule/);
   });
 
-  it("disposes ALL primitives and rebuilds from 0 when steps change mid-play", () => {
+  it("disposes ALL primitives and rebuilds from 0 when steps change mid-play", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -294,6 +300,9 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
     const initialParts = [...toneMocks.parts];
     const initialLoops = [...toneMocks.loops];
 
@@ -304,9 +313,11 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       ]);
     });
 
-    initialParts.forEach((p) => expect(p.disposed).toBe(true));
-    initialLoops.forEach((l) => expect(l.disposed).toBe(true));
-    expect(toneMocks.parts.length).toBeGreaterThan(initialParts.length);
+    await vi.waitFor(() => {
+      initialParts.forEach((p) => expect(p.disposed).toBe(true));
+      initialLoops.forEach((l) => expect(l.disposed).toBe(true));
+      expect(toneMocks.parts.length).toBeGreaterThan(initialParts.length);
+    });
     // New Part starts at offset 0 (restart from bar 0 on edit).
     const newOnsets = toneMocks.parts
       .slice(initialParts.length)
@@ -314,7 +325,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(newOnsets?.startedOffset).toBe(0);
   });
 
-  it("tempo change is a LIVE update (Transport.bpm.value); no new Parts constructed", () => {
+  it("tempo change is a LIVE update (Transport.bpm.value); no new Parts constructed", async () => {
     // Sentinel: pre-load mock bpm to a value neither effect should leave
     // behind, so we can prove BOTH the initial-render AND the post-change
     // settings of bpm.value came from the live effect.
@@ -330,6 +341,11 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
 
+    // Wait for dynamic import so engine is set (Effect 2 guards behind engine).
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
+
     // After initial render: live effect should have applied the atom value.
     expect(toneMocks.transport.bpm.value).toBe(60);
     const before = toneMocks.parts.length;
@@ -343,7 +359,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     toneMocks.parts.forEach((p) => expect(p.disposed).toBe(false));
   });
 
-  it("loop toggle is a LIVE update (no rebuild) — flips every Part's loop flag in place", () => {
+  it("loop toggle is a LIVE update (no rebuild) — flips every Part's loop flag in place", async () => {
     // Tone.Part.loop is a live setter, exposed via our handle's setLoop.
     // Toggling loop mid-play must NOT dispose Parts (which would restart
     // playback at bar 0 with an audible glitch).
@@ -357,8 +373,10 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBe(4);
+    });
     const initialParts = [...toneMocks.parts];
-    expect(initialParts).toHaveLength(4);
     initialParts.forEach((p) => expect(p.loop).toBe(false));
 
     act(() => {
@@ -375,7 +393,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     });
   });
 
-  it("loop OFF → ON cancels the pending end-event scheduled at build time", () => {
+  it("loop OFF → ON cancels the pending end-event scheduled at build time", async () => {
     // Build-time end-event id sentinel.
     toneMocks.transport.scheduleOnce.mockReturnValueOnce(7777);
     toneMocks.transport.clear.mockClear();
@@ -391,6 +409,11 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
 
+    // Wait for engine to be available and build to complete.
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
+
     // Build path scheduled the end-event since loop=false.
     expect(toneMocks.transport.scheduleOnce).toHaveBeenCalledTimes(1);
 
@@ -403,7 +426,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(toneMocks.transport.clear).toHaveBeenCalledWith(7777);
   });
 
-  it("loop ON → OFF schedules a new end-event at the natural loop end", () => {
+  it("loop ON → OFF schedules a new end-event at the natural loop end", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -414,6 +437,9 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
 
     // Loop=true at build time: no end-event scheduled.
     expect(toneMocks.transport.scheduleOnce).not.toHaveBeenCalled();
@@ -436,7 +462,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(seconds).toBeLessThanOrEqual(12 + 0.1);
   });
 
-  it("toggling drums flips the layer gain without rebuilding primitives", () => {
+  it("toggling drums flips the layer gain without rebuilding primitives", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -447,6 +473,9 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
     const before = [...toneMocks.parts];
 
     act(() => {
@@ -460,7 +489,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     // only verify the rebuild guard didn't fire.
   });
 
-  it("disposes everything on pause", () => {
+  it("disposes everything on pause", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -470,6 +499,9 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
     expect(toneMocks.parts.every((p) => !p.disposed)).toBe(true);
 
     act(() => {
@@ -496,7 +528,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
   });
 
   describe("progressionPlaybackLoadingAtom integration", () => {
-    it("flips loading true at Effect 1 build entry, false on first chord-onset", () => {
+    it("flips loading true at Effect 1 build entry, false on first chord-onset", async () => {
       const store = makeAtomStore([
         [rootNoteAtom, "C"],
         [scaleNameAtom, "major"],
@@ -507,15 +539,23 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       store.set(setProgressionPlayingAtom, true);
       renderWithStore(<Harness />, store);
 
-      // After Effect 1 builds Parts but before any audio callback fires: loading is true.
+      // After Effect 1 starts async load: loading is true via setLoading(true).
       expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
 
+      // Wait until Parts are built, then find the chord-onset Part.
+      await vi.waitFor(() => {
+        const found = toneMocks.parts.find(
+          (p) =>
+            p.events.length === 3
+            && (p.events[0][1] as { isFirstBar?: boolean }).isFirstBar === true,
+        );
+        expect(found).toBeDefined();
+      });
       const onsets = toneMocks.parts.find(
         (p) =>
           p.events.length === 3
           && (p.events[0][1] as { isFirstBar?: boolean }).isFirstBar === true,
       );
-      expect(onsets).toBeDefined();
 
       // Fire first chord-onset — loading should flip to false.
       const audioTime = toneMocks.contextNowRef.fn() + 0.1;
@@ -531,7 +571,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
     });
 
-    it("clears loading when playback stops mid-load", () => {
+    it("clears loading when playback stops mid-load", async () => {
       const store = makeAtomStore([
         [rootNoteAtom, "C"],
         [scaleNameAtom, "major"],
@@ -541,6 +581,8 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       ]);
       store.set(setProgressionPlayingAtom, true);
       renderWithStore(<Harness />, store);
+
+      // loading is set true synchronously by the effect before the async import.
       expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
 
       // Stop without ever firing the chord-onset callback.
@@ -548,10 +590,13 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
         store.set(setProgressionPlayingAtom, false);
       });
 
-      expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+      // waitFor because the cleanup path runs after the dynamic import resolves.
+      await vi.waitFor(() => {
+        expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+      });
     });
 
-    it("clears loading when muted toggles true while loading", () => {
+    it("clears loading when muted toggles true while loading", async () => {
       const store = makeAtomStore([
         [rootNoteAtom, "C"],
         [scaleNameAtom, "major"],
@@ -567,7 +612,9 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
         store.set(isMutedAtom, true);
       });
 
-      expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+      await vi.waitFor(() => {
+        expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+      });
     });
   });
 
