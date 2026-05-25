@@ -1,11 +1,13 @@
 import { NOTES } from './theory';
-import { DEFAULT_OCTAVE, A4_FREQUENCY, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
-import * as Note from "@tonaljs/note";
+import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
+import * as Note from '@tonaljs/note';
 
 export interface NoteWithOctave {
   noteName: string;
   octave: number;
 }
+
+const parseNoteCache = new Map<string, NoteWithOctave | null>();
 
 /**
  * Parses a note string like "E4" or "A#3".
@@ -13,12 +15,23 @@ export interface NoteWithOctave {
  */
 export function parseNote(noteString: string): NoteWithOctave | null {
   if (!noteString) return null;
+  if (parseNoteCache.has(noteString)) {
+    return parseNoteCache.get(noteString) as NoteWithOctave | null;
+  }
+  
   const tonalNote = Note.get(noteString);
-  if (tonalNote.empty || tonalNote.oct === undefined) return null;
-  return {
+  if (tonalNote.empty || tonalNote.oct === undefined) {
+    parseNoteCache.set(noteString, null);
+    return null;
+  }
+  
+  const result = {
     noteName: tonalNote.letter + (tonalNote.acc || ""),
     octave: tonalNote.oct,
   };
+  
+  parseNoteCache.set(noteString, result);
+  return result;
 }
 
 // Standard Tuning from highest string (1st, thinnest) to lowest string (6th, thickest)
@@ -61,34 +74,28 @@ export function getFretNoteWithOctave(openStringNote: string, fretNumber: number
 
 /**
  * Returns the frequency in Hz for a given note string (e.g. "A4").
- * Backed by Tonal's `Note.freq` (A4 = 440 Hz equal temperament). Falls
- * back to A4 when the input cannot be parsed, matching the legacy
- * behavior that used `{ noteName: "A", octave: DEFAULT_OCTAVE }`.
  */
 export function getNoteFrequency(noteStringWithOctave: string): number {
-  return Note.freq(noteStringWithOctave) ?? A4_FREQUENCY;
+  const parsed = parseNote(noteStringWithOctave) ?? { noteName: "A", octave: DEFAULT_OCTAVE };
+  const noteIndex = NOTES.indexOf(parsed.noteName);
+  // C0 is 0. A4 is 57 (since A is index 9).
+  const absoluteDistance = (parsed.octave * 12) + noteIndex;
+  const halfStepsFromA4 = absoluteDistance - A4_ABS_DISTANCE;
+  return A4_FREQUENCY * Math.pow(2, halfStepsFromA4 / 12);
 }
-
-const fretboardCache = new Map<string, string[][]>();
 
 /**
  * Returns a 2D array representing the fretboard.
  * Array of strings (top/thinnest to bottom/thickest), each containing an array of notes from fret 0 to maxFret.
  */
 export function getFretboardNotes(tuning: string[], frets: number = 24): string[][] {
-  const key = `${tuning.join(',')}|${frets}`;
-  let cached = fretboardCache.get(key);
-  if (!cached) {
-    cached = tuning.map(stringNote => {
-      const stringNotes = [];
-      for (let currentFret = 0; currentFret <= frets; currentFret++) {
-        stringNotes.push(getFretNote(stringNote, currentFret));
-      }
-      return stringNotes;
-    });
-    fretboardCache.set(key, cached);
-  }
-  return cached;
+  return tuning.map(stringNote => {
+    const stringNotes = [];
+    for (let currentFret = 0; currentFret <= frets; currentFret++) {
+      stringNotes.push(getFretNote(stringNote, currentFret));
+    }
+    return stringNotes;
+  });
 }
 
 // Common fret marker positions for rendering dots

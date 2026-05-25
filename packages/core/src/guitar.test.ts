@@ -10,6 +10,14 @@ import {
 } from './guitar';
 import { MAX_FRET } from './constants';
 
+describe('parseNote caching', () => {
+  it('returns the exact same parsed object instance for identical inputs', () => {
+    const note1 = parseNote('E4');
+    const note2 = parseNote('E4');
+    expect(note1).toBe(note2); // reference equality proves cache hit
+  });
+});
+
 describe('parseNote', () => {
   it('parses note with octave', () => {
     expect(parseNote('E4')).toEqual({ noteName: 'E', octave: 4 });
@@ -126,13 +134,5 @@ describe('STANDARD_FRET_MARKERS', () => {
     expect(STANDARD_FRET_MARKERS).toContain(5);
     expect(STANDARD_FRET_MARKERS).toContain(7);
     expect(STANDARD_FRET_MARKERS).toContain(12);
-  });
-});
-
-describe('getFretboardNotes caching', () => {
-  it('returns the same array instance for identical tuning and frets', () => {
-    const layout1 = getFretboardNotes(['E4', 'B3'], 24);
-    const layout2 = getFretboardNotes(['E4', 'B3'], 24);
-    expect(layout1).toBe(layout2); // reference equality
   });
 });
