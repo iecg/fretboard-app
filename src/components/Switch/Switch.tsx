@@ -1,5 +1,5 @@
+import * as RadixSwitch from "@radix-ui/react-switch";
 import clsx from "clsx";
-import type { KeyboardEvent } from "react";
 import styles from "./Switch.module.css";
 
 type SwitchTone = "cyan" | "warm";
@@ -30,27 +30,17 @@ export function Switch({
   id,
   className,
 }: SwitchProps) {
-  function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
-    if (disabled) return;
-    if ((event.key === " " || event.key === "Enter") && !event.repeat) {
-      event.preventDefault();
-      onChange(!checked);
-    }
-  }
-
   return (
-    <button
-      type="button"
-      role="switch"
+    <RadixSwitch.Root
       id={id}
-      aria-checked={checked}
-      aria-label={label}
+      checked={checked}
+      onCheckedChange={onChange}
       disabled={disabled}
-      data-on={checked ? "" : undefined}
+      aria-label={label}
       data-tone={tone}
       className={clsx(styles.switch, className)}
-      onClick={() => onChange(!checked)}
-      onKeyDown={handleKeyDown}
-    />
+    >
+      <RadixSwitch.Thumb className={styles.thumb} />
+    </RadixSwitch.Root>
   );
 }
