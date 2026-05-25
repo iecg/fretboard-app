@@ -20,7 +20,6 @@ import { AppHeader } from "./components/AppHeader/AppHeader";
 import { HeaderTransportCluster } from "./components/HeaderTransportCluster/HeaderTransportCluster";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
-import { Inspector } from "./components/Inspector/Inspector";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { StatusBar } from "./components/StatusBar/StatusBar";
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
@@ -35,6 +34,9 @@ import "./styles/App.css";
 const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/SettingsOverlay"));
 const HelpModal = lazy(() =>
   import("./components/HelpModal/HelpModal").then((m) => ({ default: m.HelpModal }))
+);
+const Inspector = lazy(() =>
+  import("./components/Inspector/Inspector").then((m) => ({ default: m.Inspector }))
 );
 
 function AppContent() {
