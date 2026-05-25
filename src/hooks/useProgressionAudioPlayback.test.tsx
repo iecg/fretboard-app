@@ -103,6 +103,14 @@ const toneMocks = vi.hoisted(() => {
     timeSignature: 4,
   };
 
+  // Default schedule impl fires the callback synchronously so tests observe
+  // the deferred Jotai write without juggling rAF or fake timers.
+  const drawSchedule = vi.fn((cb: () => void) => {
+    cb();
+  });
+  const drawCancel = vi.fn();
+  const draw = { expiration: 5, schedule: drawSchedule, cancel: drawCancel };
+
   return {
     contextNowRef,
     parts,
@@ -110,6 +118,7 @@ const toneMocks = vi.hoisted(() => {
     Part: PartCtor as unknown as new (...args: unknown[]) => unknown,
     Loop: LoopCtor as unknown as new (...args: unknown[]) => unknown,
     getTransport: vi.fn(() => transport),
+    getDraw: vi.fn(() => draw),
     getContext: vi.fn(() => ({
       now: () => contextNowRef.fn(),
       immediate: () => contextNowRef.fn(),
@@ -117,12 +126,15 @@ const toneMocks = vi.hoisted(() => {
     now: vi.fn(() => contextNowRef.fn()),
     setContext: vi.fn(),
     transport,
+    drawSchedule,
+    drawCancel,
   };
 });
 vi.mock("tone", () => ({
   Part: toneMocks.Part,
   Loop: toneMocks.Loop,
   getTransport: toneMocks.getTransport,
+  getDraw: toneMocks.getDraw,
   getContext: toneMocks.getContext,
   now: toneMocks.now,
   setContext: toneMocks.setContext,
@@ -150,6 +162,8 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     localStorage.clear();
     toneMocks.parts.length = 0;
     toneMocks.loops.length = 0;
+    toneMocks.drawSchedule.mockClear();
+    toneMocks.drawCancel.mockClear();
     _resetTimelineForTests();
     _resetProgressionAudioForTests();
     const audioContext = {
@@ -235,15 +249,35 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(onsets).toBeDefined();
     expect(store.get(chordRootAtom)).toBe("C");
 
-    // Fire chord-onset event for step 1 (G). Pass audioTime = "now" so the
-    // production code's lookahead delta `audioTime - immediate()` collapses
-    // to 0 and the Jotai write isn't deferred behind fake timers. This
-    // mirrors what Tone does in real playback when context.currentTime
-    // catches up to the scheduled event's time.
+    // Fire chord-onset event for step 1 (G). The orchestrator defers the
+    // Jotai write through Tone.Draw.schedule(cb, audioTime); the mock fires
+    // the callback synchronously so we can observe the state advance here.
+    const audioTime = toneMocks.contextNowRef.fn() + 0.1;
     act(() => {
-      onsets!.callback(toneMocks.contextNowRef.fn(), onsets!.events[1][1]);
+      onsets!.callback(audioTime, onsets!.events[1][1]);
     });
+    expect(toneMocks.drawSchedule).toHaveBeenCalledWith(expect.any(Function), audioTime);
     expect(store.get(chordRootAtom)).toBe("G");
+  });
+
+  // Regression guard for the 2026-05-25 P2-T2 swap (setTimeout → Tone.Draw).
+  // Pairs with the bus.ts guard that locks Draw.expiration to 5s; together
+  // they prevent a regression to the 3fa9ce5 stall (0.25s default expiration
+  // silently dropping the advance under heavy main-thread load).
+  it("source defers chord-overlay advance via Tone.Draw, not setTimeout", () => {
+    const raw = readFileSync(
+      resolve(process.cwd(), "src/hooks/useProgressionAudioPlayback.ts"),
+      "utf8",
+    );
+    const code = raw
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split("\n")
+      .map((l) => l.replace(/\/\/.*$/, ""))
+      .join("\n");
+    expect(code).not.toMatch(/setTimeout/);
+    expect(code).not.toMatch(/pendingAdvanceTimeouts/);
+    expect(code).not.toMatch(/\bstartTransition\b/);
+    expect(code).toMatch(/getDraw\(\)\.schedule/);
   });
 
   it("disposes ALL primitives and rebuilds from 0 when steps change mid-play", () => {
@@ -393,19 +427,4 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(toneMocks.loops).toHaveLength(0);
   });
 
-  // Regression guard for the 2026-05-25 progression-stall bug.
-  it("does NOT wrap advanceProgressionPlayback in Tone.Draw or startTransition", () => {
-    const raw = readFileSync(
-      resolve(process.cwd(), "src/hooks/useProgressionAudioPlayback.ts"),
-      "utf8",
-    );
-    const code = raw
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .split("\n")
-      .map((l) => l.replace(/\/\/.*$/, ""))
-      .join("\n");
-    expect(code).not.toMatch(/Draw\.schedule/);
-    expect(code).not.toMatch(/\bstartTransition\b/);
-    expect(code).not.toMatch(/from\s+["']tone["'][^;]*\bDraw\b/);
-  });
 });

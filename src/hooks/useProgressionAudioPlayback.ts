@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { getContext, getTransport } from "tone";
+import { getDraw, getTransport } from "tone";
 import {
   ensureProgressionAudio,
   resumeProgressionAudio,
@@ -101,11 +101,12 @@ function disposeAll(prims: PlaybackPrimitives | null) {
  * edits fall through Effect 1's full rebuild path.
  *
  * The chord-onset Part owns the React activeProgressionStepIndex advance,
- * deferred by the Tone lookahead via plain setTimeout so the visual
- * chord-overlay swap aligns with audio onset. NOT Tone.Draw.schedule —
- * its 250ms expiration silently drops events under heavy main-thread
- * load and would stall playback. NOT startTransition — it would defer
- * the Jotai write that the next-step React state depends on.
+ * deferred via Tone.Draw.schedule so the visual chord-overlay swap aligns
+ * with audio onset on the nearest animation frame. Draw.expiration is
+ * raised to 5s in bus.ts (commit 183caeb) so heavy main-thread renders
+ * don't silently drop the advance — the 0.25s default was the 3fa9ce5
+ * regression. NOT startTransition (would deprioritize the Jotai write
+ * that the next-step React state depends on).
  */
 export function useProgressionAudioPlayback() {
   // Read every relevant atom at the top so deps arrays stay tidy.
@@ -244,10 +245,6 @@ export function useProgressionAudioPlayback() {
     const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
     const parts: ProgressionPartHandle[] = [];
     const totalDurationSec = built.totalDurationSec;
-    // Pending chord-overlay advance timeouts. Cleared on tear-down so a
-    // pause during the lookahead window doesn't write a stale active-step
-    // index after the orchestrator has torn down.
-    const pendingAdvanceTimeouts = new Set<number>();
 
     // 1. Chord-onset Part — drives React activeProgressionStepIndex.
     const chordOnsetPart = createProgressionPart<ChordOnsetEvent>({
@@ -264,24 +261,12 @@ export function useProgressionAudioPlayback() {
           totalDurationSec,
         );
         if (event.isFirstBar) {
-          // Defer the Jotai write by the Tone lookahead delta so the chord
-          // overlay React state flips at AUDIO ONSET, not at the
-          // ~lookAhead-seconds-early callback fire time. Plain setTimeout —
-          // no Tone.Draw (250ms expiration silently drops events under heavy
-          // main-thread load → stall), no startTransition (would deprioritize
-          // the Jotai write that the next-step useEffect chain depends on).
-          // See commit 4f50968 for the original visual-leads-audio symptom.
-          const rawNow = getContext().immediate();
-          const delayMs = Math.max(0, (audioTime - rawNow) * 1000);
-          if (delayMs <= 0) {
-            setActiveStepIndex(event.stepIndex);
-          } else {
-            const id = window.setTimeout(() => {
-              pendingAdvanceTimeouts.delete(id);
-              setActiveStepIndex(event.stepIndex);
-            }, delayMs);
-            pendingAdvanceTimeouts.add(id);
-          }
+          // Visual-audio alignment via Tone.Draw — schedules on the
+          // nearest animation frame at audioTime. Draw.expiration is
+          // raised to 5s in bus.ts so heavy main-thread renders don't
+          // silently drop the advance (the 0.25s default was the
+          // 3fa9ce5 regression; see commit history).
+          getDraw().schedule(() => setActiveStepIndex(event.stepIndex), audioTime);
         }
       },
     });
@@ -383,8 +368,9 @@ export function useProgressionAudioPlayback() {
 
     primsRef.current = { parts, loop: metronome, endEventId };
     return () => {
-      pendingAdvanceTimeouts.forEach((id) => window.clearTimeout(id));
-      pendingAdvanceTimeouts.clear();
+      // Cancel any queued Draw callbacks so a paused-mid-lookahead advance
+      // doesn't write a stale active-step index after dispose.
+      getDraw().cancel();
       disposeAll(primsRef.current);
       primsRef.current = null;
     };
