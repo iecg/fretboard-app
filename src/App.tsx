@@ -22,7 +22,6 @@ import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 
-import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -40,6 +39,9 @@ const Inspector = lazy(() =>
 );
 const StatusBar = lazy(() =>
   import("./components/StatusBar/StatusBar").then((m) => ({ default: m.StatusBar }))
+);
+const ProgressionSummarySlot = lazy(() =>
+  import("./components/ProgressionSummarySlot/ProgressionSummarySlot").then((m) => ({ default: m.ProgressionSummarySlot }))
 );
 
 function AppContent() {
@@ -192,7 +194,11 @@ function AppContent() {
           }
         />
       }
-      summary={<ProgressionSummarySlot />}
+      summary={
+        <Suspense fallback={null}>
+          <ProgressionSummarySlot />
+        </Suspense>
+      }
       statusBar={
         <Suspense fallback={null}>
           <StatusBar />
