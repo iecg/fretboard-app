@@ -81,9 +81,6 @@ interface FretboardProps {
 }
 
 export function Fretboard(props: FretboardProps) {
-  // TODO(react-compiler): It intentionally disables exhaustive-deps for stable refs 
-  // in specific useMemo blocks which confuses the compiler's auto-memoization logic.
-  'use no memo';
   const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
 
@@ -185,16 +182,21 @@ export function Fretboard(props: FretboardProps) {
     return () => cancelAnimationFrame(id);
   }, [effectiveZoom, totalColumns, containerWidth]);
 
+  // Keep the latest geometry decoupled from the centering effect to avoid jumpy scrolling
+  const geometryRef = useRef({ effectiveZoom, totalColumns, stringRowPx, startFret, endFret });
+  useLayoutEffect(() => {
+    geometryRef.current = { effectiveZoom, totalColumns, stringRowPx, startFret, endFret };
+  });
+
   useLayoutEffect(() => {
     if (!autoCenterTarget) return;
     const el = scrollRef.current;
     if (!el) return;
-    const zoom = effectiveZoom;
     const containerW = el.clientWidth;
     if (containerW <= 0) return;
 
-    // Match tapered fret coordinates from FretboardSVG for accurate scroll targeting.
-    const neckWidth = totalColumns * zoom;
+    const { effectiveZoom, totalColumns, stringRowPx, startFret, endFret } = geometryRef.current;
+    const neckWidth = totalColumns * effectiveZoom;
     const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
     
     const { openColumnWidth, scaleLeftAnchor, scalePx } = getFretboardScale(
@@ -212,8 +214,6 @@ export function Fretboard(props: FretboardProps) {
     const shapeCenter = (shapeLeft + shapeRight) / 2;
 
     el.scrollTo({ left: Math.max(0, shapeCenter - containerW / 2), behavior: "smooth" });
-  // eslint-disable-next-line react-compiler/react-compiler
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- trigger only on target/key changes; geometry derived from current values
   }, [autoCenterTarget, recenterKey]);
 
   const updateCursor = useCallback((dragging: boolean) => {
