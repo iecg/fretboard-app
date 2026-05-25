@@ -58,7 +58,7 @@ export const es: Dictionary = {
     showOnBoard: "Mostrar en mástil",
     fullChordsHintSupported: "Muestra digitaciones CAGED canónicas en lugar de notas sueltas del acorde.",
     fullChordsHintNon6String: "Acordes completos solo admite afinaciones de 6 cuerdas.",
-    fullChordsHintUnsupportedType: "Acordes completos solo admite Tríada Mayor, Tríada Menor y Séptima Dominante.",
+    fullChordsHintUnsupportedType: "Acordes completos solo admite tríadas mayores y menores y acordes de séptima dominante.",
     groupTime: "Compás",
     groupProgression: "Progresión",
     groupChords: "Acordes",

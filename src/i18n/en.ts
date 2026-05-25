@@ -58,7 +58,7 @@ export const en: Dictionary = {
     showOnBoard: "Show on Board",
     fullChordsHintSupported: "Show canonical CAGED voicings instead of scattered chord tones.",
     fullChordsHintNon6String: "Full Chords currently supports 6-string tunings only.",
-    fullChordsHintUnsupportedType: "Full Chords currently supports Major Triad, Minor Triad, and Dominant 7th.",
+    fullChordsHintUnsupportedType: "Full Chords currently supports major and minor triads and dominant seventh chords.",
     groupTime: "Time",
     groupProgression: "Progression",
     groupChords: "Chords",

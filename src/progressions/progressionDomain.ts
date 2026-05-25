@@ -1,6 +1,7 @@
 import {
   CHORD_DEFINITIONS,
   formatAccidental,
+  getChordDisplayLabel,
   getDegreeSequence,
   getDiatonicChord,
   getNoteDisplay,
@@ -564,7 +565,7 @@ export function resolveProgressionStep(
     quality,
     diatonicQuality,
     label: step.degree,
-    resolvedChordLabel: `${rootLabel} ${quality}`,
+    resolvedChordLabel: `${rootLabel} ${getChordDisplayLabel(quality)}`,
     shortChordLabel: formatChordShortLabel(rootLabel, quality),
     unavailable: false,
     unavailableReason: null,

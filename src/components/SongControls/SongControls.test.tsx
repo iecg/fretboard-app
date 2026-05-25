@@ -595,7 +595,7 @@ describe("SongControls grid layout", () => {
       .querySelector('[class*="editor-header"]') as HTMLElement | null;
     expect(editorHeader).toBeInTheDocument();
     // Chord label shows the resolved chord name
-    expect(within(editorHeader!).getByText("C M")).toBeInTheDocument();
+    expect(within(editorHeader!).getByText("C major")).toBeInTheDocument();
     // Counter shows "Chord 1 / 2" (BASE_SEEDS has 2 steps, index 0 active)
     expect(within(editorHeader!).getByText(/Chord 1 \/ 2/i)).toBeInTheDocument();
     // Pill is present (aria-hidden, so not queryable by accessible name)
