@@ -3,7 +3,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import { beatsPerBarAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { beatsPerBarAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackLoadingAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { TransportBar } from "./TransportBar";
 
 const fourStepProgression = [
@@ -112,5 +112,19 @@ describe("TransportBar", () => {
     renderWithAtoms(<TransportBar />, [...playableAtoms]);
     expect(screen.queryByRole("button", { name: /Increase Tempo/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Decrease Tempo/ })).toBeNull();
+  });
+
+  it("shows a spinner in the play button while progression is loading", () => {
+    const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
+    act(() => { store.set(setProgressionPlayingAtom, true); });
+    renderWithStore(<TransportBar />, store);
+    expect(screen.getByTestId("transport-play-spinner")).toBeInTheDocument();
+  });
+
+  it("hides the spinner once loading clears", () => {
+    const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, false]]);
+    act(() => { store.set(setProgressionPlayingAtom, true); });
+    renderWithStore(<TransportBar />, store);
+    expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
   });
 });

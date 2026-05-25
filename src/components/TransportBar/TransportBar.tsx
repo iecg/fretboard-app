@@ -3,6 +3,7 @@ import {
   AudioWaveform,
   Drum,
   Guitar,
+  Loader2,
   Pause,
   Play,
   Repeat,
@@ -10,6 +11,8 @@ import {
   SkipForward,
   Timer,
 } from "lucide-react";
+import { useAtomValue } from "jotai";
+import { progressionPlaybackLoadingAtom } from "../../store/progressionAtoms";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import styles from "./TransportBar.module.css";
 
@@ -36,6 +39,7 @@ export function TransportBar() {
     setProgressionMetronomeEnabled,
   } = useProgressionState();
 
+  const progressionPlaybackLoading = useAtomValue(progressionPlaybackLoadingAtom);
   const canPlay = !progressionPlaybackBlockedReason;
 
   return (
@@ -67,8 +71,17 @@ export function TransportBar() {
           onClick={() => setProgressionPlaying(!progressionPlaying)}
           disabled={!canPlay}
           aria-label={progressionPlaying ? "Pause progression" : "Play progression"}
+          aria-busy={progressionPlaybackLoading || undefined}
         >
-          {progressionPlaying ? (
+          {progressionPlaybackLoading ? (
+            <Loader2
+              size={14}
+              strokeWidth={2.4}
+              aria-hidden="true"
+              className={styles.spinner}
+              data-testid="transport-play-spinner"
+            />
+          ) : progressionPlaying ? (
             <Pause size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
           ) : (
             <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
