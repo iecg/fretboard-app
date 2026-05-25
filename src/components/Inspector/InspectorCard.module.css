@@ -89,3 +89,16 @@
      toggle still convey the meaning. */
   display: none;
 }
+
+.cardBody[data-locked="true"] {
+  opacity: 0.42;
+  cursor: not-allowed;
+  /* Outer body accepts pointer events so cursor + tooltip work; every direct
+     child has pointer-events:none so the user can't interact with anything
+     below. `inert` already covers focus + screen reader exclusion. */
+  pointer-events: auto;
+}
+
+.cardBody[data-locked="true"] > * {
+  pointer-events: none;
+}

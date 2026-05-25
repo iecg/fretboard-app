@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 import { Switch } from "../Switch/Switch";
+import { Tooltip } from "../Tooltip/Tooltip";
 import styles from "./InspectorCard.module.css";
 
 export interface InspectorCardProps {
@@ -25,6 +26,15 @@ export interface InspectorCardProps {
   actions?: ReactNode;
   /** Optional class merged onto the body (e.g. for cards that want full-bleed). */
   bodyClassName?: string;
+  /**
+   * When true, the card body becomes non-interactive (HTML5 `inert`) and
+   * visually dims. Pair with `lockedHint` to show a tooltip explaining
+   * how the user unlocks. Independent of `active` (which dims the body
+   * via the master toggle).
+   */
+  locked?: boolean;
+  /** Tooltip content shown when hovering the locked body. Required when `locked=true`. */
+  lockedHint?: ReactNode;
   /** Card body contents — typically a PropGrid. */
   children: ReactNode;
 }
@@ -49,11 +59,26 @@ export function InspectorCard({
   stateLabel,
   actions,
   bodyClassName,
+  locked = false,
+  lockedHint,
   children,
 }: InspectorCardProps) {
   const hasToggle = onToggle !== undefined && toggleLabel !== undefined && active !== undefined;
   // When there's no master toggle, `data-active` stays "true" — body never dims.
   const isActive = hasToggle ? active : true;
+
+  const body = (
+    <div
+      className={clsx(styles.cardBody, bodyClassName)}
+      data-locked={locked ? "true" : undefined}
+      // React 19 treats `inert` as a boolean attribute: pass `true` to add the
+      // attribute (rendered as inert="" in the DOM), omit/false to remove it.
+      inert={locked || undefined}
+    >
+      {children}
+    </div>
+  );
+
   return (
     <section
       className={styles.card}
@@ -79,7 +104,13 @@ export function InspectorCard({
         )}
         {actions ? <div className={styles.cardHeadActions}>{actions}</div> : null}
       </header>
-      <div className={clsx(styles.cardBody, bodyClassName)}>{children}</div>
+      {locked && lockedHint ? (
+        <Tooltip content={lockedHint}>
+          <div tabIndex={-1}>{body}</div>
+        </Tooltip>
+      ) : (
+        body
+      )}
     </section>
   );
 }
