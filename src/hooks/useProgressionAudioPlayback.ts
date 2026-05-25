@@ -29,6 +29,7 @@ import type {
   ChordOnsetEvent,
   ChordStrumEvent,
   DrumEvent,
+  MetronomeEvent,
   ProgressionPartHandle,
 } from "../progressions/audio/progressionAudioEngine";
 
@@ -86,6 +87,7 @@ export function useProgressionAudioPlayback() {
   const buildKey = useMemo(
     () =>
       JSON.stringify({
+        beatsPerBar, // metronome event stream is baked per meter; live changes require rebuild
         steps: steps.map((s) => ({
           root: s.root,
           quality: s.quality,
@@ -97,10 +99,9 @@ export function useProgressionAudioPlayback() {
         drumPatternId,
         drumVariations,
       }),
-    [steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
+    [beatsPerBar, steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
   );
   const instrumentRef = useRef(chordInstrument);
-  const beatsPerBarRef = useRef(beatsPerBar);
   const genRef = useRef(0);
 
   const buildInputsRef = useRef({
@@ -163,8 +164,8 @@ export function useProgressionAudioPlayback() {
       // Tone's default (120 BPM). On first play, Effects 2-4 fire while the
       // engine is still loading (`if (!engine) return;`), so the Transport
       // sits at its defaults until the user nudges any of these values.
-      // Initializing them here closes that gap — the metronome Loop("4n")
-      // and the chord/bass/drum Parts then share the same tick rate from
+      // Initializing them here closes that gap — all five Parts (chord-onset,
+      // chord-strum, bass, drums, metronome) share the same tick rate from
       // beat 1, eliminating the desync the user reported.
       eng.setPlaybackTempo(inputs.tempo);
       eng.setPlaybackSwing(inputs.swing);
@@ -247,15 +248,23 @@ export function useProgressionAudioPlayback() {
       drumPart.start(partStart, 0);
       parts.push(drumPart);
 
-      let beatCounter = 0;
-      const metronome = eng.createMetronomeLoop({
-        beatsPerBar: beatsPerBarRef.current,
-        onBeat: (beatTime) => {
-          beatCounter = (beatCounter % beatsPerBarRef.current) + 1;
-          eng.scheduleClick(audio.layers.metronome, beatTime, { accent: beatCounter === 1 });
+      // 5. Metronome Part — explicit per-beat events spanning totalDurationSec
+      //    so the loop wraps in lock-step with the chord/bass/drum parts.
+      //    Replaces the prior Tone.Loop("4n", ...) which fired on an
+      //    independent schedule and clicked past the loop end whenever
+      //    totalDurationSec didn't fall on a quarter-note boundary.
+      const metronomePart = eng.createProgressionPart<MetronomeEvent>({
+        events: built.metronome,
+        loop: inputs.loopEnabled,
+        loopEnd: totalDurationSec,
+        onEvent: (audioTime, value) => {
+          eng.scheduleClick(audio.layers.metronome, audioTime, {
+            accent: value.beatInBar === 1,
+          });
         },
       });
-      metronome.start(partStart);
+      metronomePart.start(partStart, 0);
+      parts.push(metronomePart);
 
       eng.getTransport().start();
 
@@ -267,7 +276,7 @@ export function useProgressionAudioPlayback() {
         );
       }
 
-      primsRef.current = { parts, loop: metronome, endEventId, totalDurationSec };
+      primsRef.current = { parts, endEventId, totalDurationSec };
     });
 
     const genRefSnapshot = genRef;
@@ -303,7 +312,6 @@ export function useProgressionAudioPlayback() {
   }, [swing]);
 
   useEffect(() => {
-    beatsPerBarRef.current = beatsPerBar;
     if (!engine) return;
     engine.setPlaybackTimeSignature(beatsPerBar);
   }, [beatsPerBar]);

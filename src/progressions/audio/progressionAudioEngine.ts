@@ -1,11 +1,9 @@
 import { getDraw, getTransport } from "tone";
-import type { MetronomeLoopHandle } from "./progressionMetronomeLoop";
 import type { ProgressionPartHandle } from "./progressionPart";
 
 export { ensureProgressionAudio, resumeProgressionAudio, restoreProgressionBus, silenceProgressionBus } from "./bus";
 export { buildAllLayersAsync } from "./buildAllLayers";
-export type { BassEvent, ChordOnsetEvent, ChordStrumEvent, DrumEvent } from "./buildAllLayers";
-export { createMetronomeLoop } from "./progressionMetronomeLoop";
+export type { BassEvent, ChordOnsetEvent, ChordStrumEvent, DrumEvent, MetronomeEvent } from "./buildAllLayers";
 export { createProgressionPart } from "./progressionPart";
 export { setLayerGain } from "./layerBuses";
 export { getChordVoice } from "./instruments/index";
@@ -14,11 +12,10 @@ export { scheduleHiHat, scheduleKick, scheduleRide, scheduleSnare } from "./drum
 export { scheduleClick } from "./metronome";
 export { clearTimeline, pauseTimeline, setActiveStep } from "./timeline";
 export { getDraw, getTransport };
-export type { MetronomeLoopHandle, ProgressionPartHandle };
+export type { ProgressionPartHandle };
 
 export interface PlaybackPrimitives {
   parts: ProgressionPartHandle[];
-  loop: MetronomeLoopHandle | null;
   endEventId: number | null;
   totalDurationSec: number;
 }
@@ -26,7 +23,6 @@ export interface PlaybackPrimitives {
 export function disposeAll(prims: PlaybackPrimitives | null): void {
   if (!prims) return;
   prims.parts.forEach((p) => p.dispose());
-  prims.loop?.dispose();
   if (prims.endEventId !== null) {
     getTransport().clear(prims.endEventId);
   }

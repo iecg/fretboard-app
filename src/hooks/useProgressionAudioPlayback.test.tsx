@@ -198,7 +198,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       }) as unknown as typeof AudioContext;
   });
 
-  it("constructs 4 Parts (chord-onsets + strums + bass + drums) and 1 Loop (metronome) on play start", async () => {
+  it("schedules the metronome as a 5th Tone.Part (not a Tone.Loop)", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -208,11 +208,31 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     ]);
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
-    // Effect 1 dispatches `getEngine()` (dynamic import); waitFor lets the
-    // microtasks resolve before we assert.
     await vi.waitFor(() => {
-      expect(toneMocks.parts).toHaveLength(4);
-      expect(toneMocks.loops).toHaveLength(1);
+      // 5 Parts: chord-onset, chord-strum, bass, drums, metronome.
+      expect(toneMocks.parts).toHaveLength(5);
+      expect(toneMocks.loops).toHaveLength(0);
+    });
+  });
+
+  it("metronome Part loopEnd matches totalDurationSec (loops in sync with chord parts)", async () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 3], // 3/4 time
+      [progressionLoopEnabledAtom, true],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+
+    await vi.waitFor(() => {
+      expect(toneMocks.parts).toHaveLength(5);
+    });
+    // Every Part's loopEnd equals totalDurationSec = 3 bars × 3 beats × 1 sec/beat = 9
+    toneMocks.parts.forEach((p) => {
+      expect(p.loopEnd).toBe(9);
     });
   });
 
@@ -374,7 +394,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     store.set(setProgressionPlayingAtom, true);
     renderWithStore(<Harness />, store);
     await vi.waitFor(() => {
-      expect(toneMocks.parts.length).toBe(4);
+      expect(toneMocks.parts.length).toBe(5);
     });
     const initialParts = [...toneMocks.parts];
     initialParts.forEach((p) => expect(p.loop).toBe(false));
