@@ -221,7 +221,7 @@ export function getModeTriads(modeName: string): readonly string[] | null {
   if (mode.empty) return null;
   let suffixes: string[];
   try {
-    suffixes = Mode.triads(tonalName);
+    suffixes = Mode.triads(tonalName, "");
   } catch {
     return null;
   }
