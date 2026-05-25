@@ -380,6 +380,17 @@ export const setProgressionActiveStepIndexAtom = atom(null, (get, set, index: nu
   set(activeProgressionStepIndexAtom, clampProgressionIndex(index, get(progressionStepsAtom)));
 });
 
+/**
+ * Atomic "stop": set playing=false AND active step index=0. The orchestrator's
+ * Effect 1 tear-down path will dispose the Tone Parts because playing flipped
+ * false; the activeIndex reset is what distinguishes Stop from Pause.
+ */
+export const stopProgressionPlaybackAtom = atom(null, (_get, set) => {
+  set(progressionPlayingStateAtom, false);
+  set(activeProgressionStepIndexAtom, 0);
+  set(progressionStepDeadlineAtom, null);
+});
+
 export const setProgressionPlayingAtom = atom(null, (get, set, playing: boolean) => {
   if (playing && get(progressionPlaybackBlockedReasonAtom)) {
     set(progressionPlayingStateAtom, false);

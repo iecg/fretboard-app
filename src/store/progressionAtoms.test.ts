@@ -22,6 +22,7 @@ import {
   resetProgressionAtomsAtom,
   setProgressionActiveStepIndexAtom,
   setProgressionPlayingAtom,
+  stopProgressionPlaybackAtom,
   totalProgressionBarsAtom,
   updateProgressionStepCachedDegreeAtom,
   updateProgressionStepDegreeAtom,
@@ -487,5 +488,25 @@ describe("progressionPlaybackLoadingAtom", () => {
     expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
     store.set(progressionPlaybackLoadingAtom, false);
     expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+  });
+});
+
+describe("stopProgressionPlaybackAtom", () => {
+  it("sets playing=false and activeIndex=0 atomically", () => {
+    const store = createStore();
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 3);
+
+    store.set(stopProgressionPlaybackAtom);
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+
+  it("is idempotent when already stopped at index 0", () => {
+    const store = createStore();
+    store.set(stopProgressionPlaybackAtom);
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
   });
 });
