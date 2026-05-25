@@ -70,6 +70,19 @@ function fullVoicings(params: GenerateVoicingsParams): Voicing[] {
  */
 export const CLOSE_VOICING_SPAN_LIMIT = 3;
 
+function getPermutations<T>(arr: T[]): T[][] {
+  if (arr.length <= 1) return [arr];
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i++) {
+    const current = arr[i];
+    const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+    for (const perm of getPermutations(remaining)) {
+      result.push([current, ...perm]);
+    }
+  }
+  return result;
+}
+
 /**
  * Generate Close voicings: 3/4/5-note polygons on adjacent strings, where each
  * polygon contains every chord tone (no skipped tones). Note count matches the
@@ -83,78 +96,96 @@ function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
   const rootIndex = NOTES.indexOf(chordRoot);
   if (!def || rootIndex < 0 || tuning.length !== 6) return [];
 
-  // Close voicings use 3..5 notes. Below 3 (e.g. dyads) the close concept does
-  // not apply — return [] so the UI cycle is empty.
   const voiceCount = def.members.length;
   if (voiceCount < 3 || voiceCount > 5) return [];
 
   const chordPCs = def.members.map((m) => (rootIndex + m.semitone) % 12);
-  const chordPCSet = new Set(chordPCs);
   const openMidis = tuning.map(openStringMidi);
   if (openMidis.some((m) => m === null)) return [];
-
-  const candidateFrets: Record<number, number[]> = {};
-  for (let s = 0; s < 6; s += 1) {
-    const open = openMidis[s] as number;
-    const frets: number[] = [];
-    for (let f = 0; f <= maxFret; f += 1) {
-      if (chordPCSet.has((open + f) % 12)) frets.push(f);
-    }
-    candidateFrets[s] = frets;
-  }
 
   const voicings: Voicing[] = [];
   const seen = new Set<string>();
 
-  for (let start = 0; start + voiceCount <= 6; start += 1) {
-    const run: number[] = [];
-    for (let i = 0; i < voiceCount; i += 1) run.push(start + i);
-
-    const dfs = (depth: number, picked: VoicingNote[]) => {
-      if (depth === run.length) {
-        // Every chord pitch class must be present exactly once.
-        const pcs = new Set(picked.map((n) => n.midi % 12));
-        if (pcs.size !== chordPCSet.size) return;
-        for (const pc of chordPCSet) if (!pcs.has(pc)) return;
-
-        // Reject voicings that mix an open string with high frets — these produce
-        // spread shapes that aren't really "close". An all-open or all-low chord
-        // (max fret < 5) is fine; a fully-fretted chord above the nut is fine.
-        const hasOpen = picked.some((n) => n.fretIndex === 0);
-        if (hasOpen) {
-          const maxFret = Math.max(...picked.map((n) => n.fretIndex));
-          if (maxFret >= 5) return;
-        }
-
-        // Raw fret-span gate.
-        const frettedFrets = picked
-          .map((n) => n.fretIndex)
-          .filter((f) => f > 0);
-        if (frettedFrets.length >= 2) {
-          const span =
-            Math.max(...frettedFrets) - Math.min(...frettedFrets);
-          if (span > CLOSE_VOICING_SPAN_LIMIT) return;
-        }
-
-        const sorted = [...picked].sort((a, b) => a.stringIndex - b.stringIndex);
-        const positionKeys = sorted.map((n) => `${n.stringIndex}-${n.fretIndex}`);
-        const key = positionKeys.join("|");
-        if (seen.has(key)) return;
-        seen.add(key);
-        voicings.push({ positionKeys, notes: sorted });
-        return;
-      }
-      const stringIndex = run[depth];
-      const open = openMidis[stringIndex] as number;
-      for (const fret of candidateFrets[stringIndex]) {
-        const midi = open + fret;
-        dfs(depth + 1, [
-          ...picked,
-          { stringIndex, fretIndex: fret, noteName: NOTES[midi % 12], midi },
-        ]);
-      }
-    };
-    dfs(0, []);
+  const stringSets: number[][] = [];
+  for (let start = 0; start + voiceCount <= 6; start++) {
+    const set = [];
+    for (let i = 0; i < voiceCount; i++) set.push(start + i);
+    stringSets.push(set);
   }
+
+  const pcPermutations = getPermutations(chordPCs);
+
+  for (const stringSet of stringSets) {
+    const openStrings = stringSet.map((s) => openMidis[s] as number);
+
+    for (const perm of pcPermutations) {
+      const baseFrets = perm.map((pc, i) => {
+        const openPc = openStrings[i] % 12;
+        return (pc - openPc + 12) % 12;
+      });
+
+      let minSpan = Infinity;
+      let bestFrets: number[] | null = null;
+      const combinations = 1 << voiceCount;
+      
+      for (let c = 0; c < combinations; c++) {
+        let minF = Infinity;
+        let maxF = -Infinity;
+        const currentFrets = [];
+        for (let i = 0; i < voiceCount; i++) {
+          const shift = (c & (1 << i)) !== 0 ? 12 : 0;
+          const f = baseFrets[i] + shift;
+          currentFrets.push(f);
+          if (f < minF) minF = f;
+          if (f > maxF) maxF = f;
+        }
+        const span = maxF - minF;
+        if (span < minSpan) {
+          minSpan = span;
+          bestFrets = currentFrets;
+        }
+      }
+
+      if (minSpan > CLOSE_VOICING_SPAN_LIMIT || !bestFrets) continue;
+
+      let minFret = Math.min(...bestFrets);
+      while (minFret >= 12) {
+        for (let i = 0; i < voiceCount; i++) bestFrets[i] -= 12;
+        minFret -= 12;
+      }
+
+      for (let octave = 0; octave * 12 <= maxFret; octave++) {
+        const instanceFrets = bestFrets.map((f) => f + octave * 12);
+        const highestFret = Math.max(...instanceFrets);
+
+        if (highestFret > maxFret) break;
+
+        const hasOpen = instanceFrets.some((f) => f === 0);
+        if (hasOpen && highestFret >= 5) continue;
+
+        const notes: VoicingNote[] = [];
+        for (let i = 0; i < voiceCount; i++) {
+          const stringIndex = stringSet[i];
+          const fretIndex = instanceFrets[i];
+          const midi = (openMidis[stringIndex] as number) + fretIndex;
+          notes.push({
+            stringIndex,
+            fretIndex,
+            noteName: NOTES[midi % 12],
+            midi,
+          });
+        }
+
+        const positionKeys = notes.map((n) => `${n.stringIndex}-${n.fretIndex}`);
+        const key = positionKeys.join("|");
+
+        if (!seen.has(key)) {
+          seen.add(key);
+          voicings.push({ positionKeys, notes });
+        }
+      }
+    }
+  }
+
   return voicings;
 }
