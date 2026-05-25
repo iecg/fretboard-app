@@ -1,10 +1,10 @@
 export type ProgressionLayer = "chord" | "bass" | "drums" | "metronome";
 
 export interface LayerBuses {
-  chord: AudioNode;
-  bass: AudioNode;
-  drums: AudioNode;
-  metronome: AudioNode;
+  chord: GainNode;
+  bass: GainNode;
+  drums: GainNode;
+  metronome: GainNode;
 }
 
 /**
@@ -17,11 +17,11 @@ export function buildLayerBuses(
   destination: AudioNode,
 ): LayerBuses {
   const layers: ProgressionLayer[] = ["chord", "bass", "drums", "metronome"];
-  const buses = {} as Record<ProgressionLayer, AudioNode>;
+  const buses = {} as Record<ProgressionLayer, GainNode>;
   for (const layer of layers) {
     const gain = ctx.createGain();
     gain.connect(destination);
-    buses[layer] = gain as unknown as AudioNode;
+    buses[layer] = gain;
   }
   return buses as LayerBuses;
 }
@@ -36,6 +36,5 @@ export function setLayerGain(
   layer: ProgressionLayer,
   enabled: boolean,
 ): void {
-  const node = buses[layer] as unknown as { gain: { value: number } };
-  node.gain.value = enabled ? 1 : 0;
+  buses[layer].gain.value = enabled ? 1 : 0;
 }

@@ -32,8 +32,8 @@ describe("layerBuses", () => {
     const { ctx } = fakeAudioContext();
     const buses = buildLayerBuses(ctx, {} as AudioNode);
     setLayerGain(buses, "drums", false);
-    expect((buses.drums as unknown as { gain: { value: number } }).gain.value).toBe(0);
+    expect(buses.drums.gain.value).toBe(0);
     setLayerGain(buses, "drums", true);
-    expect((buses.drums as unknown as { gain: { value: number } }).gain.value).toBe(1);
+    expect(buses.drums.gain.value).toBe(1);
   });
 });

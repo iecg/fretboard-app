@@ -16,6 +16,8 @@ export interface CreateMetronomeLoopOptions {
  * Thin wrapper over `Tone.Loop` for the metronome — a perfectly periodic
  * once-per-beat callback. Beat numbering is owned by the wrapper so the
  * caller's onBeat closure stays free of cycle counters.
+ * The beat counter resets to 1 on construction; dispose and rebuild the
+ * Loop to resync the downbeat at a new start position.
  */
 export function createMetronomeLoop(
   opts: CreateMetronomeLoopOptions,

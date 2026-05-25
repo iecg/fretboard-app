@@ -5,7 +5,8 @@ export interface ProgressionPartHandle {
    *  `offset` seconds (default 0). Forwards verbatim to Tone.Part.start. */
   start: (time?: number, offset?: number) => void;
   /** Live-toggle loop without disposing. Optionally updates loopEnd at the
-   *  same time. Used by the orchestrator's loop-toggle effect. */
+   *  same time. Used by the orchestrator's loop-toggle effect.
+   *  Omitting `loopEnd` leaves the prior value intact. */
   setLoop: (loop: boolean, loopEnd?: number) => void;
   /** Stop and dispose. Idempotent. */
   dispose: () => void;
