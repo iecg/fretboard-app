@@ -11,6 +11,7 @@
  * a click handler (e.g. the play button) before scheduling.
  */
 
+import { buildLayerBuses, type LayerBuses } from "./layerBuses";
 import { _resetToneBusForTests, bindToneToProgressionContext } from "./toneBus";
 
 const BUS_GAIN = 0.55;
@@ -19,6 +20,7 @@ const RESUME_RAMP_SECONDS = 0.04;
 
 let ctx: AudioContext | null = null;
 let bus: GainNode | null = null;
+let layers: LayerBuses | null = null;
 let unsupported = false;
 
 function getAudioContextConstructor(): (new () => AudioContext) | undefined {
@@ -31,7 +33,10 @@ function getAudioContextConstructor(): (new () => AudioContext) | undefined {
 
 export interface ProgressionAudio {
   ctx: AudioContext;
+  /** Parent gain — all four layer buses connect here, then to ctx.destination. */
   bus: GainNode;
+  /** Per-layer gain nodes. Sequencer callbacks connect their voices here. */
+  layers: LayerBuses;
 }
 
 /**
@@ -41,7 +46,7 @@ export interface ProgressionAudio {
  */
 export function ensureProgressionAudio(): ProgressionAudio | null {
   if (unsupported) return null;
-  if (ctx && bus) return { ctx, bus };
+  if (ctx && bus && layers) return { ctx, bus, layers };
 
   const Ctor = getAudioContextConstructor();
   if (!Ctor) {
@@ -54,12 +59,14 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     bus = ctx.createGain();
     bus.gain.value = BUS_GAIN;
     bus.connect(ctx.destination);
-    bindToneToProgressionContext({ ctx, bus });
-    return { ctx, bus };
+    layers = buildLayerBuses(ctx, bus);
+    bindToneToProgressionContext({ ctx, bus, layers });
+    return { ctx, bus, layers };
   } catch {
     unsupported = true;
     ctx = null;
     bus = null;
+    layers = null;
     return null;
   }
 }
@@ -106,6 +113,7 @@ export function restoreProgressionBus(): void {
 export function _resetProgressionAudioForTests(): void {
   ctx = null;
   bus = null;
+  layers = null;
   unsupported = false;
   _resetToneBusForTests();
 }
