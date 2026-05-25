@@ -9,7 +9,7 @@ import { chordScopeToPositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { progressionStepsAtom } from "../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
-import { voicingTypeAtom, chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+import { voicingAtom, chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
 
 beforeEach(() => {
   localStorage.clear();
@@ -129,7 +129,7 @@ describe("useFretboardState — CAGED shape filtering and truncation", () => {
       [chordScopeToPositionAtom, true],
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [voicingTypeAtom, "caged"],
+      [voicingAtom, "caged"],
       [chordOverlayHiddenAtom, false],
       [progressionStepsAtom, [
         {
@@ -160,7 +160,7 @@ describe("useFretboardState — CAGED shape filtering and truncation", () => {
       [chordScopeToPositionAtom, true],
       [rootNoteAtom, "C"],
       [scaleNameAtom, "Major"],
-      [voicingTypeAtom, "caged"],
+      [voicingAtom, "caged"],
       [chordOverlayHiddenAtom, false],
       [progressionStepsAtom, [
         {
