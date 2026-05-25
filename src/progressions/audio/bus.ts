@@ -11,6 +11,7 @@
  * a click handler (e.g. the play button) before scheduling.
  */
 
+import { getDraw } from "tone";
 import { buildLayerBuses, type LayerBuses } from "./layerBuses";
 import { _resetToneBusForTests, bindToneToProgressionContext } from "./toneBus";
 
@@ -61,6 +62,12 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     bus.connect(ctx.destination);
     layers = buildLayerBuses(ctx, bus);
     bindToneToProgressionContext({ ctx, bus, layers });
+    // Default Draw.expiration is 250ms — under heavy main-thread load
+    // (e.g. a chord-boundary Fretboard re-render) that window is too tight
+    // and the visual advance is silently dropped. Chord boundaries are
+    // >=0.5s at sane tempos; 5s gives a 10x margin for stalls without
+    // ever firing stale.
+    getDraw().expiration = 5;
     return { ctx, bus, layers };
   } catch {
     unsupported = true;
