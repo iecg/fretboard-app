@@ -92,7 +92,7 @@ const progressionStepsStorage = createStorage<ProgressionStep[]>({
 });
 
 export const progressionStepsAtom = atomWithStorage<ProgressionStep[]>(
-  k("progressionSteps"),
+  k("progressionSteps.v2"),
   DEFAULT_STEPS,
   progressionStepsStorage,
   GET_ON_INIT,

@@ -9,7 +9,6 @@ import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
 import * as Key from "@tonaljs/key";
 import {
-  scaleNameToTonal,
   normalizeToSharps,
   getChordSemitonesFromTonal,
 } from "./lib/tonal";
@@ -390,7 +389,7 @@ export function getIntervalNotes(
 }
 
 export function getScaleNotes(rootNote: string, scaleName: string): string[] {
-  const tonalName = scaleNameToTonal(normalizeScaleName(scaleName));
+  const tonalName = normalizeScaleName(scaleName);
   if (!tonalName) return [];
   if (getNoteIndex(rootNote) === -1) return [];
   const tonalScale = Scale.get(`${rootNote} ${tonalName}`);

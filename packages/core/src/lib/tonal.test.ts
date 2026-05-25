@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  chordQualityToTonal,
-  tonalToChordQuality,
-  scaleNameToTonal,
-  tonalToScaleName,
   normalizeToSharps,
   getScaleSemitonesFromTonal,
   getChordSemitonesFromTonal,
@@ -11,57 +7,6 @@ import {
   getChordDisplayLabel,
   getScaleDisplayLabel,
 } from "./tonal";
-
-describe("chord-name adapter", () => {
-  it("maps Major Triad to M", () => {
-    expect(chordQualityToTonal("M")).toBe("M");
-  });
-  it("maps Minor Triad to m", () => {
-    expect(chordQualityToTonal("m")).toBe("m");
-  });
-  it("maps Dominant 7th to 7", () => {
-    expect(chordQualityToTonal("7")).toBe("7");
-  });
-  it("maps Diminished 7th to dim7", () => {
-    expect(chordQualityToTonal("dim7")).toBe("dim7");
-  });
-  it("maps Half-Diminished 7th to m7b5", () => {
-    expect(chordQualityToTonal("m7b5")).toBe("m7b5");
-  });
-  it("maps Power Chord (5) to 5", () => {
-    expect(chordQualityToTonal("5")).toBe("5");
-  });
-  it("returns undefined for unknown quality", () => {
-    expect(chordQualityToTonal("Bogus Chord")).toBeUndefined();
-  });
-  it("round-trips Major Triad", () => {
-    expect(tonalToChordQuality("M")).toBe("M");
-  });
-  it("round-trips Minor 7th", () => {
-    expect(tonalToChordQuality("m7")).toBe("m7");
-  });
-});
-
-describe("scale-name adapter", () => {
-  it("maps Major to major", () => {
-    expect(scaleNameToTonal("major")).toBe("major");
-  });
-  it("maps Natural Minor to minor", () => {
-    expect(scaleNameToTonal("minor")).toBe("minor");
-  });
-  it("maps Harmonic Minor to harmonic minor", () => {
-    expect(scaleNameToTonal("harmonic minor")).toBe("harmonic minor");
-  });
-  it("maps Major Pentatonic to major pentatonic", () => {
-    expect(scaleNameToTonal("major pentatonic")).toBe("major pentatonic");
-  });
-  it("maps Dorian to dorian", () => {
-    expect(scaleNameToTonal("dorian")).toBe("dorian");
-  });
-  it("round-trips Major", () => {
-    expect(tonalToScaleName("major")).toBe("major");
-  });
-});
 
 describe("normalizeToSharps", () => {
   it("converts Bb to A#", () => {

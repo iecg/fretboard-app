@@ -1,9 +1,16 @@
 /**
- * Adapter between FretFlow's verbose music-theory names and Tonal's symbol names.
+ * Internal utility helpers built on top of Tonal modules. Provides:
  *
- * FretFlow chose verbose names ("Major Triad", "minor", "major pentatonic")
- * for user-facing clarity; Tonal uses compact symbols ("M", "minor", "major pentatonic").
- * Every cross-module call into Tonal passes through this file.
+ * - `normalizeToSharps(note)` — coerce Tonal's mixed-spelling output
+ *   to FretFlow's sharps-only contract.
+ * - `transposeNoteToSharps(note, oldRoot, newRoot)` — transpose a note
+ *   by the interval between two roots, returning a sharps-normalized name.
+ * - `getScaleSemitonesFromTonal(name)` / `getChordSemitonesFromTonal(symbol)` —
+ *   source-of-truth interval extraction for FretFlow's SCALES + CHORD_DEFINITIONS.
+ * - `getModeTriads(name)` — diatonic-triad Roman-numeral table per mode
+ *   (Tonal's modal vocabulary translated to FretFlow's case+suffix conventions).
+ * - `getChordDisplayLabel(symbol)` / `getScaleDisplayLabel(name)` —
+ *   user-facing English labels derived from Tonal's chord/scale name dictionaries.
  */
 
 import * as Note from "@tonaljs/note";
@@ -11,98 +18,6 @@ import * as Interval from "@tonaljs/interval";
 import * as Scale from "@tonaljs/scale";
 import * as Chord from "@tonaljs/chord";
 import * as Mode from "@tonaljs/mode";
-
-/**
- * App chord-quality name (e.g., "Major Triad") → Tonal chord symbol suffix
- * (e.g., "M"). Suffix is what Tonal.Chord.get() consumes after the root.
- */
-// Transitional identity map (N3): chord-quality keys are now Tonal symbols
-// natively. The adapter is deleted in N5; kept as identity here so any
-// straggler caller continues to work.
-const QUALITY_TO_TONAL: Record<string, string> = {
-  M: "M",
-  m: "m",
-  dim: "dim",
-  aug: "aug",
-  sus2: "sus2",
-  sus4: "sus4",
-  "6": "6",
-  m6: "m6",
-  maj7: "maj7",
-  m7: "m7",
-  "7": "7",
-  dim7: "dim7",
-  m7b5: "m7b5",
-  mMaj7: "mMaj7",
-  "5": "5",
-};
-
-const TONAL_TO_QUALITY: Record<string, string> = Object.fromEntries(
-  Object.entries(QUALITY_TO_TONAL).map(([app, tonal]) => [tonal, app]),
-);
-
-const SCALE_TO_TONAL: Record<string, string> = {
-  "major": "major",
-  "minor": "minor",
-  "harmonic minor": "harmonic minor",
-  "melodic minor": "melodic minor",
-  "major pentatonic": "major pentatonic",
-  "minor pentatonic": "minor pentatonic",
-  "blues": "blues",
-  "ionian": "ionian",
-  "dorian": "dorian",
-  "phrygian": "phrygian",
-  "lydian": "lydian",
-  "mixolydian": "mixolydian",
-  "aeolian": "aeolian",
-  "locrian": "locrian",
-  // Harmonic Minor modes
-  "locrian 6": "locrian 6",
-  "ionian augmented": "ionian augmented",
-  "dorian #4": "dorian #4",
-  "phrygian dominant": "phrygian dominant",
-  "lydian #9": "lydian #9",
-  "ultralocrian": "ultralocrian",
-  // Melodic Minor modes
-  "dorian b2": "dorian b2",
-  "lydian augmented": "lydian augmented",
-  "lydian dominant": "lydian dominant",
-  "mixolydian b6": "mixolydian b6",
-  "locrian #2": "locrian #2",
-  "altered": "altered",
-  // Blues variants
-  "minor blues": "minor blues",
-  "major blues": "major blues",
-};
-
-const TONAL_TO_SCALE: Record<string, string> = Object.fromEntries(
-  Object.entries(SCALE_TO_TONAL).map(([app, tonal]) => [tonal, app]),
-);
-
-export function chordQualityToTonal(quality: string): string | undefined {
-  return QUALITY_TO_TONAL[quality];
-}
-
-export function tonalToChordQuality(symbol: string): string | undefined {
-  return TONAL_TO_QUALITY[symbol];
-}
-
-export function scaleNameToTonal(scaleName: string): string | undefined {
-  return SCALE_TO_TONAL[scaleName];
-}
-
-export function tonalToScaleName(tonalName: string): string | undefined {
-  return TONAL_TO_SCALE[tonalName];
-}
-
-/**
- * Return the canonical Tonal chord symbol for an (root, app-quality) pair, or
- * undefined if the quality is not a known FretFlow chord. Example: ("C", "Major Triad") → "CM".
- */
-export function tonalChordSymbol(root: string, quality: string): string | undefined {
-  const suffix = chordQualityToTonal(quality);
-  return suffix === undefined ? undefined : `${root}${suffix}`;
-}
 
 /**
  * Transpose `note` by the interval from `oldRoot` to `newRoot`, returning the

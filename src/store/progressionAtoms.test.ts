@@ -235,7 +235,7 @@ describe("progression storage hydration", () => {
   });
 
   it("hydrates a step with a legacy duration string into the new object shape", () => {
-    const key = "fretflow:progressionSteps";
+    const key = "fretflow:progressionSteps.v2";
     const legacy = [
       { id: "x", degree: "I", duration: "1-bar", qualityOverride: null },
       { id: "y", degree: "V", duration: "2-beats", qualityOverride: null },

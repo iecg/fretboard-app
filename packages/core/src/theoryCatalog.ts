@@ -366,6 +366,13 @@ function getFamilyDefinition(scaleName: string): ScaleFamilyDefinition {
   return familyDefinitionById.get(familyId) ?? SCALE_FAMILY_DEFINITIONS[0];
 }
 
+/**
+ * Defensive pass-through. As of N5 (tonal-native migration), scale names are
+ * stored natively as Tonal names so `SCALE_NAME_ALIASES` is empty and this
+ * function returns its input unchanged. Kept as a single seam so future
+ * legacy-name aliases (e.g. renaming a scale) can be added in one place
+ * without touching every consumer.
+ */
 export function normalizeScaleName(scaleName: string): string {
   return SCALE_NAME_ALIASES[scaleName] ?? scaleName;
 }

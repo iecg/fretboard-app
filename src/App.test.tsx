@@ -132,12 +132,12 @@ describe("App", () => {
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       render(<App />);
       await selectInspectorTab("Overlay");
       fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
-        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string }>;
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps.v2")) ?? "[]") as Array<{ manualRoot: string }>;
         expect(persisted[0]?.manualRoot).toBe("G");
       });
     });
@@ -148,13 +148,13 @@ describe("App", () => {
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       render(<App />);
       await selectInspectorTab("Overlay");
       fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
-        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string | null }>;
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps.v2")) ?? "[]") as Array<{ manualRoot: string | null }>;
         expect(persisted[0]?.manualRoot).toBeNull();
       });
     });
@@ -225,7 +225,7 @@ describe("App", () => {
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       render(<App />);
       // v2.0: Quality override is set in the Song tab's editor pane via a
       // LabeledSelect combobox (label="Quality"). Click the step to ensure the
@@ -241,7 +241,7 @@ describe("App", () => {
       const minOption = await screen.findByRole("option", { name: /^min$/i });
       await user.click(minOption);
       await waitFor(() => {
-        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ qualityOverride: string | null }>;
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps.v2")) ?? "[]") as Array<{ qualityOverride: string | null }>;
         expect(persisted[0]?.qualityOverride).toBe("m");
       });
     });
@@ -301,7 +301,7 @@ describe("App", () => {
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "7", manualRoot: "C" },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       localStorage.setItem(k("practiceLens"), "tones");
       localStorage.setItem(k("chordOverlayHidden"), "true");
     }
