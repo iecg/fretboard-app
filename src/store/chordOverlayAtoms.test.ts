@@ -20,7 +20,13 @@ import {
   activeScaleInstanceRangesAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
-import { progressionStepsAtom } from "./progressionAtoms";
+import {
+  progressionStepsAtom,
+  displayedStepIndexPrimitiveAtom,
+  setProgressionPlayingAtom,
+  setProgressionActiveStepIndexAtom,
+  activeResolvedProgressionStepAtom,
+} from "./progressionAtoms";
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom } from "./fingeringAtoms";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import {
@@ -1318,5 +1324,48 @@ describe("chordHighlightPositionsAtom referential stability", () => {
     const second = store.get(chordHighlightPositionsAtom);
     expect(second).not.toBe(first);
     expect(second.size).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group I — audio-lock regression: chordHighlightPositionsAtom advances with progression step
+// ---------------------------------------------------------------------------
+
+describe("chordHighlightPositionsAtom — audio-locked to progression playhead", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("chordHighlightPositionsAtom advances with displayedStepIndexPrimitiveAtom during playback", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, [
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" as const }, qualityOverride: null, manualRoot: null },
+        { id: "b", degree: "V", duration: { value: 1, unit: "bar" as const }, qualityOverride: null, manualRoot: null },
+      ] as never],
+      [voicingAtom, "full"],
+      [chordOverlayHiddenAtom, false],
+    ]);
+
+    // Advance to step 0 and enable playback
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    store.set(setProgressionPlayingAtom, true);
+
+    // Capture the resolved step at index 0 (I chord)
+    const stepAtZero = store.get(activeResolvedProgressionStepAtom);
+    expect(stepAtZero?.degree).toBe("I");
+    const beforeHighlight = store.get(chordHighlightPositionsAtom);
+
+    // Simulate playhead advance: set the displayed step index to 1
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+
+    // Verify the resolved step changed to V chord
+    const stepAtOne = store.get(activeResolvedProgressionStepAtom);
+    expect(stepAtOne?.degree).toBe("V");
+    const afterHighlight = store.get(chordHighlightPositionsAtom);
+
+    // Different chord => different highlight set
+    expect(afterHighlight).not.toEqual(beforeHighlight);
   });
 });
