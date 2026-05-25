@@ -22,7 +22,7 @@ export function FretboardSkeleton({
       aria-hidden="true"
     >
       <svg width={neckWidthPx} height={neckHeight} className={styles["skeleton-svg"]}>
-        <rect width="100%" height="100%" fill="var(--neutral-800)" />
+        <rect width="100%" height="100%" fill="var(--surface-well)" />
         {strings.map((_, i) => (
           <line
             key={`skeleton-string-${i}`}
@@ -30,7 +30,7 @@ export function FretboardSkeleton({
             y1={i * stringRowPx + stringRowPx / 2}
             x2="100%"
             y2={i * stringRowPx + stringRowPx / 2}
-            stroke="var(--neutral-600)"
+            stroke="var(--surface-highlight)"
             strokeWidth="2"
           />
         ))}
