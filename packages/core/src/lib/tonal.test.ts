@@ -8,6 +8,8 @@ import {
   getScaleSemitonesFromTonal,
   getChordSemitonesFromTonal,
   getModeTriads,
+  getChordDisplayLabel,
+  getScaleDisplayLabel,
 } from "./tonal";
 
 describe("chord-name adapter", () => {
@@ -150,5 +152,45 @@ describe("getModeTriads", () => {
   });
   it("returns null for unknown scale", () => {
     expect(getModeTriads("Bogus")).toBeNull();
+  });
+});
+
+describe("getChordDisplayLabel", () => {
+  it("major triad", () => {
+    expect(getChordDisplayLabel("M")).toBe("major");
+  });
+  it("minor seventh", () => {
+    expect(getChordDisplayLabel("m7")).toBe("minor seventh");
+  });
+  it("dominant seventh", () => {
+    expect(getChordDisplayLabel("7")).toBe("dominant seventh");
+  });
+  it("diminished seventh", () => {
+    expect(getChordDisplayLabel("dim7")).toBe("diminished seventh");
+  });
+  it("half-diminished", () => {
+    expect(getChordDisplayLabel("m7b5")).toBe("half-diminished");
+  });
+  it("power chord", () => {
+    // Tonal returns "fifth" for the "5" suffix (not "power").
+    expect(getChordDisplayLabel("5")).toBe("fifth");
+  });
+  it("falls back to input on unknown symbol", () => {
+    expect(getChordDisplayLabel("ZZZ")).toBe("ZZZ");
+  });
+});
+
+describe("getScaleDisplayLabel", () => {
+  it("major", () => {
+    expect(getScaleDisplayLabel("major")).toBe("major");
+  });
+  it("phrygian dominant", () => {
+    expect(getScaleDisplayLabel("phrygian dominant")).toBe("phrygian dominant");
+  });
+  it("ultralocrian", () => {
+    expect(getScaleDisplayLabel("ultralocrian")).toBe("ultralocrian");
+  });
+  it("falls back to input on unknown scale", () => {
+    expect(getScaleDisplayLabel("bogus scale")).toBe("bogus scale");
   });
 });

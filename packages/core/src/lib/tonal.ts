@@ -241,3 +241,36 @@ export function getModeTriads(modeName: string): readonly string[] | null {
     return null;
   }
 }
+
+/**
+ * Returns the English display label for a Tonal chord symbol, suitable
+ * for rendering in user-facing UI. Examples:
+ *   getChordDisplayLabel("M")    -> "major"
+ *   getChordDisplayLabel("m7")   -> "minor seventh"
+ *   getChordDisplayLabel("dim7") -> "diminished seventh"
+ *   getChordDisplayLabel("5")    -> "power"
+ *
+ * Returns the input unchanged if Tonal can't resolve it (defensive
+ * fallback so the UI never shows blank).
+ */
+export function getChordDisplayLabel(chordSymbol: string): string {
+  const c = Chord.get(`C${chordSymbol}`);
+  if (c.empty) return chordSymbol;
+  // Tonal returns names like "C major" or "C minor seventh"; strip the tonic.
+  return c.name.replace(/^C\s*/, "").trim() || chordSymbol;
+}
+
+/**
+ * Returns the English display label for a Tonal scale name, suitable
+ * for rendering in user-facing UI. Examples:
+ *   getScaleDisplayLabel("major")              -> "major"
+ *   getScaleDisplayLabel("phrygian dominant")  -> "phrygian dominant"
+ *   getScaleDisplayLabel("locrian 6")          -> "locrian 6"
+ *
+ * Returns the input unchanged if Tonal can't resolve it.
+ */
+export function getScaleDisplayLabel(scaleName: string): string {
+  const s = Scale.get(`C ${scaleName}`);
+  if (s.empty) return scaleName;
+  return s.name.replace(/^C\s*/, "").trim() || scaleName;
+}
