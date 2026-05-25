@@ -259,6 +259,7 @@ export function SongControls() {
         labelledById="song-progression-heading"
         locked={editsLocked}
         lockedHint={t("controls.lockedHint")}
+        headClassName={styles["progression-card-head"]}
         actions={
           <div className={styles["progression-toolbar"]}>
             <LabeledSelect

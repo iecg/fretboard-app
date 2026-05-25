@@ -26,6 +26,8 @@ export interface InspectorCardProps {
   actions?: ReactNode;
   /** Optional class merged onto the body (e.g. for cards that want full-bleed). */
   bodyClassName?: string;
+  /** Optional class merged onto the header (e.g. for cards that want tighter vertical padding). */
+  headClassName?: string;
   /**
    * When true, the card body becomes non-interactive (HTML5 `inert`) and
    * visually dims. Pair with `lockedHint` to show a tooltip explaining
@@ -59,6 +61,7 @@ export function InspectorCard({
   stateLabel,
   actions,
   bodyClassName,
+  headClassName,
   locked = false,
   lockedHint,
   children,
@@ -85,7 +88,7 @@ export function InspectorCard({
       data-active={isActive ? "true" : "false"}
       aria-labelledby={labelledById}
     >
-      <header className={styles.cardHead}>
+      <header className={clsx(styles.cardHead, headClassName)}>
         {hasToggle ? (
           <Switch label={toggleLabel} checked={active} onChange={onToggle} />
         ) : null}

@@ -328,3 +328,9 @@
   font-weight: 700;
   box-shadow: 0 0 8px rgba(14, 165, 233, 0.15);
 }
+
+/* Progression card header — tighter vertical padding than the default 10px */
+.progression-card-head {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
