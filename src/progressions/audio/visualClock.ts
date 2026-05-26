@@ -17,6 +17,8 @@ function frame(): void {
       lastWritten = tl.stepIndex;
       store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
     }
+  } else {
+    store.set(progressionVisualFrameAtom, null);
   }
   rafId = window.requestAnimationFrame(frame);
 }

@@ -108,9 +108,29 @@ describe("visualClock", () => {
     });
 
     startVisualClock(store);
-    rafCb!(16);
+    tick();
     stopVisualClock();
 
+    expect(store.get(progressionVisualFrameAtom)).toBeNull();
+  });
+
+  it("clears progressionVisualFrameAtom when getTimelinePosition transitions to null mid-loop", () => {
+    const store = createStore();
+    const mock = vi.spyOn(timeline, "getTimelinePosition");
+    mock.mockReturnValueOnce({
+      stepIndex: 0,
+      globalFraction: 0.1,
+      localFraction: 0.1,
+      paused: false,
+    });
+    mock.mockReturnValueOnce(null);
+
+    startVisualClock(store);
+
+    tick();
+    expect(store.get(progressionVisualFrameAtom)).not.toBeNull();
+
+    tick();
     expect(store.get(progressionVisualFrameAtom)).toBeNull();
   });
 });
