@@ -42,6 +42,7 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    chunkSizeWarningLimit: 1000,
     rolldownOptions: {
       output: {
         codeSplitting: {
@@ -57,8 +58,13 @@ export default defineConfig({
               priority: 3,
             },
             {
-              name: 'app-shared',
-              test: (id: string) => id.includes('src/components/SongControls') || id.includes('src/hooks/useProgressionAudioPlayback') || id.includes('src/components/StatusBar'),
+              name: 'song-controls',
+              test: (id: string) => id.includes('src/components/SongControls'),
+              priority: 3,
+            },
+            {
+              name: 'status-bar',
+              test: (id: string) => id.includes('src/components/StatusBar'),
               priority: 3,
             },
             {
