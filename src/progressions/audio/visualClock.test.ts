@@ -78,24 +78,24 @@ describe("visualClock", () => {
 
   it("publishes the full timeline frame on each RAF tick", () => {
     const store = createStore();
-    vi.spyOn(timeline, "getTimelinePosition").mockReturnValue({
-      stepIndex: 2,
-      globalFraction: 0.625,
-      localFraction: 0.5,
-      paused: false,
-    });
+    const frames = [
+      { stepIndex: 0, globalFraction: 0.1, localFraction: 0.2, paused: false },
+      { stepIndex: 1, globalFraction: 0.5, localFraction: 0.3, paused: false },
+      { stepIndex: 1, globalFraction: 0.8, localFraction: 0.6, paused: true },
+    ];
+    const mock = vi.spyOn(timeline, "getTimelinePosition");
+    frames.forEach((f) => mock.mockReturnValueOnce(f));
 
     startVisualClock(store);
-    expect(rafCb).toBeTypeOf("function");
-    rafCb!(16);
 
-    expect(store.get(displayedStepIndexPrimitiveAtom)).toBe(2);
-    expect(store.get(progressionVisualFrameAtom)).toEqual({
-      stepIndex: 2,
-      globalFraction: 0.625,
-      localFraction: 0.5,
-      paused: false,
-    });
+    tick();
+    expect(store.get(progressionVisualFrameAtom)).toEqual(frames[0]);
+
+    tick();
+    expect(store.get(progressionVisualFrameAtom)).toEqual(frames[1]);
+
+    tick();
+    expect(store.get(progressionVisualFrameAtom)).toEqual(frames[2]);
   });
 
   it("clears the mirrored playback frame when the visual clock stops", () => {
