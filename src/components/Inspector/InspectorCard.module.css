@@ -33,6 +33,7 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--faceplate-accent);
+  min-width: 11ch;
   transition: color 160ms ease;
 }
 
@@ -61,16 +62,8 @@
   transition: opacity 160ms ease;
 }
 
-.card[data-active="false"] .cardHead {
-  border-bottom-color: transparent;
-}
-
 .card[data-active="false"] .cardState {
   color: var(--dc-fg-muted);
-}
-
-.card[data-active="false"] .cardBody {
-  opacity: 0.42;
 }
 
 /* Mobile tier: tighten card padding so the controls keep breathing room
