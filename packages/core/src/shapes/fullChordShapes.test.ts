@@ -218,12 +218,10 @@ describe('getFullChordShapeMatches', () => {
   });
 
   describe("dim7 CAGED templates", () => {
+    // Only E-shape remains after audit — C, A, G, D shapes are close-voicing duplicates
+    // per docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
     for (const { shape, root, expected } of [
-      { shape: "C", root: "C", expected: new Set(["C", "D#", "F#", "A"]) },
-      { shape: "A", root: "A", expected: new Set(["A", "C", "D#", "F#"]) },
-      { shape: "G", root: "G", expected: new Set(["G", "A#", "C#", "E"]) },
       { shape: "E", root: "E", expected: new Set(["E", "G", "A#", "C#"]) },
-      { shape: "D", root: "D", expected: new Set(["D", "F", "G#", "B"]) },
     ] as const) {
       it(`resolves a ${root}dim7 ${shape}-shape voicing`, () => {
         const matches = getFullChordShapeMatches({
@@ -239,37 +237,50 @@ describe('getFullChordShapeMatches', () => {
       });
     }
 
-    it("A-shape dim7 drops the duplicate A-string root (4-note voicing)", () => {
-      // The original 5-note voicing included an A-string root that duplicated
-      // the G-string root and was unfrettable alongside the 2-fret cross-string
-      // barre on the upper strings. The 4-note voicing still covers all chord
-      // tones (B, D, F, G#) across four adjacent strings.
+    it("C-shape dim7 is omitted — identical to a close voicing (audit-driven)", () => {
       const matches = getFullChordShapeMatches({
         chordRoot: "B",
         chordType: "dim7",
         tuning: STANDARD_TUNING,
-        maxFret: 12,
+        maxFret: 24,
       });
-      const found = matches.find((m) => m.shape === "A");
-      expect(found, "expected an A-shape match for Bdim7").toBeDefined();
-      expect([...found!.positionKeys].sort()).toEqual(["0-4", "1-3", "2-4", "3-3"]);
-      const pcs = new Set(found!.notes.map((n) => n.noteName));
-      expect(pcs).toEqual(new Set(["B", "D", "F", "G#"]));
+      expect(matches.find((m) => m.shape === "C")).toBeUndefined();
     });
 
-    it("G-shape dim7 drops the low-E root (4-note voicing on upper strings)", () => {
+    it("A-shape dim7 is omitted — identical to a close voicing (audit-driven)", () => {
       const matches = getFullChordShapeMatches({
         chordRoot: "B",
         chordType: "dim7",
         tuning: STANDARD_TUNING,
-        maxFret: 12,
+        maxFret: 24,
       });
-      const found = matches.find((m) => m.shape === "G");
-      expect(found, "G-shape dim7 should match for Bdim7").toBeDefined();
-      expect(found!.positionKeys.slice().sort()).toEqual(["0-7", "1-6", "2-7", "3-6"].sort());
-      const pcs = new Set(found!.notes.map((n) => n.noteName));
-      expect(pcs).toEqual(new Set(["B", "D", "F", "G#"]));
+      expect(matches.find((m) => m.shape === "A")).toBeUndefined();
     });
+
+    it("G-shape dim7 is omitted — identical to a close voicing (audit-driven)", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "dim7",
+        tuning: STANDARD_TUNING,
+        maxFret: 24,
+      });
+      expect(matches.find((m) => m.shape === "G")).toBeUndefined();
+    });
+
+    it("D-shape dim7 is omitted — identical to a close voicing (audit-driven)", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "dim7",
+        tuning: STANDARD_TUNING,
+        maxFret: 24,
+      });
+      expect(matches.find((m) => m.shape === "D")).toBeUndefined();
+    });
+
+    // Note: A-shape dim7 and G-shape dim7 were previously documented here with
+    // specific voicing assertions. Both were removed as close-voicing duplicates
+    // per the 2026-05-26 audit; their absence is now covered by the "is omitted"
+    // tests above.
   });
 
   describe("m7b5 CAGED templates", () => {

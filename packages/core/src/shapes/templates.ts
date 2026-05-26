@@ -88,9 +88,11 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "E", quality: "dim", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [null, null, 0, 2, 1, 0] },
   { shape: "D", quality: "dim", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 3, 1, 0, null, null] },
   // dim7 — symmetric every 3 frets (the same voicing repeats); CAGED labels
-  // are conventional rather than geometrically forced. Voicings chosen to keep
-  // 5 distinct physical positions per target root.
-  { shape: "C", quality: "dim7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [null, 4, 2, 4, 3, null] },
+  // are conventional rather than geometrically forced. Only E-shape remains;
+  // C, A, G, D shapes are pitch-and-position identical to generated close
+  // voicings across all 12 roots per
+  // docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
+  // The fallbackVoicingMatchesAtom fills those positions at runtime.
   // A-string root dropped (duplicate of G-string root); 5-note voicing was
   // unfrettable due to the cross-string 2-fret barre + A-string thumb hold.
   { shape: "A", quality: "dim7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 1, null, null] },
