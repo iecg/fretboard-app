@@ -16,6 +16,7 @@ const LazyFretboardSVG = lazy(() =>
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { FretboardSkeleton } from "./FretboardSkeleton";
 import { useFretboardState, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardState";
+import { useFretboardPlaybackSnapshot } from "../FretboardSVG/hooks/useFretboardPlaybackSnapshot";
 import {
   STRING_ROW_PX_DEFAULT,
   MAX_FRET,
@@ -86,6 +87,7 @@ interface FretboardProps {
 export function Fretboard(props: FretboardProps) {
   const state = useFretboardState();
   const fretZoom = useAtomValue(fretZoomAtom);
+  const playbackSnapshot = useFretboardPlaybackSnapshot(state.practiceLens);
 
   // Fallback to props for testability; default to atom-driven state.
   const tuning = props.tuning ?? state.currentTuning;
@@ -344,6 +346,7 @@ export function Fretboard(props: FretboardProps) {
             showChordConnectors={state.showChordConnectors}
             id={id}
             onNoteClick={handleFretClick}
+            playbackSnapshot={playbackSnapshot}
           />
         </Suspense>
       </div>

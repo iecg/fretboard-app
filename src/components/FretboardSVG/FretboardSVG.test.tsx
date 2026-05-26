@@ -449,6 +449,24 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
+  it("renders lead-lens playback state from the snapshot prop instead of direct playback atom reads", () => {
+    const { container } = renderCMajor({
+      practiceLens: "lead",
+      playbackSnapshot: {
+        playing: true,
+        activeStepIndex: 0,
+        globalFraction: 0.25,
+        localFraction: 0.75,
+        stepDurationBeats: 4,
+        beatPosition: 3,
+        commonWithNext: new Set(["G"]),
+        nextGuideTones: new Set(["B", "F"]),
+      },
+    });
+
+    expect(container.querySelectorAll('[data-note-guide-tone="true"]').length).toBeGreaterThan(0);
+  });
+
   describe("shape scope and membership", () => {
     const singleShapePolygon = polyRect("E" as CagedShape, 0, 4);
     const fullShapePolygon = polyRect("C" as CagedShape, 3, 5, 5);

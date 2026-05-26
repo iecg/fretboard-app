@@ -10,12 +10,7 @@ import {
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
-import {
-  commonTonesWithNextAtom,
-  nextChordGuideTonesAtom,
-  beatPositionAtom,
-  activeStepDurationBeatsAtom,
-} from "../../store/practiceLensAtoms";
+import type { FretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
@@ -136,6 +131,8 @@ interface FretboardSVGProps {
     fretIndex: number,
     noteName: string,
   ) => void;
+  /** Pre-computed playback snapshot from useFretboardPlaybackSnapshot; drives lead-lens data. */
+  playbackSnapshot?: FretboardPlaybackSnapshot | null;
 }
 
 export function FretboardSVG({
@@ -170,6 +167,7 @@ export function FretboardSVG({
   showChordConnectors = true,
   id,
   onNoteClick,
+  playbackSnapshot,
 }: FretboardSVGProps) {
   // `effectiveZoom` stays on the prop surface (callers size the scroll area
   // around it) but non-uniform spacing inside this component is derived from
@@ -179,14 +177,17 @@ export function FretboardSVG({
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
 
-  // Lead lens atoms (Task 4.5) — read once per render, passed to useNoteData.
-  // These are always subscribed so the component re-renders when the progression
-  // advances or the beat position changes. The cost is negligible: atom reads are
-  // synchronous and the values are empty sets / 0 when no progression is active.
-  const leadCommonWithNext = useAtomValue(commonTonesWithNextAtom);
-  const leadNextGuideTones = useAtomValue(nextChordGuideTonesAtom);
-  const leadBeatPosition = useAtomValue(beatPositionAtom);
-  const leadStepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
+  // Lead lens data — sourced from the playbackSnapshot prop rather than direct
+  // atom reads. This keeps FretboardSVG decoupled from the progression store.
+  const leadLensData =
+    practiceLens === "lead" && playbackSnapshot
+      ? {
+          commonWithNext: playbackSnapshot.commonWithNext,
+          nextGuideTones: playbackSnapshot.nextGuideTones,
+          beatPosition: playbackSnapshot.beatPosition,
+          stepDurationBeats: playbackSnapshot.stepDurationBeats,
+        }
+      : undefined;
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -410,12 +411,7 @@ export function FretboardSVG({
     noteSemantics,
     fullChordPositionKeys,
     fullChordShapeByPosition,
-    leadLensData: practiceLens === "lead" ? {
-      commonWithNext: leadCommonWithNext,
-      nextGuideTones: leadNextGuideTones,
-      beatPosition: leadBeatPosition,
-      stepDurationBeats: leadStepDurationBeats,
-    } : undefined,
+    leadLensData,
   });
 
   // Scale semitone offsets (0-11) drive per-pair color via scale-degree position
