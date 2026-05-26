@@ -73,16 +73,17 @@ describe('getFullChordShapeMatches', () => {
   });
 
   describe('canonical open-shape templates', () => {
-    it('verifies all 15 canonical templates - 9 produce open matches, 6 do not', () => {
-      // Table-driven test covering all 15 FULL_CHORD_TEMPLATES entries.
+    it('verifies all 14 canonical templates - 8 produce open matches, 6 do not', () => {
+      // Table-driven test covering all 14 FULL_CHORD_TEMPLATES entries (D-shape 7 was
+      // removed as a close-voicing duplicate per the 2026-05-26 audit).
       // Each row specifies: [chordRoot, chordType, shape, expectedPositionKeys].
-      // 
-      // Of the 15 canonical templates, only 9 produce valid open (rootFret=0) matches.
+      //
+      // Of the 14 canonical templates, only 8 produce valid open (rootFret=0) matches.
       // The C and G shapes for all 3 qualities match at rootFret=3, not 0, because
       // their anchor strings (A string for C, low E for G) don't have the root note
       // at the nut position for C and G chords respectively.
       //
-      // This test protects the dataset by asserting on the 9 that do produce open
+      // This test protects the dataset by asserting on the 8 that do produce open
       // matches, and documenting the 6 that do not.
       const cases: Array<[string, string, string, string | null]> = [
         // Major Triad (3 open, 2 non-open)
@@ -99,12 +100,12 @@ describe('getFullChordShapeMatches', () => {
         ['E', 'm', 'E', '0-0|1-0|2-0|3-2|4-2|5-0'],
         ['D', 'm', 'D', '0-1|1-3|2-2|3-0'],
 
-        // Dominant 7th (3 open, 2 non-open)
+        // Dominant 7th (2 open, 3 non-open; D-shape dropped — audit duplicate)
         ['C', '7', 'C', null], // C shape matches C7 at rootFret=3, not 0
         ['A', '7', 'A', '0-0|1-2|2-0|3-2|4-0'],
         ['G', '7', 'G', null], // G shape matches G7 at rootFret=3, not 0
         ['E', '7', 'E', '0-0|1-0|2-1|3-0|4-2|5-0'],
-        ['D', '7', 'D', '0-2|1-1|2-2|3-0'],
+        ['D', '7', 'D', null], // D-shape 7 removed — identical to close voicing (audit)
       ];
 
       for (const [root, quality, shape, expectedKeys] of cases) {
@@ -118,8 +119,9 @@ describe('getFullChordShapeMatches', () => {
       }
     });
 
-    it('validates the 9 canonical templates that produce open matches', () => {
-      // Expanded individual assertions for the 9 templates that match at rootFret=0.
+    it('validates the 8 canonical templates that produce open matches', () => {
+      // Expanded individual assertions for the 8 templates that match at rootFret=0.
+      // (D-shape 7 removed as close-voicing duplicate per 2026-05-26 audit.)
       // Major Triads (A, E, D)
       expect(getMatchPositions('A', 'M', 'A', 0)).toBe('0-0|1-2|2-2|3-2|4-0');
       expect(getMatchPositions('E', 'M', 'E', 0)).toBe('0-0|1-0|2-1|3-2|4-2|5-0');
@@ -130,10 +132,9 @@ describe('getFullChordShapeMatches', () => {
       expect(getMatchPositions('E', 'm', 'E', 0)).toBe('0-0|1-0|2-0|3-2|4-2|5-0');
       expect(getMatchPositions('D', 'm', 'D', 0)).toBe('0-1|1-3|2-2|3-0');
 
-      // Dominant 7ths (A, E, D)
+      // Dominant 7ths (A, E only — D-shape 7 omitted, close-voicing duplicate)
       expect(getMatchPositions('A', '7', 'A', 0)).toBe('0-0|1-2|2-0|3-2|4-0');
       expect(getMatchPositions('E', '7', 'E', 0)).toBe('0-0|1-0|2-1|3-0|4-2|5-0');
-      expect(getMatchPositions('D', '7', 'D', 0)).toBe('0-2|1-1|2-2|3-0');
     });
 
     it('documents the 6 canonical templates that do not produce open matches', () => {
@@ -364,6 +365,16 @@ describe('getFullChordShapeMatches', () => {
         expect(pcs).toEqual(expected);
       });
     }
+  });
+
+  it("D-shape 7 is omitted — identical to a close voicing (audit-driven)", () => {
+    const matches = getFullChordShapeMatches({
+      chordRoot: "D",
+      chordType: "7",
+      tuning: STANDARD_TUNING,
+      maxFret: 24,
+    });
+    expect(matches.find((m) => m.shape === "D")).toBeUndefined();
   });
 
   describe("m7 CAGED templates", () => {

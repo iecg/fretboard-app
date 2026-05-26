@@ -46,7 +46,9 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "A", quality: "7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 0, null] },
   { shape: "G", quality: "7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 0, 0, 0, 2, 3] },
   { shape: "E", quality: "7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 0, 2, 0] },
-  { shape: "D", quality: "7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 0, null, null] },
+  // D-shape 7 omitted — pitch-and-position identical to a generated close voicing
+  // across all 12 roots per docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
+  // The fallbackVoicingMatchesAtom fills this position at runtime.
   { shape: "C", quality: "maj7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 0, 0, 2, 3, null] },
   { shape: "A", quality: "maj7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 1, 2, 0, null] },
   { shape: "G", quality: "maj7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [2, 0, 0, 0, 2, 3] },
