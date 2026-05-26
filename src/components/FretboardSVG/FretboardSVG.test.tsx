@@ -744,4 +744,41 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
     topologySpy.mockRestore();
   });
+
+  it("does not rebuild static fretboard topology when only the playback snapshot changes and no chord overlay is active", () => {
+    const topologySpy = vi.spyOn(buildTopologyModule, "buildStaticFretboardTopology");
+    const firstSnapshot = {
+      playing: true,
+      activeStepIndex: 0,
+      globalFraction: 0.0,
+      localFraction: 0.0,
+      stepDurationBeats: 4,
+      beatPosition: 1,
+      commonWithNext: new Set<string>(),
+      nextGuideTones: new Set<string>(),
+    };
+
+    // Render without chordTones — default path (DEFAULT_CHORD_TONES stable reference)
+    const { rerender } = render(
+      <FretboardSVG {...BASE_PROPS} practiceLens="lead" playbackSnapshot={firstSnapshot} />,
+    );
+    const countAfterInitialRender = topologySpy.mock.calls.length;
+    expect(countAfterInitialRender).toBeGreaterThan(0);
+
+    rerender(
+      <FretboardSVG
+        {...BASE_PROPS}
+        practiceLens="lead"
+        playbackSnapshot={{
+          ...firstSnapshot,
+          globalFraction: 0.5,
+          localFraction: 0.5,
+          beatPosition: 3,
+        }}
+      />,
+    );
+
+    expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
+    topologySpy.mockRestore();
+  });
 });

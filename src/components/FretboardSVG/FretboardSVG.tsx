@@ -42,6 +42,7 @@ import {
 const DEFAULT_WRAPPED_NOTES = new Set<string>();
 const DEFAULT_COLOR_NOTES: string[] = [];
 const DEFAULT_SHAPE_POLYGONS: ShapePolygon[] = [];
+const DEFAULT_CHORD_TONES: string[] = [];
 
 interface FretboardSVGProps {
   /** Pixels per fret column used to size the scroll container; passed through but not read internally. */
@@ -151,7 +152,7 @@ export function FretboardSVG({
   rootNote,
   displayFormat = "notes",
   chordBoxBounds = null,
-  chordTones = [],
+  chordTones = DEFAULT_CHORD_TONES,
   chordRoot,
   chordFretSpread = 0,
   practiceLens,
