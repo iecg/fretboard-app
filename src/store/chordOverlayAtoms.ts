@@ -50,6 +50,7 @@ import {
   selectFullChordMatchesForThreeNpsPosition,
 } from "../hooks/voicingSelection";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
+import { fallbackVoicingMatchesAtom } from "./voicingFallbackAtoms";
 
 /** A voicing "majority-fits" the scale window when at least
  * ceil(frettedCount × 2/3) of its fretted notes lie within [window.lo, window.hi].
@@ -550,23 +551,25 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
  */
 export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
   const matches = get(voicingMatchesAtom);
-  if (matches.length === 0) return matches;
+  const fallbacks = get(fallbackVoicingMatchesAtom);
+  if (matches.length === 0 && fallbacks.length === 0) return matches;
 
   const pattern = get(fingeringPatternAtom);
   const activePosition = get(activePositionAtom);
 
+  let scoped: Voicing[];
   if (pattern === "caged" && activePosition) {
     const { shapePolygons } = get(shapeDataAtom);
     const cagedShapes = get(cagedShapesAtom);
-    return selectFullChordMatchesForCagedPosition(matches, shapePolygons, cagedShapes);
-  }
-
-  if (pattern === "3nps" && get(chordScopeToPositionAtom) && activePosition) {
+    scoped = selectFullChordMatchesForCagedPosition(matches, shapePolygons, cagedShapes);
+  } else if (pattern === "3nps" && get(chordScopeToPositionAtom) && activePosition) {
     const { boxBounds } = get(shapeDataAtom);
-    return selectFullChordMatchesForThreeNpsPosition(matches, boxBounds, 0);
+    scoped = selectFullChordMatchesForThreeNpsPosition(matches, boxBounds, 0);
+  } else {
+    scoped = matches;
   }
 
-  return matches;
+  return fallbacks.length > 0 ? [...scoped, ...fallbacks] : scoped;
 });
 
 /**

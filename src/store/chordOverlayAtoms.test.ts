@@ -1461,6 +1461,40 @@ describe("chordHighlightPositionsAtom referential stability", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Group K — visibleVoicingMatchesAtom — full mode with close fallback (B4)
+// ---------------------------------------------------------------------------
+
+import { fallbackVoicingMatchesAtom } from "./voicingFallbackAtoms";
+
+describe("visibleVoicingMatchesAtom — full mode with close fallback", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("includes fallback voicings in the visible set", () => {
+    // B diminished has no full template for some CAGED shapes, so those
+    // positions should fall back to close voicings if any fit.
+    const store = makeAtomStore([
+      [rootNoteAtom, "B"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "B", qualityOverride: "dim" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+    ]);
+
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const fallbacks = store.get(fallbackVoicingMatchesAtom);
+
+    // Every fallback voicing's positionKeys signature must appear in visible.
+    for (const fb of fallbacks) {
+      const key = fb.positionKeys.join("|");
+      expect(visible.some((v) => v.positionKeys.join("|") === key)).toBe(true);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Group I — audio-lock regression: chordHighlightPositionsAtom advances with progression step
 // ---------------------------------------------------------------------------
 
