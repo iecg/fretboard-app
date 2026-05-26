@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 import React from "react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render } from "@testing-library/react";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
 import type { CagedShape } from "@fretflow/core";
+
+afterEach(() => {
+  animatePresenceModes.length = 0;
+});
 
 // Capture AnimatePresence modes observed during render
 const animatePresenceModes: string[] = [];
