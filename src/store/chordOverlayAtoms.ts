@@ -130,7 +130,7 @@ function fitsStringSpecificRangesForAnyInstance(
  * True when a single `"string-fret"` position key falls within any
  * non-truncated polygon's diagonal vertex bounds.
  */
-function isInAnyPolygon(
+export function isInAnyPolygon(
   positionKey: string,
   polygons: readonly ShapePolygon[],
 ): boolean {
@@ -606,20 +606,22 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
   if (get(chordOverlayHiddenAtom)) return memoizedHighlightSet([]);
 
   if (voicing === "full") {
-    const fullPositionKeys = get(voicingMatchesAtom).flatMap((v) => v.positionKeys);
-    if (get(chordSnapToScaleAtom)) {
-      const { shapePolygons } = get(shapeDataAtom);
-      if (shapePolygons.length > 0) {
-        // 1. Start with voicing positions inside the polygon
-        const result = new Set(fullPositionKeys.filter((k) => isInAnyPolygon(k, shapePolygons)));
-        // 2. Also add any chord-tone position inside the polygon,
-        //    so chord tones the CAGED voicing engine doesn't generate
-        //    (e.g. the 5th on the low E string for C Major) still light up.
-        addChordTonesWithinPolygon(get, result, shapePolygons);
-        return memoizedHighlightSet(result);
-      }
+    // Derive position keys from the *visible* voicings only — this matches
+    // the selection the connector renderer uses (filtered to the active
+    // CAGED/3NPS position via visibleVoicingMatchesAtom). Always supplement
+    // with addChordTonesWithinPolygon so in-polygon chord tones light up
+    // regardless of Lock-to-scale state. The per-position polygon filter is
+    // gone — visibleVoicingMatchesAtom's voicing-level selection already
+    // keeps neck-spanning voicings from leaking in, and connector-vertex
+    // positions outside the polygon now survive (matching what the connector
+    // polyline draws through).
+    const visibleMatches = get(visibleVoicingMatchesAtom);
+    const result = new Set(visibleMatches.flatMap((v) => v.positionKeys));
+    const { shapePolygons } = get(shapeDataAtom);
+    if (shapePolygons.length > 0) {
+      addChordTonesWithinPolygon(get, result, shapePolygons);
     }
-    return memoizedHighlightSet(fullPositionKeys);
+    return memoizedHighlightSet(result);
   }
 
   // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.

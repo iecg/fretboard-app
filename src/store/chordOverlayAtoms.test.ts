@@ -19,7 +19,9 @@ import {
   closeCandidatesAllStringSetsAtom,
   activeScaleInstanceRangesAtom,
   visibleVoicingMatchesAtom,
+  isInAnyPolygon,
 } from "./chordOverlayAtoms";
+import { shapeDataAtom } from "./shapeAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import {
   progressionStepsAtom,
@@ -552,6 +554,76 @@ describe("chordHighlightPositionsAtom", () => {
     expect(actual).toEqual(expected);
     // Explicitly confirm "more than one candidate worth of keys":
     expect(actual.size).toBeGreaterThan(candidates[0]!.positionKeys.length);
+  });
+
+  // T6 — chordHighlightPositionsAtom now derives from visibleVoicingMatchesAtom
+  // (the same source the connector pipeline uses) and ALWAYS supplements with
+  // chord tones inside the active polygon — regardless of Lock-to-scale state.
+  it("highlights are scoped to visible voicings + inside-polygon chord tones when Lock-to-scale is OFF (T6)", () => {
+    // BUG (pre-fix): with Lock=OFF the atom returned `new Set(voicingMatchesAtom positionKeys)` —
+    // every voicing across the whole neck, NOT filtered to the active CAGED position,
+    // and NOT supplemented with in-polygon chord tones. After the fix, OFF behaves
+    // like ON: derived from visibleVoicingMatchesAtom + addChordTonesWithinPolygon.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "V", qualityOverride: "7" })], // G7
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])],
+      [chordSnapToScaleAtom, false],
+    ]);
+
+    const { shapePolygons } = store.get(shapeDataAtom);
+    expect(shapePolygons.length).toBeGreaterThan(0);
+
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const all = store.get(voicingMatchesAtom);
+    // Sanity: visible filters out neck-wide voicings — there are vertices in
+    // `all` that are not in `visible` and lie outside the active polygon.
+    const visibleKeys = new Set(visible.flatMap((v) => v.positionKeys));
+    const allKeys = new Set(all.flatMap((v) => v.positionKeys));
+    const outsidePolyNonVisible = [...allKeys].filter(
+      (k) => !visibleKeys.has(k) && !isInAnyPolygon(k, shapePolygons),
+    );
+    expect(outsidePolyNonVisible.length).toBeGreaterThan(0);
+
+    const highlights = store.get(chordHighlightPositionsAtom);
+    // After fix: highlights must NOT contain any of those outside-polygon
+    // non-visible voicing keys (OLD behavior leaked them in).
+    for (const k of outsidePolyNonVisible) {
+      expect(highlights.has(k)).toBe(false);
+    }
+  });
+
+  it("keeps connector-vertex positions outside the polygon when Lock-to-scale is ON (T6)", () => {
+    // Fixture: IV (F major) on the D-shape in C major produces a visible
+    // full-chord voicing whose vertices spill slightly outside the polygon
+    // boundary — exactly the case where the OLD code stripped those positions,
+    // leaving the connector polyline drawing through bubble-less vertices.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "IV" })], // F major
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["D"])],
+      [chordSnapToScaleAtom, true],
+    ]);
+
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const { shapePolygons } = store.get(shapeDataAtom);
+    expect(shapePolygons.length).toBeGreaterThan(0);
+
+    const outsidePositions = visible.flatMap((m) =>
+      m.positionKeys.filter((k) => !isInAnyPolygon(k, shapePolygons)),
+    );
+    expect(outsidePositions.length).toBeGreaterThan(0);
+
+    const highlights = store.get(chordHighlightPositionsAtom);
+    for (const key of outsidePositions) {
+      expect(highlights.has(key)).toBe(true);
+    }
   });
 });
 
