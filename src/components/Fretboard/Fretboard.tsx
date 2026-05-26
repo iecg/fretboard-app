@@ -15,7 +15,7 @@ const LazyFretboardSVG = lazy(() =>
 );
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { FretboardSkeleton } from "./FretboardSkeleton";
-import { useFretboardState, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardState";
+import { useFretboardTopologyModel, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardTopologyModel";
 import { useFretboardPlaybackSnapshot } from "../FretboardSVG/hooks/useFretboardPlaybackSnapshot";
 import {
   STRING_ROW_PX_DEFAULT,
@@ -85,7 +85,7 @@ interface FretboardProps {
 }
 
 export function Fretboard(props: FretboardProps) {
-  const state = useFretboardState();
+  const state = useFretboardTopologyModel();
   const fretZoom = useAtomValue(fretZoomAtom);
   const playbackSnapshot = useFretboardPlaybackSnapshot(state.practiceLens);
 
