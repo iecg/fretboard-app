@@ -17,6 +17,12 @@ export interface Voicing {
   notes: VoicingNote[];
   /** Present only for `full` voicings (CAGED). Absent for `close`. */
   shape?: CagedShape;
+  /**
+   * True when this voicing is a *close-voicing fallback* rendered inside a
+   * CAGED/3NPS position that has no full-chord template match. Drives the
+   * dashed-stroke degradation cue on the connector layer.
+   */
+  isFallback?: boolean;
 }
 
 export function openStringMidi(openString: string): number | null {

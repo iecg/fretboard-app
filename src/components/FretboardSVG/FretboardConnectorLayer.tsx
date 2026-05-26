@@ -28,6 +28,7 @@ const renderChordPath = (
     data-layer={layer}
     data-caged-shape={v.shape}
     data-palette-index={v.paletteIndex + 1}
+    data-fallback={v.isFallback ? "true" : undefined}
   />
 );
 

@@ -72,6 +72,8 @@ export interface ChordConnectorVoicing {
    * renders.
    */
   voicingKey: string;
+  /** Close-voicing fallback flag — drives the dashed stroke in the connector layer. */
+  isFallback?: boolean;
 }
 
 interface NormalizedChordConnectorVertex {
@@ -87,11 +89,13 @@ interface PendingChordConnectorVoicing {
   paletteIndex: number;
   offsetPx: number;
   shape?: CagedShape;
+  isFallback?: boolean;
 }
 
 interface ExplicitChordConnectorVoicing {
   voicingKey: string;
   shape?: CagedShape;
+  isFallback?: boolean;
   notes: Array<{
     stringIndex: number;
     fretIndex: number;
@@ -526,6 +530,7 @@ export function buildPendingChordConnectorVoicings({
         paletteIndex: V2_PALETTE_INDEX,
         offsetPx: 0,
         shape: voicing.shape,
+        isFallback: voicing.isFallback,
       };
     });
 
@@ -723,6 +728,7 @@ function finalizeChordConnectorPolylines(
     voicingKey: string;
     offsetPx: number;
     shape?: CagedShape;
+    isFallback?: boolean;
   }>,
   stringRowPx: number,
   yBounds?: ConnectorYBounds,
@@ -752,6 +758,7 @@ function finalizeChordConnectorPolylines(
       paletteIndex: pv.paletteIndex,
       shape: pv.shape,
       voicingKey: pv.voicingKey,
+      isFallback: pv.isFallback,
     };
   });
 }

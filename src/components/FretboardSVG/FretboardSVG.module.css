@@ -544,6 +544,18 @@
   stroke-linecap: round;
 }
 
+/* Close-voicing fallback (rendered inside a CAGED/3NPS position that has no
+   full-chord template match). Dashed outline + softer fill make the substitute
+   nature legible at a glance without changing the voicing's color identity. */
+.chord-connectors path[data-layer="outline"][data-fallback="true"] {
+  stroke-dasharray: 5 3;
+  stroke-opacity: var(--chord-connector-fallback-outline-opacity, 0.75);
+}
+
+.chord-connectors path[data-layer="fill"][data-fallback="true"] {
+  fill-opacity: var(--chord-connector-fallback-fill-opacity, 0.08);
+}
+
 /* -----------------------------------------------------------------------
    Palette-index color rules — one rule per voicing slot (N = 1..8).
    Color property is set so the layers can pick it up via currentColor,

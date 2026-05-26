@@ -124,6 +124,8 @@ interface FretboardSVGProps {
     voicingKey: string;
     notes: FullChordMatchNote[];
     shape?: CagedShape;
+    /** Close-voicing fallback flag — toggles dashed connector stroke. */
+    isFallback?: boolean;
   }>;
   /** When false, chord voicing connector polylines are not rendered. Defaults to true. */
   showChordConnectors?: boolean;

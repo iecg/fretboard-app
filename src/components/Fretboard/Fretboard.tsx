@@ -134,6 +134,7 @@ export function Fretboard(props: FretboardProps) {
         shape: match.shape,
         voicingKey: match.positionKeys.map((key) => key.replace("-", ",")).join("|"),
         notes: match.notes,
+        isFallback: match.isFallback,
       })),
     [state.fullChordMatches],
   );
