@@ -154,3 +154,18 @@ export function selectFullChordMatchesForThreeNpsPosition(
   }
   return Array.from(byPosition.values()).map((s) => s.match);
 }
+
+/**
+ * Picks close voicings that fit entirely inside a CAGED polygon. Used when
+ * the polygon has no full-chord template available, so a close voicing
+ * stands in. Stricter than the full picker: requires `outsideCount === 0`.
+ */
+export function selectCloseFallbacksForCagedPosition(
+  closeMatches: Voicing[],
+  polygon: ShapePolygon,
+): Voicing[] {
+  if (polygon.truncated) return [];
+  return closeMatches.filter((match) =>
+    match.notes.every((note) => distanceOutsidePolygon(polygon, note) === 0),
+  );
+}
