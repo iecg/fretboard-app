@@ -22,6 +22,7 @@
     "build:types": "pnpm --filter @fretflow/core run build && tsc -b",
     "lint": "eslint . && stylelint 'src/**/*.css'",
     "preview": "vite preview",
+    "preview:prod": "pnpm run build && vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
