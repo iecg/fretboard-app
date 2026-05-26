@@ -52,6 +52,15 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "G", quality: "maj7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [2, 0, 0, 0, 2, 3] },
   { shape: "E", quality: "maj7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 1, 2, 0] },
   { shape: "D", quality: "maj7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 2, 2, 0, null, null] },
+  // m7 voicings — each hand-tuned to be geometrically distinct from the others
+  // under root-transposition (the resolver dedupes by sorted position keys, so
+  // two templates that collapse to the same physical voicing for a target root
+  // would lose one to dedup).
+  { shape: "C", quality: "m7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [3, 1, 3, 1, 3, null] },
+  { shape: "A", quality: "m7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 1, 0, 2, 0, null] },
+  { shape: "G", quality: "m7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 3, 0, 0, 1, 3] },
+  { shape: "E", quality: "m7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 0, 0, 2, 0] },
+  { shape: "D", quality: "m7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 1, 2, 0, null, null] },
 ];
 
 export const CAGED_SHAPE_COLORS: Record<
