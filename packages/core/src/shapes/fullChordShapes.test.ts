@@ -40,7 +40,7 @@ describe('getFullChordShapeMatches', () => {
     expect(
       getFullChordShapeMatches({
         chordRoot: 'C',
-        chordType: 'sus2',
+        chordType: 'add9',
         tuning: STANDARD_TUNING,
         maxFret: 12,
       }),
