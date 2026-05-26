@@ -94,7 +94,6 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   // docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
   // The fallbackVoicingMatchesAtom fills those positions at runtime.
   { shape: "E", quality: "dim7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 1, 0] },
-  { shape: "D", quality: "dim7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 0, 1, 0, null, null] },
   // m7b5 (half-diminished: root, m3, dim5, m7).
   // m7b5: G-shape omitted — the only viable fingering spans non-adjacent
   // strings (high-E + G-string + A-string + low-E with B-string and D-string
