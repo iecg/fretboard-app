@@ -75,6 +75,27 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "G", quality: "sus4", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 1, 0, 0, 3, 3] },
   { shape: "E", quality: "sus4", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 2, 2, 2, 0] },
   { shape: "D", quality: "sus4", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [3, 3, 2, 0, null, null] },
+  // dim (triad: root, m3, dim5) — only 3 chord tones so every voicing duplicates
+  // one. Each shape hand-tuned to avoid collisions under transposition.
+  { shape: "C", quality: "dim", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [2, 4, 5, null, 3, null] },
+  { shape: "A", quality: "dim", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [null, 1, 2, 1, 0, null] },
+  { shape: "G", quality: "dim", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, null, 3, 5, 4, 3] },
+  { shape: "E", quality: "dim", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [null, null, 0, 2, 1, 0] },
+  { shape: "D", quality: "dim", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 3, 1, 0, null, null] },
+  // dim7 — symmetric every 3 frets (the same voicing repeats); CAGED labels
+  // are conventional rather than geometrically forced. Voicings chosen to keep
+  // 5 distinct physical positions per target root.
+  { shape: "C", quality: "dim7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [null, 4, 2, 4, 3, null] },
+  { shape: "A", quality: "dim7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 1, 0, null] },
+  { shape: "G", quality: "dim7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 2, 3, 2, null, 3] },
+  { shape: "E", quality: "dim7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 1, 0] },
+  { shape: "D", quality: "dim7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 0, 1, 0, null, null] },
+  // m7b5 (half-diminished: root, m3, dim5, m7).
+  { shape: "C", quality: "m7b5", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [2, 4, 3, 4, 3, null] },
+  { shape: "A", quality: "m7b5", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [null, 1, 0, 1, 0, null] },
+  { shape: "G", quality: "m7b5", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, null, 3, null, 4, 3] },
+  { shape: "E", quality: "m7b5", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 3, 0, 2, 1, 0] },
+  { shape: "D", quality: "m7b5", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 1, 1, 0, null, null] },
 ];
 
 export const CAGED_SHAPE_COLORS: Record<
