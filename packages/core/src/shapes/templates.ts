@@ -98,9 +98,12 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "E", quality: "dim7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 1, 0] },
   { shape: "D", quality: "dim7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 0, 1, 0, null, null] },
   // m7b5 (half-diminished: root, m3, dim5, m7).
+  // m7b5: G-shape omitted — the only viable fingering spans non-adjacent
+  // strings (high-E + G-string + A-string + low-E with B-string and D-string
+  // muted in between), which is impractical to fret cleanly. C-shape,
+  // A-shape, E-shape, and D-shape cover the remaining fret-range needs.
   { shape: "C", quality: "m7b5", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [2, 4, 3, 4, 3, null] },
   { shape: "A", quality: "m7b5", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [null, 1, 0, 1, 0, null] },
-  { shape: "G", quality: "m7b5", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, null, 3, null, 4, 3] },
   { shape: "E", quality: "m7b5", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 3, 0, 2, 1, 0] },
   { shape: "D", quality: "m7b5", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 1, 1, 0, null, null] },
 ];

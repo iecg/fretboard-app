@@ -275,7 +275,6 @@ describe('getFullChordShapeMatches', () => {
     for (const { shape, root, expected } of [
       { shape: "C", root: "C", expected: new Set(["C", "D#", "F#", "A#"]) },
       { shape: "A", root: "A", expected: new Set(["A", "C", "D#", "G"]) },
-      { shape: "G", root: "G", expected: new Set(["G", "A#", "C#", "F"]) },
       { shape: "E", root: "E", expected: new Set(["E", "G", "A#", "D"]) },
       { shape: "D", root: "D", expected: new Set(["D", "F", "G#", "C"]) },
     ] as const) {
@@ -292,6 +291,16 @@ describe('getFullChordShapeMatches', () => {
         expect(pcs).toEqual(expected);
       });
     }
+
+    it("G-shape m7b5 is omitted — voicing required muting non-adjacent strings", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "m7b5",
+        tuning: STANDARD_TUNING,
+        maxFret: 12,
+      });
+      expect(matches.find((m) => m.shape === "G")).toBeUndefined();
+    });
   });
 
   describe("maj7 CAGED templates", () => {
