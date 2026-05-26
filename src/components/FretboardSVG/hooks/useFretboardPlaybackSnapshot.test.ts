@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { Provider, createStore } from "jotai";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import {
   setProgressionPlayingAtom,
   progressionStepsAtom,
@@ -69,21 +69,13 @@ describe("useFretboardPlaybackSnapshot", () => {
   it("returns empty sets for commonWithNext and nextGuideTones for non-lead lenses", () => {
     const store = makePlayingStore();
 
-    const { result: resultScale } = renderHook(
-      () => useFretboardPlaybackSnapshot("scale"),
+    const { result: resultTones } = renderHook(
+      () => useFretboardPlaybackSnapshot("tones"),
       { wrapper: makeWrapper(store) },
     );
-    expect(resultScale.current).not.toBeNull();
-    expect(resultScale.current!.commonWithNext).toEqual(new Set());
-    expect(resultScale.current!.nextGuideTones).toEqual(new Set());
-
-    const { result: resultChord } = renderHook(
-      () => useFretboardPlaybackSnapshot("chord"),
-      { wrapper: makeWrapper(store) },
-    );
-    expect(resultChord.current).not.toBeNull();
-    expect(resultChord.current!.commonWithNext).toEqual(new Set());
-    expect(resultChord.current!.nextGuideTones).toEqual(new Set());
+    expect(resultTones.current).not.toBeNull();
+    expect(resultTones.current!.commonWithNext).toEqual(new Set());
+    expect(resultTones.current!.nextGuideTones).toEqual(new Set());
 
     const { result: resultUndefined } = renderHook(
       () => useFretboardPlaybackSnapshot(undefined),
@@ -92,6 +84,49 @@ describe("useFretboardPlaybackSnapshot", () => {
     expect(resultUndefined.current).not.toBeNull();
     expect(resultUndefined.current!.commonWithNext).toEqual(new Set());
     expect(resultUndefined.current!.nextGuideTones).toEqual(new Set());
+  });
+
+  it("does not rerender when lead-only atoms change in non-lead mode", () => {
+    // Proves that updating harmonic content (which mutates commonTonesWithNextAtom /
+    // nextChordGuideTonesAtom) does NOT cause extra renders for a "tones" subscriber,
+    // because the derived gate atom returns the stable EMPTY_SET constant without
+    // ever subscribing to the lead-only atoms.
+    //
+    // Note: Jotai's useAtomValue calls rerender() inside its useEffect (stale-value
+    // reconciliation), so the hook renders twice during initial mount.  We capture
+    // that baseline and then assert it doesn't grow after a change that only mutates
+    // lead-only atoms.
+    const store = makePlayingStore(); // I→V, 1 bar each
+
+    let renders = 0;
+    const { result } = renderHook(
+      () => {
+        renders++;
+        return useFretboardPlaybackSnapshot("tones");
+      },
+      { wrapper: makeWrapper(store) },
+    );
+
+    const rendersAfterMount = renders; // baseline (typically 2 due to Jotai reconciliation)
+    expect(result.current).not.toBeNull();
+    expect(result.current!.commonWithNext).toEqual(new Set());
+
+    // Swap second chord from V→ii — same duration, so stepDurationBeats stays at 4.
+    // This mutates the lead-only atoms (different common tones / guide tones) but
+    // nothing the "tones" hook actually subscribes to.
+    act(() => {
+      store.set(progressionStepsAtom, [
+        { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "ii", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+    });
+
+    // No renders beyond the mount baseline — lead-only atom changes are invisible to
+    // the "tones" hook because its gating atom never calls get(commonTonesWithNextAtom)
+    // / get(nextChordGuideTonesAtom) and therefore has no Jotai dependency on them.
+    expect(renders).toBe(rendersAfterMount);
+    expect(result.current!.commonWithNext).toEqual(new Set());
+    expect(result.current!.nextGuideTones).toEqual(new Set());
   });
 
   it("returns null when not playing", () => {
