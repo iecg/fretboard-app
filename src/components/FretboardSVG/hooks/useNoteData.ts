@@ -325,6 +325,7 @@ export function useNoteData({
         const applyDimOpacity =
           (shapePolygons.length > 0 &&
             !isInsideAnyPolygon &&
+            !(hasFullChordPositionFilter && fullChordPositionKeys.has(positionKey)) &&
             (noteClass === "note-blue" ||
               noteClass === "chord-tone-outside-scale" ||
               noteClass === "chord-tone-in-scale" ||
