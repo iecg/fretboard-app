@@ -27,11 +27,11 @@ describe("pluckString — Tone.Synth backend", () => {
     expect(t.spies.ctorSpy).toHaveBeenCalledTimes(1);
     const [opts] = t.spies.ctorSpy.mock.calls[0]!;
     expect(opts.oscillator.type).toBe("custom");
-    expect(opts.oscillator.partials).toEqual([1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
-    expect(opts.envelope.attack).toBeCloseTo(0.005);
-    expect(opts.envelope.decay).toBeCloseTo(0.2);
-    expect(opts.envelope.sustain).toBeCloseTo(0.2);
-    expect(opts.envelope.release).toBeCloseTo(1.5);
+    expect(opts.oscillator.partials).toEqual([1, 0.8, 0.45, 0.22, 0.12, 0.05]);
+    expect(opts.envelope.attack).toBeCloseTo(0.01);
+    expect(opts.envelope.decay).toBeCloseTo(1.1);
+    expect(opts.envelope.sustain).toBeCloseTo(0.05);
+    expect(opts.envelope.release).toBeCloseTo(0.4);
   });
 
   it("triggers attack-release at requested freq + time with velocity", async () => {
@@ -40,7 +40,7 @@ describe("pluckString — Tone.Synth backend", () => {
     expect(t.spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
     const [pitch, duration, time, vel] = t.spies.triggerAttackRelease.mock.calls[0]!;
     expect(Number(pitch)).toBeCloseTo(220, 1);
-    expect(duration).toBeCloseTo(1.5, 2);
+    expect(duration).toBeCloseTo(1.8, 2);
     expect(time).toBeCloseTo(1.5, 3);
     expect(vel).toBeCloseTo(0.7, 2);
   });
