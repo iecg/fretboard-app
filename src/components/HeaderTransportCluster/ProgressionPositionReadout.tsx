@@ -15,10 +15,11 @@ interface ProgressionPositionReadoutProps {
   beatsPerBar: number;
 }
 
-/** Position-write interval. Reduced to ~15 Hz refresh to prevent main thread
- *  thrashing while keeping the subdivision digit's resolution reasonably smooth.
- *  `setInterval` (not rAF) keeps the headless preview ticking; rAF is paused there. */
-const TICK_MS = 64;
+/** Position-write interval. ~30 Hz refresh — smooth enough for the
+ *  subdivision digit at typical tempos without the per-frame main-thread cost
+ *  the original 60 Hz tick imposed. `setInterval` (not rAF) keeps the headless
+ *  preview ticking; rAF is paused there. */
+const TICK_MS = 33;
 
 function PositionDigits({
   parts,

@@ -105,10 +105,11 @@ describe("ProgressionPositionReadout", () => {
     // Initial label
     expect(screen.getByRole("status", { name: "Position 01.1.000 of 04.4.000" })).toBeTruthy();
 
-    // Advance 0.5s (25% of step)
+    // Advance 0.5s (25% of step). Tick interval is 33ms (~30 Hz) — advance
+    // past one full tick so the imperative aria-label setAttribute() fires.
     act(() => {
       mockTime = 0.5;
-      vi.advanceTimersByTime(16);
+      vi.advanceTimersByTime(33);
     });
 
     // 25% of 4 beats = 1 beat. So 01.2.000 (1-indexed beat)
@@ -117,7 +118,7 @@ describe("ProgressionPositionReadout", () => {
     // Advance to 0.75s (37.5% of step)
     act(() => {
       mockTime = 0.75;
-      vi.advanceTimersByTime(16);
+      vi.advanceTimersByTime(33);
     });
 
     // 37.5% of 4 beats = 1.5 beats. So 01.2.500
