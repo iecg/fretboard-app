@@ -69,6 +69,12 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "G", quality: "sus2", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 3, 0, 0, 0, 3] },
   { shape: "E", quality: "sus2", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 4, 4, 2, 0] },
   { shape: "D", quality: "sus2", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [0, 3, 2, 0, null, null] },
+  // sus4 voicings — canonical open-position fingerings, root + perfect 4th + 5th.
+  { shape: "C", quality: "sus4", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [1, 1, 0, 3, 3, null] },
+  { shape: "A", quality: "sus4", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 3, 2, 2, 0, null] },
+  { shape: "G", quality: "sus4", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 1, 0, 0, 3, 3] },
+  { shape: "E", quality: "sus4", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 2, 2, 2, 0] },
+  { shape: "D", quality: "sus4", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [3, 3, 2, 0, null, null] },
 ];
 
 export const CAGED_SHAPE_COLORS: Record<
