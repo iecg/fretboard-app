@@ -24,6 +24,7 @@ describe("useFretboardTopologyModel", () => {
       stepIndex: 0,
       globalFraction: 0,
       localFraction: 0,
+      paused: false,
     });
 
     let topologyCommits = 0;
@@ -62,6 +63,7 @@ describe("useFretboardTopologyModel", () => {
         stepIndex: 0,
         globalFraction: 0.5,
         localFraction: 0.5,
+        paused: false,
       });
     });
 
