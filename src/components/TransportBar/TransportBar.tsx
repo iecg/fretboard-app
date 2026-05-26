@@ -47,6 +47,10 @@ export function TransportBar() {
   } = useProgressionState();
 
   const progressionPlaybackLoading = useAtomValue(progressionPlaybackLoadingAtom);
+  // Intentionally reads the LOGICAL atom (not displayedProgressionStepIndexAtom):
+  // Stop-button disabled state is editor state ("has the user advanced past step 0?"),
+  // not visual playhead state — the RAF-driven displayed index would flicker the
+  // disabled state at chord boundaries during playback.
   const activeIndex = useAtomValue(activeProgressionStepIndexAtom);
   const stopProgressionPlayback = useSetAtom(stopProgressionPlaybackAtom);
   const { t } = useTranslation();
