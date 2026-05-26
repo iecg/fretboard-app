@@ -404,9 +404,7 @@ export function useNoteData({
           applyLensEmphasis: lensEmphasis,
           isHidden,
           isTension: effectiveSemantics?.isTension ?? false,
-          isGuideTone:
-            effectiveSemantics?.isGuideTone ??
-            (leadLensData?.nextGuideTones?.has(noteName) ?? false),
+          isGuideTone: effectiveSemantics?.isGuideTone ?? false,
           scaleDegree,
           degreeColor,
           fullChordShape,
