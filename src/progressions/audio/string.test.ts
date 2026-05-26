@@ -29,9 +29,9 @@ describe("pluckString — Tone.Synth backend", () => {
     expect(opts.oscillator.type).toBe("custom");
     expect(opts.oscillator.partials).toEqual([1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
     expect(opts.envelope.attack).toBeCloseTo(0.005);
-    expect(opts.envelope.decay).toBeCloseTo(0.3);
-    expect(opts.envelope.sustain).toBeCloseTo(0);
-    expect(opts.envelope.release).toBeCloseTo(0.8);
+    expect(opts.envelope.decay).toBeCloseTo(0.5);
+    expect(opts.envelope.sustain).toBeCloseTo(0.2);
+    expect(opts.envelope.release).toBeCloseTo(1.5);
   });
 
   it("triggers attack-release at requested freq + time with velocity", async () => {
@@ -40,7 +40,7 @@ describe("pluckString — Tone.Synth backend", () => {
     expect(t.spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
     const [pitch, duration, time, vel] = t.spies.triggerAttackRelease.mock.calls[0]!;
     expect(Number(pitch)).toBeCloseTo(220, 1);
-    expect(duration).toBeCloseTo(0.8, 2);
+    expect(duration).toBeCloseTo(1.5, 2);
     expect(time).toBeCloseTo(1.5, 3);
     expect(vel).toBeCloseTo(0.7, 2);
   });

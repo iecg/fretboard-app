@@ -3,10 +3,11 @@ import { createReusableVoicePool } from "./createReusableVoicePool";
 
 const PARTIALS = [1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06];
 const ATTACK = 0.005;
-const DECAY = 0.3;
-const SUSTAIN = 0;
-const RELEASE = 0.8;
-const RELEASE_TAIL_SEC = RELEASE + 0.1;
+const DECAY = 0.5;
+const SUSTAIN = 0.2;
+const RELEASE = 1.5;
+const NOTE_DURATION = 1.5;
+const RELEASE_TAIL_SEC = NOTE_DURATION + RELEASE + 0.1;
 
 export interface PluckedVoiceHandle {
   cancel: () => void;
@@ -46,7 +47,7 @@ export function pluckString(
   const lease = pluckPool.lease(dest, now);
   lease.setBusyUntil(playbackStartTime + RELEASE_TAIL_SEC);
 
-  lease.voice.triggerAttackRelease(frequency, RELEASE, startTime, velocity);
+  lease.voice.triggerAttackRelease(frequency, NOTE_DURATION, startTime, velocity);
 
   let cancelled = false;
   return {
