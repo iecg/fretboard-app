@@ -62,7 +62,7 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
       aria-hidden="true"
       pointerEvents="none"
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
         {showChordConnectors && chordPolylines.length > 0 && (
           connectorMotionMode === "group" ? (
             <motion.g

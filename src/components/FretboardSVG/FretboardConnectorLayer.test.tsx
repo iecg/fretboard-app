@@ -1,9 +1,32 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
+import React from "react";
+import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
-import { FretboardConnectorLayer } from "./FretboardConnectorLayer";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
 import type { CagedShape } from "@fretflow/core";
+
+// Capture AnimatePresence modes observed during render
+const animatePresenceModes: string[] = [];
+vi.mock("motion/react", async () => {
+  const actual = await vi.importActual<typeof import("motion/react")>("motion/react");
+  return {
+    ...actual,
+    AnimatePresence: (props: { mode?: string; children?: React.ReactNode }) => {
+      if (props.mode) animatePresenceModes.push(props.mode);
+      return <>{props.children}</>;
+    },
+    motion: {
+      ...actual.motion,
+      // Ensure motion.g renders valid SVG <g> so tests can query paths
+      g: (props: React.SVGProps<SVGGElement> & { children?: React.ReactNode }) => (
+        <g {...props}>{props.children}</g>
+      ),
+    },
+  };
+});
+
+// Import after mocking motion/react
+import { FretboardConnectorLayer } from "./FretboardConnectorLayer";
 
 // Stub polyline: just enough for the renderer to emit three <path> elements
 // (halo + fill + outline) per voicing.
@@ -86,5 +109,20 @@ describe("FretboardConnectorLayer", () => {
 
     expect(container.querySelector("[data-caged-shape='E']")).toBeNull();
     expect(container.querySelector("[data-caged-shape='A']")).toBeInTheDocument();
+  });
+
+  it("uses sync mode so entering and exiting connector groups crossfade", () => {
+    const polylines = [makePolyline("0,5|1,5|2,5", "E")];
+
+    renderInSvg(
+      <FretboardConnectorLayer
+        {...BASE_PROPS}
+        chordPolylines={polylines}
+        connectorMotionMode="group"
+      />,
+    );
+
+    expect(animatePresenceModes).toContain("sync");
+    expect(animatePresenceModes).not.toContain("wait");
   });
 });
