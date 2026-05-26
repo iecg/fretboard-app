@@ -8,24 +8,20 @@ import {
   Square,
   Timer,
 } from "lucide-react";
-import { useAtomValue, useSetAtom } from "jotai";
-import {
-  progressionPlaybackLoadingAtom,
-  stopProgressionPlaybackAtom,
-} from "../../store/progressionAtoms";
-import { useProgressionState } from "../../hooks/useProgressionState";
+import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./TransportBar.module.css";
 
 /**
  * Playback + backing-instrument controls for the DAW progression track.
- * Self-contained: subscribes to the playback atoms via `useProgressionState`.
+ * Self-contained: subscribes to the playback atoms via `usePlaybackTransportModel`.
  */
 export function TransportBar() {
   const { t } = useTranslation();
   const {
     progressionPlaying,
     progressionPlaybackBlockedReason,
+    progressionPlaybackLoading,
     setProgressionPlaying,
     progressionLoopEnabled,
     setProgressionLoopEnabled,
@@ -37,10 +33,8 @@ export function TransportBar() {
     setProgressionDrumsEnabled,
     progressionMetronomeEnabled,
     setProgressionMetronomeEnabled,
-  } = useProgressionState();
-
-  const progressionPlaybackLoading = useAtomValue(progressionPlaybackLoadingAtom);
-  const stopProgressionPlayback = useSetAtom(stopProgressionPlaybackAtom);
+    stopProgressionPlayback,
+  } = usePlaybackTransportModel();
   const canPlay = !progressionPlaybackBlockedReason;
   const playStopDisabled = !progressionPlaying && (!canPlay || progressionPlaybackLoading);
   const playStopIsPlaying = progressionPlaying;

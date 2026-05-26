@@ -1,4 +1,4 @@
-import { useProgressionState } from "../../hooks/useProgressionState";
+import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
 import { useScaleState } from "../../hooks/useScaleState";
 import { TransportBar } from "../TransportBar/TransportBar";
 import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
@@ -31,7 +31,7 @@ export function HeaderTransportCluster() {
     progressionPlaybackBlockedReason,
     totalProgressionBars,
     beatsPerBar,
-  } = useProgressionState();
+  } = usePlaybackTransportModel();
   const { scaleLabel } = useScaleState();
 
   const canPlay = !progressionPlaybackBlockedReason;
