@@ -510,7 +510,7 @@
 }
 
 .chord-connector-path {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 /* -----------------------------------------------------------------------
