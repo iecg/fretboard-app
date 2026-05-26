@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { atom } from "jotai";
 import { useAtomValue } from "jotai";
 import { progressionPlayingAtom } from "../../../store/progressionAtoms";
 import {
@@ -25,11 +26,27 @@ export interface FretboardPlaybackSnapshot {
 export function useFretboardPlaybackSnapshot(
   practiceLens?: PracticeLens,
 ): FretboardPlaybackSnapshot | null {
+  const commonWithNextForLensAtom = useMemo(
+    () =>
+      atom((get) =>
+        practiceLens === "lead" ? get(commonTonesWithNextAtom) : EMPTY_SET,
+      ),
+    [practiceLens],
+  );
+
+  const nextGuideTonesForLensAtom = useMemo(
+    () =>
+      atom((get) =>
+        practiceLens === "lead" ? get(nextChordGuideTonesAtom) : EMPTY_SET,
+      ),
+    [practiceLens],
+  );
+
   const playing = useAtomValue(progressionPlayingAtom);
   const frame = useAtomValue(progressionVisualFrameAtom);
   const stepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
-  const commonWithNext = useAtomValue(commonTonesWithNextAtom);
-  const nextGuideTones = useAtomValue(nextChordGuideTonesAtom);
+  const commonWithNext = useAtomValue(commonWithNextForLensAtom);
+  const nextGuideTones = useAtomValue(nextGuideTonesForLensAtom);
 
   return useMemo(() => {
     if (!playing || !frame) return null;
@@ -40,8 +57,8 @@ export function useFretboardPlaybackSnapshot(
       localFraction: frame.localFraction,
       stepDurationBeats,
       beatPosition: frame.localFraction * stepDurationBeats,
-      commonWithNext: practiceLens === "lead" ? commonWithNext : EMPTY_SET,
-      nextGuideTones: practiceLens === "lead" ? nextGuideTones : EMPTY_SET,
+      commonWithNext,
+      nextGuideTones,
     };
-  }, [playing, frame, stepDurationBeats, practiceLens, commonWithNext, nextGuideTones]);
+  }, [playing, frame, stepDurationBeats, commonWithNext, nextGuideTones]);
 }
