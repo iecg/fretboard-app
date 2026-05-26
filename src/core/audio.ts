@@ -28,7 +28,7 @@ const AUDIO_CONFIG = {
   RELEASE_TIME: 0.3,
 
   /** Single-note duration handed to triggerAttackRelease (seconds). */
-  NOTE_DURATION: 0.9,
+  NOTE_DURATION: 0.5,
 
   /** Filter set high enough to be transparent — strum voice has none. */
   FILTER_FREQ: 10000,
