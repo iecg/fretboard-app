@@ -140,6 +140,34 @@
   fill: var(--caged-g-fg);
 }
 
+/* Chord-root emphasis layer for full-chord-voicing mode.
+   The earlier [data-full-chord-mode="true"][data-full-chord-shape="X"] rules
+   (lines 98-121) flatten every voicing note to the CAGED shape color, which
+   makes the root visually identical to the rest of the voicing. We restore
+   chord-root distinction by (a) keeping the shape fill but overlaying a thick
+   tonic-ring stroke on the inner squircle, and (b) using white-on-color label
+   treatment so the root reads against the saturated background. */
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note.chord-root[data-full-chord-shape] :is(circle, path, polygon):last-of-type {
+  stroke: var(--note-ring-tonic);
+  stroke-width: 3.2;
+  paint-order: stroke fill;
+}
+
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note.chord-root[data-full-chord-shape] text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.45);
+  stroke-width: 0.6;
+  paint-order: stroke fill;
+  font-weight: 700;
+}
+
+/* Light theme: same treatment — the saturated shape fill already provides
+   contrast for white labels. */
+:global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note.chord-root[data-full-chord-shape] text {
+  fill: var(--note-label-on-color);
+  stroke: var(--note-label-on-color-stroke);
+}
+
 .fretboard-note.note-active :is(circle, path, polygon) {
   stroke: var(--note-ring);
   fill: var(--fretboard-note-fill-chord-tone);

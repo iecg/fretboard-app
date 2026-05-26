@@ -226,12 +226,12 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
     expect(container.querySelector('.chord-root[data-full-chord-shape="E"]')).not.toBeNull();
     expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
-    expect(
-      container.querySelector('.chord-root[data-full-chord-shape="E"] path:last-of-type'),
-    ).toHaveStyle({ fill: "var(--caged-e)" });
+    const rootPath = container.querySelector('.chord-root[data-full-chord-shape="E"] path:last-of-type');
+    expect(rootPath).toHaveStyle({ fill: "var(--caged-e)" });
+    expect(rootPath).toHaveStyle({ stroke: "var(--note-ring-tonic)" });
     expect(
       container.querySelector('.chord-root[data-full-chord-shape="E"] text'),
-    ).toHaveStyle({ fill: "var(--caged-e-fg)" });
+    ).toHaveStyle({ fill: "#ffffff" });
   });
 
   it("hides chord connectors when showChordConnectors is false", () => {
