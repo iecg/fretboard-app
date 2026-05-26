@@ -29,7 +29,7 @@ describe("pluckString — Tone.Synth backend", () => {
     expect(opts.oscillator.type).toBe("custom");
     expect(opts.oscillator.partials).toEqual([1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
     expect(opts.envelope.attack).toBeCloseTo(0.005);
-    expect(opts.envelope.decay).toBeCloseTo(0.5);
+    expect(opts.envelope.decay).toBeCloseTo(0.2);
     expect(opts.envelope.sustain).toBeCloseTo(0.2);
     expect(opts.envelope.release).toBeCloseTo(1.5);
   });

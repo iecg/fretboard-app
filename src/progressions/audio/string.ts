@@ -3,7 +3,7 @@ import { createReusableVoicePool } from "./createReusableVoicePool";
 
 const PARTIALS = [1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06];
 const ATTACK = 0.005;
-const DECAY = 0.5;
+const DECAY = 0.2;
 const SUSTAIN = 0.2;
 const RELEASE = 1.5;
 const NOTE_DURATION = 1.5;
