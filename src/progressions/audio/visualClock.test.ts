@@ -3,6 +3,7 @@ import { createStore } from "jotai";
 import {
   displayedStepIndexPrimitiveAtom,
 } from "../../store/progressionAtoms";
+import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 import { startVisualClock, stopVisualClock } from "./visualClock";
 import * as timeline from "./timeline";
 
@@ -73,5 +74,43 @@ describe("visualClock", () => {
     tick();
     stopVisualClock();
     expect(rafCb).toBeNull();
+  });
+
+  it("publishes the full timeline frame on each RAF tick", () => {
+    const store = createStore();
+    vi.spyOn(timeline, "getTimelinePosition").mockReturnValue({
+      stepIndex: 2,
+      globalFraction: 0.625,
+      localFraction: 0.5,
+      paused: false,
+    });
+
+    startVisualClock(store);
+    expect(rafCb).toBeTypeOf("function");
+    rafCb!(16);
+
+    expect(store.get(displayedStepIndexPrimitiveAtom)).toBe(2);
+    expect(store.get(progressionVisualFrameAtom)).toEqual({
+      stepIndex: 2,
+      globalFraction: 0.625,
+      localFraction: 0.5,
+      paused: false,
+    });
+  });
+
+  it("clears the mirrored playback frame when the visual clock stops", () => {
+    const store = createStore();
+    vi.spyOn(timeline, "getTimelinePosition").mockReturnValue({
+      stepIndex: 1,
+      globalFraction: 0.25,
+      localFraction: 0.25,
+      paused: false,
+    });
+
+    startVisualClock(store);
+    rafCb!(16);
+    stopVisualClock();
+
+    expect(store.get(progressionVisualFrameAtom)).toBeNull();
   });
 });
