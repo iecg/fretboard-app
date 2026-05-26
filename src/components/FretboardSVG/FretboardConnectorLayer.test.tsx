@@ -1,36 +1,9 @@
 // @vitest-environment jsdom
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 import { render } from "@testing-library/react";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
 import type { CagedShape } from "@fretflow/core";
-
-afterEach(() => {
-  animatePresenceModes.length = 0;
-});
-
-// Capture AnimatePresence modes observed during render
-const animatePresenceModes: string[] = [];
-vi.mock("motion/react", async () => {
-  const actual = await vi.importActual<typeof import("motion/react")>("motion/react");
-  return {
-    ...actual,
-    AnimatePresence: (props: { mode?: string; children?: React.ReactNode }) => {
-      if (props.mode) animatePresenceModes.push(props.mode);
-      return <>{props.children}</>;
-    },
-    motion: {
-      ...actual.motion,
-      // Ensure motion.g renders valid SVG <g> so tests can query paths
-      g: (props: React.SVGProps<SVGGElement> & { children?: React.ReactNode }) => (
-        <g {...props}>{props.children}</g>
-      ),
-    },
-  };
-});
-
-// Import after mocking motion/react
-import { FretboardConnectorLayer } from "./FretboardConnectorLayer";
 
 // Stub polyline: just enough for the renderer to emit three <path> elements
 // (halo + fill + outline) per voicing.
@@ -56,7 +29,42 @@ const BASE_PROPS = {
   clipPathUrl: "url(#test-clip)",
 };
 
+// Capture AnimatePresence modes observed during render (scoped to these tests)
+const animatePresenceModes: string[] = [];
+
+// Ensure the captured modes are cleared after each test
+afterEach(() => {
+  animatePresenceModes.length = 0;
+});
+
+// Mock motion/react in a scope owned by these tests so the
+// observed modes are local to this test file.
+vi.mock("motion/react", async () => {
+  const actual = await vi.importActual<typeof import("motion/react")>("motion/react");
+  return {
+    ...actual,
+    AnimatePresence: (props: { mode?: string; children?: React.ReactNode }) => {
+      if (props.mode) animatePresenceModes.push(props.mode);
+      return <>{props.children}</>;
+    },
+    motion: {
+      ...actual.motion,
+      // Ensure motion.g renders valid SVG <g> so tests can query paths
+      g: (props: React.SVGProps<SVGGElement> & { children?: React.ReactNode }) => (
+        <g {...props}>{props.children}</g>
+      ),
+    },
+  };
+});
+
 describe("FretboardConnectorLayer", () => {
+  // Import the module under test after installing the mock.
+  let FretboardConnectorLayer: typeof import("./FretboardConnectorLayer").FretboardConnectorLayer;
+  beforeAll(async () => {
+    const mod = await import("./FretboardConnectorLayer");
+    FretboardConnectorLayer = mod.FretboardConnectorLayer;
+  });
+
   it("renders every polyline uniformly when chord connectors are shown", () => {
     const polylines = [
       makePolyline("0,5|1,5|2,5", "E"),
