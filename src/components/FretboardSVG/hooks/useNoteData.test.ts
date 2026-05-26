@@ -392,4 +392,47 @@ describe("useNoteData", () => {
     });
   });
 
+  describe("useNoteData — full-voicing classifies vertices as in-scale chord tones", () => {
+    it("classifies a fullChordPositionKeys member as chord-tone-in-scale even when chordToneSet excludes it", () => {
+      const layoutRow = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E"];
+      const { result } = renderHook(() =>
+        useNoteData({
+          numStrings: 1,
+          fretboardLayout: [layoutRow],
+          totalColumns: 12,
+          startFret: 0,
+          maxFret: 13,
+          highlightNotes: ["C", "E", "G"],
+          hasChordOverlay: true,
+          // Intentionally omit "Bb" / "A#" from chordTones to simulate a stale
+          // chord-tones snapshot for a half-dim voicing whose b5 is part of
+          // the rendered voicing but not yet in the overlay's tone list.
+          chordTones: ["C", "E", "G"],
+          rootNote: "C",
+          chordRoot: "C",
+          colorNotes: [],
+          shapePolygons: [],
+          chordBoxBounds: null,
+          chordFretSpread: 0,
+          activePattern: "caged",
+          shapeScope: "single",
+          activeShape: "E",
+          scaleName: "major",
+          preferFlats: false,
+          wrappedNotes: new Set<string>(),
+          tuning: ["E"],
+          // A# (string 0, fret 6) — NOT in chordTones, but IS in the voicing.
+          fullChordPositionKeys: new Set(["0-6"]),
+          fullChordShapeByPosition: new Map([["0-6", "E"]]),
+        })
+      );
+
+      const voicingVertex = result.current.find(
+        (n) => n.stringIndex === 0 && n.fretIndex === 6,
+      );
+      expect(voicingVertex).toBeDefined();
+      expect(voicingVertex!.noteClass).toBe("chord-tone-in-scale");
+    });
+  });
+
 });

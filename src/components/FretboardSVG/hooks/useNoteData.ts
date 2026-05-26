@@ -304,7 +304,17 @@ export function useNoteData({
                 isInActiveShape,
               );
 
-        // Skip explicitly hidden notes, but keep "note-inactive" (those not in the 
+        // Voicing-vertex authority: any coordinate that belongs to the active
+        // full-chord voicing is rendered as an in-scale chord tone regardless of
+        // what the scale-aware classifiers said. Chord-root takes precedence so
+        // the root squircle keeps its dedicated role.
+        const isVoicingVertex =
+          hasFullChordPositionFilter && fullChordPositionKeys.has(positionKey);
+        const finalNoteClass = isVoicingVertex && noteClass !== "chord-root"
+          ? "chord-tone-in-scale"
+          : noteClass;
+
+        // Skip explicitly hidden notes, but keep "note-inactive" (those not in the
         // current scale/chord) as hit targets so they remain playable.
         if (isNoteHidden) continue;
 
@@ -325,13 +335,13 @@ export function useNoteData({
         const applyDimOpacity =
           (shapePolygons.length > 0 &&
             !isInsideAnyPolygon &&
-            !(hasFullChordPositionFilter && fullChordPositionKeys.has(positionKey)) &&
-            (noteClass === "note-blue" ||
-              noteClass === "chord-tone-outside-scale" ||
-              noteClass === "chord-tone-in-scale" ||
-              noteClass === "note-diatonic-chord" ||
-              noteClass === "chord-root" ||
-              noteClass === "key-tonic")) ||
+            !isVoicingVertex &&
+            (finalNoteClass === "note-blue" ||
+              finalNoteClass === "chord-tone-outside-scale" ||
+              finalNoteClass === "chord-tone-in-scale" ||
+              finalNoteClass === "note-diatonic-chord" ||
+              finalNoteClass === "chord-root" ||
+              finalNoteClass === "key-tonic")) ||
           (isWrapped && isHighlighted);
 
         // Lens emphasis only applies when chord overlay is active.
@@ -353,14 +363,14 @@ export function useNoteData({
           };
         }
         const lensEmphasis = getLensEmphasis(
-          noteClass,
+          finalNoteClass,
           activeLens,
           effectiveSemantics?.isGuideTone ?? false,
           leadContext,
         );
 
         // Visual hiddenness: inactive notes are not rendered in the note layer.
-        const isHidden = noteClass === "note-inactive";
+        const isHidden = finalNoteClass === "note-inactive";
 
         // Calculate scale degree color when degree colors are enabled
         let scaleDegree: string | undefined;
@@ -389,7 +399,7 @@ export function useNoteData({
           fretIndex,
           noteName,
           octave,
-          noteClass,
+          noteClass: finalNoteClass,
           displayValue,
           applyDimOpacity,
           applyLensEmphasis: lensEmphasis,
