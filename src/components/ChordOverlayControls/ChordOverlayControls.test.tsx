@@ -2,13 +2,15 @@
 import { beforeEach, describe, it, expect } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createStore } from "jotai";
 import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
-import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
+import { renderWithAtoms, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { practiceLensAtom, voicingAtom } from "../../store/chordOverlayAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
+import { hasFallbackPositionsAtom } from "../../store/voicingFallbackAtoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
 /**
@@ -329,5 +331,54 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       const toggle = screen.getByRole("switch", { name: /lock to scale/i });
       expect(toggle).not.toBeDisabled();
     });
+  });
+});
+
+describe("ChordOverlayControls — string-set picker visibility in Full mode", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("shows the picker when voicing is full and a fallback exists", () => {
+    // B dim with only the C-shape selected: B dim has no full-chord CAGED
+    // template for the C-shape, so the C-shape polygon produces a close-voicing
+    // fallback. Scale root is B so the snap-to-scale filter stays on and the B
+    // dim close voicings (B, D, F) land within the B major CAGED window.
+    const store = createStore();
+    store.set(voicingAtom, "full");
+    store.set(fingeringPatternAtom, "caged");
+    store.set(cagedShapesAtom, new Set<CagedShape>(["C"]));
+    store.set(scaleNameAtom, "major");
+    store.set(rootNoteAtom, "B");
+    store.set(progressionStepsAtom, [
+      { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "dim", manualRoot: "B" },
+    ]);
+
+    // Verify the fixture actually produces a fallback so the test is meaningful.
+    expect(store.get(hasFallbackPositionsAtom)).toBe(true);
+
+    renderWithStore(<ChordOverlayControls />, store);
+
+    // ChordStringSetPicker renders a combobox; its label contains "strings".
+    expect(screen.queryByRole("combobox", { name: /strings/i })).toBeInTheDocument();
+  });
+
+  it("hides the picker in full mode when no fallback exists (chord with full coverage)", () => {
+    // C major: all 5 CAGED shapes have full-chord templates — no fallbacks.
+    const store = createStore();
+    store.set(voicingAtom, "full");
+    store.set(fingeringPatternAtom, "caged");
+    store.set(cagedShapesAtom, new Set<CagedShape>(["C", "A", "G", "E", "D"]));
+    store.set(scaleNameAtom, "major");
+    store.set(rootNoteAtom, "C");
+    store.set(progressionStepsAtom, [
+      { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
+    ]);
+
+    expect(store.get(hasFallbackPositionsAtom)).toBe(false);
+
+    renderWithStore(<ChordOverlayControls />, store);
+
+    expect(screen.queryByRole("combobox", { name: /strings/i })).not.toBeInTheDocument();
   });
 });

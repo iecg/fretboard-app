@@ -8,6 +8,7 @@ import {
 } from "../../store/chordOverlayAtoms";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
+import { hasFallbackPositionsAtom } from "../../store/voicingFallbackAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
@@ -29,6 +30,7 @@ export function ChordOverlayControls() {
   // Read the resolved chord identity used by the panel (lens availability).
   const chordType = useAtomValue(chordTypeAtom);
   const voicing = useAtomValue(voicingAtom);
+  const hasFallback = useAtomValue(hasFallbackPositionsAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const cagedShapes = useAtomValue(cagedShapesAtom);
 
@@ -86,7 +88,7 @@ export function ChordOverlayControls() {
             label={t("controls.lensAriaLabel")}
           />
         </Prop>
-        {voicing === "close" ? (
+        {(voicing === "close" || (voicing === "full" && hasFallback)) ? (
           <Prop label={t("inspector.chordStringSetLabel")} span={2}>
             <ChordStringSetPicker />
           </Prop>
