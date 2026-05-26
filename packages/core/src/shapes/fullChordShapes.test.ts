@@ -40,7 +40,7 @@ describe('getFullChordShapeMatches', () => {
     expect(
       getFullChordShapeMatches({
         chordRoot: 'C',
-        chordType: 'maj7',
+        chordType: 'sus2',
         tuning: STANDARD_TUNING,
         maxFret: 12,
       }),
@@ -170,7 +170,7 @@ describe('getFullChordShapeMatches', () => {
   });
 
   describe("getFullChordShapeMatches — new qualities (no templates yet)", () => {
-    for (const chordType of ["maj7", "m7", "sus2", "sus4", "dim", "dim7", "m7b5"] as const) {
+    for (const chordType of ["m7", "sus2", "sus4", "dim", "dim7", "m7b5"] as const) {
       it(`resolves \`${chordType}\` to the new quality without crashing`, () => {
         const result = getFullChordShapeMatches({
           chordRoot: "C",
@@ -183,6 +183,23 @@ describe('getFullChordShapeMatches', () => {
         // is that the resolver returns an empty array (not an exception).
         expect(Array.isArray(result)).toBe(true);
         expect(result).toEqual([]);
+      });
+    }
+  });
+
+  describe("maj7 CAGED templates", () => {
+    for (const shape of ["C", "A", "G", "E", "D"] as const) {
+      it(`resolves a Cmaj7 ${shape}-shape voicing whose pitch classes are {C, E, G, B}`, () => {
+        const matches = getFullChordShapeMatches({
+          chordRoot: "C",
+          chordType: "maj7",
+          tuning: STANDARD_TUNING,
+          maxFret: 15,
+        });
+        const found = matches.find((m) => m.shape === shape);
+        expect(found, `expected a ${shape}-shape match for Cmaj7`).toBeDefined();
+        const pcs = new Set(found!.notes.map((n) => n.noteName));
+        expect(pcs).toEqual(new Set(["C", "E", "G", "B"]));
       });
     }
   });

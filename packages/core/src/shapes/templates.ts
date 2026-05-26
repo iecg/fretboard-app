@@ -47,6 +47,11 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "G", quality: "7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 0, 0, 0, 2, 3] },
   { shape: "E", quality: "7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 0, 2, 0] },
   { shape: "D", quality: "7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 0, null, null] },
+  { shape: "C", quality: "maj7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 0, 0, 2, 3, null] },
+  { shape: "A", quality: "maj7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 1, 2, 0, null] },
+  { shape: "G", quality: "maj7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [2, 0, 0, 0, 2, 3] },
+  { shape: "E", quality: "maj7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 1, 2, 0] },
+  { shape: "D", quality: "maj7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 2, 2, 0, null, null] },
 ];
 
 export const CAGED_SHAPE_COLORS: Record<
