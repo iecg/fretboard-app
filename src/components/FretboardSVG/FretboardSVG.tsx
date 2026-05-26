@@ -14,9 +14,10 @@ import type { FretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnap
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
-import { useNoteData } from "./hooks/useNoteData";
 import { useChordConnectorPolylines, CHORD_TONE_CLASSES } from "./hooks/useChordConnectorPolylines";
 import { useIntervalConnectorPolylines } from "./hooks/useIntervalConnectorPolylines";
+import { useStaticFretboardTopology } from "./hooks/useStaticFretboardTopology";
+import { useAnimatedFretboardView } from "./hooks/useAnimatedFretboardView";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
 import { FretboardDefs } from "./FretboardDefs";
@@ -177,17 +178,6 @@ export function FretboardSVG({
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
 
-  // Lead lens data — sourced from the playbackSnapshot prop rather than direct
-  // atom reads. This keeps FretboardSVG decoupled from the progression store.
-  const leadLensData =
-    practiceLens === "lead" && playbackSnapshot
-      ? {
-          commonWithNext: playbackSnapshot.commonWithNext,
-          nextGuideTones: playbackSnapshot.nextGuideTones,
-          beatPosition: playbackSnapshot.beatPosition,
-          stepDurationBeats: playbackSnapshot.stepDurationBeats,
-        }
-      : undefined;
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
@@ -382,7 +372,7 @@ export function FretboardSVG({
     return [...singles, ...doubles];
   }, [totalColumns, startFret, stringRowPx, svgDefUrl, fretCenterX, inlayY, inlayYBottomAt, inlayYTopAt]);
 
-  const noteData = useNoteData({
+  const topology = useStaticFretboardTopology({
     numStrings,
     fretboardLayout,
     totalColumns,
@@ -406,12 +396,23 @@ export function FretboardSVG({
     displayFormat,
     degreeColorsEnabled,
     wrappedNotes,
-    practiceLens,
     tuning,
     noteSemantics,
     fullChordPositionKeys,
     fullChordShapeByPosition,
-    leadLensData,
+  });
+  const { renderedNotes } = useAnimatedFretboardView({
+    topology,
+    playbackSnapshot,
+    practiceLens,
+    hasChordOverlay,
+    displayFormat,
+    degreeColorsEnabled,
+    preferFlats,
+    scaleName: scaleName || "",
+    rootNote,
+    fretCenterX,
+    stringYAt,
   });
 
   // Scale semitone offsets (0-11) drive per-pair color via scale-degree position
@@ -431,11 +432,11 @@ export function FretboardSVG({
     yBounds: connectorYBounds,
   });
 
-  // Pre-filter noteData to chord-tone subset so scale-only note changes
-  // do not trigger expensive connector recalculation.
+  // Pre-filter stable topology to the chord-tone subset so playback-frame
+  // animation updates do not trigger expensive connector recalculation.
   const chordNoteData = useMemo(
-    () => noteData.filter((n) => CHORD_TONE_CLASSES.has(n.noteClass)),
-    [noteData],
+    () => topology.filter((n) => CHORD_TONE_CLASSES.has(n.noteClass)),
+    [topology],
   );
 
   // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
@@ -531,9 +532,7 @@ export function FretboardSVG({
           {hasChordOverlay && (
             <g clipPath={svgDefUrl("fretboard-taper")}>
               <FretboardNoteLayer
-                noteData={noteData}
-                fretCenterX={fretCenterX}
-                stringYAt={stringYAt}
+                notes={renderedNotes}
                 noteBubblePx={noteBubblePx}
                 displayFormat={displayFormat}
                 degreeColorsEnabled={degreeColorsEnabled}
@@ -565,9 +564,7 @@ export function FretboardSVG({
           {/* Chord notes (or all notes when no overlay) render LAST — on top of connectors. */}
           <g clipPath={svgDefUrl("fretboard-taper")}>
             <FretboardNoteLayer
-              noteData={noteData}
-              fretCenterX={fretCenterX}
-              stringYAt={stringYAt}
+              notes={renderedNotes}
               noteBubblePx={noteBubblePx}
               displayFormat={displayFormat}
               degreeColorsEnabled={degreeColorsEnabled}
@@ -579,7 +576,7 @@ export function FretboardSVG({
         </svg>
 
         <FretboardHitTargetLayer
-          noteData={noteData}
+          noteData={topology}
           fretCenterX={fretCenterX}
           stringYAt={stringYAt}
           noteBubblePx={noteBubblePx}

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { axe } from "../../test-utils/a11y";
-import type { NoteData } from "./hooks/useNoteData";
+import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 import {
   CHORD_ROOT_HALO_RADIUS_PX,
   CIRCLE_RADIUS_REDUCTION_PX,
@@ -28,10 +28,12 @@ type NoteClass =
   | "key-tonic"
   | "note-inactive";
 
-function makeNote(noteClass: NoteClass, overrides: Partial<NoteData> = {}): NoteData {
+function makeNote(noteClass: NoteClass, overrides: Partial<RenderedFretboardNote> = {}): RenderedFretboardNote {
   return {
     stringIndex: 0,
     fretIndex: 5,
+    cx: 100,
+    cy: 50,
     noteName: "C",
     octave: 4,
     noteClass,
@@ -46,26 +48,20 @@ function makeNote(noteClass: NoteClass, overrides: Partial<NoteData> = {}): Note
 }
 
 function renderLayer(
-  noteData: NoteData[],
+  notes: RenderedFretboardNote[],
   opts: {
-    fretCenterX?: (fi: number) => number;
-    stringYAt?: (si: number, x: number) => number;
     bubblePx?: number;
     displayFormat?: "notes" | "none";
   } = {},
 ) {
   const {
-    fretCenterX = () => 100,
-    stringYAt = () => 50,
     bubblePx = 40,
     displayFormat = "notes",
   } = opts;
   return render(
     <svg>
       <FretboardNoteLayer
-        noteData={noteData}
-        fretCenterX={fretCenterX}
-        stringYAt={stringYAt}
+        notes={notes}
         noteBubblePx={bubblePx}
         displayFormat={displayFormat}
       />
@@ -107,10 +103,7 @@ describe("FretboardNoteLayer", () => {
 
   it("renders text label at note center coordinates", () => {
     const cx = 120, cy = 60;
-    const { container } = renderLayer([makeNote("note-active")], {
-      fretCenterX: () => cx,
-      stringYAt: () => cy,
-    });
+    const { container } = renderLayer([makeNote("note-active", { cx, cy })]);
     const label = container.querySelector("text")!;
     expect(label.textContent).toBe("C");
     expect(label.getAttribute("x")).toBe(String(cx));
@@ -126,9 +119,8 @@ describe("FretboardNoteLayer", () => {
     const { container } = renderLayer(
       [
         makeNote("chord-root", { stringIndex: 0, fretIndex: 1 }),
-        makeNote("chord-tone-in-scale", { stringIndex: 1, fretIndex: 2 }),
+        makeNote("chord-tone-in-scale", { stringIndex: 1, fretIndex: 2, cx: 200, cy: 30 }),
       ],
-      { fretCenterX: (fi) => fi * 50, stringYAt: (si) => si * 30 },
     );
     expect(container.querySelectorAll("path").length).toBe(3); // chord-root halo+main, chord-tone main
     expect(container.querySelectorAll("rect").length).toBe(0);
@@ -151,10 +143,9 @@ describe("FretboardNoteLayer", () => {
     const { container } = renderLayer(
       [
         makeNote("chord-root", { stringIndex: 0, fretIndex: 0 }),
-        makeNote("note-active", { stringIndex: 1, fretIndex: 1 }),
-        makeNote("note-inactive", { stringIndex: 2, fretIndex: 2 }),
+        makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 150, cy: 30 }),
+        makeNote("note-inactive", { stringIndex: 2, fretIndex: 2, cx: 200, cy: 60 }),
       ],
-      { fretCenterX: (fi) => fi * 50, stringYAt: (si) => si * 30 },
     );
     // note-inactive should NOT have data-note-role; chord-root and note-active should
     const groups = container.querySelectorAll("g[data-note-role]");
@@ -168,11 +159,10 @@ describe("FretboardNoteLayer", () => {
     const { container } = renderLayer(
       [
         makeNote("chord-root", { stringIndex: 0, fretIndex: 0 }),
-        makeNote("note-active", { stringIndex: 1, fretIndex: 1 }),
-        makeNote("chord-tone-outside-scale", { stringIndex: 2, fretIndex: 2 }),
-        makeNote("note-blue", { stringIndex: 3, fretIndex: 3 }),
+        makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 150, cy: 30 }),
+        makeNote("chord-tone-outside-scale", { stringIndex: 2, fretIndex: 2, cx: 200, cy: 60 }),
+        makeNote("note-blue", { stringIndex: 3, fretIndex: 3, cx: 250, cy: 90 }),
       ],
-      { fretCenterX: (fi) => fi * 50, stringYAt: (si) => si * 30 },
     );
     const shapeFor = (role: string) =>
       container.querySelector(`g[data-note-role="${role}"]`)?.getAttribute("data-note-shape");
@@ -216,13 +206,11 @@ describe("FretboardNoteLayer", () => {
     const { container } = render(
       <svg>
         <FretboardNoteLayer
-          noteData={[
+          notes={[
             makeNote("chord-root", { stringIndex: 0, fretIndex: 0 }),
-            makeNote("note-active", { stringIndex: 1, fretIndex: 1 }),
-            makeNote(third, { stringIndex: 2, fretIndex: 2 }),
+            makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 150, cy: 30 }),
+            makeNote(third, { stringIndex: 2, fretIndex: 2, cx: 200, cy: 60 }),
           ]}
-          fretCenterX={(fi) => fi * 50}
-          stringYAt={(si) => si * 30}
           noteBubblePx={40}
           displayFormat="notes"
           filter={filter}
@@ -236,9 +224,7 @@ describe("FretboardNoteLayer", () => {
     const { container } = render(
       <svg>
         <FretboardNoteLayer
-          noteData={[makeNote("note-active")]}
-          fretCenterX={() => 100}
-          stringYAt={() => 50}
+          notes={[makeNote("note-active")]}
           noteBubblePx={40}
           displayFormat="notes"
           animationMode="css"
