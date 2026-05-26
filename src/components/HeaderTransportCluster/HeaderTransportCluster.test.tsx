@@ -22,10 +22,12 @@ describe("HeaderTransportCluster", () => {
 
     expect(screen.getByTestId("header-transport-cluster")).toBeTruthy();
     expect(screen.getByTestId("transport-bar")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Previous chord" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Previous chord" })).toBeNull();
     expect(screen.getByRole("button", { name: "Play progression" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Next chord" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Next chord" })).toBeNull();
     expect(screen.getByRole("button", { name: "Loop progression" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Stop progression" })).toBeNull();
+    expect(screen.queryByLabelText(/pause progression/i)).toBeNull();
     expect(screen.getByText("Play")).toBeTruthy();
     expect(screen.getByText("Loop")).toBeTruthy();
     expect(screen.getByText("Position")).toBeTruthy();

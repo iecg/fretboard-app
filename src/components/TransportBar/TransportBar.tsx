@@ -3,24 +3,18 @@ import {
   AudioWaveform,
   Drum,
   Guitar,
-  Loader2,
-  Pause,
   Play,
   Repeat,
-  SkipBack,
-  SkipForward,
   Square,
   Timer,
 } from "lucide-react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
-  activeProgressionStepIndexAtom,
   progressionPlaybackLoadingAtom,
   stopProgressionPlaybackAtom,
 } from "../../store/progressionAtoms";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useTranslation } from "../../hooks/useTranslation";
-import { Tooltip } from "../Tooltip/Tooltip";
 import styles from "./TransportBar.module.css";
 
 /**
@@ -28,12 +22,11 @@ import styles from "./TransportBar.module.css";
  * Self-contained: subscribes to the playback atoms via `useProgressionState`.
  */
 export function TransportBar() {
+  const { t } = useTranslation();
   const {
     progressionPlaying,
     progressionPlaybackBlockedReason,
     setProgressionPlaying,
-    advanceProgressionPlayback,
-    previousProgressionStep,
     progressionLoopEnabled,
     setProgressionLoopEnabled,
     progressionStrumEnabled,
@@ -47,15 +40,23 @@ export function TransportBar() {
   } = useProgressionState();
 
   const progressionPlaybackLoading = useAtomValue(progressionPlaybackLoadingAtom);
-  // Intentionally reads the LOGICAL atom (not displayedProgressionStepIndexAtom):
-  // Stop-button disabled state is editor state ("has the user advanced past step 0?"),
-  // not visual playhead state — the RAF-driven displayed index would flicker the
-  // disabled state at chord boundaries during playback.
-  const activeIndex = useAtomValue(activeProgressionStepIndexAtom);
   const stopProgressionPlayback = useSetAtom(stopProgressionPlaybackAtom);
-  const { t } = useTranslation();
   const canPlay = !progressionPlaybackBlockedReason;
-  const stopDisabled = !canPlay || (!progressionPlaying && activeIndex === 0);
+  const playStopDisabled = !progressionPlaying && (!canPlay || progressionPlaybackLoading);
+  const playStopIsPlaying = progressionPlaying;
+  const progressionLabel = t("inspector.groupProgression").toLocaleLowerCase();
+  const playStopLabel = playStopIsPlaying
+    ? `${t("controls.stopProgression")} ${progressionLabel}`
+    : `${t("controls.playProgressionTooltip")} ${progressionLabel}`;
+
+  const handlePlayStopClick = () => {
+    if (progressionPlaying) {
+      stopProgressionPlayback();
+      return;
+    }
+
+    setProgressionPlaying(true);
+  };
 
   return (
     <div className={styles.transportBar} data-testid="transport-bar">
@@ -73,62 +74,21 @@ export function TransportBar() {
       <div className={styles.transportCluster}>
         <button
           type="button"
-          className={styles.transportButton}
-          onClick={() => previousProgressionStep()}
-          disabled={!canPlay || progressionPlaying}
-          aria-label="Previous chord"
+          className={clsx(
+            styles.transportButton,
+            styles.playButton,
+            playStopIsPlaying && styles["transportButton--accent"],
+          )}
+          onClick={handlePlayStopClick}
+          disabled={playStopDisabled}
+          aria-label={playStopLabel}
+          aria-busy={progressionPlaybackLoading || undefined}
         >
-          <SkipBack size={13} strokeWidth={2.4} aria-hidden="true" />
-        </button>
-        <Tooltip content={t("controls.stopProgressionTooltip")}>
-          <button
-            type="button"
-            className={styles.transportButton}
-            onClick={() => stopProgressionPlayback()}
-            disabled={stopDisabled}
-            aria-label={t("controls.stopProgression")}
-          >
-            <Square size={13} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
-          </button>
-        </Tooltip>
-        <Tooltip
-          content={
-            progressionPlaying
-              ? t("controls.pauseProgressionTooltip")
-              : t("controls.playProgressionTooltip")
-          }
-        >
-          <button
-            type="button"
-            className={clsx(styles.transportButton, styles.playButton, progressionPlaying && styles["transportButton--accent"])}
-            onClick={() => setProgressionPlaying(!progressionPlaying)}
-            disabled={!canPlay}
-            aria-label={progressionPlaying ? "Pause progression" : "Play progression"}
-            aria-busy={progressionPlaybackLoading || undefined}
-          >
-            {progressionPlaybackLoading ? (
-              <Loader2
-                size={14}
-                strokeWidth={2.4}
-                aria-hidden="true"
-                className={styles.spinner}
-                data-testid="transport-play-spinner"
-              />
-            ) : progressionPlaying ? (
-              <Pause size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
-            ) : (
-              <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
-            )}
-          </button>
-        </Tooltip>
-        <button
-          type="button"
-          className={styles.transportButton}
-          onClick={() => advanceProgressionPlayback()}
-          disabled={!canPlay || progressionPlaying}
-          aria-label="Next chord"
-        >
-          <SkipForward size={13} strokeWidth={2.4} aria-hidden="true" />
+          {playStopIsPlaying ? (
+            <Square size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
+          ) : (
+            <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
+          )}
         </button>
         <button
           type="button"

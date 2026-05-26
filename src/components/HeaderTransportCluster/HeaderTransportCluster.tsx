@@ -46,6 +46,7 @@ export function HeaderTransportCluster() {
   const canPlay = !progressionPlaybackBlockedReason;
   const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
   const activeStepBars = activeStep ? durationToBars(activeStep.duration, beatsPerBar) : 0;
+  const transportStartBar = progressionPlaying && canPlay ? currentProgressionBar : 1;
   const scale = scaleHeadline(scaleLabel);
 
   return (
@@ -54,7 +55,7 @@ export function HeaderTransportCluster() {
 
       <ProgressionPositionReadout
         playing={progressionPlaying && canPlay}
-        stepStartBar={currentProgressionBar}
+        stepStartBar={transportStartBar}
         stepBars={activeStepBars}
         stepIndex={activeProgressionStepIndex}
         totalProgressionBars={totalProgressionBars}

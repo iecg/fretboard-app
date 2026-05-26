@@ -82,12 +82,17 @@ describe("ProgressionTrack", () => {
     ).toBe("0.25");
   });
 
-  it("positions the playhead using exact fractional total duration bars", () => {
-    const { container } = renderWithAtoms(<ProgressionTrack />, [
+  it("positions the playhead using exact fractional total duration bars while playing", () => {
+    const store = makeAtomStore([
       [progressionStepsAtom, beatDurationProgression],
       [beatsPerBarAtom, 8],
       [activeProgressionStepIndexAtom, 1],
     ]);
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    const { container } = renderWithStore(<ProgressionTrack />, store);
 
     expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("12.5%");
   });
@@ -190,5 +195,22 @@ describe("ProgressionTrack", () => {
     expect(container.querySelector("[data-testid='transport-bar']")).toBeNull();
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
     expect(screen.queryByText("Position")).toBeNull();
+  });
+
+  it("does not move the stopped playhead when selecting a different chord on the timeline", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, twoBarLeadingProgression],
+      [beatsPerBarAtom, 4],
+      [activeProgressionStepIndexAtom, 0],
+    ]);
+    renderWithStore(<ProgressionTrack />, store);
+
+    const playhead = document.querySelector<HTMLElement>("[data-testid='progression-playhead']");
+    expect(playhead?.style.left).toBe("0%");
+
+    fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A minor, 1 bar/i }));
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+    expect(playhead?.style.left).toBe("0%");
   });
 });

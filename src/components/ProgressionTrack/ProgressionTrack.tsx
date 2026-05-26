@@ -45,6 +45,7 @@ export function ProgressionTrack() {
 
   const canPlay = !progressionPlaybackBlockedReason;
   const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
+  const transportStartBar = progressionPlaying && canPlay ? currentProgressionBar : 1;
   const totalDurationBars = Math.max(1, totalProgressionBars);
   const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
   const subdivisionsPerBar = Math.max(1, Math.floor(beatsPerBar));
@@ -102,7 +103,7 @@ export function ProgressionTrack() {
         <div className={styles.lane}>
           <ProgressionPlayhead
             playing={progressionPlaying && canPlay}
-            stepStartBar={currentProgressionBar}
+            stepStartBar={transportStartBar}
             totalDurationBars={totalDurationBars}
             totalBarsForDisplay={totalBarsForDisplay}
           />

@@ -91,19 +91,6 @@
   color: var(--track-accent);
 }
 
-@keyframes transport-spinner-rotate {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-.spinner {
-  animation: transport-spinner-rotate 0.9s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner { animation: none; }
-}
-
 /* ----------------------------------------------------------------------------
  * Status lights — small dot + uppercase label, stacked
  * ------------------------------------------------------------------------- */

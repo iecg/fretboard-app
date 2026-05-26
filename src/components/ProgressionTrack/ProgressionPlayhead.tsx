@@ -80,7 +80,7 @@ export function ProgressionPlayhead({
     };
     frameId = window.requestAnimationFrame(loop);
     return () => window.cancelAnimationFrame(frameId);
-  }, [playing]);
+  }, [playing, stepStartBar, totalDurationBars, totalBarsForDisplay]);
 
   return (
     <span

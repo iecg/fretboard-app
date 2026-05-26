@@ -5,7 +5,7 @@ import {
   activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
-  advanceProgressionPlaybackAtom,
+  advanceProgressionPlaybackAtom, previousProgressionStepAtom,
   beatsPerBarAtom,
   currentProgressionBarAtom,
   currentProgressionPresetIdAtom,
@@ -149,6 +149,36 @@ describe("progressionAtoms", () => {
 
     store.set(advanceProgressionPlaybackAtom);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+  });
+
+  it("does not wrap to the first step when advancing from the last step while stopped", () => {
+    const store = createStore();
+    store.set(progressionLoopEnabledAtom, true);
+    store.set(progressionStepsAtom, [
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 1);
+
+    store.set(advanceProgressionPlaybackAtom);
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+  });
+
+  it("does not wrap to the last step when moving backward from the first step while stopped", () => {
+    const store = createStore();
+    store.set(progressionLoopEnabledAtom, true);
+    store.set(progressionStepsAtom, [
+      { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+
+    store.set(previousProgressionStepAtom);
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
     expect(store.get(progressionPlayingAtom)).toBe(false);
   });
 });

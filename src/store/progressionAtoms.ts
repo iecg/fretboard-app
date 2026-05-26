@@ -609,11 +609,12 @@ export const updateProgressionStepCachedDegreeAtom = atom(
 );
 
 export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
+  const allowWrap = get(progressionPlayingStateAtom) && get(progressionLoopEnabledAtom);
   const next = findNextResolvableStepIndex(
     get(resolvedProgressionStepsAtom),
     get(activeProgressionStepIndexAtom),
     1,
-    get(progressionLoopEnabledAtom),
+    allowWrap,
   );
   if (next === null) {
     set(progressionPlayingStateAtom, false);
@@ -631,17 +632,15 @@ export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
 });
 
 export const previousProgressionStepAtom = atom(null, (get, set) => {
+  const allowWrap = get(progressionPlayingStateAtom) && get(progressionLoopEnabledAtom);
   const next = findNextResolvableStepIndex(
     get(resolvedProgressionStepsAtom),
     get(activeProgressionStepIndexAtom),
     -1,
-    true,
+    allowWrap,
   );
   if (next === null) return;
   set(activeProgressionStepIndexAtom, next);
-  // Mirror `advanceProgressionPlaybackAtom`: when stepping backward during
-  // active playback, recompute the deadline from the new step's duration so
-  // the playback loop doesn't fire on the previous step's stale timer.
   if (get(progressionPlayingStateAtom)) {
     const nextStep = get(progressionStepsAtom)[next];
     const durationMs = nextStep
