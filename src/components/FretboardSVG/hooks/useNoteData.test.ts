@@ -332,66 +332,6 @@ describe("useNoteData", () => {
     expect(blueNote?.degreeColor).toBe("#0047ff");
   });
 
-  describe("applyDimOpacity for full-voicing positions outside polygon", () => {
-    const SINGLE_STRING_LAYOUT = [[
-      "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E",
-    ]];
-
-    // Polygon spans frets 5-7 — does not cover fret 8.
-    const polyAt5To7: ShapePolygon = {
-      shape: "E" as CagedShape,
-      color: "rgba(0,0,0,0.1)",
-      cagedLabel: "E",
-      modalLabel: null,
-      truncated: false,
-      intendedMin: 5,
-      intendedMax: 7,
-      vertices: [
-        { fret: 5, string: 0 },
-        { fret: 7, string: 0 },
-      ],
-    };
-
-    it("does not dim a chord-tone voicing vertex outside the active polygon", () => {
-      const { result } = renderHook(() =>
-        useNoteData({
-          numStrings: 1,
-          fretboardLayout: SINGLE_STRING_LAYOUT,
-          totalColumns: 12,
-          startFret: 0,
-          maxFret: 12,
-          hiddenNotes: new Set(),
-          highlightNotes: ["C", "E", "G"],
-          hasChordOverlay: true,
-          chordTones: ["C", "E", "G"],
-          rootNote: "C",
-          chordRoot: "C",
-          colorNotes: [],
-          shapePolygons: [polyAt5To7],
-
-          chordBoxBounds: [],
-          chordFretSpread: 0,
-          activePattern: "caged",
-          shapeScope: "single",
-          activeShape: "E" as CagedShape,
-          scaleName: "major",
-          preferFlats: false,
-          wrappedNotes: new Set(),
-          tuning: ["E2"],
-          // Position at fret 8 (C) — chord tone, outside polygon 5-7,
-          // but a member of the active full-chord voicing.
-          fullChordPositionKeys: new Set(["0-8"]),
-        }),
-      );
-
-      const outOfPolygonC = result.current.find(
-        (n) => n.stringIndex === 0 && n.fretIndex === 8,
-      );
-      expect(outOfPolygonC).toBeDefined();
-      expect(outOfPolygonC!.applyDimOpacity).toBe(false);
-    });
-  });
-
   describe("useNoteData — full-voicing classifies vertices as in-scale chord tones", () => {
     it("classifies a fullChordPositionKeys member as chord-tone-in-scale even when chordToneSet excludes it", () => {
       const layoutRow = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E"];

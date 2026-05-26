@@ -335,7 +335,6 @@ export function useNoteData({
         const applyDimOpacity =
           (shapePolygons.length > 0 &&
             !isInsideAnyPolygon &&
-            !isVoicingVertex &&
             (finalNoteClass === "note-blue" ||
               finalNoteClass === "chord-tone-outside-scale" ||
               finalNoteClass === "chord-tone-in-scale" ||
