@@ -954,6 +954,7 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
       [fingeringPatternAtom, "3nps"],
       [npsPositionAtom, 22],
       [chordSnapToScaleAtom, true],
+      [voicingAtom, "close"],
     ]);
 
     const options = store.get(stringSetOptionsAtom);
@@ -962,6 +963,8 @@ describe("stringSetOptionsAtom + chordSnapToScaleAtom (Plan G8)", () => {
 
     // Verify the probe logic: each non-"all" option's disabled state must match
     // whether closeCandidatesAllStringSetsAtom has a candidate for that string set.
+    // (voicing="close" so the full-mode fallback disable layer is bypassed and
+    // only the snap-to-scale layer participates — the focus of this test.)
     const allCandidates = store.get(closeCandidatesAllStringSetsAtom);
     for (const opt of options) {
       if (opt.id === "all") continue;

@@ -356,9 +356,16 @@ export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
 
 /**
  * Options the picker offers for the current chord: always "All" + every
- * consecutive-string window for the chord's voice count. When snap-to-scale
- * is on and a scale pattern is active, options with zero fitting voicings are
- * marked disabled.
+ * consecutive-string window for the chord's voice count.
+ *
+ * Two disable layers compose:
+ *   1. **Close-mode (snap-to-scale):** if snap is on and a scale pattern is
+ *      active, options with zero in-scale close candidates are disabled.
+ *   2. **Full-mode fallback:** if any active position needs a close-voicing
+ *      fallback (see `fallbackPolygonsAtom`), options whose candidates can't
+ *      fit any fallback-needing polygon are disabled. Prevents the user from
+ *      picking a string set that yields zero connectors while the picker
+ *      still claims it's a valid choice.
  */
 export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
   const chordType = get(chordTypeAtom);
@@ -366,22 +373,61 @@ export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
   const def = CHORD_DEFINITIONS[chordType];
   const base = buildStringSetOptions(def?.members.length ?? 4);
 
-  const snap = get(chordSnapToScaleAtom);
-  if (!snap) return base;
-  const patternKeys = get(activeScalePatternPositionsAtom);
-  if (patternKeys.size === 0) return base;
+  // Imports below are at the bottom of this file to break a top-of-file
+  // circular import (voicingFallbackAtoms imports from this module). The
+  // bindings are live at getter-evaluation time.
+  const fallbackPolygons = get(fallbackPolygonsAtom);
+  const fallback3Nps = get(fallback3NpsBoxBoundsAtom);
+  const fallbackActive = fallbackPolygons.length > 0 || fallback3Nps !== null;
 
   const allCandidates = get(closeCandidatesAllStringSetsAtom);
+  const snap = get(chordSnapToScaleAtom);
+  const patternKeys = get(activeScalePatternPositionsAtom);
+  const snapActive = snap && patternKeys.size > 0;
+
+  if (!snapActive && !fallbackActive) return base;
 
   return base.map((opt) => {
     if (opt.id === "all") return opt;
     const optStringSet = new Set(opt.strings);
-    const hasCandidate = allCandidates.some((v) =>
+    const candidatesOnSet = allCandidates.filter((v) =>
       v.notes.every((n) => optStringSet.has(n.stringIndex)),
     );
-    return hasCandidate
-      ? opt
-      : { ...opt, disabled: true, disabledReason: "No voicing in current scale window" };
+
+    if (snapActive && candidatesOnSet.length === 0) {
+      return { ...opt, disabled: true, disabledReason: "No voicing in current scale window" };
+    }
+
+    if (fallbackActive) {
+      // At least one candidate must fit at least one fallback-needing position.
+      let fits = false;
+      if (fallback3Nps !== null) {
+        fits = candidatesOnSet.some((v) =>
+          v.notes.every((n) => {
+            const b = fallback3Nps[n.stringIndex];
+            return b !== undefined && n.fretIndex >= b.minFret && n.fretIndex <= b.maxFret;
+          }),
+        );
+      } else {
+        fits = candidatesOnSet.some((v) =>
+          fallbackPolygons.some((polygon) =>
+            v.notes.every((n) => {
+              const leftFret = polygon.vertices[n.stringIndex]?.fret;
+              const rightFret = polygon.vertices[polygon.vertices.length - 1 - n.stringIndex]?.fret;
+              if (leftFret === undefined || rightFret === undefined) return false;
+              const minFret = Math.min(leftFret, rightFret);
+              const maxFret = Math.max(leftFret, rightFret);
+              return n.fretIndex >= minFret && n.fretIndex <= maxFret;
+            }),
+          ),
+        );
+      }
+      if (!fits) {
+        return { ...opt, disabled: true, disabledReason: "No voicing fits this position" };
+      }
+    }
+
+    return opt;
   });
 });
 
@@ -733,3 +779,13 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
     };
   });
 });
+
+// Circular-import-safe re-imports — see comment in `stringSetOptionsAtom`.
+// Placed at file bottom so chordOverlayAtoms's exports are fully bound before
+// voicingFallbackAtoms re-enters this module. Atoms read these only inside
+// getter bodies, so the bindings are live by the time they're dereferenced.
+
+import {
+  fallbackPolygonsAtom,
+  fallback3NpsBoxBoundsAtom,
+} from "./voicingFallbackAtoms";
