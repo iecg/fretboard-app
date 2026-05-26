@@ -172,7 +172,6 @@ describe('getFullChordShapeMatches', () => {
   describe("dim CAGED templates", () => {
     for (const { shape, root, expected } of [
       { shape: "A", root: "A", expected: new Set(["A", "C", "D#"]) },
-      { shape: "G", root: "G", expected: new Set(["G", "A#", "C#"]) },
       { shape: "E", root: "E", expected: new Set(["E", "G", "A#"]) },
       { shape: "D", root: "D", expected: new Set(["D", "F", "G#"]) },
     ] as const) {
@@ -203,6 +202,17 @@ describe('getFullChordShapeMatches', () => {
       // the lower-neck dim voicing in its own physical fingering.
       expect(matches.find((m) => m.shape === "C")).toBeUndefined();
       expect(matches.find((m) => m.shape === "A")).toBeDefined();
+    });
+
+    it("G-shape dim is omitted — E-shape covers the upper-neck dim voicing", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "dim",
+        tuning: STANDARD_TUNING,
+        maxFret: 12,
+      });
+      expect(matches.find((m) => m.shape === "G")).toBeUndefined();
+      expect(matches.find((m) => m.shape === "E")).toBeDefined();
     });
   });
 
