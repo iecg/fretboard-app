@@ -13,12 +13,6 @@ function scaleHeadline(label: string): string {
   return label.split(" (")[0].trim();
 }
 
-function durationToBars(
-  duration: { value: number; unit: "bar" | "beat" },
-  beatsPerBar: number,
-): number {
-  return duration.unit === "bar" ? duration.value : duration.value / beatsPerBar;
-}
 
 /**
  * The DAW transport cluster, hosted in the unified `AppHeader` (Always-On DAW
@@ -35,18 +29,12 @@ export function HeaderTransportCluster() {
     progressionTempoBpm,
     progressionPlaying,
     progressionPlaybackBlockedReason,
-    currentProgressionBar,
     totalProgressionBars,
-    activeProgressionStepIndex,
-    resolvedProgressionSteps,
     beatsPerBar,
   } = useProgressionState();
   const { scaleLabel } = useScaleState();
 
   const canPlay = !progressionPlaybackBlockedReason;
-  const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
-  const activeStepBars = activeStep ? durationToBars(activeStep.duration, beatsPerBar) : 0;
-  const transportStartBar = progressionPlaying && canPlay ? currentProgressionBar : 1;
   const scale = scaleHeadline(scaleLabel);
 
   return (
@@ -55,9 +43,7 @@ export function HeaderTransportCluster() {
 
       <ProgressionPositionReadout
         playing={progressionPlaying && canPlay}
-        stepStartBar={transportStartBar}
-        stepBars={activeStepBars}
-        stepIndex={activeProgressionStepIndex}
+        stoppedBar={1}
         totalProgressionBars={totalProgressionBars}
         beatsPerBar={beatsPerBar}
         tempoBpm={progressionTempoBpm}

@@ -88,6 +88,7 @@ export function formatChordShortLabel(rootLabel: string, quality: string): strin
 export interface FormattedPlaybackPositionParts {
   bar: string;
   beat: string;
+  subdivision: string;
 }
 
 export interface FormattedPlaybackPosition {
@@ -99,11 +100,12 @@ export interface FormattedPlaybackPosition {
 /**
  * Format the DAW-style position readout for the progression track.
  *
- * Returns a bar.beat pair such as `1.2 / 4.0` where:
+ * Returns a bar.beat.sixteenth pair such as `1.2.3 / 4.0.0` where:
  * - bar is the 1-indexed bar (no padding)
  * - beat is the 1-indexed beat within the current bar
+ * - subdivision is the 1-indexed sixteenth-note within the current beat (1..4)
  *
- * The total uses duration semantics — `${bars}.0` for a `bars`-long
+ * The total uses duration semantics — `${bars}.0.0` for a `bars`-long
  * progression — matching how Logic and Ableton display song length.
  */
 export function formatProgressionPlaybackPosition(
@@ -111,12 +113,13 @@ export function formatProgressionPlaybackPosition(
   totalProgressionBars: number,
   beatsPerBar: number,
 ): FormattedPlaybackPosition {
+  const SIXTEENTHS_PER_BEAT = 4;
   const safeBeats = Math.max(1, Math.floor(beatsPerBar));
   const totalBars = Math.max(1, Math.ceil(totalProgressionBars));
   // Position can range over [1, totalBars + 1). bar 1.0 is the first beat of
-  // bar 1, bar N + 1 - ε is the final beat of the last bar. Clamping to
-  // `totalBars` would freeze the readout at `N.1` for the entire last bar
-  // instead of advancing through its beats.
+  // bar 1, bar N + 1 - ε is the final sixteenth of the last bar. Clamping to
+  // `totalBars` would freeze the readout at `N.1.1` for the entire last bar
+  // instead of advancing through its beats and subdivisions.
   const maxBar = totalBars + 1 - 1e-9;
   const clampedBar = Math.max(1, Math.min(currentProgressionBar, maxBar));
   const bar = Math.floor(clampedBar);
@@ -124,22 +127,29 @@ export function formatProgressionPlaybackPosition(
   const beatPos = positionInBar * safeBeats;
   const beatIndex = Math.min(safeBeats - 1, Math.floor(beatPos));
   const beat = beatIndex + 1;
+  const subInBeatFloat = (beatPos - Math.floor(beatPos)) * SIXTEENTHS_PER_BEAT;
+  const subdivision = Math.min(
+    SIXTEENTHS_PER_BEAT,
+    Math.max(1, Math.floor(subInBeatFloat) + 1),
+  );
 
   const currentParts: FormattedPlaybackPositionParts = {
     bar: String(bar),
     beat: String(beat),
+    subdivision: String(subdivision),
   };
-  // Total uses duration semantics: `${bars}.0` rather than the position of
+  // Total uses duration semantics: `${bars}.0.0` rather than the position of
   // the final tick. Matches Logic/Ableton "song length" displays where a
-  // 4-bar loop reads "4.0" — i.e. four full bars have elapsed at the end.
+  // 4-bar loop reads "4.0.0" — i.e. four full bars have elapsed at the end.
   const totalParts: FormattedPlaybackPositionParts = {
     bar: String(totalBars),
     beat: "0",
+    subdivision: "0",
   };
 
   return {
-    current: `${currentParts.bar}.${currentParts.beat}`,
-    total: `${totalParts.bar}.${totalParts.beat}`,
+    current: `${currentParts.bar}.${currentParts.beat}.${currentParts.subdivision}`,
+    total: `${totalParts.bar}.${totalParts.beat}.${totalParts.subdivision}`,
     parts: { current: currentParts, total: totalParts },
   };
 }

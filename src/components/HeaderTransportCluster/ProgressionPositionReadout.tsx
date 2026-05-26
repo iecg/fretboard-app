@@ -8,14 +8,12 @@ import styles from "./HeaderTransportCluster.module.css";
 
 interface ProgressionPositionReadoutProps {
   playing: boolean;
-  stepStartBar: number;
-  stepBars: number;
-  stepIndex: number;
+  stoppedBar: number;
   totalProgressionBars: number;
   beatsPerBar: number;
   /** Active tempo in BPM. Drives the imperative tick interval: one render per
-   *  beat (`60_000 / tempoBpm` ms) so the beat digit advances exactly once
-   *  per beat at any tempo. */
+   *  sixteenth-note (`60_000 / tempoBpm / 4` ms) so the subdivision digit
+   *  advances exactly once per sub-beat at any tempo. */
   tempoBpm: number;
 }
 
@@ -29,6 +27,7 @@ function PositionDigits({
   refs?: {
     bar: React.RefObject<HTMLSpanElement | null>;
     beat: React.RefObject<HTMLSpanElement | null>;
+    sub: React.RefObject<HTMLSpanElement | null>;
   };
 }) {
   return (
@@ -36,6 +35,8 @@ function PositionDigits({
       <span className={styles.digitBar} ref={refs?.bar}>{parts.bar}</span>
       <span className={styles.digitDot} aria-hidden="true">.</span>
       <span className={styles.digitBeat} ref={refs?.beat}>{parts.beat}</span>
+      <span className={styles.digitDot} aria-hidden="true">.</span>
+      <span className={styles.digitSub} ref={refs?.sub}>{parts.subdivision}</span>
     </span>
   );
 }
@@ -56,9 +57,7 @@ function PositionDigits({
  */
 export function ProgressionPositionReadout({
   playing,
-  stepStartBar,
-  stepBars,
-  stepIndex,
+  stoppedBar,
   totalProgressionBars,
   beatsPerBar,
   tempoBpm,
@@ -66,25 +65,27 @@ export function ProgressionPositionReadout({
   const containerRef = useRef<HTMLSpanElement | null>(null);
   const barRef = useRef<HTMLSpanElement | null>(null);
   const beatRef = useRef<HTMLSpanElement | null>(null);
+  const subRef = useRef<HTMLSpanElement | null>(null);
   // Last rendered digit values; skip the DOM write when nothing visible
   // would change, so the cost on the position-readout subtree is one
   // string comparison per tick when the bar is held / paused.
   const lastBarRef = useRef<string>("");
   const lastBeatRef = useRef<string>("");
+  const lastSubRef = useRef<string>("");
   const lastAriaLabelRef = useRef<string>("");
 
   // Store chord-boundary props in refs so the animation loop can access
   // the latest values without needing to be cleared and restarted
   // at every transition.
-  const propsRef = useRef({ stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar });
+  const propsRef = useRef({ stoppedBar, totalProgressionBars, beatsPerBar });
   useEffect(() => {
-    propsRef.current = { stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar };
-  }, [stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar]);
+    propsRef.current = { stoppedBar, totalProgressionBars, beatsPerBar };
+  }, [stoppedBar, totalProgressionBars, beatsPerBar]);
 
   // Initial / chord-change static render: the bar/total parts come from
   // props (or a fallback) so SSR and the first paint are correct.
   const initialPosition = formatProgressionPlaybackPosition(
-    stepStartBar,
+    stoppedBar,
     totalProgressionBars,
     beatsPerBar,
   );
@@ -97,7 +98,7 @@ export function ProgressionPositionReadout({
         currentTotalBars,
         currentBPB,
       );
-      const { bar, beat } = p.parts.current;
+      const { bar, beat, subdivision } = p.parts.current;
       if (bar !== lastBarRef.current && barRef.current) {
         barRef.current.textContent = bar;
         lastBarRef.current = bar;
@@ -105,6 +106,10 @@ export function ProgressionPositionReadout({
       if (beat !== lastBeatRef.current && beatRef.current) {
         beatRef.current.textContent = beat;
         lastBeatRef.current = beat;
+      }
+      if (subdivision !== lastSubRef.current && subRef.current) {
+        subRef.current.textContent = subdivision;
+        lastSubRef.current = subdivision;
       }
 
       // Update aria-label imperatively so screen readers stay in sync with
@@ -122,35 +127,38 @@ export function ProgressionPositionReadout({
     const tick = () => {
       const tl = getTimelinePosition();
       const {
-        stepStartBar: currentStepStartBar,
-        stepBars: currentStepBars,
-        stepIndex: currentStepIndex,
+        stoppedBar: currentStoppedBar,
+        totalProgressionBars: currentTotalBars,
       } = propsRef.current;
 
       const live =
         playing
         && tl
-        && tl.stepIndex === currentStepIndex
         && !tl.paused
-        && currentStepBars > 0;
-      const positionBar = live ? currentStepStartBar + tl.localFraction * currentStepBars : currentStepStartBar;
+        && currentTotalBars > 0;
+      const clampedGlobalFraction = live
+        ? Math.max(0, Math.min(1 - Number.EPSILON, tl.globalFraction))
+        : 0;
+      const positionBar = live
+        ? 1 + clampedGlobalFraction * currentTotalBars
+      : currentStoppedBar;
       write(positionBar);
     };
-
     // Reset the cached digit values so the first tick force-writes after a
     // chord boundary — even if the computed digits happen to match the
     // outgoing chord's last frame, the refs still need to settle to the
     // new step's start.
     lastBarRef.current = "";
     lastBeatRef.current = "";
+    lastSubRef.current = "";
     lastAriaLabelRef.current = "";
     tick();
 
     if (!playing) return;
-    // One render per beat at the active tempo: 60_000 ms / BPM.
-    // At 60 BPM → 1000 ms; 120 → 500 ms; 240 → 250 ms. Clamp to 16 ms floor
+    // One render per sixteenth note at the active tempo: 60_000 ms / BPM / 4.
+    // At 60 BPM → 250 ms; 120 → 125 ms; 240 → 63 ms. Clamp to 16 ms floor
     // so accidentally-huge tempos (>3750 BPM) don't hammer the main thread.
-    const tickMs = Math.max(16, Math.round(60000 / Math.max(1, tempoBpm)));
+    const tickMs = Math.max(16, Math.round(15000 / Math.max(1, tempoBpm)));
     const id = window.setInterval(tick, tickMs);
     return () => window.clearInterval(id);
   }, [playing, tempoBpm]);
@@ -167,7 +175,7 @@ export function ProgressionPositionReadout({
         <span className={styles.positionCurrent}>
           <PositionDigits
             parts={initialPosition.parts.current}
-            refs={{ bar: barRef, beat: beatRef }}
+            refs={{ bar: barRef, beat: beatRef, sub: subRef }}
           />
         </span>
         <span className={styles.positionSeparator} aria-hidden="true">/</span>
