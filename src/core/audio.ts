@@ -21,18 +21,18 @@ const AUDIO_CONFIG = {
   /** Master volume in linear gain (matches prior MASTER_GAIN = 0.5). */
   MASTER_GAIN: 0.5,
 
-  /** Envelope shaped to approximate the prior decay characteristic. */
-  ATTACK_TIME: 0.005,
-  DECAY_TIME: 0.4,
-  SUSTAIN: 0.0,
-  RELEASE_TIME: 1.0,
+  /** Matches strum voice envelope for warmer guitar tone. */
+  ATTACK_TIME: 0.01,
+  DECAY_TIME: 1.1,
+  SUSTAIN: 0.05,
+  RELEASE_TIME: 0.4,
 
   /** Single-note duration handed to triggerAttackRelease (seconds). */
-  NOTE_DURATION: 1.5,
+  NOTE_DURATION: 1.8,
 
-  /** Lowpass filter that adds the "muted" plucked-string color. */
-  FILTER_FREQ: 2400,
-  FILTER_Q: 0.8,
+  /** Filter set high enough to be transparent — strum voice has none. */
+  FILTER_FREQ: 10000,
+  FILTER_Q: 0.1,
 
   /** Glide time when ramping master volume to/from mute (seconds). */
   MUTE_TRANSITION_TIME: 0.02,
@@ -101,16 +101,15 @@ class GuitarSynth {
         Q: AUDIO_CONFIG.FILTER_Q,
       }).connect(this.volume);
 
-      // Custom partials roughly match the prior PeriodicWave harmonics
-      // [0, 1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]. Tone's "custom" partials
-      // omit the DC (index 0) — pass the remainder.
+      // Custom partials match the strum voice for a warmer guitar-like
+      // timbre. Tone's "custom" partials omit the DC (index 0).
       this.polySynth = new Tone.PolySynth({
         voice: Tone.Synth,
         maxPolyphony: AUDIO_CONFIG.MAX_POLYPHONY,
         options: {
           oscillator: {
             type: "custom",
-            partials: [1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06],
+            partials: [1, 0.8, 0.45, 0.22, 0.12, 0.05],
           },
           envelope: {
             attack: AUDIO_CONFIG.ATTACK_TIME,

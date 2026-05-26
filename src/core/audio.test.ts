@@ -153,11 +153,11 @@ describe("GuitarSynth (Tone-backed)", () => {
       ])[0];
       expect(opts.maxPolyphony).toBe(12);
       expect(opts.options.oscillator.type).toBe("custom");
-      expect(opts.options.oscillator.partials).toEqual([1, 0.6, 0.4, 0.3, 0.2, 0.1, 0.06]);
-      expect(opts.options.envelope.attack).toBeCloseTo(0.005);
-      expect(opts.options.envelope.decay).toBeCloseTo(0.4);
-      expect(opts.options.envelope.sustain).toBeCloseTo(0);
-      expect(opts.options.envelope.release).toBeCloseTo(1.0);
+      expect(opts.options.oscillator.partials).toEqual([1, 0.8, 0.45, 0.22, 0.12, 0.05]);
+      expect(opts.options.envelope.attack).toBeCloseTo(0.01);
+      expect(opts.options.envelope.decay).toBeCloseTo(1.1);
+      expect(opts.options.envelope.sustain).toBeCloseTo(0.05);
+      expect(opts.options.envelope.release).toBeCloseTo(0.4);
     });
 
     it("initializes Volume at the master-gain dB (≈ -6.02 dB for 0.5 gain)", () => {
