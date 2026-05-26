@@ -89,7 +89,9 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   // are conventional rather than geometrically forced. Voicings chosen to keep
   // 5 distinct physical positions per target root.
   { shape: "C", quality: "dim7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [null, 4, 2, 4, 3, null] },
-  { shape: "A", quality: "dim7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 1, 0, null] },
+  // A-string root dropped (duplicate of G-string root); 5-note voicing was
+  // unfrettable due to the cross-string 2-fret barre + A-string thumb hold.
+  { shape: "A", quality: "dim7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 1, null, null] },
   { shape: "G", quality: "dim7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 2, 3, 2, null, 3] },
   { shape: "E", quality: "dim7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 1, 0] },
   { shape: "D", quality: "dim7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 0, 1, 0, null, null] },

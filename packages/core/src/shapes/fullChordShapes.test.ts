@@ -237,6 +237,24 @@ describe('getFullChordShapeMatches', () => {
         expect(pcs).toEqual(expected);
       });
     }
+
+    it("A-shape dim7 drops the duplicate A-string root (4-note voicing)", () => {
+      // The original 5-note voicing included an A-string root that duplicated
+      // the G-string root and was unfrettable alongside the 2-fret cross-string
+      // barre on the upper strings. The 4-note voicing still covers all chord
+      // tones (B, D, F, G#) across four adjacent strings.
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "dim7",
+        tuning: STANDARD_TUNING,
+        maxFret: 12,
+      });
+      const found = matches.find((m) => m.shape === "A");
+      expect(found, "expected an A-shape match for Bdim7").toBeDefined();
+      expect([...found!.positionKeys].sort()).toEqual(["0-4", "1-3", "2-4", "3-3"]);
+      const pcs = new Set(found!.notes.map((n) => n.noteName));
+      expect(pcs).toEqual(new Set(["B", "D", "F", "G#"]));
+    });
   });
 
   describe("m7b5 CAGED templates", () => {
