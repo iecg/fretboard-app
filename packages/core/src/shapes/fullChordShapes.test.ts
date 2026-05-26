@@ -391,13 +391,13 @@ describe('getFullChordShapeMatches', () => {
   describe("m7 CAGED templates", () => {
     // Expected pitch classes per canonical root (sharps convention):
     //   Cm7 = {C, D#, G, A#}   Am7 = {A, C, E, G}
-    //   Gm7 = {G, A#, D, F}    Em7 = {E, G, B, D}    Dm7 = {D, F, A, C}
+    //   Gm7 = {G, A#, D, F}    Em7 = {E, G, B, D}
+    // D-shape m7 omitted — close-voicing duplicate per 2026-05-26 audit.
     for (const { shape, root, expected } of [
       { shape: "C", root: "C", expected: new Set(["C", "D#", "G", "A#"]) },
       { shape: "A", root: "A", expected: new Set(["A", "C", "E", "G"]) },
       { shape: "G", root: "G", expected: new Set(["G", "A#", "D", "F"]) },
       { shape: "E", root: "E", expected: new Set(["E", "G", "B", "D"]) },
-      { shape: "D", root: "D", expected: new Set(["D", "F", "A", "C"]) },
     ] as const) {
       it(`resolves a ${root}m7 ${shape}-shape voicing`, () => {
         const matches = getFullChordShapeMatches({
@@ -412,5 +412,15 @@ describe('getFullChordShapeMatches', () => {
         expect(pcs).toEqual(expected);
       });
     }
+
+    it("D-shape m7 is omitted — identical to a close voicing (audit-driven)", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "D",
+        chordType: "m7",
+        tuning: STANDARD_TUNING,
+        maxFret: 24,
+      });
+      expect(matches.find((m) => m.shape === "D")).toBeUndefined();
+    });
   });
 });

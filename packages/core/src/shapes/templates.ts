@@ -62,7 +62,8 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "A", quality: "m7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 1, 0, 2, 0, null] },
   { shape: "G", quality: "m7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 3, 0, 0, 1, 3] },
   { shape: "E", quality: "m7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 0, 0, 2, 0] },
-  { shape: "D", quality: "m7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 1, 2, 0, null, null] },
+  // D-shape m7 omitted — pitch-and-position identical to a generated close voicing
+  // across all 12 roots per docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
   // sus2 voicings — each anchored at its canonical root with at least 4 string
   // positions (resolver's minimum), all duplicating one chord tone since
   // sus2 only has 3 distinct pitch classes (root, 2nd, 5th).
