@@ -170,7 +170,7 @@ describe('getFullChordShapeMatches', () => {
   });
 
   describe("getFullChordShapeMatches — new qualities (no templates yet)", () => {
-    for (const chordType of ["sus2", "sus4", "dim", "dim7", "m7b5"] as const) {
+    for (const chordType of ["sus4", "dim", "dim7", "m7b5"] as const) {
       it(`resolves \`${chordType}\` to the new quality without crashing`, () => {
         const result = getFullChordShapeMatches({
           chordRoot: "C",
@@ -200,6 +200,29 @@ describe('getFullChordShapeMatches', () => {
         expect(found, `expected a ${shape}-shape match for Cmaj7`).toBeDefined();
         const pcs = new Set(found!.notes.map((n) => n.noteName));
         expect(pcs).toEqual(new Set(["C", "E", "G", "B"]));
+      });
+    }
+  });
+
+  describe("sus2 CAGED templates", () => {
+    for (const { shape, root, expected } of [
+      { shape: "C", root: "C", expected: new Set(["C", "D", "G"]) },
+      { shape: "A", root: "A", expected: new Set(["A", "B", "E"]) },
+      { shape: "G", root: "G", expected: new Set(["G", "A", "D"]) },
+      { shape: "E", root: "E", expected: new Set(["E", "F#", "B"]) },
+      { shape: "D", root: "D", expected: new Set(["D", "E", "A"]) },
+    ] as const) {
+      it(`resolves a ${root}sus2 ${shape}-shape voicing`, () => {
+        const matches = getFullChordShapeMatches({
+          chordRoot: root,
+          chordType: "sus2",
+          tuning: STANDARD_TUNING,
+          maxFret: 15,
+        });
+        const found = matches.find((m) => m.shape === shape);
+        expect(found, `expected a ${shape}-shape match for ${root}sus2`).toBeDefined();
+        const pcs = new Set(found!.notes.map((n) => n.noteName));
+        expect(pcs).toEqual(expected);
       });
     }
   });
