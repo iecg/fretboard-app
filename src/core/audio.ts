@@ -21,14 +21,14 @@ const AUDIO_CONFIG = {
   /** Master volume in linear gain (matches prior MASTER_GAIN = 0.5). */
   MASTER_GAIN: 0.5,
 
-  /** Matches strum voice envelope for warmer guitar tone. */
-  ATTACK_TIME: 0.01,
-  DECAY_TIME: 1.1,
-  SUSTAIN: 0.05,
-  RELEASE_TIME: 0.4,
+  /** Quick attack, fast decay for percussive picked-note feel. */
+  ATTACK_TIME: 0.005,
+  DECAY_TIME: 0.3,
+  SUSTAIN: 0.01,
+  RELEASE_TIME: 0.3,
 
   /** Single-note duration handed to triggerAttackRelease (seconds). */
-  NOTE_DURATION: 1.8,
+  NOTE_DURATION: 0.6,
 
   /** Filter set high enough to be transparent — strum voice has none. */
   FILTER_FREQ: 10000,
