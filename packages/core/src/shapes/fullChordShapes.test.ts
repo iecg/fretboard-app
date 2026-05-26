@@ -335,7 +335,8 @@ describe('getFullChordShapeMatches', () => {
   });
 
   describe("maj7 CAGED templates", () => {
-    for (const shape of ["C", "A", "G", "E", "D"] as const) {
+    // D-shape maj7 omitted — close-voicing duplicate per 2026-05-26 audit.
+    for (const shape of ["C", "A", "G", "E"] as const) {
       it(`resolves a Cmaj7 ${shape}-shape voicing whose pitch classes are {C, E, G, B}`, () => {
         const matches = getFullChordShapeMatches({
           chordRoot: "C",
@@ -349,6 +350,16 @@ describe('getFullChordShapeMatches', () => {
         expect(pcs).toEqual(new Set(["C", "E", "G", "B"]));
       });
     }
+
+    it("D-shape maj7 is omitted — identical to a close voicing (audit-driven)", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "D",
+        chordType: "maj7",
+        tuning: STANDARD_TUNING,
+        maxFret: 24,
+      });
+      expect(matches.find((m) => m.shape === "D")).toBeUndefined();
+    });
   });
 
   describe("sus4 CAGED templates", () => {
