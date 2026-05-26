@@ -59,6 +59,7 @@ export function HeaderTransportCluster() {
         stepIndex={activeProgressionStepIndex}
         totalProgressionBars={totalProgressionBars}
         beatsPerBar={beatsPerBar}
+        tempoBpm={progressionTempoBpm}
       />
 
       <div className={styles.contextReadouts}>

@@ -13,13 +13,11 @@ interface ProgressionPositionReadoutProps {
   stepIndex: number;
   totalProgressionBars: number;
   beatsPerBar: number;
+  /** Active tempo in BPM. Drives the imperative tick interval: one render per
+   *  sixteenth-note (`60_000 / tempoBpm / 4` ms) so the subdivision digit
+   *  advances exactly once per sub-beat at any tempo. */
+  tempoBpm: number;
 }
-
-/** Position-write interval. ~30 Hz refresh — smooth enough for the
- *  subdivision digit at typical tempos without the per-frame main-thread cost
- *  the original 60 Hz tick imposed. `setInterval` (not rAF) keeps the headless
- *  preview ticking; rAF is paused there. */
-const TICK_MS = 33;
 
 function PositionDigits({
   parts,
@@ -66,6 +64,7 @@ export function ProgressionPositionReadout({
   stepIndex,
   totalProgressionBars,
   beatsPerBar,
+  tempoBpm,
 }: ProgressionPositionReadoutProps) {
   const containerRef = useRef<HTMLSpanElement | null>(null);
   const barRef = useRef<HTMLSpanElement | null>(null);
@@ -158,9 +157,13 @@ export function ProgressionPositionReadout({
     tick();
 
     if (!playing) return;
-    const id = window.setInterval(tick, TICK_MS);
+    // One render per sixteenth note at the active tempo: 60_000 ms / BPM / 4.
+    // At 60 BPM → 250 ms; 120 → 125 ms; 240 → 63 ms. Clamp to 16 ms floor so
+    // accidentally-huge tempos (>3750 BPM) don't hammer the main thread.
+    const tickMs = Math.max(16, Math.round(15000 / Math.max(1, tempoBpm)));
+    const id = window.setInterval(tick, tickMs);
     return () => window.clearInterval(id);
-  }, [playing]);
+  }, [playing, tempoBpm]);
 
   return (
     <div className={styles.positionReadout}>
