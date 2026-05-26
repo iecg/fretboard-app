@@ -284,11 +284,10 @@ describe('getFullChordShapeMatches', () => {
   });
 
   describe("m7b5 CAGED templates", () => {
+    // A and D shapes omitted — close-voicing duplicates per 2026-05-26 audit.
     for (const { shape, root, expected } of [
       { shape: "C", root: "C", expected: new Set(["C", "D#", "F#", "A#"]) },
-      { shape: "A", root: "A", expected: new Set(["A", "C", "D#", "G"]) },
       { shape: "E", root: "E", expected: new Set(["E", "G", "A#", "D"]) },
-      { shape: "D", root: "D", expected: new Set(["D", "F", "G#", "C"]) },
     ] as const) {
       it(`resolves a ${root}m7b5 ${shape}-shape voicing`, () => {
         const matches = getFullChordShapeMatches({
@@ -312,6 +311,26 @@ describe('getFullChordShapeMatches', () => {
         maxFret: 12,
       });
       expect(matches.find((m) => m.shape === "G")).toBeUndefined();
+    });
+
+    it("A-shape m7b5 is omitted — identical to a close voicing (audit-driven)", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "m7b5",
+        tuning: STANDARD_TUNING,
+        maxFret: 24,
+      });
+      expect(matches.find((m) => m.shape === "A")).toBeUndefined();
+    });
+
+    it("D-shape m7b5 is omitted — identical to a close voicing (audit-driven)", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "m7b5",
+        tuning: STANDARD_TUNING,
+        maxFret: 24,
+      });
+      expect(matches.find((m) => m.shape === "D")).toBeUndefined();
     });
   });
 

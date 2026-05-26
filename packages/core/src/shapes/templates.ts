@@ -101,7 +101,8 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   // muted in between), which is impractical to fret cleanly. C-shape,
   // A-shape, E-shape, and D-shape cover the remaining fret-range needs.
   { shape: "C", quality: "m7b5", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [2, 4, 3, 4, 3, null] },
-  { shape: "A", quality: "m7b5", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [null, 1, 0, 1, 0, null] },
+  // A-shape m7b5 omitted — pitch-and-position identical to a generated close voicing
+  // across all 12 roots per docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
   { shape: "E", quality: "m7b5", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 3, 0, 2, 1, 0] },
   { shape: "D", quality: "m7b5", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 1, 1, 0, null, null] },
 ];
