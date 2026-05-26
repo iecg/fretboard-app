@@ -200,7 +200,11 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ).not.toBeInTheDocument();
       unmount();
 
-      renderManual([[voicingAtom, "full"]]);
+      // fingeringPattern="none" suppresses fallback context so this test
+      // exercises only the baseline "full hides picker" path; the full-mode
+      // fallback path is covered by the "shows the picker when voicing is full
+      // and a fallback exists" test below.
+      renderManual([[voicingAtom, "full"], [fingeringPatternAtom, "none"]]);
       expect(
         screen.queryByRole("combobox", { name: /strings/i }),
       ).not.toBeInTheDocument();
@@ -363,12 +367,15 @@ describe("ChordOverlayControls — string-set picker visibility in Full mode", (
     expect(screen.queryByRole("combobox", { name: /strings/i })).toBeInTheDocument();
   });
 
-  it("hides the picker in full mode when no fallback exists (chord with full coverage)", () => {
-    // C major: all 5 CAGED shapes have full-chord templates — no fallbacks.
+  it("hides the picker in full mode when no fallback polygon admits a close voicing", () => {
+    // C major: the lower-neck C/A/G/E shapes all have full-chord templates.
+    // The D-shape polygon repeats high on the neck (around frets 21-25) and
+    // can host a close triad fallback — exclude it from the active shape set
+    // so no polygon needs fallback and the picker stays hidden.
     const store = createStore();
     store.set(voicingAtom, "full");
     store.set(fingeringPatternAtom, "caged");
-    store.set(cagedShapesAtom, new Set<CagedShape>(["C", "A", "G", "E", "D"]));
+    store.set(cagedShapesAtom, new Set<CagedShape>(["C", "A", "G", "E"]));
     store.set(scaleNameAtom, "major");
     store.set(rootNoteAtom, "C");
     store.set(progressionStepsAtom, [
