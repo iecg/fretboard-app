@@ -76,8 +76,9 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   { shape: "E", quality: "sus4", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 2, 2, 2, 0] },
   { shape: "D", quality: "sus4", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [3, 3, 2, 0, null, null] },
   // dim (triad: root, m3, dim5) — only 3 chord tones so every voicing duplicates
-  // one. Each shape hand-tuned to avoid collisions under transposition.
-  { shape: "C", quality: "dim", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [2, 4, 5, null, 3, null] },
+  // one. Each shape hand-tuned to avoid collisions under transposition. C-shape
+  // omitted: it shared anchorString=4 with A-shape and only avoided dedup via a
+  // cosmetic high-E b5; without it C-shape fell below the 4-note threshold.
   { shape: "A", quality: "dim", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [null, 1, 2, 1, 0, null] },
   { shape: "G", quality: "dim", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, null, 3, 5, 4, 3] },
   { shape: "E", quality: "dim", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [null, null, 0, 2, 1, 0] },
