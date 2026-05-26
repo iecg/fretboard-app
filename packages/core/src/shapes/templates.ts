@@ -93,9 +93,6 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   // voicings across all 12 roots per
   // docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
   // The fallbackVoicingMatchesAtom fills those positions at runtime.
-  // A-string root dropped (duplicate of G-string root); 5-note voicing was
-  // unfrettable due to the cross-string 2-fret barre + A-string thumb hold.
-  { shape: "A", quality: "dim7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 1, null, null] },
   // Low-E root dropped (duplicate of high-E root); unplayable with the
   // thumb-over / palm-mute it would otherwise require.
   { shape: "G", quality: "dim7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 2, 3, 2, null, null] },
