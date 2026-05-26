@@ -44,6 +44,11 @@ import {
   fingeringPatternAtom,
 } from "./fingeringAtoms";
 import { shapeDataAtom, autoCenterTargetAtom } from "./shapeAtoms";
+import { activePositionAtom, chordScopeToPositionAtom } from "./chordScope";
+import {
+  selectFullChordMatchesForCagedPosition,
+  selectFullChordMatchesForThreeNpsPosition,
+} from "../hooks/voicingSelection";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 
 /** A voicing "majority-fits" the scale window when at least
@@ -530,6 +535,38 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
   }
   // close: return every fitting candidate.
   return get(closeCandidatesAtom);
+});
+
+/**
+ * The voicing matches actually shown on the board — filtered to the active
+ * CAGED / 3NPS position via the same selectors the connector source uses.
+ * When no active position exists (or in modes without a positional pattern),
+ * falls back to the unfiltered matches from voicingMatchesAtom.
+ *
+ * This atom lets the highlight-position pipeline scope to the same voicings
+ * the connector renders, instead of every voicing match across the whole
+ * neck — eliminating the asymmetry where a connector polyline arcs through
+ * a position whose chord-tone bubble was independently filtered out.
+ */
+export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
+  const matches = get(voicingMatchesAtom);
+  if (matches.length === 0) return matches;
+
+  const pattern = get(fingeringPatternAtom);
+  const activePosition = get(activePositionAtom);
+
+  if (pattern === "caged" && activePosition) {
+    const { shapePolygons } = get(shapeDataAtom);
+    const cagedShapes = get(cagedShapesAtom);
+    return selectFullChordMatchesForCagedPosition(matches, shapePolygons, cagedShapes);
+  }
+
+  if (pattern === "3nps" && get(chordScopeToPositionAtom) && activePosition) {
+    const { boxBounds } = get(shapeDataAtom);
+    return selectFullChordMatchesForThreeNpsPosition(matches, boxBounds, 0);
+  }
+
+  return matches;
 });
 
 /**

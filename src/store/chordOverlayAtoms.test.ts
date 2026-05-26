@@ -18,6 +18,7 @@ import {
   stringSetOptionsAtom,
   closeCandidatesAllStringSetsAtom,
   activeScaleInstanceRangesAtom,
+  visibleVoicingMatchesAtom,
 } from "./chordOverlayAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
 import {
@@ -551,6 +552,66 @@ describe("chordHighlightPositionsAtom", () => {
     expect(actual).toEqual(expected);
     // Explicitly confirm "more than one candidate worth of keys":
     expect(actual.size).toBeGreaterThan(candidates[0]!.positionKeys.length);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group J' — visibleVoicingMatchesAtom (T5: shared selector for highlights)
+// ---------------------------------------------------------------------------
+
+describe("visibleVoicingMatchesAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("falls back to all voicing matches when fingering pattern has no active position", () => {
+    // fingeringPattern='none' => activePositionAtom is false, no filtering.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "none"],
+    ]);
+    const all = store.get(voicingMatchesAtom);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    expect(all.length).toBeGreaterThan(0);
+    expect(visible).toEqual(all);
+  });
+
+  it("filters to position-relevant voicings when a CAGED position is active", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })], // C major chord
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["E"])], // single E-shape => active position
+    ]);
+    const all = store.get(voicingMatchesAtom);
+    const visible = store.get(visibleVoicingMatchesAtom);
+
+    expect(all.length).toBeGreaterThan(0);
+    expect(visible.length).toBeGreaterThan(0);
+    expect(visible.length).toBeLessThanOrEqual(all.length);
+    // With a single CAGED shape active, the selector dedupes by position key,
+    // so the visible set should be strictly smaller than the all-shapes set.
+    expect(visible.length).toBeLessThan(all.length);
+  });
+
+  it("returns unfiltered matches for 3NPS when chordScopeToPosition is off", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 1], // active 3NPS position
+      [chordScopeToPositionAtom, false],
+    ]);
+    const all = store.get(voicingMatchesAtom);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    expect(visible).toEqual(all);
   });
 });
 
