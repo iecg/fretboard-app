@@ -22,13 +22,13 @@ const AUDIO_CONFIG = {
   MASTER_GAIN: 0.5,
 
   /** Quick attack, fast decay for percussive picked-note feel. */
-  ATTACK_TIME: 0.005,
-  DECAY_TIME: 0.3,
-  SUSTAIN: 0.01,
-  RELEASE_TIME: 0.3,
+  ATTACK_TIME: 0.008,
+  DECAY_TIME: 0.7,
+  SUSTAIN: 0.03,
+  RELEASE_TIME: 0.35,
 
   /** Single-note duration handed to triggerAttackRelease (seconds). */
-  NOTE_DURATION: 0.6,
+  NOTE_DURATION: 1.2,
 
   /** Filter set high enough to be transparent — strum voice has none. */
   FILTER_FREQ: 10000,
