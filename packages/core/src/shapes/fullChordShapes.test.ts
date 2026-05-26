@@ -255,6 +255,20 @@ describe('getFullChordShapeMatches', () => {
       const pcs = new Set(found!.notes.map((n) => n.noteName));
       expect(pcs).toEqual(new Set(["B", "D", "F", "G#"]));
     });
+
+    it("G-shape dim7 drops the low-E root (4-note voicing on upper strings)", () => {
+      const matches = getFullChordShapeMatches({
+        chordRoot: "B",
+        chordType: "dim7",
+        tuning: STANDARD_TUNING,
+        maxFret: 12,
+      });
+      const found = matches.find((m) => m.shape === "G");
+      expect(found, "G-shape dim7 should match for Bdim7").toBeDefined();
+      expect(found!.positionKeys.slice().sort()).toEqual(["0-7", "1-6", "2-7", "3-6"].sort());
+      const pcs = new Set(found!.notes.map((n) => n.noteName));
+      expect(pcs).toEqual(new Set(["B", "D", "F", "G#"]));
+    });
   });
 
   describe("m7b5 CAGED templates", () => {

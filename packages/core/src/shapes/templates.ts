@@ -92,7 +92,9 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   // A-string root dropped (duplicate of G-string root); 5-note voicing was
   // unfrettable due to the cross-string 2-fret barre + A-string thumb hold.
   { shape: "A", quality: "dim7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 1, null, null] },
-  { shape: "G", quality: "dim7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 2, 3, 2, null, 3] },
+  // Low-E root dropped (duplicate of high-E root); unplayable with the
+  // thumb-over / palm-mute it would otherwise require.
+  { shape: "G", quality: "dim7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 2, 3, 2, null, null] },
   { shape: "E", quality: "dim7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 1, 0] },
   { shape: "D", quality: "dim7", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 0, 1, 0, null, null] },
   // m7b5 (half-diminished: root, m3, dim5, m7).
