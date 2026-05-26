@@ -60,7 +60,7 @@ describe("ProgressionPositionReadout", () => {
     expect(violations).toHaveNoViolations();
 
     // Use semantic aria-label for robust assertion
-    expect(screen.getByRole("status", { name: "Position 01.1.000 of 04.4.000" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 1.1.1 of 4.0.0" })).toBeTruthy();
   });
 
   it("updates digits during playback without NaN", async () => {
@@ -103,7 +103,7 @@ describe("ProgressionPositionReadout", () => {
     );
 
     // Initial label
-    expect(screen.getByRole("status", { name: "Position 01.1.000 of 04.4.000" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 1.1.1 of 4.0.0" })).toBeTruthy();
 
     // Advance 0.5s (25% of step). Tick interval is 33ms (~30 Hz) — advance
     // past one full tick so the imperative aria-label setAttribute() fires.
@@ -112,17 +112,18 @@ describe("ProgressionPositionReadout", () => {
       vi.advanceTimersByTime(33);
     });
 
-    // 25% of 4 beats = 1 beat. So 01.2.000 (1-indexed beat)
-    expect(screen.getByRole("status", { name: "Position 01.2.000 of 04.4.000" })).toBeTruthy();
-    
+    // 25% of 4 beats = 1 beat. So 1.2.1 (1-indexed beat, first sixteenth)
+    expect(screen.getByRole("status", { name: "Position 1.2.1 of 4.0.0" })).toBeTruthy();
+
     // Advance to 0.75s (37.5% of step)
     act(() => {
       mockTime = 0.75;
       vi.advanceTimersByTime(33);
     });
 
-    // 37.5% of 4 beats = 1.5 beats. So 01.2.500
-    expect(screen.getByRole("status", { name: "Position 01.2.500 of 04.4.000" })).toBeTruthy();
+    // 37.5% of 4 beats = 1.5 beats. So 1.2.3 (1.5 beats = beat 2, 0.5 beat
+    // offset = 2 sixteenths → 1.2.3)
+    expect(screen.getByRole("status", { name: "Position 1.2.3 of 4.0.0" })).toBeTruthy();
     
     // Final a11y check during "playback"
     let playbackViolations;

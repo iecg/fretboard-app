@@ -302,32 +302,36 @@ describe("formatChordShortLabel", () => {
 });
 
 describe("formatProgressionPlaybackPosition", () => {
-  it("formats the bar/beat/subdivision readout at the start of the progression", () => {
+  it("formats the bar/beat/sixteenth readout at the start of the progression", () => {
     expect(formatProgressionPlaybackPosition(1, 5, 4)).toMatchObject({
-      current: "01.1.000",
-      total: "05.4.000",
+      current: "1.1.1",
+      total: "5.0.0",
     });
   });
 
-  it("derives beat and subdivision from the fractional bar offset", () => {
-    expect(formatProgressionPlaybackPosition(1.25, 4, 4).current).toBe("01.2.000");
-    expect(formatProgressionPlaybackPosition(1.3, 4, 4).current).toBe("01.2.200");
+  it("derives beat and 1-indexed sixteenth from the fractional bar offset", () => {
+    // 1.25 bars = beat 2 of bar 1, on the downbeat (first sixteenth).
+    expect(formatProgressionPlaybackPosition(1.25, 4, 4).current).toBe("1.2.1");
+    // 1.3 bars = beat 2 of bar 1, +0.2 beat = 0.8 sixteenths → sixteenth 1 (floor).
+    expect(formatProgressionPlaybackPosition(1.3, 4, 4).current).toBe("1.2.1");
+    // 1.3125 bars = beat 2 of bar 1, +0.25 beat = exactly the 2nd sixteenth.
+    expect(formatProgressionPlaybackPosition(1.3125, 4, 4).current).toBe("1.2.2");
   });
 
   it("honors the active meter when deriving beat counts", () => {
     expect(formatProgressionPlaybackPosition(2.5, 4, 8)).toMatchObject({
-      current: "02.5.000",
-      total: "04.8.000",
+      current: "2.5.1",
+      total: "4.0.0",
     });
   });
 
-  it("clamps fractional totals up and pins current at the final subdivision", () => {
-    // Past-end positions clamp to the last playable subdivision (bar N, beat
-    // beatsPerBar, sub 999) so the readout shows the project end instead of
-    // freezing earlier in the bar.
+  it("clamps fractional totals up and pins current at the final sixteenth", () => {
+    // Past-end positions clamp to the last playable sixteenth (bar N, beat
+    // beatsPerBar, sixteenth 4) so the readout shows the project end instead
+    // of freezing earlier in the bar.
     expect(formatProgressionPlaybackPosition(99, 3.25, 4)).toMatchObject({
-      current: "04.4.999",
-      total: "04.4.000",
+      current: "4.4.4",
+      total: "4.0.0",
     });
   });
 });
