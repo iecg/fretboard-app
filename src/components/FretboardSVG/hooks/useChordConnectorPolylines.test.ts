@@ -3,6 +3,8 @@ import { renderHook } from "@testing-library/react";
 import type { CagedShape } from "@fretflow/core";
 import {
   buildChordConnectorPolylines,
+  buildPendingChordConnectorVoicings,
+  buildPixelChordConnectorVoicings,
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
   useChordConnectorPolylines,
@@ -892,5 +894,114 @@ describe("useChordConnectorPolylines — voicingSourceActive guard", () => {
     );
     if (expectEmpty) expect(result.current).toEqual([]);
     else expect(result.current.length).toBeGreaterThan(0);
+  });
+});
+
+describe("connector topology memo split", () => {
+  it("builds pending generated voicings without pixel geometry inputs", () => {
+    const pending = buildPendingChordConnectorVoicings({
+      noteData: notes([
+        [0, 5, "C", "chord-root"],
+        [1, 5, "E"],
+        [2, 5, "G"],
+      ]),
+      chordToneNames: ["C", "E", "G"],
+    });
+
+    expect(pending).toEqual([
+      expect.objectContaining({
+        canonicalKey: "0,5|1,5|2,5",
+        voicingKey: "0,5|1,5|2,5",
+        paletteIndex: 0,
+        noteCoords: [
+          { stringIndex: 0, fretIndex: 5 },
+          { stringIndex: 1, fretIndex: 5 },
+          { stringIndex: 2, fretIndex: 5 },
+        ],
+      }),
+    ]);
+  });
+
+  it("rebuilds pixel vertices when geometry helpers change but preserves voicing identity", () => {
+    const noteData = notes([
+      [0, 5, "C", "chord-root"],
+      [1, 5, "E"],
+      [2, 5, "G"],
+    ]);
+    const firstFretCenterX = (fi: number) => fi * 10;
+    const secondFretCenterX = (fi: number) => fi * 20;
+    const firstStringYAt = (si: number) => si * 20;
+    const secondStringYAt = (si: number) => si * 25;
+
+    const { result, rerender } = renderHook(
+      ({
+        fretCenterX,
+        stringYAt,
+      }: {
+        fretCenterX: (fretIndex: number) => number;
+        stringYAt: (stringIndex: number, x: number) => number;
+      }) =>
+        useChordConnectorPolylines({
+          noteData,
+          chordToneNames: ["C", "E", "G"],
+          fretCenterX,
+          stringYAt,
+          stringRowPx: STRING_ROW_PX,
+        }),
+      {
+        initialProps: {
+          fretCenterX: firstFretCenterX,
+          stringYAt: firstStringYAt,
+        },
+      },
+    );
+
+    expect(result.current[0]?.voicingKey).toBe("0,5|1,5|2,5");
+    expect(result.current[0]?.vertices).toEqual([
+      { x: 50, y: 0 },
+      { x: 50, y: 20 },
+      { x: 50, y: 40 },
+    ]);
+
+    rerender({
+      fretCenterX: secondFretCenterX,
+      stringYAt: secondStringYAt,
+    });
+
+    expect(result.current[0]?.voicingKey).toBe("0,5|1,5|2,5");
+    expect(result.current[0]?.vertices).toEqual([
+      { x: 100, y: 0 },
+      { x: 100, y: 25 },
+      { x: 100, y: 50 },
+    ]);
+  });
+
+  it("keeps the pure builder output identical after the refactor", () => {
+    const noteData = notes([
+      [0, 5, "C", "chord-root"],
+      [1, 5, "E"],
+      [2, 5, "G"],
+    ]);
+    const pending = buildPendingChordConnectorVoicings({
+      noteData,
+      chordToneNames: ["C", "E", "G"],
+    });
+
+    const pixel = buildPixelChordConnectorVoicings({
+      pendingVoicings: pending,
+      fretCenterX,
+      stringYAt,
+      stringRowPx: STRING_ROW_PX,
+    });
+
+    expect(pixel).toEqual(
+      buildChordConnectorPolylines(
+        noteData,
+        ["C", "E", "G"],
+        fretCenterX,
+        stringYAt,
+        STRING_ROW_PX,
+      ),
+    );
   });
 });

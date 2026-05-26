@@ -74,6 +74,21 @@ export interface ChordConnectorVoicing {
   voicingKey: string;
 }
 
+interface NormalizedChordConnectorVertex {
+  stringIndex: number;
+  fretIndex: number;
+}
+
+interface PendingChordConnectorVoicing {
+  canonicalKey: string;
+  voicingKey: string;
+  noteCoords: NormalizedChordConnectorVertex[];
+  sourceCombo: NoteData[];
+  paletteIndex: number;
+  offsetPx: number;
+  shape?: CagedShape;
+}
+
 interface ExplicitChordConnectorVoicing {
   voicingKey: string;
   shape?: CagedShape;
@@ -118,6 +133,26 @@ const CONNECTOR_CONFLICT_GAP_PX = 1.5;
  * larger than 5 wrap with modulo (documented, accepted trade-off).
  */
 const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
+
+/**
+ * Canonical pixel scale used for topology-level conflict detection.
+ * These values allow `assignConflictOffsets` to operate in a stable
+ * coordinate system that is independent of the actual rendered pixel
+ * geometry (fretCenterX / stringYAt), so the conflict graph only needs
+ * to be recomputed when the musical data changes — not on every resize.
+ */
+const TOPOLOGY_FRET_UNIT_PX = 10;
+const TOPOLOGY_STRING_UNIT_PX = 20;
+const TOPOLOGY_STRING_ROW_PX = 36;
+
+function toTopologyVertices(
+  noteCoords: NormalizedChordConnectorVertex[],
+): ChordConnectorVertex[] {
+  return noteCoords.map(({ fretIndex, stringIndex }) => ({
+    x: fretIndex * TOPOLOGY_FRET_UNIT_PX,
+    y: stringIndex * TOPOLOGY_STRING_UNIT_PX,
+  }));
+}
 
 function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
   return combo.some((note) =>
@@ -270,36 +305,30 @@ function assignConflictOffsets(
   return result;
 }
 
-// Shared finalize step for chord-connector voicings: assigns conflict offsets,
-// resolves per-voicing radii (with edge-safe clamps), then runs a post-clamp
-// collision fix so overlapping voicings stay visually distinguishable when
-// yBounds clamping collapses their radii to the same value.
+// Shared finalize step for chord-connector voicings: resolves per-voicing radii
+// (with edge-safe clamps) using the `offsetPx` already assigned in the topology
+// stage, then runs a post-clamp collision fix so overlapping voicings stay
+// visually distinguishable when yBounds clamping collapses their radii.
 function computeFinalConnectorRadii(
   pendingVoicings: ReadonlyArray<{
     rawVertices: ChordConnectorVertex[];
     sourceCombo: NoteData[];
     canonicalKey: string;
+    offsetPx: number;
     shape?: CagedShape;
   }>,
   stringRowPx: number,
   lowestStringIndex: number,
   yBounds: ConnectorYBounds | undefined,
 ): number[] {
-  const clusterOffsetMap = assignConflictOffsets(
-    pendingVoicings,
-    stringRowPx,
-    yBounds,
-    lowestStringIndex,
-  );
   const baseRadius = applyConnectorRadiusFloor(
     stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
     stringRowPx,
   );
   const radii = pendingVoicings.map((pv) => {
-    const offsetPx = clusterOffsetMap.get(pv.canonicalKey) ?? 0;
     return resolveConnectorRadiusPx({
       vertices: pv.rawVertices,
-      preferredRadius: baseRadius + Math.max(offsetPx, 0),
+      preferredRadius: baseRadius + Math.max(pv.offsetPx, 0),
       yBounds,
       edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
     });
@@ -315,8 +344,8 @@ function computeFinalConnectorRadii(
         if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
         if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
 
-        const offI = clusterOffsetMap.get(pendingVoicings[i]!.canonicalKey) ?? 0;
-        const offJ = clusterOffsetMap.get(pendingVoicings[j]!.canonicalKey) ?? 0;
+        const offI = pendingVoicings[i]!.offsetPx;
+        const offJ = pendingVoicings[j]!.offsetPx;
         const prefI = baseRadius + Math.max(offI, 0);
         const prefJ = baseRadius + Math.max(offJ, 0);
         const clampedI = radii[i]! < prefI - 0.5;
@@ -430,205 +459,8 @@ export function buildChordConnectorPolylines(
   stringRowPx: number,
   yBounds?: ConnectorYBounds,
 ): ChordConnectorVoicing[] {
-  // stringRowPx drives the capsule perpOffset for collinear voicings.
-
-  // Step 1: collect active chord-tone positions (skip note-inactive).
-  const activeTones: NoteData[] = [];
-  for (const nd of noteData) {
-    if (nd.noteClass === "note-inactive") continue;
-    if (!CHORD_TONE_CLASSES.has(nd.noteClass)) continue;
-    activeTones.push(nd);
-  }
-
-  const N = chordToneNames.length;
-  if (N < 2 || activeTones.length < N) return [];
-
-  const requiredSet = new Set(chordToneNames);
-
-  // Step 2: determine the range of string indices present.
-  let minString = Infinity;
-  let maxString = -Infinity;
-  for (const nd of activeTones) {
-    if (nd.stringIndex < minString) minString = nd.stringIndex;
-    if (nd.stringIndex > maxString) maxString = nd.stringIndex;
-  }
-
-  // Build a lookup: stringIndex → positions on that string.
-  const byString = new Map<number, NoteData[]>();
-  for (const nd of activeTones) {
-    let arr = byString.get(nd.stringIndex);
-    if (!arr) {
-      arr = [];
-      byString.set(nd.stringIndex, arr);
-    }
-    arr.push(nd);
-  }
-
-  // Track emitted voicings by canonical key to deduplicate.
-  const emitted = new Set<string>();
-
-  // Pass 1: collect raw voicings (defer path generation until offsets are known).
-  const pendingVoicings: {
-    rawVertices: ChordConnectorVertex[];
-    sourceCombo: NoteData[];
-    paletteIndex: number;
-    canonicalKey: string;
-  }[] = [];
-
-  // Step 3: slide an N-string window across the neck.
-  for (let s = minString; s + N - 1 <= maxString; s++) {
-    // Collect all positions across the N strings in this window.
-    const windowPositions: NoteData[] = [];
-    let windowFullyCovered = true;
-    for (let si = s; si < s + N; si++) {
-      const onString = byString.get(si);
-      if (!onString || onString.length === 0) {
-        windowFullyCovered = false;
-        break;
-      }
-      for (const nd of onString) {
-        windowPositions.push(nd);
-      }
-    }
-    if (!windowFullyCovered) continue;
-
-    // Collect all unique fret anchors present in this window.
-    const fretAnchors = new Set<number>();
-    for (const nd of windowPositions) {
-      fretAnchors.add(nd.fretIndex);
-    }
-
-    for (const anchor of fretAnchors) {
-      const maxFretInCluster = anchor + MAX_FRET_SPAN;
-      const minFretInCluster = anchor;
-
-      // For each string in the window, collect candidates in [anchor, anchor+MAX_FRET_SPAN].
-      const candidatesPerString: NoteData[][] = [];
-      let clusterFullyCovered = true;
-      for (let si = s; si < s + N; si++) {
-        const onString = byString.get(si) ?? [];
-        const candidates = onString.filter(
-          (nd) => nd.fretIndex >= minFretInCluster && nd.fretIndex <= maxFretInCluster,
-        );
-        if (candidates.length === 0) {
-          clusterFullyCovered = false;
-          break;
-        }
-        candidatesPerString.push(candidates);
-      }
-      if (!clusterFullyCovered) continue;
-
-      // Generate all combinations (one per string) via iterative cartesian product.
-      // We stop early if we've already found a valid voicing for this cluster.
-      // For performance, limit explosion: if total combinations > 256, still proceed
-      // but we'll just emit the best-span one.
-      const totalCombinations = candidatesPerString.reduce((acc, arr) => acc * arr.length, 1);
-      if (totalCombinations === 0) continue;
-
-      // Enumerate combinations using index arithmetic.
-      let bestCombo: NoteData[] | null = null;
-      let bestSpan = Infinity;
-
-      for (let combo = 0; combo < totalCombinations; combo++) {
-        // Decode combination index to one pick per string.
-        const picks: NoteData[] = [];
-        let remainder = combo;
-        for (let si = 0; si < N; si++) {
-          const arr = candidatesPerString[si]!;
-          const idx = remainder % arr.length;
-          remainder = Math.floor(remainder / arr.length);
-          picks.push(arr[idx]!);
-        }
-
-        // Check: union of distinct noteNames must equal the full chord-tone set.
-        const coveredNotes = new Set(picks.map((p) => p.noteName));
-        if (coveredNotes.size !== requiredSet.size) continue;
-        let allCovered = true;
-        for (const tone of requiredSet) {
-          if (!coveredNotes.has(tone)) {
-            allCovered = false;
-            break;
-          }
-        }
-        if (!allCovered) continue;
-
-        // Compute fret span for this combo.
-        let minF = Infinity;
-        let maxF = -Infinity;
-        for (const p of picks) {
-          if (p.fretIndex < minF) minF = p.fretIndex;
-          if (p.fretIndex > maxF) maxF = p.fretIndex;
-        }
-        const span = maxF - minF;
-        if (span < bestSpan) {
-          bestSpan = span;
-          bestCombo = picks;
-        }
-      }
-
-      if (!bestCombo) continue;
-
-      // Drop voicings whose fretted-note position count exceeds the playability
-      // threshold. Open strings (fretIndex === 0) are excluded — they are
-      // reachable from any hand position.
-      if (voicingFrettedPositionCount(bestCombo) > MAX_PLAYABLE_FRET_POSITIONS) continue;
-
-      // Canonical key: sorted "(stringIndex,fretIndex)" pairs.
-      const canonicalKey = bestCombo
-        .map((p) => `${p.stringIndex},${p.fretIndex}`)
-        .sort()
-        .join("|");
-      if (emitted.has(canonicalKey)) continue;
-      emitted.add(canonicalKey);
-
-      // Build raw vertices ordered by string index (window order s → s+N-1).
-      const rawVertices: ChordConnectorVertex[] = bestCombo.map((p) => {
-        const x = fretCenterX(p.fretIndex);
-        const y = stringYAt(p.stringIndex, x);
-        return { x, y };
-      });
-
-      const paletteIndex = V2_PALETTE_INDEX;
-
-      // Collect — path generation deferred to pass 2 after conflict assignment.
-      pendingVoicings.push({ rawVertices, sourceCombo: bestCombo, paletteIndex, canonicalKey });
-    }
-  }
-
-  // Pass 2: assign conflict offsets, then emit final voicings with paths.
-  //
-  // `assignConflictOffsets` builds a graph from centerline distances and base
-  // effective radii, then greedily chooses the smallest non-conflicting
-  // OFFSET_BUCKET for each voicing in canonical-key order. This keeps unrelated
-  // voicings tight while separating real same-stack overlaps.
-  //
-  // `offsetOpenPolylinePath` Minkowski-sums the rawVertices polyline (in
-  // string-index order) with a disk of radius
-  // `computeChordConnectorRadiusPx(...)` and dispatches internally:
-  //   - 3+ non-collinear vertices → rounded tube tracing the voicing
-  //     order (avoids acute-triangle silhouettes from cross-fret triads).
-  //   - 3+ collinear vertices → falls back to a capsule between the extreme
-  //     vertices (matches old look).
-  //   - 2 vertices → capsule.
-  //   - 1 vertex → circle.
-  // fill === outline (byte-identical) — renderer differentiates via fill/stroke.
-  let lowestStringIndex = 0;
-  for (const note of noteData) {
-    if (note.stringIndex > lowestStringIndex) lowestStringIndex = note.stringIndex;
-  }
-
-  const radii = computeFinalConnectorRadii(
-    pendingVoicings,
-    stringRowPx,
-    lowestStringIndex,
-    yBounds,
-  );
-
-  return pendingVoicings.map((pv, idx) => {
-    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
-    const paths = { fill: pathStr, outline: pathStr };
-    return { paths, vertices: pv.rawVertices, paletteIndex: pv.paletteIndex, voicingKey: pv.canonicalKey };
-  });
+  const pending = buildPendingChordConnectorVoicings({ noteData, chordToneNames });
+  return buildPixelChordConnectorVoicings({ pendingVoicings: pending, fretCenterX, stringYAt, stringRowPx, yBounds });
 }
 
 function createExplicitSourceCombo(
@@ -649,6 +481,239 @@ function createExplicitSourceCombo(
   }));
 }
 
+/**
+ * Pure topology stage — discovers playable voicings and assigns conflict offsets
+ * without any pixel geometry.
+ *
+ * For generated voicings: runs the window-scan / filtering / dedupe algorithm,
+ * collects `noteCoords` (fret/string indices), then calls `assignConflictOffsets`
+ * using a canonical pixel scale (TOPOLOGY_*_UNIT_PX) so the O(N²) conflict
+ * graph only runs when musical data changes — not on every resize.
+ *
+ * For explicit voicings: builds sourceCombo, canonicalKey, voicingKey, noteCoords,
+ * paletteIndex, shape, and offsetPx from the supplied voicing descriptors.
+ *
+ * Returns [] when chordToneNames has fewer than 2 entries, no active chord-tone
+ * positions exist, or `voicingSourceActive` is true with no explicit voicings.
+ */
+export function buildPendingChordConnectorVoicings({
+  noteData,
+  chordToneNames,
+  explicitVoicings,
+  voicingSourceActive,
+}: {
+  noteData: NoteData[];
+  chordToneNames: string[];
+  explicitVoicings?: ExplicitChordConnectorVoicing[];
+  voicingSourceActive?: boolean;
+}): PendingChordConnectorVoicing[] {
+  if (explicitVoicings && explicitVoicings.length > 0) {
+    const pending: PendingChordConnectorVoicing[] = explicitVoicings.map((voicing) => {
+      const sourceCombo = createExplicitSourceCombo(voicing.notes)
+        .sort((a, b) => a.stringIndex - b.stringIndex);
+      const noteCoords: NormalizedChordConnectorVertex[] = sourceCombo.map(
+        ({ stringIndex, fretIndex }) => ({ stringIndex, fretIndex }),
+      );
+      const canonicalKey = voicing.notes
+        .map((note) => `${note.stringIndex},${note.fretIndex}`)
+        .sort()
+        .join("|");
+      return {
+        canonicalKey,
+        voicingKey: voicing.voicingKey,
+        noteCoords,
+        sourceCombo,
+        paletteIndex: V2_PALETTE_INDEX,
+        offsetPx: 0,
+        shape: voicing.shape,
+      };
+    });
+
+    // Assign topology-level conflict offsets for explicit voicings.
+    let lowestStringIndex = 0;
+    for (const pv of pending) {
+      for (const nd of pv.sourceCombo) {
+        if (nd.stringIndex > lowestStringIndex) lowestStringIndex = nd.stringIndex;
+      }
+    }
+    const topoPending = pending.map((pv) => ({
+      rawVertices: toTopologyVertices(pv.noteCoords),
+      sourceCombo: pv.sourceCombo,
+      canonicalKey: pv.canonicalKey,
+      shape: pv.shape,
+    }));
+    const offsetMap = assignConflictOffsets(
+      topoPending,
+      TOPOLOGY_STRING_ROW_PX,
+      undefined,
+      lowestStringIndex,
+    );
+    return pending.map((pv) => ({ ...pv, offsetPx: offsetMap.get(pv.canonicalKey) ?? 0 }));
+  }
+
+  if (voicingSourceActive) return [];
+
+  // Generated voicing path: window-scan over active chord-tone positions.
+
+  // Collect active chord-tone positions (skip note-inactive).
+  const activeTones: NoteData[] = [];
+  for (const nd of noteData) {
+    if (nd.noteClass === "note-inactive") continue;
+    if (!CHORD_TONE_CLASSES.has(nd.noteClass)) continue;
+    activeTones.push(nd);
+  }
+
+  const N = chordToneNames.length;
+  if (N < 2 || activeTones.length < N) return [];
+
+  const requiredSet = new Set(chordToneNames);
+
+  // Determine the range of string indices present.
+  let minString = Infinity;
+  let maxString = -Infinity;
+  for (const nd of activeTones) {
+    if (nd.stringIndex < minString) minString = nd.stringIndex;
+    if (nd.stringIndex > maxString) maxString = nd.stringIndex;
+  }
+
+  // Build a lookup: stringIndex → positions on that string.
+  const byString = new Map<number, NoteData[]>();
+  for (const nd of activeTones) {
+    let arr = byString.get(nd.stringIndex);
+    if (!arr) {
+      arr = [];
+      byString.set(nd.stringIndex, arr);
+    }
+    arr.push(nd);
+  }
+
+  const emitted = new Set<string>();
+  const collected: Omit<PendingChordConnectorVoicing, "offsetPx">[] = [];
+
+  // Slide an N-string window across the neck.
+  for (let s = minString; s + N - 1 <= maxString; s++) {
+    const windowPositions: NoteData[] = [];
+    let windowFullyCovered = true;
+    for (let si = s; si < s + N; si++) {
+      const onString = byString.get(si);
+      if (!onString || onString.length === 0) {
+        windowFullyCovered = false;
+        break;
+      }
+      for (const nd of onString) windowPositions.push(nd);
+    }
+    if (!windowFullyCovered) continue;
+
+    const fretAnchors = new Set<number>();
+    for (const nd of windowPositions) fretAnchors.add(nd.fretIndex);
+
+    for (const anchor of fretAnchors) {
+      const maxFretInCluster = anchor + MAX_FRET_SPAN;
+      const minFretInCluster = anchor;
+
+      const candidatesPerString: NoteData[][] = [];
+      let clusterFullyCovered = true;
+      for (let si = s; si < s + N; si++) {
+        const onString = byString.get(si) ?? [];
+        const candidates = onString.filter(
+          (nd) => nd.fretIndex >= minFretInCluster && nd.fretIndex <= maxFretInCluster,
+        );
+        if (candidates.length === 0) {
+          clusterFullyCovered = false;
+          break;
+        }
+        candidatesPerString.push(candidates);
+      }
+      if (!clusterFullyCovered) continue;
+
+      const totalCombinations = candidatesPerString.reduce((acc, arr) => acc * arr.length, 1);
+      if (totalCombinations === 0) continue;
+
+      let bestCombo: NoteData[] | null = null;
+      let bestSpan = Infinity;
+
+      for (let combo = 0; combo < totalCombinations; combo++) {
+        const picks: NoteData[] = [];
+        let remainder = combo;
+        for (let si = 0; si < N; si++) {
+          const arr = candidatesPerString[si]!;
+          const idx = remainder % arr.length;
+          remainder = Math.floor(remainder / arr.length);
+          picks.push(arr[idx]!);
+        }
+
+        const coveredNotes = new Set(picks.map((p) => p.noteName));
+        if (coveredNotes.size !== requiredSet.size) continue;
+        let allCovered = true;
+        for (const tone of requiredSet) {
+          if (!coveredNotes.has(tone)) {
+            allCovered = false;
+            break;
+          }
+        }
+        if (!allCovered) continue;
+
+        let minF = Infinity;
+        let maxF = -Infinity;
+        for (const p of picks) {
+          if (p.fretIndex < minF) minF = p.fretIndex;
+          if (p.fretIndex > maxF) maxF = p.fretIndex;
+        }
+        const span = maxF - minF;
+        if (span < bestSpan) {
+          bestSpan = span;
+          bestCombo = picks;
+        }
+      }
+
+      if (!bestCombo) continue;
+      if (voicingFrettedPositionCount(bestCombo) > MAX_PLAYABLE_FRET_POSITIONS) continue;
+
+      const canonicalKey = bestCombo
+        .map((p) => `${p.stringIndex},${p.fretIndex}`)
+        .sort()
+        .join("|");
+      if (emitted.has(canonicalKey)) continue;
+      emitted.add(canonicalKey);
+
+      const noteCoords: NormalizedChordConnectorVertex[] = bestCombo.map(
+        ({ stringIndex, fretIndex }) => ({ stringIndex, fretIndex }),
+      );
+
+      collected.push({
+        canonicalKey,
+        voicingKey: canonicalKey,
+        noteCoords,
+        sourceCombo: bestCombo,
+        paletteIndex: V2_PALETTE_INDEX,
+        shape: undefined,
+      });
+    }
+  }
+
+  if (collected.length === 0) return [];
+
+  // Assign conflict offsets in topology space (stable across resizes).
+  let lowestStringIndex = 0;
+  for (const nd of noteData) {
+    if (nd.stringIndex > lowestStringIndex) lowestStringIndex = nd.stringIndex;
+  }
+  const topoPending = collected.map((pv) => ({
+    rawVertices: toTopologyVertices(pv.noteCoords),
+    sourceCombo: pv.sourceCombo,
+    canonicalKey: pv.canonicalKey,
+    shape: pv.shape,
+  }));
+  const offsetMap = assignConflictOffsets(
+    topoPending,
+    TOPOLOGY_STRING_ROW_PX,
+    undefined,
+    lowestStringIndex,
+  );
+
+  return collected.map((pv) => ({ ...pv, offsetPx: offsetMap.get(pv.canonicalKey) ?? 0 }));
+}
+
 function finalizeChordConnectorPolylines(
   pendingVoicings: Array<{
     rawVertices: ChordConnectorVertex[];
@@ -656,6 +721,7 @@ function finalizeChordConnectorPolylines(
     paletteIndex: number;
     canonicalKey: string;
     voicingKey: string;
+    offsetPx: number;
     shape?: CagedShape;
   }>,
   stringRowPx: number,
@@ -690,37 +756,37 @@ function finalizeChordConnectorPolylines(
   });
 }
 
-function buildExplicitChordConnectorPolylines(
-  explicitVoicings: ExplicitChordConnectorVoicing[],
-  fretCenterX: (fretIndex: number) => number,
-  stringYAt: (stringIndex: number, x: number) => number,
-  stringRowPx: number,
-  yBounds?: ConnectorYBounds,
-): ChordConnectorVoicing[] {
-  const pendingVoicings = explicitVoicings.map((voicing) => {
-    const sourceCombo = createExplicitSourceCombo(voicing.notes)
-      .sort((left, right) => left.stringIndex - right.stringIndex);
-    const rawVertices = sourceCombo.map((note) => {
-      const x = fretCenterX(note.fretIndex);
-      const y = stringYAt(note.stringIndex, x);
+/**
+ * Pixel geometry stage — maps `noteCoords` to pixel vertices using the
+ * supplied geometry helpers, then finalizes paths via `finalizeChordConnectorPolylines`.
+ * Only re-runs when geometry helpers, stringRowPx, yBounds, or the pending
+ * voicings themselves change.
+ */
+export function buildPixelChordConnectorVoicings({
+  pendingVoicings,
+  fretCenterX,
+  stringYAt,
+  stringRowPx,
+  yBounds,
+}: {
+  pendingVoicings: PendingChordConnectorVoicing[];
+  fretCenterX: (fretIndex: number) => number;
+  stringYAt: (stringIndex: number, x: number) => number;
+  stringRowPx: number;
+  yBounds?: ConnectorYBounds;
+}): ChordConnectorVoicing[] {
+  if (pendingVoicings.length === 0) return [];
+
+  const withPixelVerts = pendingVoicings.map((pv) => ({
+    ...pv,
+    rawVertices: pv.noteCoords.map(({ fretIndex, stringIndex }) => {
+      const x = fretCenterX(fretIndex);
+      const y = stringYAt(stringIndex, x);
       return { x, y };
-    });
-    const canonicalKey = voicing.notes
-      .map((note) => `${note.stringIndex},${note.fretIndex}`)
-      .sort()
-      .join("|");
+    }),
+  }));
 
-    return {
-      rawVertices,
-      sourceCombo,
-      paletteIndex: V2_PALETTE_INDEX,
-      canonicalKey,
-      shape: voicing.shape,
-      voicingKey: voicing.voicingKey,
-    };
-  });
-
-  return finalizeChordConnectorPolylines(pendingVoicings, stringRowPx, yBounds);
+  return finalizeChordConnectorPolylines(withPixelVerts, stringRowPx, yBounds);
 }
 
 export interface UseChordConnectorPolylinesParams {
@@ -742,21 +808,19 @@ export interface UseChordConnectorPolylinesParams {
 }
 
 /**
- * React hook that memoizes `buildChordConnectorPolylines` output.
+ * React hook that memoizes `buildChordConnectorPolylines` output using two
+ * independent memos:
+ *
+ * 1. **Topology memo** — depends on `noteData`, `chordToneNames`,
+ *    `explicitVoicings`, `voicingSourceActive`. Runs the O(N²) conflict-graph
+ *    assignment once per musical change and caches `PendingChordConnectorVoicing[]`.
+ *
+ * 2. **Pixel memo** — depends on `pendingVoicings`, `fretCenterX`, `stringYAt`,
+ *    `stringRowPx`, `yBounds`. Maps normalized fret/string coords to pixel
+ *    positions and emits final SVG paths. Re-runs on resize without touching
+ *    the conflict graph.
  *
  * Returns `ChordConnectorVoicing[]` — one entry per distinct playable voicing.
- * Each entry carries:
- * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
- *   render layers. Byte-identical for non-collinear voicings (closed polygon);
- *   both are capsule paths for collinear voicings.
- * - `vertices` — the original chord-tone pixel positions for debugging.
- * - `paletteIndex` — always 0 in v2.0; maps to --chord-connector-color-1
- *   via the renderer's data-palette-index attribute (every voicing renders
- *   in the same accent color).
- *
- * Re-runs when noteData, chordToneNames, or geometry helpers change.
- * The geometry helpers are included because resize/layout shifts can change
- * fret and string coordinates without changing the musical note data.
  */
 export function useChordConnectorPolylines({
   noteData,
@@ -768,31 +832,29 @@ export function useChordConnectorPolylines({
   explicitVoicings,
   voicingSourceActive,
 }: UseChordConnectorPolylinesParams): ChordConnectorVoicing[] {
-  return useMemo(
-    () => {
-      if (explicitVoicings && explicitVoicings.length > 0) {
-        return buildExplicitChordConnectorPolylines(
-          explicitVoicings,
-          fretCenterX,
-          stringYAt,
-          stringRowPx,
-          yBounds,
-        );
-      }
-
-      // A voicing source is active but produced nothing — show no connectors
-      // rather than a misleading scatter over every loose chord tone.
-      if (voicingSourceActive) return [];
-
-      return buildChordConnectorPolylines(
+  // Topology memo: only depends on musical data — stable across geometry changes.
+  const pendingVoicings = useMemo(
+    () =>
+      buildPendingChordConnectorVoicings({
         noteData,
         chordToneNames,
+        explicitVoicings,
+        voicingSourceActive,
+      }),
+     
+    [noteData, chordToneNames, explicitVoicings, voicingSourceActive],
+  );
+
+  // Pixel memo: only depends on geometry — runs on resize without conflict-graph cost.
+  return useMemo(
+    () =>
+      buildPixelChordConnectorVoicings({
+        pendingVoicings,
         fretCenterX,
         stringYAt,
         stringRowPx,
         yBounds,
-      );
-    },
-    [noteData, chordToneNames, fretCenterX, stringYAt, stringRowPx, yBounds, explicitVoicings, voicingSourceActive],
+      }),
+    [pendingVoicings, fretCenterX, stringYAt, stringRowPx, yBounds],
   );
 }
