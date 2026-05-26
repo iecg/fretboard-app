@@ -104,7 +104,8 @@ export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
   // A-shape m7b5 omitted — pitch-and-position identical to a generated close voicing
   // across all 12 roots per docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
   { shape: "E", quality: "m7b5", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 3, 0, 2, 1, 0] },
-  { shape: "D", quality: "m7b5", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 1, 1, 0, null, null] },
+  // D-shape m7b5 omitted — pitch-and-position identical to a generated close voicing
+  // across all 12 roots per docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
 ];
 
 export const CAGED_SHAPE_COLORS: Record<
