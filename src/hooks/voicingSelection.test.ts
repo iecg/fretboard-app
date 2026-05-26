@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import type { Voicing, ShapePolygon } from "@fretflow/core";
+import type { BoxBound } from "../components/FretboardSVG/utils/semantics";
 import {
   selectCloseFallbacksForCagedPosition,
+  selectCloseFallbacksForThreeNpsPosition,
 } from "./voicingSelection";
 
 describe("selectCloseFallbacksForCagedPosition", () => {
@@ -54,6 +56,43 @@ describe("selectCloseFallbacksForCagedPosition", () => {
   it("skips truncated polygons", () => {
     const truncated = { ...polygon, truncated: true } as ShapePolygon;
     const result = selectCloseFallbacksForCagedPosition([inside], truncated);
+    expect(result).toEqual([]);
+  });
+});
+
+describe("selectCloseFallbacksForThreeNpsPosition", () => {
+  const boxBounds: BoxBound[] = [
+    { minFret: 5, maxFret: 7 },
+    { minFret: 5, maxFret: 7 },
+    { minFret: 5, maxFret: 7 },
+    { minFret: 5, maxFret: 7 },
+    { minFret: 5, maxFret: 7 },
+    { minFret: 5, maxFret: 7 },
+  ];
+
+  const inside: Voicing = {
+    positionKeys: ["1-6", "2-7"],
+    notes: [
+      { stringIndex: 1, fretIndex: 6, noteName: "F", midi: 65 },
+      { stringIndex: 2, fretIndex: 7, noteName: "B", midi: 71 },
+    ],
+  };
+
+  const outside: Voicing = {
+    positionKeys: ["1-9", "2-7"],
+    notes: [
+      { stringIndex: 1, fretIndex: 9, noteName: "G#", midi: 68 },
+      { stringIndex: 2, fretIndex: 7, noteName: "B", midi: 71 },
+    ],
+  };
+
+  it("returns voicings whose every fretted note lies inside the per-string boxBounds", () => {
+    const result = selectCloseFallbacksForThreeNpsPosition([inside, outside], boxBounds);
+    expect(result).toEqual([inside]);
+  });
+
+  it("returns empty when no candidate fits", () => {
+    const result = selectCloseFallbacksForThreeNpsPosition([outside], boxBounds);
     expect(result).toEqual([]);
   });
 });

@@ -156,6 +156,23 @@ export function selectFullChordMatchesForThreeNpsPosition(
 }
 
 /**
+ * 3NPS analogue of selectCloseFallbacksForCagedPosition. Uses per-string
+ * boxBounds with zero buffer — fallback must fit cleanly inside the position.
+ */
+export function selectCloseFallbacksForThreeNpsPosition(
+  closeMatches: Voicing[],
+  boxBounds: BoxBound[],
+): Voicing[] {
+  return closeMatches.filter((match) =>
+    match.notes.every((note) => {
+      const b = boxBounds[note.stringIndex];
+      if (!b) return false;
+      return note.fretIndex >= b.minFret && note.fretIndex <= b.maxFret;
+    }),
+  );
+}
+
+/**
  * Picks close voicings that fit entirely inside a CAGED polygon. Used when
  * the polygon has no full-chord template available, so a close voicing
  * stands in. Stricter than the full picker: requires `outsideCount === 0`.
