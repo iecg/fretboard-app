@@ -40,6 +40,8 @@ import {
 } from "@fretflow/core";
 
 const DEFAULT_WRAPPED_NOTES = new Set<string>();
+const DEFAULT_COLOR_NOTES: string[] = [];
+const DEFAULT_SHAPE_POLYGONS: ShapePolygon[] = [];
 
 interface FretboardSVGProps {
   /** Pixels per fret column used to size the scroll container; passed through but not read internally. */
@@ -153,8 +155,8 @@ export function FretboardSVG({
   chordRoot,
   chordFretSpread = 0,
   practiceLens,
-  colorNotes = [],
-  shapePolygons = [],
+  colorNotes = DEFAULT_COLOR_NOTES,
+  shapePolygons = DEFAULT_SHAPE_POLYGONS,
   wrappedNotes = DEFAULT_WRAPPED_NOTES,
   hiddenNotes,
   preferFlats = false,

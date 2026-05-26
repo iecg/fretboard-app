@@ -8,6 +8,7 @@ import type { CagedShape, ShapePolygon } from "@fretflow/core";
 import type { NoteSemantics } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
+import * as buildTopologyModule from "./hooks/buildStaticFretboardTopology";
 
 vi.mock("./motionPolicy", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./motionPolicy")>();
@@ -707,5 +708,40 @@ describe("FretboardSVG/FretboardSVG", () => {
       fireEvent.keyDown(note, { key: "Tab" });
       expect(onNoteClick).not.toHaveBeenCalled();
     });
+  });
+
+  it("does not rebuild static fretboard topology when only the playback snapshot changes", () => {
+    const topologySpy = vi.spyOn(buildTopologyModule, "buildStaticFretboardTopology");
+    const firstSnapshot = {
+      playing: true,
+      activeStepIndex: 0,
+      globalFraction: 0.125,
+      localFraction: 0.25,
+      stepDurationBeats: 4,
+      beatPosition: 1,
+      commonWithNext: new Set(["G"]),
+      nextGuideTones: new Set(["B", "F"]),
+    };
+
+    const { rerender } = renderCMajor({ practiceLens: "lead", playbackSnapshot: firstSnapshot });
+    const countAfterInitialRender = topologySpy.mock.calls.length;
+    expect(countAfterInitialRender).toBeGreaterThan(0);
+
+    rerender(
+      <FretboardSVG
+        {...BASE_PROPS}
+        {...C_MAJOR}
+        practiceLens="lead"
+        playbackSnapshot={{
+          ...firstSnapshot,
+          globalFraction: 0.25,
+          localFraction: 0.75,
+          beatPosition: 3,
+        }}
+      />,
+    );
+
+    expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
+    topologySpy.mockRestore();
   });
 });
