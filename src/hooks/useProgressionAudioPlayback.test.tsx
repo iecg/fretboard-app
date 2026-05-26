@@ -7,8 +7,11 @@ import { chordRootAtom } from "../store/chordOverlayAtoms";
 import {
   beatsPerBarAtom,
   displayedStepIndexPrimitiveAtom,
+  progressionBassEnabledAtom,
+  progressionChordEnabledAtom,
   progressionDrumsEnabledAtom,
   progressionLoopEnabledAtom,
+  progressionMetronomeEnabledAtom,
   progressionPlaybackLoadingAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
@@ -150,7 +153,7 @@ vi.mock("tone", () => ({
   setContext: toneMocks.setContext,
 }));
 
-import { _resetProgressionAudioForTests } from "../progressions/audio/bus";
+import { _resetProgressionAudioForTests, ensureProgressionAudio } from "../progressions/audio/bus";
 import { _resetTimelineForTests } from "../progressions/audio/timeline";
 import {
   __resetProgressionAudioPlaybackForTests,
@@ -546,6 +549,35 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     before.forEach((p) => expect(p.disposed).toBe(false));
     // Gain side-effect is verified by the layerBuses test in Task 1 — here we
     // only verify the rebuild guard didn't fire.
+  });
+
+  it("applies the current track-button mute state when playback starts", async () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+      [progressionDrumsEnabledAtom, false],
+      [progressionLoopEnabledAtom, true],
+      [isMutedAtom, false],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    store.set(progressionChordEnabledAtom, false);
+    store.set(progressionBassEnabledAtom, false);
+    store.set(progressionMetronomeEnabledAtom, false);
+    renderWithStore(<Harness />, store);
+
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
+
+    const audio = ensureProgressionAudio();
+    expect(audio).not.toBeNull();
+    expect(audio!.layers.chord.gain.value).toBe(0);
+    expect(audio!.layers.bass.gain.value).toBe(0);
+    expect(audio!.layers.drums.gain.value).toBe(0);
+    expect(audio!.layers.metronome.gain.value).toBe(0);
   });
 
   it("disposes everything on pause", async () => {

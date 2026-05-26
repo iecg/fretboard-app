@@ -174,6 +174,10 @@ export function useProgressionAudioPlayback() {
       if (!audio) { tearDown(); return; }
       eng.resumeProgressionAudio();
       eng.restoreProgressionBus();
+      eng.setLayerGain(audio.layers, "chord", store.get(progressionChordEnabledAtom));
+      eng.setLayerGain(audio.layers, "bass", store.get(progressionBassEnabledAtom));
+      eng.setLayerGain(audio.layers, "drums", store.get(progressionDrumsEnabledAtom));
+      eng.setLayerGain(audio.layers, "metronome", store.get(progressionMetronomeEnabledAtom));
 
       const inputs = buildInputsRef.current;
 
