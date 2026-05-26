@@ -28,6 +28,13 @@ const FULL_CHORD_QUALITIES = new Set<FullChordQuality>([
   'M',
   'm',
   '7',
+  'maj7',
+  'm7',
+  'sus2',
+  'sus4',
+  'dim',
+  'dim7',
+  'm7b5',
 ]);
 
 export function getFullChordShapeMatches({

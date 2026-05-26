@@ -168,4 +168,22 @@ describe('getFullChordShapeMatches', () => {
     expect(shape5Matches.length).toBe(2);
     expect(shape5Matches.map((m) => m.shape).sort()).toEqual(['E', 'G']);
   });
+
+  describe("getFullChordShapeMatches — new qualities (no templates yet)", () => {
+    for (const chordType of ["maj7", "m7", "sus2", "sus4", "dim", "dim7", "m7b5"] as const) {
+      it(`resolves \`${chordType}\` to the new quality without crashing`, () => {
+        const result = getFullChordShapeMatches({
+          chordRoot: "C",
+          chordType,
+          tuning: STANDARD_TUNING,
+          maxFret: 15,
+        });
+        // No templates exist for these qualities yet — Task 1 only adds the
+        // type + mapping. Tasks 2–8 add templates. So this initial assertion
+        // is that the resolver returns an empty array (not an exception).
+        expect(Array.isArray(result)).toBe(true);
+        expect(result).toEqual([]);
+      });
+    }
+  });
 });

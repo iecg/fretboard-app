@@ -17,7 +17,11 @@ export const MODE_OFFSETS: Record<string, number> = {
 export type CagedShape = "C" | "A" | "G" | "E" | "D";
 export const CAGED_SHAPES: CagedShape[] = ["C", "A", "G", "E", "D"];
 
-export type FullChordQuality = "M" | "m" | "7";
+export type FullChordQuality =
+  | "M" | "m" | "7"
+  | "maj7" | "m7"
+  | "sus2" | "sus4"
+  | "dim" | "dim7" | "m7b5";
 
 export interface FullChordTemplate {
   shape: CagedShape;
