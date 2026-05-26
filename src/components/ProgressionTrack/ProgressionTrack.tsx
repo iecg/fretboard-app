@@ -1,68 +1,38 @@
 import { useCallback, type CSSProperties } from "react";
+import { useSetAtom } from "jotai";
 import clsx from "clsx";
-import { useProgressionState } from "../../hooks/useProgressionState";
+import { setProgressionActiveStepIndexAtom } from "../../store/progressionAtoms";
+import { useTimelineViewModel } from "./hooks/useTimelineViewModel";
 import styles from "./ProgressionTrack.module.css";
 import { ProgressionBlock } from "./ProgressionBlock";
 import { ProgressionPlayhead } from "./ProgressionPlayhead";
 
-function durationToBars(
-  duration: { value: number; unit: "bar" | "beat" },
-  beatsPerBar: number,
-): number {
-  return duration.unit === "bar" ? duration.value : duration.value / beatsPerBar;
-}
-
-function getProgressionBlockLayouts(
-  steps: readonly { duration: { value: number; unit: "bar" | "beat" } }[],
-  beatsPerBar: number,
-  totalBarsForDisplay: number,
-): Array<{ durationBars: number; startPercent: number; widthPercent: number }> {
-  let elapsedBars = 0;
-  return steps.map((step) => {
-    const durationBars = durationToBars(step.duration, beatsPerBar);
-    const layout = {
-      durationBars,
-      startPercent: (elapsedBars / totalBarsForDisplay) * 100,
-      widthPercent: (durationBars / totalBarsForDisplay) * 100,
-    };
-    elapsedBars += durationBars;
-    return layout;
-  });
-}
-
 export function ProgressionTrack() {
   const {
-    progressionPlaying,
-    progressionPlaybackBlockedReason,
-    currentProgressionBar,
-    totalProgressionBars,
-    activeProgressionStepIndex,
-    displayedProgressionStepIndex,
-    resolvedProgressionSteps,
-    setActiveProgressionStepIndex,
-    beatsPerBar,
-  } = useProgressionState();
-
-  const canPlay = !progressionPlaybackBlockedReason;
-  const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
-  const transportStartBar = progressionPlaying && canPlay ? currentProgressionBar : 1;
-  const totalDurationBars = Math.max(1, totalProgressionBars);
-  const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
-  const subdivisionsPerBar = Math.max(1, Math.floor(beatsPerBar));
-  const blockLayouts = getProgressionBlockLayouts(
-    resolvedProgressionSteps,
-    beatsPerBar,
+    blockLayouts,
+    totalDurationBars,
     totalBarsForDisplay,
-  );
+    subdivisionsPerBar,
+    steps,
+    activeStepIndex,
+    displayedStepIndex,
+    canPlay,
+    playing,
+    transportStartBar,
+    playbackBlockedReason,
+  } = useTimelineViewModel();
+
+  const setActiveStep = useSetAtom(setProgressionActiveStepIndexAtom);
+  const activeStep = steps[activeStepIndex] ?? null;
 
   // Stable callback so memoized ProgressionBlock children don't re-render on
   // every parent render of this component.
   const selectStep = useCallback(
     (index: number) => {
-      if (progressionPlaying) return;
-      setActiveProgressionStepIndex(index);
+      if (playing) return;
+      setActiveStep(index);
     },
-    [setActiveProgressionStepIndex, progressionPlaying],
+    [setActiveStep, playing],
   );
 
   return (
@@ -70,8 +40,8 @@ export function ProgressionTrack() {
       role="group"
       aria-label="Progression track"
       className={styles.track}
-      data-playing={progressionPlaying ? "true" : undefined}
-      title={progressionPlaybackBlockedReason ?? undefined}
+      data-playing={playing ? "true" : undefined}
+      title={playbackBlockedReason ?? undefined}
     >
       <div
         className={styles.timeline}
@@ -102,13 +72,13 @@ export function ProgressionTrack() {
         </div>
         <div className={styles.lane}>
           <ProgressionPlayhead
-            playing={progressionPlaying && canPlay}
+            playing={playing && canPlay}
             stepStartBar={transportStartBar}
             totalDurationBars={totalDurationBars}
             totalBarsForDisplay={totalBarsForDisplay}
           />
           <div className={styles.blocks}>
-            {resolvedProgressionSteps.map((step, index) => {
+            {steps.map((step, index) => {
               const layout = blockLayouts[index] ?? {
                 durationBars: 0,
                 startPercent: 0,
@@ -119,7 +89,7 @@ export function ProgressionTrack() {
                   key={step.id}
                   step={step}
                   index={index}
-                  active={index === displayedProgressionStepIndex}
+                  active={index === displayedStepIndex}
                   durationBars={layout.durationBars}
                   startPercent={layout.startPercent}
                   widthPercent={layout.widthPercent}
@@ -140,8 +110,8 @@ export function ProgressionTrack() {
             ) : null}
           </div>
         </div>
-        {progressionPlaybackBlockedReason ? (
-          <p className={styles.statusNote} role="status">{progressionPlaybackBlockedReason}</p>
+        {playbackBlockedReason ? (
+          <p className={styles.statusNote} role="status">{playbackBlockedReason}</p>
         ) : activeStep?.unavailable ? (
           <p className={styles.statusNote} role="status">{activeStep.unavailableReason}</p>
         ) : null}
