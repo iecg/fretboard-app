@@ -14,8 +14,8 @@ interface ProgressionPositionReadoutProps {
   totalProgressionBars: number;
   beatsPerBar: number;
   /** Active tempo in BPM. Drives the imperative tick interval: one render per
-   *  sixteenth-note (`60_000 / tempoBpm / 4` ms) so the subdivision digit
-   *  advances exactly once per sub-beat at any tempo. */
+   *  beat (`60_000 / tempoBpm` ms) so the beat digit advances exactly once
+   *  per beat at any tempo. */
   tempoBpm: number;
 }
 
@@ -29,7 +29,6 @@ function PositionDigits({
   refs?: {
     bar: React.RefObject<HTMLSpanElement | null>;
     beat: React.RefObject<HTMLSpanElement | null>;
-    sub: React.RefObject<HTMLSpanElement | null>;
   };
 }) {
   return (
@@ -37,8 +36,6 @@ function PositionDigits({
       <span className={styles.digitBar} ref={refs?.bar}>{parts.bar}</span>
       <span className={styles.digitDot} aria-hidden="true">.</span>
       <span className={styles.digitBeat} ref={refs?.beat}>{parts.beat}</span>
-      <span className={styles.digitDot} aria-hidden="true">.</span>
-      <span className={styles.digitSub} ref={refs?.sub}>{parts.subdivision}</span>
     </span>
   );
 }
@@ -69,13 +66,11 @@ export function ProgressionPositionReadout({
   const containerRef = useRef<HTMLSpanElement | null>(null);
   const barRef = useRef<HTMLSpanElement | null>(null);
   const beatRef = useRef<HTMLSpanElement | null>(null);
-  const subRef = useRef<HTMLSpanElement | null>(null);
   // Last rendered digit values; skip the DOM write when nothing visible
   // would change, so the cost on the position-readout subtree is one
   // string comparison per tick when the bar is held / paused.
   const lastBarRef = useRef<string>("");
   const lastBeatRef = useRef<string>("");
-  const lastSubRef = useRef<string>("");
   const lastAriaLabelRef = useRef<string>("");
 
   // Store chord-boundary props in refs so the animation loop can access
@@ -102,7 +97,7 @@ export function ProgressionPositionReadout({
         currentTotalBars,
         currentBPB,
       );
-      const { bar, beat, subdivision } = p.parts.current;
+      const { bar, beat } = p.parts.current;
       if (bar !== lastBarRef.current && barRef.current) {
         barRef.current.textContent = bar;
         lastBarRef.current = bar;
@@ -110,10 +105,6 @@ export function ProgressionPositionReadout({
       if (beat !== lastBeatRef.current && beatRef.current) {
         beatRef.current.textContent = beat;
         lastBeatRef.current = beat;
-      }
-      if (subdivision !== lastSubRef.current && subRef.current) {
-        subRef.current.textContent = subdivision;
-        lastSubRef.current = subdivision;
       }
 
       // Update aria-label imperatively so screen readers stay in sync with
@@ -152,15 +143,14 @@ export function ProgressionPositionReadout({
     // new step's start.
     lastBarRef.current = "";
     lastBeatRef.current = "";
-    lastSubRef.current = "";
     lastAriaLabelRef.current = "";
     tick();
 
     if (!playing) return;
-    // One render per sixteenth note at the active tempo: 60_000 ms / BPM / 4.
-    // At 60 BPM → 250 ms; 120 → 125 ms; 240 → 63 ms. Clamp to 16 ms floor so
-    // accidentally-huge tempos (>3750 BPM) don't hammer the main thread.
-    const tickMs = Math.max(16, Math.round(15000 / Math.max(1, tempoBpm)));
+    // One render per beat at the active tempo: 60_000 ms / BPM.
+    // At 60 BPM → 1000 ms; 120 → 500 ms; 240 → 250 ms. Clamp to 16 ms floor
+    // so accidentally-huge tempos (>3750 BPM) don't hammer the main thread.
+    const tickMs = Math.max(16, Math.round(60000 / Math.max(1, tempoBpm)));
     const id = window.setInterval(tick, tickMs);
     return () => window.clearInterval(id);
   }, [playing, tempoBpm]);
@@ -177,7 +167,7 @@ export function ProgressionPositionReadout({
         <span className={styles.positionCurrent}>
           <PositionDigits
             parts={initialPosition.parts.current}
-            refs={{ bar: barRef, beat: beatRef, sub: subRef }}
+            refs={{ bar: barRef, beat: beatRef }}
           />
         </span>
         <span className={styles.positionSeparator} aria-hidden="true">/</span>

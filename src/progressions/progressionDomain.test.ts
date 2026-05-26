@@ -302,36 +302,38 @@ describe("formatChordShortLabel", () => {
 });
 
 describe("formatProgressionPlaybackPosition", () => {
-  it("formats the bar/beat/sixteenth readout at the start of the progression", () => {
+  it("formats the bar/beat readout at the start of the progression", () => {
     expect(formatProgressionPlaybackPosition(1, 5, 4)).toMatchObject({
-      current: "1.1.1",
-      total: "5.0.0",
+      current: "1.1",
+      total: "5.0",
     });
   });
 
-  it("derives beat and 1-indexed sixteenth from the fractional bar offset", () => {
-    // 1.25 bars = beat 2 of bar 1, on the downbeat (first sixteenth).
-    expect(formatProgressionPlaybackPosition(1.25, 4, 4).current).toBe("1.2.1");
-    // 1.3 bars = beat 2 of bar 1, +0.2 beat = 0.8 sixteenths → sixteenth 1 (floor).
-    expect(formatProgressionPlaybackPosition(1.3, 4, 4).current).toBe("1.2.1");
-    // 1.3125 bars = beat 2 of bar 1, +0.25 beat = exactly the 2nd sixteenth.
-    expect(formatProgressionPlaybackPosition(1.3125, 4, 4).current).toBe("1.2.2");
+  it("derives the beat from the fractional bar offset", () => {
+    // All three of these land in beat 2 of bar 1 (positionInBar * 4 floors to
+    // index 1 for inputs 0.25, 0.3, 0.3125), so the bar.beat readout is the
+    // same — sub-beat resolution was intentionally dropped.
+    expect(formatProgressionPlaybackPosition(1.25, 4, 4).current).toBe("1.2");
+    expect(formatProgressionPlaybackPosition(1.3, 4, 4).current).toBe("1.2");
+    expect(formatProgressionPlaybackPosition(1.3125, 4, 4).current).toBe("1.2");
+    // 1.5 bars = positionInBar 0.5 × 4 = 2 → beat 3.
+    expect(formatProgressionPlaybackPosition(1.5, 4, 4).current).toBe("1.3");
   });
 
   it("honors the active meter when deriving beat counts", () => {
     expect(formatProgressionPlaybackPosition(2.5, 4, 8)).toMatchObject({
-      current: "2.5.1",
-      total: "4.0.0",
+      current: "2.5",
+      total: "4.0",
     });
   });
 
-  it("clamps fractional totals up and pins current at the final sixteenth", () => {
-    // Past-end positions clamp to the last playable sixteenth (bar N, beat
-    // beatsPerBar, sixteenth 4) so the readout shows the project end instead
-    // of freezing earlier in the bar.
+  it("clamps fractional totals up and pins current at the final beat", () => {
+    // Past-end positions clamp to the last playable beat (bar N, beat
+    // beatsPerBar) so the readout shows the project end instead of freezing
+    // earlier in the bar.
     expect(formatProgressionPlaybackPosition(99, 3.25, 4)).toMatchObject({
-      current: "4.4.4",
-      total: "4.0.0",
+      current: "4.4",
+      total: "4.0",
     });
   });
 });

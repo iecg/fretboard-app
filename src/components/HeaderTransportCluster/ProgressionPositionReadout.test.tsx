@@ -59,8 +59,8 @@ describe("ProgressionPositionReadout", () => {
     });
     expect(violations).toHaveNoViolations();
 
-    // New format: start = `1.1.1`, 4-bar total = `4.0.0`.
-    expect(screen.getByRole("status", { name: "Position 1.1.1 of 4.0.0" })).toBeTruthy();
+    // New format: start = `1.1`, 4-bar total = `4.0`.
+    expect(screen.getByRole("status", { name: "Position 1.1 of 4.0" })).toBeTruthy();
   });
 
   it("updates digits during playback without NaN", async () => {
@@ -103,23 +103,22 @@ describe("ProgressionPositionReadout", () => {
     );
 
     // Initial label
-    expect(screen.getByRole("status", { name: "Position 1.1.1 of 4.0.0" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 1.1 of 4.0" })).toBeTruthy();
 
-    // At 120 BPM the tick is 60000 / 120 / 4 = 125 ms. Advance past one tick.
-    // 0.5 s = 25% of step = beat 2 of bar 1, first sixteenth → `1.2.1`.
+    // At 120 BPM the tick is 60000 / 120 = 500 ms. Advance past one tick.
+    // 0.5 s = 25% of step = beat 2 of bar 1 → `1.2`.
     act(() => {
       mockTime = 0.5;
-      vi.advanceTimersByTime(125);
+      vi.advanceTimersByTime(500);
     });
-    expect(screen.getByRole("status", { name: "Position 1.2.1 of 4.0.0" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 1.2 of 4.0" })).toBeTruthy();
 
-    // 0.75 s = 37.5% of step = beat 2 + half-beat = 2nd sixteenth → `1.2.3`.
-    // (Half a beat = 2 sixteenths past beat 2's first sixteenth → 1+2 = 3.)
+    // 1.0 s = 50% of step = beat 3 of bar 1 → `1.3`.
     act(() => {
-      mockTime = 0.75;
-      vi.advanceTimersByTime(125);
+      mockTime = 1.0;
+      vi.advanceTimersByTime(500);
     });
-    expect(screen.getByRole("status", { name: "Position 1.2.3 of 4.0.0" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 1.3 of 4.0" })).toBeTruthy();
 
     let playbackViolations;
     await act(async () => {
@@ -170,16 +169,17 @@ describe("ProgressionPositionReadout", () => {
       />
     );
 
-    // At 60 BPM the tick is 250 ms. Advancing 125 ms does NOT fire a tick.
+    // At 60 BPM the tick is 1000 ms. Advancing 125 ms does NOT fire a tick.
     act(() => {
       mockTime = 0.5;
       vi.advanceTimersByTime(125);
     });
     // Label is still the initial value (no interval has fired yet).
-    expect(screen.getByRole("status", { name: "Position 1.1.1 of 4.0.0" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 1.1 of 4.0" })).toBeTruthy();
 
-    // Re-render at 240 BPM. New tick = 62.5 → 63 ms. After 70 ms the tick has
-    // fired and the label reflects the new position.
+    // Re-render at 240 BPM. New tick = 250 ms. After 260 ms the tick has
+    // fired and the label reflects the new position (mockTime = 0.5 = 25% of
+    // a 2 s step = beat 2).
     rerender(
       <ProgressionPositionReadout
         playing={true}
@@ -192,8 +192,8 @@ describe("ProgressionPositionReadout", () => {
       />
     );
     act(() => {
-      vi.advanceTimersByTime(70);
+      vi.advanceTimersByTime(260);
     });
-    expect(screen.getByRole("status", { name: "Position 1.2.1 of 4.0.0" })).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Position 1.2 of 4.0" })).toBeTruthy();
   });
 });

@@ -146,15 +146,8 @@
   font-weight: 600;
 }
 
-.digitSub {
-  color: var(--track-accent-dim);
-  font-size: 0.54rem;
-  font-weight: 500;
-  padding-inline-start: 0.05em;
-}
-
 /* The total/denominator renders as a single uniform small readout rather
-   than reusing the bar / beat / subdivision size hierarchy. */
+   than reusing the bar / beat size hierarchy. */
 .digits--muted {
   font-size: 0.58rem;
   font-weight: 500;
@@ -163,8 +156,7 @@
 
 .digits--muted .digitBar,
 .digits--muted .digitDot,
-.digits--muted .digitBeat,
-.digits--muted .digitSub {
+.digits--muted .digitBeat {
   color: var(--track-text-muted);
   text-shadow: none;
   font-size: inherit;
