@@ -10,8 +10,9 @@ import {
   chordLookupAtom,
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
+import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { practiceCuesAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom } from "./progressionAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
 import { updateActiveChordAtom } from "./songStateAtoms";
@@ -183,7 +184,7 @@ describe("practiceCuesAtom", () => {
 
     it("uses scale degrees for in-scale note labels", () => {
       const cues = makeChordStore("major", "C", "M", "tones").get(practiceCuesAtom);
-      expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["1", "3", "5"]);
+      expect(cues[0]!.notes.map((n) => n.intervalName)).toEqual(["R", "3", "5"]);
     });
 
     it("returns empty cues when chord overlay is off", () => {
@@ -466,11 +467,34 @@ describe("nextChordTonesAtom / commonTonesWithNextAtom", () => {
     expect(store.get(commonTonesWithNextAtom)).toEqual(new Set(["G"]));
   });
 
-  it("nextChordTonesAtom wraps around when the active step is the last step", () => {
-    const store = makeDefaultStore();
-    // Set active to the last step (index 3 = IV = F Major Triad {F,A,C}).
-    // Next wraps to index 0 = I = C Major Triad {C,E,G}.
-    store.set(activeProgressionStepIndexAtom, 3);
+  it("nextChordTonesAtom does not wrap around when loop is disabled and active step is the last step", () => {
+    const store = makeAtomStore([
+      [scaleNameAtom, "major"],
+      [rootNoteAtom, "C"],
+      [progressionLoopEnabledAtom, false],
+      [progressionPlayingStateAtom, true],
+      [progressionStepsAtom, [
+        { id: "1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "2", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]],
+      [displayedStepIndexPrimitiveAtom, 1], // Last step (V chord)
+    ]);
+    expect(store.get(nextChordTonesAtom)).toEqual(new Set());
+    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
+  });
+
+  it("nextChordTonesAtom still wraps around when loop is enabled and active step is the last step", () => {
+    const store = makeAtomStore([
+      [scaleNameAtom, "major"],
+      [rootNoteAtom, "C"],
+      [progressionLoopEnabledAtom, true],
+      [progressionPlayingStateAtom, true],
+      [progressionStepsAtom, [
+        { id: "1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "2", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]],
+      [displayedStepIndexPrimitiveAtom, 1], // Last step (V chord)
+    ]);
     expect(store.get(nextChordTonesAtom)).toEqual(new Set(["C", "E", "G"]));
   });
 

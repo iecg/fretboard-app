@@ -41,6 +41,7 @@ import {
   progressionTempoBpmAtom,
   progressionStepDeadlineAtom,
   beatsPerBarAtom,
+  progressionLoopEnabledAtom,
 } from "./progressionAtoms";
 import {
   getProgressionDurationBeats,
@@ -394,6 +395,9 @@ export const nextChordTonesAtom = atom((get): Set<string> => {
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Set();
   const active = get(displayedProgressionStepIndexAtom);
+  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
+    return new Set();
+  }
   const nextIndex = (active + 1) % steps.length;
   const step = steps[nextIndex];
   if (!step || step.unavailable || step.root === null || step.quality === null) {
@@ -445,6 +449,9 @@ export const nextChordGuideTonesAtom = atom((get): Set<string> => {
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Set();
   const active = get(displayedProgressionStepIndexAtom);
+  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
+    return new Set();
+  }
   const nextIndex = (active + 1) % steps.length;
   const step = steps[nextIndex];
   if (!step || step.unavailable || step.root === null || step.quality === null) {

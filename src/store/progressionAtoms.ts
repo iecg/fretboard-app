@@ -318,7 +318,7 @@ export const displayedProgressionStepIndexAtom = atom((get) => {
   return get(activeProgressionStepIndexAtom);
 });
 
-const progressionPlayingStateAtom = atom(false);
+export const progressionPlayingStateAtom = atom(false);
 export const progressionStepDeadlineAtom = atom<number | null>(null);
 
 /**
