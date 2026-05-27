@@ -99,19 +99,19 @@
    identity. Inner shape elements inherit from the <g> via var().
    The `data-full-chord-mode` attribute on the board div gates this
    so normal scale/chord mode is unaffected. */
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape] :is(circle, path, polygon) {
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] :is(circle, path, polygon) {
   fill: var(--shape-fill);
   stroke: var(--shape-stroke, var(--shape-fill));
   stroke-width: var(--shape-stroke-width, 1.9);
 }
 
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape] text {
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] text {
   fill: var(--text-fill, #ffffff);
 }
 
 /* Light-theme text on shape colors: the shape colors are already saturated,
    so white labels with dark outline follow the same treatment as chord-root. */
-:global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape] text {
+:global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] text {
   fill: var(--text-fill, var(--note-label-on-color));
   stroke: var(--note-label-on-color-stroke);
 }

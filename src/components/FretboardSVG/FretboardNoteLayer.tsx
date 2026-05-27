@@ -16,6 +16,22 @@ const CHORD_NOTE_CLASSES = new Set([
   "note-diatonic-chord",
 ]);
 
+const CAGED_SHAPE_CSS_VAR: Record<string, string> = {
+  E: "var(--caged-e)",
+  D: "var(--caged-d)",
+  C: "var(--caged-c)",
+  A: "var(--caged-a)",
+  G: "var(--caged-g)",
+};
+
+const CAGED_SHAPE_TEXT_VAR: Record<string, string> = {
+  E: "var(--caged-e-fg)",
+  D: "var(--caged-d-fg)",
+  C: "var(--caged-c-fg)",
+  A: "var(--caged-a-fg)",
+  G: "var(--caged-g-fg)",
+};
+
 interface FretboardNoteLayerProps {
   notes: RenderedFretboardNote[];
   noteBubblePx: number;
@@ -88,6 +104,22 @@ export const FretboardNoteLayer = memo(({
           ? reduceSquircleRadius(rawRadius)
           : reduceCircleRadius(rawRadius);
 
+        const fullChordStyle = fullChordShape
+          ? {
+              "--shape-fill": CAGED_SHAPE_CSS_VAR[fullChordShape],
+              "--shape-stroke":
+                noteClass === "chord-root"
+                  ? "var(--note-ring-tonic)"
+                  : CAGED_SHAPE_CSS_VAR[fullChordShape],
+              "--shape-stroke-width":
+                noteClass === "chord-root" ? "3.2" : undefined,
+              "--text-fill":
+                noteClass === "chord-root"
+                  ? "#ffffff"
+                  : CAGED_SHAPE_TEXT_VAR[fullChordShape],
+            }
+          : undefined;
+
         const shapeEl =
           noteShape === "squircle" ? (
             <>
@@ -158,7 +190,7 @@ export const FretboardNoteLayer = memo(({
             data-note-shape={noteShape}
             data-note-tension={isTension || undefined}
             data-note-guide-tone={isGuideTone || undefined}
-            data-full-chord-shape={fullChordShape}
+            data-full-chord-mode={fullChordShape || undefined}
             data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
             data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
@@ -168,6 +200,7 @@ export const FretboardNoteLayer = memo(({
               ...(degreeColor && degreeColorsEnabled
                 ? { "--degree-color": degreeColor }
                 : undefined),
+              ...(fullChordStyle as React.CSSProperties),
             } as React.CSSProperties}
           >
             {shapeEl}
