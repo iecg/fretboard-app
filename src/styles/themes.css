@@ -188,7 +188,7 @@
   --fretboard-glow-opacity: 0;
 
   /* CAGED shapes — boost visibility for light mode (Okabe-Ito RGB, 0.35 alpha) */
-  --caged-e-bg: rgba(0, 119, 178, 0.35);   /* E #0077B2 (darkened sky blue) + 0.35 boost */
+  --caged-e-bg: rgba(27, 124, 194, 0.35);  /* E #1B7CC2 + 0.35 boost */
   --caged-d-bg: rgba(153, 153, 153, 0.35); /* D stays neutral gray in light mode too */
   --caged-c-bg: rgba(0, 158, 115, 0.35);   /* C #009E73 + 0.35 boost */
   --caged-a-bg: rgba(0, 114, 178, 0.35);   /* A #0072B2 + 0.35 boost */
