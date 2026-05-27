@@ -1,12 +1,29 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import { voicingAtom, voicingStringSetAtom } from "./chordOverlayAtoms";
-import { fingeringPatternAtom } from "./fingeringAtoms";
+import { cagedShapesAtom, fingeringPatternAtom } from "./fingeringAtoms";
+import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
+import { progressionStepsAtom } from "./progressionAtoms";
 import {
   fallbackPolygonsAtom,
   fallbackVoicingMatchesAtom,
   hasFallbackPositionsAtom,
 } from "./voicingFallbackAtoms";
+import { makeAtomStore } from "../test-utils/renderWithAtoms";
+import type { ProgressionStep } from "../progressions/progressionDomain";
+import type { CagedShape, DegreeId } from "@fretflow/core";
+
+const STEP_DEFAULTS = {
+  duration: { value: 1, unit: "bar" as const },
+  qualityOverride: null,
+  manualRoot: null,
+};
+
+function progressionWith(
+  patch: Partial<Omit<ProgressionStep, "id">> & { degree: DegreeId },
+): ProgressionStep[] {
+  return [{ id: "step-1", ...STEP_DEFAULTS, ...patch }];
+}
 
 describe("fallbackVoicingMatchesAtom", () => {
   let store: ReturnType<typeof createStore>;
@@ -60,5 +77,28 @@ describe("hasFallbackPositionsAtom", () => {
     // fallbackPolygonsAtom does not depend on voicingStringSetAtom -> same ref.
     expect(polygonsAfter).toBe(polygonsBefore);
     expect(hasAfter).toBe(hasBefore);
+  });
+});
+
+describe("fallbackVoicingMatchesAtom — referential stability", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns the same fallbackVoicingMatches reference when the active shape set is value-equal", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "B"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "B", qualityOverride: "dim" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+    ]);
+
+    const first = store.get(fallbackVoicingMatchesAtom);
+    store.set(cagedShapesAtom, new Set<CagedShape>(["C"]));
+    const second = store.get(fallbackVoicingMatchesAtom);
+
+    expect(second).toBe(first);
   });
 });

@@ -703,3 +703,29 @@ describe("chord-visual derivations follow displayedProgressionStepIndexAtom duri
     expect(store.get(activeResolvedProgressionStepAtom)?.degree).toBe("I");
   });
 });
+
+describe("noteSemanticMapAtom — referential stability", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns the same noteSemanticMap reference when a color-note update is value-equal", () => {
+    const store = setUp({
+      scaleRoot: "G",
+      scale: "mixolydian",
+      chordRoot: "G",
+      chordType: "7",
+    });
+
+    const first = store.get(noteSemanticMapAtom);
+    // Write a structurally-equal copy of the progression steps. The new array
+    // reference forces noteSemanticMapAtom to re-evaluate, but the recomputed
+    // semantics are value-equal — value-based memoization must return the
+    // original Map reference instead of leaking a fresh one.
+    const stepsCopy = store.get(progressionStepsAtom).map((s) => ({ ...s }));
+    store.set(progressionStepsAtom, stepsCopy);
+    const second = store.get(noteSemanticMapAtom);
+
+    expect(second).toBe(first);
+  });
+});

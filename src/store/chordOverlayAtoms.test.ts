@@ -1539,3 +1539,26 @@ describe("chordHighlightPositionsAtom — audio-locked to progression playhead",
     expect(afterHighlight).not.toEqual(beforeHighlight);
   });
 });
+
+describe("visibleVoicingMatchesAtom — referential stability", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns the same visibleVoicingMatches reference when cagedShapes is replaced with an equal Set", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+    ]);
+
+    const first = store.get(visibleVoicingMatchesAtom);
+    store.set(cagedShapesAtom, new Set<CagedShape>(["C"]));
+    const second = store.get(visibleVoicingMatchesAtom);
+
+    expect(second).toBe(first);
+  });
+});

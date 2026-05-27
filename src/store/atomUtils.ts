@@ -10,6 +10,22 @@ export function setsEqual(a: ReadonlySet<string>, b: ReadonlySet<string>): boole
 }
 
 /**
+ * Shallow value-equality for two read-only Maps: same size and each key in
+ * `a` maps to a value in `b` that is reference-equal (Object.is). Used by
+ * selector-level memoization to return the previous Map reference when the
+ * recomputed Map is value-equal — letting downstream React Compiler memos
+ * short-circuit cleanly.
+ */
+export function mapsShallowEqual<K, V>(a: ReadonlyMap<K, V>, b: ReadonlyMap<K, V>): boolean {
+  if (a === b) return true;
+  if (a.size !== b.size) return false;
+  for (const [key, value] of a) {
+    if (!b.has(key) || b.get(key) !== value) return false;
+  }
+  return true;
+}
+
+/**
  * Creates a read-only atom that returns `sourceAtom`'s value when
  * `visibleAtom` is true, or the provided `fallback` when false.
  *

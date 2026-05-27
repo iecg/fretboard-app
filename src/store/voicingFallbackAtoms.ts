@@ -130,10 +130,31 @@ export const fallback3NpsBoxBoundsAtom = atom((get): BoxBound[] | null => {
  * Connector vanishes in that case; picker stays mounted (driven by
  * `hasFallbackPositionsAtom`).
  */
+// Module-scoped cache for fallbackVoicingMatchesAtom. See chordOverlayAtoms
+// `memoizeVoicings` for the rationale — same fingerprint scheme so two
+// invocations that produce a value-equal voicing list yield the same array
+// reference, allowing downstream React Compiler memos to short-circuit.
+let cachedFallbackVoicings: Voicing[] = [];
+let cachedFallbackVoicingsKey = "<uninitialized>";
+
+function memoizeFallbackVoicings(next: readonly Voicing[]): Voicing[] {
+  const fingerprint = next
+    .map((voicing) => `${voicing.shape ?? "none"}:${voicing.positionKeys.join(",")}`)
+    .join("|");
+
+  if (fingerprint === cachedFallbackVoicingsKey) {
+    return cachedFallbackVoicings;
+  }
+
+  cachedFallbackVoicingsKey = fingerprint;
+  cachedFallbackVoicings = [...next];
+  return cachedFallbackVoicings;
+}
+
 export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
   const polygons = get(fallbackPolygonsAtom);
   const boxBounds = get(fallback3NpsBoxBoundsAtom);
-  if (polygons.length === 0 && boxBounds === null) return [];
+  if (polygons.length === 0 && boxBounds === null) return memoizeFallbackVoicings([]);
 
   const allCloses = get(closeCandidatesAllStringSetsAtom);
   const stringSet = new Set(get(effectiveStringSetAtom));
@@ -143,22 +164,23 @@ export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
       : allCloses.filter((v) =>
           v.notes.every((n) => stringSet.has(n.stringIndex)),
         );
-  if (closes.length === 0) return [];
+  if (closes.length === 0) return memoizeFallbackVoicings([]);
 
+  let result: Voicing[];
   if (boxBounds !== null) {
-    return selectCloseFallbacksForThreeNpsPosition(closes, boxBounds).map(
+    result = selectCloseFallbacksForThreeNpsPosition(closes, boxBounds).map(
       (v) => ({ ...v, isFallback: true }),
     );
-  }
-
-  const result: Voicing[] = [];
-  for (const polygon of polygons) {
-    const fallbacks = selectCloseFallbacksForCagedPosition(closes, polygon);
-    for (const fb of fallbacks) {
-      result.push({ ...fb, shape: polygon.shape, isFallback: true });
+  } else {
+    result = [];
+    for (const polygon of polygons) {
+      const fallbacks = selectCloseFallbacksForCagedPosition(closes, polygon);
+      for (const fb of fallbacks) {
+        result.push({ ...fb, shape: polygon.shape, isFallback: true });
+      }
     }
   }
-  return result;
+  return memoizeFallbackVoicings(result);
 });
 
 /**

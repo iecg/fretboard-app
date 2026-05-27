@@ -595,10 +595,32 @@ export const voicingMatchesAtom = atom((get): Voicing[] => {
  * neck — eliminating the asymmetry where a connector polyline arcs through
  * a position whose chord-tone bubble was independently filtered out.
  */
+// Module-scoped cache for visibleVoicingMatchesAtom. Two visible-voicing
+// arrays are treated as value-equal when each entry has the same shape and
+// the same ordered list of position-keys — enough for downstream consumers
+// (connector renderer, chord-tone highlight set) to short-circuit when an
+// upstream invalidation produces no observable change.
+let cachedVisibleVoicings: Voicing[] = [];
+let cachedVisibleVoicingsKey = "<uninitialized>";
+
+function memoizeVoicings(next: readonly Voicing[]): Voicing[] {
+  const fingerprint = next
+    .map((voicing) => `${voicing.shape ?? "none"}:${voicing.positionKeys.join(",")}`)
+    .join("|");
+
+  if (fingerprint === cachedVisibleVoicingsKey) {
+    return cachedVisibleVoicings;
+  }
+
+  cachedVisibleVoicingsKey = fingerprint;
+  cachedVisibleVoicings = [...next];
+  return cachedVisibleVoicings;
+}
+
 export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
   const matches = get(voicingMatchesAtom);
   const fallbacks = get(fallbackVoicingMatchesAtom);
-  if (matches.length === 0 && fallbacks.length === 0) return matches;
+  if (matches.length === 0 && fallbacks.length === 0) return memoizeVoicings(matches);
 
   const pattern = get(fingeringPatternAtom);
   const activePosition = get(activePositionAtom);
@@ -615,7 +637,7 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
     scoped = matches;
   }
 
-  return fallbacks.length > 0 ? [...scoped, ...fallbacks] : scoped;
+  return memoizeVoicings(fallbacks.length > 0 ? [...scoped, ...fallbacks] : scoped);
 });
 
 /**

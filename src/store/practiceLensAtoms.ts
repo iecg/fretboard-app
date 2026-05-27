@@ -59,6 +59,53 @@ import {
   allChordMembersAtom,
 } from "./composableSelectors";
 
+/**
+ * Field-wise equality for two NoteSemantics objects. The atom rebuilds the
+ * Map (and every entry) from scratch on each evaluation, so reference-only
+ * equality would never hit the cache. All NoteSemantics fields are
+ * primitives → a flat field walk is enough.
+ */
+function noteSemanticsEqual(a: NoteSemantics, b: NoteSemantics): boolean {
+  return (
+    a.isScaleRoot === b.isScaleRoot &&
+    a.isChordRoot === b.isChordRoot &&
+    a.isChordTone === b.isChordTone &&
+    a.isInScale === b.isInScale &&
+    a.isColorTone === b.isColorTone &&
+    a.isGuideTone === b.isGuideTone &&
+    a.isTension === b.isTension &&
+    a.memberName === b.memberName &&
+    a.scaleDegree === b.scaleDegree &&
+    a.isDiatonicChord === b.isDiatonicChord &&
+    a.isFullChordMode === b.isFullChordMode
+  );
+}
+
+/**
+ * Module-scoped cache for {@link noteSemanticMapAtom}. Returning the same
+ * Map reference when the recomputed semantics are value-equal lets React
+ * Compiler's downstream auto-memos short-circuit (FretboardSVG, lens
+ * predicates), eliminating render churn on no-op upstream writes.
+ */
+let cachedNoteSemanticMap = new Map<string, NoteSemantics>();
+
+function memoizeNoteSemanticMap(next: Map<string, NoteSemantics>): Map<string, NoteSemantics> {
+  if (cachedNoteSemanticMap === next) return cachedNoteSemanticMap;
+  if (cachedNoteSemanticMap.size === next.size) {
+    let equal = true;
+    for (const [key, value] of next) {
+      const prev = cachedNoteSemanticMap.get(key);
+      if (prev === undefined || !noteSemanticsEqual(prev, value)) {
+        equal = false;
+        break;
+      }
+    }
+    if (equal) return cachedNoteSemanticMap;
+  }
+  cachedNoteSemanticMap = next;
+  return next;
+}
+
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
 const GUIDE_TONE_FORMATTED = new Set(["♭3", "3", "♭7", "7"]);
@@ -202,7 +249,7 @@ const scaleSemanticInputsAtom = atom((get) => ({
  */
 export const noteSemanticMapAtom = atom((get) => {
   const chordInputs = get(chordSemanticInputsAtom);
-  if (!chordInputs) return new Map<string, NoteSemantics>();
+  if (!chordInputs) return memoizeNoteSemanticMap(new Map<string, NoteSemantics>());
 
   const scaleInputs = get(scaleSemanticInputsAtom);
   const { rootNote, scaleName, colorNotes } = scaleInputs;
@@ -279,7 +326,7 @@ export const noteSemanticMapAtom = atom((get) => {
       });
     }
   }
-  return map;
+  return memoizeNoteSemanticMap(map);
 });
 
 /**
