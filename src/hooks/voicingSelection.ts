@@ -117,11 +117,14 @@ export function scoreFullChordForThreeNpsPosition(
   boxBounds: BoxBound[],
   chordFretSpread: number,
 ): FullChordCandidateScore | null {
+  // boxBounds for 3NPS is a single aggregate entry (index 0) spanning all
+  // strings in the position. Per-string entries do not exist; use the
+  // aggregate bound for every note regardless of string index.
+  const aggregateBound = boxBounds[0];
   const outsideDistances = match.notes.map((note) => {
-    const b = boxBounds[note.stringIndex];
-    if (!b) return Number.POSITIVE_INFINITY;
-    const minFret = b.minFret - chordFretSpread;
-    const maxFret = b.maxFret + chordFretSpread;
+    if (!aggregateBound) return 0; // no bounds at all → unconstrained
+    const minFret = aggregateBound.minFret - chordFretSpread;
+    const maxFret = aggregateBound.maxFret + chordFretSpread;
     if (note.fretIndex < minFret) return minFret - note.fretIndex;
     if (note.fretIndex > maxFret) return note.fretIndex - maxFret;
     return 0;
@@ -163,12 +166,16 @@ export function selectCloseFallbacksForThreeNpsPosition(
   closeMatches: Voicing[],
   boxBounds: BoxBound[],
 ): Voicing[] {
+  // boxBounds for 3NPS is a single aggregate entry (index 0) spanning all
+  // strings. Use the aggregate bound for every note regardless of string index.
+  const aggregateBound = boxBounds[0];
+  if (!aggregateBound) return closeMatches; // no bounds → return all (unconstrained)
   return closeMatches.filter((match) =>
-    match.notes.every((note) => {
-      const b = boxBounds[note.stringIndex];
-      if (!b) return false;
-      return note.fretIndex >= b.minFret && note.fretIndex <= b.maxFret;
-    }),
+    match.notes.every(
+      (note) =>
+        note.fretIndex >= aggregateBound.minFret &&
+        note.fretIndex <= aggregateBound.maxFret,
+    ),
   );
 }
 
