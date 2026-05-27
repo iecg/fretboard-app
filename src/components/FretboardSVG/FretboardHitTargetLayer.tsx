@@ -34,9 +34,23 @@ export const FretboardHitTargetLayer = memo(({
   neckHeight,
   onNoteClick,
 }: FretboardHitTargetLayerProps) => {
+  const handleContainerClick = onNoteClick
+    ? (event: React.MouseEvent<HTMLDivElement>) => {
+        const target = event.target as HTMLElement | null;
+        const button = target?.closest<HTMLButtonElement>("button[data-string-index]");
+        if (!button) return;
+        const stringIndex = Number(button.dataset.stringIndex);
+        const fretIndex = Number(button.dataset.fretIndex);
+        if (!Number.isFinite(stringIndex) || !Number.isFinite(fretIndex)) return;
+        onNoteClick(stringIndex, fretIndex, button.dataset.noteName ?? "");
+      }
+    : undefined;
+
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
     <div
       className={styles["fretboard-a11y-layer"]}
+      onClick={handleContainerClick}
       style={{
         position: "absolute",
         top: 0,
@@ -53,11 +67,9 @@ export const FretboardHitTargetLayer = memo(({
           <button
             key={`btn-${stringIndex}-${fretIndex}`}
             type="button"
-            onClick={
-              onNoteClick
-                ? () => onNoteClick(stringIndex, fretIndex, noteName)
-                : undefined
-            }
+            data-string-index={stringIndex}
+            data-fret-index={fretIndex}
+            data-note-name={noteName}
             disabled={!onNoteClick}
             aria-hidden={isHidden || undefined}
             tabIndex={isHidden ? -1 : undefined}
