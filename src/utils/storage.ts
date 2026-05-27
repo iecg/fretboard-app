@@ -106,6 +106,22 @@ function migrateLegacyKeys() {
 }
 migrateLegacyKeys();
 
+// One-shot orphan-key sweep for atoms deleted in
+// docs/superpowers/plans/2026-05-26-retire-lock-to-scale.md. Removes the
+// localStorage entries left behind by `chordSnapToScaleAtom` and
+// `chordScopeToPositionAtom` so they don't bloat user storage indefinitely.
+function sweepRetiredKeys() {
+  if (!hasLocalStorage()) return;
+  for (const key of ["chordSnapToScale", "chordScopeToPosition"]) {
+    try {
+      localStorage.removeItem(k(key));
+    } catch (e) {
+      console.warn("localStorage.removeItem failed", { key, e });
+    }
+  }
+}
+sweepRetiredKeys();
+
 // Sync read from localStorage on atom initialization to prevent default flash.
 export const GET_ON_INIT = { getOnInit: true } as const;
 
