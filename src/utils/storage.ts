@@ -106,8 +106,7 @@ function migrateLegacyKeys() {
 }
 migrateLegacyKeys();
 
-// One-shot orphan-key sweep for atoms deleted in
-// docs/superpowers/plans/2026-05-26-retire-lock-to-scale.md. Removes the
+// One-shot orphan-key sweep. Removes the
 // localStorage entries left behind by `chordSnapToScaleAtom` and
 // `chordScopeToPositionAtom` so they don't bloat user storage indefinitely.
 function sweepRetiredKeys() {

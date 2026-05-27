@@ -319,7 +319,7 @@ export function isValidProgressionStep(value: unknown): value is ProgressionStep
     && typeof candidate.degree === "string"
     && isProgressionDuration(candidate.duration)
     && (candidate.qualityOverride === null || typeof candidate.qualityOverride === "string")
-    // `manualRoot` is additive (Phase 2.1): treat absent/undefined as null so
+    // `manualRoot` is additive: treat absent/undefined as null so
     // pre-Phase-2 persisted shapes and legacy literal seeds still validate.
     && (candidate.manualRoot === null
       || candidate.manualRoot === undefined

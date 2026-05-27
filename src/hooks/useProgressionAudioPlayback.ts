@@ -168,7 +168,7 @@ export function useProgressionAudioPlayback() {
     setLoading(true);
 
     getEngine().then(async (eng) => {
-      if (eng === null) return; // post-teardown noop (R5-T2)
+      if (eng === null) return;
       if (gen !== genRef.current) return;
       const audio = eng.ensureProgressionAudio();
       if (!audio) { tearDown(); return; }

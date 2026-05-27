@@ -547,8 +547,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     // No new Parts, no disposals.
     expect(toneMocks.parts).toHaveLength(before.length);
     before.forEach((p) => expect(p.disposed).toBe(false));
-    // Gain side-effect is verified by the layerBuses test in Task 1 — here we
-    // only verify the rebuild guard didn't fire.
+    // Only verify the rebuild guard didn't fire.
   });
 
   it("applies the current track-button mute state when playback starts", async () => {
