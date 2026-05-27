@@ -266,10 +266,7 @@ export const noteSemanticMapAtom = atom((get) => {
   for (const m of visibleMembers) memberByNote.set(m.note, m);
   const activeChordToneSet = new Set(visibleMembers.map((m) => m.note));
 
-  // Phase 04: diatonic chord check (computed once per evaluation).
-  // Phase 2.5: degree is sourced from the active progression step; the legacy
-  // `chordOverlayMode === "degree"` gate is gone — the resolver already
-  // returns the diatonic root + quality when no manual override is set.
+  // diatonic chord check (computed once per evaluation).
   let diatonicChordRoot: string | undefined;
   let diatonicChordQuality: string | undefined;
   if (chordDegree !== null) {
@@ -338,7 +335,6 @@ export const noteSemanticMapAtom = atom((get) => {
  */
 export const practiceCuesAtom = atom((get) => {
   const practiceLens = get(practiceLensAtom);
-  // TODO (Task 4.4/4.5): rewrite cue behavior for new lens IDs.
   // Temporary bridge: "tones" uses combined targets+guide-tones behavior;
   // "lead" uses the old tension behavior. This keeps the suite green while
   // the lens enum rename is complete.

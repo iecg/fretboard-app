@@ -561,7 +561,7 @@ describe("chordHighlightPositionsAtom", () => {
   });
 
   it("voicing=close + no active position: returns the union of closeCandidatesAtom positionKeys", () => {
-    // After the Task 3 fix, chordHighlightPositionsAtom for close derives from
+    // chordHighlightPositionsAtom for close derives from
     // visibleVoicingMatchesAtom (position-scoped). With no active position
     // (fingeringPattern='none'), visible falls back to all voicingMatchesAtom
     // matches = closeCandidatesAtom (the string-set-filtered candidates).
@@ -1145,8 +1145,6 @@ describe("effectiveStringSetAtom — auto-fallback when picked option is disable
 
 // ---------------------------------------------------------------------------
 // Group G — chordHighlightPositionsAtom referential stability
-// Diagnosed in docs/superpowers/research/2026-05-25-playback-degradation.md
-// as primary root cause of chord-transition visual stutter: reference-fresh
 // Set returns defeat React Compiler's auto-memoization downstream.
 // ---------------------------------------------------------------------------
 
@@ -1332,7 +1330,7 @@ describe("visibleVoicingMatchesAtom — referential stability", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Group — Task 4: voicing=off in-polygon highlights are unconditional
+// Group — voicing=off in-polygon highlights are unconditional
 // ---------------------------------------------------------------------------
 
 describe("chordHighlightPositionsAtom — voicing=off, no snap toggle required", () => {
@@ -1359,7 +1357,7 @@ describe("chordHighlightPositionsAtom — voicing=off, no snap toggle required",
 });
 
 // ---------------------------------------------------------------------------
-// Group — Task 4 (3NPS diagonal filter): per-string-fret membership regression
+// Group — 3NPS diagonal filter: per-string-fret membership regression
 // ---------------------------------------------------------------------------
 
 describe("3NPS voicing filter uses per-string-fret pattern membership (diagonal-aware)", () => {

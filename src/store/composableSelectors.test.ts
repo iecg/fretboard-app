@@ -76,9 +76,6 @@ describe("pure predicates", () => {
 });
 
 describe("cross-domain derived atoms", () => {
-  // Phase 2.5: the chord is owned by the active progression step. Tests seed
-  // a single-step progression whose `manualRoot` + `qualityOverride` fully
-  // specify the chord under test.
   function setupManualChord(root: string, quality: string | null) {
     const store = createStore();
     store.set(progressionStepsAtom, [

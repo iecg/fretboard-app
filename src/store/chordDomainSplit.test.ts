@@ -13,13 +13,6 @@ import { updateActiveChordAtom } from "./songStateAtoms";
 
 function makeStore() {
   const store = createStore();
-  // Phase 2.5: the chord is owned by the active progression step. Each test
-  // seeds a single manual-root step so `chordRootAtom` / `chordTypeAtom`
-  // resolve to specific values; `disableChordOverlay` (below) empties the
-  // progression for "overlay off" cases.
-  //
-  // `degree: "ii"` resolves in every diatonic scale (Major, Dorian, …) so
-  // the tests can swap scales freely without the step turning `unavailable`.
   store.set(progressionStepsAtom, [
     {
       id: "test-step",
@@ -89,8 +82,6 @@ describe("chordMemberFactsAtom", () => {
   });
 
   it("does NOT depend on scale — same result regardless of rootNoteAtom/scaleNameAtom", () => {
-    // Phase 2.5: set the scale FIRST, then pin manualRoot/qualityOverride.
-    // Otherwise the rootNote-change listener transposes manualRoot.
     const storeA = makeStore();
     storeA.set(rootNoteAtom, "A");
     storeA.set(scaleNameAtom, "major");
@@ -131,10 +122,6 @@ describe("chordMemberFactsAtom", () => {
 
 describe("Focus removal", () => {
   it("chord domain is scale-free: chordMemberFactsAtom returns same facts for any scale", () => {
-    // Set rootNote + scale FIRST, then setChord — otherwise the Phase 2.2
-    // manualRoot transposition listener would shift the seeded chord when
-    // rootNoteAtom changes, defeating the test's "same chord, different scale"
-    // premise.
     const storeA = makeStore();
     storeA.set(rootNoteAtom, "A");
     storeA.set(scaleNameAtom, "major");

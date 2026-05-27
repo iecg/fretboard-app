@@ -157,9 +157,6 @@ describe("atoms", () => {
     });
   });
 
-  // Phase 2.5: chordTypeAtom is a read-only derived view of the active
-  // progression step's resolved quality. Writes flow through
-  // `updateActiveChordAtom` in songStateAtoms.
   describe("chordTypeAtom (derived, read-only)", () => {
     it("reads the active step's qualityOverride", () => {
       const store = makeStore();

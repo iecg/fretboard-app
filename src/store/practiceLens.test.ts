@@ -27,14 +27,6 @@ function tonicDegreeFor(scaleName: string): string {
 
 function makeStore() {
   const store = createStore();
-  // Phase 2.5: the chord is owned by the active progression step. Tests
-  // start with a one-step progression seeded to the test's chord; Setup
-  // entries that pass `chordRoot`/`chordType` update the active step via
-  // `updateActiveChordAtom`. To disable the chord overlay, set `chordType: null`.
-  //
-  // `degree: "ii"` resolves in every diatonic scale (Major, Natural Minor,
-  // Dorian, Minor Pentatonic, …) so tests can swap scales freely without
-  // accidentally turning the step `unavailable`.
   store.set(progressionStepsAtom, [
     {
       id: "test-step",
@@ -379,10 +371,10 @@ describe("color notes are scale-owned — independent of chord overlay", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase 04 — noteSemanticMapAtom scaleDegree + isDiatonicChord
+// noteSemanticMapAtom scaleDegree + isDiatonicChord
 // ---------------------------------------------------------------------------
 
-describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () => {
+describe("noteSemanticMapAtom — scaleDegree and isDiatonicChord", () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -441,10 +433,10 @@ describe("noteSemanticMapAtom — Phase 04 scaleDegree and isDiatonicChord", () 
 });
 
 // ---------------------------------------------------------------------------
-// Task 4.2 — nextChordTonesAtom / commonTonesWithNextAtom
+// nextChordTonesAtom / commonTonesWithNextAtom
 // ---------------------------------------------------------------------------
 
-describe("nextChordTonesAtom / commonTonesWithNextAtom (Task 4.2)", () => {
+describe("nextChordTonesAtom / commonTonesWithNextAtom", () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -504,10 +496,10 @@ describe("nextChordTonesAtom / commonTonesWithNextAtom (Task 4.2)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Task 4.3 — activeStepDurationBeatsAtom / beatPositionAtom
+// activeStepDurationBeatsAtom / beatPositionAtom
 // ---------------------------------------------------------------------------
 
-describe("activeStepDurationBeatsAtom (Task 4.3)", () => {
+describe("activeStepDurationBeatsAtom", () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -613,10 +605,10 @@ describe("beatPositionAtom (Task 4.3)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Task 4.5 — nextChordGuideTonesAtom
+// nextChordGuideTonesAtom
 // ---------------------------------------------------------------------------
 
-describe("nextChordGuideTonesAtom (Task 4.5)", () => {
+describe("nextChordGuideTonesAtom", () => {
   beforeEach(() => {
     localStorage.clear();
   });

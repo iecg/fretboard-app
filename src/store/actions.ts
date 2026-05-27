@@ -51,10 +51,6 @@ export const setFingeringPatternAtom = atom(
 );
 
 export const setRootNoteAtom = atom(null, (_get, set, note: string) => {
-  // Phase 2.5: the chord identity is owned by the active progression step,
-  // which auto-resolves its diatonic root against the new scale root. No
-  // explicit chord-sync is needed here — `manualRoot` is transposed by the
-  // root-change listener in `progressionAtoms.ts`.
   set(rootNoteAtom, note);
 });
 

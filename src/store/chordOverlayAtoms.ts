@@ -82,7 +82,7 @@ export function isInAnyPolygon(
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
 
-// Map legacy three-lens IDs to the new two-lens IDs (Task 4.1).
+// Map legacy three-lens IDs to the new two-lens IDs.
 // Returns a raw string — narrowing to PracticeLens happens at the validate
 // boundary in onRead. Unknown inputs pass through unchanged so validate()
 // can reject them and fall back to the atom default.
@@ -590,9 +590,7 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
 // Set each evaluation) lets React Compiler's auto-memoization actually
 // short-circuit downstream consumers (FretboardSVG, useChordConnectorPolylines,
 // useNoteData) when the chord highlight set is value-equal across Jotai
-// re-evaluations triggered by upstream dep churn. Diagnosed in
-// docs/superpowers/research/2026-05-25-playback-degradation.md as the primary
-// root cause of chord-transition visual stutter.
+// re-evaluations triggered by upstream dep churn.
 let cachedHighlightSet: Set<string> = new Set();
 let cachedHighlightKey = "<uninitialized>";
 
