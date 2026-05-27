@@ -708,6 +708,53 @@ describe("visibleVoicingMatchesAtom", () => {
     }
     expect(visible.length).toBeGreaterThan(0);
   });
+
+  it("scopes full voicings to the active 3NPS position without any toggle", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 1],
+      // chordScopeToPositionAtom intentionally NOT set — must auto-scope
+    ]);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const { boxBounds } = store.get(shapeDataAtom);
+    // Every visible voicing has outsideCount <= 2 vs the 3NPS box
+    // (per scoreFullChordForThreeNpsPosition tolerance).
+    for (const v of visible) {
+      const outsideCount = v.notes.filter((n) => {
+        const b = boxBounds[n.stringIndex];
+        if (!b) return true;
+        return n.fretIndex < b.minFret || n.fretIndex > b.maxFret;
+      }).length;
+      expect(outsideCount).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("scopes close voicings to the active 3NPS position", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 3], // a position previously broken by snap-to-scale
+    ]);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const { boxBounds } = store.get(shapeDataAtom);
+    // Every visible close voicing fits entirely inside the active 3NPS box.
+    for (const v of visible) {
+      for (const n of v.notes) {
+        const b = boxBounds[n.stringIndex];
+        expect(b).toBeDefined();
+        if (!b) continue;
+        expect(n.fretIndex).toBeGreaterThanOrEqual(b.minFret);
+        expect(n.fretIndex).toBeLessThanOrEqual(b.maxFret);
+      }
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
