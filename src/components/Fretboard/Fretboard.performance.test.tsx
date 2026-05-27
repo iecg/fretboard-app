@@ -105,4 +105,36 @@ describe("Fretboard performance wiring", () => {
     expect(second.fretboardLayout).toBe(first.fretboardLayout);
     expect(second.fullChordVoicings).toBe(first.fullChordVoicings);
   });
+
+  it("ignores redundant ResizeObserver width entries", async () => {
+    const callbacks: ResizeObserverCallback[] = [];
+    class ResizeObserverMock {
+      constructor(cb: ResizeObserverCallback) {
+        callbacks.push(cb);
+      }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+
+    const store = createStore();
+    render(
+      <Provider store={store}>
+        <Fretboard stringRowPx={40} />
+      </Provider>,
+    );
+    await flushSuspense();
+
+    const before = received.length;
+
+    await act(async () => {
+      callbacks[0]?.([{ contentRect: { width: 320 } } as ResizeObserverEntry], {} as ResizeObserver);
+      callbacks[0]?.([{ contentRect: { width: 320 } } as ResizeObserverEntry], {} as ResizeObserver);
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => resolve(undefined)),
+      );
+    });
+
+    expect(received.length).toBe(before + 1);
+  });
 });

@@ -171,12 +171,24 @@ export function Fretboard(props: FretboardProps) {
     const el = scrollRef.current;
     if (!el) return;
     if (el.clientWidth > 0) setContainerWidth(el.clientWidth);
+    let rafId: number | null = null;
+    let pendingWidth = -1;
     const ro = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
-      if (width > 0) setContainerWidth(width);
+      if (width <= 0) return;
+      if (width === pendingWidth) return;
+      pendingWidth = width;
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        setContainerWidth((prev) => (prev === pendingWidth ? prev : pendingWidth));
+      });
     });
     ro.observe(el);
-    return () => ro.disconnect();
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      ro.disconnect();
+    };
   }, []);
 
   useEffect(() => {
