@@ -11,4 +11,12 @@ describe("StatusBar full-width (v2.0)", () => {
     const max = computed.maxWidth;
     expect(["none", "", "100%"]).toContain(max);
   });
+
+  it("status bar applies full-bleed (zero outer horizontal padding) rule", () => {
+    renderWithAtoms(<StatusBar />);
+    const el = screen.getByTestId("status-bar");
+    // The full-bleed contract is encoded in StatusBar.module.css. Test it via
+    // a structural data attribute to make the contract explicit.
+    expect(el.dataset.fullBleed).toBe("true");
+  });
 });

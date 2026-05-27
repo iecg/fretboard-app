@@ -5,7 +5,7 @@
   gap: 1.5rem;
   width: 100%;
   min-width: 0;
-  padding: 0.3rem 0.85rem;
+  padding: 0.3rem 0;
   box-sizing: border-box;
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -39,6 +39,14 @@
   content: "·";
   margin-right: 0.5rem;
   color: var(--dc-fg-muted);
+}
+
+.group:first-child {
+  margin-left: 0.85rem;
+}
+
+.group:last-child {
+  margin-right: 0.85rem;
 }
 
 .label {

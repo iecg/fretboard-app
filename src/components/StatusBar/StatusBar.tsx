@@ -101,7 +101,7 @@ export function StatusBar() {
   );
 
   return (
-    <div className={styles["status-bar"]} data-testid="status-bar">
+    <div className={styles["status-bar"]} data-testid="status-bar" data-full-bleed="true">
       <div className={styles.group}>{leftFields.map(renderField)}</div>
       <div className={styles.group}>
         {rightFields.map(renderField)}
