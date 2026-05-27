@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, beforeEach } from "vitest";
-import { screen, within, fireEvent } from "@testing-library/react";
+import { screen, within, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
@@ -173,6 +173,30 @@ describe("SongControls playback lock (R1-T2)", () => {
     const addButton = screen.getByLabelText("Add chord");
     // The button is rendered, but its closest ancestor with `inert` makes it non-interactive.
     expect(addButton.closest("[inert]")).not.toBeNull();
+  });
+
+  it("Progression card surfaces the locked hint text during playback", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    renderWithStore(
+      <TooltipProvider><SongControls /></TooltipProvider>,
+      store,
+    );
+    act(() => { store.set(setProgressionPlayingAtom, true); });
+    // Both Key and Progression cards are locked — expect at least one hint to appear.
+    const hints = screen.getAllByText(/Pause playback to edit/i);
+    expect(hints.length).toBeGreaterThan(0);
+  });
+
+  it("Progression card section has data-locked=true during playback", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    renderWithStore(
+      <TooltipProvider><SongControls /></TooltipProvider>,
+      store,
+    );
+    act(() => { store.set(setProgressionPlayingAtom, true); });
+    const sections = document.querySelectorAll("section[aria-labelledby='song-progression-heading']");
+    expect(sections.length).toBeGreaterThan(0);
+    expect(sections[0]!.getAttribute("data-locked")).toBe("true");
   });
 });
 

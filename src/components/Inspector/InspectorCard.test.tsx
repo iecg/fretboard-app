@@ -26,14 +26,20 @@ describe("InspectorCard", () => {
     expect(screen.getByTestId("inner-button")).toBeInTheDocument();
   });
 
-  it("sets data-locked on the card body when locked=true", () => {
+  it("sets data-locked on the card section when locked=true", () => {
     const { container } = renderCard({ locked: true, lockedHint: "Pause to edit" });
-    expect(container.querySelector("[data-locked='true']")).toBeInTheDocument();
+    expect(container.querySelector("section[data-locked='true']")).toBeInTheDocument();
   });
 
-  it("makes the body inert when locked=true", () => {
+  it("makes the card body inert when locked=true", () => {
     const { container } = renderCard({ locked: true, lockedHint: "Pause to edit" });
-    expect(container.querySelector("[data-locked='true']")).toHaveAttribute("inert");
+    // The body div carries both data-locked and inert; the section also gets data-locked.
+    expect(container.querySelector("div[data-locked='true']")).toHaveAttribute("inert");
+  });
+
+  it("renders the lockedHint inline in the header when locked=true", () => {
+    renderCard({ locked: true, lockedHint: "Pause to edit" });
+    expect(screen.getByText("Pause to edit")).toBeInTheDocument();
   });
 
   it("body is interactive when locked=false (default)", () => {

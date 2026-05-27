@@ -83,15 +83,23 @@
   display: none;
 }
 
-.cardBody[data-locked="true"] {
-  opacity: 0.42;
+.card[data-locked="true"] .cardBody,
+.card[data-locked="true"] .cardHeadActions {
+  opacity: 0.55;
   cursor: not-allowed;
-  /* Outer body accepts pointer events so cursor + tooltip work; every direct
-     child has pointer-events:none so the user can't interact with anything
-     below. `inert` already covers focus + screen reader exclusion. */
-  pointer-events: auto;
 }
 
-.cardBody[data-locked="true"] > * {
-  pointer-events: none;
+.card[data-locked="true"] .cardBody *,
+.card[data-locked="true"] .cardHeadActions * {
+  /* stylelint-disable-next-line declaration-no-important */
+  cursor: not-allowed !important;
+}
+
+.cardLockedHint {
+  color: var(--text-muted, var(--dc-fg-muted));
+  font-size: 0.75rem;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

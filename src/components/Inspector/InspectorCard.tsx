@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 import { Switch } from "../Switch/Switch";
-import { Tooltip } from "../Tooltip/Tooltip";
 import styles from "./InspectorCard.module.css";
 
 export interface InspectorCardProps {
@@ -30,12 +29,12 @@ export interface InspectorCardProps {
   headClassName?: string;
   /**
    * When true, the card body becomes non-interactive (HTML5 `inert`) and
-   * visually dims. Pair with `lockedHint` to show a tooltip explaining
-   * how the user unlocks. Independent of `active` (which dims the body
-   * via the master toggle).
+   * visually dims. Pair with `lockedHint` to show an inline hint in the
+   * header explaining how the user unlocks. Independent of `active` (which
+   * dims the body via the master toggle).
    */
   locked?: boolean;
-  /** Tooltip content shown when hovering the locked body. Required when `locked=true`. */
+  /** Inline hint shown in the header when `locked=true`. Replaces `description` while locked. */
   lockedHint?: ReactNode;
   /** Card body contents — typically a PropGrid. */
   children: ReactNode;
@@ -70,22 +69,11 @@ export function InspectorCard({
   // When there's no master toggle, `data-active` stays "true" — body never dims.
   const isActive = hasToggle ? active : true;
 
-  const body = (
-    <div
-      className={clsx(styles.cardBody, bodyClassName)}
-      data-locked={locked ? "true" : undefined}
-      // React 19 treats `inert` as a boolean attribute: pass `true` to add the
-      // attribute (rendered as inert="" in the DOM), omit/false to remove it.
-      inert={locked || undefined}
-    >
-      {children}
-    </div>
-  );
-
   return (
     <section
       className={styles.card}
       data-active={isActive ? "true" : "false"}
+      data-locked={locked ? "true" : undefined}
       aria-labelledby={labelledById}
     >
       <header className={clsx(styles.cardHead, headClassName)}>
@@ -100,7 +88,11 @@ export function InspectorCard({
             {stateLabel}
           </span>
         ) : null}
-        {description ? (
+        {locked && lockedHint ? (
+          <span className={styles.cardLockedHint} aria-live="polite">
+            {lockedHint}
+          </span>
+        ) : description ? (
           <span className={styles.cardDesc}>{description}</span>
         ) : (
           <span className={styles.cardDesc} aria-hidden="true" />
@@ -115,13 +107,13 @@ export function InspectorCard({
           </div>
         ) : null}
       </header>
-      {locked && lockedHint ? (
-        <Tooltip content={lockedHint}>
-          <div tabIndex={-1}>{body}</div>
-        </Tooltip>
-      ) : (
-        body
-      )}
+      <div
+        className={clsx(styles.cardBody, bodyClassName)}
+        data-locked={locked ? "true" : undefined}
+        inert={locked || undefined}
+      >
+        {children}
+      </div>
     </section>
   );
 }
