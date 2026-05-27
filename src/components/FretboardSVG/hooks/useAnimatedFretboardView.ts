@@ -44,6 +44,22 @@ export interface UseAnimatedFretboardViewProps {
   stringYAt: (stringIndex: number, x: number) => number;
 }
 
+function buildLeadLensSnapshot(
+  practiceLens: PracticeLens | undefined,
+  playbackSnapshot: FretboardPlaybackSnapshot | null | undefined,
+): LeadLensSnapshot | undefined {
+  if (practiceLens !== "lead" || !playbackSnapshot) {
+    return undefined;
+  }
+
+  return {
+    commonWithNext: playbackSnapshot.commonWithNext,
+    nextGuideTones: playbackSnapshot.nextGuideTones,
+    beatPosition: playbackSnapshot.beatPosition,
+    stepDurationBeats: playbackSnapshot.stepDurationBeats,
+  };
+}
+
 export function buildAnimatedFretboardNotes({
   topology,
   hasChordOverlay,
@@ -110,23 +126,17 @@ export function useAnimatedFretboardView({
   void scaleName;
   void rootNote;
 
-  const leadLensSnapshot = useMemo(() => (
-    practiceLens === "lead" && playbackSnapshot
-      ? {
-          commonWithNext: playbackSnapshot.commonWithNext,
-          nextGuideTones: playbackSnapshot.nextGuideTones,
-          beatPosition: playbackSnapshot.beatPosition,
-          stepDurationBeats: playbackSnapshot.stepDurationBeats,
-        }
-      : undefined
-  ), [practiceLens, playbackSnapshot]);
+  const playbackEmphasisSnapshot = useMemo(
+    () => buildLeadLensSnapshot(practiceLens, playbackSnapshot),
+    [practiceLens, playbackSnapshot],
+  );
 
   const noteData = useMemo(() => buildAnimatedFretboardNotes({
     topology,
     hasChordOverlay,
     practiceLens,
-    leadLensSnapshot,
-  }), [topology, hasChordOverlay, practiceLens, leadLensSnapshot]);
+    leadLensSnapshot: playbackEmphasisSnapshot,
+  }), [topology, hasChordOverlay, practiceLens, playbackEmphasisSnapshot]);
 
   const renderedNotes = useMemo(() => buildRenderedFretboardNotes({
     noteData,

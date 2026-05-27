@@ -64,15 +64,19 @@ describe("useAnimatedFretboardView", () => {
     );
 
     const initialTopology = result.current.topology;
-    const initialRenderedNotes = result.current.view.renderedNotes;
-    const initialBNote = initialRenderedNotes.find((note) => note.noteName === "B");
+    const initialView = result.current.view;
+    const initialBNote = initialView.renderedNotes.find((note) => note.noteName === "B");
 
     rerender({ beatPosition: 3 });
 
+    const updatedView = result.current.view;
     const updatedBNote = result.current.view.renderedNotes.find((note) => note.noteName === "B");
 
     expect(result.current.topology).toBe(initialTopology);
-    expect(result.current.view.renderedNotes).not.toBe(initialRenderedNotes);
+    expect(updatedView.noteData).not.toBe(initialView.noteData);
+    expect(updatedView.renderedNotes).not.toBe(initialView.renderedNotes);
     expect(updatedBNote?.applyLensEmphasis).not.toEqual(initialBNote?.applyLensEmphasis);
+    expect(updatedBNote?.cx).toBe(initialBNote?.cx);
+    expect(updatedBNote?.cy).toBe(initialBNote?.cy);
   });
 });
