@@ -37,6 +37,7 @@ import {
   updateActiveChordAtom,
 } from "./songStateAtoms";
 import { chordScopeToPositionAtom } from "./chordScope";
+import { selectCloseFallbacksForCagedPosition } from "../hooks/voicingSelection";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import type { ProgressionStep } from "../progressions/progressionDomain";
 import type { CagedShape, DegreeId } from "@fretflow/core";
@@ -684,6 +685,28 @@ describe("visibleVoicingMatchesAtom", () => {
     const all = store.get(voicingMatchesAtom);
     const visible = store.get(visibleVoicingMatchesAtom);
     expect(visible).toEqual(all);
+  });
+
+  it("scopes close voicings to the active CAGED polygon", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+    ]);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const { shapePolygons } = store.get(shapeDataAtom);
+    const cShapes = shapePolygons.filter((p) => p.shape === "C" && !p.truncated);
+    expect(cShapes.length).toBeGreaterThan(0);
+    for (const voicing of visible) {
+      const fitsSome = cShapes.some(
+        (polygon) => selectCloseFallbacksForCagedPosition([voicing], polygon).length === 1,
+      );
+      expect(fitsSome).toBe(true);
+    }
+    expect(visible.length).toBeGreaterThan(0);
   });
 });
 

@@ -44,10 +44,12 @@ import {
   fingeringPatternAtom,
 } from "./fingeringAtoms";
 import { shapeDataAtom, autoCenterTargetAtom } from "./shapeAtoms";
-import { activePositionAtom, chordScopeToPositionAtom } from "./chordScope";
+import { activePositionAtom } from "./chordScope";
 import {
   selectFullChordMatchesForCagedPosition,
   selectFullChordMatchesForThreeNpsPosition,
+  selectCloseFallbacksForCagedPosition,
+  selectCloseFallbacksForThreeNpsPosition,
 } from "../hooks/voicingSelection";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 import { fallbackVoicingMatchesAtom } from "./voicingFallbackAtoms";
@@ -625,14 +627,29 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
   const pattern = get(fingeringPatternAtom);
   const activePosition = get(activePositionAtom);
 
+  const voicing = get(voicingAtom);
   let scoped: Voicing[];
   if (pattern === "caged" && activePosition) {
     const { shapePolygons } = get(shapeDataAtom);
     const cagedShapes = get(cagedShapesAtom);
-    scoped = selectFullChordMatchesForCagedPosition(matches, shapePolygons, cagedShapes);
-  } else if (pattern === "3nps" && get(chordScopeToPositionAtom) && activePosition) {
+    if (voicing === "full") {
+      scoped = selectFullChordMatchesForCagedPosition(matches, shapePolygons, cagedShapes);
+    } else {
+      // close: strict in-polygon fit, like fallback selection
+      const activePolygons = shapePolygons.filter(
+        (p) => p.shape !== undefined && cagedShapes.has(p.shape) && !p.truncated,
+      );
+      scoped = activePolygons.flatMap((polygon) =>
+        selectCloseFallbacksForCagedPosition(matches, polygon),
+      );
+    }
+  } else if (pattern === "3nps" && activePosition) {
     const { boxBounds } = get(shapeDataAtom);
-    scoped = selectFullChordMatchesForThreeNpsPosition(matches, boxBounds, 0);
+    if (voicing === "full") {
+      scoped = selectFullChordMatchesForThreeNpsPosition(matches, boxBounds, 0);
+    } else {
+      scoped = selectCloseFallbacksForThreeNpsPosition(matches, boxBounds);
+    }
   } else {
     scoped = matches;
   }
