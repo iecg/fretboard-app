@@ -1,5 +1,3 @@
-const ALL_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];
-
 export interface StringSetOption {
   /** Stable identifier — "all" or "0-1-2-3" style. */
   id: string;
@@ -11,10 +9,9 @@ export interface StringSetOption {
   disabledReason?: string;
 }
 
-export const ALL_STRINGS_OPTION: StringSetOption = {
-  id: "all",
-  strings: ALL_STRINGS,
-};
+// ALL_STRINGS_OPTION is intentionally not exported — no external consumers
+// remain after the stringSetOptionsAtom no-chord branch was updated to return []
+// and effectiveStringSetAtom became voicing-mode-aware (full mode always returns all 6 strings).
 
 /**
  * For a chord requiring `voiceCount` notes on a 6-string instrument,

@@ -25,7 +25,6 @@ import {
 } from "../utils/storage";
 import {
   buildStringSetOptions,
-  ALL_STRINGS_OPTION,
   type StringSetOption,
 } from "./voicingStringSets";
 import { preferFlatsAtom } from "./scaleAtoms";
@@ -248,7 +247,7 @@ export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
  */
 export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
   const chordType = get(chordTypeAtom);
-  if (!chordType) return [ALL_STRINGS_OPTION];
+  if (!chordType) return [];
   const def = CHORD_DEFINITIONS[chordType];
   const base = buildStringSetOptions(def?.members.length ?? 4);
 
@@ -327,20 +326,33 @@ export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
   });
 });
 
+const ALL_SIX_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];
+
 /**
- * The string indices the user's stored selection resolves to (falls back to
- * ALL when the stored id doesn't match any current option — e.g. after a
- * chord swap that changes voice count). If the picked option is disabled,
- * falls back to the first enabled option's strings (Plan I-T7).
+ * The string indices the engine renders close-voicing candidates against.
+ * Voicing-mode aware:
+ *   - voicing === "full":  returns ALL_SIX_STRINGS unconditionally. Full mode
+ *     uses the full board; the user's stored window is irrelevant.
+ *   - voicing === "close": returns stored window's strings if it matches an
+ *     enabled option; else first enabled option's strings (auto-heal);
+ *     else stored window's strings unchanged (engine renders nothing, toggle
+ *     bar honestly shows the dead-end).
  */
 export const effectiveStringSetAtom = atom((get): readonly number[] => {
+  if (get(voicingAtom) === "full") return ALL_SIX_STRINGS;
   const options = get(stringSetOptionsAtom);
   const stored = get(voicingStringSetAtom);
   const match = options.find((o) => o.id === stored);
   if (match && !match.disabled) return match.strings;
-  // Fallback chain: first enabled option (if any), else ALL.
   const firstEnabled = options.find((o) => !o.disabled);
-  return firstEnabled ? firstEnabled.strings : ALL_STRINGS_OPTION.strings;
+  if (firstEnabled) return firstEnabled.strings;
+  // Dead-end: stored option may still exist (just disabled) — return its
+  // strings so the toggle bar's selected button stays consistent. Engine
+  // renders nothing because the stored window doesn't fit the position.
+  if (match) return match.strings;
+  // Final fallback: stored id matches nothing at all (e.g. after chord swap
+  // shrunk voice count). Return empty so engine renders nothing.
+  return [];
 });
 
 const FRET_WINDOW_BUFFER = 1;

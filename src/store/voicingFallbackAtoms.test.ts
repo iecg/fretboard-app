@@ -80,6 +80,31 @@ describe("hasFallbackPositionsAtom", () => {
   });
 });
 
+describe("fallbackVoicingMatchesAtom — full-mode string-set bypass (Task 3 regression-guard)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("emits identical matches in full mode regardless of voicingStringSetAtom value", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["D"])],
+      [voicingAtom, "full"],
+    ]);
+
+    store.set(voicingStringSetAtom, "0-1-2");
+    const matchesA = store.get(fallbackVoicingMatchesAtom);
+
+    store.set(voicingStringSetAtom, "2-3-4");
+    const matchesB = store.get(fallbackVoicingMatchesAtom);
+
+    expect(matchesA).toEqual(matchesB);
+  });
+});
+
 describe("fallbackVoicingMatchesAtom — referential stability", () => {
   beforeEach(() => {
     localStorage.clear();

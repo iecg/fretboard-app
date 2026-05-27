@@ -179,6 +179,23 @@
   width: 100%;
 }
 
+/* "chip" variant: segmented buttons, no group-level chrome.
+   Each button carries its own background + border (see .toggle-btn--chip).
+   Used by the CAGED shape toggle and the chord string-set toggle. */
+.toggle-group--chip {
+  width: 100%;
+  gap: 0.45rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.toggle-btn--chip {
+  background: var(--dc-bg);
+  border: 1px solid var(--dc-border);
+  border-radius: calc(var(--dc-radius) - 1px);
+}
+
 .toggle-btn {
   display: inline-flex;
   align-items: center;

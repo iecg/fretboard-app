@@ -9,6 +9,7 @@ const toggleBarVariants = cva(shared["toggle-group"], {
   variants: {
     variant: {
       default: shared["toggle-group--default"],
+      chip: shared["toggle-group--chip"],
       tabs: styles["mobile-tab-bar"],
     },
   },
@@ -21,6 +22,7 @@ const toggleButtonVariants = cva("", {
   variants: {
     variant: {
       default: shared["toggle-btn"],
+      chip: `${shared["toggle-btn"]} ${shared["toggle-btn--chip"]}`,
       tabs: styles["mobile-tab"],
     },
     isActive: {
@@ -49,7 +51,7 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   options: readonly ToggleBarOption<Value>[];
   value: Value | undefined;
   onChange: (value: Value) => void;
-  variant?: "default" | "tabs";
+  variant?: "default" | "chip" | "tabs";
   label?: string;
   /** When "scroll" — the toggle group scrolls horizontally instead of shrinking buttons. */
   overflow?: "scroll";

@@ -894,32 +894,104 @@ describe("voicingStringSetAtom + effectiveStringSetAtom", () => {
     localStorage.clear();
   });
 
-  it("defaults to 'all' → falls back to first available window (0-1-2)", () => {
+  it("defaults to 'all' → in full mode returns all 6 strings (full mode ignores stored window)", () => {
+    // Default voicingAtom is "full". effectiveStringSetAtom always returns ALL_SIX_STRINGS in full mode.
     const store = makeAtomStore([]);
     expect(store.get(voicingStringSetAtom)).toBe("all");
-    expect([...store.get(effectiveStringSetAtom)]).toEqual([0, 1, 2]);
+    expect([...store.get(effectiveStringSetAtom)]).toEqual([0, 1, 2, 3, 4, 5]);
   });
 
-  it("selecting a window narrows effective strings", () => {
+  it("selecting a window narrows effective strings in close mode", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "7" })],
+      [voicingAtom, "close"],
     ]);
     store.set(voicingStringSetAtom, "1-2-3-4");
     expect([...store.get(effectiveStringSetAtom)]).toEqual([1, 2, 3, 4]);
   });
 
-  it("falls back to first available window when stored id no longer matches options for the active chord", () => {
+  it("falls back to first available window when stored id no longer matches options (close mode)", () => {
     // Major Triad has 3 notes → options are "0-1-2", "1-2-3", ... "3-4-5".
     // "0-1-2-3" (a 4-note window) doesn't appear in triad options.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
     ]);
     store.set(voicingStringSetAtom, "0-1-2-3");
     expect([...store.get(effectiveStringSetAtom)]).toEqual([0, 1, 2]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group G7 — stringSetOptionsAtom no-chord branch
+// ---------------------------------------------------------------------------
+
+describe("stringSetOptionsAtom — no-chord branch", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns an empty list when no chord is active", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, []],
+    ]);
+    expect(store.get(stringSetOptionsAtom)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group G7b — effectiveStringSetAtom voicing-mode-aware (Task 2)
+// ---------------------------------------------------------------------------
+
+describe("effectiveStringSetAtom (voicing-mode aware)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns all 6 strings in full mode regardless of stored window", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "full"],
+      [voicingStringSetAtom, "0-1-2"],
+    ]);
+    expect(store.get(effectiveStringSetAtom)).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it("returns stored window's strings in close mode when option is enabled", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [fingeringPatternAtom, "none"],
+      [voicingAtom, "close"],
+      [voicingStringSetAtom, "0-1-2"],
+    ]);
+    expect(store.get(effectiveStringSetAtom)).toEqual([0, 1, 2]);
+  });
+
+  it("returns stored window's strings (unchanged) in close mode when no option is enabled (dead-end)", () => {
+    // C dim / C major / G shape: all close-voicing windows are disabled
+    // because no close voicing fits the G-shape polygon.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "dim" })],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["G"])],
+      [voicingAtom, "close"],
+      [voicingStringSetAtom, "0-1-2"],
+    ]);
+    const options = store.get(stringSetOptionsAtom);
+    // Sanity-check the setup: all options should be disabled
+    expect(options.every((o) => o.disabled)).toBe(true);
+    // No silent ALL fallback — returns stored window's strings unchanged
+    expect(store.get(effectiveStringSetAtom)).toEqual([0, 1, 2]);
   });
 });
 

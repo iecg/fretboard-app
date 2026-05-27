@@ -3,11 +3,10 @@ import {
   chordTypeAtom,
   voicingAtom,
 } from "../../store/chordOverlayAtoms";
-import { hasFallbackPositionsAtom } from "../../store/voicingFallbackAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { VoicingControl } from "./VoicingControl";
-import { ChordStringSetPicker } from "./ChordStringSetPicker";
+import { ChordStringSetToggleBar } from "./ChordStringSetToggleBar";
 import panelStyles from "./ChordOverlayControls.module.css";
 
 export function ChordOverlayControls() {
@@ -15,7 +14,6 @@ export function ChordOverlayControls() {
 
   const chordType = useAtomValue(chordTypeAtom);
   const voicing = useAtomValue(voicingAtom);
-  const hasFallback = useAtomValue(hasFallbackPositionsAtom);
 
   const hasActiveChord = Boolean(chordType);
 
@@ -25,9 +23,9 @@ export function ChordOverlayControls() {
         <Prop label={t("inspector.voicingLabel")} span={3}>
           <VoicingControl />
         </Prop>
-        {(voicing === "close" || (voicing === "full" && hasFallback)) && hasActiveChord ? (
-          <Prop label={t("inspector.chordStringSetLabel")} span={2}>
-            <ChordStringSetPicker />
+        {voicing === "close" && hasActiveChord ? (
+          <Prop label={t("inspector.chordStringSetLabel")} span={9}>
+            <ChordStringSetToggleBar />
           </Prop>
         ) : null}
       </PropGrid>

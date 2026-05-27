@@ -505,11 +505,15 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(shapeCell?.querySelector("p")).toBeNull();
     });
 
-    it("renders CAGED shape controls with separated multi-select chrome", () => {
+    it("renders CAGED shape controls composed from the shared chip toggle chrome", () => {
       renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
       const group = screen.getByRole("group", { name: "Shape" });
+      // Preserves its local class for the multi-select interaction hooks,
+      // and now composes the shared chip-variant chrome so the visual
+      // treatment stays in sync with ChordStringSetToggleBar.
       expect(group.className).toMatch(/shapeToggleBar/);
-      expect(group).not.toHaveClass("toggle-group");
+      expect(group.className).toMatch(/toggle-group/);
+      expect(group.className).toMatch(/toggle-group--chip/);
     });
   });
 });

@@ -10,12 +10,11 @@ import { voicingAtom } from "../../store/chordOverlayAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
-import { hasFallbackPositionsAtom } from "../../store/voicingFallbackAtoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
 /**
  * ChordOverlayControls now owns only the VOICING sub-group (VoicingControl +
- * optional ChordStringSetPicker). The Lens picker has been removed.
+ * optional ChordStringSetToggleBar). The Lens picker has been removed.
  *
  * Default seeds: C Major, one progression step at degree I (= Major Triad).
  * `fingeringPatternAtom = "caged"` keeps the overlay enabled.
@@ -126,23 +125,25 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(screen.queryByTestId("close-position-picker")).not.toBeInTheDocument();
     });
 
-    it("renders the string-set picker when voicing is 'close'", () => {
+    it("renders the string-set toggle bar (not a dropdown) when voicing is 'close'", () => {
       renderManual([[voicingAtom, "close"]]);
+      // New behavior: toggle bar (role=group) not dropdown (role=combobox)
       expect(
-        screen.getByRole("combobox", { name: /strings/i }),
+        screen.getByRole("group", { name: /strings/i }),
       ).toBeInTheDocument();
+      expect(screen.queryByRole("combobox", { name: /strings/i })).not.toBeInTheDocument();
     });
 
-    it("hides the string-set picker when voicing is 'off' or 'full'", () => {
+    it("hides the string-set control when voicing is 'off' or 'full'", () => {
       const { unmount } = renderManual([[voicingAtom, "off"]]);
       expect(
-        screen.queryByRole("combobox", { name: /strings/i }),
+        screen.queryByRole("group", { name: /strings/i }),
       ).not.toBeInTheDocument();
       unmount();
 
       renderManual([[voicingAtom, "full"], [fingeringPatternAtom, "none"]]);
       expect(
-        screen.queryByRole("combobox", { name: /strings/i }),
+        screen.queryByRole("group", { name: /strings/i }),
       ).not.toBeInTheDocument();
     });
 
@@ -192,12 +193,26 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
 
 });
 
-describe("ChordOverlayControls — string-set picker visibility in Full mode", () => {
+describe("ChordOverlayControls — string-set picker render gate", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("shows the picker when voicing is full and a fallback exists", () => {
+  it("renders the toggle bar in close mode with an active chord", () => {
+    const store = createStore();
+    store.set(voicingAtom, "close");
+    store.set(scaleNameAtom, "major");
+    store.set(rootNoteAtom, "C");
+    store.set(progressionStepsAtom, [
+      { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
+    ]);
+    renderWithStore(<ChordOverlayControls />, store);
+    expect(screen.getByRole("group", { name: /strings/i })).toBeInTheDocument();
+    // Specifically the new toggle bar (buttons, not a select for strings)
+    expect(screen.queryByRole("combobox", { name: /strings/i })).not.toBeInTheDocument();
+  });
+
+  it("does NOT render the picker in full mode even when hasFallback is true", () => {
     const store = createStore();
     store.set(voicingAtom, "full");
     store.set(fingeringPatternAtom, "caged");
@@ -207,29 +222,15 @@ describe("ChordOverlayControls — string-set picker visibility in Full mode", (
     store.set(progressionStepsAtom, [
       { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "dim", manualRoot: "B" },
     ]);
-
-    expect(store.get(hasFallbackPositionsAtom)).toBe(true);
-
     renderWithStore(<ChordOverlayControls />, store);
-
-    expect(screen.queryByRole("combobox", { name: /strings/i })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: /strings/i })).not.toBeInTheDocument();
   });
 
-  it("hides the picker in full mode when no fallback polygon admits a close voicing", () => {
+  it("does NOT render the picker when no chord is active", () => {
     const store = createStore();
-    store.set(voicingAtom, "full");
-    store.set(fingeringPatternAtom, "caged");
-    store.set(cagedShapesAtom, new Set<CagedShape>(["C", "A", "G", "E"]));
-    store.set(scaleNameAtom, "major");
-    store.set(rootNoteAtom, "C");
-    store.set(progressionStepsAtom, [
-      { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
-    ]);
-
-    expect(store.get(hasFallbackPositionsAtom)).toBe(false);
-
+    store.set(voicingAtom, "close");
+    store.set(progressionStepsAtom, []);
     renderWithStore(<ChordOverlayControls />, store);
-
-    expect(screen.queryByRole("combobox", { name: /strings/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: /strings/i })).not.toBeInTheDocument();
   });
 });

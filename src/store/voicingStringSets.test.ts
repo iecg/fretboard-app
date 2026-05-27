@@ -1,14 +1,13 @@
 import { describe, it, expect } from "vitest";
 import {
   buildStringSetOptions,
-  ALL_STRINGS_OPTION,
 } from "./voicingStringSets";
 
 describe("buildStringSetOptions", () => {
-  it("does not emit ALL_STRINGS_OPTION", () => {
-    expect(buildStringSetOptions(3)).not.toContainEqual(ALL_STRINGS_OPTION);
-    expect(buildStringSetOptions(4)).not.toContainEqual(ALL_STRINGS_OPTION);
-    expect(buildStringSetOptions(5)).not.toContainEqual(ALL_STRINGS_OPTION);
+  it("does not emit an option with id 'all'", () => {
+    expect(buildStringSetOptions(3).every((o) => o.id !== "all")).toBe(true);
+    expect(buildStringSetOptions(4).every((o) => o.id !== "all")).toBe(true);
+    expect(buildStringSetOptions(5).every((o) => o.id !== "all")).toBe(true);
   });
 
   it("emits 3 windows for a 4-note chord (Top 4 / Middle 4 / Bottom 4)", () => {
