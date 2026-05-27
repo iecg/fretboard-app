@@ -47,22 +47,17 @@ export function MainLayoutWrapper({
       {header}
 
       {showSummary && !!summary && (
-        <>
-          <hr className={styles["section-divider"]} aria-hidden="true" />
-          <div
-            className={styles["summary-shell"]}
-            data-testid="summary-shell"
-            data-layout-tier={layoutTier}
-            data-layout-variant={layoutVariant}
-          >
-            {summary}
-          </div>
-        </>
+        <div
+          className={styles["summary-shell"]}
+          data-testid="summary-shell"
+          data-layout-tier={layoutTier}
+          data-layout-variant={layoutVariant}
+        >
+          {summary}
+        </div>
       )}
 
       {helpModal}
-
-      <hr className={styles["section-divider"]} aria-hidden="true" />
 
       <main
         className={styles["main-fretboard"]}
@@ -73,12 +68,7 @@ export function MainLayoutWrapper({
         {children}
       </main>
 
-      {showControlsPanel && (
-        <>
-          <hr className={styles["section-divider"]} aria-hidden="true" />
-          {controlsPanel}
-        </>
-      )}
+      {showControlsPanel && controlsPanel}
 
       {showMobileTabs && (
         <div className={styles["mobile-tabs-shell"]}>

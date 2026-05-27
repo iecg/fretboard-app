@@ -4,33 +4,6 @@
   min-width: 0;
 }
 
-/* Full-bleed horizontal dividers for light mode.
-   Escape the app-container 1rem padding so the line reaches viewport edges.
-   Reference palette: MUTE #857c6c at 30% opacity. */
-.section-divider {
-  display: none; /* hidden in dark mode */
-  width: calc(100% + 2rem);
-  margin-left: -1rem;
-  margin-right: -1rem;
-  height: 1px;
-  border: 0;
-  background: color-mix(in srgb, #857c6c 30%, transparent);
-  flex-shrink: 0;
-}
-
-@media (max-width: 767px) {
-  .section-divider {
-    width: calc(100% + 1.3rem);
-    margin-left: -0.65rem;
-    margin-right: -0.65rem;
-  }
-}
-
-/* stylelint-disable selector-pseudo-class-no-unknown */
-:global([data-theme="modern-light"]) .section-divider {
-  display: block;
-}
-/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .summary-shell {
   display: flex;
