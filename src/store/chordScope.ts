@@ -1,20 +1,5 @@
 import { atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
-import { k, GET_ON_INIT, booleanStorage } from "../utils/storage";
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom } from "./fingeringAtoms";
-
-/**
- * The single, explicit fingering↔chord coupling: when on AND
- * `activePositionAtom` resolves true, the chord overlay (loose chord-tone
- * highlighting + voicing-engine output) is constrained to the active
- * fingering position's fret window. Default off.
- */
-export const chordScopeToPositionAtom = atomWithStorage<boolean>(
-  k("chordScopeToPosition"),
-  false,
-  booleanStorage,
-  GET_ON_INIT,
-);
 
 /**
  * True when the fingering mode resolves to a single, identifiable position:

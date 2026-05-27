@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore } from "jotai";
 import {
-  chordScopeToPositionAtom,
   activePositionAtom,
 } from "./chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "./fingeringAtoms";
@@ -10,10 +9,6 @@ describe("chordScope atoms", () => {
   let store: ReturnType<typeof createStore>;
   beforeEach(() => {
     store = createStore();
-  });
-
-  it("chordScopeToPositionAtom defaults to false", () => {
-    expect(store.get(chordScopeToPositionAtom)).toBe(false);
   });
 
   it("activePositionAtom is false when fingering is 'none'", () => {

@@ -96,8 +96,7 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
 
   // Note: npsPositionAtom storage clamps to [1, 7] (constrainedNumberStorage),
   // so `npsPosition === 0` is unreachable at runtime — `activePositionAtom` is
-  // always true for 3NPS. Position-based filtering is unconditional in 3NPS mode;
-  // the old chordScopeToPositionAtom bypass has been retired.
+  // always true for 3NPS. Position-based filtering is unconditional in 3NPS mode.
 });
 
 describe("useFretboardState — CAGED shape filtering and truncation", () => {
