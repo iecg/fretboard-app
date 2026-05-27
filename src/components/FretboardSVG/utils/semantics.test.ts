@@ -104,7 +104,6 @@ describe("semantics utils", () => {
       expect(res).toBe("chord-root");
     });
 
-    // Phase 04: note-diatonic-chord branch
     it("returns note-diatonic-chord for chord tone when isDiatonicChord is true", () => {
       const sem: NoteSemantics = {
         isScaleRoot: false,
@@ -191,7 +190,6 @@ describe("semantics utils", () => {
       expect(res.noteShape).toBe("circle");
     });
 
-    // Phase 04: note-diatonic-chord visuals
     it("returns squircle + RADIUS_SCALE_CHORD_TONE for note-diatonic-chord", () => {
       const res = getNoteVisuals("note-diatonic-chord");
       expect(res.noteShape).toBe("squircle");

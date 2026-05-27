@@ -78,7 +78,6 @@ describe("StatusBar", () => {
   });
 
   it("prefixes the chord degree when one is set", () => {
-    // Phase 2.5: the degree is sourced from the active progression step.
     renderWithAtoms(<StatusBar />, [
       [progressionStepsAtom, [
         {

@@ -139,25 +139,6 @@ const CONNECTOR_CONFLICT_GAP_PX = 1.5;
  */
 const OFFSET_BUCKET = [0, 3] as const;
 
-// (Topology pixel-scale shim removed 2026-05-27.)
-//
-// Conflict detection used to project voicings into a canonical pixel scale
-// (10 px/fret, 20 px/string, 36 px string row) and check `polylineDistance
-// ≤ 2 * baseRadius + gap`. That was screen-resolution-independent but
-// still depended on a chosen px ratio that had to be hand-calibrated to
-// match what users perceive as "overlap". It produced false positives on
-// close voicings spaced 3 frets apart on the same string set.
-//
-// The discrete truth is simpler: every voicing is N notes, one per string,
-// on N consecutive strings, so two voicings overlap visually iff they
-// share at least one (stringIndex, fretIndex) vertex — both polylines pass
-// through that exact dot, and their stroke bubbles touch there.
-//
-// Edge case the rule misses: two voicings on the same strings at adjacent
-// frets (e.g. parallel barres at frets 12 and 13). In practice the
-// close-voicing picker emits one best combo per fret anchor and dedupes
-// by canonical key, so this case does not surface from the generator.
-
 function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
   return combo.some((note) =>
     note.stringIndex === 0 || note.stringIndex === lowestStringIndex,
@@ -537,7 +518,6 @@ export function buildPendingChordConnectorVoicings({
       };
     });
 
-    // Vertex-share conflict offsets — no pixel math involved.
     const offsetMap = assignConflictOffsets(pending);
     return pending.map((pv) => ({ ...pv, offsetPx: offsetMap.get(pv.canonicalKey) ?? 0 }));
   }

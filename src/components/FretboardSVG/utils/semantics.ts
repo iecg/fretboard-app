@@ -73,7 +73,6 @@ export function getLensEmphasis(
 
   if (!practiceLens) return defaultEmphasis;
 
-  // "tones" lens is fully implemented (Task 4.4): guide-tone emphasis + full intensity for other chord tones.
   switch (practiceLens) {
     case "tones":
       return applyTonesBase(noteClass, isGuideTone);
@@ -124,8 +123,6 @@ export function getLensEmphasis(
       // 3. Departing: current chord tone that doesn't carry into the next chord.
       //    Departing overrides guide-tone emphasis — Lead lens is about voice-leading
       //    concerns, not chord-quality definition.
-      // TODO (Phase 8 polish): consider a distinct departing visual cue —
-      // currently the 0.6 opacity is close to the scale-only 0.7 dim.
       if (isCurrentChordTone && !commonWithNext.has(notePc)) {
         return { radiusBoost: 0.85, opacityBoost: 0.6 };
       }
@@ -240,7 +237,6 @@ export function getNoteVisuals(
         noteShape: "diamond",
       };
     case "note-diatonic-chord":
-      // Phase 04: use chord-tone-in-scale visuals as fallback; Phase 05+ adds distinct styling
       return {
         radiusScale: RADIUS_SCALE_CHORD_TONE,
         noteShape: "squircle",

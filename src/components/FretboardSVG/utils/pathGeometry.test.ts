@@ -298,10 +298,6 @@ describe("offsetOpenPolylinePath", () => {
   });
 
   it("3 non-collinear vertices: emits 3 A commands (1 outside join + 2 end caps)", () => {
-    // Skinny diagonal triad — the geometry that previously rendered as an
-    // acute convex-hull triangle. Each interior vertex contributes an arc
-    // on both sides (one outside long-way + one inside short-way) so the
-    // tube doesn't bevel across the polyline.
     const pts = [
       { x: 0, y: 0 },     // V_0
       { x: 10, y: 36 },   // V_1 (mid)

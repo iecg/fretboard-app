@@ -36,8 +36,6 @@ describe("ProgressionTrack", () => {
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 1, I, C major, 1 bar, active/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Step 3, vi, A minor, 2 bars/i })).toBeTruthy();
-    // Transport, status lights, and the position/tempo/scale readouts moved
-    // to the header transport cluster (Always-On DAW Phase A).
     expect(screen.queryByRole("button", { name: "Play progression" })).toBeNull();
     expect(screen.queryByText("Position")).toBeNull();
   });
@@ -135,7 +133,6 @@ describe("ProgressionTrack", () => {
       [beatsPerBarAtom, 4],
     ]);
 
-    // The accompaniment controls moved to the Progression tab (Phase 11).
     expect(screen.queryByLabelText("Genre style")).toBeNull();
     expect(screen.queryByLabelText("Chord instrument")).toBeNull();
     expect(screen.queryByLabelText("Chord pattern")).toBeNull();
@@ -190,8 +187,6 @@ describe("ProgressionTrack", () => {
       [beatsPerBarAtom, 4],
     ]);
 
-    // TransportBar + position readout moved to the header transport cluster
-    // (Always-On DAW Phase A); only the timeline stays in ProgressionTrack.
     expect(container.querySelector("[data-testid='transport-bar']")).toBeNull();
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
     expect(screen.queryByText("Position")).toBeNull();
