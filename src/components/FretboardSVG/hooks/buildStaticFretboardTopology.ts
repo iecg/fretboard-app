@@ -19,6 +19,7 @@ import {
   type BoxBound,
 } from "../utils/semantics";
 import type { NoteData } from "./useNoteData";
+import { buildPolygonCoverage } from "../../../core/polygonCoverage";
 
 export interface StaticFretboardTopologyNote extends NoteData {
   positionKey: string;
@@ -110,6 +111,7 @@ export function buildStaticFretboardTopology({
   const colorNoteSet = new Set(colorNotes);
   const degreesMap = getDegreesForScale(scaleName);
   const hasFullChordPositionFilter = !!fullChordPositionKeys && fullChordPositionKeys.size > 0;
+  const polygonCoverage = buildPolygonCoverage(shapePolygons, maxFret);
 
   for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
     const layoutRow = fretboardLayout[stringIndex];
@@ -154,17 +156,7 @@ export function buildStaticFretboardTopology({
         (ENHARMONICS[noteName] && colorNoteSet.has(ENHARMONICS[noteName]!))
       ));
 
-      const isInsideAnyPolygon = shapePolygons.some((poly) => {
-        if (poly.truncated) return false;
-        const leftFret = poly.vertices[stringIndex]?.fret;
-        const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-        return (
-          leftFret !== undefined &&
-          rightFret !== undefined &&
-          fretIndex >= leftFret &&
-          fretIndex <= rightFret
-        );
-      });
+      const isInsideAnyPolygon = polygonCoverage.coveredPositions.has(positionKey);
 
       const isInPlayableContext = (() => {
         if (!hasChordOverlay) return false;

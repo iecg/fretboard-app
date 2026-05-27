@@ -38,7 +38,7 @@ import { activePositionAtom } from "./chordScope";
 import { selectCloseFallbacksForCagedPosition } from "../hooks/voicingSelection";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import type { ProgressionStep } from "../progressions/progressionDomain";
-import type { CagedShape, DegreeId } from "@fretflow/core";
+import type { CagedShape, DegreeId, ShapePolygon } from "@fretflow/core";
 
 const STEP_DEFAULTS = {
   duration: { value: 1, unit: "bar" as const },
@@ -99,6 +99,48 @@ describe("chordRootAtom / chordTypeAtom — derived from active progression step
     ]);
     expect(store.get(chordRootAtom)).toBe("G");
     expect(store.get(chordTypeAtom)).toBe("7");
+  });
+});
+
+describe("isInAnyPolygon", () => {
+  it("uses non-truncated polygon coverage for membership checks", () => {
+    const polygons: ShapePolygon[] = [
+      {
+        shape: "C",
+        color: "red",
+        cagedLabel: "C",
+        modalLabel: null,
+        truncated: false,
+        intendedMin: 3,
+        intendedMax: 5,
+        vertices: [
+          { string: 0, fret: 3 },
+          { string: 1, fret: 4 },
+          { string: 1, fret: 5 },
+          { string: 0, fret: 5 },
+        ],
+      },
+      {
+        shape: "A",
+        color: "blue",
+        cagedLabel: "A",
+        modalLabel: null,
+        truncated: true,
+        intendedMin: 8,
+        intendedMax: 10,
+        vertices: [
+          { string: 0, fret: 8 },
+          { string: 1, fret: 8 },
+          { string: 1, fret: 10 },
+          { string: 0, fret: 10 },
+        ],
+      },
+    ];
+
+    expect(isInAnyPolygon("0-3", polygons)).toBe(true);
+    expect(isInAnyPolygon("1-4", polygons)).toBe(true);
+    expect(isInAnyPolygon("1-3", polygons)).toBe(false);
+    expect(isInAnyPolygon("0-9", polygons)).toBe(false);
   });
 });
 

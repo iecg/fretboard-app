@@ -53,6 +53,7 @@ import {
 } from "../hooks/voicingSelection";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 import { fallbackVoicingMatchesAtom } from "./voicingFallbackAtoms";
+import { buildPolygonCoverage } from "../core/polygonCoverage";
 
 export interface ShapeInstanceRange {
   minFret: number;
@@ -76,19 +77,7 @@ export function isInAnyPolygon(
   positionKey: string,
   polygons: readonly ShapePolygon[],
 ): boolean {
-  const [sStr, fStr] = positionKey.split("-");
-  const s = Number(sStr);
-  const f = Number(fStr);
-
-  for (const poly of polygons) {
-    const leftFret = poly.vertices[s]?.fret;
-    const rightFret = poly.vertices[poly.vertices.length - 1 - s]?.fret;
-    if (leftFret === undefined || rightFret === undefined) continue;
-    const lo = Math.min(leftFret, rightFret);
-    const hi = Math.max(leftFret, rightFret);
-    if (f >= lo && f <= hi) return true;
-  }
-  return false;
+  return buildPolygonCoverage(polygons, 24).coveredPositions.has(positionKey);
 }
 
 const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
@@ -677,11 +666,12 @@ function addChordTonesWithinPolygon(
   if (tones.length === 0) return;
   const tuning = get(currentTuningAtom);
   const layout = getCachedFretboardLayout(tuning, 24);
+  const polygonCoverage = buildPolygonCoverage(shapePolygons, 24);
   for (let s = 0; s < tuning.length; s++) {
     for (let f = 0; f <= 24; f++) {
       if (tones.includes(layout[s][f])) {
         const key = `${s}-${f}`;
-        if (isInAnyPolygon(key, shapePolygons)) {
+        if (polygonCoverage.coveredPositions.has(key)) {
           result.add(key);
         }
       }
