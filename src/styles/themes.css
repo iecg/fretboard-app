@@ -39,6 +39,7 @@
   --surface-shell:       #ebebdc; /* BG — warm parchment shell (reference palette) */
   --surface-card-top:    #f6f2e9; /* PANEL — cream card surface (reference palette) */
   --surface-card-nested: #f1ede3; /* inset card: visibly recessed from card-top (reference palette) */
+  --surface-card-soft:   #e3ddd0; /* PANEL-SOFT — recessed surface for tab cards / status bar (reference palette) */
   --surface-well:        #ddd8cf; /* control well: distinctly sunken below PANEL-SOFT (reference palette) */
   --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
   --surface-float:       #f6f2e9; /* floating overlay (dropdown, modal): PANEL elevation */
