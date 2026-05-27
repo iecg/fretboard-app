@@ -8,7 +8,6 @@ import {
   getDegreesForScale,
   getFretNoteWithOctave,
   parseNote,
-  CHORD_DEFINITIONS,
   type NoteSemantics,
   type ShapePolygon,
   type CagedShape,
@@ -41,7 +40,6 @@ export interface UseStaticFretboardTopologyProps {
   chordTones: string[];
   rootNote: string;
   chordRoot?: string;
-  chordType?: string;  // chord quality, e.g. "M", "m", "7", "maj7", "m7"
   colorNotes: string[];
   shapePolygons: ShapePolygon[];
   chordFretSpread: number;
@@ -74,7 +72,6 @@ export function buildStaticFretboardTopology({
   chordTones,
   rootNote,
   chordRoot,
-  chordType,
   colorNotes,
   shapePolygons,
   chordFretSpread,
@@ -111,42 +108,6 @@ export function buildStaticFretboardTopology({
   const highlightSet = new Set(highlightNotes);
   const chordToneSet = new Set(chordTones);
   const colorNoteSet = new Set(colorNotes);
-  const MEMBER_NAME_TO_DEGREE: Record<string, string> = {
-    root: "1",
-    "2": "2",
-    b3: "3",
-    "3": "3",
-    "4": "4",
-    b5: "5",
-    "5": "5",
-    "#5": "5",
-    "6": "6",
-    b7: "7",
-    "7": "7",
-    bb7: "7",
-  };
-
-  const degreeByNote: Record<string, string> = {};
-  if (chordRoot && chordType) {
-    const chordDef = CHORD_DEFINITIONS[chordType];
-    if (chordDef) {
-      const normChordRoot = chordRoot.includes("b") && ENHARMONICS[chordRoot]
-        ? ENHARMONICS[chordRoot]
-        : chordRoot;
-      const rootIdx = NOTES.indexOf(normChordRoot);
-      if (rootIdx !== -1) {
-        chordDef.members.forEach((member) => {
-          const noteIdx = (rootIdx + member.semitone) % 12;
-          const noteName = NOTES[noteIdx];
-          const degree = MEMBER_NAME_TO_DEGREE[member.name];
-          if (degree) {
-            degreeByNote[noteName] = degree;
-          }
-        });
-      }
-    }
-  }
-
   const degreesMap = getDegreesForScale(scaleName);
   const hasFullChordPositionFilter = !!fullChordPositionKeys && fullChordPositionKeys.size > 0;
 
@@ -359,7 +320,6 @@ export function buildStaticFretboardTopology({
         isGuideTone: effectiveSemantics?.isGuideTone ?? false,
         scaleDegree,
         degreeColor,
-        chordDegree: chordToneSet.has(noteName) ? degreeByNote[noteName] : undefined,
         fullChordShape,
         isMatchedFullChordPosition,
         isInsideAnyPolygon,

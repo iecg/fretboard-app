@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
+import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { NoteAnimationMode } from "./motionPolicy";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
@@ -80,7 +80,6 @@ export const FretboardNoteLayer = memo(({
         scaleDegree,
         degreeColor,
         fullChordShape,
-        chordDegree,
       }) => {
         const baseRadius = noteBubblePx / 2;
         const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -92,6 +91,20 @@ export const FretboardNoteLayer = memo(({
         const shapeEl =
           noteShape === "squircle" ? (
             <>
+              {noteClass === "chord-root" && (
+                <path
+                  d={squirclePath(cx, cy, r + CHORD_ROOT_HALO_RADIUS_PX)}
+                  style={{
+                    fill: "none",
+                    stroke: isTension
+                      ? "var(--neon-orange-dim)"
+                      : "color-mix(in srgb, var(--neon-orange) 22%, transparent)",
+                    strokeWidth: isTension ? 1.8 : 1.5,
+                    strokeDasharray: isTension ? "6 3" : undefined,
+                    paintOrder: "stroke",
+                  }}
+                />
+              )}
               <path d={squirclePath(cx, cy, r)} />
             </>
           ) : noteShape === "diamond" ? (
@@ -149,7 +162,6 @@ export const FretboardNoteLayer = memo(({
             data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
             data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
-            data-chord-degree={chordDegree}
             style={{
               "--note-r": r,
               opacity: finalOpacity !== 1 ? finalOpacity : undefined,
@@ -159,14 +171,6 @@ export const FretboardNoteLayer = memo(({
             } as React.CSSProperties}
           >
             {shapeEl}
-            {chordDegree && (
-              <circle
-                cx={cx}
-                cy={cy}
-                r={r * 0.35}
-                className={styles["chord-degree-dot"]}
-              />
-            )}
             {displayFormat !== "none" && (
               <text x={cx} y={cy}>
                 {formatAccidental(displayValue)}
