@@ -54,79 +54,9 @@ import {
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 import { fallbackVoicingMatchesAtom } from "./voicingFallbackAtoms";
 
-/** A voicing "majority-fits" the scale window when at least
- * ceil(frettedCount × 2/3) of its fretted notes lie within [window.lo, window.hi].
- * Open strings are not bound by the window (playable at any hand position). */
-/**
- * A voicing fits the diagonal scale window when 100% of its fretted notes lie
- * within the active shape's fret-range on their respective strings.
- * Open strings are not bound by the shape.
- */
-function fitsStringSpecificRanges(
-  positionKeys: readonly string[],
-  allowedPositions: Set<string>,
-): boolean {
-  const stringRanges: Record<number, { lo: number; hi: number }> = {};
-  for (const key of allowedPositions) {
-    const [sStr, fStr] = key.split("-");
-    const s = Number(sStr);
-    const f = Number(fStr);
-    if (f > 0) {
-      if (!stringRanges[s]) {
-        stringRanges[s] = { lo: f, hi: f };
-      } else {
-        stringRanges[s].lo = Math.min(stringRanges[s].lo, f);
-        stringRanges[s].hi = Math.max(stringRanges[s].hi, f);
-      }
-    }
-  }
-
-  return positionKeys.every((key) => {
-    const [sStr, fStr] = key.split("-");
-    const s = Number(sStr);
-    const f = Number(fStr);
-    if (f === 0) return true; // open strings always allowed
-    const range = stringRanges[s];
-    if (!range) return false;
-    return f >= range.lo && f <= range.hi;
-  });
-}
-
 export interface ShapeInstanceRange {
   minFret: number;
   maxFret: number;
-}
-
-function fitsStringSpecificRangesForAnyInstance(
-  positionKeys: readonly string[],
-  allowedPositions: Set<string>,
-  instances: readonly ShapeInstanceRange[],
-): boolean {
-  const fretted = positionKeys
-    .map((k) => Number(k.split("-")[1]))
-    .filter((f) => f > 0);
-  if (fretted.length === 0) return true; // open strings always allowed
-
-  const vMin = Math.min(...fretted);
-  const vMax = Math.max(...fretted);
-
-  // Find the scale shape instance that covers this voicing's fret window (buffered by ±1)
-  const matchingInstance = instances.find(
-    (inst) => vMin >= inst.minFret - 1 && vMax <= inst.maxFret + 1
-  );
-  if (!matchingInstance) return false;
-
-  // Filter allowed positions strictly to this shape instance
-  const instCoords = new Set<string>();
-  for (const c of allowedPositions) {
-    const f = Number(c.split("-")[1]);
-    if (f >= matchingInstance.minFret && f <= matchingInstance.maxFret) {
-      instCoords.add(c);
-    }
-  }
-
-  // Verify that the voicing fits the string-specific ranges of this instance
-  return fitsStringSpecificRanges(positionKeys, instCoords);
 }
 
 /**
@@ -330,30 +260,21 @@ export const activeScaleInstanceRangesAtom = atom<ShapeInstanceRange[]>((get) =>
 });
 
 /**
- * All close voicings that pass the snap-to-scale filter but WITHOUT the
- * string-set filter applied. Used by {@link stringSetOptionsAtom} to probe
- * each string-set window for availability independently of the user's
- * current selection.
+ * All close voicings the chord generates — unscoped to position or string set.
+ * Scoping happens at {@link visibleVoicingMatchesAtom} / {@link chordHighlightPositionsAtom} level.
+ * Used by {@link stringSetOptionsAtom} to probe each string-set window for
+ * availability independently of the user's current selection.
  */
 export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];
-  const all = generateVoicings({
+  return generateVoicings({
     chordRoot: get(chordRootAtom),
     chordType,
     tuning: get(currentTuningAtom),
     maxFret: 24,
     voicingType: "close",
   });
-
-  if (get(chordSnapToScaleAtom)) {
-    const allowedPositions = get(activeScalePatternPositionsAtom);
-    const instances = get(activeScaleInstanceRangesAtom);
-    if (allowedPositions.size > 0 && instances.length > 0) {
-      return all.filter((v) => fitsStringSpecificRangesForAnyInstance(v.positionKeys, allowedPositions, instances));
-    }
-  }
-  return all;
 });
 
 /**
@@ -383,9 +304,11 @@ export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
   const fallbackActive = fallbackPolygons.length > 0 || fallback3Nps !== null;
 
   const allCandidates = get(closeCandidatesAllStringSetsAtom);
-  const snap = get(chordSnapToScaleAtom);
-  const patternKeys = get(activeScalePatternPositionsAtom);
-  const snapActive = snap && patternKeys.size > 0;
+  const { shapePolygons, boxBounds } = get(shapeDataAtom);
+  const fingeringPattern = get(fingeringPatternAtom);
+  const cagedShapes = get(cagedShapesAtom);
+  const activePosition = get(activePositionAtom);
+  const snapActive = activePosition && (fingeringPattern === "caged" || fingeringPattern === "3nps");
 
   if (!snapActive && !fallbackActive) return base;
 
@@ -396,8 +319,21 @@ export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
       v.notes.every((n) => optStringSet.has(n.stringIndex)),
     );
 
-    if (snapActive && candidatesOnSet.length === 0) {
-      return { ...opt, disabled: true, disabledReason: "No voicing in current scale window" };
+    if (snapActive) {
+      let fitsAnyScope: boolean;
+      if (fingeringPattern === "caged") {
+        const activePolygons = shapePolygons.filter(
+          (p) => p.shape !== undefined && cagedShapes.has(p.shape) && !p.truncated,
+        );
+        fitsAnyScope = activePolygons.some(
+          (polygon) => selectCloseFallbacksForCagedPosition(candidatesOnSet, polygon).length > 0,
+        );
+      } else {
+        fitsAnyScope = selectCloseFallbacksForThreeNpsPosition(candidatesOnSet, boxBounds).length > 0;
+      }
+      if (!fitsAnyScope) {
+        return { ...opt, disabled: true, disabledReason: "No voicing in current position" };
+      }
     }
 
     if (fallbackActive) {
@@ -531,8 +467,10 @@ export const activeScalePatternPositionsAtom = atom<Set<string>>((get) => {
 });
 
 /**
- * All Close voicings that fit within the active scale-shape window (or all of
- * them when no shape is active or when {@link chordSnapToScaleAtom} is off).
+ * All close voicings for the active chord, filtered only by the user's selected
+ * string-set window. The snap-to-scale / position-scoping filter has moved
+ * upstream to {@link visibleVoicingMatchesAtom} and
+ * {@link chordHighlightPositionsAtom}.
  */
 export const closeCandidatesAtom = atom((get): Voicing[] => {
   const chordType = get(chordTypeAtom);
@@ -544,27 +482,9 @@ export const closeCandidatesAtom = atom((get): Voicing[] => {
     maxFret: 24,
     voicingType: "close",
   });
-
-  // Apply the diagonal string-specific snap (if enabled and a scale shape is active),
-  // then the string-set filter. String-specific boundaries ensure 100% of the voicing's
-  // fretted notes lie inside the CAGED/3NPS diagonal shape footprint, natively supporting
-  // octave-shifted 3NPS patterns. Open strings are always allowed.
-  let windowed = all;
-  if (get(chordSnapToScaleAtom)) {
-    const allowedPositions = get(activeScalePatternPositionsAtom);
-    const instances = get(activeScaleInstanceRangesAtom);
-    if (allowedPositions.size > 0 && instances.length > 0) {
-      windowed = all.filter((v) => fitsStringSpecificRangesForAnyInstance(v.positionKeys, allowedPositions, instances));
-    }
-  }
-
   const stringSet = new Set(get(effectiveStringSetAtom));
-  // Fast-path when "all 6 strings" is selected — every voicing satisfies the
-  // membership test, so skip the per-note loop.
-  if (stringSet.size === 6) return windowed;
-  return windowed.filter((v) =>
-    v.notes.every((n) => stringSet.has(n.stringIndex)),
-  );
+  if (stringSet.size === 6) return all;
+  return all.filter((v) => v.notes.every((n) => stringSet.has(n.stringIndex)));
 });
 
 /**
