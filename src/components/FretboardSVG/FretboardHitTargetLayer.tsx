@@ -5,12 +5,14 @@ import styles from "./FretboardSVG.module.css";
 import type { NoteData } from "./hooks/useNoteData";
 
 const NOTE_CLASS_ROLE: Record<string, string> = {
-  "root-active": "root",
-  "chord-tone": "chord tone",
+  "key-tonic": "root",
+  "chord-root": "root",
+  "chord-tone-in-scale": "chord tone",
   "note-blue": "blue note",
+  "scale-only": "scale tone",
   "note-active": "scale tone",
-  "note-scale-only": "scale tone",
-  "chord-outside": "chord outside",
+  "chord-tone-outside-scale": "chord outside",
+  "note-diatonic-chord": "chord tone",
 };
 
 interface FretboardHitTargetLayerProps {
