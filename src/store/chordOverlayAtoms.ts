@@ -724,8 +724,8 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
     return memoizedHighlightSet(result);
   }
 
-  // voicing === "off": if lock-to-scale is on, still highlight chord tones restricted to the pattern
-  if (voicing === "off" && get(chordSnapToScaleAtom)) {
+  // voicing === "off": always highlight chord tones restricted to the pattern when one is active
+  if (voicing === "off") {
     const { shapePolygons } = get(shapeDataAtom);
     if (shapePolygons.length > 0) {
       const result = new Set<string>();

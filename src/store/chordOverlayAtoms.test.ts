@@ -1674,3 +1674,33 @@ describe("visibleVoicingMatchesAtom — referential stability", () => {
     expect(second).toBe(first);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Group — Task 4: voicing=off in-polygon highlights are unconditional
+// ---------------------------------------------------------------------------
+
+describe("chordHighlightPositionsAtom — voicing=off, no snap toggle required", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("highlights in-polygon chord tones when voicing=off and a pattern is active (no toggle required)", () => {
+    // Previously this branch was gated by `&& get(chordSnapToScaleAtom)`.
+    // After Task 4 the gate is removed: in-polygon highlights always fire
+    // when voicing=off and a shape polygon exists.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })], // C major
+      [voicingAtom, "off"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+      // chordSnapToScaleAtom NOT set — previously this returned empty unless snap=true
+    ]);
+    const { shapePolygons } = store.get(shapeDataAtom);
+    expect(shapePolygons.length).toBeGreaterThan(0);
+
+    const highlights = store.get(chordHighlightPositionsAtom);
+    expect(highlights.size).toBeGreaterThan(0);
+  });
+});
