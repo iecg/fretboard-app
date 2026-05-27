@@ -1,4 +1,4 @@
-import { memo, useRef } from "react";
+import { memo, useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
@@ -99,9 +99,12 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   connectorMotionMode,
   clipPathUrl,
 }: FretboardConnectorLayerProps) {
-  const prevMode = useRef(connectorMotionMode);
-  const skipInitial = prevMode.current === "none" && connectorMotionMode === "group";
-  prevMode.current = connectorMotionMode;
+  const [prevMode, setPrevMode] = useState(connectorMotionMode);
+  const skipInitial = prevMode === "none" && connectorMotionMode === "group";
+
+  useLayoutEffect(() => {
+    setPrevMode(connectorMotionMode);
+  }, [connectorMotionMode]);
 
   const polylinesKey = chordPolylines.map((v) => v.voicingKey).sort().join(",");
   const motionKey = `chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}-${polylinesKey}`;

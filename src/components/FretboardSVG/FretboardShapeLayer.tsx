@@ -1,4 +1,4 @@
-import { memo, useRef, type ReactNode } from "react";
+import { memo, useLayoutEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import type { ShapeAnimationMode } from "./motionPolicy";
@@ -35,9 +35,12 @@ const renderAnimatedShapeGroup = (polygons: ReactNode, skipInitial: boolean) => 
 );
 
 export const FretboardShapeLayer = memo(({ svgPolygons, animationMode = "group" }: FretboardShapeLayerProps) => {
-  const prevMode = useRef(animationMode);
-  const skipInitial = prevMode.current === "none" && animationMode === "group";
-  prevMode.current = animationMode;
+  const [prevMode, setPrevMode] = useState(animationMode);
+  const skipInitial = prevMode === "none" && animationMode === "group";
+
+  useLayoutEffect(() => {
+    setPrevMode(animationMode);
+  }, [animationMode]);
   const polygons = svgPolygons.map(({ points, color, key }) => (
     <polygon
       key={key}
