@@ -241,11 +241,11 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelector('.chord-root[data-full-chord-shape="E"]')).not.toBeNull();
     expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
     const rootPath = container.querySelector('.chord-root[data-full-chord-shape="E"] path:last-of-type');
-    expect(rootPath).toHaveStyle({ fill: "var(--caged-e)" });
-    expect(rootPath).toHaveStyle({ stroke: "var(--note-ring-tonic)" });
+    expect(rootPath).toHaveStyle({ fill: "var(--shape-fill)" });
+    expect(rootPath).toHaveStyle({ stroke: "var(--shape-stroke, var(--shape-fill))" });
     expect(
       container.querySelector('.chord-root[data-full-chord-shape="E"] text'),
-    ).toHaveStyle({ fill: "#ffffff" });
+    ).toHaveStyle({ fill: "var(--text-fill, #ffffff)" });
   });
 
   it("hides chord connectors when showChordConnectors is false", () => {

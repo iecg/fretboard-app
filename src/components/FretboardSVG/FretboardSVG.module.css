@@ -43,7 +43,6 @@
 .fretboard-note :is(circle, path, polygon) {
   stroke-width: 1.9;
   paint-order: stroke;
-  transition: stroke-width 0.12s ease-out, stroke 0.12s ease-out;
 }
 
 .fretboard-note:focus-visible :is(circle, path, polygon) {
@@ -95,76 +94,25 @@
   stroke-width: 2.3;
 }
 
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="E"] :is(circle, path, polygon) {
-  stroke: var(--caged-e);
-  fill: var(--caged-e);
+/* Full-chord voicing mode: each note <g> carries --shape-fill and
+   --shape-stroke CSS variables computed inline from the CAGED shape
+   identity. Inner shape elements inherit from the <g> via var().
+   The `data-full-chord-mode` attribute on the board div gates this
+   so normal scale/chord mode is unaffected. */
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape] :is(circle, path, polygon) {
+  fill: var(--shape-fill);
+  stroke: var(--shape-stroke, var(--shape-fill));
+  stroke-width: var(--shape-stroke-width, 1.9);
 }
 
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="D"] :is(circle, path, polygon) {
-  stroke: var(--caged-d);
-  fill: var(--caged-d);
+.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape] text {
+  fill: var(--text-fill, #ffffff);
 }
 
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="C"] :is(circle, path, polygon) {
-  stroke: var(--caged-c);
-  fill: var(--caged-c);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="A"] :is(circle, path, polygon) {
-  stroke: var(--caged-a);
-  fill: var(--caged-a);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="G"] :is(circle, path, polygon) {
-  stroke: var(--caged-g);
-  fill: var(--caged-g);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="E"] text {
-  fill: var(--caged-e-fg);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="D"] text {
-  fill: var(--caged-d-fg);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="C"] text {
-  fill: var(--caged-c-fg);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="A"] text {
-  fill: var(--caged-a-fg);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape="G"] text {
-  fill: var(--caged-g-fg);
-}
-
-/* Chord-root emphasis layer for full-chord-voicing mode.
-   The earlier [data-full-chord-mode="true"][data-full-chord-shape="X"] rules
-   (lines 98-121) flatten every voicing note to the CAGED shape color, which
-   makes the root visually identical to the rest of the voicing. We restore
-   chord-root distinction by (a) keeping the shape fill but overlaying a thick
-   tonic-ring stroke on the inner squircle, and (b) using white-on-color label
-   treatment so the root reads against the saturated background. */
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note.chord-root[data-full-chord-shape] :is(circle, path, polygon):last-of-type {
-  stroke: var(--note-ring-tonic);
-  stroke-width: 3.2;
-  paint-order: stroke fill;
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note.chord-root[data-full-chord-shape] text {
-  fill: #ffffff;
-  stroke: rgb(0 0 0 / 0.45);
-  stroke-width: 0.6;
-  paint-order: stroke fill;
-  font-weight: 700;
-}
-
-/* Light theme: same treatment — the saturated shape fill already provides
-   contrast for white labels. */
-:global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note.chord-root[data-full-chord-shape] text {
-  fill: var(--note-label-on-color);
+/* Light-theme text on shape colors: the shape colors are already saturated,
+   so white labels with dark outline follow the same treatment as chord-root. */
+:global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-shape] text {
+  fill: var(--text-fill, var(--note-label-on-color));
   stroke: var(--note-label-on-color-stroke);
 }
 
