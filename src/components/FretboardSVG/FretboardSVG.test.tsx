@@ -238,14 +238,14 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
-    expect(container.querySelector('.chord-root[data-full-chord-mode="E"]')).not.toBeNull();
+    expect(container.querySelector('.chord-root[data-full-chord-mode]')).not.toBeNull();
     expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
-    const rootPath = container.querySelector('.chord-root[data-full-chord-mode="E"] path:last-of-type');
-    expect(rootPath).toHaveStyle({ fill: "var(--shape-fill)" });
-    expect(rootPath).toHaveStyle({ stroke: "var(--shape-stroke, var(--shape-fill))" });
+    const rootG = container.querySelector('.chord-root[data-full-chord-mode]');
+    expect(rootG).toHaveStyle({ "--shape-fill": "var(--caged-e)" });
+    expect(rootG).toHaveStyle({ "--shape-stroke": "var(--note-ring-tonic)" });
     expect(
-      container.querySelector('.chord-root[data-full-chord-mode="E"] text'),
-    ).toHaveStyle({ fill: "var(--text-fill, #ffffff)" });
+      container.querySelector('.chord-root[data-full-chord-mode] text'),
+    ).toHaveStyle({ "--text-fill": "#ffffff" });
   });
 
   it("hides chord connectors when showChordConnectors is false", () => {
