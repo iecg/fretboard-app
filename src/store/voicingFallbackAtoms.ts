@@ -59,8 +59,8 @@ const fallbackContextActiveAtom = atom((get): boolean => {
 
 /**
  * CAGED polygons that have NO full-chord template match AND at least one
- * close voicing (across any string set, post snap-to-scale) that fits inside
- * them. Independent of the user's `voicingStringSetAtom` pick — that's what
+ * close voicing (across any string set) that fits inside them. Independent
+ * of the user's `voicingStringSetAtom` pick — that's what
  * keeps `hasFallbackPositionsAtom` sticky across string-set changes.
  *
  * Polygons that lack both a full match and any fitting close voicing are
@@ -124,8 +124,8 @@ export const fallback3NpsBoxBoundsAtom = atom((get): BoxBound[] | null => {
 
 /**
  * For each active polygon / 3NPS position that has NO full-chord match,
- * the close voicings (already snap-to-scale + string-set filtered) that
- * fit inside it. May be empty even when `hasFallbackPositionsAtom` is true
+ * the close voicings (string-set filtered) that fit inside it. May be empty
+ * even when `hasFallbackPositionsAtom` is true
  * — happens when the user picks a string set with no in-polygon fits.
  * Connector vanishes in that case; picker stays mounted (driven by
  * `hasFallbackPositionsAtom`).

@@ -282,8 +282,9 @@ export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
  * consecutive-string window for the chord's voice count.
  *
  * Two disable layers compose:
- *   1. **Close-mode (snap-to-scale):** if snap is on and a scale pattern is
- *      active, options with zero in-scale close candidates are disabled.
+ *   1. **Close-mode (position-scoped):** when a CAGED shape or 3NPS position
+ *      is active, options with zero candidates fitting any active polygon/box
+ *      are disabled.
  *   2. **Full-mode fallback:** if any active position needs a close-voicing
  *      fallback (see `fallbackPolygonsAtom`), options whose candidates can't
  *      fit any fallback-needing polygon are disabled. Prevents the user from
@@ -605,11 +606,11 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
     // the selection the connector renderer uses (filtered to the active
     // CAGED/3NPS position via visibleVoicingMatchesAtom). Always supplement
     // with addChordTonesWithinPolygon so in-polygon chord tones light up
-    // regardless of Lock-to-scale state. The per-position polygon filter is
-    // gone — visibleVoicingMatchesAtom's voicing-level selection already
-    // keeps neck-spanning voicings from leaking in, and connector-vertex
-    // positions outside the polygon now survive (matching what the connector
-    // polyline draws through).
+    // for every position the active pattern covers. The per-position polygon
+    // filter is gone — visibleVoicingMatchesAtom's voicing-level selection
+    // already keeps neck-spanning voicings from leaking in, and
+    // connector-vertex positions outside the polygon now survive (matching
+    // what the connector polyline draws through).
     const visibleMatches = get(visibleVoicingMatchesAtom);
     const result = new Set(visibleMatches.flatMap((v) => v.positionKeys));
     const { shapePolygons } = get(shapeDataAtom);
