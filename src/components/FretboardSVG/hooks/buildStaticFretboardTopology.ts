@@ -270,6 +270,8 @@ export function buildStaticFretboardTopology({
         (shapePolygons.length > 0 &&
           !isInsideAnyPolygon &&
           (finalNoteClass === "note-blue" ||
+            finalNoteClass === "note-active" ||
+            finalNoteClass === "scale-only" ||
             finalNoteClass === "chord-tone-outside-scale" ||
             finalNoteClass === "chord-tone-in-scale" ||
             finalNoteClass === "note-diatonic-chord" ||

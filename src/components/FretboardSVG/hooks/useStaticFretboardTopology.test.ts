@@ -94,4 +94,40 @@ describe("useStaticFretboardTopology", () => {
     // Outside both polygons:
     expect(result.current.find((note) => note.positionKey === "1-3")?.isInsideAnyPolygon).toBe(false);
   });
+
+  it("applies dim opacity to note-active scale notes sitting outside CAGED shape polygons when chord overlay is off", () => {
+    const shapePolygons: ShapePolygon[] = [
+      {
+        shape: "C",
+        color: "red",
+        cagedLabel: "C",
+        modalLabel: null,
+        truncated: false,
+        intendedMin: 3,
+        intendedMax: 5,
+        vertices: [
+          { string: 0, fret: 3 },
+          { string: 0, fret: 5 },
+        ],
+      },
+    ];
+
+    const { result } = renderHook(() => useStaticFretboardTopology({
+      ...TOPOLOGY_PROPS,
+      numStrings: 1,
+      fretboardLayout: [["G", "G#", "A", "A#", "B", "C"]],
+      totalColumns: 5,
+      maxFret: 6,
+      shapePolygons,
+      hasChordOverlay: false,
+      tuning: ["G3"],
+    }));
+
+    // Inside polygon (fret 4 / position '0-4') -> applyDimOpacity should be false
+    expect(result.current.find((note) => note.positionKey === "0-4")?.noteClass).toBe("note-active");
+    expect(result.current.find((note) => note.positionKey === "0-4")?.applyDimOpacity).toBe(false);
+    // Outside polygon (fret 2 / position '0-2') -> applyDimOpacity should be true for note-active
+    expect(result.current.find((note) => note.positionKey === "0-2")?.noteClass).toBe("note-active");
+    expect(result.current.find((note) => note.positionKey === "0-2")?.applyDimOpacity).toBe(true);
+  });
 });
