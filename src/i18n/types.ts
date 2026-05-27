@@ -81,8 +81,6 @@ export interface Dictionary {
     voicingClose: string;
     chordStringSetLabel: string;
     chordStringSetAll: string;
-    chordLockToScaleLabel: string;
-    chordLockToScaleHint: string;
     stringSetAll: string;
     stringSetBass: string;
     stringSetLowerMid: string;

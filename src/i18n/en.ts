@@ -83,8 +83,6 @@ export const en: Dictionary = {
     voicingClose: "Close",
     chordStringSetLabel: "Strings",
     chordStringSetAll: "All",
-    chordLockToScaleLabel: "Lock to scale",
-    chordLockToScaleHint: "Restrict voicings to the active scale window",
     stringSetAll: "All",
     stringSetBass: "Bass",
     stringSetLowerMid: "Lower mid",

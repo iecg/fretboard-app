@@ -163,7 +163,7 @@ describe("Fretboard wiring", () => {
     expect(subdominant.fullChordPositionKeys?.has("4-15")).toBe(true);
   });
 
-  it("filters out full-chord notes outside the selected CAGED scale position when lock-to-scale is on", async () => {
+  it("filters out full-chord notes outside the selected CAGED scale position", async () => {
     const supertonic = await renderGMajorEPositionChord("D#", "m");
     expect(supertonic.fullChordVoicings?.some((voicing) => voicing.shape === "E")).toBe(true);
     // D#m root at string 3 fret 1 is outside the E-shape's diagonal bounds at fret 3.

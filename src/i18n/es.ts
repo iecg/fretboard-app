@@ -83,8 +83,6 @@ export const es: Dictionary = {
     voicingClose: "Cerrado",
     chordStringSetLabel: "Cuerdas",
     chordStringSetAll: "Todas",
-    chordLockToScaleLabel: "Bloquear a escala",
-    chordLockToScaleHint: "Limitar los voicings a la ventana de la escala activa",
     stringSetAll: "Todas",
     stringSetBass: "Graves",
     stringSetLowerMid: "Medios graves",

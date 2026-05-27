@@ -7,14 +7,12 @@ import {
   voicingAtom,
 } from "../../store/chordOverlayAtoms";
 import { lensAvailabilityAtom } from "../../store/practiceLensAtoms";
-import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { hasFallbackPositionsAtom } from "../../store/voicingFallbackAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { VoicingControl } from "./VoicingControl";
 import { ChordStringSetPicker } from "./ChordStringSetPicker";
-import { ChordSnapToScaleToggle } from "./ChordSnapToScaleToggle";
 import panelStyles from "./ChordOverlayControls.module.css";
 
 /** Compact lens labels for the narrow Voicing-row Lens toggle. The `satisfies`
@@ -31,9 +29,6 @@ export function ChordOverlayControls() {
   const chordType = useAtomValue(chordTypeAtom);
   const voicing = useAtomValue(voicingAtom);
   const hasFallback = useAtomValue(hasFallbackPositionsAtom);
-  const fingeringPattern = useAtomValue(fingeringPatternAtom);
-  const cagedShapes = useAtomValue(cagedShapesAtom);
-
   const [practiceLens, setPracticeLens] = useAtom(practiceLensAtom);
   const lensAvailability = useAtomValue(lensAvailabilityAtom);
 
@@ -91,16 +86,6 @@ export function ChordOverlayControls() {
         {(voicing === "close" || (voicing === "full" && hasFallback)) ? (
           <Prop label={t("inspector.chordStringSetLabel")} span={2}>
             <ChordStringSetPicker />
-          </Prop>
-        ) : null}
-        {fingeringPattern !== "none" ? (
-          <Prop label={t("inspector.chordLockToScaleLabel")} span={2}>
-            <ChordSnapToScaleToggle
-              disabled={
-                !((fingeringPattern === "caged" && cagedShapes.size === 1) ||
-                  fingeringPattern === "3nps")
-              }
-            />
           </Prop>
         ) : null}
         <p className={panelStyles.lensHelp} data-testid="lens-help-text">

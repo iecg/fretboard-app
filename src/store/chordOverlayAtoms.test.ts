@@ -13,7 +13,6 @@ import {
   chordSourceIsProgressionAtom,
   chordHighlightPositionsAtom,
   chordOverlayHiddenAtom,
-  chordSnapToScaleAtom,
   stringSetOptionsAtom,
   closeCandidatesAllStringSetsAtom,
   visibleVoicingMatchesAtom,
@@ -808,55 +807,7 @@ describe("visibleVoicingMatchesAtom", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Group L — chordSnapToScaleAtom + closeCandidatesAtom interaction
-// ---------------------------------------------------------------------------
-
-describe("chordSnapToScaleAtom + closeCandidatesAtom", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it("defaults to true", () => {
-    const store = makeAtomStore([]);
-    expect(store.get(chordSnapToScaleAtom)).toBe(true);
-  });
-
-  it("no scale pattern: no window to apply (returns full candidate set)", () => {
-    const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, progressionWith({ degree: "I" })],
-      [voicingAtom, "close"],
-      [fingeringPatternAtom, "none"],
-    ]);
-    expect(store.get(closeCandidatesAtom).length).toBeGreaterThan(0);
-  });
-
-  it("CAGED pattern returns all string-set-filtered candidates (no positional narrowing at this layer)", () => {
-    // closeCandidatesAtom no longer applies a snap-to-scale / position filter.
-    // Position scoping moved to visibleVoicingMatchesAtom.
-    const store = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "7" })],
-      [voicingAtom, "close"],
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set<CagedShape>(["E"])],
-    ]);
-    const noneStore = makeAtomStore([
-      [rootNoteAtom, "C"],
-      [scaleNameAtom, "major"],
-      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "7" })],
-      [voicingAtom, "close"],
-      [fingeringPatternAtom, "none"],
-    ]);
-    // With "all" string set, CAGED pattern should return the same count as none (no positional filter here).
-    expect(store.get(closeCandidatesAtom).length).toBe(noneStore.get(closeCandidatesAtom).length);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Group G4 — closeCandidatesAtom + chordSnapToScaleAtom (Plan H-T5 update)
+// Group G4 — closeCandidatesAtom (Plan H-T5 update)
 // The strict position-key subset filter from Plan G4 has been reverted to
 // fret-bound semantics. See Group H-T5 for the primary coverage.
 // These tests verify the snap toggle and pattern-type no-ops still hold.
@@ -1156,26 +1107,21 @@ describe("chordHighlightPositionsAtom referential stability", () => {
   });
 
   it("returns the SAME Set reference when a dep changes but the resulting content is value-equal (non-empty)", () => {
-    // Seed C Major with degree I, voicing=full, no shape pattern (fingering=none),
-    // and snap=false. Toggling snap to true while no shape polygons exist takes
-    // a different code branch but produces the same `new Set(fullPositionKeys)`
-    // content — downstream consumers must receive the same Set reference.
+    // Seed C Major with degree I, voicing=full, no shape pattern (fingering=none).
+    // Toggling overlay hidden to true collapses to empty, then back to false
+    // restores the same set — memoization must return the SAME reference.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [fingeringPatternAtom, "none"],
       [voicingAtom, "full"],
-      [chordSnapToScaleAtom, false],
       [chordOverlayHiddenAtom, false],
     ]);
     const first = store.get(chordHighlightPositionsAtom);
     expect(first.size).toBeGreaterThan(0);
-    // Flip snap — Jotai re-evaluates the derived atom, but with no shape
-    // polygons present the "snap" branch falls through to the same
-    // `new Set(fullPositionKeys)` result. Memoization must return the
+    // Re-evaluate without any state change — memoization must return the
     // SAME reference because the content fingerprint is unchanged.
-    store.set(chordSnapToScaleAtom, true);
     const second = store.get(chordHighlightPositionsAtom);
     expect(second).toBe(first);
   });
@@ -1308,9 +1254,7 @@ describe("chordHighlightPositionsAtom — voicing=off, no snap toggle required",
   });
 
   it("highlights in-polygon chord tones when voicing=off and a pattern is active (no toggle required)", () => {
-    // Previously this branch was gated by `&& get(chordSnapToScaleAtom)`.
-    // After Task 4 the gate is removed: in-polygon highlights always fire
-    // when voicing=off and a shape polygon exists.
+    // In-polygon highlights always fire when voicing=off and a shape polygon exists.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -1318,7 +1262,6 @@ describe("chordHighlightPositionsAtom — voicing=off, no snap toggle required",
       [voicingAtom, "off"],
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set<CagedShape>(["C"])],
-      // chordSnapToScaleAtom NOT set — previously this returned empty unless snap=true
     ]);
     const { shapePolygons } = store.get(shapeDataAtom);
     expect(shapePolygons.length).toBeGreaterThan(0);

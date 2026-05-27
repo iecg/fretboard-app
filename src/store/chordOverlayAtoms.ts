@@ -385,19 +385,6 @@ export const effectiveStringSetAtom = atom((get): readonly number[] => {
   return firstEnabled ? firstEnabled.strings : ALL_STRINGS_OPTION.strings;
 });
 
-/**
- * Toggle for "snap close voicings to the active scale window". When true
- * (default), `closeCandidatesAtom` is filtered to candidates that fit inside
- * `activeScaleWindowAtom`. When false, the filter is bypassed and every
- * hand-span-fitting candidate is offered regardless of scale position.
- */
-export const chordSnapToScaleAtom = atomWithStorage<boolean>(
-  k("chordSnapToScale"),
-  true,
-  booleanStorage,
-  GET_ON_INIT,
-);
-
 const FRET_WINDOW_BUFFER = 1;
 
 /**
