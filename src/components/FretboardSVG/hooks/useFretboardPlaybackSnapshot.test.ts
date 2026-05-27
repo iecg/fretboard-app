@@ -129,6 +129,21 @@ describe("useFretboardPlaybackSnapshot", () => {
     expect(result.current!.nextGuideTones).toEqual(new Set());
   });
 
+  it("does not create new empty Set references for non-lead lenses", () => {
+    const store = makePlayingStore();
+    const { result, rerender } = renderHook(
+      () => useFretboardPlaybackSnapshot("tones"),
+      { wrapper: makeWrapper(store) },
+    );
+
+    const first = result.current;
+    rerender();
+    const second = result.current;
+
+    expect(second?.commonWithNext).toBe(first?.commonWithNext);
+    expect(second?.nextGuideTones).toBe(first?.nextGuideTones);
+  });
+
   it("returns null when not playing", () => {
     const store = createStore();
     store.set(progressionStepsAtom, [

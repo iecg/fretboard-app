@@ -5,6 +5,7 @@ import { Provider, createStore } from "jotai";
 import { Fretboard } from "./Fretboard";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { fretZoomAtom } from "../../store/layoutAtoms";
+import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 // Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
 import "../FretboardSVG/FretboardSVG";
 
@@ -104,6 +105,30 @@ describe("Fretboard performance wiring", () => {
     const second = received.at(-1)!;
     expect(second.fretboardLayout).toBe(first.fretboardLayout);
     expect(second.fullChordVoicings).toBe(first.fullChordVoicings);
+  });
+
+  it("does not rerender the Fretboard shell when playback frame changes", async () => {
+    const store = createStore();
+
+    render(
+      <Provider store={store}>
+        <Fretboard stringRowPx={40} />
+      </Provider>,
+    );
+    await flushSuspense();
+
+    const renderCountBefore = received.length;
+
+    act(() => {
+      store.set(progressionVisualFrameAtom, {
+        stepIndex: 0,
+        globalFraction: 0.5,
+        localFraction: 0.5,
+        paused: false,
+      });
+    });
+
+    expect(received.length).toBe(renderCountBefore);
   });
 
   it("ignores redundant ResizeObserver width entries", async () => {

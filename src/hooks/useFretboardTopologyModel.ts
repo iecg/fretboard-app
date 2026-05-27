@@ -8,11 +8,10 @@ import {
   visibleVoicingMatchesAtom,
 } from "../store/chordOverlayAtoms";
 import { activePositionAtom } from "../store/chordScope";
-import { recenterKeyAtom, fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
-import { currentTuningAtom, fretStartAtom, fretEndAtom } from "../store/layoutAtoms";
+import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { noteSemanticMapAtom } from "../store/practiceLensAtoms";
 import { rootNoteAtom, scaleNameAtom, preferFlatsAtom, effectiveColorNotesAtom, effectiveHiddenNotesAtom } from "../store/scaleAtoms";
-import { effectiveShapeDataAtom, autoCenterTargetAtom } from "../store/shapeAtoms";
+import { effectiveShapeDataAtom } from "../store/shapeAtoms";
 import { displayFormatAtom } from "../store/uiAtoms";
 import type { CagedShape } from "@fretflow/core";
 
@@ -21,18 +20,13 @@ export type ActiveShapeType = CagedShape | number | CagedShape[] | undefined;
 export type ShapeScope = "single" | "multi" | "global";
 
 export function useFretboardTopologyModel() {
-  const currentTuning = useAtomValue(currentTuningAtom);
   const rootNote = useAtomValue(rootNoteAtom);
   const scaleName = useAtomValue(scaleNameAtom);
-  const startFret = useAtomValue(fretStartAtom);
-  const endFret = useAtomValue(fretEndAtom);
   const displayFormat = useAtomValue(displayFormatAtom);
   const preferFlats = useAtomValue(preferFlatsAtom);
   const noteSemanticMap = useAtomValue(noteSemanticMapAtom);
   const { highlightNotes, boxBounds, shapePolygons, wrappedNotes } =
     useAtomValue(effectiveShapeDataAtom);
-  const autoCenterTarget = useAtomValue(autoCenterTargetAtom);
-  const recenterKey = useAtomValue(recenterKeyAtom);
 
   const chordTones = useAtomValue(chordTonesAtom);
   const chordRoot = useAtomValue(chordRootAtom);
@@ -79,11 +73,8 @@ export function useFretboardTopologyModel() {
   const chordBoxBounds = activePosition ? boxBounds : null;
 
   return {
-    currentTuning,
     rootNote,
     scaleName,
-    startFret,
-    endFret,
     displayFormat,
     preferFlats,
     noteSemanticMap,
@@ -91,8 +82,6 @@ export function useFretboardTopologyModel() {
     boxBounds,
     shapePolygons,
     wrappedNotes,
-    autoCenterTarget,
-    recenterKey,
     chordTones,
     chordRoot,
     chordFretSpread: 0,

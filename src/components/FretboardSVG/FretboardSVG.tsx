@@ -10,7 +10,7 @@ import {
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
-import type { FretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
+import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
@@ -137,8 +137,12 @@ interface FretboardSVGProps {
     fretIndex: number,
     noteName: string,
   ) => void;
-  /** Pre-computed playback snapshot from useFretboardPlaybackSnapshot; drives lead-lens data. */
-  playbackSnapshot?: FretboardPlaybackSnapshot | null;
+  /**
+   * Playback snapshot for lead-lens emphasis. When omitted, FretboardSVG subscribes
+   * to playback atoms internally so the Fretboard shell stays isolated from frame ticks.
+   * Tests may inject a snapshot directly to avoid atom setup.
+   */
+  playbackSnapshot?: import("./hooks/useFretboardPlaybackSnapshot").FretboardPlaybackSnapshot | null;
 }
 
 export function FretboardSVG({
@@ -173,7 +177,7 @@ export function FretboardSVG({
   showChordConnectors = true,
   id,
   onNoteClick,
-  playbackSnapshot,
+  playbackSnapshot: playbackSnapshotProp,
 }: FretboardSVGProps) {
   // `effectiveZoom` stays on the prop surface (callers size the scroll area
   // around it) but non-uniform spacing inside this component is derived from
@@ -182,6 +186,16 @@ export function FretboardSVG({
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
+
+  // Playback snapshot is subscribed here (inside the lazy boundary) so that
+  // frame ticks do not re-render the Fretboard shell. Tests may inject the
+  // snapshot directly via the prop to avoid atom setup.
+  const internalPlaybackSnapshot = useFretboardPlaybackSnapshot(
+    playbackSnapshotProp === undefined ? practiceLens : undefined,
+  );
+  const playbackSnapshot = playbackSnapshotProp !== undefined
+    ? playbackSnapshotProp
+    : internalPlaybackSnapshot;
 
   const internalId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const defsPrefix = `fretboard-${id ?? internalId}`;

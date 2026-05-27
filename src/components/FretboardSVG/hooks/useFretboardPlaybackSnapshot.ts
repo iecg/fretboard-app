@@ -12,6 +12,12 @@ import type { PracticeLens } from "@fretflow/core";
 
 const EMPTY_SET = new Set<string>();
 
+// Stable module-level atoms — no recreation across renders.
+const leadCommonWithNextAtom = atom((get) => get(commonTonesWithNextAtom));
+const leadNextGuideTonesAtom = atom((get) => get(nextChordGuideTonesAtom));
+const emptyCommonWithNextAtom = atom(() => EMPTY_SET);
+const emptyNextGuideTonesAtom = atom(() => EMPTY_SET);
+
 export interface FretboardPlaybackSnapshot {
   playing: boolean;
   activeStepIndex: number;
@@ -26,27 +32,15 @@ export interface FretboardPlaybackSnapshot {
 export function useFretboardPlaybackSnapshot(
   practiceLens?: PracticeLens,
 ): FretboardPlaybackSnapshot | null {
-  const commonWithNextForLensAtom = useMemo(
-    () =>
-      atom((get) =>
-        practiceLens === "lead" ? get(commonTonesWithNextAtom) : EMPTY_SET,
-      ),
-    [practiceLens],
-  );
-
-  const nextGuideTonesForLensAtom = useMemo(
-    () =>
-      atom((get) =>
-        practiceLens === "lead" ? get(nextChordGuideTonesAtom) : EMPTY_SET,
-      ),
-    [practiceLens],
-  );
-
   const playing = useAtomValue(progressionPlayingAtom);
   const frame = useAtomValue(progressionVisualFrameAtom);
   const stepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
-  const commonWithNext = useAtomValue(commonWithNextForLensAtom);
-  const nextGuideTones = useAtomValue(nextGuideTonesForLensAtom);
+  const commonWithNext = useAtomValue(
+    practiceLens === "lead" ? leadCommonWithNextAtom : emptyCommonWithNextAtom,
+  );
+  const nextGuideTones = useAtomValue(
+    practiceLens === "lead" ? leadNextGuideTonesAtom : emptyNextGuideTonesAtom,
+  );
 
   return useMemo(() => {
     if (!playing || !frame) return null;

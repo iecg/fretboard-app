@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { clsx } from "clsx";
-import { useAtomValue } from "jotai";
 import styles from "./Fretboard.module.css";
 import {
   getFretNoteWithOctave,
@@ -8,7 +7,6 @@ import {
 } from "@fretflow/core";
 import { playGuitarNote } from "../../core/lazyGuitarAudio";
 import { getCachedFretboardLayout } from "../../core/fretboardLayoutCache";
-import { fretZoomAtom } from "../../store/layoutAtoms";
 import type { AutoCenterTarget } from "../../store/shapeAtoms";
 const LazyFretboardSVG = lazy(() => 
   import("../FretboardSVG/FretboardSVG").then((m) => ({ default: m.FretboardSVG }))
@@ -16,7 +14,7 @@ const LazyFretboardSVG = lazy(() =>
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { FretboardSkeleton } from "./FretboardSkeleton";
 import { useFretboardTopologyModel, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardTopologyModel";
-import { useFretboardPlaybackSnapshot } from "../FretboardSVG/hooks/useFretboardPlaybackSnapshot";
+import { useFretboardViewportModel } from "../../hooks/useFretboardViewportModel";
 import {
   STRING_ROW_PX_DEFAULT,
   MAX_FRET,
@@ -86,11 +84,10 @@ interface FretboardProps {
 
 export function Fretboard(props: FretboardProps) {
   const state = useFretboardTopologyModel();
-  const fretZoom = useAtomValue(fretZoomAtom);
-  const playbackSnapshot = useFretboardPlaybackSnapshot(state.practiceLens);
+  const viewport = useFretboardViewportModel();
 
   // Fallback to props for testability; default to atom-driven state.
-  const tuning = props.tuning ?? state.currentTuning;
+  const tuning = props.tuning ?? viewport.currentTuning;
   const maxFret = props.maxFret ?? MAX_FRET;
   const highlightNotes = props.highlightNotes ?? state.highlightNotes;
   const rootNote = props.rootNote ?? state.rootNote;
@@ -99,8 +96,8 @@ export function Fretboard(props: FretboardProps) {
   const chordRoot = props.chordRoot ?? state.chordRoot;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
   const chordBoxBounds = props.chordBoxBounds !== undefined ? props.chordBoxBounds : state.chordBoxBounds;
-  const autoCenterTarget = props.autoCenterTarget ?? state.autoCenterTarget;
-  const recenterKey = props.recenterKey ?? state.recenterKey;
+  const autoCenterTarget = props.autoCenterTarget ?? viewport.autoCenterTarget;
+  const recenterKey = props.recenterKey ?? viewport.recenterKey;
   const colorNotes = props.colorNotes ?? state.colorNotes;
   const shapePolygons = props.shapePolygons ?? state.shapePolygons;
   const wrappedNotes = props.wrappedNotes ?? state.wrappedNotes;
@@ -111,8 +108,8 @@ export function Fretboard(props: FretboardProps) {
   const activeShape = props.activeShape ?? state.activeShape;
   const shapeScope = props.shapeScope ?? state.shapeScope;
   const noteSemantics = state.noteSemanticMap.size > 0 ? state.noteSemanticMap : undefined;
-  const startFret = state.startFret;
-  const endFret = state.endFret;
+  const startFret = viewport.startFret;
+  const endFret = viewport.endFret;
   const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
   const onFretClickProp = props.onFretClick;
   const id = props.id;
@@ -151,7 +148,7 @@ export function Fretboard(props: FretboardProps) {
       : 40,
   );
   const desktopZoom =
-    fretZoom <= 100 ? autoFitZoom : (autoFitZoom * fretZoom) / 100;
+    viewport.fretZoom <= 100 ? autoFitZoom : (autoFitZoom * viewport.fretZoom) / 100;
   const effectiveZoom = desktopZoom;
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -356,7 +353,6 @@ export function Fretboard(props: FretboardProps) {
             showChordConnectors={state.showChordConnectors}
             id={id}
             onNoteClick={handleFretClick}
-            playbackSnapshot={playbackSnapshot}
           />
         </Suspense>
       </div>
