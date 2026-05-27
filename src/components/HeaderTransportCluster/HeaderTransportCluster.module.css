@@ -51,15 +51,15 @@
   text-shadow: none;
 }
 
-/* Position readout: no box chrome — inline label above value on cream bg */
+/* Position readout: PANEL chip + warm hairline (matches Tempo/Scale) */
 :global([data-theme="modern-light"]) .positionReadout {
-  border-color: transparent;
-  background: transparent;
+  background: var(--surface-card-top);
+  border-color: var(--track-border);
 }
 
-/* Tempo + Scale readouts: minimal thin border, cream background */
+/* Tempo + Scale readouts: PANEL chip + warm hairline */
 :global([data-theme="modern-light"]) .contextBox {
-  background: transparent;
+  background: var(--surface-card-top);
   border-color: var(--track-border);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
