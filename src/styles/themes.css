@@ -201,6 +201,12 @@
   /* Intentionally cool/violet in BOTH themes — color-tone is a semantic "outside-key chromatic accent" role and the cool hue reinforces the role boundary against warm chord-overlay amber. */
   --note-ring-color-tone: #7c3aed;
 
+  /* Chord degree ring colors — light theme */
+  --chord-degree-1: #B84D00;   /* darker vermillion — root */
+  --chord-degree-3: #B8A000;   /* darker yellow — third */
+  --chord-degree-5: #3A8EC4;   /* darker sky blue — fifth */
+  --chord-degree-7: #D45FA0;   /* darker pink — seventh */
+
   /* Note colors — primary and secondary note emphasis */
   --note-blue: #0e7a93; /* was #0891b2 — retune to DAW mockup palette */
   --note-blue-glow: transparent;
@@ -364,6 +370,12 @@
   --caged-c-bg: rgba(0, 158, 115, 0.18);    /* C #009E73 + 0.18 */
   --caged-a-bg: rgba(0, 114, 178, 0.18);    /* A #0072B2 + 0.18 */
   --caged-g-bg: rgba(204, 121, 167, 0.18);  /* G #CC79A7 + 0.18 */
+
+  /* Chord degree ring colors — dark theme */
+  --chord-degree-1: #D55E00;   /* vermillion — root */
+  --chord-degree-3: #F0E442;   /* yellow — third */
+  --chord-degree-5: #56B4E9;   /* sky blue — fifth */
+  --chord-degree-7: #F781BF;   /* pink — seventh */
 }
 
 [data-theme="modern-light"] [data-scale-degree] {
