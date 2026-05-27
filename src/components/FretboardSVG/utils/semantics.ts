@@ -11,7 +11,7 @@ import {
 export type BoxBound = { minFret: number; maxFret: number };
 
 export type LensEmphasis = {
-  glowColor?: "cyan" | "orange" | "violet";
+  glowColor?: "cyan" | "orange" | "violet" | `var(--${string})`;
   radiusBoost: number;
   opacityBoost: number;
 };
@@ -99,12 +99,12 @@ export function getEmphasis(
     beatPosition >= stepDurationBeats - 1 &&
     nextGuideTones.has(notePc)
   ) {
-    return { glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 };
+    return { glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 };
   }
 
   // 2. Hold: current chord tone that persists into the next chord.
   if (isCurrentChordTone && commonWithNext.has(notePc)) {
-    return { glowColor: "cyan", radiusBoost: 1.2, opacityBoost: 1 };
+    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 };
   }
 
   // 3. Departing: current chord tone that doesn't carry into the next chord.

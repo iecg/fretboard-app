@@ -477,7 +477,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       },
     });
 
-    expect(container.querySelectorAll('[data-lens-emphasis="orange"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-lens-emphasis="var(--note-glow-anticipation)"]').length).toBeGreaterThan(0);
   });
 
   describe("shape scope and membership", () => {

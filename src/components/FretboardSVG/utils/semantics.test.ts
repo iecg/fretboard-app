@@ -224,7 +224,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       commonWithNext: new Set(["A"]),
     };
     const result = getEmphasis("chord-tone-in-scale", false, ctx);
-    expect(result).toEqual({ glowColor: "cyan", radiusBoost: 1.2, opacityBoost: 1 });
+    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 });
   });
 
   it("hold applies to chord-root class too (root is a common tone)", () => {
@@ -234,7 +234,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       commonWithNext: new Set(["A"]),
     };
     const result = getEmphasis("chord-root", false, ctx);
-    expect(result).toEqual({ glowColor: "cyan", radiusBoost: 1.2, opacityBoost: 1 });
+    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 });
   });
 
   it("hold applies to chord-tone-outside-scale class", () => {
@@ -244,7 +244,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       commonWithNext: new Set(["C"]),
     };
     const result = getEmphasis("chord-tone-outside-scale", false, ctx);
-    expect(result).toEqual({ glowColor: "cyan", radiusBoost: 1.2, opacityBoost: 1 });
+    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 });
   });
 
   // -------------------------------------------------------------------------
@@ -292,7 +292,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       stepDurationBeats: 4,
     };
     const result = getEmphasis("scale-only", false, ctx);
-    expect(result).toEqual({ glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 });
+    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
   });
 
   it("anticipation fires even on notes not in the current chord", () => {
@@ -305,7 +305,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       stepDurationBeats: 4,
     };
     const result = getEmphasis("note-inactive", false, ctx);
-    expect(result).toEqual({ glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 });
+    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
   });
 
   it("anticipation takes priority over hold when a note is both common AND a next-chord guide tone", () => {
@@ -318,7 +318,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       stepDurationBeats: 4,
     };
     const result = getEmphasis("chord-tone-in-scale", false, ctx);
-    expect(result).toEqual({ glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 });
+    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
   });
 
   it("does NOT mark anticipation outside the last-beat window (beatPosition=2.5)", () => {
@@ -330,7 +330,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       stepDurationBeats: 4,
     };
     const result = getEmphasis("scale-only", false, ctx);
-    expect(result).not.toMatchObject({ glowColor: "orange" });
+    expect(result).not.toMatchObject({ glowColor: "var(--note-glow-anticipation)" });
     expect(result).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
@@ -367,7 +367,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       stepDurationBeats: 4,
     };
     const result = getEmphasis("scale-only", false, ctx);
-    expect(result).toEqual({ glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 });
+    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
   });
 
   // -------------------------------------------------------------------------
@@ -395,5 +395,32 @@ describe("getEmphasis - voice-leading emphasis", () => {
     const result = getEmphasis("scale-only", true /* isGuideTone */, ctx);
     // Falls to tones-base: isGuideTone=true → cyan glow
     expect(result).toEqual({ glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 });
+  });
+
+  // -------------------------------------------------------------------------
+  // CSS var token references for lens-emphasis glow colors
+  // -------------------------------------------------------------------------
+  it("uses CSS var references for lens-emphasis glow colors (anticipation path)", () => {
+    const leadCtx: LeadLensContext = {
+      notePc: "G",
+      commonWithNext: new Set<string>(),
+      nextGuideTones: new Set(["G"]),
+      beatPosition: 3,
+      stepDurationBeats: 4,
+    };
+    const result = getEmphasis("scale-only", false, leadCtx);
+    expect(result.glowColor).toBe("var(--note-glow-anticipation)");
+  });
+
+  it("uses the hold-glow CSS var on a current chord tone that carries through", () => {
+    const leadCtx: LeadLensContext = {
+      notePc: "C",
+      commonWithNext: new Set(["C"]),
+      nextGuideTones: new Set<string>(),
+      beatPosition: 0,
+      stepDurationBeats: 4,
+    };
+    const result = getEmphasis("chord-tone-in-scale", false, leadCtx);
+    expect(result.glowColor).toBe("var(--note-glow-hold)");
   });
 });

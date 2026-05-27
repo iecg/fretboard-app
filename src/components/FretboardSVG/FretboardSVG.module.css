@@ -384,13 +384,13 @@
    radiusBoost/opacityBoost are already applied inline by FretboardNoteLayer.tsx;
    these rules add the glow filter on top. */
 
-/* Hold: common tone carried into next chord — cyan glow (stable/sustained). */
-[data-practice-lens="lead"] .fretboard-note[data-lens-emphasis="cyan"] {
+/* Hold: common tone carried into next chord — hold-glow token (stable/sustained). */
+[data-practice-lens="lead"] .fretboard-note[data-lens-emphasis="var(--note-glow-hold)"] {
   filter: var(--fretboard-svg-glow-cyan-url);
 }
 
-/* Anticipation: next chord's guide tone in the last-beat window — orange glow (incoming). */
-[data-practice-lens="lead"] .fretboard-note[data-lens-emphasis="orange"] {
+/* Anticipation: next chord's guide tone in the last-beat window — anticipation-glow token (incoming). */
+[data-practice-lens="lead"] .fretboard-note[data-lens-emphasis="var(--note-glow-anticipation)"] {
   filter: var(--fretboard-svg-glow-orange-url);
 }
 
