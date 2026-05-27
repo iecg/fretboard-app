@@ -108,8 +108,11 @@ export function getEmphasis(
   }
 
   // 3. Departing: current chord tone that doesn't carry into the next chord.
+  //    Soft dim — keeps the note clearly playable while signalling that it's
+  //    about to leave. Avoids the F→G case (no common tones) where every
+  //    current-chord note would otherwise fade beyond legibility.
   if (isCurrentChordTone && !commonWithNext.has(notePc)) {
-    return { radiusBoost: 0.85, opacityBoost: 0.6 };
+    return { radiusBoost: 0.95, opacityBoost: 0.85 };
   }
 
   // 4. Tones base.

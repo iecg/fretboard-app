@@ -257,7 +257,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       commonWithNext: new Set(["A"]),
     };
     const result = getEmphasis("chord-tone-in-scale", false, ctx);
-    expect(result).toEqual({ radiusBoost: 0.85, opacityBoost: 0.6 });
+    expect(result).toEqual({ radiusBoost: 0.95, opacityBoost: 0.85 });
   });
 
   it("departing overrides guide-tone emphasis (voice-leading > chord-quality)", () => {
@@ -267,7 +267,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       commonWithNext: new Set(["A"]),
     };
     const result = getEmphasis("chord-tone-in-scale", true /* isGuideTone */, ctx);
-    expect(result).toEqual({ radiusBoost: 0.85, opacityBoost: 0.6 });
+    expect(result).toEqual({ radiusBoost: 0.95, opacityBoost: 0.85 });
   });
 
   it("non-chord-tone class does NOT get departing emphasis (only chord tones depart)", () => {
