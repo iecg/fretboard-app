@@ -36,6 +36,7 @@ import {
 } from "./progressionAtoms";
 import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
+import { makeAtomStore } from "../test-utils/renderWithAtoms";
 
 describe("progressionAtoms", () => {
   beforeEach(() => {
@@ -540,6 +541,21 @@ describe("stopProgressionPlaybackAtom", () => {
     store.set(stopProgressionPlaybackAtom);
     expect(store.get(progressionPlayingAtom)).toBe(false);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+
+  it("stopProgressionPlaybackAtom resets active step index to the first resolvable step rather than unconditionally to 0", () => {
+    const store = makeAtomStore([
+      [scaleNameAtom, "major"],
+      [rootNoteAtom, "C"],
+      [progressionStepsAtom, [
+        { id: "1", degree: "#IV", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null }, // Unavailable step
+        { id: "2", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]],
+      [activeProgressionStepIndexAtom, 1],
+    ]);
+
+    store.set(stopProgressionPlaybackAtom);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1); // Should snap to first resolvable (step index 1)
   });
 });
 

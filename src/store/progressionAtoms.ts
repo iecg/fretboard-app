@@ -419,9 +419,11 @@ export const setProgressionActiveStepIndexAtom = atom(null, (get, set, index: nu
  * Effect 1 tear-down path will dispose the Tone Parts because playing flipped
  * false; the activeIndex reset is what distinguishes Stop from Pause.
  */
-export const stopProgressionPlaybackAtom = atom(null, (_get, set) => {
+export const stopProgressionPlaybackAtom = atom(null, (get, set) => {
   set(progressionPlayingStateAtom, false);
-  set(activeProgressionStepIndexAtom, 0);
+  const resolved = get(resolvedProgressionStepsAtom);
+  const firstResolvable = findFirstResolvableStepIndex(resolved);
+  set(activeProgressionStepIndexAtom, firstResolvable ?? 0);
   set(progressionStepDeadlineAtom, null);
 });
 
