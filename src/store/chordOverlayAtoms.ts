@@ -547,8 +547,13 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
       // a single voicing may fit multiple octave instances of the same shape;
       // emitting it once per polygon would create phantom conflicts in
       // assignConflictOffsets and assign non-zero offsets to non-overlapping voicings.
+      // Truncated polygons (e.g. the open D-shape clipped at the nut) are
+      // valid hosts — selectCloseFallbacksForCagedPosition only accepts
+      // voicings whose notes fit per-string vertex bounds, so the visible
+      // portion of a truncated polygon can still host an open-position
+      // close voicing (e.g. open C on strings 0-1-2 inside the open D-shape).
       const activePolygons = shapePolygons.filter(
-        (p) => p.shape !== undefined && cagedShapes.has(p.shape) && !p.truncated,
+        (p) => p.shape !== undefined && cagedShapes.has(p.shape),
       );
       const seen = new Set<string>();
       scoped = activePolygons
@@ -767,7 +772,7 @@ export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
   return chordMembers.map((member): ChordMemberFact => ({
     internalNote: member.note,
     displayNote: formatAccidental(getNoteDisplay(member.note, chordRoot)),
-    memberName: member.name === "root" ? "1" : formatAccidental(member.name),
+    memberName: member.name === "root" ? "R" : formatAccidental(member.name),
     semitone: member.semitone,
     isChordRoot: member.name === "root",
   }));

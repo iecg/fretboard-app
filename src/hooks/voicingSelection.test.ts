@@ -52,10 +52,13 @@ describe("selectCloseFallbacksForCagedPosition", () => {
     expect(result).toEqual([]);
   });
 
-  it("skips truncated polygons", () => {
+  it("accepts truncated polygons (their visible portion can host a close voicing)", () => {
+    // The open D-shape at the nut is truncated but its visible portion at
+    // fret 0-1 can still host an open-C close voicing. Without this, the
+    // user sees the polygon outline with no notes inside it.
     const truncated = { ...polygon, truncated: true } as ShapePolygon;
     const result = selectCloseFallbacksForCagedPosition([inside], truncated);
-    expect(result).toEqual([]);
+    expect(result).toEqual([inside]);
   });
 });
 

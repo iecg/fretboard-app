@@ -197,12 +197,17 @@ export function selectCloseFallbacksForThreeNpsPosition(
  * Picks close voicings that fit entirely inside a CAGED polygon. Used when
  * the polygon has no full-chord template available, so a close voicing
  * stands in. Stricter than the full picker: requires `outsideCount === 0`.
+ *
+ * Truncated polygons are accepted: their visible portion is still a real
+ * polygon on the fretboard, and a close voicing whose notes all fall within
+ * the polygon's per-string vertex bounds is a valid fallback (e.g. the open
+ * C voicing on strings 1-2-3 fits the open D-shape's truncated low-fret
+ * polygon).
  */
 export function selectCloseFallbacksForCagedPosition(
   closeMatches: Voicing[],
   polygon: ShapePolygon,
 ): Voicing[] {
-  if (polygon.truncated) return [];
   return closeMatches.filter((match) =>
     match.notes.every((note) => distanceOutsidePolygon(polygon, note) === 0),
   );

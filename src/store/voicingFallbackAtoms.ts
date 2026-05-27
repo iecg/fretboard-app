@@ -82,8 +82,17 @@ export const fallbackPolygonsAtom = atom((get): readonly ShapePolygon[] => {
   const needing: ShapePolygon[] = [];
   for (const polygon of shapePolygons) {
     if (polygon.shape !== undefined && !cagedShapes.has(polygon.shape)) continue;
-    if (polygon.truncated) continue;
-    const hasFull = fulls.some(
+    // Truncated polygons (e.g. the open D-shape clipped at the nut) always
+    // route through the fallback path. `scoreFullChordForCagedPosition` can
+    // still return a non-null score for them (the open C 5-note voicing
+    // scores against the truncated D-shape with outsideCount=2 within
+    // tolerance), but the upstream selector
+    // `selectFullChordMatchesForCagedPosition` explicitly skips truncated
+    // polygons — it would never actually select that match. Without this
+    // `!polygon.truncated` guard, hasFull=true would block the fallback
+    // and the user would see neither a full voicing nor a close fallback
+    // at the truncated polygon's visible portion.
+    const hasFull = !polygon.truncated && fulls.some(
       (m) => scoreFullChordForCagedPosition(m, polygon, cagedShapes) !== null,
     );
     if (hasFull) continue;
