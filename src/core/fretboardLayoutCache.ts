@@ -1,4 +1,4 @@
-import { getFretboardNotes } from "@fretflow/core";
+import { clearFretboardNotesCache, getFretboardNotes } from "@fretflow/core";
 
 export function getCachedFretboardLayout(
   tuning: readonly string[],
@@ -8,5 +8,5 @@ export function getCachedFretboardLayout(
 }
 
 export function clearFretboardLayoutCache(): void {
-  // Compatibility no-op: @fretflow/core owns the fretboard layout cache.
+  clearFretboardNotesCache();
 }

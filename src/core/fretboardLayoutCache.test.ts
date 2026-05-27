@@ -22,4 +22,14 @@ describe("fretboardLayoutCache", () => {
     const second = getCachedFretboardLayout(tuning, 12);
     expect(second).not.toBe(first);
   });
+
+  it("clears the underlying fretboard cache", () => {
+    const tuning = ["E4", "B3", "G3", "D3", "A2", "E2"];
+    const first = getCachedFretboardLayout(tuning, 24);
+
+    clearFretboardLayoutCache();
+
+    const second = getCachedFretboardLayout(tuning, 24);
+    expect(second).not.toBe(first);
+  });
 });

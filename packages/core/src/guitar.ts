@@ -118,5 +118,9 @@ export function getFretboardNotes(tuning: string[], frets: number = 24): string[
   return cached;
 }
 
+export function clearFretboardNotesCache(): void {
+  fretboardCache.clear();
+}
+
 // Common fret marker positions for rendering dots
 export { STANDARD_FRET_MARKERS };
