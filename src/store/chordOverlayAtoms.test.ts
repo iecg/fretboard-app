@@ -18,6 +18,8 @@ import {
   visibleVoicingMatchesAtom,
   isInAnyPolygon,
   chordLookupAtom,
+  chordLookupRootAtom,
+  chordLookupTypeAtom,
 } from "./chordOverlayAtoms";
 import { shapeDataAtom } from "./shapeAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
@@ -1403,5 +1405,84 @@ describe("3NPS voicing filter uses per-string-fret pattern membership (diagonal-
         expect(patternSet.has(`${n.stringIndex}-${n.fretIndex}`)).toBe(true);
       }
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group L — chordLookup slice atoms — selectAtom reference stability
+// ---------------------------------------------------------------------------
+
+describe("chordLookup slice atoms — selectAtom reference stability", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("chordLookupRootAtom does not re-emit when only the progression-step id object changes", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+    ]);
+
+    const first = store.get(chordLookupRootAtom);
+    let notifications = 0;
+    const unsub = store.sub(chordLookupRootAtom, () => {
+      notifications++;
+    });
+
+    // Mutate progression-step identity without changing root or type.
+    store.set(
+      progressionStepsAtom,
+      store.get(progressionStepsAtom).map((step) => ({ ...step })),
+    );
+
+    unsub();
+    const second = store.get(chordLookupRootAtom);
+    expect(second).toBe(first);
+    expect(notifications).toBe(0);
+  });
+
+  it("chordLookupTypeAtom does not re-emit when only chord tones become hidden", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+    ]);
+
+    const first = store.get(chordLookupTypeAtom);
+    let notifications = 0;
+    const unsub = store.sub(chordLookupTypeAtom, () => {
+      notifications++;
+    });
+
+    // chordOverlayHiddenAtom collapses chordTones to [] but leaves chordType intact.
+    store.set(chordOverlayHiddenAtom, true);
+
+    unsub();
+    const second = store.get(chordLookupTypeAtom);
+    expect(second).toBe(first);
+    expect(notifications).toBe(0);
+  });
+
+  it("chordLookupRootAtom does re-emit when the chord root actually changes", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+    ]);
+
+    const first = store.get(chordLookupRootAtom);
+    let notifications = 0;
+    const unsub = store.sub(chordLookupRootAtom, () => {
+      notifications++;
+    });
+
+    // Switching to the V chord changes the root from C to G.
+    store.set(progressionStepsAtom, progressionWith({ degree: "V" }));
+
+    unsub();
+    const second = store.get(chordLookupRootAtom);
+    expect(second).not.toBe(first);
+    expect(notifications).toBeGreaterThanOrEqual(1);
   });
 });
