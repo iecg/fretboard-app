@@ -42,6 +42,8 @@ interface FretboardProps {
   chordTones?: string[];
   /** Root note of the active chord overlay. */
   chordRoot?: string;
+  /** Quality string of the active chord overlay (e.g. "M", "m7", "7"). */
+  chordType?: string;
   /** Fret spread of the chord voicing, used to size shape-constrained rendering. */
   chordFretSpread?: number;
   /**
@@ -97,6 +99,7 @@ export function Fretboard(props: FretboardProps) {
   const displayFormat = props.displayFormat ?? state.displayFormat;
   const chordTones = props.chordTones ?? state.chordTones;
   const chordRoot = props.chordRoot ?? state.chordRoot;
+  const chordType = props.chordType ?? state.chordType ?? undefined;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
   const chordBoxBounds = props.chordBoxBounds !== undefined ? props.chordBoxBounds : state.chordBoxBounds;
   const autoCenterTarget = props.autoCenterTarget ?? state.autoCenterTarget;
@@ -342,6 +345,7 @@ export function Fretboard(props: FretboardProps) {
             chordBoxBounds={chordBoxBounds}
             chordTones={chordTones}
             chordRoot={chordRoot}
+            chordType={chordType}
             chordFretSpread={chordFretSpread}
             practiceLens={state.practiceLens}
             colorNotes={colorNotes}

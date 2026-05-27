@@ -78,6 +78,7 @@ interface FretboardSVGProps {
   chordTones?: string[];
   /** Root note of the active chord overlay. */
   chordRoot?: string;
+  chordType?: string;
   /** Fret spread of the chord voicing, used for shape-constrained rendering. */
   chordFretSpread?: number;
   /** Active practice lens that drives note emphasis rules (colors, tension cues, squircles). */
@@ -156,6 +157,7 @@ export function FretboardSVG({
   chordBoxBounds = null,
   chordTones = DEFAULT_CHORD_TONES,
   chordRoot,
+  chordType,
   chordFretSpread = 0,
   practiceLens,
   colorNotes = DEFAULT_COLOR_NOTES,
@@ -389,6 +391,7 @@ export function FretboardSVG({
     chordTones,
     rootNote,
     chordRoot,
+    chordType,
     colorNotes,
     shapePolygons,
     chordBoxBounds,
