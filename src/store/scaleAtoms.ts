@@ -138,6 +138,36 @@ export const scaleNotesAtom = atom((get) =>
   getScaleNotes(get(rootNoteAtom), get(scaleNameAtom)),
 );
 
+export interface ScaleContext {
+  rootNote: string;
+  scaleName: string;
+  scaleNotes: readonly string[];
+  scaleNoteSet: ReadonlySet<string>;
+  degreesMap: Readonly<Record<number, string>>;
+}
+
+const scaleContextCache = new Map<string, ScaleContext>();
+
+export const scaleContextAtom = atom((get): ScaleContext => {
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const scaleNotes = get(scaleNotesAtom);
+  const key = `${rootNote}|${scaleName}|${scaleNotes.join(",")}`;
+
+  const cached = scaleContextCache.get(key);
+  if (cached) return cached;
+
+  const next: ScaleContext = {
+    rootNote,
+    scaleName,
+    scaleNotes,
+    scaleNoteSet: new Set(scaleNotes),
+    degreesMap: getDegreesForScale(scaleName),
+  };
+  scaleContextCache.set(key, next);
+  return next;
+});
+
 export const colorNotesAtom = atom((get) => {
   const scaleName = get(scaleNameAtom);
   const rootNote = get(rootNoteAtom);

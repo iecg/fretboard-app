@@ -59,6 +59,15 @@ export interface ShapeInstanceRange {
   maxFret: number;
 }
 
+export interface ChordLookup {
+  chordRoot: string;
+  chordType: string | null;
+  chordTones: readonly string[];
+  chordToneSet: ReadonlySet<string>;
+  chordMembers: readonly ResolvedChordMember[];
+  memberByNote: ReadonlyMap<string, ResolvedChordMember>;
+}
+
 /**
  * True when a single `"string-fret"` position key falls within any
  * non-truncated polygon's diagonal vertex bounds.
@@ -699,7 +708,7 @@ export const chordTonesAtom = atom((get) => {
   return tones.filter((n) => !hidden.has(n));
 });
 
-export const chordMembersAtom = atom((get) => {
+const rawChordMembersAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
   if (!chordType) return [] as ResolvedChordMember[];
@@ -712,10 +721,36 @@ export const chordMembersAtom = atom((get) => {
     note: NOTES[(rootIndex + m.semitone) % 12],
   }));
 });
-/** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
-export const chordShortLabelAtom = atom((get) => {
+
+const chordLookupCache = new Map<string, ChordLookup>();
+
+export const chordLookupAtom = atom((get): ChordLookup => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
+  const chordTones = get(chordTonesAtom);
+  const chordMembers = get(rawChordMembersAtom);
+  const key = `${chordRoot}|${chordType ?? "none"}|${chordTones.join(",")}`;
+
+  const cached = chordLookupCache.get(key);
+  if (cached) return cached;
+
+  const next: ChordLookup = {
+    chordRoot,
+    chordType,
+    chordTones,
+    chordToneSet: new Set(chordTones),
+    chordMembers,
+    memberByNote: new Map(chordMembers.map((member) => [member.note, member])),
+  };
+  chordLookupCache.set(key, next);
+  return next;
+});
+
+export const chordMembersAtom = atom((get) => get(chordLookupAtom).chordMembers);
+
+/** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
+export const chordShortLabelAtom = atom((get) => {
+  const { chordRoot, chordType } = get(chordLookupAtom);
   const preferFlats = get(preferFlatsAtom);
   if (!chordType) return null;
   const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, preferFlats));
@@ -726,23 +761,15 @@ export const chordShortLabelAtom = atom((get) => {
  * displayNote uses chord-root-relative accidentals, NOT scale-derived accidentals.
  */
 export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
-  const chordRoot = get(chordRootAtom);
-  const chordType = get(chordTypeAtom);
+  const { chordRoot, chordType, chordMembers } = get(chordLookupAtom);
   if (!chordType) return [];
-  const def = CHORD_DEFINITIONS[chordType];
-  if (!def) return [];
-  const rootIndex = NOTES.indexOf(chordRoot);
-  if (rootIndex === -1) return [];
-  return def.members.map((m): ChordMemberFact => {
-    const note = NOTES[(rootIndex + m.semitone) % 12];
-    return {
-      internalNote: note,
-      displayNote: formatAccidental(getNoteDisplay(note, chordRoot)),
-      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
-      semitone: m.semitone,
-      isChordRoot: m.name === "root",
-    };
-  });
+  return chordMembers.map((member): ChordMemberFact => ({
+    internalNote: member.note,
+    displayNote: formatAccidental(getNoteDisplay(member.note, chordRoot)),
+    memberName: member.name === "root" ? "1" : formatAccidental(member.name),
+    semitone: member.semitone,
+    isChordRoot: member.name === "root",
+  }));
 });
 
 // Circular-import-safe re-imports — see comment in `stringSetOptionsAtom`.

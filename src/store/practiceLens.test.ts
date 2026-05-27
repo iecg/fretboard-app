@@ -3,7 +3,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createStore } from "jotai";
 import type { PracticeLens } from "@fretflow/core";
 import { k } from "../utils/storage";
-import { practiceLensAtom, chordHiddenNotesAtom, chordTypeAtom } from "./chordOverlayAtoms";
+import {
+  practiceLensAtom,
+  chordHiddenNotesAtom,
+  chordTypeAtom,
+  chordLookupAtom,
+} from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { practiceCuesAtom, lensAvailabilityAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
@@ -707,6 +712,29 @@ describe("chord-visual derivations follow displayedProgressionStepIndexAtom duri
 describe("noteSemanticMapAtom — referential stability", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it("reuses the same chord lookup and noteSemanticMap references when chord semantics are unchanged", () => {
+    const store = setUp({
+      scaleRoot: "G",
+      scale: "mixolydian",
+      chordRoot: "G",
+      chordType: "7",
+    });
+
+    const firstLookup = store.get(chordLookupAtom);
+    const firstMap = store.get(noteSemanticMapAtom);
+
+    store.set(
+      progressionStepsAtom,
+      store.get(progressionStepsAtom).map((step) => ({ ...step })),
+    );
+
+    const secondLookup = store.get(chordLookupAtom);
+    const secondMap = store.get(noteSemanticMapAtom);
+
+    expect(secondLookup).toBe(firstLookup);
+    expect(secondMap).toBe(firstMap);
   });
 
   it("returns the same noteSemanticMap reference when a color-note update is value-equal", () => {

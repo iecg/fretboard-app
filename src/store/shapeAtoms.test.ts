@@ -8,8 +8,9 @@ import {
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "./fingeringAtoms";
-import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
+import { rootNoteAtom, scaleContextAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
+import { displayedStepIndexPrimitiveAtom } from "./progressionAtoms";
 
 // ---------------------------------------------------------------------------
 // shapeDataAtom — two-strings intervalPairs branch (UAT-8 + UAT-10 regression guard)
@@ -158,6 +159,25 @@ describe("shapeDataAtom — two-strings intervalPairs", () => {
       expect(highlightSet.has(pair.a)).toBe(true);
       expect(highlightSet.has(pair.b)).toBe(true);
     }
+  });
+});
+
+describe("scaleContextAtom — referential stability", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns the same scale context reference when unrelated writes do not change root or scale", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+    ]);
+
+    const first = store.get(scaleContextAtom);
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+    const second = store.get(scaleContextAtom);
+
+    expect(second).toBe(first);
   });
 });
 
@@ -330,4 +350,3 @@ describe("shapeDataAtom — CAGED scale shape remapping under minor active chord
     expect(poly.intendedMax).toBe(3);
   });
 });
-

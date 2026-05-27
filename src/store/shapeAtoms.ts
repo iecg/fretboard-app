@@ -7,7 +7,7 @@ import {
   getShapeCenterFret,
   type ShapePolygon,
 } from "@fretflow/core";
-import { getScaleNotes, NOTES } from "@fretflow/core";
+import { NOTES } from "@fretflow/core";
 import {
   getOneStringCoordinates,
   getTwoStringsCoordinates,
@@ -28,8 +28,7 @@ import {
   twoStringsActivePairTupleAtom,
 } from "./fingeringAtoms";
 import {
-  rootNoteAtom,
-  scaleNameAtom,
+  scaleContextAtom,
   scaleVisibleAtom,
 } from "./scaleAtoms";
 import {
@@ -47,8 +46,7 @@ export interface ShapeData {
 }
 
 const cagedShapeDataAtom = atom((get): ShapeData => {
-  const rootNote = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
+  const { rootNote, scaleName } = get(scaleContextAtom);
   const currentTuning = get(currentTuningAtom);
   const cagedShapes = get(cagedShapesAtom);
 
@@ -76,8 +74,7 @@ const cagedShapeDataAtom = atom((get): ShapeData => {
 });
 
 const threeNpsShapeDataAtom = atom((get): ShapeData => {
-  const rootNote = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
+  const { rootNote, scaleName } = get(scaleContextAtom);
   const currentTuning = get(currentTuningAtom);
   const npsPosition = get(npsPositionAtom);
   const npsOctave = get(npsOctaveAtom);
@@ -94,8 +91,7 @@ const threeNpsShapeDataAtom = atom((get): ShapeData => {
 });
 
 const oneStringShapeDataAtom = atom((get): ShapeData => {
-  const rootNote = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
+  const { rootNote, scaleName, scaleNotes: scaleNoteNames } = get(scaleContextAtom);
   const currentTuning = get(currentTuningAtom);
   const oneStringIndex = get(oneStringIndexAtom);
   const oneStringInterval = get(oneStringIntervalAtom);
@@ -107,7 +103,6 @@ const oneStringShapeDataAtom = atom((get): ShapeData => {
   if (oneStringInterval > 0) {
     // UAT-22: On mode connects consecutive scale tones (2nds) only — SD distance = 1.
     const board = getCachedFretboardLayout(currentTuning, 24);
-    const scaleNoteNames = getScaleNotes(rootNote, scaleName);
     const scaleNoteSet = new Set(scaleNoteNames);
     const scaleNoteSemitones = scaleNoteNames.map((n) => NOTES.indexOf(n)).filter((i) => i !== -1);
     intervalPairs = getOneStringIntervalPairs(
@@ -130,8 +125,7 @@ const oneStringShapeDataAtom = atom((get): ShapeData => {
 });
 
 const twoStringsShapeDataAtom = atom((get): ShapeData => {
-  const rootNote = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
+  const { rootNote, scaleName, scaleNotes: scaleNoteNames } = get(scaleContextAtom);
   const currentTuning = get(currentTuningAtom);
   const twoStringsInterval = get(twoStringsIntervalAtom);
   const activePairTuple = get(twoStringsActivePairTupleAtom);
@@ -144,7 +138,6 @@ const twoStringsShapeDataAtom = atom((get): ShapeData => {
 
   if (twoStringsInterval > 0) {
     const board = getCachedFretboardLayout(currentTuning, 24);
-    const scaleNoteNames = getScaleNotes(rootNote, scaleName);
     const scaleNoteSet = new Set(scaleNoteNames);
     const scaleNoteSemitones = scaleNoteNames.map((n) => NOTES.indexOf(n)).filter((i) => i !== -1);
     const targetSdDist = TWO_STRINGS_INTERVAL_SD_DISTANCES[twoStringsInterval - 1] ?? 2;
@@ -168,12 +161,11 @@ export const shapeDataAtom = atom((get): ShapeData => {
     case "one-string": return get(oneStringShapeDataAtom);
     case "two-strings": return get(twoStringsShapeDataAtom);
     default: {
-      const rootNote = get(rootNoteAtom);
-      const scaleName = get(scaleNameAtom);
+      const { scaleNotes } = get(scaleContextAtom);
       // Subscribe to currentTuningAtom so tuningNameAtom is always initialized on first render.
       get(currentTuningAtom);
       return {
-        highlightNotes: getScaleNotes(rootNote, scaleName),
+        highlightNotes: [...scaleNotes],
         boxBounds: [],
         shapePolygons: [],
         wrappedNotes: new Set<string>(),

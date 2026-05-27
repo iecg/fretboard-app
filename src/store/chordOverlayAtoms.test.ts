@@ -17,6 +17,7 @@ import {
   closeCandidatesAllStringSetsAtom,
   visibleVoicingMatchesAtom,
   isInAnyPolygon,
+  chordLookupAtom,
 } from "./chordOverlayAtoms";
 import { shapeDataAtom } from "./shapeAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
@@ -1162,6 +1163,29 @@ describe("chordHighlightPositionsAtom referential stability", () => {
     const second = store.get(chordHighlightPositionsAtom);
     expect(second).not.toBe(first);
     expect(second.size).toBe(0);
+  });
+});
+
+describe("chordLookupAtom — referential stability", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns the same chord lookup reference when visible chord tones are unchanged", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+    ]);
+
+    const first = store.get(chordLookupAtom);
+    store.set(
+      progressionStepsAtom,
+      store.get(progressionStepsAtom).map((step) => ({ ...step })),
+    );
+    const second = store.get(chordLookupAtom);
+
+    expect(second).toBe(first);
   });
 });
 

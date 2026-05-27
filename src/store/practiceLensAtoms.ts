@@ -6,7 +6,6 @@ import {
 
   LENS_REGISTRY,
   CHORD_DEFINITIONS,
-  getScaleNotes,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
@@ -21,21 +20,14 @@ import type {
   ChordRowEntry,
 
 } from "@fretflow/core";
+import { type DegreeId } from "@fretflow/core";
 import {
-  getDegreesForScale,
-  type DegreeId,
-} from "@fretflow/core";
-import {
-  rootNoteAtom,
-  scaleNameAtom,
-  scaleNotesAtom,
+  scaleContextAtom,
   colorNotesAtom,
   preferFlatsAtom,
 } from "./scaleAtoms";
 import {
-  chordRootAtom,
-  chordTypeAtom,
-  chordMembersAtom,
+  chordLookupAtom,
   practiceLensAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
@@ -152,14 +144,15 @@ function buildLandOnCue(allChordMembers: ChordRowEntry[]): PracticeCue {
 }
 
 const cueBaseInputsAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
+  const { chordType, chordRoot } = get(chordLookupAtom);
   if (!chordType) return null;
+  const { scaleNotes } = get(scaleContextAtom);
   return {
     chordType,
-    chordRoot: get(chordRootAtom),
+    chordRoot,
     preferFlats: get(preferFlatsAtom),
     allChordMembers: get(allChordMembersAtom),
-    scaleNotes: get(scaleNotesAtom),
+    scaleNotes,
   };
 });
 
@@ -216,22 +209,20 @@ const tensionCuesAtom = atom((get) => {
 
 /** Gathers chord-specific inputs. Returns null when there is no active chord or the overlay is hidden. */
 const chordSemanticInputsAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
+  const chordLookup = get(chordLookupAtom);
+  const { chordType } = chordLookup;
   if (!chordType) return null;
   if (get(chordOverlayHiddenAtom)) return null;
   return {
-    chordRoot: get(chordRootAtom),
-    chordMembers: get(chordMembersAtom),
+    chordLookup,
     hiddenNotes: get(chordHiddenNotesAtom),
     chordDegree: get(activeChordCachedDegreeAtom),
-    chordType,
   };
 });
 
 /** Gathers scale-specific inputs. */
 const scaleSemanticInputsAtom = atom((get) => ({
-  rootNote: get(rootNoteAtom),
-  scaleName: get(scaleNameAtom),
+  scaleContext: get(scaleContextAtom),
   colorNotes: get(colorNotesAtom),
 }));
 
@@ -252,10 +243,16 @@ export const noteSemanticMapAtom = atom((get) => {
   if (!chordInputs) return memoizeNoteSemanticMap(new Map<string, NoteSemantics>());
 
   const scaleInputs = get(scaleSemanticInputsAtom);
-  const { rootNote, scaleName, colorNotes } = scaleInputs;
-  const { chordRoot, chordMembers, hiddenNotes, chordDegree, chordType } = chordInputs;
+  const {
+    scaleContext: { rootNote, scaleName, scaleNoteSet, degreesMap },
+    colorNotes,
+  } = scaleInputs;
+  const {
+    chordLookup: { chordRoot, chordMembers, chordType },
+    hiddenNotes,
+    chordDegree,
+  } = chordInputs;
 
-  const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
   const colorNoteSet = new Set(colorNotes);
 
   // Per-note hides: drop hidden notes from chord-tone classification so the
@@ -273,8 +270,6 @@ export const noteSemanticMapAtom = atom((get) => {
   // Phase 2.5: degree is sourced from the active progression step; the legacy
   // `chordOverlayMode === "degree"` gate is gone — the resolver already
   // returns the diatonic root + quality when no manual override is set.
-  const degreesMap = getDegreesForScale(scaleName);
-
   let diatonicChordRoot: string | undefined;
   let diatonicChordQuality: string | undefined;
   if (chordDegree !== null) {
@@ -359,8 +354,7 @@ export const practiceCuesAtom = atom((get) => {
  * Context inputs for LENS_REGISTRY predicates.
  */
 export const lensAvailabilityContextAtom = atom((get): LensAvailabilityContext => {
-  const chordType = get(chordTypeAtom);
-  const chordMembers = get(chordMembersAtom);
+  const { chordType, chordMembers } = get(chordLookupAtom);
   const colorNotes = get(colorNotesAtom);
   const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
 
