@@ -17,6 +17,50 @@ interface FretboardConnectorLayerProps {
   clipPathUrl: string;
 }
 
+const renderStaticChordConnectorGroup = (
+  chordPolylines: ChordConnectorVoicing[],
+  connectorSource: "full-chord" | "generated",
+  motionKey: string,
+) => (
+  <g
+    key={motionKey}
+    className={styles["chord-connectors"]}
+    data-connector-source={connectorSource}
+    data-motion="none"
+    data-render-path="static"
+    aria-hidden="true"
+    pointerEvents="none"
+  >
+    {chordPolylines.map((v) => renderChordPath(v, "halo"))}
+    {chordPolylines.map((v) => renderChordPath(v, "fill"))}
+    {chordPolylines.map((v) => renderChordPath(v, "outline"))}
+  </g>
+);
+
+const renderAnimatedChordConnectorGroup = (
+  chordPolylines: ChordConnectorVoicing[],
+  connectorSource: "full-chord" | "generated",
+  motionKey: string,
+) => (
+  <motion.g
+    key={motionKey}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
+    className={styles["chord-connectors"]}
+    data-connector-source={connectorSource}
+    data-motion="group"
+    data-render-path="animated"
+    aria-hidden="true"
+    pointerEvents="none"
+  >
+    {chordPolylines.map((v) => renderChordPath(v, "halo"))}
+    {chordPolylines.map((v) => renderChordPath(v, "fill"))}
+    {chordPolylines.map((v) => renderChordPath(v, "outline"))}
+  </motion.g>
+);
+
 const renderChordPath = (
   v: ChordConnectorVoicing,
   layer: "halo" | "fill" | "outline",
@@ -65,37 +109,9 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
     >
       <AnimatePresence mode="sync">
         {showChordConnectors && chordPolylines.length > 0 && (
-          connectorMotionMode === "group" ? (
-            <motion.g
-              key={motionKey}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-              className={styles["chord-connectors"]}
-              data-connector-source={connectorSource}
-              data-motion="group"
-              aria-hidden="true"
-              pointerEvents="none"
-            >
-              {chordPolylines.map((v) => renderChordPath(v, "halo"))}
-              {chordPolylines.map((v) => renderChordPath(v, "fill"))}
-              {chordPolylines.map((v) => renderChordPath(v, "outline"))}
-            </motion.g>
-          ) : (
-            <g
-              key={motionKey}
-              className={styles["chord-connectors"]}
-              data-connector-source={connectorSource}
-              data-motion="none"
-              aria-hidden="true"
-              pointerEvents="none"
-            >
-              {chordPolylines.map((v) => renderChordPath(v, "halo"))}
-              {chordPolylines.map((v) => renderChordPath(v, "fill"))}
-              {chordPolylines.map((v) => renderChordPath(v, "outline"))}
-            </g>
-          )
+          connectorMotionMode === "group"
+            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey)
+            : renderStaticChordConnectorGroup(chordPolylines, connectorSource, motionKey)
         )}
       </AnimatePresence>
       {intervalPolylines.length > 0 && (

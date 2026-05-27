@@ -138,6 +138,21 @@ describe("FretboardConnectorLayer", () => {
     expect(animatePresenceModes).not.toContain("wait");
   });
 
+  it("marks the animated connector wrapper explicitly when group fades are enabled", () => {
+    const polylines = [makePolyline("0,5|1,5|2,5", "E")];
+
+    const { container } = renderInSvg(
+      <FretboardConnectorLayer
+        {...BASE_PROPS}
+        chordPolylines={polylines}
+        connectorMotionMode="group"
+      />,
+    );
+
+    expect(container.querySelector('g[data-motion="group"]')).toBeTruthy();
+    expect(container.querySelector('g[data-render-path="animated"]')).toBeTruthy();
+  });
+
   it("renders a static connector wrapper when group fades are disabled", () => {
     const polylines = [makePolyline("0,5|1,5|2,5", "E")];
 
@@ -150,6 +165,7 @@ describe("FretboardConnectorLayer", () => {
     );
 
     expect(container.querySelector('g[data-motion="none"]')).toBeTruthy();
+    expect(container.querySelector('g[data-render-path="static"]')).toBeTruthy();
     expect(container.querySelector('g[data-motion="group"]')).toBeNull();
   });
 });

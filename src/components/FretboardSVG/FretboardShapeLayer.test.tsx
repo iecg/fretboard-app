@@ -82,6 +82,7 @@ describe("FretboardShapeLayer", () => {
     );
 
     expect(container.querySelector('g[data-motion="group"]')).toBeTruthy();
+    expect(container.querySelector('g[data-render-path="animated"]')).toBeTruthy();
   });
 
   it("renders a static wrapper when group fades are disabled", () => {
@@ -95,6 +96,7 @@ describe("FretboardShapeLayer", () => {
     );
 
     expect(container.querySelector('g[data-motion="none"]')).toBeTruthy();
+    expect(container.querySelector('g[data-render-path="static"]')).toBeTruthy();
     expect(container.querySelector('g[data-motion="group"]')).toBeNull();
   });
 });
