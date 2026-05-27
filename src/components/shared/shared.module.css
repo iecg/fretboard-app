@@ -196,6 +196,15 @@
   border-radius: calc(var(--dc-radius) - 1px);
 }
 
+/* Chip-variant active state. The default .toggle-btn.active glow extends
+   14px outside the box, which (without the default toggle-group's 2px
+   padding to absorb it) makes an active chip look taller than its siblings.
+   Strip the outer glow; keep the accent-color background + border for
+   emphasis. */
+.toggle-btn--chip.active {
+  box-shadow: none;
+}
+
 .toggle-btn {
   display: inline-flex;
   align-items: center;
