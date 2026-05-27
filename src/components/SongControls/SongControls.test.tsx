@@ -162,6 +162,18 @@ describe("SongControls playback lock (R1-T2)", () => {
     expect(timeCard.querySelector("[data-locked='true']")).toBeNull();
     expect(backingCard.querySelector("[data-locked='true']")).toBeNull();
   });
+
+  it("Progression card header actions become non-interactive during playback", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(
+      <TooltipProvider><SongControls /></TooltipProvider>,
+      store,
+    );
+    const addButton = screen.getByLabelText("Add chord");
+    // The button is rendered, but its closest ancestor with `inert` makes it non-interactive.
+    expect(addButton.closest("[inert]")).not.toBeNull();
+  });
 });
 
 describe("SongControls TIME", () => {

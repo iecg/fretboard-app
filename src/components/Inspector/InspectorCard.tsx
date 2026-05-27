@@ -105,7 +105,15 @@ export function InspectorCard({
         ) : (
           <span className={styles.cardDesc} aria-hidden="true" />
         )}
-        {actions ? <div className={styles.cardHeadActions}>{actions}</div> : null}
+        {actions ? (
+          <div
+            className={styles.cardHeadActions}
+            inert={locked || undefined}
+            data-locked={locked ? "true" : undefined}
+          >
+            {actions}
+          </div>
+        ) : null}
       </header>
       {locked && lockedHint ? (
         <Tooltip content={lockedHint}>
