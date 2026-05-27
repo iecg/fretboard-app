@@ -7,7 +7,7 @@ import {
   chordHighlightPositionsAtom,
   visibleVoicingMatchesAtom,
 } from "../store/chordOverlayAtoms";
-import { chordScopeToPositionAtom, activePositionAtom } from "../store/chordScope";
+import { activePositionAtom } from "../store/chordScope";
 import { recenterKeyAtom, fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { currentTuningAtom, fretStartAtom, fretEndAtom } from "../store/layoutAtoms";
 import { noteSemanticMapAtom } from "../store/practiceLensAtoms";
@@ -45,7 +45,6 @@ export function useFretboardTopologyModel() {
   const npsPosition = useAtomValue(npsPositionAtom);
   const chordHighlightPositions = useAtomValue(chordHighlightPositionsAtom);
   const showChordConnectors = useAtomValue(voicingAtom) !== "off";
-  const chordScopeToPosition = useAtomValue(chordScopeToPositionAtom);
   const activePosition = useAtomValue(activePositionAtom);
 
   let activePattern: ActivePatternType | undefined;
@@ -77,7 +76,7 @@ export function useFretboardTopologyModel() {
   }
 
   const visibleFullChordMatches = useAtomValue(visibleVoicingMatchesAtom);
-  const chordBoxBounds = chordScopeToPosition && activePosition ? boxBounds : null;
+  const chordBoxBounds = activePosition ? boxBounds : null;
 
   return {
     currentTuning,

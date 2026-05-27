@@ -5,7 +5,6 @@ import { Provider } from "jotai";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { useFretboardState } from "./useFretboardState";
 import { voicingMatchesAtom } from "../store/chordOverlayAtoms";
-import { chordScopeToPositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { progressionStepsAtom } from "../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
@@ -22,11 +21,9 @@ function wrapWithStore(store: ReturnType<typeof makeAtomStore>) {
 }
 
 describe("useFretboardState — chord box bounds gating (Task 7)", () => {
-  it("returns null chordBoxBounds when chordScopeToPositionAtom is off", () => {
+  it("returns null chordBoxBounds when no active position resolves", () => {
     const store = makeAtomStore([
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set(["C"])],
-      [chordScopeToPositionAtom, false],
+      [fingeringPatternAtom, "none"],
     ]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
@@ -34,25 +31,22 @@ describe("useFretboardState — chord box bounds gating (Task 7)", () => {
     expect(result.current.chordBoxBounds).toBeNull();
   });
 
-  it("returns concrete chordBoxBounds when scope is on AND a single CAGED shape is active", () => {
+  it("returns concrete chordBoxBounds when a single CAGED shape is active", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C"])],
-      [chordScopeToPositionAtom, true],
     ]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    // single CAGED shape => activePositionAtom is true
-    // chordScopeToPosition is true => chordBoxBounds should equal boxBounds
+    // single CAGED shape => activePositionAtom is true => chordBoxBounds should equal boxBounds
     expect(result.current.chordBoxBounds).toEqual(result.current.boxBounds);
   });
 
-  it("returns non-null chordBoxBounds when scope is on and multiple CAGED shapes are selected", () => {
+  it("returns non-null chordBoxBounds when multiple CAGED shapes are selected", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C", "A", "G"])],
-      [chordScopeToPositionAtom, true],
     ]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
@@ -80,12 +74,11 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
     ];
   }
 
-  it("filters voicings when scope is on and a 3NPS position is active", () => {
+  it("filters voicings when a 3NPS position is active", () => {
     const store = makeAtomStore([
       ...seedManualChord(),
       [fingeringPatternAtom, "3nps"],
       [npsPositionAtom, 1],
-      [chordScopeToPositionAtom, true],
     ] as Parameters<typeof makeAtomStore>[0]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
@@ -101,24 +94,10 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
     }
   });
 
-  it("does not filter when scope is off", () => {
-    const store = makeAtomStore([
-      ...seedManualChord(),
-      [fingeringPatternAtom, "3nps"],
-      [npsPositionAtom, 1],
-      [chordScopeToPositionAtom, false],
-    ] as Parameters<typeof makeAtomStore>[0]);
-    const { result } = renderHook(() => useFretboardState(), {
-      wrapper: wrapWithStore(store),
-    });
-    const raw = store.get(voicingMatchesAtom);
-    expect(result.current.fullChordMatches).toEqual(raw);
-  });
-
   // Note: npsPositionAtom storage clamps to [1, 7] (constrainedNumberStorage),
   // so `npsPosition === 0` is unreachable at runtime — `activePositionAtom` is
-  // always true for 3NPS. The scope toggle is the only way to bypass filtering
-  // in 3NPS mode (covered by the "scope off" case above).
+  // always true for 3NPS. Position-based filtering is unconditional in 3NPS mode;
+  // the old chordScopeToPositionAtom bypass has been retired.
 });
 
 describe("useFretboardState — CAGED shape filtering and truncation", () => {
@@ -126,7 +105,6 @@ describe("useFretboardState — CAGED shape filtering and truncation", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["D"])],
-      [chordScopeToPositionAtom, true],
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
       [voicingAtom, "caged"],
@@ -157,7 +135,6 @@ describe("useFretboardState — CAGED shape filtering and truncation", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C"])],
-      [chordScopeToPositionAtom, true],
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
       [voicingAtom, "caged"],
