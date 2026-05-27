@@ -1,5 +1,5 @@
 import { atom, type Atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atomWithStorage, selectAtom } from "jotai/utils";
 import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
   NOTES,
@@ -54,11 +54,6 @@ import {
 import { formatChordShortLabel } from "../progressions/progressionDomain";
 import { fallbackVoicingMatchesAtom } from "./voicingFallbackAtoms";
 import { buildPolygonCoverage } from "../core/polygonCoverage";
-
-export interface ShapeInstanceRange {
-  minFret: number;
-  maxFret: number;
-}
 
 export interface ChordLookup {
   chordRoot: string;
@@ -237,25 +232,6 @@ export const voicingStringSetAtom = atomWithStorage<string>(
   voicingStringSetStorage,
   GET_ON_INIT,
 );
-
-export const activeScaleInstanceRangesAtom = atom<ShapeInstanceRange[]>((get) => {
-  const pattern = get(fingeringPatternAtom);
-  const { shapePolygons, boxBounds } = get(shapeDataAtom);
-
-  if (pattern === "caged" && shapePolygons.length > 0) {
-    return shapePolygons.map((p) => ({
-      minFret: p.intendedMin,
-      maxFret: p.intendedMax,
-    }));
-  }
-  if (pattern === "3nps" && boxBounds.length > 0) {
-    return boxBounds.map((b) => ({
-      minFret: b.minFret,
-      maxFret: b.maxFret,
-    }));
-  }
-  return [];
-});
 
 /**
  * All close voicings the chord generates — unscoped to position or string set.
@@ -444,16 +420,6 @@ export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | nu
  * strings). Returns an empty set for patterns that don't define a positional
  * window (none, one-string, two-strings), so the snap filter becomes a no-op.
  */
-export const activeScalePatternPositionsAtom = atom<Set<string>>((get) => {
-  const pattern = get(fingeringPatternAtom);
-  if (pattern === "caged" || pattern === "3nps") {
-    const { highlightNotes } = get(shapeDataAtom);
-    return new Set(highlightNotes.filter((n) => n.includes("-")));
-  }
-  // none, one-string, two-strings have no positional pattern to lock to.
-  return new Set();
-});
-
 /**
  * All close voicings for the active chord, filtered only by the user's selected
  * string-set window. The snap-to-scale / position-scoping filter has moved
@@ -734,7 +700,17 @@ export const chordLookupAtom = atom((get): ChordLookup => {
   return next;
 });
 
-export const chordMembersAtom = atom((get) => get(chordLookupAtom).chordMembers);
+/** Stable slice: chord root letter alone. Re-emits only when the root changes. */
+export const chordLookupRootAtom = selectAtom(
+  chordLookupAtom,
+  (lookup) => lookup.chordRoot,
+);
+
+/** Stable slice: chord quality/type alone. Re-emits only when the type changes. */
+export const chordLookupTypeAtom = selectAtom(
+  chordLookupAtom,
+  (lookup) => lookup.chordType,
+);
 
 /** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
 export const chordShortLabelAtom = atom((get) => {
