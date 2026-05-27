@@ -74,8 +74,7 @@ describe('getFullChordShapeMatches', () => {
 
   describe('canonical open-shape templates', () => {
     it('verifies all 14 canonical templates - 8 produce open matches, 6 do not', () => {
-      // Table-driven test covering all 14 FULL_CHORD_TEMPLATES entries (D-shape 7 was
-      // removed as a close-voicing duplicate per the 2026-05-26 audit).
+      // Table-driven test covering all 14 FULL_CHORD_TEMPLATES entries (D-shape 7 was removed).
       // Each row specifies: [chordRoot, chordType, shape, expectedPositionKeys].
       //
       // Of the 14 canonical templates, only 8 produce valid open (rootFret=0) matches.
@@ -100,12 +99,12 @@ describe('getFullChordShapeMatches', () => {
         ['E', 'm', 'E', '0-0|1-0|2-0|3-2|4-2|5-0'],
         ['D', 'm', 'D', '0-1|1-3|2-2|3-0'],
 
-        // Dominant 7th (2 open, 3 non-open; D-shape dropped — audit duplicate)
+        // Dominant 7th (2 open, 3 non-open; D-shape dropped)
         ['C', '7', 'C', null], // C shape matches C7 at rootFret=3, not 0
         ['A', '7', 'A', '0-0|1-2|2-0|3-2|4-0'],
         ['G', '7', 'G', null], // G shape matches G7 at rootFret=3, not 0
         ['E', '7', 'E', '0-0|1-0|2-1|3-0|4-2|5-0'],
-        ['D', '7', 'D', null], // D-shape 7 removed — identical to close voicing (audit)
+        ['D', '7', 'D', null], // D-shape 7 removed — identical to close voicing
       ];
 
       for (const [root, quality, shape, expectedKeys] of cases) {
@@ -121,7 +120,7 @@ describe('getFullChordShapeMatches', () => {
 
     it('validates the 8 canonical templates that produce open matches', () => {
       // Expanded individual assertions for the 8 templates that match at rootFret=0.
-      // (D-shape 7 removed as close-voicing duplicate per 2026-05-26 audit.)
+      // (D-shape 7 removed as close-voicing duplicate.)
       // Major Triads (A, E, D)
       expect(getMatchPositions('A', 'M', 'A', 0)).toBe('0-0|1-2|2-2|3-2|4-0');
       expect(getMatchPositions('E', 'M', 'E', 0)).toBe('0-0|1-0|2-1|3-2|4-2|5-0');
@@ -218,8 +217,7 @@ describe('getFullChordShapeMatches', () => {
   });
 
   describe("dim7 CAGED templates", () => {
-    // Only E-shape remains after audit — C, A, G, D shapes are close-voicing duplicates
-    // per docs/superpowers/research/2026-05-26-full-close-voicing-overlap.md.
+    // Only E-shape remains — C, A, G, D shapes are close-voicing duplicates.
     for (const { shape, root, expected } of [
       { shape: "E", root: "E", expected: new Set(["E", "G", "A#", "C#"]) },
     ] as const) {

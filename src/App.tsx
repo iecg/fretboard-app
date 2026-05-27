@@ -98,11 +98,6 @@ function AppContent() {
     };
   }, []);
 
-  // v2.3: Removed automatic chord-overlay reset on identity change.
-  // Persisted user preference for chord overlay visibility is now honoured
-  // across chord/scale transitions. The one-tick overlayResetReadyRef that
-  // previously guarded the reset effect is also removed.
-
   return (
   <TooltipProvider>
   <>

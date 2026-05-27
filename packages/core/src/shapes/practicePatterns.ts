@@ -22,8 +22,6 @@ import { getScaleNotes } from "../theory";
 //
 // The interval-pair filter below shows scale-tone double-stops on a single
 // adjacent string pair, with chord-connector lines between pair members.
-// The full Rectangle + Stack overlay (grouping notes already visible under any
-// fingering pattern) is deferred to Phase 5 (Note Grouping).
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
