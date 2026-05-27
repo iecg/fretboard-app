@@ -6,7 +6,6 @@ import {
   type ConnectorYBounds,
   resolveConnectorRadiusPx,
   applyConnectorRadiusFloor,
-  computeChordConnectorRadiusPx,
   CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
 } from "../utils/connectorRadius";
 
@@ -140,32 +139,24 @@ const CONNECTOR_CONFLICT_GAP_PX = 1.5;
  */
 const OFFSET_BUCKET = [0, 3] as const;
 
-/**
- * Canonical pixel scale used for topology-level conflict detection.
- * These values allow `assignConflictOffsets` to operate in a stable
- * coordinate system that is independent of the actual rendered pixel
- * geometry (fretCenterX / stringYAt), so the conflict graph only needs
- * to be recomputed when the musical data changes — not on every resize.
- */
-// Topology x-scale calibrated so that two voicings on the same string set
-// separated by ≥3 frets do NOT trigger a conflict. At base radius ≈15.12
-// (0.42 × 36) the conflict threshold is ~31.7 px; with FRET_UNIT_PX=16,
-// a 2-fret gap (32 px) still conflicts but a 3-fret gap (48 px) does not.
-// This matches the visual reality of close voicings on the same strings —
-// chord roots 3 frets apart on the same 3-string window do not visually
-// overlap, so they should not be radius-bumped.
-const TOPOLOGY_FRET_UNIT_PX = 16;
-const TOPOLOGY_STRING_UNIT_PX = 20;
-const TOPOLOGY_STRING_ROW_PX = 36;
-
-function toTopologyVertices(
-  noteCoords: NormalizedChordConnectorVertex[],
-): ChordConnectorVertex[] {
-  return noteCoords.map(({ fretIndex, stringIndex }) => ({
-    x: fretIndex * TOPOLOGY_FRET_UNIT_PX,
-    y: stringIndex * TOPOLOGY_STRING_UNIT_PX,
-  }));
-}
+// (Topology pixel-scale shim removed 2026-05-27.)
+//
+// Conflict detection used to project voicings into a canonical pixel scale
+// (10 px/fret, 20 px/string, 36 px string row) and check `polylineDistance
+// ≤ 2 * baseRadius + gap`. That was screen-resolution-independent but
+// still depended on a chosen px ratio that had to be hand-calibrated to
+// match what users perceive as "overlap". It produced false positives on
+// close voicings spaced 3 frets apart on the same string set.
+//
+// The discrete truth is simpler: every voicing is N notes, one per string,
+// on N consecutive strings, so two voicings overlap visually iff they
+// share at least one (stringIndex, fretIndex) vertex — both polylines pass
+// through that exact dot, and their stroke bubbles touch there.
+//
+// Edge case the rule misses: two voicings on the same strings at adjacent
+// frets (e.g. parallel barres at frets 12 and 13). In practice the
+// close-voicing picker emits one best combo per fret anchor and dedupes
+// by canonical key, so this case does not surface from the generator.
 
 function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
   return combo.some((note) =>
@@ -254,40 +245,43 @@ function polylineDistance(
 }
 
 /**
- * Assign radius offsets using a centerline conflict graph. AABB clustering was
- * too coarse in some positions and too weak in dense same-fret stacks. The
- * graph is based on actual polyline distance and base effective radii, then a
- * deterministic greedy color pass selects the smallest available radius slot.
+ * Assign radius offsets using a discrete vertex-share conflict graph.
+ *
+ * Two voicings conflict iff they share at least one `(stringIndex, fretIndex)`
+ * coordinate — both polylines pass through that exact dot, so their stroke
+ * bubbles overlap there regardless of render scale. This is screen-resolution
+ * independent and needs no calibration constants.
+ *
+ * After building the graph, a deterministic greedy color pass (sorted by
+ * `canonicalKey`) assigns each voicing the smallest `OFFSET_BUCKET` value
+ * not already taken by any neighbor. Clusters of 3+ overlapping voicings
+ * exhaust the 2-color bucket — the third+ voicing wraps modulo and shares
+ * an offset with a neighbor (documented UX trade-off in `OFFSET_BUCKET`).
  */
 function assignConflictOffsets(
   pendingVoicings: ReadonlyArray<{
-    rawVertices: ChordConnectorVertex[];
     sourceCombo: NoteData[];
     canonicalKey: string;
     shape?: CagedShape;
   }>,
-  stringRowPx: number,
-  yBounds: ConnectorYBounds | undefined,
-  lowestStringIndex: number,
 ): Map<string, number> {
   const result = new Map<string, number>();
-  const conflicts = pendingVoicings.map(() => new Set<number>());
-  const baseRadii = pendingVoicings.map((pv) =>
-    resolveConnectorRadiusPx({
-      vertices: pv.rawVertices,
-      preferredRadius: computeChordConnectorRadiusPx(stringRowPx, 0),
-      yBounds,
-      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
-    }),
+  const vertexSets = pendingVoicings.map(
+    (pv) => new Set(pv.sourceCombo.map((n) => `${n.stringIndex}-${n.fretIndex}`)),
   );
+  const conflicts = pendingVoicings.map(() => new Set<number>());
 
   for (let i = 0; i < pendingVoicings.length; i++) {
     for (let j = i + 1; j < pendingVoicings.length; j++) {
-      const distance = polylineDistance(
-        pendingVoicings[i]!.rawVertices,
-        pendingVoicings[j]!.rawVertices,
-      );
-      if (distance <= baseRadii[i]! + baseRadii[j]! + CONNECTOR_CONFLICT_GAP_PX) {
+      const a = vertexSets[i]!;
+      const b = vertexSets[j]!;
+      let shares = false;
+      // Iterate the smaller set for early termination.
+      const [small, large] = a.size <= b.size ? [a, b] : [b, a];
+      for (const key of small) {
+        if (large.has(key)) { shares = true; break; }
+      }
+      if (shares) {
         conflicts[i]!.add(j);
         conflicts[j]!.add(i);
       }
@@ -543,25 +537,8 @@ export function buildPendingChordConnectorVoicings({
       };
     });
 
-    // Assign topology-level conflict offsets for explicit voicings.
-    let lowestStringIndex = 0;
-    for (const pv of pending) {
-      for (const nd of pv.sourceCombo) {
-        if (nd.stringIndex > lowestStringIndex) lowestStringIndex = nd.stringIndex;
-      }
-    }
-    const topoPending = pending.map((pv) => ({
-      rawVertices: toTopologyVertices(pv.noteCoords),
-      sourceCombo: pv.sourceCombo,
-      canonicalKey: pv.canonicalKey,
-      shape: pv.shape,
-    }));
-    const offsetMap = assignConflictOffsets(
-      topoPending,
-      TOPOLOGY_STRING_ROW_PX,
-      undefined,
-      lowestStringIndex,
-    );
+    // Vertex-share conflict offsets — no pixel math involved.
+    const offsetMap = assignConflictOffsets(pending);
     return pending.map((pv) => ({ ...pv, offsetPx: offsetMap.get(pv.canonicalKey) ?? 0 }));
   }
 
@@ -707,24 +684,8 @@ export function buildPendingChordConnectorVoicings({
 
   if (collected.length === 0) return [];
 
-  // Assign conflict offsets in topology space (stable across resizes).
-  let lowestStringIndex = 0;
-  for (const nd of noteData) {
-    if (nd.stringIndex > lowestStringIndex) lowestStringIndex = nd.stringIndex;
-  }
-  const topoPending = collected.map((pv) => ({
-    rawVertices: toTopologyVertices(pv.noteCoords),
-    sourceCombo: pv.sourceCombo,
-    canonicalKey: pv.canonicalKey,
-    shape: pv.shape,
-  }));
-  const offsetMap = assignConflictOffsets(
-    topoPending,
-    TOPOLOGY_STRING_ROW_PX,
-    undefined,
-    lowestStringIndex,
-  );
-
+  // Vertex-share conflict offsets — discrete, screen-independent.
+  const offsetMap = assignConflictOffsets(collected);
   return collected.map((pv) => ({ ...pv, offsetPx: offsetMap.get(pv.canonicalKey) ?? 0 }));
 }
 

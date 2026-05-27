@@ -633,23 +633,16 @@ describe("useChordConnectorPolylines", () => {
 });
 
 // -------------------------------------------------------------------------
-// Adjacency-aware offset assignment (plan 03-02; updated 2026-05-27)
+// Adjacency-aware offset assignment (updated 2026-05-27)
 //
-// assignConflictOffsets builds a centerline-conflict graph using polyline
-// distances in topology coords, then greedy-colors with OFFSET_BUCKET=[0,3].
-// Clusters of 3+ overlapping voicings wrap modulo — the third+ voicing
-// reuses an offset, producing a deliberate collision (see OFFSET_BUCKET
-// docstring for rationale).
+// assignConflictOffsets is now fully discrete: two voicings conflict iff
+// they share at least one (stringIndex, fretIndex) coordinate. No pixel
+// math, no calibration constants, no screen-size dependency. Greedy color
+// pass uses OFFSET_BUCKET=[0,3]; clusters of 3+ wrap modulo.
 //
-// Geometry parameters (used to derive overlap expectations):
-//   TOPOLOGY_FRET_UNIT_PX = 16   (calibrated so 3-fret gap = no conflict)
-//   TOPOLOGY_STRING_UNIT_PX = 20
-//   TOPOLOGY_STRING_ROW_PX = 36
-//   baseRadius = 36 * 0.42 ≈ 15.12 px
-//   conflict threshold = 2 * baseRadius + CONFLICT_GAP ≈ 31.7 px
-//
-// Two voicings on the same strings overlap automatically (segments touch).
-// "Far apart" = fret distance ≥ 3 frets on same strings (gap ≥ 48 px).
+// Overlap rules in this test file:
+//   "share a vertex" = conflict → get distinct offsets (2-color bucket).
+//   "share no vertex" = no conflict → both default radius (offset 0).
 // -------------------------------------------------------------------------
 
 describe("adjacency-aware offset assignment", () => {
