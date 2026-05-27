@@ -712,10 +712,16 @@ export const chordHighlightPositionsAtom = atom((get): Set<string> => {
     return memoizedHighlightSet(result);
   }
 
-  // close: snap-to-scale toggle is already applied inside closeCandidatesAllStringSetsAtom.
-  // Note highlights represent ALL close candidate positions across all strings, decoupled from the string-set filter.
   if (voicing === "close") {
-    return memoizedHighlightSet(get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys));
+    // Mirror the full branch: derive from visible (position-scoped) voicings
+    // so chord-tone highlights stay confined to the active CAGED/3NPS window.
+    const visibleMatches = get(visibleVoicingMatchesAtom);
+    const result = new Set(visibleMatches.flatMap((v) => v.positionKeys));
+    const { shapePolygons } = get(shapeDataAtom);
+    if (shapePolygons.length > 0) {
+      addChordTonesWithinPolygon(get, result, shapePolygons);
+    }
+    return memoizedHighlightSet(result);
   }
 
   // voicing === "off": if lock-to-scale is on, still highlight chord tones restricted to the pattern

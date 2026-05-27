@@ -541,14 +541,21 @@ describe("chordHighlightPositionsAtom", () => {
     expect(store.get(chordHighlightPositionsAtom)).toEqual(expected);
   });
 
-  it("voicing=close: returns the union of ALL closeCandidatesAllStringSetsAtom positionKeys (not just one)", () => {
+  it("voicing=close + no active position: returns the union of closeCandidatesAtom positionKeys", () => {
+    // After the Task 3 fix, chordHighlightPositionsAtom for close derives from
+    // visibleVoicingMatchesAtom (position-scoped). With no active position
+    // (fingeringPattern='none'), visible falls back to all voicingMatchesAtom
+    // matches = closeCandidatesAtom (the string-set-filtered candidates).
+    // Old behavior was whole-neck closeCandidatesAllStringSetsAtom — that was
+    // decoupled from position, leaking highlights across the whole neck.
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
       [progressionStepsAtom, progressionWith({ degree: "I" })],
       [voicingAtom, "close"],
+      [fingeringPatternAtom, "none"], // explicit: no position, no polygon filtering
     ]);
-    const candidates = store.get(closeCandidatesAllStringSetsAtom);
+    const candidates = store.get(closeCandidatesAtom);
     expect(candidates.length).toBeGreaterThan(1);
     const expected = new Set(candidates.flatMap((v) => v.positionKeys));
     const actual = store.get(chordHighlightPositionsAtom);
@@ -625,6 +632,41 @@ describe("chordHighlightPositionsAtom", () => {
     for (const key of outsidePositions) {
       expect(highlights.has(key)).toBe(true);
     }
+  });
+
+  it("highlights only in-polygon close voicings when CAGED shape is active", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })], // C major
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+      // Disable snap-to-scale so closeCandidatesAllStringSetsAtom spans the whole
+      // neck — without the fix, highlights will contain outside-polygon positions.
+      [chordSnapToScaleAtom, false],
+    ]);
+    const highlights = store.get(chordHighlightPositionsAtom);
+    const { shapePolygons } = store.get(shapeDataAtom);
+    // Use all shapePolygons (including truncated) to match isInAnyPolygon semantics
+    // used by addChordTonesWithinPolygon inside chordHighlightPositionsAtom.
+    expect(shapePolygons.length).toBeGreaterThan(0);
+    // Sanity: without the fix, closeCandidatesAllStringSetsAtom returns candidates
+    // across the whole neck (snap=false), so there will be positions outside the polygon.
+    const allCandidateKeys = new Set(
+      store.get(closeCandidatesAllStringSetsAtom).flatMap((v) => v.positionKeys),
+    );
+    // Use the same isInAnyPolygon check that addChordTonesWithinPolygon uses
+    const outsideKeys = [...allCandidateKeys].filter(
+      (key) => !isInAnyPolygon(key, shapePolygons),
+    );
+    // There must be whole-neck candidates that lie outside the active polygon
+    expect(outsideKeys.length).toBeGreaterThan(0);
+    // After fix: highlights must NOT contain any of those outside-polygon keys
+    for (const key of outsideKeys) {
+      expect(highlights.has(key)).toBe(false);
+    }
+    expect(highlights.size).toBeGreaterThan(0);
   });
 });
 
