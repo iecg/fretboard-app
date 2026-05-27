@@ -181,6 +181,28 @@
   border-radius: 50%;
 }
 
+/* Light-mode header chrome — warm divider tones instead of faceplate-divider dark navy */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .app-header-transport {
+  border-inline-start-color: rgb(133 124 108 / 0.25);
+}
+
+:global([data-theme="modern-light"]) .app-header-actions {
+  border-inline-start-color: rgb(133 124 108 / 0.25);
+}
+
+/* Brand icon tile: warm ORANGE rust hairline on cream */
+:global([data-theme="modern-light"]) .app-header-brand-icon {
+  border-color: rgb(177 67 27 / 0.28);
+  background: rgb(177 67 27 / 0.04);
+}
+
+/* Full-bleed warm hairline divider below the header */
+:global([data-theme="modern-light"]) .app-header {
+  border-bottom: 1px solid rgb(133 124 108 / 0.22);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 /* stylelint-disable-next-line selector-pseudo-class-no-unknown */
 .app-header-actions button :global(.icon) {
   width: 0.95rem;

@@ -17,6 +17,14 @@
   border-bottom: 1px solid var(--faceplate-divider);
 }
 
+/* Light-mode tab header: warm hairline divider, full-bleed via negative margin.
+   Reference palette: MUTE #857c6c. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .tabHeader {
+  border-bottom-color: rgb(133 124 108 / 0.30);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 .tabList {
   display: flex;
   gap: var(--space-1, 0.25rem);

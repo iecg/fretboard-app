@@ -84,7 +84,10 @@
 
   /* Shared note-role contract (light values — reference palette). */
   --note-label-on-color: #2a251d;           /* INK — dark warm brown on cream fills */
-  --note-label-on-color-stroke: rgba(255, 255, 255, 0.65); /* warm white halo on dark fills */
+  /* Light-mode stroke: subtle cream halo instead of heavy white.
+     On ORANGE/CYAN tinted fills the halo should be nearly invisible — use
+     a very faint warm-white that just softens the edge without washing out. */
+  --note-label-on-color-stroke: rgba(246, 242, 233, 0.50);
   --note-label-on-color-shadow: none;
   --note-role-tonic-fill: #b1431b;          /* ORANGE — reference palette */
   --note-role-root-fill: #9d3717;           /* ORANGE darkened slightly for chord-root distinction */
@@ -294,14 +297,15 @@
 
   /* Chord-tone connector palette — canonical Okabe-Ito 8-color palette.
      Identical across light and dark themes for consistent voicing identity.
-     A halo/casing stroke (--chord-connector-halo-*) provides the contrasting
-     edge that makes these colors readable against any wood background —
-     the palette itself is not modified for contrast. */
-  --chord-connector-fill-opacity: 0.40;
+     Light mode: lower fill-opacity (0.22 vs dark 0.15) because the warm tan
+     maple wood (#fbe6c6–#e0ab68) provides less contrast than rosewood, so
+     a moderate alpha keeps the connector readable without over-saturating.
+     Halo: warmer, slightly higher opacity to lift off the maple background. */
+  --chord-connector-fill-opacity: 0.22;
   --chord-connector-outline-width: 1.25px;
-  --chord-connector-outline-opacity: 0.85;
+  --chord-connector-outline-opacity: 0.80;
   --chord-connector-halo-width: 2px;
-  --chord-connector-halo-color: rgba(255, 255, 255, 0.45);
+  --chord-connector-halo-color: rgba(255, 255, 255, 0.55);
   --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
   --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
   --chord-connector-color-3: #999999; /* Okabe-Ito: gray */

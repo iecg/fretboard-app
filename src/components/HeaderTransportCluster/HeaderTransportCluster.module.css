@@ -27,13 +27,16 @@
   font-family: var(--font-sans);
 }
 
-/* Light-mode token flip — definition from borders, dimmer teal accent,
-   dark slate text on a pale readout surface. */
+/* Light-mode token flip — warm cream readout surface, CYAN teal accent,
+   INK-family text. Reference palette: PANEL #f6f2e9, CYAN #147088, INK #2a251d. */
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .cluster {
-  --track-bg-readout: #e3e8ed;
-  --track-text-dim: rgb(15 23 42 / 0.7);
-  --track-text-muted: rgb(15 23 42 / 0.42);
+  --track-accent: #147088;
+  --track-accent-dim: rgb(20 112 136 / 0.65);
+  --track-bg-readout: transparent;
+  --track-border: rgb(133 124 108 / 0.22);
+  --track-text-dim: rgb(42 37 29 / 0.75);
+  --track-text-muted: rgb(42 37 29 / 0.45);
 }
 
 :global([data-theme="modern-light"]) .digitBar {
@@ -46,6 +49,18 @@
 
 :global([data-theme="modern-light"]) .scalePrimary {
   text-shadow: none;
+}
+
+/* Position readout: no box chrome — inline label above value on cream bg */
+:global([data-theme="modern-light"]) .positionReadout {
+  border-color: transparent;
+  background: transparent;
+}
+
+/* Tempo + Scale readouts: minimal thin border, cream background */
+:global([data-theme="modern-light"]) .contextBox {
+  background: transparent;
+  border-color: var(--track-border);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 

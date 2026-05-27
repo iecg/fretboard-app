@@ -15,6 +15,21 @@
   transition: border-color 160ms ease;
 }
 
+/* Light-mode card: visible PANEL surface with warm thin border.
+   Reference palette: PANEL #f6f2e9, MUTE #857c6c, INK #2a251d. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .card {
+  background: var(--surface-card-top); /* PANEL #f6f2e9 */
+  border-color: rgb(133 124 108 / 0.28);
+  box-shadow: 0 1px 4px rgb(42 37 29 / 0.06);
+}
+
+:global([data-theme="modern-light"]) .cardHead {
+  background: rgb(250 248 243 / 0.80);
+  border-bottom-color: rgb(133 124 108 / 0.18);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 .cardName {
   font-family: var(--font-mono);
   font-size: 0.75rem;

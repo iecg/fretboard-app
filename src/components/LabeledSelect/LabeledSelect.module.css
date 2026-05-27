@@ -125,6 +125,17 @@
   box-shadow: var(--elevation-overlay);
 }
 
+/* Light-mode dropdown: cream float surface with warm border. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .labeled-select-content {
+  background:
+    radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
+    linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));
+  border-color: rgb(133 124 108 / 0.30);
+  box-shadow: 0 4px 12px rgb(42 37 29 / 0.10), 0 1px 4px rgb(42 37 29 / 0.06);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 .labeled-select-viewport {
   padding: 0.25rem;
 }

@@ -184,15 +184,13 @@
   fill: var(--note-label-on-color);
 }
 
-/* Light-mode chord-tone-in-scale and note-diatonic-chord white-label override (Fix B-1).
-   These roles use cream #fef3e2 fill that nearly vanishes against warm maple wood
-   (#fbe6c6 / #f1c38e — only ~20 RGB delta). The note circle becomes faint, making
-   a dark label appear to float on the wood background. White labels + dark stroke
-   match the key-tonic / chord-root treatment and provide consistent legibility. */
+/* Light-mode chord-tone-in-scale and note-diatonic-chord label override.
+   These roles use a CYAN-tinted cream fill (--fretboard-note-fill-chord-tone).
+   INK text + very faint halo stroke for legibility on the slightly-saturated fill. */
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
 :global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text {
-  stroke: rgb(0 0 0 / 0.45);
-  fill: #ffffff;
+  stroke: var(--note-label-on-color-stroke);
+  fill: var(--note-label-on-color);
 }
 
 /* Light-mode lens-emphasized labels — same white-on-amber treatment as tonic/chord-root. */

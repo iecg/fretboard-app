@@ -251,7 +251,7 @@
   min-width: 1.75rem;
   height: 1.75rem;
   padding: 0 0.5rem;
-  background-color: rgba(14, 165, 233, 0.15);
+  background-color: color-mix(in srgb, var(--faceplate-accent) 12%, transparent);
   border: 1.5px solid var(--faceplate-accent);
   border-radius: 6px;
   color: var(--faceplate-accent);
@@ -259,14 +259,14 @@
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  box-shadow: 0 0 10px rgba(14, 165, 233, 0.1);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--faceplate-accent) 14%, transparent);
 }
 
 .active-chord-label {
   font-family: var(--font-sans);
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--text-strong, #ffffff);
+  color: var(--text-main);
   letter-spacing: -0.01em;
 }
 
@@ -333,11 +333,11 @@
 }
 
 .pip.active-pip {
-  background-color: rgba(14, 165, 233, 0.1);
+  background-color: color-mix(in srgb, var(--faceplate-accent) 10%, transparent);
   border-color: var(--faceplate-accent);
   color: var(--faceplate-accent);
   font-weight: 700;
-  box-shadow: 0 0 8px rgba(14, 165, 233, 0.15);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--faceplate-accent) 18%, transparent);
 }
 
 /* Progression card header — tighter vertical padding than the default 10px */

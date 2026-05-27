@@ -14,6 +14,14 @@
   overflow: hidden;
 }
 
+/* Light-mode: cream BG, warm hairline divider. Reference palette: BG #ebebdc, MUTE #857c6c. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .status-bar {
+  background: rgb(235 235 220 / 0.60);
+  border-top-color: rgb(133 124 108 / 0.25);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 /* A run of dot-separated fields. The left run holds the reading context;
    the right run holds the session fields plus the version tag. */
 .group {

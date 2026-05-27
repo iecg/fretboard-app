@@ -56,87 +56,91 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .track {
-  --track-accent-dim: rgb(46 181 204 / 0.6);
-  --track-accent-faint: rgb(46 181 204 / 0.12);
-  --track-warm: #cc7a3d;
-  --track-warm-dim: rgb(204 122 61 / 0.6);
-  --track-warm-faint: rgb(204 122 61 / 0.12);
-  --track-bg-readout: #e3e8ed;
-  --track-text-dim: rgb(15 23 42 / 0.7);
-  --track-text-muted: rgb(15 23 42 / 0.42);
+  /* Reference palette: CYAN #147088, ORANGE #b1431b, INK #2a251d, MUTE #857c6c */
+  --track-accent: #147088;
+  --track-accent-dim: rgb(20 112 136 / 0.65);
+  --track-accent-faint: rgb(20 112 136 / 0.10);
+  --track-warm: #b1431b;
+  --track-warm-dim: rgb(177 67 27 / 0.65);
+  --track-warm-faint: rgb(177 67 27 / 0.10);
+  --track-bg-readout: transparent;
+  --track-text-dim: rgb(42 37 29 / 0.75);
+  --track-text-muted: rgb(42 37 29 / 0.45);
 }
 
-/* Ruler: darker ticks and baseline for definition on light surface */
+/* Ruler: warm INK-family ticks on cream surface. Reference palette: INK #2a251d. */
 :global([data-theme="modern-light"]) .ruler::after {
-  background: rgb(15 23 42 / 0.1);
+  background: rgb(42 37 29 / 0.10);
 }
 
 :global([data-theme="modern-light"]) .rulerBarTick {
-  background: rgb(15 23 42 / 0.2);
+  background: rgb(42 37 29 / 0.22);
 }
 
 :global([data-theme="modern-light"]) .rulerTick {
-  background: rgb(15 23 42 / 0.08);
+  background: rgb(42 37 29 / 0.08);
 }
 
 :global([data-theme="modern-light"]) .rulerTick--beat {
-  background: rgb(15 23 42 / 0.15);
+  background: rgb(42 37 29 / 0.15);
 }
 
-/* Chord blocks: crisp borders on pale surface */
+/* Chord blocks: warm INK-family borders on PANEL cream surface.
+   Reference palette: INK #2a251d, MUTE #857c6c, PANEL #f6f2e9, ORANGE #b1431b. */
 :global([data-theme="modern-light"]) .block {
-  --block-border: rgb(15 23 42 / 0.1);
-  --block-bg: rgb(255 255 255 / 0.45);
-  --block-fg: rgb(15 23 42 / 0.6);
-  --block-name-fg: rgb(15 23 42 / 0.85);
-  --block-badge-fg: rgb(15 23 42 / 0.5);
+  --block-border: rgb(133 124 108 / 0.28);
+  --block-bg: rgb(246 242 233 / 0.70);
+  --block-fg: rgb(42 37 29 / 0.65);
+  --block-name-fg: rgb(42 37 29 / 0.88);
+  --block-badge-fg: rgb(133 124 108 / 0.80);
 }
 
 :global([data-theme="modern-light"]) .block:hover:not([data-active="true"]) {
-  --block-border: rgb(15 23 42 / 0.18);
-  --block-bg: rgb(255 255 255 / 0.65);
+  --block-border: rgb(133 124 108 / 0.45);
+  --block-bg: rgb(250 248 243 / 0.85);
 }
 
 :global([data-theme="modern-light"]) .block:focus-visible {
-  --block-border: #2EB5CC;
-  box-shadow: 0 0 0 1px #2EB5CC, 0 0 6px rgb(46 181 204 / 0.2);
+  --block-border: #147088;
+  box-shadow: 0 0 0 1px #147088, 0 0 6px rgb(20 112 136 / 0.18);
 }
 
+/* Active block: ORANGE rust tint — reference palette */
 :global([data-theme="modern-light"]) .block[data-active="true"] {
-  --block-border: rgb(204 122 61 / 0.5);
-  --block-bg: rgb(255 180 120 / 0.14);
-  --block-fg: rgb(140 70 20 / 0.85);
-  --block-name-fg: rgb(120 55 10 / 0.92);
-  --block-badge-fg: #cc7a3d;
+  --block-border: rgb(177 67 27 / 0.45);
+  --block-bg: rgb(177 67 27 / 0.08);
+  --block-fg: rgb(140 55 20 / 0.88);
+  --block-name-fg: rgb(100 38 12 / 0.95);
+  --block-badge-fg: #b1431b;
 
-  border-color: rgb(204 122 61 / 0.5);
+  border-color: rgb(177 67 27 / 0.45);
   box-shadow:
-    inset 0 0 16px rgb(204 122 61 / 0.08),
-    0 2px 8px rgb(204 122 61 / 0.1);
+    inset 0 0 16px rgb(177 67 27 / 0.06),
+    0 2px 8px rgb(177 67 27 / 0.08);
 }
 
 :global([data-theme="modern-light"]) .block[data-active="true"] .degreeBadge {
-  border-color: rgb(204 122 61 / 0.45);
-  background: rgb(204 122 61 / 0.08);
+  border-color: rgb(177 67 27 / 0.38);
+  background: rgb(177 67 27 / 0.07);
 }
 
 :global([data-theme="modern-light"]) .block[data-active="true"] .duration {
-  color: rgb(140 70 20 / 0.6);
+  color: rgb(140 55 20 / 0.55);
 }
 
 :global([data-theme="modern-light"]) .degreeBadge {
-  background: rgb(255 255 255 / 0.5);
+  background: rgb(246 242 233 / 0.60);
 }
 
-/* Playhead: solid teal with soft shadow instead of neon glow */
+/* Playhead: CYAN #147088 with soft warm shadow */
 :global([data-theme="modern-light"]) .playheadArrow {
-  background: #2EB5CC;
-  filter: drop-shadow(0 0 2px rgb(46 181 204 / 0.4));
+  background: #147088;
+  filter: drop-shadow(0 0 2px rgb(20 112 136 / 0.35));
 }
 
 :global([data-theme="modern-light"]) .playheadLine {
-  background: linear-gradient(180deg, #2EB5CC 0%, rgb(46 181 204 / 0.5) 100%);
-  box-shadow: 0 0 4px rgb(46 181 204 / 0.35);
+  background: linear-gradient(180deg, #147088 0%, rgb(20 112 136 / 0.45) 100%);
+  box-shadow: 0 0 4px rgb(20 112 136 / 0.28);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
