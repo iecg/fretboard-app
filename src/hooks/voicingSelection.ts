@@ -144,7 +144,11 @@ export function scoreFullChordForThreeNpsPosition(
     totalOutside += distance;
     if (distance > maxOutside) maxOutside = distance;
   }
-  if (outsideCount > 2) return null;
+  // 3NPS uses a tighter tolerance than CAGED (which allows ≤2 outside): a
+  // single "reach" note past the pattern is tolerated, but two or more pushes
+  // the voicing far enough off the diagonal to no longer belong to this
+  // position. See docs/superpowers/plans/2026-05-26-voicing-and-layout-fixes-followups.md.
+  if (outsideCount > 1) return null;
   return {
     match,
     outsideCount,

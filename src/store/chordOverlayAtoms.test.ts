@@ -702,13 +702,13 @@ describe("visibleVoicingMatchesAtom", () => {
     const visible = store.get(visibleVoicingMatchesAtom);
     const { highlightNotes } = store.get(shapeDataAtom);
     const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
-    // Every visible voicing has at most 2 notes outside the diagonal pattern
-    // (per scoreFullChordForThreeNpsPosition tolerance).
+    // Every visible voicing has at most 1 note outside the diagonal pattern
+    // (per scoreFullChordForThreeNpsPosition tighter 3NPS tolerance).
     for (const v of visible) {
       const outsideCount = v.notes.filter(
         (n) => !patternSet.has(`${n.stringIndex}-${n.fretIndex}`),
       ).length;
-      expect(outsideCount).toBeLessThanOrEqual(2);
+      expect(outsideCount).toBeLessThanOrEqual(1);
     }
     // Visible is scoped (≤ all candidates).
     expect(visible.length).toBeLessThanOrEqual(all.length);
@@ -750,13 +750,13 @@ describe("visibleVoicingMatchesAtom", () => {
     const visible = store.get(visibleVoicingMatchesAtom);
     const { highlightNotes } = store.get(shapeDataAtom);
     const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
-    // Every visible voicing has outsideCount <= 2 vs the diagonal 3NPS pattern
-    // (per scoreFullChordForThreeNpsPosition tolerance — diagonal-aware).
+    // Every visible voicing has outsideCount <= 1 vs the diagonal 3NPS pattern
+    // (per scoreFullChordForThreeNpsPosition tighter 3NPS tolerance — diagonal-aware).
     for (const v of visible) {
       const outsideCount = v.notes.filter(
         (n) => !patternSet.has(`${n.stringIndex}-${n.fretIndex}`),
       ).length;
-      expect(outsideCount).toBeLessThanOrEqual(2);
+      expect(outsideCount).toBeLessThanOrEqual(1);
     }
   });
 
@@ -1337,12 +1337,12 @@ describe("3NPS voicing filter uses per-string-fret pattern membership (diagonal-
     const visible = store.get(visibleVoicingMatchesAtom);
     const { highlightNotes } = store.get(shapeDataAtom);
     const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
-    // Full tolerance: every visible voicing has at most 2 notes outside the pattern.
+    // 3NPS full tolerance: every visible voicing has at most 1 note outside the pattern.
     for (const v of visible) {
       const outside = v.notes.filter(
         (n) => !patternSet.has(`${n.stringIndex}-${n.fretIndex}`),
       ).length;
-      expect(outside).toBeLessThanOrEqual(2);
+      expect(outside).toBeLessThanOrEqual(1);
     }
   });
 
