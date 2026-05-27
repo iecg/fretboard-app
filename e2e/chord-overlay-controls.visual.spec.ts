@@ -1,9 +1,9 @@
 /**
  * Visual regression tests for the ChordOverlayControls panel.
  *
- * After Plan D (v2.0 inspector cleanup), ChordOverlayControls renders only the
- * Voicing group (dropdown + Practice lens toggle + optional ClosePositionCycle).
- * The former Chord Type toggle bar was removed in D2.
+ * After lens consolidation (commit e5d2f2ea), ChordOverlayControls renders only
+ * the Voicing group (dropdown + optional ChordStringSetPicker).
+ * The Practice lens toggle row and the former Chord Type toggle bar were removed.
  *
  * Covers:
  *   1. Desktop dark  — 1280x900, manual mode, Major Triad active
@@ -31,14 +31,8 @@ test.describe("Chord Overlay Controls Visual", () => {
     // ChordOverlayControls lives in the Inspector's Overlay tab.
     await page.getByRole("tab", { name: "Overlay" }).click();
 
-    // Wait for the Practice lens toggle (role=group) to be visible — this
-    // confirms ChordOverlayControls is fully mounted after D2 cleanup.
-    await page
-      .getByRole("group", { name: "Practice lens" })
-      .first()
-      .waitFor({ state: "visible" });
-
-    // Verify the Voicing dropdown is present.
+    // Wait for the Voicing dropdown — confirms ChordOverlayControls is fully
+    // mounted. (Practice lens row was removed in lens consolidation e5d2f2ea.)
     await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
@@ -62,11 +56,6 @@ test.describe("Chord Overlay Controls Visual", () => {
 
     await page.getByRole("tab", { name: "Overlay" }).click();
 
-    await page
-      .getByRole("group", { name: "Practice lens" })
-      .first()
-      .waitFor({ state: "visible" });
-
     await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
@@ -89,12 +78,8 @@ test.describe("Chord Overlay Controls Visual", () => {
     // Activate the Overlay tab so ChordOverlayControls is visible.
     await page.getByRole("tab", { name: "Overlay" }).click();
 
-    // Wait for the Practice lens toggle to confirm the panel is mounted.
-    await page
-      .getByRole("group", { name: "Practice lens" })
-      .first()
-      .waitFor({ state: "visible" });
-
+    // Wait for the Voicing dropdown to confirm the panel is mounted.
+    // (Practice lens row was removed in lens consolidation e5d2f2ea.)
     await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
