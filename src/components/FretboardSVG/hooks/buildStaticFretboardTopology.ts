@@ -40,6 +40,7 @@ export interface UseStaticFretboardTopologyProps {
   chordTones: string[];
   rootNote: string;
   chordRoot?: string;
+  chordType?: string;  // chord quality, e.g. "M", "m", "7", "maj7", "m7"
   colorNotes: string[];
   shapePolygons: ShapePolygon[];
   chordFretSpread: number;
