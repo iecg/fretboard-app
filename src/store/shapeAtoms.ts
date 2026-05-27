@@ -201,7 +201,7 @@ export const autoCenterTargetAtom = atom((get) => {
   if (fingeringPattern === "caged" && shapePolygons.length > 0) {
     if (clickedShape) {
       const clickedPoly = shapePolygons.find((p) => p.shape === clickedShape);
-      if (clickedPoly && !clickedPoly.truncated) {
+      if (clickedPoly) {
         target = {
           centerFret: getShapeCenterFret(clickedPoly),
           minFret: clickedPoly.intendedMin,

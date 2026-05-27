@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { shapeDataAtom } from "./shapeAtoms";
+import { shapeDataAtom, autoCenterTargetAtom } from "./shapeAtoms";
 import {
   fingeringPatternAtom,
   oneStringIndexAtom,
   oneStringIntervalAtom,
   twoStringsPairAtom,
   twoStringsIntervalAtom,
+  clickedShapeAtom,
 } from "./fingeringAtoms";
 import { rootNoteAtom, scaleContextAtom, scaleNameAtom } from "./scaleAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
@@ -348,5 +349,22 @@ describe("shapeDataAtom — CAGED scale shape remapping under minor active chord
     // At rootFret=0 (first A), it covers frets 0 to 3
     expect(poly.intendedMin).toBe(-1);
     expect(poly.intendedMax).toBe(3);
+  });
+});
+
+describe("autoCenterTargetAtom", () => {
+  it("autoCenterTargetAtom returns the target center for clicked shapes even if they are truncated", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set(["D"])],
+      [rootNoteAtom, "C#"],
+      [scaleNameAtom, "major"],
+      [clickedShapeAtom, "D"],
+    ]);
+
+    // Force D shape polygon to be truncated by mapping visible range
+    const target = store.get(autoCenterTargetAtom);
+    expect(target).toBeDefined();
+    expect(target?.minFret).toBe(-2); // Intended range min relative to anchor
   });
 });
