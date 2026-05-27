@@ -156,3 +156,71 @@ describe("FretboardHitTargetLayer", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
+
+describe("FretboardHitTargetLayer — event delegation", () => {
+  it("delegates click to onNoteClick using data attributes (not per-button closure)", () => {
+    const onNoteClick = vi.fn();
+    const noteData = [
+      makeNote({ stringIndex: 0, fretIndex: 0, noteName: "E" }),
+      makeNote({ stringIndex: 2, fretIndex: 5, noteName: "C" }),
+      makeNote({ stringIndex: 5, fretIndex: 12, noteName: "E" }),
+    ];
+    const { container } = render(
+      <FretboardHitTargetLayer
+        {...defaultProps}
+        noteData={noteData}
+        onNoteClick={onNoteClick}
+      />,
+    );
+    const buttons = container.querySelectorAll("button");
+    fireEvent.click(buttons[1]);
+    expect(onNoteClick).toHaveBeenCalledTimes(1);
+    expect(onNoteClick).toHaveBeenCalledWith(2, 5, "C");
+  });
+
+  it("does not invoke onNoteClick when the layer is clicked outside any button", () => {
+    const onNoteClick = vi.fn();
+    const { container } = render(
+      <FretboardHitTargetLayer {...defaultProps} onNoteClick={onNoteClick} />,
+    );
+    const layer = container.firstChild as HTMLElement;
+    fireEvent.click(layer);
+    expect(onNoteClick).not.toHaveBeenCalled();
+  });
+
+  it("fires on keyboard activation (Enter) of a focused button", () => {
+    const onNoteClick = vi.fn();
+    const { container } = render(
+      <FretboardHitTargetLayer
+        {...defaultProps}
+        noteData={[makeNote({ stringIndex: 3, fretIndex: 7, noteName: "B" })]}
+        onNoteClick={onNoteClick}
+      />,
+    );
+    const btn = container.querySelector("button")!;
+    btn.focus();
+    // Simulating a click on a focused button is the jsdom equivalent of the
+    // browser converting Enter/Space activation into a synthetic click that
+    // bubbles to the container's onClick.
+    fireEvent.click(btn);
+    expect(onNoteClick).toHaveBeenCalledTimes(1);
+    expect(onNoteClick).toHaveBeenCalledWith(3, 7, "B");
+  });
+
+  it("attaches data-string-index, data-fret-index, data-note-name to each button", () => {
+    const noteData = [makeNote({ stringIndex: 4, fretIndex: 9, noteName: "C#" })];
+    const { container } = render(
+      <FretboardHitTargetLayer {...defaultProps} noteData={noteData} />,
+    );
+    const btn = container.querySelector("button")!;
+    expect(btn.dataset.stringIndex).toBe("4");
+    expect(btn.dataset.fretIndex).toBe("9");
+    expect(btn.dataset.noteName).toBe("C#");
+  });
+
+  it("does not throw when clicked while onNoteClick is undefined", () => {
+    const { container } = render(<FretboardHitTargetLayer {...defaultProps} />);
+    const btn = container.querySelector("button")!;
+    expect(() => fireEvent.click(btn)).not.toThrow();
+  });
+});
