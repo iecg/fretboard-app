@@ -228,12 +228,12 @@ describe("FretboardSVG/FretboardSVG", () => {
       .sort();
 
     expect(chordRoleLabels).toEqual([
-      "C on string 1, fret 8",
-      "C on string 4, fret 10",
-      "C on string 6, fret 8",
-      "E on string 3, fret 9",
-      "G on string 2, fret 8",
-      "G on string 5, fret 10",
+      "C on string 1, fret 8, root",
+      "C on string 4, fret 10, root",
+      "C on string 6, fret 8, root",
+      "E on string 3, fret 9, chord tone",
+      "G on string 2, fret 8, chord tone",
+      "G on string 5, fret 10, chord tone",
     ]);
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
