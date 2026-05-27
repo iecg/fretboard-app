@@ -750,7 +750,8 @@ export const chordLookupTypeAtom = selectAtom(
 
 /** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
 export const chordShortLabelAtom = atom((get) => {
-  const { chordRoot, chordType } = get(chordLookupAtom);
+  const chordRoot = get(chordLookupRootAtom);
+  const chordType = get(chordLookupTypeAtom);
   const preferFlats = get(preferFlatsAtom);
   if (!chordType) return null;
   const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, preferFlats));
