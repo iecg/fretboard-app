@@ -91,9 +91,9 @@ src/
 2. Orchestrator merges adjacent boundaries with buffer.
 3. `FretboardSVG.tsx` renders pixel SVG polygons; `useChordConnectorPolylines` draws the connector polylines linking voicing notes.
 
-## Lens & Note Roles
+## Note Roles
 
-Notes carry a semantic role (`root-active`, `chord-tone`, `note-blue`, `note-active`, `note-scale-only`, `chord-outside`, `note-inactive`). **Lenses** (registered in `src/store/practiceLensAtoms.ts` + `chordOverlayAtoms.ts`) compose emphasis rules (colors, squircles, tension cues) on top of that base model. **Scale and chord are independent domains** — do not cross-wire their visibility, lens, or color state.
+Notes carry a semantic role (`root-active`, `chord-tone`, `note-blue`, `note-active`, `note-scale-only`, `chord-outside`, `note-inactive`). The **emphasis layer** in `src/components/FretboardSVG/utils/semantics.ts#getEmphasis` adds voice-leading cues (anticipation, hold, departing) when a progression is active, falling back to guide-tone emphasis when there's no progression. **Scale and chord are independent domains** — do not cross-wire their visibility or color state.
 
 ## Testing
 

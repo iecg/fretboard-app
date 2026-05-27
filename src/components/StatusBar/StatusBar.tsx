@@ -1,7 +1,6 @@
 import { useAtomValue } from "jotai";
-import { CAGED_SHAPES, LENS_REGISTRY } from "@fretflow/core";
-import type { PracticeLens } from "@fretflow/core";
-import { chordShortLabelAtom, practiceLensAtom } from "../../store/chordOverlayAtoms";
+import { CAGED_SHAPES } from "@fretflow/core";
+import { chordShortLabelAtom } from "../../store/chordOverlayAtoms";
 import { activeChordCachedDegreeAtom } from "../../store/songStateAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import type { FingeringPattern } from "../../store/fingeringAtoms";
@@ -23,14 +22,6 @@ const PATTERN_LABELS: Record<FingeringPattern, string> = {
   "two-strings": "Two Strings",
 };
 
-/** Compact lens labels — the strip mirrors the Chord tab's short forms.
- * The `satisfies` clause makes a new lens added to `LENS_REGISTRY` without
- * a label fail to compile. */
-const LENS_SHORT_LABELS = {
-  tones: "Tones",
-  lead: "Lead",
-} satisfies Partial<Record<PracticeLens, string>>;
-
 interface StatusField {
   id: string;
   label: string;
@@ -39,7 +30,7 @@ interface StatusField {
 
 /**
  * The DAW shell's bottom status bar — a single-line mono strip. Reading fields
- * (Key / Chord / Lens / Pattern / Frets) sit flush-left; the session fields
+ * (Key / Chord / Pattern / Frets) sit flush-left; the session fields
  * (Tempo / Tuning) and the version tag are pushed flush-right. A pure read-out:
  * it subscribes to existing atoms and never writes. Mounted by
  * `MainLayoutWrapper` on the desktop and tablet tiers.
@@ -49,7 +40,6 @@ export function StatusBar() {
   const scaleLabel = useAtomValue(scaleLabelAtom);
   const chordShortLabel = useAtomValue(chordShortLabelAtom);
   const chordDegree = useAtomValue(activeChordCachedDegreeAtom);
-  const lens = useAtomValue(practiceLensAtom);
   const pattern = useAtomValue(fingeringPatternAtom);
   const cagedShapes = useAtomValue(cagedShapesAtom);
   const fretStart = useAtomValue(fretStartAtom);
@@ -58,11 +48,6 @@ export function StatusBar() {
   const totalBars = useAtomValue(totalProgressionBarsAtom);
   const steps = useAtomValue(progressionStepsAtom);
   const tuningName = useAtomValue(tuningNameAtom);
-
-  const lensLabel =
-    LENS_SHORT_LABELS[lens] ??
-    LENS_REGISTRY.find((e) => e.id === lens)?.label ??
-    EMPTY;
 
   const chordValue = chordShortLabel
     ? chordDegree
@@ -78,7 +63,6 @@ export function StatusBar() {
   const leftFields: ReadonlyArray<StatusField> = [
     { id: "key", label: t("statusBar.key"), value: scaleLabel || EMPTY },
     { id: "chord", label: t("statusBar.chord"), value: chordValue },
-    { id: "lens", label: t("statusBar.lens"), value: lensLabel },
     { id: "pattern", label: t("statusBar.pattern"), value: patternValue },
     { id: "frets", label: t("statusBar.frets"), value: `${fretStart}–${fretEnd}` },
   ];

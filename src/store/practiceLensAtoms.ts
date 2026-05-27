@@ -3,8 +3,6 @@ import {
   NOTES,
   ENHARMONICS,
   INTERVAL_NAMES,
-
-  LENS_REGISTRY,
   CHORD_DEFINITIONS,
   getNoteDisplay,
   formatAccidental,
@@ -13,12 +11,10 @@ import {
 } from "@fretflow/core";
 import type {
   ChordMemberName,
-  LensAvailabilityContext,
   NoteSemantics,
   PracticeCue,
   PracticeCueNote,
   ChordRowEntry,
-
 } from "@fretflow/core";
 import { type DegreeId } from "@fretflow/core";
 import {
@@ -28,7 +24,6 @@ import {
 } from "./scaleAtoms";
 import {
   chordLookupAtom,
-  practiceLensAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
   fullChordsEnabledAtom,
@@ -48,7 +43,6 @@ import {
   MIN_PROGRESSION_TEMPO_BPM,
 } from "../progressions/progressionDomain";
 import {
-  hasOutsideChordMembersAtom,
   allChordMembersAtom,
 } from "./composableSelectors";
 
@@ -101,7 +95,6 @@ function memoizeNoteSemanticMap(next: Map<string, NoteSemantics>): Map<string, N
 
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
-const GUIDE_TONE_FORMATTED = new Set(["♭3", "3", "♭7", "7"]);
 
 /**
  * Finds nearest in-scale resolution (≤2 semitones, step-up preferred).
@@ -157,56 +150,6 @@ const cueBaseInputsAtom = atom((get) => {
   };
 });
 
-const guideTonesCuesAtom = atom((get) => {
-  const base = get(cueBaseInputsAtom);
-  if (!base) return [] as PracticeCue[];
-  const cues: PracticeCue[] = [];
-  if (base.allChordMembers.length > 0) {
-    cues.push(buildLandOnCue(base.allChordMembers));
-  }
-  const guideNotes = base.allChordMembers.filter((e) =>
-    GUIDE_TONE_FORMATTED.has(e.memberName),
-  );
-  if (guideNotes.length > 0) {
-    cues.push({
-      kind: "guide-tones",
-      label: "Guide tones",
-      notes: guideNotes.map((e) => ({
-        ...toCueNote(e),
-        role: "guide-tone" as const,
-      })),
-    });
-  }
-  return cues;
-});
-
-const tensionCuesAtom = atom((get) => {
-  const base = get(cueBaseInputsAtom);
-  if (!base) return [] as PracticeCue[];
-  const { allChordMembers, chordRoot, preferFlats, scaleNotes } = base;
-
-  const displayNote = (note: string) =>
-    formatAccidental(getNoteDisplay(note, chordRoot, preferFlats));
-
-  const cues: PracticeCue[] = [];
-  if (allChordMembers.length > 0) {
-    cues.push(buildLandOnCue(allChordMembers));
-  }
-  const tensionMembers = allChordMembers.filter((e) => !e.inScale);
-  if (tensionMembers.length > 0) {
-    const tensionNotes = tensionMembers.map((e) => ({
-      ...toCueNote(e),
-      role: "chord-tone-outside-scale" as const,
-      resolvesTo: findNearestScaleResolution(e.internalNote, scaleNotes, displayNote),
-    }));
-    cues.push({
-      kind: "tension",
-      label: "Tension",
-      notes: tensionNotes,
-    });
-  }
-  return cues;
-});
 
 /** Gathers chord-specific inputs. Returns null when there is no active chord or the overlay is hidden. */
 const chordSemanticInputsAtom = atom((get) => {
@@ -325,57 +268,44 @@ export const noteSemanticMapAtom = atom((get) => {
 /**
  * Derives the ordered coaching cues rendered in the practice bar.
  *
- * Inputs (read via `get`): the active practice lens (`practiceLensAtom`),
- * chord root/type, scale name, and the chord-row catalog.
+ * Inputs (read via `get`): chord root/type, scale name, and the chord-row
+ * catalog. Emits "Land on" + "Tension" cues (chord notes that fall outside
+ * the active scale, with nearest-in-scale resolution targets).
  *
  * Output: `PracticeCue[]` ordered for left-to-right display. Returns `[]`
  * when no chord is active.
  *
- * See the "Lens & Note Roles" section in `CLAUDE.md` for how cues compose
- * with the base note-role model.
+ * See the "Note Roles" section in `CLAUDE.md` for how cues compose with the
+ * base note-role model.
  */
 export const practiceCuesAtom = atom((get) => {
-  const practiceLens = get(practiceLensAtom);
-  // Temporary bridge: "tones" uses combined targets+guide-tones behavior;
-  // "lead" uses the old tension behavior. This keeps the suite green while
-  // the lens enum rename is complete.
-  switch (practiceLens) {
-    case "tones": return get(guideTonesCuesAtom);
-    case "lead": return get(tensionCuesAtom);
-    default: return [] as PracticeCue[];
+  const base = get(cueBaseInputsAtom);
+  if (!base) return [] as PracticeCue[];
+  const { allChordMembers, chordRoot, preferFlats, scaleNotes } = base;
+
+  const displayNote = (note: string) =>
+    formatAccidental(getNoteDisplay(note, chordRoot, preferFlats));
+
+  const cues: PracticeCue[] = [];
+  if (allChordMembers.length > 0) {
+    cues.push(buildLandOnCue(allChordMembers));
   }
+  const tensionMembers = allChordMembers.filter((e) => !e.inScale);
+  if (tensionMembers.length > 0) {
+    const tensionNotes = tensionMembers.map((e) => ({
+      ...toCueNote(e),
+      role: "chord-tone-outside-scale" as const,
+      resolvesTo: findNearestScaleResolution(e.internalNote, scaleNotes, displayNote),
+    }));
+    cues.push({
+      kind: "tension",
+      label: "Tension",
+      notes: tensionNotes,
+    });
+  }
+  return cues;
 });
 
-
-/**
- * Context inputs for LENS_REGISTRY predicates.
- */
-export const lensAvailabilityContextAtom = atom((get): LensAvailabilityContext => {
-  const { chordType, chordMembers } = get(chordLookupAtom);
-  const colorNotes = get(colorNotesAtom);
-  const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
-
-  return {
-    hasChordOverlay: !!chordType,
-    hasGuideTones: chordMembers.some((m) => GUIDE_TONE_RAW.has(m.name)),
-    hasColorNotes: colorNotes.length > 0,
-    hasOutsideTones: hasOutsideChordMembers,
-  };
-});
-
-/**
- * Resolved list of lenses with availability and reasons.
- */
-export const lensAvailabilityAtom = atom((get) => {
-  const ctx = get(lensAvailabilityContextAtom);
-  return LENS_REGISTRY.map((entry) => ({
-    id: entry.id,
-    label: entry.label,
-    description: entry.description,
-    available: entry.isAvailable(ctx),
-    reason: entry.unavailableReason(ctx),
-  }));
-});
 
 /**
  * Pitch-class set of the chord at the step *after* the active progression step.

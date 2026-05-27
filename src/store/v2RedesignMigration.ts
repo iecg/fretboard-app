@@ -16,6 +16,7 @@ type V2Voicing = "off" | "full" | "close";
  *   - voicingStringSet       (voicingStringSetAtom)
  *   - voicingConnectors      (voicingConnectorsAtom)
  *   - voicingSectionExpanded (voicingSectionExpandedAtom)
+ *   - practiceLens           (practiceLensAtom — Lens Consolidation)
  *
  * Migration mapping (v1 → v2 `voicing`):
  *   - voicingConnectors === false  → "off"          (precedence: connectors-off wins)
@@ -54,6 +55,7 @@ export function runV2RedesignMigration(): void {
       k("voicingStringSet"),
       k("voicingConnectors"),
       k("voicingSectionExpanded"),
+      k("practiceLens"),
     ];
     for (const key of KEYS_TO_RETIRE) {
       localStorage.removeItem(key);

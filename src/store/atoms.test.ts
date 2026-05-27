@@ -5,7 +5,7 @@ import { RESET } from "jotai/utils";
 import { k } from "../test-utils/storage";
 import { setRootNoteAtom, setScaleNameAtom, setFingeringPatternAtom, resetAtom } from "./actions";
 import { isMutedAtom } from "./audioAtoms";
-import { chordRootAtom, chordTypeAtom, linkChordRootAtom, practiceLensAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
+import { chordRootAtom, chordTypeAtom, linkChordRootAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
 import { updateActiveChordAtom, activeChordCachedDegreeAtom } from "./songStateAtoms";
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
 import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
@@ -304,7 +304,6 @@ describe("atoms", () => {
       store.set(fretZoomAtom, 200);
       store.set(displayFormatAtom, "degrees");
       store.set(linkChordRootAtom, false);
-      store.set(practiceLensAtom, "tones");
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
       store.set(tuningNameAtom, "Drop D");

@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import {
-  type PracticeLens,
   type NoteSemantics,
 } from "@fretflow/core";
 import type { ShapePolygon, CagedShape } from "@fretflow/core";
@@ -55,7 +54,6 @@ export interface UseNoteDataProps {
   displayFormat?: UseStaticFretboardTopologyProps["displayFormat"];
   degreeColorsEnabled?: UseStaticFretboardTopologyProps["degreeColorsEnabled"];
   wrappedNotes: UseStaticFretboardTopologyProps["wrappedNotes"];
-  practiceLens?: PracticeLens;
   tuning: UseStaticFretboardTopologyProps["tuning"];
   noteSemantics?: Map<string, NoteSemantics>;
   fullChordPositionKeys?: Set<string>;
@@ -91,7 +89,6 @@ export function useNoteData({
   displayFormat,
   degreeColorsEnabled,
   wrappedNotes,
-  practiceLens,
   tuning,
   noteSemantics,
   fullChordPositionKeys,
@@ -132,7 +129,6 @@ export function useNoteData({
   return useMemo(() => buildAnimatedFretboardNotes({
     topology,
     hasChordOverlay,
-    practiceLens,
     leadLensSnapshot: leadLensData,
-  }), [topology, hasChordOverlay, practiceLens, leadLensData]);
+  }), [topology, hasChordOverlay, leadLensData]);
 }

@@ -1,4 +1,4 @@
-import type { PracticeLens, NoteSemantics } from "@fretflow/core";
+import type { NoteSemantics } from "@fretflow/core";
 import {
   RADIUS_SCALE_KEY_TONIC,
   RADIUS_SCALE_CHORD_ROOT,
@@ -17,10 +17,10 @@ export type LensEmphasis = {
 };
 
 /**
- * Per-note context for the Lead lens. Built once per render in `useNoteData`
- * (from atoms read at the top of the hook) and passed per-note into
- * `getLensEmphasis`. All fields use the sharps-convention pitch classes that
- * FretFlow stores internally (C#, D#, …).
+ * Per-note context for voice-leading emphasis. Built once per render in
+ * `useAnimatedFretboardView` and passed per-note into `getEmphasis`. All
+ * fields use the sharps-convention pitch classes that FretFlow stores
+ * internally (C#, D#, …).
  */
 export type LeadLensContext = {
   /** Pitch class of the note being classified. */
@@ -63,77 +63,57 @@ function applyTonesBase(
   return { radiusBoost: 1, opacityBoost: 1 };
 }
 
-export function getLensEmphasis(
+export function getEmphasis(
   noteClass: string,
-  practiceLens: PracticeLens | undefined,
   isGuideTone: boolean,
   leadContext?: LeadLensContext,
 ): LensEmphasis {
-  const defaultEmphasis: LensEmphasis = { radiusBoost: 1, opacityBoost: 1 };
-
-  if (!practiceLens) return defaultEmphasis;
-
-  switch (practiceLens) {
-    case "tones":
-      return applyTonesBase(noteClass, isGuideTone);
-
-    case "lead": {
-      // Lead lens: voice-leading emphasis based on how the current note relates
-      // to the upcoming chord change. Priority order (highest → lowest):
-      //   1. Anticipation — next chord's guide tone in the last beat window
-      //      (fires even on notes not in the current chord)
-      //   2. Hold — current chord tone that carries into the next chord
-      //   3. Departing — current chord tone that resolves away on the change
-      //   4. Tones base — inherited behavior for all other notes
-      //
-      // When leadContext is not provided (e.g. call sites not yet updated),
-      // fall back to tones-base behavior so visuals don't regress.
-      if (!leadContext) {
-        return applyTonesBase(noteClass, isGuideTone);
-      }
-
-      const {
-        notePc,
-        commonWithNext,
-        nextGuideTones,
-        beatPosition,
-        stepDurationBeats,
-      } = leadContext;
-
-      const isCurrentChordTone = CHORD_TONE_CLASSES.has(noteClass);
-
-      // 1. Anticipation: next chord's guide tone in the last-beat window.
-      //    Applies regardless of current-chord membership — the whole point is
-      //    to highlight *where* the next chord's guide tones are before they arrive.
-      if (
-        stepDurationBeats > 0 &&
-        beatPosition >= stepDurationBeats - 1 &&
-        nextGuideTones.has(notePc)
-      ) {
-        // "orange" anticipation glow — warm/incoming signal
-        return { glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 };
-      }
-
-      // 2. Hold: current chord tone that persists into the next chord.
-      if (isCurrentChordTone && commonWithNext.has(notePc)) {
-        // "cyan" hold glow — stable/sustained signal
-        return { glowColor: "cyan", radiusBoost: 1.2, opacityBoost: 1 };
-      }
-
-      // 3. Departing: current chord tone that doesn't carry into the next chord.
-      //    Departing overrides guide-tone emphasis — Lead lens is about voice-leading
-      //    concerns, not chord-quality definition.
-      if (isCurrentChordTone && !commonWithNext.has(notePc)) {
-        return { radiusBoost: 0.85, opacityBoost: 0.6 };
-      }
-
-      // 4. Tones base: inherited behavior (guide-tone glow, scale-only dim, default).
-      return applyTonesBase(noteClass, isGuideTone);
-    }
-
-    default:
-      return defaultEmphasis;
+  // Voice-leading emphasis based on how the current note relates to the
+  // upcoming chord change. Priority order (highest → lowest):
+  //   1. Anticipation — next chord's guide tone in the last beat window
+  //      (fires even on notes not in the current chord)
+  //   2. Hold — current chord tone that carries into the next chord
+  //   3. Departing — current chord tone that resolves away on the change
+  //   4. Tones base — guide-tone glow + scale-only dim
+  //
+  // When leadContext is not provided (e.g. no active progression),
+  // fall back to tones-base behavior so visuals still render meaningfully.
+  if (!leadContext) {
+    return applyTonesBase(noteClass, isGuideTone);
   }
+
+  const {
+    notePc,
+    commonWithNext,
+    nextGuideTones,
+    beatPosition,
+    stepDurationBeats,
+  } = leadContext;
+
+  const isCurrentChordTone = CHORD_TONE_CLASSES.has(noteClass);
+
+  // 1. Anticipation: next chord's guide tone in the last-beat window.
+  //    Applies regardless of current-chord membership.
+  if (
+    stepDurationBeats > 0 &&
+    beatPosition >= stepDurationBeats - 1 &&
+    nextGuideTones.has(notePc)
+  ) {
+    return { glowColor: "orange", radiusBoost: 1.15, opacityBoost: 1 };
+  }
+
+  // 2. Hold: current chord tone that persists into the next chord.
+  if (isCurrentChordTone && commonWithNext.has(notePc)) {
+    return { glowColor: "cyan", radiusBoost: 1.2, opacityBoost: 1 };
+  }
+
+  // 3. Departing: current chord tone that doesn't carry into the next chord.
+  if (isCurrentChordTone && !commonWithNext.has(notePc)) {
+    return { radiusBoost: 0.85, opacityBoost: 0.6 };
+  }
+
+  // 4. Tones base.
+  return applyTonesBase(noteClass, isGuideTone);
 }
 
 export function classifyNote(

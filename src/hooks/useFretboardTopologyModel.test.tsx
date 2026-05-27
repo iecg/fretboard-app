@@ -33,7 +33,7 @@ describe("useFretboardTopologyModel", () => {
     }
 
     function PlaybackProbe() {
-      useFretboardPlaybackSnapshot();
+      useFretboardPlaybackSnapshot(true);
       useEffect(() => {
         playbackCommits += 1;
       });

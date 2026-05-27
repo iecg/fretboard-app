@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, it, expect } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore } from "jotai";
 import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { practiceLensAtom, voicingAtom } from "../../store/chordOverlayAtoms";
+import { voicingAtom } from "../../store/chordOverlayAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
@@ -15,8 +15,7 @@ import { ChordOverlayControls } from "./ChordOverlayControls";
 
 /**
  * ChordOverlayControls now owns only the VOICING sub-group (VoicingControl +
- * Lens ToggleBar). SOURCE (Degree + Root) and CHORD TYPE (Quality) have moved
- * to SongControls / the Song-tab progression editor.
+ * optional ChordStringSetPicker). The Lens picker has been removed.
  *
  * Default seeds: C Major, one progression step at degree I (= Major Triad).
  * `fingeringPatternAtom = "caged"` keeps the overlay enabled.
@@ -46,11 +45,6 @@ const renderDegree = (extras: ReadonlyArray<SeedTuple> = []) =>
 const renderManual = (extras: ReadonlyArray<SeedTuple> = []) =>
   renderWithAtoms(<ChordOverlayControls />, [...MANUAL_SEEDS, ...extras] as never);
 
-// `within(screen.getByRole("group", { name })).getByRole("button", { name })`
-// shorthand — the most repeated pattern in this file.
-const groupBtn = (groupName: string, btnName: string | RegExp) =>
-  within(screen.getByRole("group", { name: groupName })).getByRole("button", { name: btnName });
-
 describe("ChordOverlayControls/ChordOverlayControls", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -71,13 +65,9 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       expect(headers).toHaveLength(0);
     });
 
-    it("renders a VOICING label above the Voicing dropdown so the row aligns with Lens", () => {
+    it("renders a VOICING label above the Voicing dropdown", () => {
       renderDegree();
-      // The Prop's label renders as a visible micro-label in the DOM.
-      // Look for the text "Voicing" that appears as a propLabel element.
       const allVoicingLabels = screen.getAllByText("Voicing");
-      // At least one should be the Prop label (the micro-label above the dropdown).
-      // The propLabel has "propLabel" in its className.
       const propLabel = allVoicingLabels.find((el) => /propLabel/i.test(el.className));
       expect(propLabel).toBeDefined();
     });
@@ -94,27 +84,12 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("7. lens picker remains functional", () => {
-    it("lens ToggleBar is present when chord is active", () => {
+  describe("Lens removal", () => {
+    it("does not render a Lens control", () => {
       renderDegree();
-      expect(screen.getByRole("group", { name: "Practice lens" })).toBeInTheDocument();
-    });
-
-    it("lens ToggleBar has a pressed button when a lens is active", () => {
-      renderDegree([[practiceLensAtom, "tones"]]);
-      // Find a button that is aria-pressed="true" inside the Practice lens group
-      const lensGroup = screen.getByRole("group", { name: "Practice lens" });
-      const pressedButton = within(lensGroup).getByRole("button", { pressed: true });
-      expect(pressedButton).toBeInTheDocument();
-    });
-
-    it("renders exactly two lens options: Tones, Lead", () => {
-      renderDegree();
-      const group = screen.getByRole("group", { name: "Practice lens" });
-      const buttons = within(group).getAllByRole("button");
-      expect(buttons).toHaveLength(2);
-      expect(buttons[0]).toHaveTextContent(/tones/i);
-      expect(buttons[1]).toHaveTextContent(/lead/i);
+      expect(screen.queryByRole("group", { name: /lens/i })).not.toBeInTheDocument();
+      expect(screen.queryByText(/Tones/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Lead/i)).not.toBeInTheDocument();
     });
   });
 
@@ -127,46 +102,11 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("12. lens Prop shows static hint", () => {
-    it("does not render a lens help-button when chord is active", () => {
-      renderDegree();
-      expect(
-        screen.queryByRole("button", { name: /show help for lens/i }),
-      ).not.toBeInTheDocument();
-    });
-
-    it("renders the static lens hint with highlighted Tones and Lead terms", () => {
-      renderDegree();
-      const hint = screen.getByTestId("lens-help-text");
-      expect(hint).toHaveTextContent(
-        "Tones highlights chord notes with guide-tone (3rd/7th) emphasis. Lead anticipates the next chord.",
-      );
-      expect(within(hint).getByText("Tones")).toHaveClass("lensHelpStrong");
-      expect(within(hint).getByText("Lead")).toHaveClass("lensHelpStrong");
-    });
-
-    it("no legacy lens-hint paragraph remains", () => {
-      const { container } = renderDegree();
-      expect(container.querySelector(".lens-hint")).not.toBeInTheDocument();
-    });
-  });
-
-  describe("13. group headers order and Lens placement", () => {
+  describe("13. group headers order", () => {
     it("renders no group headers (Voicing sub-group header retired)", () => {
       renderManual();
       const headers = screen.queryAllByRole("heading", { level: 3 });
       expect(headers).toHaveLength(0);
-    });
-
-    it("places the Lens control after the Voicing combobox in the DOM", () => {
-      renderManual();
-      const lensLabel = screen.getByText("Lens");
-      const voicingCombobox = screen.getByRole("combobox", { name: /voicing/i });
-      // Lens label appears after the Voicing combobox in document order.
-      expect(
-        voicingCombobox.compareDocumentPosition(lensLabel) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
     });
   });
 
@@ -200,10 +140,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
       ).not.toBeInTheDocument();
       unmount();
 
-      // fingeringPattern="none" suppresses fallback context so this test
-      // exercises only the baseline "full hides picker" path; the full-mode
-      // fallback path is covered by the "shows the picker when voicing is full
-      // and a fallback exists" test below.
       renderManual([[voicingAtom, "full"], [fingeringPatternAtom, "none"]]);
       expect(
         screen.queryByRole("combobox", { name: /strings/i }),
@@ -248,18 +184,6 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
   });
 
   describe("17. chord-tab design parity", () => {
-    it.each(["Tones", "Lead"])("Lens toggle includes the %s option", (name) => {
-      renderDegree();
-      expect(groupBtn("Practice lens", name)).toBeInTheDocument();
-    });
-
-    it("both lens options are enabled when chord overlay is active (both only require chord overlay)", () => {
-      // C Major triad on degree I — both tones and lead only require hasChordOverlay.
-      renderDegree();
-      expect(groupBtn("Practice lens", "Tones")).not.toBeDisabled();
-      expect(groupBtn("Practice lens", "Lead")).not.toBeDisabled();
-    });
-
     it.each(["Full Chords", "Show on Board"])("no longer renders the %s switch", (name) => {
       renderManual();
       expect(screen.queryByRole("switch", { name })).toBeNull();
@@ -274,10 +198,6 @@ describe("ChordOverlayControls — string-set picker visibility in Full mode", (
   });
 
   it("shows the picker when voicing is full and a fallback exists", () => {
-    // B dim with only the C-shape selected: B dim has no full-chord CAGED
-    // template for the C-shape, so the C-shape polygon produces a close-voicing
-    // fallback. Scale root is B so the snap-to-scale filter stays on and the B
-    // dim close voicings (B, D, F) land within the B major CAGED window.
     const store = createStore();
     store.set(voicingAtom, "full");
     store.set(fingeringPatternAtom, "caged");
@@ -288,20 +208,14 @@ describe("ChordOverlayControls — string-set picker visibility in Full mode", (
       { id: "step-1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "dim", manualRoot: "B" },
     ]);
 
-    // Verify the fixture actually produces a fallback so the test is meaningful.
     expect(store.get(hasFallbackPositionsAtom)).toBe(true);
 
     renderWithStore(<ChordOverlayControls />, store);
 
-    // ChordStringSetPicker renders a combobox; its label contains "strings".
     expect(screen.queryByRole("combobox", { name: /strings/i })).toBeInTheDocument();
   });
 
   it("hides the picker in full mode when no fallback polygon admits a close voicing", () => {
-    // C major: the lower-neck C/A/G/E shapes all have full-chord templates.
-    // The D-shape polygon repeats high on the neck (around frets 21-25) and
-    // can host a close triad fallback — exclude it from the active shape set
-    // so no polygon needs fallback and the picker stays hidden.
     const store = createStore();
     store.set(voicingAtom, "full");
     store.set(fingeringPatternAtom, "caged");

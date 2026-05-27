@@ -4,7 +4,6 @@ import { useReducedMotion } from "motion/react";
 import {
   getNoteDisplay,
   getScaleSemitones,
-  type PracticeLens,
   type NoteSemantics,
 } from "@fretflow/core";
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
@@ -80,8 +79,6 @@ interface FretboardSVGProps {
   chordRoot?: string;
   /** Fret spread of the chord voicing, used for shape-constrained rendering. */
   chordFretSpread?: number;
-  /** Active practice lens that drives note emphasis rules (colors, tension cues, squircles). */
-  practiceLens?: PracticeLens;
   /** Notes to render with the special "color" highlight role. */
   colorNotes?: string[];
   /** CAGED / 3NPS shape polygons to render as filled regions behind the notes. */
@@ -161,7 +158,6 @@ export function FretboardSVG({
   chordTones = DEFAULT_CHORD_TONES,
   chordRoot,
   chordFretSpread = 0,
-  practiceLens,
   colorNotes = DEFAULT_COLOR_NOTES,
   shapePolygons = DEFAULT_SHAPE_POLYGONS,
   wrappedNotes = DEFAULT_WRAPPED_NOTES,
@@ -191,7 +187,7 @@ export function FretboardSVG({
   // frame ticks do not re-render the Fretboard shell. Tests may inject the
   // snapshot directly via the prop to avoid atom setup.
   const internalPlaybackSnapshot = useFretboardPlaybackSnapshot(
-    playbackSnapshotProp === undefined ? practiceLens : undefined,
+    playbackSnapshotProp === undefined,
   );
   const playbackSnapshot = playbackSnapshotProp !== undefined
     ? playbackSnapshotProp
@@ -423,7 +419,6 @@ export function FretboardSVG({
   const { renderedNotes } = useAnimatedFretboardView({
     topology,
     playbackSnapshot,
-    practiceLens,
     hasChordOverlay,
     displayFormat,
     degreeColorsEnabled,
@@ -491,7 +486,6 @@ export function FretboardSVG({
       role="group"
       aria-label={ariaLabel}
       className={styles["fretboard-board"]}
-      data-practice-lens={hasChordOverlay ? practiceLens : undefined}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       data-full-chord-mode={fullChordVoicings?.length ? "true" : undefined}
       data-testid="fretboard-svg"

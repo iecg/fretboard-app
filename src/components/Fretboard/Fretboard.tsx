@@ -337,7 +337,6 @@ export function Fretboard(props: FretboardProps) {
             chordTones={chordTones}
             chordRoot={chordRoot}
             chordFretSpread={chordFretSpread}
-            practiceLens={state.practiceLens}
             colorNotes={colorNotes}
             shapePolygons={shapePolygons}
             wrappedNotes={wrappedNotes}

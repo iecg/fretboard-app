@@ -8,15 +8,20 @@ import { addProgressionStepAtom, progressionStepsAtom, progressionTempoBpmAtom }
 import { StatusBar } from "./StatusBar";
 
 describe("StatusBar", () => {
-  it("renders all eight field labels and the version badge", () => {
+  it("renders field labels and the version badge", () => {
     renderWithAtoms(<StatusBar />);
     expect(screen.getByTestId("status-bar")).toBeInTheDocument();
-    for (const label of ["Key", "Chord", "Lens", "Pattern", "Frets", "Tempo", "Progression", "Tuning"]) {
-      // Scope to the label span — a value (e.g. the "Chord" lens) can share the text.
+    for (const label of ["Key", "Chord", "Pattern", "Frets", "Tempo", "Progression", "Tuning"]) {
       expect(screen.getByText(label, { selector: ".label" })).toBeInTheDocument();
     }
     expect(screen.getByTestId("status-version")).toBeInTheDocument();
     expect(screen.getByTestId("status-version")).toHaveTextContent("FretFlow Studio");
+  });
+
+  it("does not render a lens label", () => {
+    renderWithAtoms(<StatusBar />);
+    expect(screen.queryByText(/Tones/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Lead/i)).not.toBeInTheDocument();
   });
 
   it("shows the fret window from fretStartAtom/fretEndAtom", () => {
@@ -35,12 +40,6 @@ describe("StatusBar", () => {
   it("shows the tuning name", () => {
     renderWithAtoms(<StatusBar />, [[tuningNameAtom, "Drop D"]]);
     expect(screen.getByTestId("status-tuning")).toHaveTextContent("Drop D");
-  });
-
-  it("shows the active lens label by default", () => {
-    renderWithAtoms(<StatusBar />);
-    // practiceLensAtom defaults to "tones" -> compact lens label "Tones".
-    expect(screen.getByTestId("status-lens")).toHaveTextContent("Tones");
   });
 
   it("labels a non-CAGED pattern", () => {
@@ -93,7 +92,6 @@ describe("StatusBar", () => {
   });
 
   it("shows the progression length field with a 4-step, 4-bar seed", () => {
-    // Seed 4 steps each of 1 bar = 4 bars, 4 chords.
     const fourSteps = [
       { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -112,9 +110,7 @@ describe("StatusBar", () => {
     ];
     const store = makeAtomStore([[progressionStepsAtom, threeSteps]]);
     renderWithStore(<StatusBar />, store);
-    // Seeded with 3 steps: 3 bars · 3 chords.
     expect(screen.getByTestId("status-progression")).toHaveTextContent("3 bars · 3 chords");
-    // Add one step — addProgressionStepAtom appends a new 1-bar step.
     act(() => { store.set(addProgressionStepAtom); });
     expect(screen.getByTestId("status-progression")).toHaveTextContent("4 bars · 4 chords");
   });

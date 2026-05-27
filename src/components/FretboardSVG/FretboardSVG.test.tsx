@@ -162,15 +162,15 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll(".chord-tone-outside-scale").length).toBeGreaterThan(0);
   });
 
-  it("lead lens keeps in-scale chord root and outside chord tones visible", () => {
-    const { container } = renderCMajor({ chordTones: ["C", "A#"], practiceLens: "lead" });
+  it("keeps in-scale chord root and outside chord tones visible", () => {
+    const { container } = renderCMajor({ chordTones: ["C", "A#"] });
     expect(container.querySelectorAll(".chord-root.hidden").length).toBe(0);
     expect(container.querySelectorAll(".chord-tone-outside-scale:not(.hidden)").length).toBeGreaterThan(0);
   });
 
-  it("outside chord root is visible and not hidden in lead lens", () => {
+  it("outside chord root is visible and not hidden", () => {
     const { container } = renderCMajor({
-      chordTones: ["D", "F#", "A"], chordRoot: "D", practiceLens: "lead",
+      chordTones: ["D", "F#", "A"], chordRoot: "D",
     });
     expect(container.querySelectorAll(".chord-root:not(.hidden)").length).toBeGreaterThan(0);
   });
@@ -463,9 +463,8 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  it("renders lead-lens playback state from the snapshot prop instead of direct playback atom reads", () => {
+  it("renders playback state from the snapshot prop instead of direct playback atom reads", () => {
     const { container } = renderCMajor({
-      practiceLens: "lead",
       playbackSnapshot: {
         playing: true,
         activeStepIndex: 0,
@@ -636,16 +635,14 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  describe("lens leakage — no lens effect when chord overlay is off", () => {
-    it("data-practice-lens only present when chord overlay is active", () => {
-      const { container, rerender } = render(<FretboardSVG {...BASE_PROPS} practiceLens="tones" />);
+  describe("no lens data attribute", () => {
+    it("data-practice-lens is not present (lens removed)", () => {
+      const { container } = render(<FretboardSVG {...BASE_PROPS} />);
       expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBeNull();
-      rerender(<FretboardSVG {...BASE_PROPS} chordTones={["C", "E", "G"]} chordRoot="C" practiceLens="tones" />);
-      expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBe('tones');
     });
 
-    it("scale notes have normal opacity with no chord overlay regardless of practiceLens", () => {
-      const { container } = render(<FretboardSVG {...BASE_PROPS} practiceLens="tones" />);
+    it("scale notes have normal opacity with no chord overlay", () => {
+      const { container } = render(<FretboardSVG {...BASE_PROPS} />);
       container.querySelectorAll('.fretboard-note:not(.hidden)').forEach((el) => {
         expect(parseFloat(getComputedStyle(el as Element).opacity)).toBeGreaterThanOrEqual(1);
       });
@@ -755,7 +752,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       nextGuideTones: new Set(["B", "F"]),
     };
 
-    const { rerender } = renderCMajor({ practiceLens: "lead", playbackSnapshot: firstSnapshot });
+    const { rerender } = renderCMajor({ playbackSnapshot: firstSnapshot });
     const countAfterInitialRender = topologySpy.mock.calls.length;
     expect(countAfterInitialRender).toBeGreaterThan(0);
 
@@ -763,7 +760,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       <FretboardSVG
         {...BASE_PROPS}
         {...C_MAJOR}
-        practiceLens="lead"
+        
         playbackSnapshot={{
           ...firstSnapshot,
           globalFraction: 0.25,
@@ -792,7 +789,7 @@ describe("FretboardSVG/FretboardSVG", () => {
 
     // Render without chordTones — default path (DEFAULT_CHORD_TONES stable reference)
     const { rerender } = render(
-      <FretboardSVG {...BASE_PROPS} practiceLens="lead" playbackSnapshot={firstSnapshot} />,
+      <FretboardSVG {...BASE_PROPS}  playbackSnapshot={firstSnapshot} />,
     );
     const countAfterInitialRender = topologySpy.mock.calls.length;
     expect(countAfterInitialRender).toBeGreaterThan(0);
@@ -800,7 +797,7 @@ describe("FretboardSVG/FretboardSVG", () => {
     rerender(
       <FretboardSVG
         {...BASE_PROPS}
-        practiceLens="lead"
+        
         playbackSnapshot={{
           ...firstSnapshot,
           globalFraction: 0.5,

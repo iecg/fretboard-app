@@ -92,6 +92,12 @@ describe("runV2RedesignMigration", () => {
     spy.mockRestore();
   });
 
+  it("retires the practiceLens key", () => {
+    localStorage.setItem("fretflow:practiceLens", JSON.stringify("tones"));
+    runV2RedesignMigration();
+    expect(localStorage.getItem("fretflow:practiceLens")).toBeNull();
+  });
+
   it("does not modify existing progressionSteps storage", () => {
     const original = JSON.stringify([
       { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },

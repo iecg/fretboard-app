@@ -47,7 +47,6 @@ describe("useAnimatedFretboardView", () => {
             commonWithNext: new Set<string>(),
             nextGuideTones: new Set(["B"]),
           },
-          practiceLens: "lead",
           hasChordOverlay: true,
           displayFormat: "notes",
           degreeColorsEnabled: true,

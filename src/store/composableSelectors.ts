@@ -128,8 +128,8 @@ export const hasOutsideChordMembersAtom = atom((get) => {
 
 /**
  * Catalog of chord members annotated with scale-membership flags and role
- * tags — the canonical input shared by every practice-lens composite (see
- * `practiceLensAtoms.ts`) and the chord summary atoms in `atoms.ts`.
+ * tags — the canonical input for practice cues (see `practiceLensAtoms.ts`)
+ * and the chord summary atoms in `atoms.ts`.
  *
  * Inputs (read via `get`): `chordTypeAtom`, `chordRootAtom`, `rootNoteAtom`,
  * `scaleNameAtom`. Empty array when no chord is selected.

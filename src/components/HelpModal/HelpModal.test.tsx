@@ -42,15 +42,11 @@ describe("HelpModal/HelpModal", () => {
     expect(focusLabels).toHaveLength(0);
   });
 
-  it("lists current lens names matching LENS_REGISTRY labels", () => {
+  it("does not mention 'Tones' or 'Lead' as lens names", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    expect(screen.getAllByText("Chord Tones").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Guide Tones").length).toBeGreaterThan(0);
-    // "Tension" appears as both <strong> and <em> in the description
-    expect(screen.getAllByText("Tension").length).toBeGreaterThan(0);
-    // Removed lenses — must not appear
-    expect(screen.queryByText("Chord + Color")).toBeNull();
-    expect(screen.queryByText("Color Notes")).toBeNull();
+    // Lens picker was removed; help text should not mention the old lens names.
+    expect(screen.queryByText(/Tones lens/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Lead lens/i)).not.toBeInTheDocument();
   });
 
   it("renders the chord-mode-removed notice when not yet seen", () => {

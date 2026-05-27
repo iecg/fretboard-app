@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { atom } from "jotai";
 import { useAtomValue } from "jotai";
 import { progressionPlayingAtom } from "../../../store/progressionAtoms";
 import {
@@ -8,15 +7,6 @@ import {
   nextChordGuideTonesAtom,
 } from "../../../store/practiceLensAtoms";
 import { progressionVisualFrameAtom } from "../../../store/progressionVisualAtoms";
-import type { PracticeLens } from "@fretflow/core";
-
-const EMPTY_SET = new Set<string>();
-
-// Stable module-level atoms — no recreation across renders.
-const leadCommonWithNextAtom = atom((get) => get(commonTonesWithNextAtom));
-const leadNextGuideTonesAtom = atom((get) => get(nextChordGuideTonesAtom));
-const emptyCommonWithNextAtom = atom(() => EMPTY_SET);
-const emptyNextGuideTonesAtom = atom(() => EMPTY_SET);
 
 export interface FretboardPlaybackSnapshot {
   playing: boolean;
@@ -30,20 +20,16 @@ export interface FretboardPlaybackSnapshot {
 }
 
 export function useFretboardPlaybackSnapshot(
-  practiceLens?: PracticeLens,
+  enabled: boolean,
 ): FretboardPlaybackSnapshot | null {
   const playing = useAtomValue(progressionPlayingAtom);
   const frame = useAtomValue(progressionVisualFrameAtom);
   const stepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
-  const commonWithNext = useAtomValue(
-    practiceLens === "lead" ? leadCommonWithNextAtom : emptyCommonWithNextAtom,
-  );
-  const nextGuideTones = useAtomValue(
-    practiceLens === "lead" ? leadNextGuideTonesAtom : emptyNextGuideTonesAtom,
-  );
+  const commonWithNext = useAtomValue(commonTonesWithNextAtom);
+  const nextGuideTones = useAtomValue(nextChordGuideTonesAtom);
 
   return useMemo(() => {
-    if (!playing || !frame) return null;
+    if (!enabled || !playing || !frame) return null;
     return {
       playing,
       activeStepIndex: frame.stepIndex,
@@ -54,5 +40,5 @@ export function useFretboardPlaybackSnapshot(
       commonWithNext,
       nextGuideTones,
     };
-  }, [playing, frame, stepDurationBeats, commonWithNext, nextGuideTones]);
+  }, [enabled, playing, frame, stepDurationBeats, commonWithNext, nextGuideTones]);
 }

@@ -4,7 +4,6 @@ import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
-  LENS_REGISTRY,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
@@ -13,7 +12,6 @@ import {
 import type {
   ChordMemberFact,
   ResolvedChordMember,
-  PracticeLens,
   ShapePolygon,
   Voicing,
   VoicingType,
@@ -24,7 +22,6 @@ import {
   booleanStorage,
   enumValidator,
   GET_ON_INIT,
-  withStorageErrorBoundary,
 } from "../utils/storage";
 import {
   buildStringSetOptions,
@@ -78,46 +75,6 @@ export function isInAnyPolygon(
   polygons: readonly ShapePolygon[],
 ): boolean {
   return buildPolygonCoverage(polygons, 24).coveredPositions.has(positionKey);
-}
-
-const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
-
-// Map legacy three-lens IDs to the new two-lens IDs.
-// Returns a raw string — narrowing to PracticeLens happens at the validate
-// boundary in onRead. Unknown inputs pass through unchanged so validate()
-// can reject them and fall back to the atom default.
-function mapLegacyLensId(raw: string): string {
-  if (raw === "targets" || raw === "guide-tones") return "tones";
-  if (raw === "tension") return "lead";
-  return raw;
-}
-
-const practiceLensStorage = createStorage<PracticeLens>({
-  onRead: (v) => mapLegacyLensId(v as string) as PracticeLens,
-  validate: (v) => (PRACTICE_LENS_VALUES as string[]).includes(v),
-  migrate: () => {
-    // migrate() only runs when the storage key is absent (see
-    // createStorage.getItem in src/utils/storage.ts). When the lens key
-    // exists with a legacy value, onRead() handles the mapping instead, so
-    // there's no point checking `k("practiceLens")` here.
-    // Legacy: viewMode predates the lens key entirely.
-    const oldViewMode =
-      readLocalStorage(k("viewMode")) ?? readLocalStorage("viewMode");
-    if (oldViewMode === "chord") return "tones";
-    if (oldViewMode === "outside") return "lead";
-    if (oldViewMode) return "tones";
-    return undefined;
-  },
-});
-
-/**
- * Helper: read a raw localStorage string value without subscribing to atoms.
- * Used inside migrate() callbacks where atom subscriptions are not allowed.
- */
-function readLocalStorage(key: string): string | null {
-  const raw = withStorageErrorBoundary<string | null>(key, null).getRaw();
-  if (raw === null) return null;
-  return raw === "" ? null : raw;
 }
 
 // ---------------------------------------------------------------------------
@@ -681,14 +638,6 @@ function addChordTonesWithinPolygon(
     }
   }
 }
-
-// Migrates from legacy viewMode value on first access.
-export const practiceLensAtom = atomWithStorage<PracticeLens>(
-  k("practiceLens"),
-  "tones",
-  practiceLensStorage,
-  GET_ON_INIT,
-);
 
 export const chordTonesAtom = atom((get) => {
   if (get(chordOverlayHiddenAtom)) return [];

@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import type { PracticeLens } from "@fretflow/core";
-import { getLensEmphasis, type LeadLensContext } from "../utils/semantics";
+import { getEmphasis, type LeadLensContext } from "../utils/semantics";
 import type { FretboardPlaybackSnapshot } from "./useFretboardPlaybackSnapshot";
 import type { NoteData } from "./useNoteData";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
@@ -20,7 +19,6 @@ export interface LeadLensSnapshot {
 interface BuildAnimatedFretboardNotesProps {
   topology: StaticFretboardTopologyNote[];
   hasChordOverlay: boolean;
-  practiceLens?: PracticeLens;
   leadLensSnapshot?: LeadLensSnapshot;
 }
 
@@ -33,7 +31,6 @@ interface BuildRenderedFretboardNotesProps {
 export interface UseAnimatedFretboardViewProps {
   topology: StaticFretboardTopologyNote[];
   playbackSnapshot?: FretboardPlaybackSnapshot | null;
-  practiceLens?: PracticeLens;
   hasChordOverlay: boolean;
   displayFormat?: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
@@ -45,10 +42,9 @@ export interface UseAnimatedFretboardViewProps {
 }
 
 function buildLeadLensSnapshot(
-  practiceLens: PracticeLens | undefined,
   playbackSnapshot: FretboardPlaybackSnapshot | null | undefined,
 ): LeadLensSnapshot | undefined {
-  if (practiceLens !== "lead" || !playbackSnapshot) {
+  if (!playbackSnapshot) {
     return undefined;
   }
 
@@ -63,14 +59,11 @@ function buildLeadLensSnapshot(
 export function buildAnimatedFretboardNotes({
   topology,
   hasChordOverlay,
-  practiceLens,
   leadLensSnapshot,
 }: BuildAnimatedFretboardNotesProps): NoteData[] {
-  const activeLens = hasChordOverlay ? practiceLens : undefined;
-
   return topology.map((note) => {
     let leadContext: LeadLensContext | undefined;
-    if (activeLens === "lead" && leadLensSnapshot) {
+    if (hasChordOverlay && leadLensSnapshot) {
       leadContext = {
         notePc: note.noteName,
         commonWithNext: leadLensSnapshot.commonWithNext,
@@ -82,9 +75,8 @@ export function buildAnimatedFretboardNotes({
 
     return {
       ...note,
-      applyLensEmphasis: getLensEmphasis(
+      applyLensEmphasis: getEmphasis(
         note.noteClass,
-        activeLens,
         note.isGuideTone,
         leadContext,
       ),
@@ -110,7 +102,6 @@ function buildRenderedFretboardNotes({
 export function useAnimatedFretboardView({
   topology,
   playbackSnapshot,
-  practiceLens,
   hasChordOverlay,
   displayFormat,
   degreeColorsEnabled,
@@ -127,16 +118,15 @@ export function useAnimatedFretboardView({
   void rootNote;
 
   const playbackEmphasisSnapshot = useMemo(
-    () => buildLeadLensSnapshot(practiceLens, playbackSnapshot),
-    [practiceLens, playbackSnapshot],
+    () => buildLeadLensSnapshot(playbackSnapshot),
+    [playbackSnapshot],
   );
 
   const noteData = useMemo(() => buildAnimatedFretboardNotes({
     topology,
     hasChordOverlay,
-    practiceLens,
     leadLensSnapshot: playbackEmphasisSnapshot,
-  }), [topology, hasChordOverlay, practiceLens, playbackEmphasisSnapshot]);
+  }), [topology, hasChordOverlay, playbackEmphasisSnapshot]);
 
   const renderedNotes = useMemo(() => buildRenderedFretboardNotes({
     noteData,

@@ -2,7 +2,6 @@ import { useAtomValue } from "jotai";
 import {
   chordTonesAtom,
   chordRootAtom,
-  practiceLensAtom,
   voicingAtom,
   chordHighlightPositionsAtom,
   visibleVoicingMatchesAtom,
@@ -30,7 +29,6 @@ export function useFretboardTopologyModel() {
 
   const chordTones = useAtomValue(chordTonesAtom);
   const chordRoot = useAtomValue(chordRootAtom);
-  const practiceLens = useAtomValue(practiceLensAtom);
   const colorNotes = useAtomValue(effectiveColorNotesAtom);
   const hiddenNotes = useAtomValue(effectiveHiddenNotesAtom);
 
@@ -85,7 +83,6 @@ export function useFretboardTopologyModel() {
     chordTones,
     chordRoot,
     chordFretSpread: 0,
-    practiceLens,
     colorNotes,
     hiddenNotes,
     activePattern,

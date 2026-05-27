@@ -111,11 +111,6 @@ export interface ChordRowEntry {
   scaleInterval?: string;
 }
 
-// Practice lenses replace raw viewMode
-export type PracticeLens =
-  | "tones"   // chord tones with guide-tone (3rd/7th) emphasis
-  | "lead";   // highlights common tones + anticipates upcoming guide tones
-
 // Composable note semantics
 export interface NoteSemantics {
   isScaleRoot: boolean;
@@ -144,49 +139,7 @@ export interface ChordMemberFact {
   isChordRoot: boolean;
 }
 
-// Context for lens availability predicates
-export interface LensAvailabilityContext {
-  hasChordOverlay: boolean;
-  /** Chord definition includes a 3rd or 7th member. */
-  hasGuideTones: boolean;
-  /** Scale has characteristic/divergent color notes. */
-  hasColorNotes: boolean;
-  /** At least one active chord tone falls outside the scale. */
-  hasOutsideTones: boolean;
-}
-
-// Practice lens registry entry
-export interface LensRegistryEntry {
-  id: PracticeLens;
-  label: string;
-  description: string;
-  isAvailable: (ctx: LensAvailabilityContext) => boolean;
-  /** Returns a human-readable reason when the lens is unavailable, or null. */
-  unavailableReason: (ctx: LensAvailabilityContext) => string | null;
-  /** When true, hide this lens from the picker instead of showing it disabled. */
-  hideWhenUnavailable?: boolean;
-}
-
-export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
-  {
-    id: "tones",
-    label: "Tones",
-    description: "Shows chord tones with guide-tone (3rd/7th) emphasis",
-    isAvailable: (ctx) => ctx.hasChordOverlay,
-    unavailableReason: (ctx) =>
-      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
-  },
-  {
-    id: "lead",
-    label: "Lead",
-    description: "Highlights common tones with the next chord and anticipates upcoming guide tones",
-    isAvailable: (ctx) => ctx.hasChordOverlay,
-    unavailableReason: (ctx) =>
-      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
-  },
-];
-
-export type PracticeCueKind = "land-on" | "guide-tones" | "color-note" | "tension";
+export type PracticeCueKind = "land-on" | "color-note" | "tension";
 
 export interface PracticeCueNote {
   internalNote: string;
