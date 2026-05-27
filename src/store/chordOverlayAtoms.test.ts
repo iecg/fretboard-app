@@ -815,6 +815,25 @@ describe("visibleVoicingMatchesAtom", () => {
     const visible = store.get(visibleVoicingMatchesAtom);
     expect(visible.length).toBeGreaterThan(0);
   });
+
+  it("close voicings on CAGED are deduped across polygon instances", () => {
+    // A single close voicing may fit multiple octave instances of the same CAGED
+    // shape (e.g. open C-shape at fret 0 AND its 12-fret octave). Without dedup,
+    // the same voicing appears twice in visibleVoicingMatchesAtom, downstream
+    // assignConflictOffsets sees identical polylines (distance=0 → conflict) and
+    // assigns a non-zero radius offset even though there's only one actual voicing.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+    ]);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const keys = visible.map((v) => v.positionKeys.slice().sort().join("|"));
+    expect(new Set(keys).size).toBe(keys.length); // no dups
+  });
 });
 
 // ---------------------------------------------------------------------------

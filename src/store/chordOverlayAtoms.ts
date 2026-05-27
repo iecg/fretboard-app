@@ -543,13 +543,22 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
     if (voicing === "full") {
       scoped = selectFullChordMatchesForCagedPosition(matches, shapePolygons, cagedShapes);
     } else {
-      // close: strict in-polygon fit, like fallback selection
+      // close: strict in-polygon fit. Dedupe across polygon instances —
+      // a single voicing may fit multiple octave instances of the same shape;
+      // emitting it once per polygon would create phantom conflicts in
+      // assignConflictOffsets and assign non-zero offsets to non-overlapping voicings.
       const activePolygons = shapePolygons.filter(
         (p) => p.shape !== undefined && cagedShapes.has(p.shape) && !p.truncated,
       );
-      scoped = activePolygons.flatMap((polygon) =>
-        selectCloseFallbacksForCagedPosition(matches, polygon),
-      );
+      const seen = new Set<string>();
+      scoped = activePolygons
+        .flatMap((polygon) => selectCloseFallbacksForCagedPosition(matches, polygon))
+        .filter((v) => {
+          const key = v.positionKeys.slice().sort().join("|");
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
     }
   } else if (pattern === "3nps" && activePosition) {
     const { boxBounds } = get(shapeDataAtom);
