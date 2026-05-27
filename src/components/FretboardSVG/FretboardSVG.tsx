@@ -480,9 +480,10 @@ export function FretboardSVG({
   const connectorSource = hasChordOverlay ? "full-chord" : "generated";
 
   const prefersReducedMotion = useReducedMotion() ?? false;
+  const playbackActive = !!playbackSnapshot?.playing;
   const motionPolicy = useMemo(
-    () => resolveFretboardMotionPolicy({ prefersReducedMotion }),
-    [prefersReducedMotion],
+    () => resolveFretboardMotionPolicy({ prefersReducedMotion, playbackActive }),
+    [playbackActive, prefersReducedMotion],
   );
 
   return (

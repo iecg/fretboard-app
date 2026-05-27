@@ -68,6 +68,19 @@ const E_SHAPE_C_MAJOR_VOICING = {
 };
 
 describe("FretboardSVG/FretboardSVG", () => {
+  describe("resolveFretboardMotionPolicy", () => {
+    it("disables group fades for shapes and connectors while playback is active", () => {
+      expect(resolveFretboardMotionPolicy({
+        prefersReducedMotion: false,
+        playbackActive: true,
+      })).toEqual({
+        noteMode: "css",
+        shapeMode: "none",
+        connectorMode: "none",
+      });
+    });
+  });
+
   it("renders note circles when highlightNotes are provided", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
     const activeNotes = document.querySelectorAll(".note-active, .key-tonic");
@@ -641,6 +654,16 @@ describe("FretboardSVG/FretboardSVG", () => {
 
   describe("motion policy wiring", () => {
     const MINIMAL_POLYGON = polyRect("E" as CagedShape, 0, 4, 1);
+    const PLAYBACK_SNAPSHOT = {
+      playing: true,
+      activeStepIndex: 0,
+      globalFraction: 0.125,
+      localFraction: 0.25,
+      stepDurationBeats: 4,
+      beatPosition: 1,
+      commonWithNext: new Set(["G"]),
+      nextGuideTones: new Set(["B", "F"]),
+    };
 
     it("uses group-mode wrappers when policy returns group modes", () => {
       const { container } = renderCMajor({ shapePolygons: [MINIMAL_POLYGON] });
@@ -655,6 +678,15 @@ describe("FretboardSVG/FretboardSVG", () => {
       const { container } = renderCMajor({ shapePolygons: [MINIMAL_POLYGON] });
       expect(container.querySelector('[data-motion="group"]')).toBeNull();
       expect(container.querySelectorAll('[data-motion="none"]').length).toBeGreaterThan(0);
+    });
+
+    it("passes playback activity into motion policy resolution", () => {
+      renderCMajor({ shapePolygons: [MINIMAL_POLYGON], playbackSnapshot: PLAYBACK_SNAPSHOT });
+
+      expect(resolveFretboardMotionPolicy).toHaveBeenCalledWith({
+        prefersReducedMotion: false,
+        playbackActive: true,
+      });
     });
   });
 
