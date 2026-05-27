@@ -188,7 +188,7 @@
   --fretboard-glow-opacity: 0;
 
   /* CAGED shapes — boost visibility for light mode (Okabe-Ito RGB, 0.35 alpha) */
-  --caged-e-bg: rgba(184, 87, 0, 0.35);    /* E #B85700 + 0.35 boost */
+  --caged-e-bg: rgba(0, 119, 178, 0.35);   /* E #0077B2 (darkened sky blue) + 0.35 boost */
   --caged-d-bg: rgba(153, 153, 153, 0.35); /* D stays neutral gray in light mode too */
   --caged-c-bg: rgba(0, 158, 115, 0.35);   /* C #009E73 + 0.35 boost */
   --caged-a-bg: rgba(0, 114, 178, 0.35);   /* A #0072B2 + 0.35 boost */
@@ -354,12 +354,12 @@
   --color-note-inner-fill: var(--fretboard-note-fill-chord-tone);
 
   /* CAGED shapes — canonical Okabe-Ito palette (same as light mode) */
-  --caged-e: #E69F00;                        /* Okabe-Ito orange, slot 1 */
+  --caged-e: #56B4E9;                        /* Okabe-Ito sky blue */
   --caged-d: #999999;                        /* Okabe-Ito gray, slot 3 */
   --caged-c: #009E73;                        /* Okabe-Ito bluish green, slot 4 */
   --caged-a: #0072B2;                        /* Okabe-Ito blue, slot 6 */
   --caged-g: #CC79A7;                        /* Okabe-Ito reddish purple, slot 7 */
-  --caged-e-bg: rgba(230, 159, 0, 0.18);    /* E #E69F00 + 0.18 */
+  --caged-e-bg: rgba(86, 180, 233, 0.18);   /* E #56B4E9 + 0.18 */
   --caged-d-bg: rgba(153, 153, 153, 0.18);  /* D #999999 + 0.18 */
   --caged-c-bg: rgba(0, 158, 115, 0.18);    /* C #009E73 + 0.18 */
   --caged-a-bg: rgba(0, 114, 178, 0.18);    /* A #0072B2 + 0.18 */
