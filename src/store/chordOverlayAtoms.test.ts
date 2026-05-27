@@ -699,18 +699,14 @@ describe("visibleVoicingMatchesAtom", () => {
     ]);
     const all = store.get(voicingMatchesAtom);
     const visible = store.get(visibleVoicingMatchesAtom);
-    const { boxBounds } = store.get(shapeDataAtom);
-    // boxBounds for 3NPS is a single aggregate entry (index 0); per-string
-    // entries don't exist. Use the aggregate bound (boxBounds[0]) to check
-    // whether each note is within the position window. Strings not in boxBounds
-    // are unconstrained — not counted as outside.
-    const aggregateBound = boxBounds[0];
-    // Every visible voicing fits the 3NPS aggregate box (≤2 notes outside).
+    const { highlightNotes } = store.get(shapeDataAtom);
+    const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
+    // Every visible voicing has at most 2 notes outside the diagonal pattern
+    // (per scoreFullChordForThreeNpsPosition tolerance).
     for (const v of visible) {
-      const outsideCount = v.notes.filter((n) => {
-        if (!aggregateBound) return false; // no bounds → unconstrained
-        return n.fretIndex < aggregateBound.minFret || n.fretIndex > aggregateBound.maxFret;
-      }).length;
+      const outsideCount = v.notes.filter(
+        (n) => !patternSet.has(`${n.stringIndex}-${n.fretIndex}`),
+      ).length;
       expect(outsideCount).toBeLessThanOrEqual(2);
     }
     // Visible is scoped (≤ all candidates).
@@ -751,18 +747,14 @@ describe("visibleVoicingMatchesAtom", () => {
       [npsPositionAtom, 1],
     ]);
     const visible = store.get(visibleVoicingMatchesAtom);
-    const { boxBounds } = store.get(shapeDataAtom);
-    // boxBounds for 3NPS is a single aggregate entry (index 0); per-string
-    // entries don't exist. Strings with no boxBounds entry are unconstrained —
-    // not counted as outside. Use the aggregate bound to check fret placement.
-    const aggregateBound = boxBounds[0];
-    // Every visible voicing has outsideCount <= 2 vs the 3NPS aggregate box
-    // (per scoreFullChordForThreeNpsPosition tolerance).
+    const { highlightNotes } = store.get(shapeDataAtom);
+    const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
+    // Every visible voicing has outsideCount <= 2 vs the diagonal 3NPS pattern
+    // (per scoreFullChordForThreeNpsPosition tolerance — diagonal-aware).
     for (const v of visible) {
-      const outsideCount = v.notes.filter((n) => {
-        if (!aggregateBound) return false; // no bounds → unconstrained
-        return n.fretIndex < aggregateBound.minFret || n.fretIndex > aggregateBound.maxFret;
-      }).length;
+      const outsideCount = v.notes.filter(
+        (n) => !patternSet.has(`${n.stringIndex}-${n.fretIndex}`),
+      ).length;
       expect(outsideCount).toBeLessThanOrEqual(2);
     }
   });
@@ -777,15 +769,13 @@ describe("visibleVoicingMatchesAtom", () => {
       [npsPositionAtom, 3], // a position previously broken by snap-to-scale
     ]);
     const visible = store.get(visibleVoicingMatchesAtom);
-    const { boxBounds } = store.get(shapeDataAtom);
-    // Every visible close voicing fits entirely inside the active 3NPS box
-    // (strings not present in boxBounds are unconstrained — treated as fitting).
+    const { highlightNotes } = store.get(shapeDataAtom);
+    const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
+    // Every visible close voicing must have ALL notes inside the diagonal pattern
+    // (selectCloseFallbacksForThreeNpsPosition requires exact membership, zero tolerance).
     for (const v of visible) {
       for (const n of v.notes) {
-        const b = boxBounds[n.stringIndex];
-        if (!b) continue; // string not in box → unconstrained
-        expect(n.fretIndex).toBeGreaterThanOrEqual(b.minFret);
-        expect(n.fretIndex).toBeLessThanOrEqual(b.maxFret);
+        expect(patternSet.has(`${n.stringIndex}-${n.fretIndex}`)).toBe(true);
       }
     }
   });
@@ -1299,5 +1289,55 @@ describe("chordHighlightPositionsAtom — voicing=off, no snap toggle required",
 
     const highlights = store.get(chordHighlightPositionsAtom);
     expect(highlights.size).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Group — Task 4 (3NPS diagonal filter): per-string-fret membership regression
+// ---------------------------------------------------------------------------
+
+describe("3NPS voicing filter uses per-string-fret pattern membership (diagonal-aware)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("3NPS full-voicing filter accepts voicings inside the diagonal pattern (per-string-fret membership)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 3],
+    ]);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const { highlightNotes } = store.get(shapeDataAtom);
+    const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
+    // Full tolerance: every visible voicing has at most 2 notes outside the pattern.
+    for (const v of visible) {
+      const outside = v.notes.filter(
+        (n) => !patternSet.has(`${n.stringIndex}-${n.fretIndex}`),
+      ).length;
+      expect(outside).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("3NPS close-voicing filter requires all notes inside the diagonal pattern", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [voicingAtom, "close"],
+      [fingeringPatternAtom, "3nps"],
+      [npsPositionAtom, 3],
+    ]);
+    const visible = store.get(visibleVoicingMatchesAtom);
+    const { highlightNotes } = store.get(shapeDataAtom);
+    const patternSet = new Set(highlightNotes.filter((n) => n.includes("-")));
+    for (const v of visible) {
+      for (const n of v.notes) {
+        expect(patternSet.has(`${n.stringIndex}-${n.fretIndex}`)).toBe(true);
+      }
+    }
   });
 });

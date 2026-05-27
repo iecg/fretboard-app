@@ -305,7 +305,7 @@ export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
   const fallbackActive = fallbackPolygons.length > 0 || fallback3Nps !== null;
 
   const allCandidates = get(closeCandidatesAllStringSetsAtom);
-  const { shapePolygons, boxBounds } = get(shapeDataAtom);
+  const { shapePolygons } = get(shapeDataAtom);
   const fingeringPattern = get(fingeringPatternAtom);
   const cagedShapes = get(cagedShapesAtom);
   const activePosition = get(activePositionAtom);
@@ -330,7 +330,9 @@ export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
           (polygon) => selectCloseFallbacksForCagedPosition(candidatesOnSet, polygon).length > 0,
         );
       } else {
-        fitsAnyScope = selectCloseFallbacksForThreeNpsPosition(candidatesOnSet, boxBounds).length > 0;
+        const { highlightNotes } = get(shapeDataAtom);
+        const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
+        fitsAnyScope = selectCloseFallbacksForThreeNpsPosition(candidatesOnSet, patternPositions).length > 0;
       }
       if (!fitsAnyScope) {
         return { ...opt, disabled: true, disabledReason: "No voicing in current position" };
@@ -561,11 +563,12 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
         });
     }
   } else if (pattern === "3nps" && activePosition) {
-    const { boxBounds } = get(shapeDataAtom);
+    const { highlightNotes } = get(shapeDataAtom);
+    const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
     if (voicing === "full") {
-      scoped = selectFullChordMatchesForThreeNpsPosition(matches, boxBounds, 0);
+      scoped = selectFullChordMatchesForThreeNpsPosition(matches, patternPositions, 0);
     } else {
-      scoped = selectCloseFallbacksForThreeNpsPosition(matches, boxBounds);
+      scoped = selectCloseFallbacksForThreeNpsPosition(matches, patternPositions);
     }
   } else {
     scoped = matches;

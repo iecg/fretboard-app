@@ -5,7 +5,6 @@
  * (see visibleVoicingMatchesAtom in chordOverlayAtoms.ts).
  */
 import type { CagedShape, Voicing, VoicingNote, ShapePolygon } from "@fretflow/core";
-import type { BoxBound } from "../components/FretboardSVG/utils/semantics";
 
 function distanceOutsidePolygon(
   polygon: ShapePolygon,
@@ -106,48 +105,63 @@ export function selectFullChordMatchesForCagedPosition(
 }
 
 /**
- * 3NPS analogue of `scoreFullChordForCagedPosition`. Where CAGED uses polygon
- * vertices to derive per-string left/right fret bounds, 3NPS exposes per-string
- * `boxBounds` directly. Same `outsideCount ≤ 2` tolerance and `chordFretSpread`
- * buffer so the existing comparator handles both. `selectedShapePriority` is
- * unused for 3NPS and stays at 0.
+ * 3NPS analogue of `scoreFullChordForCagedPosition`. Uses `patternPositions`
+ * (the set of "string-fret" keys in the active 3NPS diagonal pattern) for
+ * membership testing, which is diagonal-aware by construction. Where CAGED uses
+ * polygon vertices, 3NPS uses the concrete position-key membership from
+ * `shapeDataAtom.highlightNotes`. `selectedShapePriority` is unused for 3NPS
+ * and stays at 0.
  */
 export function scoreFullChordForThreeNpsPosition(
   match: Voicing,
-  boxBounds: BoxBound[],
-  chordFretSpread: number,
+  patternPositions: Set<string>,
+  chordFretSpread: number = 0,
 ): FullChordCandidateScore | null {
-  // boxBounds for 3NPS is a single aggregate entry (index 0) spanning all
-  // strings in the position. Per-string entries do not exist; use the
-  // aggregate bound for every note regardless of string index.
-  const aggregateBound = boxBounds[0];
-  const outsideDistances = match.notes.map((note) => {
-    if (!aggregateBound) return 0; // no bounds at all → unconstrained
-    const minFret = aggregateBound.minFret - chordFretSpread;
-    const maxFret = aggregateBound.maxFret + chordFretSpread;
-    if (note.fretIndex < minFret) return minFret - note.fretIndex;
-    if (note.fretIndex > maxFret) return note.fretIndex - maxFret;
-    return 0;
-  });
-  const outsideCount = outsideDistances.filter((d) => d > 0).length;
+  if (patternPositions.size === 0) {
+    return {
+      match,
+      outsideCount: 0,
+      totalOutsideDistance: 0,
+      maxOutsideDistance: 0,
+      selectedShapePriority: 0,
+    };
+  }
+  let outsideCount = 0;
+  let totalOutside = 0;
+  let maxOutside = 0;
+  for (const note of match.notes) {
+    if (patternPositions.has(`${note.stringIndex}-${note.fretIndex}`)) continue;
+    // Outside the pattern — distance is fret-distance to nearest same-string pattern note.
+    let nearest = Infinity;
+    for (const key of patternPositions) {
+      const [sStr, fStr] = key.split("-");
+      if (Number(sStr) !== note.stringIndex) continue;
+      const d = Math.abs(Number(fStr) - note.fretIndex);
+      if (d < nearest) nearest = d;
+    }
+    const distance = Number.isFinite(nearest) ? nearest : chordFretSpread + 1;
+    outsideCount++;
+    totalOutside += distance;
+    if (distance > maxOutside) maxOutside = distance;
+  }
   if (outsideCount > 2) return null;
   return {
     match,
     outsideCount,
-    totalOutsideDistance: outsideDistances.reduce((sum, d) => sum + d, 0),
-    maxOutsideDistance: Math.max(...outsideDistances),
+    totalOutsideDistance: totalOutside,
+    maxOutsideDistance: maxOutside,
     selectedShapePriority: 0,
   };
 }
 
 export function selectFullChordMatchesForThreeNpsPosition(
   matches: Voicing[],
-  boxBounds: BoxBound[],
-  chordFretSpread: number,
+  patternPositions: Set<string>,
+  chordFretSpread: number = 0,
 ): Voicing[] {
   const byPosition = new Map<string, FullChordCandidateScore>();
   for (const match of matches) {
-    const score = scoreFullChordForThreeNpsPosition(match, boxBounds, chordFretSpread);
+    const score = scoreFullChordForThreeNpsPosition(match, patternPositions, chordFretSpread);
     if (score === null) continue;
     const positionKey = getPositionKey(match);
     const previous = byPosition.get(positionKey);
@@ -159,22 +173,18 @@ export function selectFullChordMatchesForThreeNpsPosition(
 }
 
 /**
- * 3NPS analogue of selectCloseFallbacksForCagedPosition. Uses per-string
- * boxBounds with zero buffer — fallback must fit cleanly inside the position.
+ * 3NPS analogue of selectCloseFallbacksForCagedPosition. Requires every note
+ * in the voicing to be present in the diagonal pattern's position-key set.
+ * Stricter than the full picker: no tolerance for notes outside the pattern.
  */
 export function selectCloseFallbacksForThreeNpsPosition(
   closeMatches: Voicing[],
-  boxBounds: BoxBound[],
+  patternPositions: Set<string>,
 ): Voicing[] {
-  // boxBounds for 3NPS is a single aggregate entry (index 0) spanning all
-  // strings. Use the aggregate bound for every note regardless of string index.
-  const aggregateBound = boxBounds[0];
-  if (!aggregateBound) return closeMatches; // no bounds → return all (unconstrained)
+  if (patternPositions.size === 0) return closeMatches;
   return closeMatches.filter((match) =>
-    match.notes.every(
-      (note) =>
-        note.fretIndex >= aggregateBound.minFret &&
-        note.fretIndex <= aggregateBound.maxFret,
+    match.notes.every((note) =>
+      patternPositions.has(`${note.stringIndex}-${note.fretIndex}`),
     ),
   );
 }

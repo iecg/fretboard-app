@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import type { Voicing, ShapePolygon } from "@fretflow/core";
-import type { BoxBound } from "../components/FretboardSVG/utils/semantics";
 import {
   selectCloseFallbacksForCagedPosition,
   selectCloseFallbacksForThreeNpsPosition,
@@ -61,14 +60,15 @@ describe("selectCloseFallbacksForCagedPosition", () => {
 });
 
 describe("selectCloseFallbacksForThreeNpsPosition", () => {
-  const boxBounds: BoxBound[] = [
-    { minFret: 5, maxFret: 7 },
-    { minFret: 5, maxFret: 7 },
-    { minFret: 5, maxFret: 7 },
-    { minFret: 5, maxFret: 7 },
-    { minFret: 5, maxFret: 7 },
-    { minFret: 5, maxFret: 7 },
-  ];
+  // Represents strings 0–5 all sharing frets 5–7 (the diagonal pattern's position keys).
+  const patternPositions = new Set<string>([
+    "0-5", "0-6", "0-7",
+    "1-5", "1-6", "1-7",
+    "2-5", "2-6", "2-7",
+    "3-5", "3-6", "3-7",
+    "4-5", "4-6", "4-7",
+    "5-5", "5-6", "5-7",
+  ]);
 
   const inside: Voicing = {
     positionKeys: ["1-6", "2-7"],
@@ -86,13 +86,13 @@ describe("selectCloseFallbacksForThreeNpsPosition", () => {
     ],
   };
 
-  it("returns voicings whose every fretted note lies inside the per-string boxBounds", () => {
-    const result = selectCloseFallbacksForThreeNpsPosition([inside, outside], boxBounds);
+  it("returns voicings whose every note is a member of the diagonal pattern position set", () => {
+    const result = selectCloseFallbacksForThreeNpsPosition([inside, outside], patternPositions);
     expect(result).toEqual([inside]);
   });
 
-  it("returns empty when no candidate fits", () => {
-    const result = selectCloseFallbacksForThreeNpsPosition([outside], boxBounds);
+  it("returns empty when no candidate fits the pattern", () => {
+    const result = selectCloseFallbacksForThreeNpsPosition([outside], patternPositions);
     expect(result).toEqual([]);
   });
 });

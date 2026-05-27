@@ -105,11 +105,12 @@ export const fallback3NpsBoxBoundsAtom = atom((get): BoxBound[] | null => {
   if (!get(fallbackContextActiveAtom)) return null;
   if (get(fingeringPatternAtom) !== "3nps") return null;
 
-  const { boxBounds } = get(shapeDataAtom);
+  const { boxBounds, highlightNotes } = get(shapeDataAtom);
   if (boxBounds.length === 0) return null;
+  const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
   const fulls = get(voicingMatchesAtom);
   const hasFull = fulls.some(
-    (m) => scoreFullChordForThreeNpsPosition(m, boxBounds, 0) !== null,
+    (m) => scoreFullChordForThreeNpsPosition(m, patternPositions, 0) !== null,
   );
   if (hasFull) return null;
   // Same recoverability constraint as the CAGED path: only surface the
@@ -117,7 +118,7 @@ export const fallback3NpsBoxBoundsAtom = atom((get): BoxBound[] | null => {
   const anyCloseFits =
     selectCloseFallbacksForThreeNpsPosition(
       get(closeCandidatesAllStringSetsAtom),
-      boxBounds,
+      patternPositions,
     ).length > 0;
   return anyCloseFits ? boxBounds : null;
 });
@@ -168,7 +169,9 @@ export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
 
   let result: Voicing[];
   if (boxBounds !== null) {
-    result = selectCloseFallbacksForThreeNpsPosition(closes, boxBounds).map(
+    const { highlightNotes } = get(shapeDataAtom);
+    const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
+    result = selectCloseFallbacksForThreeNpsPosition(closes, patternPositions).map(
       (v) => ({ ...v, isFallback: true }),
     );
   } else {
