@@ -1,4 +1,4 @@
-export interface PerfTraceDetail {
+interface PerfTraceDetail {
   name: string;
   durationMs: number;
   meta: Record<string, unknown>;

@@ -1,6 +1,9 @@
 import { useCallback, type CSSProperties } from "react";
-import { useSetAtom } from "jotai";
-import { setProgressionActiveStepIndexAtom } from "../../store/progressionAtoms";
+import { useSetAtom, useAtomValue } from "jotai";
+import {
+  setProgressionActiveStepIndexAtom,
+  activeResolvedProgressionStepAtom,
+} from "../../store/progressionAtoms";
 import { useTimelineViewModel } from "./hooks/useTimelineViewModel";
 import styles from "./ProgressionTrack.module.css";
 import { ProgressionBlock } from "./ProgressionBlock";
@@ -13,8 +16,7 @@ export function ProgressionTrack() {
     totalDurationBars,
     totalBarsForDisplay,
     subdivisionsPerBar,
-    steps,
-    activeStepIndex,
+    stepAtoms,
     displayedStepIndex,
     canPlay,
     playing,
@@ -23,7 +25,7 @@ export function ProgressionTrack() {
   } = useTimelineViewModel();
 
   const setActiveStep = useSetAtom(setProgressionActiveStepIndexAtom);
-  const activeStep = steps[activeStepIndex] ?? null;
+  const activeStep = useAtomValue(activeResolvedProgressionStepAtom);
 
   // Stable callback so memoized ProgressionBlock children don't re-render on
   // every parent render of this component.
@@ -63,7 +65,7 @@ export function ProgressionTrack() {
             totalBarsForDisplay={totalBarsForDisplay}
           />
           <div className={styles.blocks}>
-            {steps.map((step, index) => {
+            {stepAtoms.map((stepAtom, index) => {
               const layout = blockLayouts[index] ?? {
                 durationBars: 0,
                 startPercent: 0,
@@ -71,8 +73,8 @@ export function ProgressionTrack() {
               };
               return (
                 <ProgressionBlock
-                  key={step.id}
-                  step={step}
+                  key={`${stepAtom}`}
+                  stepAtom={stepAtom}
                   index={index}
                   active={index === displayedStepIndex}
                   durationBars={layout.durationBars}

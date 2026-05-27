@@ -92,7 +92,7 @@ export function buildAnimatedFretboardNotes({
   });
 }
 
-export function buildRenderedFretboardNotes({
+function buildRenderedFretboardNotes({
   noteData,
   fretCenterX,
   stringYAt,

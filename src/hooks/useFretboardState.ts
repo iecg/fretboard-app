@@ -1,6 +1,6 @@
 import { useFretboardTopologyModel } from "./useFretboardTopologyModel";
 
-export type { ActiveShapeType, ShapeScope } from "./useFretboardTopologyModel";
+export type { ActiveShapeType } from "./useFretboardTopologyModel";
 
 /**
  * Thin compatibility wrapper around {@link useFretboardTopologyModel}.

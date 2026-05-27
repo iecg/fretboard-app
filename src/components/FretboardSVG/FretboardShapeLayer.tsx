@@ -1,4 +1,4 @@
-import { memo, type ReactNode } from "react";
+import { memo, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import type { ShapeAnimationMode } from "./motionPolicy";
@@ -20,10 +20,10 @@ const renderStaticShapeGroup = (polygons: ReactNode) => (
   </g>
 );
 
-const renderAnimatedShapeGroup = (polygons: ReactNode) => (
+const renderAnimatedShapeGroup = (polygons: ReactNode, skipInitial: boolean) => (
   <motion.g
     key="shape-layer"
-    initial={{ opacity: 0 }}
+    initial={skipInitial ? false : { opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
     transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
@@ -35,6 +35,9 @@ const renderAnimatedShapeGroup = (polygons: ReactNode) => (
 );
 
 export const FretboardShapeLayer = memo(({ svgPolygons, animationMode = "group" }: FretboardShapeLayerProps) => {
+  const prevMode = useRef(animationMode);
+  const skipInitial = prevMode.current === "none" && animationMode === "group";
+  prevMode.current = animationMode;
   const polygons = svgPolygons.map(({ points, color, key }) => (
     <polygon
       key={key}
@@ -52,7 +55,7 @@ export const FretboardShapeLayer = memo(({ svgPolygons, animationMode = "group" 
   return (
     <AnimatePresence>
       {svgPolygons.length > 0 && (
-        renderAnimatedShapeGroup(polygons)
+        renderAnimatedShapeGroup(polygons, skipInitial)
       )}
     </AnimatePresence>
   );

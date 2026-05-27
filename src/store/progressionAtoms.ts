@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { atomWithStorage, RESET } from "jotai/utils";
+import { atomWithStorage, RESET, splitAtom } from "jotai/utils";
 import { getDegreeSequence, getDiatonicChord } from "@fretflow/core";
 import {
   DEFAULT_BEATS_PER_BAR,
@@ -97,6 +97,8 @@ export const progressionStepsAtom = atomWithStorage<ProgressionStep[]>(
   progressionStepsStorage,
   GET_ON_INIT,
 );
+
+export const progressionStepAtomsAtom = splitAtom(progressionStepsAtom);
 
 /**
  * Phase 2.2: when the user changes the scale **root**, transpose every step's

@@ -1,9 +1,9 @@
 import { tracePerf } from "../../../utils/perf/perfTrace";
 
-export type DurationInput = { value: number; unit: "bar" | "beat" };
+type DurationInput = { value: number; unit: "bar" | "beat" };
 export type StepInput = { duration: DurationInput };
 
-export type TimelineBlockLayout = {
+type TimelineBlockLayout = {
   durationBars: number;
   startPercent: number;
   widthPercent: number;

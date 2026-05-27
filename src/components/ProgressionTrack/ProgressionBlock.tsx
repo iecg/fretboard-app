@@ -1,10 +1,12 @@
-import { memo, type CSSProperties } from "react";
-import type { ResolvedProgressionStep } from "../../progressions/progressionDomain";
-import { formatProgressionDurationLabel } from "../../progressions/progressionDomain";
+import { memo, useMemo, type CSSProperties } from "react";
+import { useAtomValue, type Atom } from "jotai";
+import type { ProgressionStep } from "../../progressions/progressionDomain";
+import { formatProgressionDurationLabel, resolveProgressionStep } from "../../progressions/progressionDomain";
+import { scaleNameAtom, rootNoteAtom, preferFlatsAtom } from "../../store/scaleAtoms";
 import styles from "./ProgressionTrack.module.css";
 
 interface ProgressionBlockProps {
-  step: ResolvedProgressionStep;
+  stepAtom: Atom<ProgressionStep>;
   index: number;
   active: boolean;
   durationBars: number;
@@ -24,7 +26,7 @@ interface ProgressionBlockProps {
  * Sub-step playhead motion no longer touches this subtree.
  */
 function ProgressionBlockComponent({
-  step,
+  stepAtom,
   index,
   active,
   durationBars,
@@ -32,7 +34,16 @@ function ProgressionBlockComponent({
   widthPercent,
   onSelect,
 }: ProgressionBlockProps) {
-  const duration = formatProgressionDurationLabel(step.duration);
+  const step = useAtomValue(stepAtom);
+  const scaleName = useAtomValue(scaleNameAtom);
+  const rootNote = useAtomValue(rootNoteAtom);
+  const preferFlats = useAtomValue(preferFlatsAtom);
+
+  const resolvedStep = useMemo(() => {
+    return resolveProgressionStep(step, scaleName, rootNote, index, preferFlats);
+  }, [step, scaleName, rootNote, index, preferFlats]);
+
+  const duration = formatProgressionDurationLabel(resolvedStep.duration);
   return (
     <button
       type="button"
@@ -43,17 +54,17 @@ function ProgressionBlockComponent({
         width: `calc(${widthPercent}% - 3px)`,
       } as CSSProperties}
       data-active={active ? "true" : undefined}
-      data-unavailable={step.unavailable ? "true" : undefined}
+      data-unavailable={resolvedStep.unavailable ? "true" : undefined}
       onClick={() => onSelect(index)}
-      aria-label={`Step ${index + 1}, ${step.degree}, ${step.resolvedChordLabel ?? "Unavailable"}, ${duration}${active ? ", active" : ""}`}
+      aria-label={`Step ${index + 1}, ${resolvedStep.degree}, ${resolvedStep.resolvedChordLabel ?? "Unavailable"}, ${duration}${active ? ", active" : ""}`}
     >
-      <span className={styles.degreeBadge}>{step.degree}</span>
+      <span className={styles.degreeBadge}>{resolvedStep.degree}</span>
       <span className={styles.blockText}>
         <span
           className={styles.chordName}
-          title={step.resolvedChordLabel ?? step.unavailableReason ?? undefined}
+          title={resolvedStep.resolvedChordLabel ?? resolvedStep.unavailableReason ?? undefined}
         >
-          {step.shortChordLabel ?? step.unavailableReason}
+          {resolvedStep.shortChordLabel ?? resolvedStep.unavailableReason}
         </span>
         <span className={styles.duration}>{duration}</span>
       </span>

@@ -47,7 +47,7 @@ export function scoreFullChordForCagedPosition(
   };
 }
 
-export function compareFullChordCandidateScores(
+function compareFullChordCandidateScores(
   left: FullChordCandidateScore,
   right: FullChordCandidateScore,
 ): number {
@@ -57,7 +57,7 @@ export function compareFullChordCandidateScores(
     left.selectedShapePriority - right.selectedShapePriority;
 }
 
-export function getPositionKey(match: Voicing): string {
+function getPositionKey(match: Voicing): string {
   return match.positionKeys.join("|");
 }
 

@@ -7,12 +7,14 @@ import {
   displayedProgressionStepIndexAtom,
   progressionPlaybackBlockedReasonAtom,
   progressionPlayingAtom,
-  resolvedProgressionStepsAtom,
+  progressionStepsAtom,
+  progressionStepAtomsAtom,
 } from "../../../store/progressionAtoms";
 import { buildTimelineViewModel } from "./buildTimelineViewModel";
 
 export function useTimelineViewModel() {
-  const steps = useAtomValue(resolvedProgressionStepsAtom);
+  const steps = useAtomValue(progressionStepsAtom);
+  const stepAtoms = useAtomValue(progressionStepAtomsAtom);
   const beatsPerBar = useAtomValue(beatsPerBarAtom);
   const activeStepIndex = useAtomValue(activeProgressionStepIndexAtom);
   const displayedStepIndex = useAtomValue(displayedProgressionStepIndexAtom);
@@ -30,7 +32,7 @@ export function useTimelineViewModel() {
 
   return {
     ...staticView,
-    steps,
+    stepAtoms,
     activeStepIndex,
     displayedStepIndex,
     currentProgressionBar,

@@ -32,13 +32,6 @@
 .bar--lg {
   height: 1rem;
 }
-
-.circle {
-  composes: bone;
-  border-radius: 50%;
-  aspect-ratio: 1;
-}
-
 /* Card-shaped skeleton matching the app's Card component */
 .card-skeleton {
   background: var(--surface-card-top);
@@ -156,18 +149,6 @@
   composes: bone;
   flex: 1;
   border-radius: 0;
-}
-
-/* Circle of Fifths skeleton */
-.cof-skeleton {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.7rem 0;
-}
-
-.cof-skeleton .circle {
-  width: min(14rem, 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {

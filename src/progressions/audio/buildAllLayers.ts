@@ -14,9 +14,9 @@ import {
   type DrumHit,
 } from "./patterns";
 
-export type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride";
-export type StrumStyle = "staccato" | "sustained";
-export type StrumDirection = "down" | "up";
+type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride";
+type StrumStyle = "staccato" | "sustained";
+type StrumDirection = "down" | "up";
 
 export interface ChordOnsetEvent {
   stepIndex: number;

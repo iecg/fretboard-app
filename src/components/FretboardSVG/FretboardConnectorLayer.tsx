@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
@@ -41,10 +41,11 @@ const renderAnimatedChordConnectorGroup = (
   chordPolylines: ChordConnectorVoicing[],
   connectorSource: "full-chord" | "generated",
   motionKey: string,
+  skipInitial: boolean,
 ) => (
   <motion.g
     key={motionKey}
-    initial={{ opacity: 0 }}
+    initial={skipInitial ? false : { opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
     transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
@@ -98,6 +99,10 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   connectorMotionMode,
   clipPathUrl,
 }: FretboardConnectorLayerProps) {
+  const prevMode = useRef(connectorMotionMode);
+  const skipInitial = prevMode.current === "none" && connectorMotionMode === "group";
+  prevMode.current = connectorMotionMode;
+
   const polylinesKey = chordPolylines.map((v) => v.voicingKey).sort().join(",");
   const motionKey = `chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}-${polylinesKey}`;
   return (
@@ -110,7 +115,7 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
       <AnimatePresence mode="sync">
         {showChordConnectors && chordPolylines.length > 0 && (
           connectorMotionMode === "group"
-            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey)
+            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey, skipInitial)
             : renderStaticChordConnectorGroup(chordPolylines, connectorSource, motionKey)
         )}
       </AnimatePresence>
