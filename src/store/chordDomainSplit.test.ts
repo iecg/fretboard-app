@@ -113,7 +113,7 @@ describe("chordMemberFactsAtom", () => {
     setChord(store, "G", "m7");
     const facts = store.get(chordMemberFactsAtom);
     const names = facts.map((f) => f.memberName);
-    expect(names).toContain("1");
+    expect(names).toContain("R");
     expect(names).toContain("♭3");
     expect(names).toContain("5");
     expect(names).toContain("♭7");

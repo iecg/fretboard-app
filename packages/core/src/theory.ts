@@ -31,7 +31,7 @@ export const NOTES = [
 ];
 
 export const INTERVAL_NAMES = [
-  "1",
+  "R",
   "b2",
   "2",
   "b3",

@@ -106,7 +106,7 @@ export function buildChordRowEntries(
     return {
       internalNote: m.note,
       displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, preferFlats)),
-      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
+      memberName: m.name === "root" ? "R" : formatAccidental(m.name),
       role,
       inScale,
       scaleDegree,

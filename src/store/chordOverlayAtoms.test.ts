@@ -307,7 +307,7 @@ describe("allChordMembersAtom — scaleDegree + scaleInterval", () => {
 
     const cEntry = members.find((m) => m.internalNote === "C");
     expect(cEntry!.inScale).toBe(true);
-    expect(cEntry!.scaleInterval).toBe("1");
+    expect(cEntry!.scaleInterval).toBe("R");
 
     const eEntry = members.find((m) => m.internalNote === "E");
     expect(eEntry!.inScale).toBe(true);
