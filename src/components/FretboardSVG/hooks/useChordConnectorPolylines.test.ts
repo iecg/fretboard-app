@@ -633,49 +633,58 @@ describe("useChordConnectorPolylines", () => {
 });
 
 // -------------------------------------------------------------------------
-// Adjacency-aware offset assignment (plan 03-02)
+// Adjacency-aware offset assignment (plan 03-02; updated 2026-05-27)
 //
-// detectOverlapClusters uses inflated AABB union-find to cluster voicings
-// whose envelopes overlap. assignClusterOffsets sorts each cluster by
-// canonicalKey and assigns OFFSET_BUCKET[i % OFFSET_BUCKET.length].
+// assignConflictOffsets builds a centerline-conflict graph using polyline
+// distances in topology coords, then greedy-colors with OFFSET_BUCKET=[0,3].
+// Clusters of 3+ overlapping voicings wrap modulo — the third+ voicing
+// reuses an offset, producing a deliberate collision (see OFFSET_BUCKET
+// docstring for rationale).
 //
 // Geometry parameters (used to derive overlap expectations):
-//   fretCenterX(fi) = fi * 10  → 10 px per fret
-//   stringYAt(si) = si * 20    → 20 px per string
-//   STRING_ROW_PX = 36
-//   baseRadius = 36 * 0.47 ≈ 16.92 px
-//   maxBucketOffset = 10 px (OFFSET_BUCKET last element)
-//   inflateBy = baseRadius + maxBucketOffset ≈ 26.92 px
+//   TOPOLOGY_FRET_UNIT_PX = 16   (calibrated so 3-fret gap = no conflict)
+//   TOPOLOGY_STRING_UNIT_PX = 20
+//   TOPOLOGY_STRING_ROW_PX = 36
+//   baseRadius = 36 * 0.42 ≈ 15.12 px
+//   conflict threshold = 2 * baseRadius + CONFLICT_GAP ≈ 31.7 px
 //
-// Two voicings on the same strings overlap in y automatically. In x they
-// overlap if their fret positions are within 2 * 26.92 / 10 ≈ 5.4 frets.
-//
-// "Far apart" = fret distance > 5.4 (e.g. frets 1-3 vs 9-11 → gap ≥ 6 frets).
+// Two voicings on the same strings overlap automatically (segments touch).
+// "Far apart" = fret distance ≥ 3 frets on same strings (gap ≥ 48 px).
 // -------------------------------------------------------------------------
 
 describe("adjacency-aware offset assignment", () => {
   // -------------------------------------------------------------------------
-  // Overlapping voicings (sharing strings at the same fret) form an AABB
-  // cluster and receive distinct OFFSET_BUCKET entries → pairwise distinct
-  // paths. Non-overlapping voicings stay as singleton clusters with offset 0
-  // (matching their solo baselines). Outputs are deterministic across re-runs.
+  // Overlapping voicings (sharing strings at the same fret) form a conflict
+  // cluster. With OFFSET_BUCKET=[0,3], clusters of size 2 get distinct paths
+  // (offsets 0,3); clusters of size 3+ wrap modulo (offsets 0,3,0,…) so the
+  // first and third voicings collide — intentional UX trade-off.
+  // Non-overlapping voicings stay as singletons with offset 0.
   // -------------------------------------------------------------------------
 
-  it.each<{ n: number; specs: NoteSpec[] }>([
+  const extractRadius = (path: string): number =>
+    parseFloat(path.match(/A ([\d.]+)/)?.[1] ?? "0");
+
+  it.each<{ n: number; expectedDistinctRadii: number; specs: NoteSpec[] }>([
     {
       n: 2,
+      expectedDistinctRadii: 2,
       specs: [[0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"], [3, 5, "C", "chord-root"]],
     },
     {
       n: 3,
+      expectedDistinctRadii: 2,
       specs: [[0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"],
         [3, 5, "C", "chord-root"], [4, 5, "E"]],
     },
-  ])("$n AABB-overlapping voicings receive $n distinct path strings", ({ n, specs }) => {
-    const result = build(notes(specs), ["C", "E", "G"]);
-    expect(result).toHaveLength(n);
-    expect(new Set(result.map((v) => v.paths.fill)).size).toBe(n);
-  });
+  ])(
+    "$n overlapping voicings use ≤2 distinct radii (2-color bucket; cluster of 3+ collides)",
+    ({ n, expectedDistinctRadii, specs }) => {
+      const result = build(notes(specs), ["C", "E", "G"]);
+      expect(result).toHaveLength(n);
+      const radii = new Set(result.map((v) => extractRadius(v.paths.fill)));
+      expect(radii.size).toBe(expectedDistinctRadii);
+    },
+  );
 
   it("non-overlapping voicings get offset 0 (matching singleton baselines)", () => {
     const baseline1 = build(notes([[0, 1, "C", "chord-root"], [1, 2, "E"], [2, 3, "G"]]), ["C", "E", "G"]);
@@ -705,23 +714,11 @@ describe("adjacency-aware offset assignment", () => {
   });
 
   // -------------------------------------------------------------------------
-  // (5) Cluster size 6 stress: six overlapping voicings all get distinct paths.
-  //
-  // Six voicings from adjacent 4-string windows on strings 0-8, all at fret 5.
-  // chord ["C","E","G","B"] with repeating pattern C,E,G,B,C,E,G,B,C on str0-8.
-  // Windows [0-3],[1-4],[2-5],[3-6],[4-7],[5-8] → 6 voicings.
-  //
-  // All-pairwise AABB-overlap proof (most distant pair: window 0-3 vs 5-8):
-  //   [0-3]: y=[0,60], inflated y max = 60 + 26.92 = 86.92
-  //   [5-8]: y=[100,160], inflated y min = 100 - 26.92 = 73.08
-  //   73.08 < 86.92 → overlap ✓
-  // x is identical for all (fret 5 = x 50) → x AABB always overlaps.
-  //
-  // Single cluster of size 6 → 6 distinct OFFSET_BUCKET entries → pairwise distinct paths.
+  // Cluster size 6 stress: six overlapping voicings, 2-color bucket caps
+  // distinct paths at 2. Offsets alternate 0,3,0,3,0,3 along canonical-key
+  // sort order. Intentional collision per OFFSET_BUCKET trade-off.
   // -------------------------------------------------------------------------
-  it("(5) cluster of 6 voicings: all six paths.fill strings are pairwise distinct", () => {
-    // Cmaj7 pattern C,E,G,B across strings 0-8 at fret 5; each 4-string window
-    // [s, s+3] covers one rotation. 6 windows → 6 voicings, all distinct.
+  it("cluster of 6 voicings: only 2 distinct radii used (2-color bucket)", () => {
     const result = build(
       notes(["C", "E", "G", "B", "C", "E", "G", "B", "C"].map(
         (n, si) => [si, 5, n, n === "C" ? "chord-root" : "chord-tone-in-scale"] as NoteSpec,
@@ -729,7 +726,10 @@ describe("adjacency-aware offset assignment", () => {
       ["C", "E", "G", "B"],
     );
     expect(result).toHaveLength(6);
-    expect(new Set(result.map((v) => v.paths.fill)).size).toBe(6);
+    const radii = new Set(
+      result.map((v) => parseFloat(v.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0")),
+    );
+    expect(radii.size).toBe(2);
   });
 });
 

@@ -130,13 +130,15 @@ const CONNECTOR_CONFLICT_GAP_PX = 1.5;
 
 /**
  * Per-voicing pixel offset deltas added to the base radius.
- * Assigned by adjacency-aware cluster detection so that voicings whose
- * envelopes overlap receive distinct offsets with 3 px spacing between
- * adjacent values. Non-negative: smallest envelope equals base radius
- * (no bubble-clipping risk). Five entries cap the cluster size; clusters
- * larger than 5 wrap with modulo (documented, accepted trade-off).
+ * Two-color palette: voicings whose envelopes overlap alternate between
+ * default radius (0) and one step larger (3 px). Clusters of 3+ overlapping
+ * voicings wrap with modulo — the third+ voicing reuses an offset already
+ * taken by a neighbor, producing a visible collision. This is an explicit
+ * UX trade-off: full-chord templates rarely produce ≥3-way overlaps, and
+ * when they do (e.g. degraded shapes in high frets), the accepted minor
+ * collision reads as more elegant than a 5-tier ladder of growing radii.
  */
-const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
+const OFFSET_BUCKET = [0, 3] as const;
 
 /**
  * Canonical pixel scale used for topology-level conflict detection.
@@ -145,7 +147,14 @@ const OFFSET_BUCKET = [0, 3, 6, 9, 12] as const;
  * geometry (fretCenterX / stringYAt), so the conflict graph only needs
  * to be recomputed when the musical data changes — not on every resize.
  */
-const TOPOLOGY_FRET_UNIT_PX = 10;
+// Topology x-scale calibrated so that two voicings on the same string set
+// separated by ≥3 frets do NOT trigger a conflict. At base radius ≈15.12
+// (0.42 × 36) the conflict threshold is ~31.7 px; with FRET_UNIT_PX=16,
+// a 2-fret gap (32 px) still conflicts but a 3-fret gap (48 px) does not.
+// This matches the visual reality of close voicings on the same strings —
+// chord roots 3 frets apart on the same 3-string window do not visually
+// overlap, so they should not be radius-bumped.
+const TOPOLOGY_FRET_UNIT_PX = 16;
 const TOPOLOGY_STRING_UNIT_PX = 20;
 const TOPOLOGY_STRING_ROW_PX = 36;
 
