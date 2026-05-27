@@ -5,7 +5,6 @@ import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { axe } from "../../test-utils/a11y";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 import {
-  CHORD_ROOT_HALO_RADIUS_PX,
   CIRCLE_RADIUS_REDUCTION_PX,
   SQUIRCLE_RADIUS_REDUCTION_PX,
   squirclePath,
@@ -75,18 +74,14 @@ describe("FretboardNoteLayer", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("renders squircle as a superellipse path with halo for chord-root", () => {
+  it("renders squircle as a superellipse path for chord-root", () => {
     const noteBubblePx = 40;
     const visualRadius = (noteBubblePx / 2) * 0.86 - SQUIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer([makeNote("chord-root")], { bubblePx: noteBubblePx });
 
     const paths = container.querySelectorAll("path");
-    expect(paths.length).toBe(2);
-    expect(paths[1]!.getAttribute("d")).toBe(squirclePath(100, 50, visualRadius));
-    expect(paths[0]!.getAttribute("d")).toBe(
-      squirclePath(100, 50, visualRadius + CHORD_ROOT_HALO_RADIUS_PX),
-    );
-    expect(container.querySelectorAll("rect").length).toBe(0);
+    expect(paths.length).toBe(1);
+    expect(paths[0]!.getAttribute("d")).toBe(squirclePath(100, 50, visualRadius));
 
     const label = container.querySelector("text")!;
     expect(label.textContent).toBe("C");
@@ -122,7 +117,7 @@ describe("FretboardNoteLayer", () => {
         makeNote("chord-tone-in-scale", { stringIndex: 1, fretIndex: 2, cx: 200, cy: 30 }),
       ],
     );
-    expect(container.querySelectorAll("path").length).toBe(3); // chord-root halo+main, chord-tone main
+    expect(container.querySelectorAll("path").length).toBe(2); // chord-root main, chord-tone main
     expect(container.querySelectorAll("rect").length).toBe(0);
     expect(container.querySelectorAll("text").length).toBe(2);
   });
@@ -173,7 +168,7 @@ describe("FretboardNoteLayer", () => {
   });
 
   it.each<{ role: NoteClass; scale: number; pathIndex: number; totalPaths: number }>([
-    { role: "chord-root", scale: RADIUS_SCALE_CHORD_ROOT, pathIndex: 1, totalPaths: 2 },
+    { role: "chord-root", scale: RADIUS_SCALE_CHORD_ROOT, pathIndex: 0, totalPaths: 1 },
     { role: "chord-tone-in-scale", scale: RADIUS_SCALE_CHORD_TONE, pathIndex: 0, totalPaths: 1 },
   ])("$role squircle radius reduced by SQUIRCLE_RADIUS_REDUCTION_PX", ({ role, scale, pathIndex, totalPaths }) => {
     const noteBubblePx = 40;

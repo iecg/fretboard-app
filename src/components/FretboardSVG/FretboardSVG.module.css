@@ -570,26 +570,12 @@
 .chord-connectors path[data-palette-index="7"] { color: var(--chord-connector-color-7); }
 .chord-connectors path[data-palette-index="8"] { color: var(--chord-connector-color-8); }
 
-.chord-connectors path[data-caged-shape="E"] { color: var(--caged-e); }
-.chord-connectors path[data-caged-shape="D"] { color: var(--caged-d); }
-.chord-connectors path[data-caged-shape="C"] { color: var(--caged-c); }
-.chord-connectors path[data-caged-shape="A"] { color: var(--caged-a); }
-.chord-connectors path[data-caged-shape="G"] { color: var(--caged-g); }
+.chord-degree-dot {
+  fill: white !important;
+  stroke: none !important;
+  pointer-events: none;
+}
 
-/* -----------------------------------------------------------------------
-   Active-voicing highlight ring.
-   Named constants (comment-level):
-     ACTIVE_STROKE_BUMP    = 0.5px   (added to --chord-connector-outline-width)
-     ACTIVE_SHADOW_BLUR    = 2px     (drop-shadow radius)
-     NON_ACTIVE_DIM_FACTOR = 0.7     (multiplied against base opacity tokens)
-   No transition/animation — snap on state change (no motion).
-   ----------------------------------------------------------------------- */
-
-/* -----------------------------------------------------------------------
-   2-Strings interval connectors — polyline style matching chord connectors.
-   Three-pass halo + fill + outline render; per-pair color via --chord-connector-color-N.
-   Shares the same CSS token convention as .chord-connectors.
-   ----------------------------------------------------------------------- */
 .interval-connectors path[data-layer="halo"] {
   fill: none;
   stroke: var(--chord-connector-halo-color, rgba(255, 255, 255, 0.5));
