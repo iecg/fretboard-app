@@ -3,11 +3,11 @@ import { clsx } from "clsx";
 import { useAtomValue } from "jotai";
 import styles from "./Fretboard.module.css";
 import {
-  getFretboardNotes,
   getFretNoteWithOctave,
   getNoteFrequency,
 } from "@fretflow/core";
 import { playGuitarNote } from "../../core/lazyGuitarAudio";
+import { getCachedFretboardLayout } from "../../core/fretboardLayoutCache";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import type { AutoCenterTarget } from "../../store/shapeAtoms";
 const LazyFretboardSVG = lazy(() => 
@@ -117,10 +117,7 @@ export function Fretboard(props: FretboardProps) {
   const onFretClickProp = props.onFretClick;
   const id = props.id;
 
-  const fretboardLayout = useMemo(
-    () => getFretboardNotes(tuning, Math.max(endFret, maxFret)),
-    [tuning, endFret, maxFret],
-  );
+  const fretboardLayout = getCachedFretboardLayout(tuning, Math.max(endFret, maxFret));
 
   // `state.fullChordPositions` is already a Set<string> sourced from
   // chordHighlightPositionsAtom — pass it through directly. The note-highlight

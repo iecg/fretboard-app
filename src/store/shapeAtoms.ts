@@ -7,7 +7,6 @@ import {
   getShapeCenterFret,
   type ShapePolygon,
 } from "@fretflow/core";
-import { getFretboardNotes } from "@fretflow/core";
 import { getScaleNotes, NOTES } from "@fretflow/core";
 import {
   getOneStringCoordinates,
@@ -16,6 +15,7 @@ import {
   TWO_STRINGS_INTERVAL_SD_DISTANCES,
   getOneStringIntervalPairs,
 } from "@fretflow/core";
+import { getCachedFretboardLayout } from "../core/fretboardLayoutCache";
 import {
   fingeringPatternAtom,
   cagedShapesAtom,
@@ -106,7 +106,7 @@ const oneStringShapeDataAtom = atom((get): ShapeData => {
 
   if (oneStringInterval > 0) {
     // UAT-22: On mode connects consecutive scale tones (2nds) only — SD distance = 1.
-    const board = getFretboardNotes(currentTuning, 24);
+    const board = getCachedFretboardLayout(currentTuning, 24);
     const scaleNoteNames = getScaleNotes(rootNote, scaleName);
     const scaleNoteSet = new Set(scaleNoteNames);
     const scaleNoteSemitones = scaleNoteNames.map((n) => NOTES.indexOf(n)).filter((i) => i !== -1);
@@ -143,7 +143,7 @@ const twoStringsShapeDataAtom = atom((get): ShapeData => {
   let intervalPairs: Array<{ a: string; b: string }> = [];
 
   if (twoStringsInterval > 0) {
-    const board = getFretboardNotes(currentTuning, 24);
+    const board = getCachedFretboardLayout(currentTuning, 24);
     const scaleNoteNames = getScaleNotes(rootNote, scaleName);
     const scaleNoteSet = new Set(scaleNoteNames);
     const scaleNoteSemitones = scaleNoteNames.map((n) => NOTES.indexOf(n)).filter((i) => i !== -1);
@@ -247,4 +247,3 @@ export const autoCenterTargetAtom = atom((get) => {
 });
 
 export const intervalPairsAtom = atom((get) => get(effectiveShapeDataAtom).intervalPairs);
-

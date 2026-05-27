@@ -9,7 +9,6 @@ import {
   getNoteDisplay,
   formatAccidental,
   generateVoicings,
-  getFretboardNotes,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
@@ -38,6 +37,7 @@ import {
   activeChordRootAtom,
   activeChordQualityAtom,
 } from "./songStateAtoms";
+import { getCachedFretboardLayout } from "../core/fretboardLayoutCache";
 import { currentTuningAtom } from "./layoutAtoms";
 import {
   cagedShapesAtom,
@@ -655,7 +655,7 @@ function addChordTonesWithinPolygon(
   const tones = get(chordTonesAtom);
   if (tones.length === 0) return;
   const tuning = get(currentTuningAtom);
-  const layout = getFretboardNotes(tuning, 24);
+  const layout = getCachedFretboardLayout(tuning, 24);
   for (let s = 0; s < tuning.length; s++) {
     for (let f = 0; f <= 24; f++) {
       if (tones.includes(layout[s][f])) {
