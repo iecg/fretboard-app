@@ -10,6 +10,64 @@
 
 ---
 
+## Reference design — received 2026-05-27
+
+User provided the light-mode reference (image attached to chat). Core palette transcribed below; image should be saved to `docs/superpowers/specs/assets/2026-05-27-theming-reference.png` by the user (or by frontend-design at the start of execution) so the spec links to a durable file.
+
+### Palette
+
+| Reference name | Hex | Role in reference |
+|---|---|---|
+| BG | `#ebebdc` | App background — warm parchment |
+| PANEL | `#f6f2e9` | Card/panel surface — cream |
+| PANEL-SOFT | `#e3ddd8` | Secondary surface — warm beige |
+| INK | `#2a251d` | Primary text — dark warm brown (no black) |
+| MUTE | `#857c6c` | Secondary text — warm gray |
+| CYAN | `#147088` | Primary accent — deep teal (logo, active states, toggles, tab underline, active shape button fill) |
+| ORANGE | `#b1431b` | Warm accent — rust/terracotta (active chord card tint, plausibly playback / chord-tone ring) |
+
+Fretboard wood color visible in reference (no swatch label): warm tan, roughly `#d6c4a0` family — more saturated than PANEL, less than the existing maple. Frontend-design should sample the exact value from the reference image.
+
+### Aesthetic direction
+
+Vintage/editorial. Warm earthy base, no pure white or pure black, complementary teal+rust accents. The light mode shifts from "wood-grained guitar app" toward "artisan tool / fine notebook". Implications:
+
+- The current `[data-theme="modern-light"]` cool-blue string retone is replaced by a warm string treatment in the same palette family as INK/MUTE.
+- "Active" everywhere collapses to one accent: CYAN. Used for tab underline, active toggle track, active shape button fill, links, primary CTA.
+- "Playback / active chord" everywhere collapses to: ORANGE. Used for the active chord card tint, plausibly for chord-tone ring + the anticipation glow token added by Lens Consolidation.
+- Tonic / scale-root might also adopt ORANGE as the warm "this is special" marker (current light-mode `--note-ring-tonic: #b45309` is in the same family — natural fit).
+
+### Suggested token-family mappings (frontend-design verifies/iterates)
+
+These are not commitments; they're a starting point for `frontend-design` to evaluate against the reference image.
+
+- **Family 1 — Note fills (light mode):**
+  - `--fretboard-note-fill-tonic` → derived from ORANGE at high lightness (e.g. `color-mix` rust + cream).
+  - `--fretboard-note-fill-chord-root` → ORANGE-tinted cream, slightly stronger than tonic.
+  - `--fretboard-note-fill-chord-tone` → CYAN-tinted cream.
+  - `--fretboard-note-fill-scale-only` → PANEL-SOFT or a wood-tinted neutral.
+  - `--fretboard-note-fill-chord-outside`, `-tension-emph`, `-tension-strong` → ORANGE-family at varying intensities.
+  - `--fretboard-note-fill-guide-emph` → CYAN-family.
+- **Family 2 — Note rings + glows (light mode):**
+  - `--note-ring` → CYAN (`#147088`).
+  - `--note-ring-tonic` → ORANGE (`#b1431b`).
+  - `--note-ring-color-tone` → a third earthy hue (consider MUTE `#857c6c` or a desaturated rust).
+- **Family 4 — Lens-emphasis glows (NEW tokens):**
+  - `--note-glow-anticipation` light → ORANGE-family. Dark → keep existing orange `#fb923c`-ish or retune.
+  - `--note-glow-hold` light → CYAN-family. Dark → keep existing cyan `#06b6d4`-ish or retune.
+- **Panel / chrome:**
+  - `--surface-app` → BG (`#ebebdc`).
+  - `--surface-card` → PANEL (`#f6f2e9`).
+  - `--surface-card-soft` → PANEL-SOFT (`#e3ddd8`).
+  - `--text-primary` → INK (`#2a251d`).
+  - `--text-muted` → MUTE (`#857c6c`).
+  - `--accent-primary` → CYAN.
+  - `--accent-warm` → ORANGE.
+
+Token NAMES above are illustrative — frontend-design works against whatever the current codebase actually defines (see file-touch list below).
+
+---
+
 ## Context
 
 ### Today
