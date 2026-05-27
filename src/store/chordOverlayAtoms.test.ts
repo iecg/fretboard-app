@@ -105,7 +105,7 @@ describe("chordRootAtom / chordTypeAtom — derived from active progression step
 });
 
 describe("isInAnyPolygon", () => {
-  it("uses non-truncated polygon coverage for membership checks", () => {
+  it("uses polygon coverage for membership checks (truncated polygons covered too)", () => {
     const polygons: ShapePolygon[] = [
       {
         shape: "C",
@@ -142,7 +142,10 @@ describe("isInAnyPolygon", () => {
     expect(isInAnyPolygon("0-3", polygons)).toBe(true);
     expect(isInAnyPolygon("1-4", polygons)).toBe(true);
     expect(isInAnyPolygon("1-3", polygons)).toBe(false);
-    expect(isInAnyPolygon("0-9", polygons)).toBe(false);
+    // Truncated polygons' visible portion is now covered. Fixes the
+    // invisible-notes-inside-clipped-shape bug (notes inside a drawn polygon
+    // were being dim-opacity'd as if outside the shape).
+    expect(isInAnyPolygon("0-9", polygons)).toBe(true);
   });
 });
 

@@ -30,7 +30,7 @@ describe("polygonCoverage", () => {
     expect(coverage.stringRanges.get(1)).toEqual([{ minFret: 4, maxFret: 5 }]);
   });
 
-  it("ignores truncated polygons and clamps ranges to the fretboard", () => {
+  it("covers truncated polygons' visible portion and clamps ranges to the fretboard", () => {
     const coverage = buildPolygonCoverage([
       {
         shape: "C",
@@ -64,11 +64,24 @@ describe("polygonCoverage", () => {
       },
     ], 24);
 
-    expect(coverage.coveredPositions.has("0-0")).toBe(false);
+    // Truncated polygon's visible portion is now covered: a polygon drawn on
+    // the fretboard should mark its on-board positions as covered so notes
+    // inside it don't get dim-opacity treatment.
+    expect(coverage.coveredPositions.has("0-0")).toBe(true);
+    expect(coverage.coveredPositions.has("0-4")).toBe(true);
+    expect(coverage.coveredPositions.has("1-1")).toBe(true);
+    expect(coverage.coveredPositions.has("1-3")).toBe(true);
+    // Non-truncated A-shape polygon, clamped to fret 24:
     expect(coverage.coveredPositions.has("0-24")).toBe(true);
     expect(coverage.coveredPositions.has("0-25")).toBe(false);
     expect(coverage.coveredPositions.has("1-24")).toBe(true);
-    expect(coverage.stringRanges.get(0)).toEqual([{ minFret: 21, maxFret: 24 }]);
-    expect(coverage.stringRanges.get(1)).toEqual([{ minFret: 22, maxFret: 24 }]);
+    expect(coverage.stringRanges.get(0)).toEqual([
+      { minFret: 0, maxFret: 4 },
+      { minFret: 21, maxFret: 24 },
+    ]);
+    expect(coverage.stringRanges.get(1)).toEqual([
+      { minFret: 1, maxFret: 3 },
+      { minFret: 22, maxFret: 24 },
+    ]);
   });
 });

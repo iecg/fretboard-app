@@ -40,7 +40,7 @@ describe("useStaticFretboardTopology", () => {
     expect(result.current).toBe(initialTopology);
   });
 
-  it("marks notes covered by polygon ranges and ignores truncated polygons", () => {
+  it("marks notes covered by polygon ranges including truncated polygons' visible portion", () => {
     const shapePolygons: ShapePolygon[] = [
       {
         shape: "C",
@@ -88,8 +88,10 @@ describe("useStaticFretboardTopology", () => {
     }));
 
     expect(result.current.find((note) => note.positionKey === "0-3")?.isInsideAnyPolygon).toBe(true);
-    expect(result.current.find((note) => note.positionKey === "0-1")?.isInsideAnyPolygon).toBe(false);
+    // Truncated A-shape polygon (intended 0..2) on-board portion covers 0-1/0-2/1-0/1-1/1-2 now.
+    expect(result.current.find((note) => note.positionKey === "0-1")?.isInsideAnyPolygon).toBe(true);
     expect(result.current.find((note) => note.positionKey === "1-4")?.isInsideAnyPolygon).toBe(true);
+    // Outside both polygons:
     expect(result.current.find((note) => note.positionKey === "1-3")?.isInsideAnyPolygon).toBe(false);
   });
 });

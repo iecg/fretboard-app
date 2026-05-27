@@ -183,7 +183,10 @@ export function buildStaticFretboardTopology({
         if (shapeScope === "global") return true;
 
         return shapePolygons.some((poly) => {
-          if (poly.truncated) return false;
+          // Truncated polygons' visible portion is still a polygon the user
+          // sees on the fretboard; positions inside it ARE in a playable
+          // context. The clamped-vertex check below correctly filters to the
+          // on-board fret range.
           if (shapeScope === "single") {
             if (activePattern === "caged" && poly.shape !== activeShape) return false;
             if (activePattern === "3nps" && poly.shape !== activeShape) return false;

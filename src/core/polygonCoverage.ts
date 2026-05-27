@@ -13,8 +13,9 @@ export function buildPolygonCoverage(
   const stringRanges = new Map<number, Array<{ minFret: number; maxFret: number }>>();
 
   for (const polygon of polygons) {
-    if (polygon.truncated) continue;
-
+    // Truncated polygons are still drawn on the fretboard — their visible
+    // portion (vertices clamped to [0, maxFret]) is real coverage. Excluding
+    // them here would dim notes that sit inside a polygon the user can see.
     for (let vertexIndex = 0; vertexIndex < polygon.vertices.length / 2; vertexIndex++) {
       const leftVertex = polygon.vertices[vertexIndex];
       const rightVertex = polygon.vertices[polygon.vertices.length - 1 - vertexIndex];
