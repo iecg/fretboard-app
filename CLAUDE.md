@@ -30,31 +30,39 @@ pnpm run preview               # preview build locally
 
 ### State & Logic
 
-- **State:** Jotai atoms under `src/store/`, domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `actions`. Import directly from the relevant domain module (e.g. `import { rootNoteAtom } from "../store/scaleAtoms"`). Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
-- **Domain (pure):** `src/core/` — `theory.ts`, `theoryCatalog.ts`, `guitar.ts`, `degrees.ts`, `circleOfFifthsUtils.ts`, `constants.ts`. Plus the `src/shapes/` package (`templates`, `helpers`, `polygons`, `threeNPS`, `analytics`).
-- **Music theory:** `@fretflow/core`'s theory functions (`getNoteDisplay`, `getChordNotes`, `getScaleNotes`, `getDiatonicChord`, `getKeySignature`, etc.) are backed by [Tonal.js](https://github.com/tonaljs/tonal) (`@tonaljs/note`, `@tonaljs/chord`, `@tonaljs/scale`, `@tonaljs/key`, `@tonaljs/interval`). Naming translation lives in `packages/core/src/lib/tonal.ts`.
-- **Audio:** `GuitarSynth` singleton in `src/core/audio.ts` (Web Audio API).
+- **State:** Jotai atoms under `src/store/`, domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `progressionAtoms`, `songStateAtoms`, `voicingFallbackAtoms`, `voicingStringSets`, `composableSelectors`, `actions`. Import directly from the relevant domain module (e.g. `import { rootNoteAtom } from "../store/scaleAtoms"`). Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
+- **Domain (pure):** `@fretflow/core` workspace package at `packages/core/src/` — `theory.ts`, `theoryCatalog.ts`, `guitar.ts`, `degrees.ts`, `circleOfFifthsUtils.ts`, `diatonicNotes.ts`, `constants.ts`. Includes the `shapes/` package (`templates`, `fullChordShapes`, `voicings`, `helpers`, `polygons`, `threeNPS`, `analytics`, `practicePatterns`).
+- **Music theory:** `@fretflow/core`'s theory functions (`getNoteDisplay`, `getChordNotes`, `getScaleNotes`, `getDiatonicChord`, `getKeySignature`, etc.) are backed by [Tonal.js](https://github.com/tonaljs/tonal) (`@tonaljs/note`, `@tonaljs/chord`, `@tonaljs/scale`, `@tonaljs/key`, `@tonaljs/interval`, `@tonaljs/roman-numeral`, `@tonaljs/progression`). Naming translation lives in `packages/core/src/lib/tonal.ts`.
+- **Audio:** `GuitarSynth` singleton in `src/core/audio.ts` (Web Audio API). Tone.js progression playback in `src/progressions/` + `src/hooks/useProgressionAudioPlayback.ts`.
 - **Persistence:** `atomWithStorage` with keys prefixed via `src/utils/storage.ts`.
 
 ### Components & Layout
 
-- **Orchestration:** `src/App.tsx` is a thin orchestrator (~158 lines) that wires atoms to `MainLayoutWrapper`.
+- **Orchestration:** `src/App.tsx` (~260 lines) wires atoms to `MainLayoutWrapper`.
 - **Rendering:** `components/Fretboard/Fretboard.tsx` wraps `components/FretboardSVG/FretboardSVG.tsx` (the primary SVG renderer — large, direct atom subscriptions). `components/CircleOfFifths/` handles root/degree selection.
 - **Layout:** `useLayoutMode` (in `src/hooks/`) measures viewport via `src/layout/responsive.ts` → returns `{ tier, variant, … }`. `MainLayoutWrapper` emits `data-layout-tier` (mobile/tablet/desktop) and `data-layout-variant` (mobile/landscape-mobile/tablet-split/tablet-stacked/desktop-split/desktop-stacked/desktop-3col) attributes. **Both gate responsive CSS — always consider both.**
-- **Primitives:** `NoteGrid`, `ToggleBar`, `StepperControl`, `LabeledSelect`, `Card`.
+- **Primitives:** `NoteGrid`, `ToggleBar`, `StepperControl`, `LabeledSelect`, `Card`, `InspectorCard`.
 
 ## File Layout
 
 ```text
+packages/
+└── core/                     # @fretflow/core — pure music-theory package
+    └── src/                  # theory, theoryCatalog, guitar, degrees, circleOfFifthsUtils,
+                              # diatonicNotes, constants, shapes/, lib/tonal.ts
+
 src/
-├── App.tsx                   # thin orchestrator
+├── App.tsx                   # orchestrator (~260 lines)
 ├── main.tsx
-├── core/                     # pure domain (theory, theoryCatalog, guitar, degrees, audio, ...)
+├── core/                     # app-side runtime (audio, lazyGuitarAudio, toneInit,
+│                             # fretboardLayoutCache, polygonCoverage)
 ├── store/                    # Jotai atom modules (domain-split) + actions.ts
-├── hooks/                    # useLayoutMode, useFretboardState, useFocusTrap, ...
+├── hooks/                    # useLayoutMode, useFretboardState, useFretboardTopologyModel,
+│                             # usePlaybackTransportModel, useProgressionAudioPlayback, ...
 ├── layout/                   # breakpoints + responsive layout resolver
-├── shapes/                   # CAGED + 3NPS package
+├── progressions/             # progression domain + Tone.js audio engine
 ├── utils/                    # storage helpers, dom helpers
+├── i18n/                     # translation strings + useTranslation
 ├── test-utils/               # renderWithAtoms, a11y helpers, vitest setup
 ├── styles/                   # tokens.css, semantic.css, App.css, index.css (global only)
 ├── assets/                   # static images
@@ -69,7 +77,7 @@ src/
 - **Coordinates:** `"string-fret"` keys (e.g., `"0-12"`).
 - **Tests:** Co-located with source — `components/<Name>/<Name>.test.tsx`, `core/<name>.test.ts`, `store/<name>.test.ts`. Shared helpers in `src/test-utils/`.
 - **CSS:**
-  - CSS Modules (`*.module.css`) for all component-scoped styles (26 modules).
+  - CSS Modules (`*.module.css`) for all component-scoped styles (38 modules).
   - Global foundations under `src/styles/` (`tokens.css`, `semantic.css`, `App.css`, `index.css`) — imported via `src/styles/index.css`.
   - Shared module CSS in `src/components/shared/shared.module.css`.
   - Use `clsx` for conditional classes, `cva` for variant class systems, `motion` (from `motion/react`) for animations.
@@ -79,9 +87,9 @@ src/
 
 ## CAGED / 3NPS System
 
-1. `src/shapes/` finds note positions via `SHAPE_CONFIGS` and generates polygon vertices (fixed templates for pentatonic, dynamic for 7-note scales).
+1. `packages/core/src/shapes/` finds note positions via `SHAPE_CONFIGS` and generates polygon vertices (fixed templates for pentatonic, dynamic for 7-note scales). `fullChordShapes.ts` + `voicings.ts` provide full-chord and close-voicing pickers.
 2. Orchestrator merges adjacent boundaries with buffer.
-3. `FretboardSVG.tsx` renders pixel SVG polygons.
+3. `FretboardSVG.tsx` renders pixel SVG polygons; `useChordConnectorPolylines` draws the connector polylines linking voicing notes.
 
 ## Lens & Note Roles
 
