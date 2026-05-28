@@ -270,8 +270,8 @@
   r: calc(var(--note-r) * 1px - 0.4px);
 }
 
-.fretboard-note[data-note-role="key-tonic"],
-.fretboard-note[data-note-role="chord-root"],
+/* Root roles (key-tonic, chord-root) are intentionally glow-free —
+   their identity reads via the structural double-ring, not glow. */
 .fretboard-note[data-note-role="chord-tone-in-scale"],
 .fretboard-note[data-note-role="note-diatonic-chord"],
 .fretboard-note[data-note-role="chord-tone-outside-scale"] {

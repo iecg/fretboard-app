@@ -112,8 +112,8 @@ export const FretboardNoteLayer = memo(({
                     fill: "none",
                     stroke: isTension
                       ? "var(--neon-orange-dim)"
-                      : "color-mix(in srgb, var(--neon-orange) 22%, transparent)",
-                    strokeWidth: isTension ? 1.8 : 1.5,
+                      : "var(--note-ring-tonic)",
+                    strokeWidth: 1.8,
                     strokeDasharray: isTension ? "6 3" : undefined,
                     paintOrder: "stroke",
                   }}
@@ -133,7 +133,17 @@ export const FretboardNoteLayer = memo(({
               }).join(" ")}
             />
           ) : (
-            <circle cx={cx} cy={cy} r={r} />
+            <>
+              {noteClass === "key-tonic" && (
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={r + CHORD_ROOT_HALO_RADIUS_PX}
+                  style={{ fill: "none", stroke: "var(--note-ring-tonic)", strokeWidth: 1.8, paintOrder: "stroke" }}
+                />
+              )}
+              <circle cx={cx} cy={cy} r={r} />
+            </>
           );
 
         const baseOpacity = applyDimOpacity ? 0.8 : 1;
