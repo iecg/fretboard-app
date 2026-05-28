@@ -185,6 +185,7 @@ describe("ToggleBar/ToggleBar", () => {
   it.each([
     ["default", undefined],
     ["tabs", "tabs"],
+    ["pip", "pip"],
   ] as const)("%s variant has no a11y violations", async (_label, variant) => {
     const { container } = render(
       <ToggleBar

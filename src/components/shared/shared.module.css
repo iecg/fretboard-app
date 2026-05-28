@@ -209,6 +209,11 @@
   background: var(--destructive-control-hover-bg);
 }
 
+/* Base toggle group: intentionally supplies the resting surface chrome
+   (dc-* bg/border/radius) for the `default` variant, so `.toggle-group--default`
+   need not separately compose `.surface--control`. The other variants override
+   this: `chip` clears it (transparent bg, no border) and routes chrome onto each
+   button, `pip` resets it to a bare flex row, and `tabs` uses its own surface. */
 .toggle-group {
   display: flex;
   align-items: stretch;
