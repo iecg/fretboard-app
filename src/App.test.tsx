@@ -39,9 +39,8 @@ vi.mock("./components/Fretboard/Fretboard", async () => {
   };
 });
 
-// v2.0: CircleOfFifths is no longer rendered by App. We need a root-note
-// setter that IS rendered. Mock FingeringPatternControls (rendered in the
-// Overlay tab) to also render a test-only root-note change button.
+// FingeringPatternControls is rendered in the Overlay tab. Mock it so the
+// component-under-test exposes a root-note setter the suite can fire.
 vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async () => {
   const { useAtomValue, useSetAtom } = await import("jotai");
   const { rootNoteAtom } = await import("./store/scaleAtoms");
@@ -53,7 +52,7 @@ vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async 
       return (
         <>
           <div data-testid="fingering-controls">Fingering Controls</div>
-          {/* Test-only root-note setter, replaces the removed CircleOfFifths */}
+          {/* Test-only root-note setter for assertions below */}
           <button data-testid="set-root-note" onClick={() => setRootNote("G")}>
             Set Root: {rootNote}
           </button>

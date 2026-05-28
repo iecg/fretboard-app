@@ -21,24 +21,21 @@ test.describe("App Components Visual", () => {
     await expectLocatorVisual(locator, "fretboard-light-1280x900");
   });
 
-  test("circle-of-fifths-desktop-1280x900", async ({ page }) => {
-    // v2.0: CircleOfFifths is no longer rendered in the app shell.
-    // Capture the Inspector Overlay tab (Scale + Chord groups)
-    // which replaced the old Scale/Chord/Key 3-tab layout.
+  test("overlay-tab-desktop-1280x900", async ({ page }) => {
     await page.getByRole("tab", { name: "Overlay" }).click();
     const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
     await locator.scrollIntoViewIfNeeded();
-    await expectLocatorVisual(locator, "circle-of-fifths-desktop-1280x900");
+    await expectLocatorVisual(locator, "overlay-tab-desktop-1280x900");
   });
 
-  test("circle-of-fifths-light-1280x900", async ({ page }) => {
+  test("overlay-tab-light-1280x900", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
     await page.getByRole("tab", { name: "Overlay" }).click();
     const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
     await locator.scrollIntoViewIfNeeded();
-    await expectLocatorVisual(locator, "circle-of-fifths-light-1280x900");
+    await expectLocatorVisual(locator, "overlay-tab-light-1280x900");
   });
 });
 

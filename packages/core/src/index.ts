@@ -32,7 +32,6 @@ export {
   getActiveScaleBrowseOption,
   getAdjacentScaleBrowseOption,
 } from "./theoryCatalog";
-export * from "./circleOfFifthsUtils";
 export * from "./shapes";
 export * from "./shapes/practicePatterns";
 export { transposeNoteToSharps, getChordDisplayLabel } from "./lib/tonal";

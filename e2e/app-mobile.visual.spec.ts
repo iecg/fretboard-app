@@ -17,9 +17,6 @@ test.describe("App Mobile Visual", () => {
     await expect(page.getByTestId("app-container")).toBeVisible();
     await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
 
-    // v2.0: CircleOfFifths is no longer in the app shell. The Inspector now
-    // has 2 tabs: Overlay (Scale + Chord groups) and Song. Plan F renamed
-    // "View" → "Overlay" and shortened the group headers.
     // Capture the Overlay tab content as the key-controls visual.
     await page.getByRole("tab", { name: "Overlay" }).click();
 
