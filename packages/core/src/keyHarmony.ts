@@ -31,7 +31,9 @@ export interface ScaleRootInfo {
 }
 
 /** Which parallel key the scale borrows from: "minor" for major-flavored
- *  scales, "major" for minor-flavored, "both" for diminished-flavored. */
+ *  scales, "major" for minor-flavored, "both" for diminished-flavored.
+ *  Note: Tonal's `Mode.get(name).triad` returns "" for a major triad (not
+ *  "M"), "m" for minor, and "dim" for diminished. */
 function parallelKeyFor(scaleName: string): "minor" | "major" | "both" {
   if (scaleName === "major" || scaleName === "ionian") return "minor";
   if (
@@ -44,9 +46,9 @@ function parallelKeyFor(scaleName: string): "minor" | "major" | "both" {
   }
   const mode = Mode.get(scaleName);
   if (!mode.empty) {
-    if (mode.triad === "M") return "minor";
-    if (mode.triad === "m") return "major";
-    return "both";
+    if (mode.triad === "" || mode.triad === "M") return "minor"; // major-flavored → borrow from parallel minor
+    if (mode.triad === "m") return "major"; // minor-flavored → borrow from parallel major
+    return "both"; // diminished-flavored (e.g. locrian)
   }
   return "minor";
 }
@@ -79,8 +81,8 @@ function parallelRoots(parentScale: string, tonic: string): string[] {
 
 export function getScaleRoots(scaleName: string, tonicNote: string): ScaleRootInfo[] {
   const parent = getHarmonyParentScale(scaleName);
-  const tonicChroma = Note.chroma(tonicNote) ?? 0;
-  const tonicIdx = NOTES.indexOf(tonicNote);
+  const rawChroma = Note.chroma(tonicNote);
+  const tonicChroma = rawChroma == null || Number.isNaN(rawChroma) ? 0 : rawChroma;
 
   const diatonicQualityByOffset = new Map<number, string>();
   for (const degree of getDegreeSequence(parent)) {
@@ -101,7 +103,7 @@ export function getScaleRoots(scaleName: string, tonicNote: string): ScaleRootIn
   }
 
   return Array.from({ length: 12 }, (_, offset): ScaleRootInfo => {
-    const note = NOTES[(tonicIdx + offset) % 12];
+    const note = NOTES[(tonicChroma + offset) % 12];
     if (diatonicQualityByOffset.has(offset)) {
       return { note, offset, rootClass: "diatonic", defaultQuality: diatonicQualityByOffset.get(offset)! };
     }

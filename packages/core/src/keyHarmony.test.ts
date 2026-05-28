@@ -42,10 +42,25 @@ describe("getScaleRoots — major pentatonic routes through parent major", () =>
   });
 });
 
+describe("getScaleRoots — A natural minor", () => {
+  it("A minor borrows from parallel major (C#, F#, G#)", () => {
+    const roots = getScaleRoots("minor", "A");
+    expect(roots.filter((r) => r.rootClass === "borrowed").map((r) => r.note).sort())
+      .toEqual(["C#", "F#", "G#"].sort());
+  });
+});
+
 describe("getScaleRoots — modes pick the right parallel pool", () => {
   it("D dorian (minor-flavored) borrows from parallel major", () => {
     const roots = getScaleRoots("dorian", "D");
     expect(roots).toHaveLength(12);
     expect(roots.filter((r) => r.rootClass === "borrowed").length).toBeGreaterThan(0);
+    expect(roots.filter((r) => r.rootClass === "borrowed").map((r) => r.note).sort())
+      .toEqual(["C#", "F#"].sort());
+  });
+  it("D mixolydian (major-flavored) borrows from parallel minor (includes F)", () => {
+    const roots = getScaleRoots("mixolydian", "D");
+    const borrowed = roots.filter((r) => r.rootClass === "borrowed").map((r) => r.note);
+    expect(borrowed).toContain("F");
   });
 });
