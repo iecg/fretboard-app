@@ -343,7 +343,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       stepDurationBeats: 0,
     };
     const result = getEmphasis("scale-only", false, ctx);
-    expect(result).not.toMatchObject({ glowColor: "orange" });
+    expect(result).not.toMatchObject({ glowColor: "var(--note-glow-anticipation)" });
   });
 
   it("does NOT mark anticipation exactly at the window boundary (beatPosition=2.999, stepDuration=4)", () => {
@@ -355,7 +355,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       stepDurationBeats: 4,
     };
     const result = getEmphasis("scale-only", false, ctx);
-    expect(result).not.toMatchObject({ glowColor: "orange" });
+    expect(result).not.toMatchObject({ glowColor: "var(--note-glow-anticipation)" });
   });
 
   it("DOES mark anticipation exactly at the window boundary (beatPosition=3.0, stepDuration=4)", () => {

@@ -47,8 +47,9 @@ const CHORD_TONE_CLASSES = new Set([
 ]);
 
 /**
- * Applies the Tones lens logic (guide-tone emphasis + scale-only dim).
- * Shared between the "tones" case and the Lead lens fallback path.
+ * Fallback emphasis when no progression is active or no voice-leading
+ * context applies. Boosts guide tones with the hold-glow token and dims
+ * scale-only / color-tone notes.
  */
 function applyTonesBase(
   noteClass: string,
