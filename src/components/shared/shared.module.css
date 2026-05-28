@@ -239,8 +239,7 @@
 }
 
 .toggle-btn--chip {
-  background: var(--dc-bg);
-  border: 1px solid var(--dc-border);
+  composes: surface--control;
   border-radius: calc(var(--dc-radius) - 1px);
 }
 
