@@ -581,6 +581,31 @@ export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { 
   ));
 });
 
+/** Session-only: when true, changing a step's root preserves its
+ *  qualityOverride (jazz/comping "color holds, root walks"). Not persisted. */
+export const qualityLockAtom = atom(false);
+
+/** Orchestrates a chord-root selection from the editor dropdown. In-scale
+ *  selections revert to diatonic resolution (clear manualRoot, set degree);
+ *  borrowed/chromatic selections pin manualRoot and cache the numeral as the
+ *  degree hint. Clears qualityOverride unless qualityLockAtom is true. */
+export const selectProgressionStepRootAtom = atom(
+  null,
+  (get, set, update: { id: string; root: string; numeral: string; inScale: boolean }) => {
+    const locked = get(qualityLockAtom);
+    set(
+      progressionStepsAtom,
+      get(progressionStepsAtom).map((step) => {
+        if (step.id !== update.id) return step;
+        const next = { ...step, degree: update.numeral };
+        next.manualRoot = update.inScale ? null : update.root;
+        if (!locked) next.qualityOverride = null;
+        return next;
+      }),
+    );
+  },
+);
+
 /**
  * Sets `manualRoot` on the target step. When non-null the step is treated as
  * a manual / out-of-scale chord; when null the step reverts to diatonic
