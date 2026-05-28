@@ -1,1 +1,7 @@
-npx --no-install commitlint --edit "$1"
+# Resolve commitlint from main repo's node_modules (handles worktrees)
+COMMITLINT="$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" && cd .. && pwd -P)/node_modules/.bin/commitlint"
+if [ -x "$COMMITLINT" ]; then
+  exec "$COMMITLINT" --edit "$1"
+else
+  pnpm exec commitlint --edit "$1"
+fi
