@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 
 export interface StringSetOptionInput {
@@ -45,15 +44,11 @@ export function StringSetPicker({
   width = "fixed",
   widthValue = "7rem",
 }: StringSetPickerProps) {
-  const items = useMemo(
-    () =>
-      options.map((opt) => ({
-        value: opt.id,
-        label: formatLabel(opt, allLabel),
-        disabled: opt.disabled,
-      })),
-    [options, allLabel],
-  );
+  const items = options.map((opt) => ({
+    value: opt.id,
+    label: formatLabel(opt, allLabel),
+    disabled: opt.disabled,
+  }));
   return (
     <LabeledSelect
       label={label}

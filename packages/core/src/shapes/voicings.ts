@@ -49,6 +49,8 @@ export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
       return fullVoicings(params);
     case "close":
       return closeVoicings(params);
+    default:
+      return [];
   }
 }
 

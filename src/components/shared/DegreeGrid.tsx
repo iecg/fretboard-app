@@ -104,13 +104,24 @@ export function DegreeGrid({
 
   const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const selectedIndex = cells.findIndex((c) => c.note === selectedNote);
-  const [focusIndex, setFocusIndex] = useState(
-    selectedIndex >= 0 ? selectedIndex : 0,
-  );
+  const [{ focusIndex, anchoredNote }, setFocusState] = useState<{
+    focusIndex: number;
+    anchoredNote: string;
+  }>({
+    focusIndex: selectedIndex >= 0 ? selectedIndex : 0,
+    anchoredNote: selectedNote,
+  });
+
+  const resolvedFocusIndex =
+    anchoredNote !== selectedNote
+      ? selectedIndex >= 0
+        ? selectedIndex
+        : 0
+      : focusIndex;
 
   const moveFocus = (next: number) => {
     const wrapped = ((next % cells.length) + cells.length) % cells.length;
-    setFocusIndex(wrapped);
+    setFocusState({ focusIndex: wrapped, anchoredNote: selectedNote });
     buttonRefs.current[wrapped]?.focus();
   };
 
@@ -153,9 +164,9 @@ export function DegreeGrid({
           disabled={disabled}
           aria-pressed={cell.note === selectedNote}
           aria-label={cell.inKey ? `${cell.display} ${cell.numeral}` : `${cell.numeral} ${cell.display}`}
-          tabIndex={index === focusIndex ? 0 : -1}
+          tabIndex={index === resolvedFocusIndex ? 0 : -1}
           onKeyDown={(event) => handleKeyDown(event, index)}
-          onFocus={() => setFocusIndex(index)}
+          onFocus={() => setFocusState({ focusIndex: index, anchoredNote: selectedNote })}
           onClick={() =>
             cell.inKey
               ? onSelectInKey(cell.note, cell.numeral)

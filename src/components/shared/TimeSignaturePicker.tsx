@@ -37,10 +37,12 @@ export function TimeSignaturePicker() {
   );
 
   const handleChange = (id: string) => {
-    const [b, d] = id.split("/").map(Number);
-    if (!Number.isFinite(b) || !Number.isFinite(d)) return;
-    setBeats(b);
-    setDenominator(d as TimeSignatureDenominator);
+    const selected = SIGNATURES.find(
+      (s) => signatureId(s.beats, s.denominator) === id,
+    );
+    if (!selected) return;
+    setBeats(selected.beats);
+    setDenominator(selected.denominator);
   };
 
   return (

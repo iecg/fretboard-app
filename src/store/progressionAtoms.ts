@@ -663,6 +663,7 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(progressionDrumsEnabledAtom, RESET);
   set(progressionMetronomeEnabledAtom, RESET);
   set(beatsPerBarAtom, RESET);
+  set(timeSignatureDenominatorAtom, RESET);
   set(progressionGenreStyleAtom, RESET);
   set(progressionChordInstrumentAtom, RESET);
   set(progressionChordPatternAtom, RESET);
