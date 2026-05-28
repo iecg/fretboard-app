@@ -13,7 +13,6 @@ export { buildAllLayersAsync } from "./buildAllLayers";
 export type { BassEvent, ChordOnsetEvent, ChordStrumEvent, DrumEvent, MetronomeEvent } from "./buildAllLayers";
 export { createProgressionPart } from "./progressionPart";
 export { setLayerGain } from "./layerBuses";
-export { getChordVoice } from "./instruments/index";
 export { scheduleBassNote } from "./bass";
 export { scheduleHiHat, scheduleKick, scheduleRide, scheduleSnare } from "./drumKit";
 export { scheduleClick } from "./metronome";

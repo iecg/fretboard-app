@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getChordVoiceForInstrument, getChordVoice } from "./index";
+import { getChordVoiceForInstrument } from "./index";
 import { getChordPatch } from "../sound/instrumentPatches";
 
 describe("chord voice resolution by instrument + genre patch", () => {
@@ -21,9 +21,4 @@ describe("chord voice resolution by instrument + genre patch", () => {
     }
   });
 
-  it("getChordVoice shim returns a usable voice for each instrument", () => {
-    for (const inst of ["piano", "organ", "strum"] as const) {
-      expect(typeof getChordVoice(inst).scheduleChord).toBe("function");
-    }
-  });
 });

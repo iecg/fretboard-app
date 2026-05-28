@@ -41,10 +41,3 @@ export function getChordVoiceForInstrument(
   return voiceForPatch(patch);
 }
 
-/**
- * Backward-compat shim. The engine/hook still call this until Task 13 wires the
- * genre chord patch through. Resolves to the family-default patch voice.
- */
-export function getChordVoice(id: ChordInstrumentId): ChordVoice {
-  return getChordVoiceForInstrument(id, DEFAULT_CHORD_PATCH_BY_FAMILY[familyForInstrument(id)]);
-}
