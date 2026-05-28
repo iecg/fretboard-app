@@ -21,4 +21,14 @@ describe("resolveFretboardMotionPolicy", () => {
       connectorMode: "group",
     });
   });
+
+  it("playback keeps connector group fade but freezes shapes", () => {
+    expect(resolveFretboardMotionPolicy({ prefersReducedMotion: false, playbackActive: true }))
+      .toEqual({ noteMode: "css", shapeMode: "none", connectorMode: "group" });
+  });
+
+  it("reduced motion overrides playback", () => {
+    expect(resolveFretboardMotionPolicy({ prefersReducedMotion: true, playbackActive: true }))
+      .toEqual({ noteMode: "none", shapeMode: "none", connectorMode: "none" });
+  });
 });
