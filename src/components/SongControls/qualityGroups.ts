@@ -92,7 +92,18 @@ export function buildQualityGroupsWithDiatonic(
     diatonicOptions.push({ value: seventh, label: CHORD_TYPE_SHORT_LABELS[seventh] ?? seventh });
   }
 
-  return [{ groupLabel: labels.diatonic, options: diatonicOptions }, ...base];
+  // Radix Select requires unique item values. The diatonic chord is shown in
+  // the Diatonic group; remove those values from the categorical base groups so
+  // each value appears exactly once.
+  const diatonicValues = new Set(diatonicOptions.map((o) => o.value));
+  const dedupedBase = base
+    .map((group) => ({
+      ...group,
+      options: group.options.filter((o) => !diatonicValues.has(o.value)),
+    }))
+    .filter((group) => group.options.length > 0);
+
+  return [{ groupLabel: labels.diatonic, options: diatonicOptions }, ...dedupedBase];
 }
 
 export function buildQualitySelectGroups(

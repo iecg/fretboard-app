@@ -23,6 +23,15 @@ describe("buildQualityGroupsWithDiatonic — in-key root", () => {
       ["Diatonic", "Triads", "Sus", "Sixths", "Sevenths"],
     );
   });
+  it("does not duplicate diatonic values in the base groups", () => {
+    const allValues = groups.flatMap((g) => g.options.map((o) => o.value));
+    const dupes = allValues.filter((v, i) => allValues.indexOf(v) !== i);
+    expect(dupes).toEqual([]);
+    const triads = groups.find((g) => g.groupLabel === "Triads")!;
+    expect(triads.options.map((o) => o.value)).not.toContain("M");
+    const sevenths = groups.find((g) => g.groupLabel === "Sevenths")!;
+    expect(sevenths.options.map((o) => o.value)).not.toContain("maj7");
+  });
 });
 
 describe("buildQualityGroupsWithDiatonic — diminished diatonic root", () => {
@@ -30,6 +39,13 @@ describe("buildQualityGroupsWithDiatonic — diminished diatonic root", () => {
     const groups = buildQualityGroupsWithDiatonic("major", "C", "B", labels);
     expect(groups[0].groupLabel).toBe("Diatonic");
     expect(groups[0].options.map((o) => o.value)).toEqual(["dim", "m7b5"]);
+  });
+  it("removes the dim diatonic values from base groups", () => {
+    const groups = buildQualityGroupsWithDiatonic("major", "C", "B", labels);
+    const triads = groups.find((g) => g.groupLabel === "Triads")!;
+    expect(triads.options.map((o) => o.value)).not.toContain("dim");
+    const sevenths = groups.find((g) => g.groupLabel === "Sevenths")!;
+    expect(sevenths.options.map((o) => o.value)).not.toContain("m7b5");
   });
 });
 
