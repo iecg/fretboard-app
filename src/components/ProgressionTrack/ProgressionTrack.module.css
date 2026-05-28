@@ -97,7 +97,7 @@
 
 :global([data-theme="modern-light"]) .block:hover:not([data-active="true"]) {
   --block-border: rgb(133 124 108 / 0.45);
-  --block-bg: rgb(250 248 243 / 0.85);
+  --block-bg: var(--surface-card-top);
 }
 
 :global([data-theme="modern-light"]) .block:focus-visible {
