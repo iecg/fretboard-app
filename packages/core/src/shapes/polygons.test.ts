@@ -142,3 +142,19 @@ describe("deduplicateAdjacentStrings", () => {
     expect(perStringNotes[1]).toContain(3);
   });
 });
+
+describe("buildPolygonFromNotes Complexity Scaling Guardrail", () => {
+  it("scales linearly with the number of strings, avoiding quadratic scaling", () => {
+    // 1x Scale: 3 strings
+    const baseNotes = [[5], [5], [5]];
+    const baseVertices = buildPolygonFromNotes(baseNotes, 3, new Set());
+
+    // 2x Scale: 6 strings (doubled scale)
+    const doubleNotes = [[5], [5], [5], [5], [5], [5]];
+    const doubleVertices = buildPolygonFromNotes(doubleNotes, 6, new Set());
+
+    // For O(V) linear complexity: double the strings must scale vertices by <= 2.2x
+    expect(doubleVertices.length).toBeLessThanOrEqual(baseVertices.length * 2.2);
+  });
+});
+
