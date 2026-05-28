@@ -1,4 +1,4 @@
-import { useId, useMemo, useCallback, type CSSProperties } from "react";
+import { useId, useMemo, useCallback, type CSSProperties, memo } from "react";
 import { useAtomValue } from "jotai";
 import { useReducedMotion } from "motion/react";
 import {
@@ -15,7 +15,7 @@ import styles from "./FretboardSVG.module.css";
 import { useFretboardGeometry } from "./hooks/useFretboardGeometry";
 import { useChordConnectorPolylines, CHORD_TONE_CLASSES } from "./hooks/useChordConnectorPolylines";
 import { useIntervalConnectorPolylines } from "./hooks/useIntervalConnectorPolylines";
-import { useStaticFretboardTopology } from "./hooks/useStaticFretboardTopology";
+import { useStaticFretboardTopology, type StaticFretboardTopologyNote } from "./hooks/useStaticFretboardTopology";
 import { useAnimatedFretboardView } from "./hooks/useAnimatedFretboardView";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
@@ -141,6 +141,144 @@ interface FretboardSVGProps {
    */
   playbackSnapshot?: import("./hooks/useFretboardPlaybackSnapshot").FretboardPlaybackSnapshot | null;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const areConnectorPropsEqual = (prev: any, next: any) => {
+  if (prev.fretCenterX !== next.fretCenterX) return false;
+  if (prev.stringYAt !== next.stringYAt) return false;
+  if (prev.stringRowPx !== next.stringRowPx) return false;
+  if (prev.voicingSourceActive !== next.voicingSourceActive) return false;
+  if (prev.chordRoot !== next.chordRoot) return false;
+  if (prev.showChordConnectors !== next.showChordConnectors) return false;
+  if (prev.connectorMotionMode !== next.connectorMotionMode) return false;
+  if (prev.clipPathUrl !== next.clipPathUrl) return false;
+
+  if (prev.yBounds?.minY !== next.yBounds?.minY || prev.yBounds?.maxY !== next.yBounds?.maxY) return false;
+
+  const strArrayEqual = (a: string[], b: string[]) => {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    if (a.length !== b.length) return false;
+    return a.every((val, i) => val === b[i]);
+  };
+  if (!strArrayEqual(prev.chordToneNames, next.chordToneNames)) return false;
+  if (!strArrayEqual(prev.chordTones, next.chordTones)) return false;
+
+  // Compare explicitVoicings (used by useChordConnectorPolylines)
+  if (prev.explicitVoicings !== next.explicitVoicings) {
+    if (!prev.explicitVoicings || !next.explicitVoicings) return false;
+    if (prev.explicitVoicings.length !== next.explicitVoicings.length) return false;
+    for (let i = 0; i < prev.explicitVoicings.length; i++) {
+      const pv = prev.explicitVoicings[i];
+      const nv = next.explicitVoicings[i];
+      if (pv.voicingKey !== nv.voicingKey || pv.isFallback !== nv.isFallback || pv.shape !== nv.shape) return false;
+      if (pv.notes.length !== nv.notes.length) return false;
+      for (let j = 0; j < pv.notes.length; j++) {
+        if (
+          pv.notes[j].stringIndex !== nv.notes[j].stringIndex ||
+          pv.notes[j].fretIndex !== nv.notes[j].fretIndex ||
+          pv.notes[j].noteName !== nv.notes[j].noteName
+        ) {
+          return false;
+        }
+      }
+    }
+  }
+
+  // Compare intervalPolylines (passed into FretboardConnectorLayer)
+  if (prev.intervalPolylines !== next.intervalPolylines) {
+    if (!prev.intervalPolylines || !next.intervalPolylines) return false;
+    if (prev.intervalPolylines.length !== next.intervalPolylines.length) return false;
+    for (let i = 0; i < prev.intervalPolylines.length; i++) {
+      const pi = prev.intervalPolylines[i];
+      const ni = next.intervalPolylines[i];
+      if (pi.key !== ni.key || pi.paletteIndex !== ni.paletteIndex) return false;
+    }
+  }
+
+  if (prev.noteData === next.noteData) return true;
+  if (!prev.noteData || !next.noteData) return false;
+  if (prev.noteData.length !== next.noteData.length) return false;
+  for (let i = 0; i < prev.noteData.length; i++) {
+    const p = prev.noteData[i];
+    const n = next.noteData[i];
+    if (
+      p.string !== n.string ||
+      p.fret !== n.fret ||
+      p.noteName !== n.noteName ||
+      p.noteClass !== n.noteClass
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+interface ChordConnectorEvaluatorProps {
+  noteData: StaticFretboardTopologyNote[];
+  chordToneNames: string[];
+  fretCenterX: (fretIndex: number) => number;
+  stringYAt: (stringIndex: number, x: number) => number;
+  stringRowPx: number;
+  yBounds: import("./utils/connectorRadius").ConnectorYBounds | undefined;
+  explicitVoicings: Array<{
+    voicingKey: string;
+    notes: FullChordMatchNote[];
+    shape?: CagedShape;
+    isFallback?: boolean;
+  }> | undefined;
+  voicingSourceActive: boolean;
+  intervalPolylines: import("./hooks/useIntervalConnectorPolylines").IntervalConnectorPolyline[];
+  chordRoot?: string;
+  chordTones: string[];
+  showChordConnectors: boolean;
+  connectorMotionMode: import("./motionPolicy").FretboardMotionPolicy["connectorMode"];
+  clipPathUrl: string;
+}
+
+const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
+  noteData,
+  chordToneNames,
+  fretCenterX,
+  stringYAt,
+  stringRowPx,
+  yBounds,
+  explicitVoicings,
+  voicingSourceActive,
+  intervalPolylines,
+  chordRoot,
+  chordTones,
+  showChordConnectors,
+  connectorMotionMode,
+  clipPathUrl,
+}: ChordConnectorEvaluatorProps) {
+  const chordPolylines = useChordConnectorPolylines({
+    noteData,
+    chordToneNames,
+    fretCenterX,
+    stringYAt,
+    stringRowPx,
+    yBounds,
+    explicitVoicings,
+    voicingSourceActive,
+  });
+
+  const connectorSource = voicingSourceActive ? "full-chord" : "generated";
+
+  return (
+    <FretboardConnectorLayer
+      chordPolylines={chordPolylines}
+      intervalPolylines={intervalPolylines}
+      connectorSource={connectorSource}
+      chordRoot={chordRoot}
+      chordTones={chordTones}
+      showChordConnectors={showChordConnectors}
+      connectorMotionMode={connectorMotionMode}
+      clipPathUrl={clipPathUrl}
+    />
+  );
+}, areConnectorPropsEqual);
 
 export function FretboardSVG({
   effectiveZoom,
@@ -453,26 +591,8 @@ export function FretboardSVG({
     [topology],
   );
 
-  // Per-string chord filter (UAT-3): when fingering pattern restricts to 1 or 2 strings,
-  // highlightNotes already contains only those string coords, so chord-tone role naturally
-  // applies only to in-pattern notes. Chord connectors are suppressed separately here
-  // because cross-string voicings do not make sense in a 1/2-string context.
-  const connectorPolylines = useChordConnectorPolylines({
-    noteData: chordNoteData,
-    chordToneNames:
-      fingeringPattern === "one-string" || fingeringPattern === "two-strings"
-        ? []
-        : chordTones,
-    fretCenterX,
-    stringYAt,
-    stringRowPx,
-    yBounds: connectorYBounds,
-    explicitVoicings: fullChordVoicings,
-    voicingSourceActive: hasChordOverlay,
-  });
-  // When a chord overlay is active the voicing engine is the only source —
-  // never label the layer "generated", even when the engine returns nothing.
-  const connectorSource = hasChordOverlay ? "full-chord" : "generated";
+  // Chord connectors evaluation and generation is decoupled from animation frames
+  // by wrapping it in the memoized ChordConnectorEvaluator component.
 
   const prefersReducedMotion = useReducedMotion() ?? false;
   const playbackActive = !!playbackSnapshot?.playing;
@@ -564,10 +684,20 @@ export function FretboardSVG({
               in the taper-carved corner gaps paint on the app-container backdrop —
               that's an accepted trade-off; the wood gradient stays clipped to the
               taper and does not overflow. */}
-          <FretboardConnectorLayer
-            chordPolylines={connectorPolylines}
+          <ChordConnectorEvaluator
+            noteData={chordNoteData}
+            chordToneNames={
+              fingeringPattern === "one-string" || fingeringPattern === "two-strings"
+                ? []
+                : chordTones
+            }
+            fretCenterX={fretCenterX}
+            stringYAt={stringYAt}
+            stringRowPx={stringRowPx}
+            yBounds={connectorYBounds}
+            explicitVoicings={fullChordVoicings}
+            voicingSourceActive={hasChordOverlay}
             intervalPolylines={intervalConnectorPolylines}
-            connectorSource={connectorSource}
             chordRoot={chordRoot}
             chordTones={chordTones}
             showChordConnectors={showChordConnectors}
