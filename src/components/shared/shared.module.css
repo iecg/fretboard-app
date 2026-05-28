@@ -161,6 +161,54 @@
   color: var(--text-muted);
 }
 
+/* ===== Composable control surfaces =====
+   Single source of truth for control chrome. Components compose one of these
+   via `composes:` rather than re-implementing the token chain.
+   `.surface--control` = inline form controls (steppers, selects, toggle bars).
+   `.surface--chrome`   = standalone chrome icon buttons (header, modal close). */
+.surface--control {
+  background-color: var(--dc-bg);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius);
+  transition: var(--dc-transition);
+}
+.surface--control:hover {
+  background-color: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
+}
+.surface--control:focus-within {
+  border-color: var(--dc-border-active);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.surface--chrome {
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
+  border: 1px solid var(--surface-control-border);
+  box-shadow: var(--elevation-card);
+  color: var(--surface-control-fg-muted);
+  transition: var(--transition-surface), transform var(--transition-fast);
+}
+.surface--chrome:hover {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
+  transform: translateY(-1px);
+}
+
+/* Tone modifiers — layer on top of either surface to recolor without
+   redefining the whole chrome. */
+.tone--destructive {
+  background: var(--destructive-control-bg);
+  border-color: var(--destructive-control-border);
+  color: var(--destructive-control-fg);
+}
+.tone--destructive:hover {
+  background: var(--destructive-control-hover-bg);
+}
+
 .toggle-group {
   display: flex;
   align-items: stretch;
