@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { getDrumKitPatch } from "./sound/instrumentPatches";
 
 // Hoisted Tone synth spies — one helper per ctor we actually need to
 // distinguish on:
@@ -376,6 +377,18 @@ describe("drumKit — Tone backend", () => {
       expect(metalSpies.dispose).not.toHaveBeenCalled();
       vi.advanceTimersByTime(1600); // > RIDE_DISPOSE_MS (1500)
       expect(metalSpies.dispose).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("kit patch overrides", () => {
+    it("applies kit kick overrides (pitchDecay/octaves/decay) over the defaults", () => {
+      const kit = getDrumKitPatch("kit-funk")!;
+      scheduleKick({} as AudioNode, 0, { velocity: 1, kit });
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
+      const [opts] = membraneSpies.ctorSpy.mock.calls[0]!;
+      expect(opts.pitchDecay).toBeCloseTo(kit.voices.kick!.pitchDecay!, 4);
+      expect(opts.octaves).toBe(kit.voices.kick!.octaves);
+      expect(opts.envelope.decay).toBeCloseTo(kit.voices.kick!.envelope!.decay!, 4);
     });
   });
 });
