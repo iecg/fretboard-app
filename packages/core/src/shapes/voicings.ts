@@ -41,18 +41,34 @@ export interface GenerateVoicingsParams {
   voicingType: VoicingType;
 }
 
+const voicingCache = new Map<string, Voicing[]>();
+
 export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
+  const cacheKey = `${params.chordRoot}-${params.chordType}-${params.tuning.join(",")}-${params.maxFret}-${params.voicingType}`;
+  
+  if (voicingCache.has(cacheKey)) {
+    return voicingCache.get(cacheKey)!;
+  }
+  
+  let result: Voicing[];
   switch (params.voicingType) {
     case "off":
-      return [];
+      result = [];
+      break;
     case "full":
-      return fullVoicings(params);
+      result = fullVoicings(params);
+      break;
     case "close":
-      return closeVoicings(params);
+      result = closeVoicings(params);
+      break;
     default:
-      return [];
+      result = [];
   }
+  
+  voicingCache.set(cacheKey, result);
+  return result;
 }
+
 
 function fullVoicings(params: GenerateVoicingsParams): Voicing[] {
   const { chordRoot, chordType, tuning, maxFret } = params;

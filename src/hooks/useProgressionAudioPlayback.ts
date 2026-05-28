@@ -33,6 +33,7 @@ import type {
   MetronomeEvent,
   ProgressionPartHandle,
 } from "../progressions/audio/progressionAudioEngine";
+import type { BuiltLayers } from "../progressions/audio/buildAllLayers";
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
@@ -116,6 +117,37 @@ export function useProgressionAudioPlayback() {
       }),
     [beatsPerBar, steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
   );
+  const cacheRef = useRef<{ key: string; value: BuiltLayers } | null>(null);
+  const fullCacheKey = useMemo(
+    () =>
+      JSON.stringify({
+        beatsPerBar,
+        steps: steps.map((s) => ({
+          root: s.root,
+          quality: s.quality,
+          dur: s.duration,
+          unavailable: s.unavailable ?? false,
+        })),
+        chordPatternId,
+        bassPatternId,
+        drumPatternId,
+        drumVariations,
+        tempo,
+        swing,
+        loopEnabled,
+      }),
+    [
+      beatsPerBar,
+      steps,
+      chordPatternId,
+      bassPatternId,
+      drumPatternId,
+      drumVariations,
+      tempo,
+      swing,
+      loopEnabled,
+    ],
+  );
   const instrumentRef = useRef(chordInstrument);
   const genRef = useRef(0);
 
@@ -149,6 +181,69 @@ export function useProgressionAudioPlayback() {
       loopEnabled,
     };
   });
+
+  // Debounced background compilation during idle time.
+  useEffect(() => {
+    if (playing || blocked || muted) return;
+
+    const runBackgroundBuild = () => {
+      // Avoid rebuilding if already cached.
+      if (cacheRef.current && cacheRef.current.key === fullCacheKey) {
+        return;
+      }
+
+      getEngine().then(async (eng) => {
+        if (eng === null) return;
+        // Verify playing hasn't started in the meantime.
+        if (store.get(progressionPlayingAtom)) return;
+
+        try {
+          const built = await eng.buildAllLayersAsync({
+            steps,
+            tempoBpm: tempo,
+            beatsPerBar,
+            swing,
+            chordPatternId,
+            bassPatternId,
+            drumPatternId,
+            drumVariations,
+            loop: loopEnabled,
+          });
+
+          // Verify playing hasn't started in the meantime before caching.
+          if (store.get(progressionPlayingAtom)) return;
+
+          cacheRef.current = {
+            key: fullCacheKey,
+            value: built,
+          };
+        } catch (err) {
+          console.error("Background audio build failed:", err);
+        }
+      });
+    };
+
+    const timer = setTimeout(runBackgroundBuild, 200);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [
+    playing,
+    blocked,
+    muted,
+    fullCacheKey,
+    steps,
+    tempo,
+    beatsPerBar,
+    swing,
+    chordPatternId,
+    bassPatternId,
+    drumPatternId,
+    drumVariations,
+    loopEnabled,
+    store,
+  ]);
 
   useEffect(() => {
     const tearDown = () => {
@@ -194,22 +289,47 @@ export function useProgressionAudioPlayback() {
       eng.setPlaybackTimeSignature(inputs.beatsPerBar);
 
       let built;
-      try {
-        built = await eng.buildAllLayersAsync({
-          steps: inputs.steps,
-          tempoBpm: inputs.tempo,
-          beatsPerBar: inputs.beatsPerBar,
-          swing: inputs.swing,
-          chordPatternId: inputs.chordPatternId,
-          bassPatternId: inputs.bassPatternId,
-          drumPatternId: inputs.drumPatternId,
-          drumVariations: inputs.drumVariations,
-          loop: inputs.loopEnabled,
-        });
-      } catch (err) {
-        console.error("Audio build failed", err);
-        setLoading(false);
-        return;
+      const currentCacheKey = JSON.stringify({
+        beatsPerBar: inputs.beatsPerBar,
+        steps: inputs.steps.map((s) => ({
+          root: s.root,
+          quality: s.quality,
+          dur: s.duration,
+          unavailable: s.unavailable ?? false,
+        })),
+        chordPatternId: inputs.chordPatternId,
+        bassPatternId: inputs.bassPatternId,
+        drumPatternId: inputs.drumPatternId,
+        drumVariations: inputs.drumVariations,
+        tempo: inputs.tempo,
+        swing: inputs.swing,
+        loopEnabled: inputs.loopEnabled,
+      });
+
+      if (cacheRef.current && cacheRef.current.key === currentCacheKey) {
+        built = cacheRef.current.value;
+      } else {
+        try {
+          built = await eng.buildAllLayersAsync({
+            steps: inputs.steps,
+            tempoBpm: inputs.tempo,
+            beatsPerBar: inputs.beatsPerBar,
+            swing: inputs.swing,
+            chordPatternId: inputs.chordPatternId,
+            bassPatternId: inputs.bassPatternId,
+            drumPatternId: inputs.drumPatternId,
+            drumVariations: inputs.drumVariations,
+            loop: inputs.loopEnabled,
+          });
+          cacheRef.current = {
+            key: currentCacheKey,
+            value: built,
+          };
+        } catch (err) {
+          console.error("Audio build failed", err);
+          setLoading(false);
+          return;
+        }
       }
       
       if (gen !== genRef.current) return;

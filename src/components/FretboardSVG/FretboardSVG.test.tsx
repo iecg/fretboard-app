@@ -9,10 +9,19 @@ import type { NoteSemantics } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
 import * as buildTopologyModule from "./hooks/buildStaticFretboardTopology";
+import * as useChordConnectorHooks from "./hooks/useChordConnectorPolylines";
 
 vi.mock("./motionPolicy", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./motionPolicy")>();
   return { ...actual, resolveFretboardMotionPolicy: vi.fn().mockImplementation(actual.resolveFretboardMotionPolicy) };
+});
+
+vi.mock("./hooks/useChordConnectorPolylines", async () => {
+  const actual = await vi.importActual<typeof useChordConnectorHooks>("./hooks/useChordConnectorPolylines");
+  return {
+    ...actual,
+    useChordConnectorPolylines: vi.fn(actual.useChordConnectorPolylines),
+  };
 });
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
@@ -809,5 +818,64 @@ describe("FretboardSVG/FretboardSVG", () => {
 
     expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
     topologySpy.mockRestore();
+  });
+});
+
+describe("FretboardSVG Connector Decoupling", () => {
+  it("does not re-evaluate useChordConnectorPolylines when animation data changes", () => {
+    const spy = vi.spyOn(useChordConnectorHooks, "useChordConnectorPolylines");
+    const mockTuning = ["E4", "B3", "G3", "D3", "A2", "E2"];
+    const mockLayout = getFretboardNotes(mockTuning, 12);
+
+    const { rerender } = render(
+      <FretboardSVG
+        effectiveZoom={100}
+        neckWidthPx={1000}
+        startFret={0}
+        endFret={12}
+        fretboardLayout={mockLayout}
+        tuning={mockTuning}
+        highlightNotes={["E", "G"]}
+        rootNote="E"
+        playbackSnapshot={{
+          playing: true,
+          activeStepIndex: 0,
+          globalFraction: 0,
+          localFraction: 0,
+          stepDurationBeats: 4,
+          beatPosition: 0,
+          commonWithNext: new Set(),
+          nextGuideTones: new Set(),
+        }}
+      />
+    );
+
+    const initialCallCount = spy.mock.calls.length;
+
+    // Rerender with a different playbackSnapshot position (simulating animation frames)
+    rerender(
+      <FretboardSVG
+        effectiveZoom={100}
+        neckWidthPx={1000}
+        startFret={0}
+        endFret={12}
+        fretboardLayout={mockLayout}
+        tuning={mockTuning}
+        highlightNotes={["E", "G"]}
+        rootNote="E"
+        playbackSnapshot={{
+          playing: true,
+          activeStepIndex: 0,
+          globalFraction: 0.1,
+          localFraction: 0.1, // Only local fraction changes
+          stepDurationBeats: 4,
+          beatPosition: 0.4,
+          commonWithNext: new Set(),
+          nextGuideTones: new Set(),
+        }}
+      />
+    );
+
+    expect(spy.mock.calls.length).toBe(initialCallCount);
   });
 });

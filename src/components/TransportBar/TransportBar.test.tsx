@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
+import React from "react";
 import { act, fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
@@ -233,5 +234,18 @@ describe("TransportBar", () => {
       fireEvent.mouseOver(button);
       expect(screen.queryByRole("tooltip")).toBeNull();
     }
+  });
+});
+
+describe("Concurrent UI Transitions", () => {
+  it("performs active step updates inside a transition", () => {
+    const startTransitionSpy = vi.spyOn(React, "startTransition");
+    const store = makeAtomStore([...playableAtoms]);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+
+    fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
+
+    expect(startTransitionSpy).toHaveBeenCalled();
+    startTransitionSpy.mockRestore();
   });
 });

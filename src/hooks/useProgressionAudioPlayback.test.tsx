@@ -772,4 +772,45 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     });
   });
 
+  it("eagerly compiles backing track audio layers during idle time and uses the cached value on Play", async () => {
+    const buildMod = await import("../progressions/audio/buildAllLayers");
+    const spy = vi.spyOn(buildMod, "buildAllLayersAsync");
+
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    // Render hook while NOT playing (idle).
+    renderWithStore(<Harness />, store);
+
+    // Wait for the background compilation to complete.
+    await vi.waitFor(() => {
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+
+    // Clear call history on spy.
+    spy.mockClear();
+
+    // Start playing. The playback effect should start immediately
+    // and consume the cached compilation value without calling buildAllLayersAsync again.
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    // Wait for parts to be built.
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
+
+    // Since it was cached, buildAllLayersAsync should not have been called during transition to play!
+    expect(spy).not.toHaveBeenCalled();
+
+    spy.mockRestore();
+  });
+
 });
+
