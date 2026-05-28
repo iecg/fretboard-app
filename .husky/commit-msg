@@ -3,5 +3,5 @@ COMMITLINT="$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" && cd .. && pwd
 if [ -x "$COMMITLINT" ]; then
   exec "$COMMITLINT" --edit "$1"
 else
-  npx --no-install commitlint --edit "$1"
+  pnpm exec commitlint --edit "$1"
 fi

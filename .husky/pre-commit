@@ -9,5 +9,5 @@ LINT_STAGED="$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" && cd .. && pw
 if [ -x "$LINT_STAGED" ]; then
   exec "$LINT_STAGED"
 else
-  npx lint-staged
+  pnpm exec lint-staged
 fi
