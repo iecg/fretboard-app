@@ -114,4 +114,45 @@ describe("useAnimatedFretboardView", () => {
     expect(updatedBNote?.cx).toBe(initialBNote?.cx);
     expect(updatedBNote?.cy).toBe(initialBNote?.cy);
   });
+
+  it("keeps noteData reference-stable when the frame advances within a step (below anticipation threshold)", () => {
+    // Beat 1 of 4 (localFraction=0.25) → below anticipation threshold (0.75)
+    const store = makePlayingStore(0.25);
+    const wrapper = makeWrapper(store);
+
+    const { result } = renderHook(
+      () => {
+        const topology = useStaticFretboardTopology(TOPOLOGY_PROPS);
+        const view = useAnimatedFretboardView({
+          topology,
+          hasChordOverlay: true,
+          displayFormat: "notes",
+          degreeColorsEnabled: true,
+          preferFlats: false,
+          scaleName: "major",
+          rootNote: "G",
+          fretCenterX,
+          stringYAt,
+        });
+        return { topology, view };
+      },
+      { wrapper },
+    );
+
+    const initialNoteData = result.current.view.noteData;
+
+    // Advance the frame within the same step — localFraction changes (0.25 → 0.50)
+    // but stays below the 0.75 anticipation threshold and stepIndex is unchanged.
+    // Emphasis must NOT recompute: noteData keeps the same reference.
+    act(() => {
+      store.set(progressionVisualFrameAtom, {
+        stepIndex: 0,
+        globalFraction: 0.25,
+        localFraction: 0.5,
+        paused: false,
+      });
+    });
+
+    expect(result.current.view.noteData).toBe(initialNoteData);
+  });
 });

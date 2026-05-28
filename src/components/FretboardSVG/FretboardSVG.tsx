@@ -322,8 +322,12 @@ export function FretboardSVG({
   const intervalPairs = useAtomValue(intervalPairsAtom);
 
   // Playback snapshot is subscribed here (inside the lazy boundary) so that
-  // frame ticks do not re-render the Fretboard shell. Tests may inject the
-  // snapshot directly via the prop to avoid atom setup.
+  // frame ticks stay contained to FretboardSVG rather than re-rendering the
+  // Fretboard shell above it. FretboardSVG itself DOES re-render per frame
+  // (it subscribes to progressionVisualFrameAtom via this hook), but note
+  // emphasis is decoupled from frame ticks by useEmphasisContext, so the
+  // per-note getEmphasis pass does not recompute on every frame. Tests may
+  // inject the snapshot directly via the prop to avoid atom setup.
   const internalPlaybackSnapshot = useFretboardPlaybackSnapshot(
     playbackSnapshotProp === undefined,
   );

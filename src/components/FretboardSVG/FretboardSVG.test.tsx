@@ -681,8 +681,6 @@ describe("FretboardSVG/FretboardSVG", () => {
       globalFraction: 0.125,
       localFraction: 0.25,
       stepDurationBeats: 4,
-      commonWithNext: new Set(["G"]),
-      nextGuideTones: new Set(["B", "F"]),
     };
 
     it("uses group-mode wrappers when policy returns group modes", () => {
@@ -770,8 +768,6 @@ describe("FretboardSVG/FretboardSVG", () => {
       globalFraction: 0.125,
       localFraction: 0.25,
       stepDurationBeats: 4,
-      commonWithNext: new Set(["G"]),
-      nextGuideTones: new Set(["B", "F"]),
     };
 
     const { rerender } = renderCMajor({ playbackSnapshot: firstSnapshot });
@@ -803,8 +799,6 @@ describe("FretboardSVG/FretboardSVG", () => {
       globalFraction: 0.0,
       localFraction: 0.0,
       stepDurationBeats: 4,
-      commonWithNext: new Set<string>(),
-      nextGuideTones: new Set<string>(),
     };
 
     // Render without chordTones — default path (DEFAULT_CHORD_TONES stable reference)
@@ -853,8 +847,6 @@ describe("FretboardSVG Connector Decoupling", () => {
           globalFraction: 0,
           localFraction: 0,
           stepDurationBeats: 4,
-          commonWithNext: new Set(),
-          nextGuideTones: new Set(),
         }}
       />
     );
@@ -879,8 +871,6 @@ describe("FretboardSVG Connector Decoupling", () => {
           globalFraction: 0.1,
           localFraction: 0.1, // Only local fraction changes
           stepDurationBeats: 4,
-          commonWithNext: new Set(),
-          nextGuideTones: new Set(),
         }}
       />
     );
