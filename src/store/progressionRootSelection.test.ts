@@ -41,4 +41,20 @@ describe("selectProgressionStepRootAtom", () => {
     const step = store.get(progressionStepsAtom)[0];
     expect(step.qualityOverride).toBe("maj7");
   });
+
+  it("preserves qualityOverride when locked even for a borrowed selection", () => {
+    store.set(qualityLockAtom, true);
+    store.set(selectProgressionStepRootAtom, { id: "s1", root: "A#", numeral: "bVII", inScale: false });
+    const step = store.get(progressionStepsAtom)[0];
+    expect(step.manualRoot).toBe("A#");
+    expect(step.qualityOverride).toBe("maj7");
+  });
+
+  it("is a no-op when the step id is not found", () => {
+    const before = store.get(progressionStepsAtom);
+    store.set(selectProgressionStepRootAtom, { id: "does-not-exist", root: "F", numeral: "IV", inScale: true });
+    const after = store.get(progressionStepsAtom);
+    expect(after).toEqual(before);
+    expect(after[0].qualityOverride).toBe("maj7"); // untouched
+  });
 });
