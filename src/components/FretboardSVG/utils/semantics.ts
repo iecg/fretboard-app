@@ -11,7 +11,7 @@ import {
 export type BoxBound = { minFret: number; maxFret: number };
 
 export type LensEmphasis = {
-  glowColor?: "cyan" | "orange" | "violet" | `var(--${string})`;
+  glowColor?: `var(--${string})`;
   radiusBoost: number;
   opacityBoost: number;
 };
@@ -55,7 +55,7 @@ function applyTonesBase(
   isGuideTone: boolean,
 ): LensEmphasis {
   if (isGuideTone) {
-    return { glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 };
+    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
   }
   if (noteClass === "scale-only" || noteClass === "color-tone") {
     return { radiusBoost: 0.85, opacityBoost: 0.7 };

@@ -11,9 +11,9 @@ describe("semantics utils", () => {
       expect(res).toEqual({ radiusBoost: 1, opacityBoost: 1 });
     });
 
-    it("boosts guide tones with cyan glow", () => {
+    it("boosts guide tones with hold-glow token", () => {
       const res = getEmphasis("chord-tone", true);
-      expect(res.glowColor).toBe("cyan");
+      expect(res.glowColor).toBe("var(--note-glow-hold)");
       expect(res.radiusBoost).toBeGreaterThan(1);
     });
 
@@ -23,9 +23,9 @@ describe("semantics utils", () => {
       expect(res.opacityBoost).toBe(1);
     });
 
-    it("emphasizes guide tones with cyan glow and larger radius", () => {
+    it("emphasizes guide tones with the hold-glow token and larger radius", () => {
       expect(getEmphasis("chord-tone-in-scale", true)).toEqual({
-        glowColor: "cyan",
+        glowColor: "var(--note-glow-hold)",
         radiusBoost: 1.15,
         opacityBoost: 1,
       });
@@ -33,7 +33,7 @@ describe("semantics utils", () => {
 
     it("emphasizes guide tones regardless of underlying noteClass", () => {
       expect(getEmphasis("chord-tone-outside-scale", true)).toMatchObject({
-        glowColor: "cyan",
+        glowColor: "var(--note-glow-hold)",
       });
     });
 
@@ -203,9 +203,9 @@ describe("getEmphasis - voice-leading emphasis", () => {
   // Fallback: no leadContext → tones-base behavior
   // -------------------------------------------------------------------------
   it("falls back to tones-base when leadContext is undefined", () => {
-    // Guide tone gets cyan glow.
+    // Guide tone gets hold-glow token.
     expect(getEmphasis("chord-tone-in-scale", true, undefined))
-      .toEqual({ glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 });
+      .toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 });
     // Scale-only dims.
     expect(getEmphasis("scale-only", false, undefined))
       .toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
@@ -393,8 +393,8 @@ describe("getEmphasis - voice-leading emphasis", () => {
     };
     // F is scale-only (not a chord tone in current chord), guide tone flag from semantics
     const result = getEmphasis("scale-only", true /* isGuideTone */, ctx);
-    // Falls to tones-base: isGuideTone=true → cyan glow
-    expect(result).toEqual({ glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 });
+    // Falls to tones-base: isGuideTone=true → hold-glow token
+    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 });
   });
 
   // -------------------------------------------------------------------------
