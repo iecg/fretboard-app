@@ -212,3 +212,22 @@ describe("closeVoicings span cap", () => {
     expect(voicings.length).toBeGreaterThan(0);
   });
 });
+
+describe("Voicing Generation Caching", () => {
+  it("retrieves voicings from memory cache if parameters are identical", () => {
+    const params = {
+      chordRoot: "C",
+      chordType: "maj7",
+      tuning: ["E4", "B3", "G3", "D3", "A2", "E2"],
+      maxFret: 24,
+      voicingType: "close" as const,
+    };
+
+    const firstResult = generateVoicings(params);
+    const secondResult = generateVoicings(params);
+    
+    // They must point to the exact same array reference in memory
+    expect(firstResult).toBe(secondResult);
+  });
+});
+
