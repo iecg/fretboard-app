@@ -82,5 +82,21 @@ describe("FretboardShapeLayer", () => {
     );
 
     expect(container.querySelector('g[data-motion="group"]')).toBeTruthy();
+    expect(container.querySelector('g[data-render-path="animated"]')).toBeTruthy();
+  });
+
+  it("renders a static wrapper when group fades are disabled", () => {
+    const { container } = render(
+      <svg>
+        <FretboardShapeLayer
+          svgPolygons={[{ key: "shape-A", points: "0,0 100,0 100,50 0,50", color: "red" }]}
+          animationMode="none"
+        />
+      </svg>,
+    );
+
+    expect(container.querySelector('g[data-motion="none"]')).toBeTruthy();
+    expect(container.querySelector('g[data-render-path="static"]')).toBeTruthy();
+    expect(container.querySelector('g[data-motion="group"]')).toBeNull();
   });
 });

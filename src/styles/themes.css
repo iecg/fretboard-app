@@ -7,41 +7,42 @@
 [data-theme="modern-light"] {
   color-scheme: light;
 
-  /* Primitive Colors — Cool blue-gray spectrum with intentional steps */
-  --bg-color: #e4eaef;        /* distinctly cool-neutral shell (was #fcfaf8 — retune to DAW mockup palette) */
-  --surface-base: #eef2f6;    /* cool panel base, L≈95.9; below card-nested (was #fbf8f3 L≈98.0 — retune to DAW mockup palette) */
-  --surface-raised: #dde4eb;  /* inset/nested context (was #f5f2ef) */
-  --surface-highlight: #c9d2da; /* borders, dividers (was #e8e4df) */
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --text-on-highlight: #0f172a;
+  /* Primitive Colors — Warm parchment spectrum (reference palette) */
+  --bg-color: #ebebdc;        /* BG — warm parchment shell (reference palette) */
+  --surface-base: #efebdf;    /* warm base, between BG and PANEL (reference palette) */
+  --surface-raised: #e3ddd8;  /* PANEL-SOFT — secondary surface (reference palette) */
+  --surface-highlight: #cdc9c0; /* borders, dividers — darker than PANEL-SOFT (reference palette) */
+  --text-main: #2a251d;         /* INK — dark warm brown (reference palette) */
+  --text-muted: #857c6c;        /* MUTE — warm gray (reference palette) */
+  --text-on-highlight: #2a251d; /* INK — reference palette */
   --text-on-accent: #ffffff;
-  --text-soft-white: #1e293b;
+  --text-soft-white: #3d3529;   /* slightly lighter than INK (reference palette) */
 
-  /* App Shell — Modern Light */
-  /* widened L-span: ~7.3% vs 4.3% prior; glow alphas 6-8% approaching dark-mode parity without brown wash */
-  --bg-app-gradient-start: #fffef9; /* was #fdfcfb; brighten white edge */
-  --bg-app-gradient-mid: #faf8f3;   /* was #fcfaf8; darken mid ~1% */
-  --bg-app-gradient-end: #f0ede6;   /* was #f6f4f0; extend bottom range */
-  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(180 83 9 / 0.06), transparent 60%);
-  --bg-app-accent-glow-1: rgb(180 83 9 / 0.06); /* was 0.03 */
-  --bg-app-accent-glow-2: rgb(180 83 9 / 0.07); /* was 0.04 */
-  --bg-app-accent-glow-3: rgb(180 83 9 / 0.08); /* was 0.04 */
+  /* App Shell — Modern Light (reference palette warm parchment) */
+  --bg-app-gradient-start: #f6f2e9; /* PANEL — cream top edge */
+  --bg-app-gradient-mid: #eeead9;   /* between PANEL and BG */
+  --bg-app-gradient-end: #e5e1d0;   /* slightly deeper than BG at bottom */
+  --bg-app-accent-glow: radial-gradient(ellipse at 50% 0%, rgb(177 67 27 / 0.06), transparent 60%);
+  --bg-app-accent-glow-1: rgb(177 67 27 / 0.06); /* ORANGE rust glow — reference palette */
+  --bg-app-accent-glow-2: rgb(177 67 27 / 0.07); /* reference palette */
+  --bg-app-accent-glow-3: rgb(177 67 27 / 0.08); /* reference palette */
 
-  /* Surface Ladder Contract (light mode)
+  /* Surface Ladder Contract (light mode — reference palette)
    * Rule: --surface-card-top > --surface-card-nested > --surface-base in OKLCH L-brightness
-   * card-top     #ffffff  L≈100.0%
-   * card-nested  #f3f6f9  L≈97.2%  (delta from card-top:    2.8%)
-   * base         #eef2f6  L≈95.9%  (delta from card-nested: 1.3%)
+   * card-top     #f6f2e9  PANEL — cream card surface
+   * card-nested  #f1ede3  between PANEL and BG
+   * base         #efebdf  between BG and PANEL
+   * shell        #ebebdc  BG — app shell (deepest)
    * Both steps exceed the 1% L-delta minimum.
    * Do NOT nudge a single token without re-checking the full ladder order. */
   /* Surface Ladder — intentional light-mode values (deepest → highest) */
-  --surface-shell:       #e4eaef; /* = shell/bg, cool blue-gray (was #fcfaf8 — retune to DAW mockup palette) */
-  --surface-card-top:    #ffffff; /* was #fcf9f5 — retune to DAW mockup palette */
-  --surface-card-nested: #f3f6f9; /* inset card: visibly recessed from card-top (was #f8f6f4 — retune to DAW mockup palette) */
-  --surface-well:        #dde4eb; /* control well: distinctly sunken (was #f0ece7 — retune to DAW mockup palette) */
+  --surface-shell:       #ebebdc; /* BG — warm parchment shell (reference palette) */
+  --surface-card-top:    #f6f2e9; /* PANEL — cream card surface (reference palette) */
+  --surface-card-nested: #f1ede3; /* inset card: visibly recessed from card-top (reference palette) */
+  --surface-card-soft:   #e3ddd0; /* PANEL-SOFT — recessed surface for tab cards / status bar (reference palette) */
+  --surface-well:        #ddd8cf; /* control well: distinctly sunken below PANEL-SOFT (reference palette) */
   --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
-  --surface-float:       #ffffff; /* floating overlay (dropdown, modal): highest elevation */
+  --surface-float:       #f6f2e9; /* floating overlay (dropdown, modal): PANEL elevation */
   --surface-control:     var(--surface-well); /* controls sit lower than nested content cards */
 
   /* Strip tokens — routed through ladder */
@@ -57,40 +58,43 @@
   --surface-overlay:            var(--surface-card-top);  /* was #ffffff → card-level near-white */
 
   /* Focus ring — restrained for light backgrounds */
-  --focus-ring-glow: 0 0 0 3px rgb(14 122 147 / 0.18); /* was 0 0 0 3px rgba(8, 145, 178, 0.15) — retune to DAW mockup palette */
+  --focus-ring-glow: 0 0 0 3px rgb(20 112 136 / 0.20); /* CYAN teal focus ring (reference palette) */
 
   /* Interaction — Primary theme accent */
-  --accent-primary: #0e7a93; /* was #0891b2 — retune to DAW mockup palette */
-  --accent-glow: rgb(14 122 147 / 0.06); /* was rgba(8, 145, 178, 0.04) — retune to DAW mockup palette */
-  
+  --accent-primary: #147088; /* CYAN — reference palette primary accent */
+  --accent-glow: rgb(20 112 136 / 0.06); /* CYAN glow — reference palette */
+
   --interactive-hover: color-mix(in srgb, var(--accent-primary) 90%, black);
   --interactive-active: color-mix(in srgb, var(--accent-primary) 80%, black);
-  --interactive-focus: #0e7a93; /* was #0891b2 — retune to DAW mockup palette */
-  
+  --interactive-focus: #147088; /* CYAN — reference palette */
+
   /* Interaction — Hover */
-  --chrome-hover-bg: #e3ded7;
+  --chrome-hover-bg: #ddd8cf;  /* PANEL-SOFT family hover — reference palette */
   --chrome-hover-bg-tint: color-mix(in srgb, var(--accent-primary) 10%, transparent);
 
-  /* Neon colors — significantly restrained for a professional look */
-  --neon-cyan: #0e7a93; /* was #0891b2 — retune to DAW mockup palette */
-  --neon-cyan-bright: #12a0bf; /* was #06b6d4 — retune to DAW mockup palette */
-  --neon-cyan-dim: #0a5972; /* was #164e63 — retune to DAW mockup palette */
-  --neon-orange: #c44a1f; /* was #ea580c — retune to DAW mockup palette */
-  --neon-orange-bright: #d96a3a; /* was #f97316 — retune to DAW mockup palette */
-  --neon-orange-dim: #923613; /* was #7c2d12 — retune to DAW mockup palette */
+  /* Neon colors — restrained, bound to reference palette */
+  --neon-cyan: #147088;       /* CYAN — reference palette primary accent */
+  --neon-cyan-bright: #1a8aab; /* CYAN lightened ~10% */
+  --neon-cyan-dim: #0f5568;    /* CYAN darkened ~15% */
+  --neon-orange: #b1431b;      /* ORANGE — reference palette warm accent */
+  --neon-orange-bright: #d05620; /* ORANGE lightened ~15% */
+  --neon-orange-dim: #7d2e12;  /* ORANGE darkened ~25% */
   --neon-violet: #7e22ce;
   --neon-violet-dim: #4c1d95;
-  --neon-brand-gradient: linear-gradient(90deg, #0e7a93 0%, #c44a1f 100%); /* was linear-gradient(90deg, #0891b2 0%, #ea580c 100%) — retune to DAW mockup palette */
+  --neon-brand-gradient: linear-gradient(90deg, #147088 0%, #b1431b 100%); /* CYAN → ORANGE reference palette */
 
-  /* Shared note-role contract (light values). */
-  --note-label-on-color: #ffffff;
-  --note-label-on-color-stroke: rgb(0 0 0 / 0.45);
-  --note-label-on-color-shadow: 0 1px 1px rgb(0 0 0 / 0.55);
-  --note-role-tonic-fill: #c44a1f; /* was #ea580c — re-tint to new orange family */
-  --note-role-root-fill: #c2410c;
-  --note-role-chord-fill: #d97706;
-  --note-role-tension-fill: #9a6a00;
-  --note-role-border: #c44a1f; /* was #ea580c — re-tint to new orange family */
+  /* Shared note-role contract (light values — reference palette). */
+  --note-label-on-color: #2a251d;           /* INK — dark warm brown on cream fills */
+  /* Light-mode stroke: subtle cream halo instead of heavy white.
+     On ORANGE/CYAN tinted fills the halo should be nearly invisible — use
+     a very faint warm-white that just softens the edge without washing out. */
+  --note-label-on-color-stroke: rgba(246, 242, 233, 0.50);
+  --note-label-on-color-shadow: none;
+  --note-role-tonic-fill: #b1431b;          /* ORANGE — reference palette */
+  --note-role-root-fill: #9d3717;           /* ORANGE darkened slightly for chord-root distinction */
+  --note-role-chord-fill: #d97706;          /* amber — chord fill (kept from prior) */
+  --note-role-tension-fill: #9a6a00;        /* amber-dark — tension fill (kept from prior) */
+  --note-role-border: #b1431b;              /* ORANGE — reference palette */
   --degree-light-fill-default: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
   --degree-light-fill-I: #b45d00;
   --degree-light-fill-II: #1f5f95;
@@ -102,10 +106,10 @@
   --degree-light-fill-blue: #0a40bb;
 
   /* Glow effects — minimal to none in modern-light */
-  --glow-cyan-sm: 0 1px 2px rgba(14, 122, 147, 0.1); /* was rgba(8, 145, 178, 0.1) — retune to DAW mockup palette */
+  --glow-cyan-sm: 0 1px 2px rgba(20, 112, 136, 0.12); /* CYAN teal glow (reference palette) */
   --glow-cyan-md: none;
   --glow-cyan-lg: none;
-  --glow-orange-sm: 0 1px 2px rgba(196, 74, 31, 0.1); /* was rgba(234, 88, 12, 0.1) — re-tint to new orange family */
+  --glow-orange-sm: 0 1px 2px rgba(177, 67, 27, 0.12); /* ORANGE rust glow (reference palette) */
   --glow-orange-md: none;
   --glow-orange-lg: none;
   --glow-violet-sm: none;
@@ -123,8 +127,8 @@
   --token-shimmer-highlight: rgb(0 0 0 / 0.06);
 
   /* Chip backgrounds — using solid accents for active states */
-  --token-chip-active-bg: #0e7a93; /* was #0891b2 — retune to DAW mockup palette */
-  --token-chip-tonic-bg: #c44a1f; /* was #ea580c — re-tint to new orange family */
+  --token-chip-active-bg: #147088; /* CYAN — reference palette */
+  --token-chip-tonic-bg: #b1431b;  /* ORANGE — reference palette */
 
   /* Degree chip surface tokens */
   --chip-divider: #f5f2ed;
@@ -188,21 +192,28 @@
   --fretboard-glow-opacity: 0;
 
   /* CAGED shapes — boost visibility for light mode (Okabe-Ito RGB, 0.35 alpha) */
-  --caged-e-bg: rgba(184, 87, 0, 0.35);    /* E #B85700 + 0.35 boost */
+  --caged-e-bg: rgba(27, 124, 194, 0.35);  /* E #1B7CC2 + 0.35 boost */
   --caged-d-bg: rgba(153, 153, 153, 0.35); /* D stays neutral gray in light mode too */
   --caged-c-bg: rgba(0, 158, 115, 0.35);   /* C #009E73 + 0.35 boost */
   --caged-a-bg: rgba(0, 114, 178, 0.35);   /* A #0072B2 + 0.35 boost */
   --caged-g-bg: rgba(204, 121, 167, 0.35); /* G #CC79A7 + 0.35 boost */
 
-  /* Note ring tokens — light mode: distinct hues against warm maple wood */
-  --note-ring: #0369a1;
-  --note-ring-tonic: #b45309;
-  --note-ring-dim: #0c4a6e;
-  /* Intentionally cool/violet in BOTH themes — color-tone is a semantic "outside-key chromatic accent" role and the cool hue reinforces the role boundary against warm chord-overlay amber. */
-  --note-ring-color-tone: #7c3aed;
+  /* Lens-emphasis glows — light-mode rebound to the reference palette accents.
+     Anticipation = ORANGE rust (warm signal for the incoming chord change).
+     Hold         = CYAN teal  (cool signal for stable / sustained tones). */
+  --note-glow-anticipation: #b1431b;
+  --note-glow-hold:         #147088;
+
+  /* Note ring tokens — light mode, reference palette */
+  --note-ring:            #147088;  /* CYAN — default note ring (reference palette) */
+  --note-ring-tonic:      #b1431b;  /* ORANGE — tonic stands out warm (reference palette) */
+  --note-ring-dim:        #857c6c;  /* MUTE — subdued ring (reference palette) */
+  --note-ring-color-tone: #6b8c70;  /* desaturated sage — earthy third hue, distinguishable from CYAN+ORANGE */
+  --note-glow:            color-mix(in srgb, #147088 50%, transparent); /* CYAN glow (reference palette) */
+  --note-glow-tonic:      color-mix(in srgb, #b1431b 50%, transparent); /* ORANGE glow (reference palette) */
 
   /* Note colors — primary and secondary note emphasis */
-  --note-blue: #0e7a93; /* was #0891b2 — retune to DAW mockup palette */
+  --note-blue: #147088; /* CYAN — reference palette */
   --note-blue-glow: transparent;
 
   /* Shadows for notes — removed glow */
@@ -222,14 +233,14 @@
   --destructive-control-confirmed-bg: var(--neon-orange);
 
   /* Interaction — Selection & Persistent States */
-  --selected-bg: #0e7a93; /* was #0891b2 — retune to DAW mockup palette */
+  --selected-bg: #147088;     /* CYAN — reference palette */
   --selected-fg: #ffffff;
-  --selected-border: #12a0bf; /* was #06b6d4 — retune to DAW mockup palette */
+  --selected-border: #1a8aab; /* CYAN bright — reference palette */
   --selected-bg-image: none;
   --selected-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --selected-chord-bg: #c44a1f; /* was #ea580c — re-tint to new orange family */
+  --selected-chord-bg: #b1431b;   /* ORANGE — reference palette */
   --selected-chord-fg: #ffffff;
-  --selected-chord-border: #d96a3a; /* was #f97316 — re-tint to new orange family */
+  --selected-chord-border: #d05620; /* ORANGE bright — reference palette */
   --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
 
   /* Fretboard accessibility chrome — light-mode override */
@@ -237,8 +248,11 @@
 
   /* Fretboard SVG — light-mode rings, fills, and number color */
   --fretboard-board-shadow: rgb(0 0 0 / 0.15);
-  --fretboard-note-text-fill: #0f172a;
+  --fretboard-note-text-fill: #2a251d;  /* INK — reference palette */
   --fretboard-note-text-stroke: transparent;
+  /* Note text — light mode, reference palette */
+  --note-text-in-scale:  #2a251d;  /* INK — dark warm brown on cream fills */
+  --note-text-tonic:     #2a251d;  /* INK — same; tonic fill is warm enough at 22% */
   --fretboard-note-chord-tone-outside-fill: var(--note-role-tension-fill); /* light-mode tension fill keeps semantic separation from guide/chord tones while supporting white labels */
   /* Lens-emphasis token namespaces.
      Guide-tones (5 tokens) treats all deemphasized notes uniformly — the lens emphasis is a binary
@@ -261,18 +275,18 @@
   --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
   --fretboard-fret-number-color: #475569;
 
-  /* Fretboard note fill token overrides — light mode amber hierarchy against maple wood.
-     Hierarchy: tonic (#c44a1f, orange) > chord-root (#c2410c, deep orange) > chord-tone (#fef3e2, cream) > scale-only (#f5efe4, warm cream).
-     Chord-outside (#9a6a00, amber-yellow) stays in the tension family; role conveys outside-scale via diamond shape + dashed border.
-     Wood mid-tone is #f1c38e; fills must read distinctly against it with #b45309 amber stroke. */
-  --fretboard-note-fill-tonic: var(--note-role-tonic-fill);
-  --fretboard-note-fill-chord-root: var(--note-role-root-fill);
-  --fretboard-note-fill-chord-tone: #fef3e2; /* amber-50 warm: cream-white with amber tint */
-  --fretboard-note-fill-scale-only: #f5efe4; /* warm cream, ~94% L: RGB delta 45 vs maple-wood-top #fbe6c6; darker than chord-tone #fef3e2 (97% L) — surface ladder preserved */
-  --fretboard-note-fill-chord-outside:  var(--fretboard-note-chord-tone-outside-fill);
-  --fretboard-note-fill-tension-emph:   var(--fretboard-tension-emphasis-fill);
-  --fretboard-note-fill-tension-strong: var(--fretboard-tension-emphasis-fill);
-  --fretboard-note-fill-guide-emph:     var(--fretboard-guide-tones-emphasis-fill);
+  /* Fretboard note fill token overrides — light mode, reference palette.
+     Tonic + chord-root in warm ORANGE family (rust tints into cream PANEL);
+     chord-tone in cool CYAN family; scale-only in PANEL-SOFT neutral;
+     outside/tension in deeper ORANGE-family tints. */
+  --fretboard-note-fill-tonic:          color-mix(in srgb, #b1431b 22%, #f6f2e9); /* ORANGE 22% into PANEL */
+  --fretboard-note-fill-chord-root:     color-mix(in srgb, #b1431b 32%, #f6f2e9); /* ORANGE 32% into PANEL */
+  --fretboard-note-fill-chord-tone:     color-mix(in srgb, #147088 18%, #f6f2e9); /* CYAN 18% into PANEL */
+  --fretboard-note-fill-scale-only:     #e3ddd8;                                   /* PANEL-SOFT — neutral */
+  --fretboard-note-fill-chord-outside:  color-mix(in srgb, #b1431b 40%, #f6f2e9); /* ORANGE 40% into PANEL */
+  --fretboard-note-fill-tension-emph:   color-mix(in srgb, #b1431b 55%, #f6f2e9); /* ORANGE 55% into PANEL */
+  --fretboard-note-fill-tension-strong: color-mix(in srgb, #b1431b 70%, #f6f2e9); /* ORANGE 70% into PANEL */
+  --fretboard-note-fill-guide-emph:     color-mix(in srgb, #147088 35%, #f6f2e9); /* CYAN 35% into PANEL */
   --fretboard-note-fill-deemphasis-chord:  var(--fretboard-guide-tones-deemphasis-fill);
   --fretboard-note-fill-deemphasis-violet: var(--fretboard-guide-tones-color-tone-fill);
 
@@ -284,14 +298,15 @@
 
   /* Chord-tone connector palette — canonical Okabe-Ito 8-color palette.
      Identical across light and dark themes for consistent voicing identity.
-     A halo/casing stroke (--chord-connector-halo-*) provides the contrasting
-     edge that makes these colors readable against any wood background —
-     the palette itself is not modified for contrast. */
-  --chord-connector-fill-opacity: 0.40;
+     Light mode: lower fill-opacity (0.22 vs dark 0.15) because the warm tan
+     maple wood (#fbe6c6–#e0ab68) provides less contrast than rosewood, so
+     a moderate alpha keeps the connector readable without over-saturating.
+     Halo: warmer, slightly higher opacity to lift off the maple background. */
+  --chord-connector-fill-opacity: 0.22;
   --chord-connector-outline-width: 1.25px;
-  --chord-connector-outline-opacity: 0.85;
+  --chord-connector-outline-opacity: 0.80;
   --chord-connector-halo-width: 2px;
-  --chord-connector-halo-color: rgba(255, 255, 255, 0.45);
+  --chord-connector-halo-color: rgba(255, 255, 255, 0.55);
   --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
   --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
   --chord-connector-color-3: #999999; /* Okabe-Ito: gray */
@@ -339,27 +354,18 @@
   --chord-connector-color-7: #CC79A7; /* Okabe-Ito: reddish purple */
   --chord-connector-color-8: #F0E442; /* Okabe-Ito: yellow */
 
-  /* CircleOfFifths tokens — dark mode center gradient and text tones */
-  --cof-center-start: rgb(34 40 54 / 0.98);
-  --cof-center-end: rgb(16 20 29 / 1);
-  --cof-inner-stroke: rgb(255 255 255 / 0.14);
-  --cof-text-stroke: rgba(0, 0, 0, 0.4);
-  --cof-text-muted: rgb(184 197 212 / 0.62);
-  --cof-enharmonic-muted: rgb(171 183 197 / 0.58);
-  --cof-degree-muted: rgb(165 176 188 / 0.44);
-
   /* Chip tokens — dark mode chip border and note inner fill */
   --chip-border-muted: rgb(255 255 255 / 0.22);
   --chip-line-muted: rgb(255 255 255 / 0.18);
   --color-note-inner-fill: var(--fretboard-note-fill-chord-tone);
 
   /* CAGED shapes — canonical Okabe-Ito palette (same as light mode) */
-  --caged-e: #E69F00;                        /* Okabe-Ito orange, slot 1 */
+  --caged-e: #56B4E9;                        /* Okabe-Ito sky blue */
   --caged-d: #999999;                        /* Okabe-Ito gray, slot 3 */
   --caged-c: #009E73;                        /* Okabe-Ito bluish green, slot 4 */
   --caged-a: #0072B2;                        /* Okabe-Ito blue, slot 6 */
   --caged-g: #CC79A7;                        /* Okabe-Ito reddish purple, slot 7 */
-  --caged-e-bg: rgba(230, 159, 0, 0.18);    /* E #E69F00 + 0.18 */
+  --caged-e-bg: rgba(86, 180, 233, 0.18);   /* E #56B4E9 + 0.18 */
   --caged-d-bg: rgba(153, 153, 153, 0.18);  /* D #999999 + 0.18 */
   --caged-c-bg: rgba(0, 158, 115, 0.18);    /* C #009E73 + 0.18 */
   --caged-a-bg: rgba(0, 114, 178, 0.18);    /* A #0072B2 + 0.18 */

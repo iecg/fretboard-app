@@ -24,7 +24,7 @@ export interface VisualState {
   linkChordRoot?: boolean;
   /** Phase 02: root note for manual-mode chord overlay */
   chordRootOverride?: string;
-  /** Phase 02: chord quality for manual-mode chord overlay (e.g. "Dominant 7th") */
+  /** Phase 02: chord quality for manual-mode chord overlay (Tonal symbol, e.g. "7", "maj7") */
   chordQualityOverride?: string;
   /** Phase 02: "degree" | "manual" */
   chordOverlayMode?: string;
@@ -74,13 +74,24 @@ export async function loadVisualState(
       // Suppress the first-run coach mark so it never appears in snapshots.
       localStorage.setItem(coachmarkKey, "true");
 
+      // Map well-known atom keys to their current storage-version suffix.
+      // Phase N2 bumped baseScaleNameAtom -> scaleName.v2; Phase N5 bumped
+      // progressionStepsAtom -> progressionSteps.v2. Specs use the friendly
+      // base name in their VisualState seed; remap here so we write to the
+      // version the atoms read from at boot.
+      const STORAGE_KEY_RENAMES: Record<string, string> = {
+        scaleName: "scaleName.v2",
+        progressionSteps: "progressionSteps.v2",
+      };
+
       // Write new state
       Object.entries(s).forEach(([key, value]) => {
         if (value === undefined || value === null) return;
 
         // Serialize complex types as JSON, simple types as strings
         const serialized = typeof value === "object" ? JSON.stringify(value) : String(value);
-        localStorage.setItem(`${prefix}${key}`, serialized);
+        const storageKey = STORAGE_KEY_RENAMES[key] ?? key;
+        localStorage.setItem(`${prefix}${storageKey}`, serialized);
       });
     },
     {
@@ -166,10 +177,7 @@ export async function waitForStableLayout(page: Page, timeout = 2000) {
   }, timeout);
 }
 
-/**
- * Waits for a specific locator to have a stable bounding box.
- */
-export async function waitForStable(locator: Locator, timeout = 2000) {
+async function waitForStable(locator: Locator, timeout = 2000) {
   const page = locator.page();
   const element = await locator.elementHandle();
   if (!element) return;
@@ -232,7 +240,11 @@ export async function prepareVisualPage(
   }, COACHMARK_SETTINGS_DISMISSED_KEY);
 
   if (options.goto !== false) {
-    await page.goto("/");
+    // Wait for "load" (not just navigation commit) so the document is fully
+    // parsed before addStyleTag injects into it. Without this, cold Docker
+    // containers can time out because the page is still loading when the
+    // style injection runs.
+    await page.goto("/", { waitUntil: "load" });
   } else {
     await page.evaluate((key: string) => {
       localStorage.setItem(key, "true");
@@ -336,22 +348,4 @@ export async function openHelp(page: Page) {
   await waitForStableLayout(page);
 }
 
-/**
- * Reads a single computed-style property from a pseudo-element of the matched
- * locator. The host element is sometimes intentionally transparent while the
- * visual treatment lives on `::before` / `::after`, so plain
- * `getComputedStyle(el)[prop]` returns the wrong value.
- */
-export function getPseudoStyle(
-  locator: Locator,
-  pseudo: "::before" | "::after",
-  property: string,
-): Promise<string> {
-  return locator.evaluate(
-    (el, [p, prop]) => {
-      const styles = getComputedStyle(el, p) as unknown as Record<string, string>;
-      return styles[prop] ?? "";
-    },
-    [pseudo, property] as const,
-  );
-}
+

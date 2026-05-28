@@ -1,2 +1,4 @@
 packages:
   - "packages/core"
+allowBuilds:
+  esbuild: set this to true or false

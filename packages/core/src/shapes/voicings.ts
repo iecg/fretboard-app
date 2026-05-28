@@ -3,11 +3,9 @@ import { parseNote } from "../guitar";
 import type { CagedShape } from "./templates";
 import { getFullChordShapeMatches } from "./fullChordShapes";
 
-export type VoicingType = "caged" | "drop2" | "triad";
-export type VoicingInversion = "root" | "1st" | "2nd" | "3rd";
+export type VoicingType = "off" | "full" | "close";
 
 export interface VoicingNote {
-  /** 0 = highest string, 5 = lowest. */
   stringIndex: number;
   fretIndex: number;
   noteName: string;
@@ -17,18 +15,16 @@ export interface VoicingNote {
 export interface Voicing {
   positionKeys: string[];
   notes: VoicingNote[];
-  /** Present only for `caged` voicings; absent for algorithmic voicings. */
+  /** Present only for `full` voicings (CAGED). Absent for `close`. */
   shape?: CagedShape;
+  /**
+   * True when this voicing is a *close-voicing fallback* rendered inside a
+   * CAGED/3NPS position that has no full-chord template match. Drives the
+   * dashed-stroke degradation cue on the connector layer.
+   */
+  isFallback?: boolean;
 }
 
-const INVERSION_INDEX: Record<VoicingInversion, number> = {
-  root: 0,
-  "1st": 1,
-  "2nd": 2,
-  "3rd": 3,
-};
-
-/** MIDI number of an open string written like "E2" / "A#3". null if unparseable. */
 export function openStringMidi(openString: string): number | null {
   const parsed = parseNote(openString);
   if (!parsed) return null;
@@ -37,176 +33,167 @@ export function openStringMidi(openString: string): number | null {
   return parsed.octave * 12 + idx;
 }
 
-/**
- * Pitch class (0-11) of the note that must be the lowest voice for `inversion`.
- * null when the chord has no member at that inversion index (e.g. 3rd on a triad).
- */
-export function inversionBassPitchClass(
-  chordRoot: string,
-  chordType: string,
-  inversion: VoicingInversion,
-): number | null {
-  const def = CHORD_DEFINITIONS[chordType];
-  const rootIndex = NOTES.indexOf(chordRoot);
-  if (!def || rootIndex < 0) return null;
-  const memberIndex = INVERSION_INDEX[inversion];
-  const member = def.members[memberIndex];
-  if (!member) return null;
-  return (rootIndex + member.semitone) % 12;
-}
-
 export interface GenerateVoicingsParams {
   chordRoot: string;
   chordType: string;
   tuning: string[];
   maxFret: number;
   voicingType: VoicingType;
-  inversion: VoicingInversion;
-  /** Allowed string indices (0 = high E … 5 = low E). */
-  stringSet: readonly number[];
-}
-
-// Span limits tuned in Task 11 Step 5: triad raised 4→5 so close-position
-// C-major triads (which span up to 5 frets across adjacent strings) survive.
-// drop2 is raised to 6 so that spread (pitch-span > 12) triads can be voiced
-// on 3 adjacent strings — their minimum fret span is 6 semitones.
-const SPAN_LIMIT: Record<"triad" | "drop2", number> = { triad: 5, drop2: 6 };
-
-/** Frets >0 only — open strings do not constrain the hand span. */
-function fretSpan(notes: VoicingNote[]): number {
-  const fretted = notes.map((n) => n.fretIndex).filter((f) => f > 0);
-  if (fretted.length < 2) return 0;
-  return Math.max(...fretted) - Math.min(...fretted);
-}
-
-/**
- * Algorithmic search for triad / drop2 voicings.
- * voiceCount: 3 for triad, 4 for drop2 (3 when a drop2 chord has <4 tones).
- *
- * Note: the drop2 pitch-span gate (`12 < span <= 24`, enabled via
- * `requireOctaveSpread`) is a heuristic approximation. It accepts any 4-note
- * voicing whose total span sits in the octave-plus range — it is NOT a true
- * drop-2 octave-displacement transform of a close-position voicing.
- */
-function searchVoicings(
-  params: GenerateVoicingsParams,
-  voiceCount: number,
-  requireOctaveSpread: boolean,
-): Voicing[] {
-  const { chordRoot, chordType, tuning, maxFret, inversion, stringSet, voicingType } = params;
-  const def = CHORD_DEFINITIONS[chordType];
-  const rootIndex = NOTES.indexOf(chordRoot);
-  if (!def || rootIndex < 0 || tuning.length !== 6) return [];
-
-  const bassPC = inversionBassPitchClass(chordRoot, chordType, inversion);
-  if (bassPC === null) return [];
-
-  const chordPCs = def.members.map((m) => (rootIndex + m.semitone) % 12);
-  const chordPCSet = new Set(chordPCs);
-  const allowed = [...stringSet].sort((a, b) => a - b);
-  const spanLimit = SPAN_LIMIT[voicingType === "drop2" ? "drop2" : "triad"];
-
-  const openMidis = tuning.map(openStringMidi);
-  if (openMidis.some((m) => m === null)) return [];
-
-  const candidateFrets: Record<number, number[]> = {};
-  for (const s of allowed) {
-    const open = openMidis[s] as number;
-    const frets: number[] = [];
-    for (let f = 0; f <= maxFret; f += 1) {
-      if (chordPCSet.has((open + f) % 12)) frets.push(f);
-    }
-    candidateFrets[s] = frets;
-  }
-
-  const voicings: Voicing[] = [];
-  const seen = new Set<string>();
-
-  for (let i = 0; i + voiceCount <= allowed.length; i += 1) {
-    const run = allowed.slice(i, i + voiceCount);
-    const contiguous = run.every((v, k) => k === 0 || v === run[k - 1] + 1);
-    if (!contiguous) continue;
-
-    const dfs = (depth: number, picked: VoicingNote[]) => {
-      if (depth === run.length) {
-        const pcs = new Set(picked.map((n) => n.midi % 12));
-        // Belt-and-suspenders: picked.length === voiceCount === chordPCSet.size,
-        // so a size mismatch can only mean a duplicated pitch class.
-        if (pcs.size !== chordPCSet.size) return;
-        for (const pc of chordPCSet) if (!pcs.has(pc)) return;
-        const lowest = picked.reduce((a, b) => (a.midi <= b.midi ? a : b));
-        if (lowest.midi % 12 !== bassPC) return;
-        if (fretSpan(picked) > spanLimit) return;
-        const midis = picked.map((n) => n.midi);
-        const pitchSpan = Math.max(...midis) - Math.min(...midis);
-        if (requireOctaveSpread && !(pitchSpan > 12 && pitchSpan <= 24)) return;
-        if (!requireOctaveSpread && pitchSpan > 12) return;
-        const sorted = [...picked].sort((a, b) => a.stringIndex - b.stringIndex);
-        const positionKeys = sorted.map((n) => `${n.stringIndex}-${n.fretIndex}`);
-        const key = positionKeys.join("|");
-        if (seen.has(key)) return;
-        seen.add(key);
-        voicings.push({ positionKeys, notes: sorted });
-        return;
-      }
-      const stringIndex = run[depth];
-      const open = openMidis[stringIndex] as number;
-      for (const fret of candidateFrets[stringIndex]) {
-        const midi = open + fret;
-        dfs(depth + 1, [
-          ...picked,
-          { stringIndex, fretIndex: fret, noteName: NOTES[midi % 12], midi },
-        ]);
-      }
-    };
-    dfs(0, []);
-  }
-  return voicings;
 }
 
 export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
-  const { voicingType } = params;
-  if (voicingType === "caged") {
-    return cagedVoicings(params);
+  switch (params.voicingType) {
+    case "off":
+      return [];
+    case "full":
+      return fullVoicings(params);
+    case "close":
+      return closeVoicings(params);
+    default:
+      return [];
   }
-  const def = CHORD_DEFINITIONS[params.chordType];
-  if (!def) return [];
-  if (voicingType === "triad") {
-    // Triad: always the closed-position search, capped at 3 voices.
-    return searchVoicings(params, Math.min(3, def.members.length), false);
-  }
-  // drop2: always the spread search. voiceCount uses all chord tones for
-  // 4+ note chords and falls back to the chord's tone count for smaller ones
-  // (a 3-note "drop 2" is the spread/string-skip triad).
-  const voiceCount = def.members.length >= 4 ? 4 : Math.min(3, def.members.length);
-  return searchVoicings(params, voiceCount, true);
 }
 
-function cagedVoicings(params: GenerateVoicingsParams): Voicing[] {
-  const { chordRoot, chordType, tuning, maxFret, inversion, stringSet } = params;
-  const allowed = new Set(stringSet);
+function fullVoicings(params: GenerateVoicingsParams): Voicing[] {
+  const { chordRoot, chordType, tuning, maxFret } = params;
   const openMidis = tuning.map(openStringMidi);
   if (openMidis.some((m) => m === null)) return [];
-  const bassPC = inversionBassPitchClass(chordRoot, chordType, inversion);
-  // The requested inversion has no corresponding chord tone (e.g. a "3rd"
-  // inversion of a triad) — there is nothing valid to generate.
-  if (inversion !== "root" && bassPC === null) return [];
-
   const matches = getFullChordShapeMatches({ chordRoot, chordType, tuning, maxFret });
-  const voicings: Voicing[] = [];
-  for (const match of matches) {
-    const notes: VoicingNote[] = match.notes.map((n) => ({
+  return matches.map((match) => ({
+    positionKeys: match.positionKeys,
+    notes: match.notes.map((n) => ({
       stringIndex: n.stringIndex,
       fretIndex: n.fretIndex,
       noteName: n.noteName,
       midi: (openMidis[n.stringIndex] as number) + n.fretIndex,
-    }));
-    if (!notes.every((n) => allowed.has(n.stringIndex))) continue;
-    if (inversion !== "root" && bassPC !== null) {
-      const lowest = notes.reduce((a, b) => (a.midi <= b.midi ? a : b));
-      if (lowest.midi % 12 !== bassPC) continue;
+    })),
+    shape: match.shape,
+  }));
+}
+
+/**
+ * Maximum fretted-fret span for a close voicing. Capped at 3 so the candidate
+ * set stays within playable shapes (typical hand reach around mid-neck, <= 4 physical frets).
+ * A larger value re-admits spread/spider shapes that don't feel "close".
+ */
+export const CLOSE_VOICING_SPAN_LIMIT = 3;
+
+function getPermutations<T>(arr: T[]): T[][] {
+  if (arr.length <= 1) return [arr];
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i++) {
+    const current = arr[i];
+    const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+    for (const perm of getPermutations(remaining)) {
+      result.push([current, ...perm]);
     }
-    voicings.push({ positionKeys: match.positionKeys, notes, shape: match.shape });
   }
+  return result;
+}
+
+/**
+ * Generate Close voicings: 3/4/5-note polygons on adjacent strings, where each
+ * polygon contains every chord tone (no skipped tones). Note count matches the
+ * chord's tone count: triads = 3, tetrads = 4, pentads = 5.
+ *
+ * Span limit: see {@link CLOSE_VOICING_SPAN_LIMIT}.
+ */
+function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
+  const { chordRoot, chordType, tuning, maxFret } = params;
+  const def = CHORD_DEFINITIONS[chordType];
+  const rootIndex = NOTES.indexOf(chordRoot);
+  if (!def || rootIndex < 0 || tuning.length !== 6) return [];
+
+  const voiceCount = def.members.length;
+  if (voiceCount < 3 || voiceCount > 5) return [];
+
+  const chordPCs = def.members.map((m) => (rootIndex + m.semitone) % 12);
+  const openMidis = tuning.map(openStringMidi);
+  if (openMidis.some((m) => m === null)) return [];
+
+  const voicings: Voicing[] = [];
+  const seen = new Set<string>();
+
+  const stringSets: number[][] = [];
+  for (let start = 0; start + voiceCount <= 6; start++) {
+    const set = [];
+    for (let i = 0; i < voiceCount; i++) set.push(start + i);
+    stringSets.push(set);
+  }
+
+  const pcPermutations = getPermutations(chordPCs);
+
+  for (const stringSet of stringSets) {
+    const openStrings = stringSet.map((s) => openMidis[s] as number);
+
+    for (const perm of pcPermutations) {
+      const baseFrets = perm.map((pc, i) => {
+        const openPc = openStrings[i] % 12;
+        return (pc - openPc + 12) % 12;
+      });
+
+      let minSpan = Infinity;
+      let bestFrets: number[] | null = null;
+      const combinations = 1 << voiceCount;
+      
+      for (let c = 0; c < combinations; c++) {
+        let minF = Infinity;
+        let maxF = -Infinity;
+        const currentFrets = [];
+        for (let i = 0; i < voiceCount; i++) {
+          const shift = (c & (1 << i)) !== 0 ? 12 : 0;
+          const f = baseFrets[i] + shift;
+          currentFrets.push(f);
+          if (f < minF) minF = f;
+          if (f > maxF) maxF = f;
+        }
+        const span = maxF - minF;
+        if (span < minSpan) {
+          minSpan = span;
+          bestFrets = currentFrets;
+        }
+      }
+
+      if (minSpan > CLOSE_VOICING_SPAN_LIMIT || !bestFrets) continue;
+
+      let minFret = Math.min(...bestFrets);
+      while (minFret >= 12) {
+        for (let i = 0; i < voiceCount; i++) bestFrets[i] -= 12;
+        minFret -= 12;
+      }
+
+      for (let octave = 0; octave * 12 <= maxFret; octave++) {
+        const instanceFrets = bestFrets.map((f) => f + octave * 12);
+        const highestFret = Math.max(...instanceFrets);
+
+        if (highestFret > maxFret) break;
+
+        const hasOpen = instanceFrets.some((f) => f === 0);
+        if (hasOpen && highestFret >= 5) continue;
+
+        const notes: VoicingNote[] = [];
+        for (let i = 0; i < voiceCount; i++) {
+          const stringIndex = stringSet[i];
+          const fretIndex = instanceFrets[i];
+          const midi = (openMidis[stringIndex] as number) + fretIndex;
+          notes.push({
+            stringIndex,
+            fretIndex,
+            noteName: NOTES[midi % 12],
+            midi,
+          });
+        }
+
+        const positionKeys = notes.map((n) => `${n.stringIndex}-${n.fretIndex}`);
+        const key = positionKeys.join("|");
+
+        if (!seen.has(key)) {
+          seen.add(key);
+          voicings.push({ positionKeys, notes });
+        }
+      }
+    }
+  }
+
   return voicings;
 }

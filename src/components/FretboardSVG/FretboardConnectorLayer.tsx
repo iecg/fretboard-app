@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
@@ -17,6 +17,51 @@ interface FretboardConnectorLayerProps {
   clipPathUrl: string;
 }
 
+const renderStaticChordConnectorGroup = (
+  chordPolylines: ChordConnectorVoicing[],
+  connectorSource: "full-chord" | "generated",
+  motionKey: string,
+) => (
+  <g
+    key={motionKey}
+    className={styles["chord-connectors"]}
+    data-connector-source={connectorSource}
+    data-motion="none"
+    data-render-path="static"
+    aria-hidden="true"
+    pointerEvents="none"
+  >
+    {chordPolylines.map((v) => renderChordPath(v, "halo"))}
+    {chordPolylines.map((v) => renderChordPath(v, "fill"))}
+    {chordPolylines.map((v) => renderChordPath(v, "outline"))}
+  </g>
+);
+
+const renderAnimatedChordConnectorGroup = (
+  chordPolylines: ChordConnectorVoicing[],
+  connectorSource: "full-chord" | "generated",
+  motionKey: string,
+  skipInitial: boolean,
+) => (
+  <motion.g
+    key={motionKey}
+    initial={skipInitial ? false : { opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
+    className={styles["chord-connectors"]}
+    data-connector-source={connectorSource}
+    data-motion="group"
+    data-render-path="animated"
+    aria-hidden="true"
+    pointerEvents="none"
+  >
+    {chordPolylines.map((v) => renderChordPath(v, "halo"))}
+    {chordPolylines.map((v) => renderChordPath(v, "fill"))}
+    {chordPolylines.map((v) => renderChordPath(v, "outline"))}
+  </motion.g>
+);
+
 const renderChordPath = (
   v: ChordConnectorVoicing,
   layer: "halo" | "fill" | "outline",
@@ -28,6 +73,7 @@ const renderChordPath = (
     data-layer={layer}
     data-caged-shape={v.shape}
     data-palette-index={v.paletteIndex + 1}
+    data-fallback={v.isFallback ? "true" : undefined}
   />
 );
 
@@ -53,7 +99,15 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   connectorMotionMode,
   clipPathUrl,
 }: FretboardConnectorLayerProps) {
-  const motionKey = `chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}`;
+  const [prevMode, setPrevMode] = useState(connectorMotionMode);
+  const skipInitial = prevMode === "none" && connectorMotionMode === "group";
+
+  useLayoutEffect(() => {
+    setPrevMode(connectorMotionMode);
+  }, [connectorMotionMode]);
+
+  const polylinesKey = chordPolylines.map((v) => v.voicingKey).sort().join(",");
+  const motionKey = `chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}-${polylinesKey}`;
   return (
     <g
       className={styles["fretboard-overlays"]}
@@ -61,39 +115,11 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
       aria-hidden="true"
       pointerEvents="none"
     >
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="sync">
         {showChordConnectors && chordPolylines.length > 0 && (
-          connectorMotionMode === "group" ? (
-            <motion.g
-              key={motionKey}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-              className={styles["chord-connectors"]}
-              data-connector-source={connectorSource}
-              data-motion="group"
-              aria-hidden="true"
-              pointerEvents="none"
-            >
-              {chordPolylines.map((v) => renderChordPath(v, "halo"))}
-              {chordPolylines.map((v) => renderChordPath(v, "fill"))}
-              {chordPolylines.map((v) => renderChordPath(v, "outline"))}
-            </motion.g>
-          ) : (
-            <g
-              key={motionKey}
-              className={styles["chord-connectors"]}
-              data-connector-source={connectorSource}
-              data-motion="none"
-              aria-hidden="true"
-              pointerEvents="none"
-            >
-              {chordPolylines.map((v) => renderChordPath(v, "halo"))}
-              {chordPolylines.map((v) => renderChordPath(v, "fill"))}
-              {chordPolylines.map((v) => renderChordPath(v, "outline"))}
-            </g>
-          )
+          connectorMotionMode === "group"
+            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey, skipInitial)
+            : renderStaticChordConnectorGroup(chordPolylines, connectorSource, motionKey)
         )}
       </AnimatePresence>
       {intervalPolylines.length > 0 && (

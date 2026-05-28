@@ -143,6 +143,27 @@ describe("StepperControl/StepperControl", () => {
     expect(onChange).toHaveBeenCalledWith(6);
   });
 
+  it("disables both inc/dec buttons when disabled=true (overriding bounds)", () => {
+    const onChange = vi.fn();
+    render(
+      <StepperControl
+        label="Tempo"
+        value={5}
+        min={0}
+        max={10}
+        onChange={onChange}
+        disabled
+      />,
+    );
+    const dec = screen.getByRole("button", { name: /decrease tempo/i });
+    const inc = screen.getByRole("button", { name: /increase tempo/i });
+    expect(dec).toBeDisabled();
+    expect(inc).toBeDisabled();
+    fireEvent.click(inc);
+    fireEvent.click(dec);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it("has no a11y violations", async () => {
     const { container } = render(
       <StepperControl label="Fret count" value={5} min={1} max={24} onChange={() => {}} />,

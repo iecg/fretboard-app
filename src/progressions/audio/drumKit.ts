@@ -13,6 +13,8 @@
  * `bass.ts`, and `string.ts` after the Phase 7B migration.
  */
 import * as Tone from "tone";
+import type { ReusableVoiceLease } from "./createReusableVoicePool";
+import { createReusableVoicePool } from "./createReusableVoicePool";
 
 const HIT_VELOCITY_DEFAULT = 1;
 
@@ -38,17 +40,12 @@ export interface DrumVoiceHandle {
   cancel: () => void;
 }
 
-interface DisposableSynth {
-  dispose: () => void;
-}
-
-/**
- * Build a one-shot voice handle whose `cancel()` defers `synth.dispose()` by
- * `tailMs` so the voice's release tail isn't cut off. Repeated `cancel()`
- * calls are idempotent — only the first schedules the timer.
- */
 function deferredDisposeHandle(
-  synth: DisposableSynth,
+  lease: ReusableVoiceLease<
+    Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth
+  >,
+  time: number,
+  busyUntil: number,
   tailMs: number,
 ): DrumVoiceHandle {
   let cancelled = false;
@@ -56,9 +53,22 @@ function deferredDisposeHandle(
     cancel: () => {
       if (cancelled) return;
       cancelled = true;
+      if (!lease.isCurrent()) return;
+
+      const cancelTime = Tone.now();
+      if (cancelTime < time) {
+        lease.dispose();
+        return;
+      }
+
+      if (cancelTime >= busyUntil) {
+        return;
+      }
+
+      lease.setBusyUntil(cancelTime + tailMs / 1000);
       setTimeout(() => {
         try {
-          synth.dispose();
+          lease.dispose();
         } catch {
           /* already disposed */
         }
@@ -68,6 +78,63 @@ function deferredDisposeHandle(
 }
 
 const NOOP_HANDLE: DrumVoiceHandle = { cancel: () => {} };
+const kickVoicePool = createReusableVoicePool<Tone.MembraneSynth>({
+  createVoice: () =>
+    new Tone.MembraneSynth({
+      pitchDecay: 0.04,
+      octaves: 6,
+      oscillator: { type: "sine" },
+      envelope: {
+        attack: 0.001,
+        decay: 0.35,
+        sustain: 0,
+        release: 0.1,
+        attackCurve: "exponential",
+      },
+    }),
+});
+const snareVoicePool = createReusableVoicePool<Tone.NoiseSynth>({
+  createVoice: () =>
+    new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: {
+        attack: 0.001,
+        decay: 0.18,
+        sustain: 0,
+        release: 0.05,
+      },
+    }),
+});
+const closedHatVoicePool = createReusableVoicePool<Tone.MetalSynth>({
+  createVoice: () =>
+    new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 0.05, release: 0.02 },
+      harmonicity: 5.1,
+      modulationIndex: 32,
+      resonance: 4000,
+      octaves: 1.5,
+    }),
+});
+const openHatVoicePool = createReusableVoicePool<Tone.MetalSynth>({
+  createVoice: () =>
+    new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 0.35, release: 0.02 },
+      harmonicity: 5.1,
+      modulationIndex: 32,
+      resonance: 4000,
+      octaves: 1.5,
+    }),
+});
+const rideVoicePool = createReusableVoicePool<Tone.MetalSynth>({
+  createVoice: () =>
+    new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 1.0, release: 0.3 },
+      harmonicity: 3.1,
+      modulationIndex: 22,
+      resonance: 2400,
+      octaves: 1.0,
+    }),
+});
 
 /**
  * Schedule a kick drum hit at `time`. `Tone.MembraneSynth` provides the
@@ -81,22 +148,13 @@ export function scheduleKick(
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
-
-  const synth = new Tone.MembraneSynth({
-    pitchDecay: 0.04,
-    octaves: 6,
-    oscillator: { type: "sine" },
-    envelope: {
-      attack: 0.001,
-      decay: 0.35,
-      sustain: 0,
-      release: 0.1,
-      attackCurve: "exponential",
-    },
-  });
-  synth.connect(dest);
-  synth.triggerAttackRelease("C1", 0.5, time, velocity);
-  return deferredDisposeHandle(synth, KICK_DISPOSE_MS);
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = kickVoicePool.lease(dest, now);
+  const busyUntil = playbackStartTime + 0.6;
+  lease.setBusyUntil(busyUntil);
+  lease.voice.triggerAttackRelease("C1", 0.5, time, velocity);
+  return deferredDisposeHandle(lease, time, busyUntil, KICK_DISPOSE_MS);
 }
 
 /**
@@ -111,20 +169,14 @@ export function scheduleSnare(
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
-
-  const synth = new Tone.NoiseSynth({
-    noise: { type: "white" },
-    envelope: {
-      attack: 0.001,
-      decay: 0.18,
-      sustain: 0,
-      release: 0.05,
-    },
-  });
-  synth.connect(dest);
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = snareVoicePool.lease(dest, now);
+  const busyUntil = playbackStartTime + 0.23;
+  lease.setBusyUntil(busyUntil);
   // NoiseSynth has no pitch — signature is (duration, time, velocity).
-  synth.triggerAttackRelease(0.18, time, velocity);
-  return deferredDisposeHandle(synth, SNARE_DISPOSE_MS);
+  lease.voice.triggerAttackRelease(0.18, time, velocity);
+  return deferredDisposeHandle(lease, time, busyUntil, SNARE_DISPOSE_MS);
 }
 
 export interface HiHatOptions extends DrumHitOptions {
@@ -145,18 +197,19 @@ export function scheduleHiHat(
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
   const decay = options.open ? 0.35 : 0.05;
-
-  const synth = new Tone.MetalSynth({
-    envelope: { attack: 0.001, decay, release: 0.02 },
-    harmonicity: 5.1,
-    modulationIndex: 32,
-    resonance: 4000,
-    octaves: 1.5,
-  });
-  synth.connect(dest);
-  synth.triggerAttackRelease("C6", decay, time, velocity);
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = (options.open ? openHatVoicePool : closedHatVoicePool).lease(
+    dest,
+    now,
+  );
+  const busyUntil = playbackStartTime + decay + 0.02;
+  lease.setBusyUntil(busyUntil);
+  lease.voice.triggerAttackRelease("C6", decay, time, velocity);
   return deferredDisposeHandle(
-    synth,
+    lease,
+    time,
+    busyUntil,
     options.open ? HAT_OPEN_DISPOSE_MS : HAT_CLOSED_DISPOSE_MS,
   );
 }
@@ -178,15 +231,11 @@ export function scheduleRide(
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
-
-  const synth = new Tone.MetalSynth({
-    envelope: { attack: 0.001, decay: 1.0, release: 0.3 },
-    harmonicity: 3.1,
-    modulationIndex: 22,
-    resonance: 2400,
-    octaves: 1.0,
-  });
-  synth.connect(dest);
-  synth.triggerAttackRelease("D6", 1.0, time, velocity);
-  return deferredDisposeHandle(synth, RIDE_DISPOSE_MS);
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = rideVoicePool.lease(dest, now);
+  const busyUntil = playbackStartTime + 1.3;
+  lease.setBusyUntil(busyUntil);
+  lease.voice.triggerAttackRelease("D6", 1.0, time, velocity);
+  return deferredDisposeHandle(lease, time, busyUntil, RIDE_DISPOSE_MS);
 }

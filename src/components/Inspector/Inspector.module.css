@@ -1,37 +1,45 @@
-/* The Inspector panel is a DAW faceplate — a theme-adaptive hardware-style
- * surface using the .faceplate class from shared.module.css. */
 .root {
-  composes: faceplate from "../shared/shared.module.css";
-
   display: flex;
   flex-direction: column;
   gap: var(--space-2, 0.5rem);
-  padding: var(--space-3, 0.75rem);
+  padding: var(--space-3, 0.75rem) 0;
+  /* v2.0: no outer card chrome — content flows against the page background. */
 }
 
-/* DAW Shell Phase 13b — a mono "Inspector" kicker. Top placement renders it
-   inline with the tab row inside `.tabHeader`. */
-.panelLabel {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: var(--faceplate-accent);
-  padding-inline: var(--space-1, 0.25rem);
-  white-space: nowrap;
-}
-
-/* Top-placement header row — the "Inspector" kicker and the tab pills share
-   one baseline. The divider rule sits on this row, with `padding-bottom`
-   opening a gap between the pills and the line. */
+/* Top-placement header row — tab pills share one baseline. The divider rule
+   sits on this row, with `padding-bottom` opening a gap between pills and the
+   line. */
 .tabHeader {
   display: flex;
   align-items: center;
   gap: var(--space-3, 0.75rem);
-  padding-bottom: var(--space-2, 0.5rem);
+  /* Full-bleed extension: escape app-container's 1rem horizontal padding so
+     the border-bottom hairline reaches the viewport edges. Padding-inline
+     restores the inset for the tab pills themselves. */
+  width: calc(100% + 2rem);
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  padding-bottom: 0;
   border-bottom: 1px solid var(--faceplate-divider);
 }
+
+/* Mobile tier: app-container uses 0.65rem padding (App.css media query).
+   Match the escape on narrow viewports so the bleed still reaches edge. */
+@media (max-width: 767px) {
+  .tabHeader {
+    width: calc(100% + 1.3rem);
+    margin-inline: -0.65rem;
+    padding-inline: 0.65rem;
+  }
+}
+
+/* Light-mode tab header: warm hairline divider, full-bleed via negative margin.
+   Reference palette: MUTE #857c6c. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .tabHeader {
+  border-bottom-color: rgb(133 124 108 / 0.30);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .tabList {
   display: flex;
@@ -44,6 +52,7 @@
   border: 0;
   border-bottom: 2px solid transparent;
   padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  margin-bottom: -1px;
   font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
   font-size: 11px;
   font-weight: 500;
@@ -67,28 +76,6 @@
   color: var(--faceplate-accent);
   border-bottom-color: var(--faceplate-accent);
   text-shadow: var(--faceplate-accent-glow);
-}
-
-/* Top-placement tabs are no-fill rounded pills — the active tab is outlined
-   in the accent color rather than filled, replacing the bottom-underline
-   indicator (DAW Shell Phase 13b). The bottom-docked (mobile) tab bar keeps
-   the Phase 7 underline treatment — these rules are scoped to
-   `[data-placement="top"]` so they never reach it. */
-.root[data-placement="top"] .tab {
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
-}
-
-.root[data-placement="top"] .tab:hover:not([data-state="active"]) {
-  border-color: var(--faceplate-divider);
-}
-
-.root[data-placement="top"] .tab[data-state="active"] {
-  color: var(--faceplate-accent);
-  background: transparent;
-  border-color: var(--faceplate-accent);
-  text-shadow: none;
 }
 
 .tabPanel {

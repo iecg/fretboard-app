@@ -25,9 +25,16 @@ interface GetFullChordShapeMatchesParams {
 }
 
 const FULL_CHORD_QUALITIES = new Set<FullChordQuality>([
-  'Major Triad',
-  'Minor Triad',
-  'Dominant 7th',
+  'M',
+  'm',
+  '7',
+  'maj7',
+  'm7',
+  'sus2',
+  'sus4',
+  'dim',
+  'dim7',
+  'm7b5',
 ]);
 
 export function getFullChordShapeMatches({
@@ -63,14 +70,18 @@ export function getFullChordShapeMatches({
     }
 
     const anchorNotes = fretboard[template.anchorString];
-    if (!anchorNotes) {
-      continue;
+    if (!anchorNotes || anchorNotes.length === 0) continue;
+
+    const openIndex = NOTES.indexOf(anchorNotes[0]);
+    if (openIndex < 0) continue;
+
+    const firstRootFret = (rootIndex - openIndex + 12) % 12;
+    const rootFrets: number[] = [];
+    for (let f = firstRootFret; f <= maxFret; f += 12) {
+      rootFrets.push(f);
     }
 
-    for (let anchorFret = 0; anchorFret < anchorNotes.length; anchorFret += 1) {
-      if (anchorNotes[anchorFret] !== chordRoot) {
-        continue;
-      }
+    for (const anchorFret of rootFrets) {
 
       const notes: FullChordMatchNote[] = [];
       const positionKeys: string[] = [];
@@ -107,5 +118,21 @@ export function getFullChordShapeMatches({
     }
   }
 
-  return matches;
+  // Deduplicate matches that have the exact same set of physical coordinates (positionKeys)
+  const uniqueMatchesMap = new Map<string, FullChordMatch>();
+
+  for (const match of matches) {
+    const key = match.positionKeys.slice().sort().join('|');
+    const existing = uniqueMatchesMap.get(key);
+    if (!existing) {
+      uniqueMatchesMap.set(key, match);
+    } else {
+      // Prefer standard E-shape barre chord over G-shape for minor triads
+      if (match.shape === 'E' && existing.shape === 'G') {
+        uniqueMatchesMap.set(key, match);
+      }
+    }
+  }
+
+  return Array.from(uniqueMatchesMap.values());
 }

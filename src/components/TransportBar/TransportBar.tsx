@@ -3,27 +3,26 @@ import {
   AudioWaveform,
   Drum,
   Guitar,
-  Pause,
   Play,
   Repeat,
-  SkipBack,
-  SkipForward,
+  Square,
   Timer,
 } from "lucide-react";
-import { useProgressionState } from "../../hooks/useProgressionState";
+import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
+import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./TransportBar.module.css";
 
 /**
  * Playback + backing-instrument controls for the DAW progression track.
- * Self-contained: subscribes to the playback atoms via `useProgressionState`.
+ * Self-contained: subscribes to the playback atoms via `usePlaybackTransportModel`.
  */
 export function TransportBar() {
+  const { t } = useTranslation();
   const {
     progressionPlaying,
     progressionPlaybackBlockedReason,
+    progressionPlaybackLoading,
     setProgressionPlaying,
-    advanceProgressionPlayback,
-    previousProgressionStep,
     progressionLoopEnabled,
     setProgressionLoopEnabled,
     progressionStrumEnabled,
@@ -34,9 +33,24 @@ export function TransportBar() {
     setProgressionDrumsEnabled,
     progressionMetronomeEnabled,
     setProgressionMetronomeEnabled,
-  } = useProgressionState();
-
+    stopProgressionPlayback,
+  } = usePlaybackTransportModel();
   const canPlay = !progressionPlaybackBlockedReason;
+  const playStopDisabled = !progressionPlaying && (!canPlay || progressionPlaybackLoading);
+  const playStopIsPlaying = progressionPlaying;
+  const progressionLabel = t("inspector.groupProgression").toLocaleLowerCase();
+  const playStopLabel = playStopIsPlaying
+    ? `${t("controls.stopProgression")} ${progressionLabel}`
+    : `${t("controls.playProgressionTooltip")} ${progressionLabel}`;
+
+  const handlePlayStopClick = () => {
+    if (progressionPlaying) {
+      stopProgressionPlayback();
+      return;
+    }
+
+    setProgressionPlaying(true);
+  };
 
   return (
     <div className={styles.transportBar} data-testid="transport-bar">
@@ -54,34 +68,21 @@ export function TransportBar() {
       <div className={styles.transportCluster}>
         <button
           type="button"
-          className={styles.transportButton}
-          onClick={() => previousProgressionStep()}
-          disabled={!canPlay}
-          aria-label="Previous chord"
+          className={clsx(
+            styles.transportButton,
+            styles.playButton,
+            playStopIsPlaying && styles["transportButton--accent"],
+          )}
+          onClick={handlePlayStopClick}
+          disabled={playStopDisabled}
+          aria-label={playStopLabel}
+          aria-busy={progressionPlaybackLoading || undefined}
         >
-          <SkipBack size={13} strokeWidth={2.4} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className={clsx(styles.transportButton, styles.playButton, progressionPlaying && styles["transportButton--accent"])}
-          onClick={() => setProgressionPlaying(!progressionPlaying)}
-          disabled={!canPlay}
-          aria-label={progressionPlaying ? "Pause progression" : "Play progression"}
-        >
-          {progressionPlaying ? (
-            <Pause size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
+          {playStopIsPlaying ? (
+            <Square size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
           ) : (
             <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
           )}
-        </button>
-        <button
-          type="button"
-          className={styles.transportButton}
-          onClick={() => advanceProgressionPlayback()}
-          disabled={!canPlay}
-          aria-label="Next chord"
-        >
-          <SkipForward size={13} strokeWidth={2.4} aria-hidden="true" />
         </button>
         <button
           type="button"

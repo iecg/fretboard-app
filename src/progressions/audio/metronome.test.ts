@@ -14,21 +14,23 @@ vi.mock("tone", async () => {
   const s = await synth;
   return {
     Synth: s.spies.ctorSpy,
-    now: () => 0,
+    now: () => s.now(),
     gainToDb: (g: number) => 20 * Math.log10(Math.max(1e-6, g)),
   };
 });
 
-import { scheduleClick } from "./metronome";
-
 describe("scheduleClick — Tone backend", () => {
   let spies: Awaited<typeof synth>["spies"];
+  let tone: Awaited<typeof synth>;
+  let scheduleClick: typeof import("./metronome").scheduleClick;
 
   beforeEach(async () => {
-    const s = await synth;
-    spies = s.spies;
+    tone = await synth;
+    spies = tone.spies;
     vi.useFakeTimers();
-    s.reset();
+    tone.reset();
+    vi.resetModules();
+    ({ scheduleClick } = await import("./metronome"));
   });
 
   afterEach(() => {
@@ -51,6 +53,38 @@ describe("scheduleClick — Tone backend", () => {
     expect(spies.triggerAttackRelease.mock.calls[0]![0]).toBeCloseTo(900, 0);
   });
 
+  it("reuses one Synth for non-overlapping clicks on the same destination", () => {
+    const dest = {} as AudioNode;
+    scheduleClick(dest, 0, { accent: true, velocity: 0.8 });
+    tone.setNow(0.2);
+    scheduleClick(dest, 0.25, { accent: false, velocity: 0.7 });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+  });
+
+  it("allocates separate Synths for future clicks scheduled in one pass", () => {
+    const dest = {} as AudioNode;
+    scheduleClick(dest, 2, { accent: true, velocity: 0.8 });
+    scheduleClick(dest, 2.5, { accent: false, velocity: 0.7 });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps different destinations on different leased synths", () => {
+    const firstDest = {} as AudioNode;
+    const secondDest = {} as AudioNode;
+
+    scheduleClick(firstDest, 0, { accent: true, velocity: 0.8 });
+    tone.setNow(0.2);
+    scheduleClick(secondDest, 0.25, { accent: false, velocity: 0.7 });
+
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(tone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
+    expect(tone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
+  });
+
   it("skips scheduling when velocity is zero", () => {
     scheduleClick({} as AudioNode, 0, { velocity: 0 });
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
@@ -65,6 +99,19 @@ describe("scheduleClick — Tone backend", () => {
     expect(spies.dispose).not.toHaveBeenCalled();
     vi.advanceTimersByTime(25);
     expect(spies.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancel() prevents a future-scheduled click from ever being attacked", async () => {
+    const handle = scheduleClick({} as AudioNode, 2, { accent: true, velocity: 0.8 });
+
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+    expect(spies.playbackAttackRelease).not.toHaveBeenCalled();
+
+    handle.cancel();
+    await vi.advanceTimersByTimeAsync(2_500);
+    tone.setNow(2.5);
+
+    expect(spies.playbackAttackRelease).not.toHaveBeenCalled();
   });
 
   it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {

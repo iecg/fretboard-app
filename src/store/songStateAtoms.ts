@@ -13,9 +13,7 @@ import {
  *
  * These atoms are the single write surface the Chord-tab UI uses to edit
  * "the current chord". They read from / write to the *active progression
- * step* so chord overrides live alongside the step itself. The resolver
- * doesn't yet honour `manualRoot`, so we short-circuit it here when it's
- * set.
+ * step* so chord overrides live alongside the step itself.
  *
  * Phase 2.5 removed the standalone `chordOverlayModeAtom` /
  * `chordRootOverrideAtom` / `chordQualityOverrideAtom` / `chordDegreeAtom`
@@ -30,12 +28,10 @@ export const activeChordIsManualAtom = atom((get) => {
 });
 
 /**
- * Current chord root (resolved): `manualRoot` if set, else the diatonic root
- * derived from degree + scale.
+ * Current chord root (resolved): the diatonic root derived from degree + scale,
+ * or `manualRoot` when set (honored by the resolver since Plan G11a).
  */
 export const activeChordRootAtom = atom<string | null>((get) => {
-  const step = get(activeProgressionStepAtom);
-  if (step?.manualRoot != null) return step.manualRoot;
   return get(activeResolvedProgressionStepAtom)?.root ?? null;
 });
 

@@ -8,7 +8,7 @@ interface NoteGridProps {
   notes: string[];
   selected: string;
   onSelect: (note: string) => void;
-  useFlats: boolean;
+  preferFlats: boolean;
 }
 
 export const NOTE_GRID_COLUMNS = 12;
@@ -17,7 +17,7 @@ export function NoteGrid({
   notes,
   selected,
   onSelect,
-  useFlats,
+  preferFlats,
 }: NoteGridProps) {
   const selectedIndex = notes.indexOf(selected);
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -84,7 +84,7 @@ export function NoteGrid({
             transition={{ duration: ANIMATION_DURATION_FAST }}
           >
             <span className={shared["note-btn-label"]}>
-              {formatAccidental(getNoteDisplay(n, n, useFlats))}
+              {formatAccidental(getNoteDisplay(n, n, preferFlats))}
             </span>
           </motion.button>
         );

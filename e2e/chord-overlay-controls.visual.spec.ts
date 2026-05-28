@@ -1,14 +1,14 @@
 /**
  * Visual regression tests for the ChordOverlayControls panel.
  *
- * Tests the chord-type toggle bar surface in manual mode (the mode that always
- * renders the full 16-button chord-type toggle bar unconditionally). Resolves
- * QC-10: no existing visual spec captured this panel prior to plan 01-04.
+ * After lens consolidation (commit e5d2f2ea), ChordOverlayControls renders only
+ * the Voicing group (dropdown + optional ChordStringSetPicker).
+ * The Practice lens toggle row and the former Chord Type toggle bar were removed.
  *
  * Covers:
  *   1. Desktop dark  — 1280x900, manual mode, Major Triad active
  *   2. Desktop light — 1280x900, manual mode, Major Triad active
- *   3. Mobile dark   — 390x844, manual mode (scroll overflow validation)
+ *   3. Mobile dark   — 390x844, manual mode
  */
 import { expect, test } from "@playwright/test";
 import { loadVisualState, expectFullPageVisual } from "./visual-helpers";
@@ -18,32 +18,22 @@ const linuxTolerance =
 
 test.describe("Chord Overlay Controls Visual", () => {
   test("chord-overlay-controls-manual-1280x900", async ({ page }) => {
-    // Seed manual mode with Major Triad selected so the Chords disclosure
-    // opens by default (defaultOpen={Boolean(chordType)}) and the toggle
-    // bar is immediately visible without requiring a disclosure click.
     await loadVisualState(
       page,
       {
         chordOverlayMode: "manual",
-        chordQualityOverride: "Major Triad",
+        chordQualityOverride: "M",
         chordRootOverride: "C",
       },
       { width: 1280, height: 900 },
     );
 
-    // ChordOverlayControls now lives in the Inspector's Chord tab — activate
-    // it so the panel is mounted into the DOM.
-    await page.getByRole("tab", { name: "Chord" }).click();
+    // ChordOverlayControls lives in the Inspector's Overlay tab.
+    await page.getByRole("tab", { name: "Overlay" }).click();
 
-    // Wait for the chord-type toggle bar to be visible.
-    await page
-      .getByRole("group", { name: "Chord Type" })
-      .first()
-      .waitFor({ state: "visible" });
-
-    // Assert new chord types from plan 01-02 and updated labels from plan 01-03.
-    await expect(page.getByRole("button", { name: "aug" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "m7♭5" })).toBeVisible();
+    // Wait for the Voicing dropdown — confirms ChordOverlayControls is fully
+    // mounted. (Practice lens row was removed in lens consolidation e5d2f2ea.)
+    await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
       page,
@@ -57,22 +47,16 @@ test.describe("Chord Overlay Controls Visual", () => {
       page,
       {
         chordOverlayMode: "manual",
-        chordQualityOverride: "Major Triad",
+        chordQualityOverride: "M",
         chordRootOverride: "C",
         theme: "light",
       },
       { width: 1280, height: 900 },
     );
 
-    await page.getByRole("tab", { name: "Chord" }).click();
+    await page.getByRole("tab", { name: "Overlay" }).click();
 
-    await page
-      .getByRole("group", { name: "Chord Type" })
-      .first()
-      .waitFor({ state: "visible" });
-
-    await expect(page.getByRole("button", { name: "aug" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "m7♭5" })).toBeVisible();
+    await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
       page,
@@ -81,28 +65,22 @@ test.describe("Chord Overlay Controls Visual", () => {
   });
 
   test("chord-overlay-controls-manual-mobile-390x844", async ({ page }) => {
-    // Mobile viewport validates the scroll-overflow CSS added in plan 01-03.
-    // After the mobile rehost, chord controls live in the Inspector's Chord tab
-    // (mobileTabAtom was removed). Navigate via tab click.
     await loadVisualState(
       page,
       {
         chordOverlayMode: "manual",
-        chordQualityOverride: "Major Triad",
+        chordQualityOverride: "M",
         chordRootOverride: "C",
       },
       { width: 390, height: 844 },
     );
 
-    // Activate the Chord tab so ChordOverlayControls is visible.
-    await page.getByRole("tab", { name: "Chord" }).click();
+    // Activate the Overlay tab so ChordOverlayControls is visible.
+    await page.getByRole("tab", { name: "Overlay" }).click();
 
-    // Wait for the chord-type toggle bar to be visible in the chords tab.
-    const toggleBar = page.getByRole("group", { name: "Chord Type" }).first();
-    await toggleBar.waitFor({ state: "visible" });
-
-    await expect(page.getByRole("button", { name: "aug" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "m7♭5" })).toBeVisible();
+    // Wait for the Voicing dropdown to confirm the panel is mounted.
+    // (Practice lens row was removed in lens consolidation e5d2f2ea.)
+    await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
       page,

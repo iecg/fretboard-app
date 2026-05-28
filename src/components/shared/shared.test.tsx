@@ -23,11 +23,10 @@ describe("shared.module.css responsive selectors", () => {
     expect(sharedCSS).not.toMatch(barePattern);
   });
 
-  it("compact density is the default: toggle-btn base min-height is 1.4rem", () => {
-    // Compact is the universal default — the compact DAW-inspector density
-    // sets the baseline toggle-btn height to 1.4rem. Mobile gets a separate
-    // touch-target override; desktop and tablet use this base value.
-    expect(sharedCSS).toMatch(/\.toggle-btn[^{]*\{[^}]*min-height:\s*1\.4rem/);
+  it("toggle-group base height is the 32px inspector control row", () => {
+    // Toggle bars align with the inspector's 32px field height. Mobile still
+    // gets a separate touch-target override for accessibility.
+    expect(sharedCSS).toMatch(/\.toggle-group[^{]*\{[^}]*height:\s*32px/);
   });
 
   it("note-btn base min-height uses the shared --control-height token", () => {
@@ -110,7 +109,7 @@ describe("NoteGrid responsive class membership", () => {
   it("note-btn class is present inside a desktop-tier container", () => {
     render(
       <div className="app-container" data-layout-tier="desktop">
-        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} useFlats={false} />
+        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} preferFlats={false} />
       </div>,
     );
     screen.getAllByRole("button").forEach((btn) => {
@@ -121,7 +120,7 @@ describe("NoteGrid responsive class membership", () => {
   it("note-btn class is present inside a tablet-tier container", () => {
     render(
       <div className="app-container" data-layout-tier="tablet">
-        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} useFlats={false} />
+        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} preferFlats={false} />
       </div>,
     );
     screen.getAllByRole("button").forEach((btn) => {

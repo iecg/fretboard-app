@@ -1,8 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const CIRCLE_OF_FIFTHS_SELECTOR =
-  '[data-testid="circle-of-fifths-svg"]';
-
 async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
   await page.goto("/", { waitUntil: "networkidle" });
@@ -15,7 +12,7 @@ async function gotoApp(page: Page, width: number, height: number) {
 }
 
 async function getMetrics(page: Page) {
-  return page.evaluate((circleSelector) => {
+  return page.evaluate(() => {
     const app = document.querySelector('[data-testid="app-container"]');
     const badge = document.querySelector('[data-testid="version-badge"]');
     const badgeRect = badge?.getBoundingClientRect();
@@ -25,7 +22,6 @@ async function getMetrics(page: Page) {
     const settingsDrawer = document.querySelector('[data-testid="settings-drawer"]');
     const helpModal = document.querySelector('[data-testid="help-modal"]');
     const helpContent = document.querySelector('[data-testid="help-modal-content"]');
-    const circle = document.querySelector(circleSelector);
     // The desktop controls panel is the Inspector (Radix Tabs); its tablist
     // is the stable container hook now that .dashboard-card columns are gone.
     const controlsColumn = document.querySelector('[role="tablist"][aria-label="Inspector"]');
@@ -71,7 +67,6 @@ async function getMetrics(page: Page) {
       actionsRect: getRect(actions),
       settingsDrawerRect: getRect(settingsDrawer),
       helpModalRect: getRect(helpModal),
-      circleRect: getRect(circle),
       controlsColumnRect: getRect(controlsColumn),
       keyColumnRect: getRect(keyColumn),
       helpContent:
@@ -83,7 +78,7 @@ async function getMetrics(page: Page) {
             }
           : null,
     };
-  }, CIRCLE_OF_FIFTHS_SELECTOR);
+  });
 }
 
 
@@ -198,17 +193,16 @@ test.describe("responsive layout regressions", () => {
     expect(initial.variant).toBe("desktop-stacked");
     expect(initial.summaryCount).toBe(1);
 
-    // The Circle of Fifths now lives in the Inspector's Scale tab.
-    await page.getByRole("tab", { name: "Scale" }).click();
-    await page.locator(CIRCLE_OF_FIFTHS_SELECTOR).waitFor({ state: "visible" });
-    await page.locator(CIRCLE_OF_FIFTHS_SELECTOR).scrollIntoViewIfNeeded();
+    // v2.0: Key group (Root + Scale) moved to the Song tab. CoF retired.
+    // E1: Root note is now a LabeledSelect combobox (label="Root"), not a button group.
+    await page.getByRole("tab", { name: "Song" }).click();
+    const rootCombobox = page.getByRole("combobox", { name: /^Root$/i });
+    await expect(rootCombobox).toBeVisible();
+    await rootCombobox.scrollIntoViewIfNeeded();
     const after = await getMetrics(page);
-    expect(after.circleRect).not.toBeNull();
-    expect(after.circleRect!.height).toBeGreaterThanOrEqual(220);
-    // Inside the Inspector Scale tab the Circle renders slightly larger than in
-    // the legacy key-column layout — widen the upper bound accordingly.
-    expect(after.circleRect!.height).toBeLessThanOrEqual(480);
-    expect(after.circleRect!.bottom).toBeLessThanOrEqual(768);
+    // The key group panel (tabpanel) should be comfortably within the viewport.
+    expect(after.keyColumnRect).not.toBeNull();
+    expect(after.keyColumnRect!.bottom).toBeLessThanOrEqual(768 + 10); // 10px tolerance
   });
 
   test("uses a full-width settings drawer on narrow portrait phones", async ({

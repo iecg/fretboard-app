@@ -1,4 +1,4 @@
-import { Fragment, useId } from 'react';
+import React, { Fragment, useId } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
@@ -26,6 +26,21 @@ interface LabeledSelectBaseProps {
   'aria-describedby'?: string;
   disabled?: boolean;
   hideLabel?: boolean;
+  /** Sizing mode for the trigger. Defaults to "fill" (100% of parent).
+   *
+   * - "fill" — trigger stretches to fill parent container (most selects)
+   * - "fixed" — caller specifies an exact width via `widthValue` (e.g. "6rem")
+   *             so the trigger is a stable shape regardless of selected option
+   * - "auto" — content-sized (intrinsic), min 5rem
+   */
+  width?: "fill" | "fixed" | "auto";
+  /** Required when width="fixed". CSS length applied to the trigger. */
+  widthValue?: string;
+  /**
+   * @deprecated use `width="auto"`. Kept as an alias for back-compat during
+   * the Plan H sweep.
+   */
+  fit?: boolean;
 }
 
 /** Exactly one of `options` (flat) or `groups` (grouped) must be provided. */
@@ -62,10 +77,16 @@ export function LabeledSelect({
   'aria-describedby': ariaDescribedBy,
   disabled,
   hideLabel,
+  width,
+  widthValue,
+  fit,
 }: LabeledSelectProps) {
   const generatedId = useId();
   const selectId = id ?? generatedId;
   const labelId = `${selectId}-label`;
+
+  const resolvedWidth: "fill" | "fixed" | "auto" =
+    width ?? (fit ? "auto" : "fill");
 
   return (
     <div
@@ -77,6 +98,12 @@ export function LabeledSelect({
         },
         className,
       )}
+      data-width={resolvedWidth === "fill" ? undefined : resolvedWidth}
+      style={
+        resolvedWidth === "fixed" && widthValue
+          ? ({ "--labeled-select-width": widthValue } as React.CSSProperties)
+          : undefined
+      }
     >
       <span id={labelId} className={styles['labeled-select-label-text']}>
         {label}
@@ -100,6 +127,9 @@ export function LabeledSelect({
             position="popper"
             sideOffset={4}
           >
+            <Select.ScrollUpButton className={styles['labeled-select-scroll-button']}>
+              ▲
+            </Select.ScrollUpButton>
             <Select.Viewport className={styles['labeled-select-viewport']}>
               {groups
                 ? groups.map((group, index) => (
@@ -127,6 +157,9 @@ export function LabeledSelect({
                     <LabeledSelectItem key={option.value} {...option} />
                   ))}
             </Select.Viewport>
+            <Select.ScrollDownButton className={styles['labeled-select-scroll-button']}>
+              ▼
+            </Select.ScrollDownButton>
           </Select.Content>
         </Select.Portal>
       </Select.Root>

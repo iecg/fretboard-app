@@ -1,4 +1,4 @@
-import { useProgressionState } from "../../hooks/useProgressionState";
+import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
 import { useScaleState } from "../../hooks/useScaleState";
 import { TransportBar } from "../TransportBar/TransportBar";
 import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
@@ -13,12 +13,6 @@ function scaleHeadline(label: string): string {
   return label.split(" (")[0].trim();
 }
 
-function durationToBars(
-  duration: { value: number; unit: "bar" | "beat" },
-  beatsPerBar: number,
-): number {
-  return duration.unit === "bar" ? duration.value : duration.value / beatsPerBar;
-}
 
 /**
  * The DAW transport cluster, hosted in the unified `AppHeader` (Always-On DAW
@@ -35,17 +29,12 @@ export function HeaderTransportCluster() {
     progressionTempoBpm,
     progressionPlaying,
     progressionPlaybackBlockedReason,
-    currentProgressionBar,
     totalProgressionBars,
-    activeProgressionStepIndex,
-    resolvedProgressionSteps,
     beatsPerBar,
-  } = useProgressionState();
+  } = usePlaybackTransportModel();
   const { scaleLabel } = useScaleState();
 
   const canPlay = !progressionPlaybackBlockedReason;
-  const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
-  const activeStepBars = activeStep ? durationToBars(activeStep.duration, beatsPerBar) : 0;
   const scale = scaleHeadline(scaleLabel);
 
   return (
@@ -54,11 +43,10 @@ export function HeaderTransportCluster() {
 
       <ProgressionPositionReadout
         playing={progressionPlaying && canPlay}
-        stepStartBar={currentProgressionBar}
-        stepBars={activeStepBars}
-        stepIndex={activeProgressionStepIndex}
+        stoppedBar={1}
         totalProgressionBars={totalProgressionBars}
         beatsPerBar={beatsPerBar}
+        tempoBpm={progressionTempoBpm}
       />
 
       <div className={styles.contextReadouts}>

@@ -82,8 +82,8 @@ export const rootNoteAtom = atom(
 );
 
 export const baseScaleNameAtom = atomWithStorage(
-  k("scaleName"),
-  "Major",
+  k("scaleName.v2"),
+  "major",
   scaleNameStorage,
   GET_ON_INIT,
 );
@@ -126,7 +126,7 @@ export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
   readLegacyAccidentalMode(),
 );
 
-export const useFlatsAtom = atom((get) =>
+export const preferFlatsAtom = atom((get) =>
   resolveAccidentalMode(
     get(rootNoteAtom),
     get(scaleNameAtom),
@@ -138,17 +138,47 @@ export const scaleNotesAtom = atom((get) =>
   getScaleNotes(get(rootNoteAtom), get(scaleNameAtom)),
 );
 
+export interface ScaleContext {
+  rootNote: string;
+  scaleName: string;
+  scaleNotes: readonly string[];
+  scaleNoteSet: ReadonlySet<string>;
+  degreesMap: Readonly<Record<number, string>>;
+}
+
+const scaleContextCache = new Map<string, ScaleContext>();
+
+export const scaleContextAtom = atom((get): ScaleContext => {
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const scaleNotes = get(scaleNotesAtom);
+  const key = `${rootNote}|${scaleName}|${scaleNotes.join(",")}`;
+
+  const cached = scaleContextCache.get(key);
+  if (cached) return cached;
+
+  const next: ScaleContext = {
+    rootNote,
+    scaleName,
+    scaleNotes,
+    scaleNoteSet: new Set(scaleNotes),
+    degreesMap: getDegreesForScale(scaleName),
+  };
+  scaleContextCache.set(key, next);
+  return next;
+});
+
 export const colorNotesAtom = atom((get) => {
   const scaleName = get(scaleNameAtom);
   const rootNote = get(rootNoteAtom);
   const intervals = SCALES[scaleName];
   if (!intervals) return [];
   // Blue note is b5 in Minor Blues, b3 in Major Blues.
-  if (scaleName === "Minor Blues") {
+  if (scaleName === "minor blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 6) % 12]] : [];
   }
-  if (scaleName === "Major Blues") {
+  if (scaleName === "major blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 3) % 12]] : [];
   }
@@ -161,7 +191,7 @@ export const activeBrowseOptionAtom = atom((get) =>
     get(rootNoteAtom),
     get(scaleNameAtom),
     "parallel",
-    get(useFlatsAtom),
+    get(preferFlatsAtom),
   ),
 );
 
@@ -173,7 +203,7 @@ export const degreeChipsAtom = atom((get) => {
   const rootNote = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const scaleNotes = get(scaleNotesAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
   const intervals = SCALES[scaleName] || [];
   const degreesMap = getDegreesForScale(scaleName);
 
@@ -188,7 +218,7 @@ export const degreeChipsAtom = atom((get) => {
     return {
       internalNote: note,
       note: formatAccidental(
-        getNoteDisplayInScale(note, rootNote, intervals, useFlats),
+        getNoteDisplayInScale(note, rootNote, intervals, preferFlats),
       ),
       interval: formatAccidental(interval),
       scaleDegree,
@@ -269,7 +299,7 @@ export const effectiveColorNotesAtom: Atom<string[]> = gatedAtom(
 export const practiceBarColorNotesAtom = atom((get) => {
   const colorNotes = get(colorNotesAtom);
   const rootNote = get(rootNoteAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
 
   if (colorNotes.length === 0) return [] as PracticeBarColorNote[];
   const rootIdx = NOTES.indexOf(rootNote);
@@ -280,7 +310,7 @@ export const practiceBarColorNotesAtom = atom((get) => {
     const intervalName = INTERVAL_NAMES[interval] ?? "";
     return {
       internalNote: note,
-      displayNote: formatAccidental(getNoteDisplay(note, rootNote, useFlats)),
+      displayNote: formatAccidental(getNoteDisplay(note, rootNote, preferFlats)),
       intervalName: formatAccidental(intervalName),
     };
   });

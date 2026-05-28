@@ -5,15 +5,15 @@ import { axe } from "../../test-utils/a11y";
 import { ChordTypeGrid } from "./ChordTypeGrid";
 
 const OPTIONS = [
-  { value: "Major Triad", label: "Maj" },
-  { value: "Minor Triad", label: "min" },
-  { value: "Dominant 7th", label: "7" },
+  { value: "M", label: "Maj" },
+  { value: "m", label: "min" },
+  { value: "7", label: "7" },
 ];
 
 describe("ChordTypeGrid", () => {
   it("renders a labeled group with a button per option", () => {
     render(
-      <ChordTypeGrid options={OPTIONS} value="Major Triad" onChange={() => {}} label="Chord Type" />,
+      <ChordTypeGrid options={OPTIONS} value="M" onChange={() => {}} label="Chord Type" />,
     );
     expect(screen.getByRole("group", { name: "Chord Type" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Maj" })).toBeInTheDocument();
@@ -23,7 +23,7 @@ describe("ChordTypeGrid", () => {
 
   it("marks the active option as pressed", () => {
     render(
-      <ChordTypeGrid options={OPTIONS} value="Minor Triad" onChange={() => {}} label="Chord Type" />,
+      <ChordTypeGrid options={OPTIONS} value="m" onChange={() => {}} label="Chord Type" />,
     );
     expect(screen.getByRole("button", { name: "min" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "Maj" })).toHaveAttribute("aria-pressed", "false");
@@ -35,7 +35,7 @@ describe("ChordTypeGrid", () => {
     render(
       <ChordTypeGrid
         options={OPTIONS}
-        value="Major Triad"
+        value="M"
         onChange={(v) => {
           picked = v;
         }}
@@ -43,7 +43,7 @@ describe("ChordTypeGrid", () => {
       />,
     );
     await user.click(screen.getByRole("button", { name: "7" }));
-    expect(picked).toBe("Dominant 7th");
+    expect(picked).toBe("7");
   });
 
   it("disables an option flagged disabled", () => {
@@ -60,7 +60,7 @@ describe("ChordTypeGrid", () => {
 
   it("has no accessibility violations", async () => {
     const { container } = render(
-      <ChordTypeGrid options={OPTIONS} value="Major Triad" onChange={() => {}} label="Chord Type" />,
+      <ChordTypeGrid options={OPTIONS} value="M" onChange={() => {}} label="Chord Type" />,
     );
     expect(await axe(container)).toHaveNoViolations();
   });

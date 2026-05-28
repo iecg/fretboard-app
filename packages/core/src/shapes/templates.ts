@@ -10,14 +10,18 @@ export const MAJOR_MODE_NAMES = [
 
 /** Mode offset from parent major scale. */
 export const MODE_OFFSETS: Record<string, number> = {
-  'Major': 0, 'Dorian': 1, 'Phrygian': 2, 'Lydian': 3,
-  'Mixolydian': 4, 'Natural Minor': 5, 'Locrian': 6,
+  'major': 0, 'dorian': 1, 'phrygian': 2, 'lydian': 3,
+  'mixolydian': 4, 'minor': 5, 'locrian': 6,
 };
 
 export type CagedShape = "C" | "A" | "G" | "E" | "D";
 export const CAGED_SHAPES: CagedShape[] = ["C", "A", "G", "E", "D"];
 
-export type FullChordQuality = "Major Triad" | "Minor Triad" | "Dominant 7th";
+export type FullChordQuality =
+  | "M" | "m" | "7"
+  | "maj7" | "m7"
+  | "sus2" | "sus4"
+  | "dim" | "dim7" | "m7b5";
 
 export interface FullChordTemplate {
   shape: CagedShape;
@@ -28,21 +32,74 @@ export interface FullChordTemplate {
 }
 
 export const FULL_CHORD_TEMPLATES: FullChordTemplate[] = [
-  { shape: "C", quality: "Major Triad", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 1, 0, 2, 3, null] },
-  { shape: "A", quality: "Major Triad", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 2, 2, 0, null] },
-  { shape: "G", quality: "Major Triad", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 0, 0, 0, 2, 3] },
-  { shape: "E", quality: "Major Triad", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 2, 2, 0] },
-  { shape: "D", quality: "Major Triad", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 3, 2, 0, null, null] },
-  { shape: "C", quality: "Minor Triad", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [null, 1, 0, 1, 3, null] },
-  { shape: "A", quality: "Minor Triad", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 1, 2, 2, 0, null] },
-  { shape: "G", quality: "Minor Triad", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 3, 3, 5, 5, 3] },
-  { shape: "E", quality: "Minor Triad", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 0, 2, 2, 0] },
-  { shape: "D", quality: "Minor Triad", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 3, 2, 0, null, null] },
-  { shape: "C", quality: "Dominant 7th", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 1, 3, 2, 3, null] },
-  { shape: "A", quality: "Dominant 7th", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 0, null] },
-  { shape: "G", quality: "Dominant 7th", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 0, 0, 0, 2, 3] },
-  { shape: "E", quality: "Dominant 7th", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 0, 2, 0] },
-  { shape: "D", quality: "Dominant 7th", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 1, 2, 0, null, null] },
+  { shape: "C", quality: "M", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 1, 0, 2, 3, null] },
+  { shape: "A", quality: "M", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 2, 2, 0, null] },
+  { shape: "G", quality: "M", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 0, 0, 0, 2, 3] },
+  { shape: "E", quality: "M", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 2, 2, 0] },
+  { shape: "D", quality: "M", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [2, 3, 2, 0, null, null] },
+  { shape: "C", quality: "m", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [null, 1, 0, 1, 3, null] },
+  { shape: "A", quality: "m", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 1, 2, 2, 0, null] },
+  { shape: "G", quality: "m", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 3, 0, 0, 1, 3] },
+  { shape: "E", quality: "m", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 0, 2, 2, 0] },
+  { shape: "D", quality: "m", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 3, 2, 0, null, null] },
+  { shape: "C", quality: "7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 1, 3, 2, 3, null] },
+  { shape: "A", quality: "7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 0, null] },
+  { shape: "G", quality: "7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 0, 0, 0, 2, 3] },
+  { shape: "E", quality: "7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 0, 2, 0] },
+  // D-shape 7 omitted — pitch-and-position identical to a generated close voicing.
+  // The fallbackVoicingMatchesAtom fills this position at runtime.
+  { shape: "C", quality: "maj7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [0, 0, 0, 2, 3, null] },
+  { shape: "A", quality: "maj7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 2, 1, 2, 0, null] },
+  { shape: "G", quality: "maj7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [2, 0, 0, 0, 2, 3] },
+  { shape: "E", quality: "maj7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 1, 1, 2, 0] },
+  // D-shape maj7 omitted — pitch-and-position identical to a generated close voicing.
+  // m7 voicings — each hand-tuned to be geometrically distinct from the others
+  // under root-transposition (the resolver dedupes by sorted position keys, so
+  // two templates that collapse to the same physical voicing for a target root
+  // would lose one to dedup).
+  { shape: "C", quality: "m7", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [3, 1, 3, 1, 3, null] },
+  { shape: "A", quality: "m7", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 1, 0, 2, 0, null] },
+  { shape: "G", quality: "m7", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [1, 3, 0, 0, 1, 3] },
+  { shape: "E", quality: "m7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 0, 0, 2, 0] },
+  // D-shape m7 omitted — pitch-and-position identical to a generated close voicing.
+  // sus2 voicings — each anchored at its canonical root with at least 4 string
+  // positions (resolver's minimum), all duplicating one chord tone since
+  // sus2 only has 3 distinct pitch classes (root, 2nd, 5th).
+  { shape: "C", quality: "sus2", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [3, 3, 0, 0, 3, null] },
+  { shape: "A", quality: "sus2", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 0, 2, 2, 0, null] },
+  { shape: "G", quality: "sus2", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 3, 0, 0, 0, 3] },
+  { shape: "E", quality: "sus2", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 4, 4, 2, 0] },
+  { shape: "D", quality: "sus2", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [0, 3, 2, 0, null, null] },
+  // sus4 voicings — canonical open-position fingerings, root + perfect 4th + 5th.
+  { shape: "C", quality: "sus4", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [1, 1, 0, 3, 3, null] },
+  { shape: "A", quality: "sus4", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [0, 3, 2, 2, 0, null] },
+  { shape: "G", quality: "sus4", anchorString: 5, anchorFretOffset: 3, fretsHighToLow: [3, 1, 0, 0, 3, 3] },
+  { shape: "E", quality: "sus4", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 0, 2, 2, 2, 0] },
+  { shape: "D", quality: "sus4", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [3, 3, 2, 0, null, null] },
+  // dim (triad: root, m3, dim5) — only 3 chord tones so every voicing duplicates
+  // one. Each shape hand-tuned to avoid collisions under transposition. C-shape
+  // and G-shape templates intentionally omitted. Both were round-1 dedup-breaker
+  // hacks (high-E note added solely to differentiate from A-shape / E-shape
+  // respectively). Without the cosmetic notes they collapse below the 4-note
+  // threshold and never register; A-shape and E-shape cover the lower-neck and
+  // upper-neck dim voicings respectively.
+  { shape: "A", quality: "dim", anchorString: 4, anchorFretOffset: 0, fretsHighToLow: [null, 1, 2, 1, 0, null] },
+  { shape: "E", quality: "dim", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [null, null, 0, 2, 1, 0] },
+  { shape: "D", quality: "dim", anchorString: 3, anchorFretOffset: 0, fretsHighToLow: [1, 3, 1, 0, null, null] },
+  // dim7 — symmetric every 3 frets (the same voicing repeats); CAGED labels
+  // are conventional rather than geometrically forced. Only E-shape remains;
+  // C, A, G, D shapes are pitch-and-position identical to generated close voicings.
+  // The fallbackVoicingMatchesAtom fills those positions at runtime.
+  { shape: "E", quality: "dim7", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 2, 0, 2, 1, 0] },
+  // m7b5 (half-diminished: root, m3, dim5, m7).
+  // m7b5: G-shape omitted — the only viable fingering spans non-adjacent
+  // strings (high-E + G-string + A-string + low-E with B-string and D-string
+  // muted in between), which is impractical to fret cleanly. C-shape,
+  // A-shape, E-shape, and D-shape cover the remaining fret-range needs.
+  { shape: "C", quality: "m7b5", anchorString: 4, anchorFretOffset: 3, fretsHighToLow: [2, 4, 3, 4, 3, null] },
+  // A-shape m7b5 omitted — pitch-and-position identical to a generated close voicing.
+  { shape: "E", quality: "m7b5", anchorString: 5, anchorFretOffset: 0, fretsHighToLow: [0, 3, 0, 2, 1, 0] },
+  // D-shape m7b5 omitted — pitch-and-position identical to a generated close voicing.
 ];
 
 export const CAGED_SHAPE_COLORS: Record<
@@ -134,13 +191,13 @@ const SHAPE_TEMPLATES_HARMONIC_MINOR: Record<CagedShape, ShapeTemplate> = {
 };
 
 const HAND_TUNED_TEMPLATES: Record<string, Record<CagedShape, ShapeTemplate>> = {
-  'Major':          SHAPE_TEMPLATES_7NOTE,
-  'Natural Minor':  SHAPE_TEMPLATES_7NOTE,
-  'Dorian':         SHAPE_TEMPLATES_DORIAN,
-  'Phrygian':       SHAPE_TEMPLATES_PHRYGIAN,
-  'Locrian':        SHAPE_TEMPLATES_LOCRIAN,
-  'Harmonic Minor': SHAPE_TEMPLATES_HARMONIC_MINOR,
-  'Mixolydian':     SHAPE_TEMPLATES_PHRYGIAN,
+  'major':          SHAPE_TEMPLATES_7NOTE,
+  'minor':  SHAPE_TEMPLATES_7NOTE,
+  'dorian':         SHAPE_TEMPLATES_DORIAN,
+  'phrygian':       SHAPE_TEMPLATES_PHRYGIAN,
+  'locrian':        SHAPE_TEMPLATES_LOCRIAN,
+  'harmonic minor': SHAPE_TEMPLATES_HARMONIC_MINOR,
+  'mixolydian':     SHAPE_TEMPLATES_PHRYGIAN,
 };
 
 const derivedTemplateCache = new Map<string, Record<CagedShape, ShapeTemplate>>();
@@ -334,7 +391,7 @@ export function isMajorScale(scaleName: string): boolean {
  * when their intervals contain a major 3rd.
  */
 const RELATIVE_MINOR_REMAP_SCALES = new Set([
-  'Major', 'Lydian', 'Mixolydian', 'Major Pentatonic', 'Major Blues',
+  'major', 'lydian', 'mixolydian', 'major pentatonic', 'major blues',
 ]);
 
 export function shouldUseRelativeMinorAnchor(scaleName: string): boolean {

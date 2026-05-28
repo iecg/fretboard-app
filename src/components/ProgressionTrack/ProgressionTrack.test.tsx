@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { fireEvent, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { createStore, Provider } from "jotai";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, displayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [
   { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th" },
+  { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
   { id: "three", degree: "vi", duration: { value: 2, unit: "bar" }, qualityOverride: null },
   { id: "four", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ] as const;
@@ -33,10 +34,8 @@ describe("ProgressionTrack", () => {
 
     expect(screen.getByRole("group", { name: "Progression track" })).toBeTruthy();
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Step 1, I, C Major Triad, 1 bar, active/i })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i })).toBeTruthy();
-    // Transport, status lights, and the position/tempo/scale readouts moved
-    // to the header transport cluster (Always-On DAW Phase A).
+    expect(screen.getByRole("button", { name: /Step 1, I, C major, 1 bar, active/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Step 3, vi, A minor, 2 bars/i })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Play progression" })).toBeNull();
     expect(screen.queryByText("Position")).toBeNull();
   });
@@ -62,7 +61,7 @@ describe("ProgressionTrack", () => {
     ]);
     renderWithStore(<ProgressionTrack />, store);
 
-    fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 2 bars/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A minor, 2 bars/i }));
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
   });
@@ -76,17 +75,22 @@ describe("ProgressionTrack", () => {
     expect(container.querySelector<HTMLElement>("[aria-label='Progression timeline']")?.style.getPropertyValue("--bar-count")).toBe("2");
     expect(
       screen
-        .getByRole("button", { name: /Step 1, I, C Major Triad, 2 beats, active/i })
+        .getByRole("button", { name: /Step 1, I, C major, 2 beats, active/i })
         .style.getPropertyValue("--duration-bars"),
     ).toBe("0.25");
   });
 
-  it("positions the playhead using exact fractional total duration bars", () => {
-    const { container } = renderWithAtoms(<ProgressionTrack />, [
+  it("positions the playhead using exact fractional total duration bars while playing", () => {
+    const store = makeAtomStore([
       [progressionStepsAtom, beatDurationProgression],
       [beatsPerBarAtom, 8],
       [activeProgressionStepIndexAtom, 1],
     ]);
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    const { container } = renderWithStore(<ProgressionTrack />, store);
 
     expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("12.5%");
   });
@@ -97,10 +101,10 @@ describe("ProgressionTrack", () => {
       [beatsPerBarAtom, 4],
     ]);
 
-    const first = screen.getByRole("button", { name: /Step 1, I, C Major Triad, 2 bars, active/i });
-    const second = screen.getByRole("button", { name: /Step 2, V, G Major Triad, 1 bar/i });
-    const third = screen.getByRole("button", { name: /Step 3, vi, A Minor Triad, 1 bar/i });
-    const fourth = screen.getByRole("button", { name: /Step 4, IV, F Major Triad, 1 bar/i });
+    const first = screen.getByRole("button", { name: /Step 1, I, C major, 2 bars, active/i });
+    const second = screen.getByRole("button", { name: /Step 2, V, G major, 1 bar/i });
+    const third = screen.getByRole("button", { name: /Step 3, vi, A minor, 1 bar/i });
+    const fourth = screen.getByRole("button", { name: /Step 4, IV, F major, 1 bar/i });
 
     expect(first.style.left).toBe("0%");
     expect(first.style.width).toBe("calc(40% - 3px)");
@@ -129,7 +133,6 @@ describe("ProgressionTrack", () => {
       [beatsPerBarAtom, 4],
     ]);
 
-    // The accompaniment controls moved to the Progression tab (Phase 11).
     expect(screen.queryByLabelText("Genre style")).toBeNull();
     expect(screen.queryByLabelText("Chord instrument")).toBeNull();
     expect(screen.queryByLabelText("Chord pattern")).toBeNull();
@@ -138,16 +141,71 @@ describe("ProgressionTrack", () => {
     expect(screen.queryByLabelText("Swing amount")).toBeNull();
   });
 
+  it("ignores timeline-block clicks while progression is playing", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, fourStepProgression],
+      [activeProgressionStepIndexAtom, 0],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    expect(store.get(progressionPlayingAtom)).toBe(true);
+    renderWithStore(<ProgressionTrack />, store);
+
+    fireEvent.click(screen.getByRole("button", { name: /Step 2, V, G dominant seventh, 1 bar/i }));
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+
+  it("active block follows displayedProgressionStepIndexAtom during playback", async () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ] as never);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    store.set(setProgressionPlayingAtom, true);
+
+    render(
+      <Provider store={store}>
+        <ProgressionTrack />
+      </Provider>,
+    );
+
+    // Initial: primitive defaults to 0
+    expect(screen.getAllByRole("button")[0]).toHaveAttribute("data-active", "true");
+
+    await act(async () => {
+      store.set(displayedStepIndexPrimitiveAtom, 1);
+    });
+
+    expect(screen.getAllByRole("button")[1]).toHaveAttribute("data-active", "true");
+    expect(screen.getAllByRole("button")[0]).not.toHaveAttribute("data-active", "true");
+  });
+
   it("no longer hosts the transport bar — only the timeline", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
       [progressionStepsAtom, fourStepProgression],
       [beatsPerBarAtom, 4],
     ]);
 
-    // TransportBar + position readout moved to the header transport cluster
-    // (Always-On DAW Phase A); only the timeline stays in ProgressionTrack.
     expect(container.querySelector("[data-testid='transport-bar']")).toBeNull();
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
     expect(screen.queryByText("Position")).toBeNull();
+  });
+
+  it("does not move the stopped playhead when selecting a different chord on the timeline", () => {
+    const store = makeAtomStore([
+      [progressionStepsAtom, twoBarLeadingProgression],
+      [beatsPerBarAtom, 4],
+      [activeProgressionStepIndexAtom, 0],
+    ]);
+    renderWithStore(<ProgressionTrack />, store);
+
+    const playhead = document.querySelector<HTMLElement>("[data-testid='progression-playhead']");
+    expect(playhead?.style.left).toBe("0%");
+
+    fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A minor, 1 bar/i }));
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+    expect(playhead?.style.left).toBe("0%");
   });
 });

@@ -4,6 +4,11 @@ import { GENRE_STYLES } from "../../progressions/audio/genres";
 import { CHORD_PATTERNS, BASS_PATTERNS, DRUM_PATTERNS } from "../../progressions/audio/patterns";
 import type { ChordInstrumentId } from "../../progressions/audio/instruments/types";
 import { Prop, GroupHeader } from "../Inspector/InspectorGrid";
+
+export interface BackingTrackControlsProps {
+  /** When true, skip the internal GroupHeader (host provides its own card chrome). */
+  hideHeader?: boolean;
+}
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import styles from "./BackingTrackControls.module.css";
 
@@ -14,7 +19,7 @@ import styles from "./BackingTrackControls.module.css";
  * `GroupHeader` plus `Prop` cells, designed to be rendered inside the
  * Progression tab's `PropGrid`.
  */
-export function BackingTrackControls() {
+export function BackingTrackControls({ hideHeader = false }: BackingTrackControlsProps = {}) {
   const { t } = useTranslation();
   const {
     progressionGenreStyle,
@@ -33,7 +38,7 @@ export function BackingTrackControls() {
 
   return (
     <>
-      <GroupHeader>{t("inspector.groupBackingTrack")}</GroupHeader>
+      {!hideHeader && <GroupHeader>{t("inspector.groupBackingTrack")}</GroupHeader>}
       <Prop label={t("inspector.btGenre")} span={1}>
         <LabeledSelect
           label="Genre style"

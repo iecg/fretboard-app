@@ -139,6 +139,11 @@
   --note-text-tonic: var(--neon-orange-bright);
   --note-glow: var(--glow-cyan-sm);
   --note-glow-tonic: var(--glow-orange-sm);
+  /* Lens-emphasis glows (used by getEmphasis in FretboardSVG/utils/semantics.ts).
+     Anticipation: next chord's guide tones in the last beat of the current step.
+     Hold:         current chord tones that persist into the next chord. */
+  --note-glow-anticipation: #fb923c;  /* warm orange, matches dark-mode chord-tone-ring family */
+  --note-glow-hold:         #06b6d4;  /* cyan, matches dark-mode in-scale chord-tone family */
 
   --text-brand: var(--neon-cyan-bright);
   --text-brand-gradient: var(--neon-brand-gradient);
@@ -264,31 +269,31 @@
   --surface-control-hover-bg-image: none; /* intentional: no gradient overlay in light mode */
   --surface-control-hover-fg: var(--text-main); /* #0f172a — maximum-contrast dark on hover */
 
-  /* DAW faceplate — light mode: a pale cool-tinted substrate with a dimmer
-     cyan accent and a softer (but still present) glow. */
-  --faceplate-bg: #eef2f5;
-  --faceplate-bg-elevated: #f5f8fa;
-  --faceplate-wash: rgb(46 181 204 / 0.05);
-  --faceplate-border: rgb(46 181 204 / 0.35);
-  --faceplate-divider: rgb(0 0 0 / 0.08);
-  --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 12px 28px -22px rgb(0 0 0 / 0.25);
-  --faceplate-accent: var(--neon-cyan-dim);
-  --faceplate-accent-glow: 0 0 4px rgb(46 181 204 / 0.30);
+  /* DAW faceplate — light mode: warm cream substrate aligned to reference palette.
+     PANEL (#f6f2e9) elevated surface, CYAN teal accent, no cold blues. */
+  --faceplate-bg: #f6f2e9;
+  --faceplate-bg-elevated: #faf8f3;
+  --faceplate-wash: rgb(20 112 136 / 0.04);
+  --faceplate-border: rgb(20 112 136 / 0.20);
+  --faceplate-divider: rgb(133 124 108 / 0.18);
+  --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 8px 20px -16px rgb(0 0 0 / 0.18);
+  --faceplate-accent: #147088;
+  --faceplate-accent-glow: 0 0 4px rgb(20 112 136 / 0.20);
 
-  /* DAW control — light mode: teal-tinted with subtle depth instead of neon
-     glow. Mirrors the TransportBar [data-theme="modern-light"] treatment. */
-  --dc-bg: rgb(46 181 204 / 0.05);
-  --dc-bg-hover: rgb(46 181 204 / 0.1);
-  --dc-bg-active: rgb(46 181 204 / 0.1);
-  --dc-border: rgb(46 181 204 / 0.3);
-  --dc-border-hover: rgb(46 181 204 / 0.55);
-  --dc-border-active: rgb(46 181 204 / 0.65);
-  --dc-fg: rgb(15 23 42 / 0.55);
-  --dc-fg-strong: #2eb5cc;
-  --dc-fg-muted: rgb(15 23 42 / 0.42);
-  --dc-glow-focus: 0 0 0 1px #2eb5cc, 0 0 6px rgb(46 181 204 / 0.25);
+  /* DAW control — light mode: warm cream surfaces with CYAN teal accents.
+     Reference palette: BG #ebebdc, PANEL #f6f2e9, CYAN #147088, INK #2a251d. */
+  --dc-bg: rgb(20 112 136 / 0.04);
+  --dc-bg-hover: rgb(20 112 136 / 0.08);
+  --dc-bg-active: rgb(20 112 136 / 0.10);
+  --dc-border: rgb(20 112 136 / 0.22);
+  --dc-border-hover: rgb(20 112 136 / 0.50);
+  --dc-border-active: rgb(20 112 136 / 0.65);
+  --dc-fg: rgb(42 37 29 / 0.65);
+  --dc-fg-strong: #147088;
+  --dc-fg-muted: rgb(42 37 29 / 0.45);
+  --dc-glow-focus: 0 0 0 1px #147088, 0 0 6px rgb(20 112 136 / 0.20);
   --dc-glow-active:
-    0 0 0 1px rgb(46 181 204 / 0.45), 0 2px 8px rgb(46 181 204 / 0.15);
+    0 0 0 1px rgb(20 112 136 / 0.40), 0 2px 6px rgb(20 112 136 / 0.12);
 }
 
 [data-theme="modern-dark"] {

@@ -9,6 +9,15 @@ import { fretEndAtom, fretStartAtom, fretZoomAtom } from "../../store/layoutAtom
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { axe } from "../../test-utils/a11y";
+// Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
+import "../FretboardSVG/FretboardSVG";
+
+// Flushes React.lazy Suspense so the FretboardSVG mounts before assertions.
+async function flushSuspense() {
+  await act(async () => {
+    await Promise.resolve();
+  });
+}
 
 // Mock audio synth
 vi.mock("../../core/audio", () => ({
@@ -28,15 +37,14 @@ describe("Fretboard/Fretboard", () => {
     displayFormat: "notes" as const,
   };
 
-  function renderFretboard(store = createStore()) {
-    return {
-      store,
-      ...render(
-        <Provider store={store}>
-          <Fretboard {...defaultProps} />
-        </Provider>,
-      ),
-    };
+  async function renderFretboard(store = createStore()) {
+    const result = render(
+      <Provider store={store}>
+        <Fretboard {...defaultProps} />
+      </Provider>,
+    );
+    await flushSuspense();
+    return { store, ...result };
   }
 
   function getVisibleFretLabels(container: HTMLElement) {
@@ -68,24 +76,33 @@ describe("Fretboard/Fretboard", () => {
   });
 
   describe("Rendering", () => {
-    it("renders without crashing", () => {
+    it("renders without crashing", async () => {
       const { container } = render(<Fretboard {...defaultProps} />);
+      await flushSuspense();
       expect(container.firstChild).toBeTruthy();
     });
 
-    it("renders all 6 strings for standard tuning", () => {
+    it("keeps the fretboard visible before ResizeObserver publishes width", async () => {
       const { container } = render(<Fretboard {...defaultProps} />);
+      await flushSuspense();
+      const wrapper = container.querySelector('[class*="fretboard-wrapper"]');
+      expect(wrapper).not.toHaveStyle({ visibility: "hidden" });
+    });
+
+    it("renders all 6 strings for standard tuning", async () => {
+      const { container } = render(<Fretboard {...defaultProps} />);
+      await flushSuspense();
       // Fretboard has 6 rows for standard tuning
       const fretboard = container.querySelector("div");
       expect(fretboard).toBeTruthy();
     });
 
-    it("renders correct number of frets based on endFret - startFret", () => {
+    it("renders correct number of frets based on endFret - startFret", async () => {
       const store = createStore();
       store.set(fretStartAtom, 3);
       store.set(fretEndAtom, 7);
 
-      const { container } = renderFretboard(store);
+      const { container } = await renderFretboard(store);
 
       expect(container.querySelectorAll(".fret-number")).toHaveLength(5);
       expect(getVisibleFretLabels(container)).toEqual([
@@ -97,15 +114,16 @@ describe("Fretboard/Fretboard", () => {
       ]);
     });
 
-    it("renders with different tunings", () => {
+    it("renders with different tunings", async () => {
       const dropDTuning = ["E4", "B3", "G3", "D3", "A2", "D2"];
       render(<Fretboard {...defaultProps} tuning={dropDTuning} />);
+      await flushSuspense();
       expect(document.body).toBeTruthy(); // Rendered without error
     });
   });
 
   describe("Note highlighting", () => {
-    it("highlights specified notes", () => {
+    it("highlights specified notes", async () => {
       const store = createStore();
       store.set(progressionStepsAtom, []);
       const { container } = render(
@@ -113,6 +131,7 @@ describe("Fretboard/Fretboard", () => {
           <Fretboard {...defaultProps} highlightNotes={["E", "G", "B", "C"]} />
         </Provider>,
       );
+      await flushSuspense();
       // Scale root (C) → key-tonic; other scale notes → note-active
       expect(container.querySelectorAll(".key-tonic").length).toBeGreaterThan(
         0,
@@ -122,7 +141,7 @@ describe("Fretboard/Fretboard", () => {
       );
     });
 
-    it("updates highlight when notes change", () => {
+    it("updates highlight when notes change", async () => {
       const store = createStore();
       store.set(progressionStepsAtom, []);
       const { container, rerender } = render(
@@ -130,6 +149,7 @@ describe("Fretboard/Fretboard", () => {
           <Fretboard {...defaultProps} highlightNotes={["C", "E", "G"]} />
         </Provider>,
       );
+      await flushSuspense();
 
       expect(container.querySelectorAll(".key-tonic").length).toBeGreaterThan(
         0,
@@ -143,6 +163,7 @@ describe("Fretboard/Fretboard", () => {
           <Fretboard {...defaultProps} highlightNotes={["D", "F#", "A"]} />
         </Provider>,
       );
+      await flushSuspense();
 
       // C is rootNote but not in highlight list — no key-tonic
       expect(container.querySelectorAll(".key-tonic")).toHaveLength(0);
@@ -151,10 +172,11 @@ describe("Fretboard/Fretboard", () => {
       );
     });
 
-    it("handles empty highlight array", () => {
+    it("handles empty highlight array", async () => {
       const { container } = render(
         <Fretboard {...defaultProps} highlightNotes={[]} />,
       );
+      await flushSuspense();
 
       expect(container.querySelectorAll(".key-tonic")).toHaveLength(0);
       expect(container.querySelectorAll(".note-active")).toHaveLength(0);
@@ -164,26 +186,29 @@ describe("Fretboard/Fretboard", () => {
   });
 
   describe("Display formats", () => {
-    it('displays notes when displayFormat is "notes"', () => {
+    it('displays notes when displayFormat is "notes"', async () => {
       render(
         <Fretboard {...defaultProps} displayFormat="notes" rootNote="C" />,
       );
+      await flushSuspense();
       expect(document.body).toBeTruthy();
     });
 
-    it('displays degrees when displayFormat is "degrees"', () => {
+    it('displays degrees when displayFormat is "degrees"', async () => {
       render(
         <Fretboard {...defaultProps} displayFormat="degrees" rootNote="C" />,
       );
+      await flushSuspense();
       expect(document.body).toBeTruthy();
     });
 
-    it('displays nothing when displayFormat is "none"', () => {
+    it('displays nothing when displayFormat is "none"', async () => {
       render(<Fretboard {...defaultProps} displayFormat="none" />);
+      await flushSuspense();
       expect(document.body).toBeTruthy();
     });
 
-    it("keeps note labels visible when scale degree colors are enabled", () => {
+    it("keeps note labels visible when scale degree colors are enabled", async () => {
       const store = createStore();
       store.set(scaleDegreeColorsEnabledAtom, true);
       const { container } = render(
@@ -192,30 +217,33 @@ describe("Fretboard/Fretboard", () => {
             {...defaultProps}
             displayFormat="notes"
             rootNote="C"
-            scaleName="Major"
+            scaleName="major"
           />
         </Provider>
       );
+      await flushSuspense();
 
       expect(container.querySelector('[data-degree-colors="true"] text')).toBeTruthy();
     });
 
-    it("updates display when displayFormat changes", () => {
+    it("updates display when displayFormat changes", async () => {
       const { rerender } = render(
         <Fretboard {...defaultProps} displayFormat="notes" />,
       );
+      await flushSuspense();
 
       rerender(<Fretboard {...defaultProps} displayFormat="degrees" />);
+      await flushSuspense();
       expect(document.body).toBeTruthy();
     });
   });
 
   describe("Zoom and scroll", () => {
-    it("respects fretZoom atom", () => {
+    it("respects fretZoom atom", async () => {
       const store = createStore();
       store.set(fretZoomAtom, 200);
 
-      const { container } = renderFretboard(store);
+      const { container } = await renderFretboard(store);
       const firstFret = container.querySelector(".fret-number");
 
       expect(firstFret).toBeTruthy();
@@ -224,16 +252,17 @@ describe("Fretboard/Fretboard", () => {
       expect(firstFret).toHaveStyle("width: 41px");
     });
 
-    it("has scroll container that is draggable", () => {
+    it("has scroll container that is draggable", async () => {
       const { container } = render(<Fretboard {...defaultProps} />);
+      await flushSuspense();
       const scrollContainer =
         container.querySelector('[class*="scroll"]') || container.firstChild;
       expect(scrollContainer).toBeTruthy();
     });
 
-    it("handles zoom changes via atom store", () => {
+    it("handles zoom changes via atom store", async () => {
       const store = createStore();
-      const { container } = renderFretboard(store);
+      const { container } = await renderFretboard(store);
 
       // Fret 0 open-string column has fixed width (noteBubblePx-derived, zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
@@ -250,9 +279,9 @@ describe("Fretboard/Fretboard", () => {
       );
     });
 
-    it("responds to fretStart and fretEnd atom changes", () => {
+    it("responds to fretStart and fretEnd atom changes", async () => {
       const store = createStore();
-      const { container } = renderFretboard(store);
+      const { container } = await renderFretboard(store);
 
       expect(getVisibleFretLabels(container).slice(0, 5)).toEqual([
         "", // fret 0 (open string) label intentionally suppressed
@@ -310,33 +339,40 @@ describe("Fretboard/Fretboard", () => {
       label: "colorNotes with full scale",
       props: { highlightNotes: ["C", "D", "E", "F", "G", "A", "B"], colorNotes: ["F#", "B"] },
     },
-  ])("renders with $label without crashing", ({ props }) => {
+  ])("renders with $label without crashing", async ({ props }) => {
     render(<Fretboard {...defaultProps} {...props} />);
+    await flushSuspense();
     expect(document.body).toBeTruthy();
   });
 
-  it("re-renders without crashing when colorNotes changes", () => {
+  it("re-renders without crashing when colorNotes changes", async () => {
     const { rerender } = render(<Fretboard {...defaultProps} colorNotes={["F", "B"]} />);
+    await flushSuspense();
     rerender(<Fretboard {...defaultProps} colorNotes={["F#", "C#"]} />);
+    await flushSuspense();
     expect(document.body).toBeTruthy();
   });
 
   describe("Accidentals", () => {
-    it.each([false, true])("renders with useFlats=%s", (useFlats) => {
-      render(<Fretboard {...defaultProps} useFlats={useFlats} />);
+    it.each([false, true])("renders with preferFlats=%s", async (preferFlats) => {
+      render(<Fretboard {...defaultProps} preferFlats={preferFlats} />);
+      await flushSuspense();
       expect(document.body).toBeTruthy();
     });
 
-    it("updates display when useFlats changes", () => {
-      const { rerender } = render(<Fretboard {...defaultProps} useFlats={false} />);
-      rerender(<Fretboard {...defaultProps} useFlats={true} />);
+    it("updates display when preferFlats changes", async () => {
+      const { rerender } = render(<Fretboard {...defaultProps} preferFlats={false} />);
+      await flushSuspense();
+      rerender(<Fretboard {...defaultProps} preferFlats={true} />);
+      await flushSuspense();
       expect(document.body).toBeTruthy();
     });
   });
 
   describe("Fret markers", () => {
-    it("displays fret markers at standard positions", () => {
+    it("displays fret markers at standard positions", async () => {
       const { container } = render(<Fretboard {...defaultProps} />);
+      await flushSuspense();
 
       for (const fret of [3, 5, 7, 9, 12, 15, 17, 19, 21, 24]) {
         expect(getFretMarker(container, fret)).toBeTruthy();
@@ -350,12 +386,12 @@ describe("Fretboard/Fretboard", () => {
       ).toBe("true");
     });
 
-    it("hides fret markers outside visible range", () => {
+    it("hides fret markers outside visible range", async () => {
       const store = createStore();
       store.set(fretStartAtom, 10);
       store.set(fretEndAtom, 15);
 
-      const { container } = renderFretboard(store);
+      const { container } = await renderFretboard(store);
 
       expect(getFretMarker(container, 12)).toBeTruthy();
       expect(
@@ -376,6 +412,7 @@ describe("Fretboard/Fretboard", () => {
     it("calls onFretClick when a fret is clicked", async () => {
       const onFretClick = vi.fn();
       render(<Fretboard {...defaultProps} onFretClick={onFretClick} />);
+      await flushSuspense();
 
       // Find a note bubble and click it
       const buttons = screen.queryAllByRole("button");
@@ -390,6 +427,7 @@ describe("Fretboard/Fretboard", () => {
       render(
         <Fretboard {...defaultProps} rootNote="C" onFretClick={onFretClick} />,
       );
+      await flushSuspense();
 
       const buttons = screen.queryAllByRole("button");
       if (buttons.length > 0) {
@@ -408,13 +446,14 @@ describe("Fretboard/Fretboard", () => {
       });
     });
 
-    it("adjusts zoom for mobile viewport", () => {
+    it("adjusts zoom for mobile viewport", async () => {
       render(<Fretboard {...defaultProps} />);
+      await flushSuspense();
       // Mobile zoom calculation: Math.floor(600 / 7) ≈ 85
       expect(document.body).toBeTruthy();
     });
 
-    it("uses desktop zoom on wide viewports", () => {
+    it("uses desktop zoom on wide viewports", async () => {
       Object.defineProperty(window, "innerWidth", {
         writable: true,
         configurable: true,
@@ -422,6 +461,7 @@ describe("Fretboard/Fretboard", () => {
       });
 
       const { container } = render(<Fretboard {...defaultProps} />);
+      await flushSuspense();
 
       // Fret 0 open-string column has fixed width (zoom-independent)
       expect(container.querySelector(".fret-number")).toHaveStyle(
@@ -431,30 +471,32 @@ describe("Fretboard/Fretboard", () => {
   });
 
   describe("Edge cases", () => {
-    it("handles 0 frets gracefully", () => {
+    it("handles 0 frets gracefully", async () => {
       const store = createStore();
       store.set(fretStartAtom, 0);
       store.set(fretEndAtom, 0);
 
-      const { container } = renderFretboard(store);
+      const { container } = await renderFretboard(store);
 
       expect(container.querySelectorAll(".fret-number")).toHaveLength(1);
       expect(getVisibleFretLabels(container)).toEqual([""]); // fret 0 label suppressed
     });
 
-    it("handles very high fret numbers", () => {
+    it("handles very high fret numbers", async () => {
       render(<Fretboard {...defaultProps} maxFret={36} />);
+      await flushSuspense();
 
       expect(document.body).toBeTruthy();
     });
 
-    it("handles single-note highlight", () => {
+    it("handles single-note highlight", async () => {
       render(<Fretboard {...defaultProps} highlightNotes={["C"]} />);
+      await flushSuspense();
 
       expect(document.body).toBeTruthy();
     });
 
-    it("handles all 12 notes highlighted", () => {
+    it("handles all 12 notes highlighted", async () => {
       render(
         <Fretboard
           {...defaultProps}
@@ -474,39 +516,43 @@ describe("Fretboard/Fretboard", () => {
           ]}
         />,
       );
+      await flushSuspense();
 
       expect(document.body).toBeTruthy();
     });
   });
 
   describe('marker-dot CSS custom property', () => {
-    it('sets --string-row-px on fretboard-neck container', () => {
+    it('sets --string-row-px on fretboard-neck container', async () => {
       const { container } = render(
         <Provider store={createStore()}>
           <Fretboard {...defaultProps} stringRowPx={48} />
         </Provider>,
       );
+      await flushSuspense();
       const neck = container.querySelector('.fretboard-neck');
       expect(neck).not.toBeNull();
       expect((neck as HTMLElement).style.getPropertyValue('--string-row-px')).toBe('48px');
     });
 
-    it('sets --string-row-px correctly at minimum stringRowPx=40', () => {
+    it('sets --string-row-px correctly at minimum stringRowPx=40', async () => {
       const { container } = render(
         <Provider store={createStore()}>
           <Fretboard {...defaultProps} stringRowPx={40} />
         </Provider>,
       );
+      await flushSuspense();
       const neck = container.querySelector('.fretboard-neck');
       expect((neck as HTMLElement).style.getPropertyValue('--string-row-px')).toBe('40px');
     });
 
-    it('sets --string-row-px correctly at maximum stringRowPx=72', () => {
+    it('sets --string-row-px correctly at maximum stringRowPx=72', async () => {
       const { container } = render(
         <Provider store={createStore()}>
           <Fretboard {...defaultProps} stringRowPx={72} />
         </Provider>,
       );
+      await flushSuspense();
       const neck = container.querySelector('.fretboard-neck');
       expect((neck as HTMLElement).style.getPropertyValue('--string-row-px')).toBe('72px');
     });
@@ -520,22 +566,24 @@ describe("Fretboard/Fretboard", () => {
       stringRowPx: 40,
     };
 
-    function renderInteractive(
+    async function renderInteractive(
       store = createStore(),
       overrides: Record<string, unknown> = {},
     ) {
-      return render(
+      const result = render(
         <Provider store={store}>
           <Fretboard {...interactionProps} {...overrides} />
         </Provider>,
       );
+      await flushSuspense();
+      return result;
     }
 
-    function renderWithOverflow(
+    async function renderWithOverflow(
       store = createStore(),
       overrides: Record<string, unknown> = {},
     ) {
-      const result = renderInteractive(store, overrides);
+      const result = await renderInteractive(store, overrides);
       const wrapper = result.container.querySelector(
         ".fretboard-wrapper",
       ) as HTMLElement;
@@ -565,7 +613,7 @@ describe("Fretboard/Fretboard", () => {
       const onFretClick = vi.fn();
       const store = createStore();
       store.set(progressionStepsAtom, []);
-      renderInteractive(store, { onFretClick });
+      await renderInteractive(store, { onFretClick });
       const user = userEvent.setup();
       const activeNote = document.querySelector(
         ".note-bubble.root-active, .note-bubble.note-active, .note-bubble.chord-tone",
@@ -577,7 +625,7 @@ describe("Fretboard/Fretboard", () => {
 
     it("suppresses click after a drag of > 5px", async () => {
       const onFretClick = vi.fn();
-      const { wrapper } = renderWithOverflow(createStore(), { onFretClick });
+      const { wrapper } = await renderWithOverflow(createStore(), { onFretClick });
       // Flush rAF used by the hasOverflow effect so drag detection activates
       await act(async () => {
         await new Promise((r) => requestAnimationFrame(r));
@@ -604,7 +652,7 @@ describe("Fretboard/Fretboard", () => {
       expect(onFretClick).not.toHaveBeenCalled();
     });
 
-    it("re-renders with wider neck when fretZoomAtom increases", () => {
+    it("re-renders with wider neck when fretZoomAtom increases", async () => {
       let roCallback: ResizeObserverCallback | null = null;
       const OriginalRO = globalThis.ResizeObserver;
       class MockResizeObserver {
@@ -619,7 +667,7 @@ describe("Fretboard/Fretboard", () => {
         MockResizeObserver as unknown as typeof ResizeObserver;
 
       const store = createStore();
-      renderInteractive(store);
+      await renderInteractive(store);
 
       act(() => {
         roCallback?.(
@@ -649,7 +697,7 @@ describe("Fretboard/Fretboard", () => {
   });
 
   it("has no a11y violations", async () => {
-    const { container } = renderFretboard();
+    const { container } = await renderFretboard();
     expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -298,10 +298,6 @@ describe("offsetOpenPolylinePath", () => {
   });
 
   it("3 non-collinear vertices: emits 3 A commands (1 outside join + 2 end caps)", () => {
-    // Skinny diagonal triad — the geometry that previously rendered as an
-    // acute convex-hull triangle. Each interior vertex contributes an arc
-    // on both sides (one outside long-way + one inside short-way) so the
-    // tube doesn't bevel across the polyline.
     const pts = [
       { x: 0, y: 0 },     // V_0
       { x: 10, y: 36 },   // V_1 (mid)
@@ -471,5 +467,100 @@ describe("offsetOpenPolylinePath", () => {
     ];
     const r = 16;
     expect(offsetOpenPolylinePath(pts, r)).toBe(offsetOpenPolylinePath(pts, r));
+  });
+
+  it("exceeds miter limit on extremely acute corners and falls back to a clean bevel", () => {
+    // Acute angle from (0,0) -> (100,0) -> (1, 1).
+    // The incoming edge is heading right, the outgoing edge is heading back-left.
+    // The inner corner offset intersection is extremely far away.
+    const pts = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 1, y: 1 },
+    ];
+    const r = 10;
+    const d = offsetOpenPolylinePath(pts, r);
+    expect(d).not.toBe("");
+    
+    // Parse coordinates and ensure there are no extreme miter coordinates
+    // (e.g. nothing exceeding 300px since the points themselves are within 100px and radius is 10px).
+    const numbers = d
+      .replace(/[MLQAZ]/gi, " ")
+      .trim()
+      .split(/\s+/)
+      .map(Number)
+      .filter(Number.isFinite);
+    for (const num of numbers) {
+      expect(Math.abs(num)).toBeLessThan(300);
+    }
+  });
+
+  it("miters a 90-degree corner and fillets/clips a sharper 77-degree corner", () => {
+    // 1. 90-degree corner (0,0) -> (100,0) -> (100,100) with r=10.
+    // miter_distance = 1.414 * 10 = 14.14 <= 15. Kept as miter (contains Q).
+    const pts90 = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ];
+    const d90 = offsetOpenPolylinePath(pts90, 10);
+    const qCount90 = (d90.match(/\bQ\b/g) ?? []).length;
+    expect(qCount90).toBe(1);
+
+    // 2. Sharp corner (160, -36) -> (0, 0) -> (0, -36) with r=19.8.
+    // With clipped miter, it successfully fillets but keeps coordinates bounded
+    // under 300px instead of letting them spike, or throwing/spiking/looping.
+    const ptsSharp = [
+      { x: 160, y: -36 },
+      { x: 0, y: 0 },
+      { x: 0, y: -36 },
+    ];
+    const dSharp = offsetOpenPolylinePath(ptsSharp, 19.8);
+    const qCountSharp = (dSharp.match(/\bQ\b/g) ?? []).length;
+    expect(qCountSharp).toBe(1); // Contains a filleted Q curve around the clipped intersection
+    
+    // Ensure all coordinates are bounded and did not spike to infinity or huge values.
+    const numbers = dSharp
+      .replace(/[MLQAZ]/gi, " ")
+      .trim()
+      .split(/\s+/)
+      .map(Number)
+      .filter(Number.isFinite);
+    for (const num of numbers) {
+      expect(Math.abs(num)).toBeLessThan(300);
+    }
+  });
+
+  it("prevents adjacent inside fillets from overlapping on short vertical segments", () => {
+    // Hourglass/Z-shape voicing in fretboard pixel space:
+    // V_0 = (100, 36)
+    // V_1 = (100, 72)
+    // V_2 = (100, 108)
+    // V_3 = (172, 144)
+    // V_4 = (172, 180)
+    // V_5 = (100, 216)
+    // Radius r = 19.8.
+    const pts = [
+      { x: 100, y: 36 },
+      { x: 100, y: 72 },
+      { x: 100, y: 108 },
+      { x: 172, y: 144 },
+      { x: 172, y: 180 },
+      { x: 100, y: 216 },
+    ];
+    const d = offsetOpenPolylinePath(pts, 19.8);
+    expectClosedPath(d);
+    
+    // It should have filleted Q curves at both V_3 and V_4 on Side B.
+    // Let's ensure there are no extreme/spiky coordinates in the path.
+    const numbers = d
+      .replace(/[MLQAZ]/gi, " ")
+      .trim()
+      .split(/\s+/)
+      .map(Number)
+      .filter(Number.isFinite);
+    for (const num of numbers) {
+      expect(Math.abs(num)).toBeLessThan(400);
+    }
   });
 });

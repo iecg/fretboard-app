@@ -1,10 +1,18 @@
 import { NOTES } from './theory';
 import { DEFAULT_OCTAVE, A4_FREQUENCY, A4_ABS_DISTANCE, MAX_FRET, STANDARD_FRET_MARKERS } from './constants';
+import { normalizeToSharps } from './lib/tonal';
+import * as Note from '@tonaljs/note';
+
+// Pre-compute a long master chromatic sequence to allow O(1) slicing for any string length.
+// Length 100 covers MAX_FRET (24) + max openIndex (11) with plenty of buffer.
+const MASTER_CHROMATIC = Array.from({ length: 100 }, (_, i) => NOTES[i % 12]);
 
 export interface NoteWithOctave {
   noteName: string;
   octave: number;
 }
+
+const parseNoteCache = new Map<string, NoteWithOctave | null>();
 
 /**
  * Parses a note string like "E4" or "A#3".
@@ -12,13 +20,24 @@ export interface NoteWithOctave {
  */
 export function parseNote(noteString: string): NoteWithOctave | null {
   if (!noteString) return null;
-  const match = noteString.match(/^([A-G]#?)(\d)$/);
-  if (!match) return null;
-  const noteName = match[1];
-  const octave = parseInt(match[2], 10);
-  if (!NOTES.includes(noteName)) return null;
-  if (!Number.isFinite(octave)) return null;
-  return { noteName, octave };
+  if (parseNoteCache.has(noteString)) {
+    return parseNoteCache.get(noteString) as NoteWithOctave | null;
+  }
+  
+  const tonalNote = Note.get(noteString);
+  if (tonalNote.empty || tonalNote.oct === undefined) {
+    parseNoteCache.set(noteString, null);
+    return null;
+  }
+  
+  const rawName = tonalNote.letter + (tonalNote.acc || "");
+  const result: NoteWithOctave = {
+    noteName: normalizeToSharps(rawName),
+    octave: tonalNote.oct,
+  };
+  
+  parseNoteCache.set(noteString, result);
+  return result;
 }
 
 // Standard Tuning from highest string (1st, thinnest) to lowest string (6th, thickest)
@@ -71,18 +90,36 @@ export function getNoteFrequency(noteStringWithOctave: string): number {
   return A4_FREQUENCY * Math.pow(2, halfStepsFromA4 / 12);
 }
 
+const fretboardCache = new Map<string, string[][]>();
+
 /**
  * Returns a 2D array representing the fretboard.
  * Array of strings (top/thinnest to bottom/thickest), each containing an array of notes from fret 0 to maxFret.
  */
 export function getFretboardNotes(tuning: string[], frets: number = 24): string[][] {
-  return tuning.map(stringNote => {
-    const stringNotes = [];
-    for (let currentFret = 0; currentFret <= frets; currentFret++) {
-      stringNotes.push(getFretNote(stringNote, currentFret));
-    }
-    return stringNotes;
-  });
+  const key = `${tuning.join(',')}|${frets}`;
+  let cached = fretboardCache.get(key);
+  if (!cached) {
+    cached = tuning.map(stringNote => {
+      const parsed = parseNote(stringNote);
+      let openIndex = parsed ? NOTES.indexOf(parsed.noteName) : -1;
+      if (openIndex === -1) {
+        if (typeof console !== "undefined" && console.warn) {
+          console.warn(`[guitar] invalid tuning note "${stringNote}", falling back to E`);
+        }
+        openIndex = NOTES.indexOf("E");
+      }
+
+      // O(1) slice instead of mapping and modulo math
+      return MASTER_CHROMATIC.slice(openIndex, openIndex + frets + 1);
+    });
+    fretboardCache.set(key, cached);
+  }
+  return cached;
+}
+
+export function clearFretboardNotesCache(): void {
+  fretboardCache.clear();
 }
 
 // Common fret marker positions for rendering dots

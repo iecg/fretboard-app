@@ -5,12 +5,12 @@ import { RESET } from "jotai/utils";
 import { k } from "../test-utils/storage";
 import { setRootNoteAtom, setScaleNameAtom, setFingeringPatternAtom, resetAtom } from "./actions";
 import { isMutedAtom } from "./audioAtoms";
-import { chordRootAtom, chordTypeAtom, linkChordRootAtom, chordFretSpreadAtom, practiceLensAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
+import { chordRootAtom, chordTypeAtom, linkChordRootAtom, chordOverlayHiddenAtom, chordTonesAtom } from "./chordOverlayAtoms";
 import { updateActiveChordAtom, activeChordCachedDegreeAtom } from "./songStateAtoms";
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
 import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
 import { progressionStepsAtom, progressionTempoBpmAtom, progressionPlayingAtom, activeProgressionStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
-import { rootNoteAtom, scaleNameAtom, accidentalModeAtom, useFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, accidentalModeAtom, preferFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
 import { displayFormatAtom } from "./uiAtoms";
 import { STANDARD_TUNING, TUNINGS } from "@fretflow/core";
 import { CAGED_SHAPES } from "@fretflow/core";
@@ -125,12 +125,12 @@ describe("atoms", () => {
   // Atom-specific migrations / validators that aren't covered by the shared
   // storage abstraction (custom serializers, enum validation, legacy renames).
   describe("atom-specific storage migrations", () => {
-    it("scaleName: legacy 'Minor' migrates to 'Natural Minor'", () => {
-      localStorage.setItem(k("scaleName"), "Minor");
+    it("scaleName: persists Tonal-vocabulary names under the v2 key", () => {
+      localStorage.setItem(k("scaleName.v2"), "minor");
       const store = makeStore();
       const unsub = mount(store, scaleNameAtom);
-      expect(store.get(scaleNameAtom)).toBe("Natural Minor");
-      expect(localStorage.getItem(k("scaleName"))).toBe("Natural Minor");
+      expect(store.get(scaleNameAtom)).toBe("minor");
+      expect(localStorage.getItem(k("scaleName.v2"))).toBe("minor");
       unsub();
     });
 
@@ -157,16 +157,13 @@ describe("atoms", () => {
     });
   });
 
-  // Phase 2.5: chordTypeAtom is a read-only derived view of the active
-  // progression step's resolved quality. Writes flow through
-  // `updateActiveChordAtom` in songStateAtoms.
   describe("chordTypeAtom (derived, read-only)", () => {
     it("reads the active step's qualityOverride", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor 7th", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "m7", manualRoot: "C" },
       ]);
-      expect(store.get(chordTypeAtom)).toBe("Minor 7th");
+      expect(store.get(chordTypeAtom)).toBe("m7");
     });
 
     it("falls back to the diatonic default when no override is set", () => {
@@ -175,8 +172,8 @@ describe("atoms", () => {
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      store.set(scaleNameAtom, "major");
+      expect(store.get(chordTypeAtom)).toBe("M");
     });
 
     it("returns null when the progression is empty (overlay off)", () => {
@@ -190,7 +187,7 @@ describe("atoms", () => {
     it("transposes manualRoot when the scale root changes (was: link-sync)", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ]);
       store.set(rootNoteAtom, "C");
       store.set(setRootNoteAtom, "G");
@@ -199,15 +196,15 @@ describe("atoms", () => {
     });
 
     it.each([
-      ["I", "G", "Major Triad"],
-      ["vi", "E", "Minor Triad"],
+      ["I", "G", "M"],
+      ["vi", "E", "m"],
     ])("preserves diatonic resolution on scale-root change (degree %s → root %s, %s)", (degree, expectedRoot, expectedType) => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
         { id: "x", degree: degree as import("@fretflow/core").DegreeId, duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
+      store.set(scaleNameAtom, "major");
       store.set(setRootNoteAtom, "G");
       expect(store.get(chordRootAtom)).toBe(expectedRoot);
       expect(store.get(chordTypeAtom)).toBe(expectedType);
@@ -221,10 +218,10 @@ describe("atoms", () => {
         { id: "x", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(scaleNameAtom, "Mixolydian");
+      store.set(scaleNameAtom, "major");
+      store.set(scaleNameAtom, "mixolydian");
       expect(store.get(chordRootAtom)).toBe("D");
-      expect(store.get(chordTypeAtom)).toBe("Minor Triad");
+      expect(store.get(chordTypeAtom)).toBe("m");
     });
 
     it("simultaneous root + scale write re-resolves the diatonic chord", () => {
@@ -233,22 +230,22 @@ describe("atoms", () => {
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
+      store.set(scaleNameAtom, "major");
       store.set(rootNoteAtom, "G");
-      store.set(scaleNameAtom, "Mixolydian");
+      store.set(scaleNameAtom, "mixolydian");
       expect(store.get(chordRootAtom)).toBe("G");
-      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      expect(store.get(chordTypeAtom)).toBe("M");
     });
   });
 
   describe("setScaleNameAtom — progression degree remap on mode change", () => {
     it.each([
       // Major → Dorian: I (semitone 0) remaps to i (Minor Triad on A).
-      ["Major", "Dorian", "I", "A", "i", "A", "Minor Triad"],
+      ["major", "dorian", "I", "A", "i", "A", "m"],
       // Major → Mixolydian: V (semitone 7) remaps to v (Minor Triad on G).
-      ["Major", "Mixolydian", "V", "C", "v", "G", "Minor Triad"],
+      ["major", "mixolydian", "V", "C", "v", "G", "m"],
       // Major → Lydian: V stays V (both have Major Triad on semitone 7).
-      ["Major", "Lydian", "V", "C", "V", "G", "Major Triad"],
+      ["major", "lydian", "V", "C", "V", "G", "M"],
     ])("%s → %s: degree %s remaps to %s on root %s", (
       fromScale, toScale, fromDegree, root, toDegree, expectedRoot, expectedType,
     ) => {
@@ -270,45 +267,43 @@ describe("atoms", () => {
         { id: "x", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(setScaleNameAtom, "Phrygian");
+      store.set(scaleNameAtom, "major");
+      store.set(setScaleNameAtom, "phrygian");
       // Phrygian's ordinal-1 degree is "II" (semitone 1, Major Triad on Db).
       expect(store.get(progressionStepsAtom)[0]!.degree).toBe("II");
-      expect(store.get(chordTypeAtom)).toBe("Major Triad");
+      expect(store.get(chordTypeAtom)).toBe("M");
     });
 
     it("preserves chord-quality override across scale changes (sticky)", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: null },
+        { id: "x", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7", manualRoot: null },
       ]);
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
-      store.set(setScaleNameAtom, "Lydian");
-      expect(store.get(progressionStepsAtom)[0]!.qualityOverride).toBe("Dominant 7th");
-      expect(store.get(chordTypeAtom)).toBe("Dominant 7th");
+      store.set(scaleNameAtom, "major");
+      store.set(setScaleNameAtom, "lydian");
+      expect(store.get(progressionStepsAtom)[0]!.qualityOverride).toBe("7");
+      expect(store.get(chordTypeAtom)).toBe("7");
     });
   });
 
   describe("resetAtom", () => {
     it("clears only fretflow-prefixed localStorage keys and resets every atom to its default", () => {
       localStorage.setItem(k("rootNote"), "G");
-      localStorage.setItem(k("scaleName"), "Dorian");
+      localStorage.setItem(k("scaleName.v2"), "dorian");
       localStorage.setItem("unrelatedKey", "keep");
 
       const store = makeStore();
       // Mutate a broad cross-section so the reset has to cover every category.
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Minor Triad", manualRoot: "F#" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "m", manualRoot: "F#" },
       ]);
       store.set(rootNoteAtom, "G");
-      store.set(scaleNameAtom, "Dorian");
+      store.set(scaleNameAtom, "dorian");
       store.set(isMutedAtom, true);
       store.set(fretZoomAtom, 200);
       store.set(displayFormatAtom, "degrees");
       store.set(linkChordRootAtom, false);
-      store.set(practiceLensAtom, "tones");
-      store.set(chordFretSpreadAtom, 5);
       store.set(fingeringPatternAtom, "caged");
       store.set(npsPositionAtom, 3);
       store.set(tuningNameAtom, "Drop D");
@@ -326,14 +321,13 @@ describe("atoms", () => {
       expect(localStorage.getItem(k("rootNote"))).toBeNull();
 
       expect(store.get(rootNoteAtom)).toBe("C");
-      expect(store.get(scaleNameAtom)).toBe("Major");
+      expect(store.get(scaleNameAtom)).toBe("major");
       expect(store.get(isMutedAtom)).toBe(false);
       expect(store.get(fretZoomAtom)).toBe(100);
       expect(store.get(displayFormatAtom)).toBe("notes");
       expect(store.get(chordTypeAtom)).toBeNull();
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);
-      expect(store.get(chordFretSpreadAtom)).toBe(0);
       expect(store.get(fingeringPatternAtom)).toBe("none");
       expect(store.get(npsPositionAtom)).toBe(1);
       expect(store.get(tuningNameAtom)).toBe("Standard");
@@ -367,18 +361,18 @@ describe("atoms", () => {
     });
   });
 
-  describe("useFlatsAtom (derived)", () => {
+  describe("preferFlatsAtom (derived)", () => {
     it.each([
-      ["G", "Major", "auto", false],
-      ["F", "Major", "auto", true],
-      ["F", "Major", "sharps", false],
-      ["G", "Major", "flats", true],
-    ])("root=%s scale=%s mode=%s → useFlats=%s", (root, scale, mode, expected) => {
+      ["G", "major", "auto", false],
+      ["F", "major", "auto", true],
+      ["F", "major", "sharps", false],
+      ["G", "major", "flats", true],
+    ])("root=%s scale=%s mode=%s → preferFlats=%s", (root, scale, mode, expected) => {
       const store = makeStore();
       store.set(rootNoteAtom, root);
       store.set(scaleNameAtom, scale);
       store.set(accidentalModeAtom, mode as "auto" | "sharps" | "flats");
-      expect(store.get(useFlatsAtom)).toBe(expected);
+      expect(store.get(preferFlatsAtom)).toBe(expected);
     });
   });
 
@@ -404,7 +398,7 @@ describe("atoms", () => {
     it("re-derives when the active step's manualRoot changes", () => {
       const store = makeStore();
       store.set(progressionStepsAtom, [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ]);
       expect(store.get(chordTonesAtom)).toEqual(["C", "E", "G"]);
       store.set(updateActiveChordAtom, { root: "G" });
@@ -414,9 +408,9 @@ describe("atoms", () => {
 
   describe("colorNotesAtom (derived)", () => {
     it.each([
-      ["C", "Major", []],
-      ["A", "Natural Minor", []],
-      ["C", "Minor Blues", ["F#"]],
+      ["C", "major", []],
+      ["A", "minor", []],
+      ["C", "minor blues", ["F#"]],
     ])("root=%s scale=%s → colorNotes=%j", (root, scale, expected) => {
       const store = makeStore();
       store.set(rootNoteAtom, root);
@@ -440,7 +434,7 @@ describe("atoms", () => {
     it("toggling off clears individually hidden notes and hides the scale", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
+      store.set(scaleNameAtom, "major");
       store.set(toggleHiddenNoteAtom, "E");
       store.set(toggleHiddenNoteAtom, "G");
       expect(store.get(hiddenNotesAtom).size).toBe(2);
@@ -452,7 +446,7 @@ describe("atoms", () => {
     it("toggling on restores full scale with no hidden notes", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
+      store.set(scaleNameAtom, "major");
       store.set(toggleHiddenNoteAtom, "E");
       store.set(toggleScaleVisibleAtom);
       store.set(toggleScaleVisibleAtom);
@@ -472,7 +466,7 @@ describe("atoms", () => {
     it("effectiveHiddenNotes is empty when scale is hidden, populated when visible", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Major");
+      store.set(scaleNameAtom, "major");
       store.set(toggleHiddenNoteAtom, "E");
       expect(store.get(effectiveHiddenNotesAtom).has("E")).toBe(true);
       store.set(scaleVisibleAtom, false);
@@ -482,7 +476,7 @@ describe("atoms", () => {
     it("effectiveColorNotes is empty when scale is hidden, blue note when visible", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "Minor Blues");
+      store.set(scaleNameAtom, "minor blues");
       store.set(scaleVisibleAtom, true);
       expect(store.get(effectiveColorNotesAtom)).toEqual(["F#"]);
       store.set(scaleVisibleAtom, false);
@@ -523,7 +517,7 @@ describe("atoms", () => {
         { id: "three", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ]);
       store.set(activeProgressionStepIndexAtom, 2);
-      store.set(setScaleNameAtom, "Natural Minor");
+      store.set(setScaleNameAtom, "minor");
       expect(store.get(progressionStepsAtom).map((s) => s.degree)).toEqual(["i", "v", "VI"]);
       expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
     });

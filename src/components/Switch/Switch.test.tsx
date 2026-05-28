@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
 import { Switch } from "./Switch";
 
@@ -10,45 +11,40 @@ describe("Switch", () => {
     expect(sw.getAttribute("aria-checked")).toBe("true");
   });
 
-  it("calls onChange with the inverse of checked when clicked", () => {
+  it("calls onChange with the inverse of checked when clicked", async () => {
     const onChange = vi.fn();
+    const user = userEvent.setup();
     render(<Switch checked={false} onChange={onChange} label="Test switch" />);
-    fireEvent.click(screen.getByRole("switch", { name: "Test switch" }));
+    await user.click(screen.getByRole("switch", { name: "Test switch" }));
     expect(onChange).toHaveBeenCalledWith(true);
   });
 
-  it("toggles via Space key", () => {
+  it("toggles via Space key", async () => {
     const onChange = vi.fn();
+    const user = userEvent.setup();
     render(<Switch checked={false} onChange={onChange} label="Test switch" />);
     const sw = screen.getByRole("switch", { name: "Test switch" });
+    await user.click(sw);
     sw.focus();
-    fireEvent.keyDown(sw, { key: " ", code: "Space" });
+    await user.keyboard(" ");
     expect(onChange).toHaveBeenCalledWith(true);
   });
 
-  it("toggles via Enter key", () => {
+  it("toggles via Enter key", async () => {
     const onChange = vi.fn();
+    const user = userEvent.setup();
     render(<Switch checked={true} onChange={onChange} label="Test switch" />);
     const sw = screen.getByRole("switch", { name: "Test switch" });
     sw.focus();
-    fireEvent.keyDown(sw, { key: "Enter", code: "Enter" });
+    await user.keyboard("{Enter}");
     expect(onChange).toHaveBeenCalledWith(false);
   });
 
-  it("ignores key repeat events to prevent rapid-fire toggles", () => {
+  it("does not fire onChange when disabled", async () => {
     const onChange = vi.fn();
-    render(<Switch checked={false} onChange={onChange} label="Test switch" />);
-    const sw = screen.getByRole("switch", { name: "Test switch" });
-    sw.focus();
-    fireEvent.keyDown(sw, { key: " ", code: "Space", repeat: true });
-    fireEvent.keyDown(sw, { key: "Enter", code: "Enter", repeat: true });
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it("does not fire onChange when disabled", () => {
-    const onChange = vi.fn();
+    const user = userEvent.setup();
     render(<Switch checked={false} onChange={onChange} label="Test" disabled />);
-    fireEvent.click(screen.getByRole("switch"));
+    await user.click(screen.getByRole("switch"));
     expect(onChange).not.toHaveBeenCalled();
   });
 

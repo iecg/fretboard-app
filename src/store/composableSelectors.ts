@@ -1,6 +1,5 @@
 import { atom } from "jotai";
 import {
-  CHORD_DEFINITIONS,
   INTERVAL_NAMES,
   NOTES,
   formatAccidental,
@@ -10,15 +9,11 @@ import {
 import type { ChordRowEntry, ResolvedChordMember } from "@fretflow/core";
 import { getDegreesForScale, type DegreeId } from "@fretflow/core";
 import {
-  chordMembersAtom,
-  chordRootAtom,
-  chordTypeAtom,
+  chordLookupAtom,
 } from "./chordOverlayAtoms";
 import {
-  rootNoteAtom,
-  scaleNameAtom,
-  scaleNotesAtom,
-  useFlatsAtom,
+  scaleContextAtom,
+  preferFlatsAtom,
 } from "./scaleAtoms";
 
 // ---------------------------------------------------------------------------
@@ -62,13 +57,38 @@ export function chordMemberRole(
 export function buildChordRowEntries(
   chordMembers: readonly ResolvedChordMember[],
   chordRoot: string,
+  scaleNoteSet: ReadonlySet<string>,
+  degreesMap: Readonly<Record<number, string>>,
+  tonicIdx: number,
+  preferFlats: boolean,
+): ChordRowEntry[];
+export function buildChordRowEntries(
+  chordMembers: readonly ResolvedChordMember[],
+  chordRoot: string,
   rootNote: string,
   scaleName: string,
-  useFlats: boolean,
+  preferFlats: boolean,
+): ChordRowEntry[];
+export function buildChordRowEntries(
+  chordMembers: readonly ResolvedChordMember[],
+  chordRoot: string,
+  rootNoteOrScaleNoteSet: string | ReadonlySet<string>,
+  scaleNameOrDegreesMap: string | Readonly<Record<number, string>>,
+  tonicIdxOrPreferFlats: number | boolean,
+  preferFlatsMaybe?: boolean,
 ): ChordRowEntry[] {
-  const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
-  const degreesMap = getDegreesForScale(scaleName);
-  const tonicIdx = NOTES.indexOf(rootNote);
+  const scaleNoteSet = typeof rootNoteOrScaleNoteSet === "string"
+    ? new Set(getScaleNotes(rootNoteOrScaleNoteSet, scaleNameOrDegreesMap as string))
+    : rootNoteOrScaleNoteSet;
+  const degreesMap = typeof rootNoteOrScaleNoteSet === "string"
+    ? getDegreesForScale(scaleNameOrDegreesMap as string)
+    : scaleNameOrDegreesMap;
+  const tonicIdx = typeof rootNoteOrScaleNoteSet === "string"
+    ? NOTES.indexOf(rootNoteOrScaleNoteSet)
+    : tonicIdxOrPreferFlats as number;
+  const preferFlats = typeof rootNoteOrScaleNoteSet === "string"
+    ? tonicIdxOrPreferFlats as boolean
+    : preferFlatsMaybe as boolean;
 
   return chordMembers.map((m): ChordRowEntry => {
     const inScale = scaleNoteSet.has(m.note);
@@ -85,8 +105,8 @@ export function buildChordRowEntries(
     }
     return {
       internalNote: m.note,
-      displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, useFlats)),
-      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
+      displayNote: formatAccidental(getNoteDisplay(m.note, chordRoot, preferFlats)),
+      memberName: m.name === "root" ? "R" : formatAccidental(m.name),
       role,
       inScale,
       scaleDegree,
@@ -101,21 +121,15 @@ export function buildChordRowEntries(
 // ---------------------------------------------------------------------------
 
 export const hasOutsideChordMembersAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
+  const { chordType, chordTones } = get(chordLookupAtom);
   if (!chordType) return false;
-  const chordRoot = get(chordRootAtom);
-  const def = CHORD_DEFINITIONS[chordType];
-  if (!def) return false;
-  const rootIndex = NOTES.indexOf(chordRoot);
-  if (rootIndex === -1) return false;
-  const tones = def.members.map((m) => NOTES[(rootIndex + m.semitone) % 12]);
-  return hasAnyChordToneOutsideScale(tones, get(scaleNotesAtom));
+  return hasAnyChordToneOutsideScale(chordTones, get(scaleContextAtom).scaleNoteSet);
 });
 
 /**
  * Catalog of chord members annotated with scale-membership flags and role
- * tags — the canonical input shared by every practice-lens composite (see
- * `practiceLensAtoms.ts`) and the chord summary atoms in `atoms.ts`.
+ * tags — the canonical input for practice cues (see `practiceLensAtoms.ts`)
+ * and the chord summary atoms in `atoms.ts`.
  *
  * Inputs (read via `get`): `chordTypeAtom`, `chordRootAtom`, `rootNoteAtom`,
  * `scaleNameAtom`. Empty array when no chord is selected.
@@ -126,13 +140,15 @@ export const hasOutsideChordMembersAtom = atom((get) => {
  * See the "Lens & Note Roles" section in `CLAUDE.md` for the role taxonomy.
  */
 export const allChordMembersAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
+  const { chordType, chordMembers, chordRoot } = get(chordLookupAtom);
   if (!chordType) return [] as ChordRowEntry[];
+  const { rootNote, degreesMap, scaleNoteSet } = get(scaleContextAtom);
   return buildChordRowEntries(
-    get(chordMembersAtom),
-    get(chordRootAtom),
-    get(rootNoteAtom),
-    get(scaleNameAtom),
-    get(useFlatsAtom),
+    chordMembers,
+    chordRoot,
+    scaleNoteSet,
+    degreesMap,
+    NOTES.indexOf(rootNote),
+    get(preferFlatsAtom),
   );
 });

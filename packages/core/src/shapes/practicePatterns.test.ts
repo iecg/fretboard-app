@@ -13,7 +13,7 @@ import { getScaleNotes, SCALES, normalizeScaleName } from "../theory";
 // ---------------------------------------------------------------------------
 
 const ROOT = "C";
-const SCALE = "Major"; // C D E F G A B
+const SCALE = "major"; // C D E F G A B
 // STANDARD_TUNING from guitar.ts: high-E (index 0) to low-E (index 5), with octaves.
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
 const FRETS = 24;
@@ -264,8 +264,8 @@ describe("getTwoStringsIntervalPairs", () => {
 
   it("3rds (SD=2) in C major pentatonic (5-note) produces all 5 lower notes", () => {
     // C major pentatonic: C D E G A (5 notes). SD=2 covers both minor and major 3rds.
-    const pentNotes = new Set(getScaleNotes("C", "Major Pentatonic"));
-    const pentSemitones = SCALES[normalizeScaleName("Major Pentatonic")]!;
+    const pentNotes = new Set(getScaleNotes("C", "major pentatonic"));
+    const pentSemitones = SCALES[normalizeScaleName("major pentatonic")]!;
     const pairs = getTwoStringsIntervalPairs([0, 1], BOARD, pentNotes, pentSemitones, 2, STANDARD_TUNING);
     expect(pairs.length).toBeGreaterThan(0);
     const lowerNotes = new Set(pairs.map((p) => noteAt(p.b)));
@@ -276,8 +276,8 @@ describe("getTwoStringsIntervalPairs", () => {
 
   it("3rds (SD=2) in C minor pentatonic (5-note) yields pairs", () => {
     // C minor pentatonic: C Eb F G Bb (using sharps: C D# F G A#)
-    const pentNotes = new Set(getScaleNotes("C", "Minor Pentatonic"));
-    const pentSemitones = SCALES[normalizeScaleName("Minor Pentatonic")]!;
+    const pentNotes = new Set(getScaleNotes("C", "minor pentatonic"));
+    const pentSemitones = SCALES[normalizeScaleName("minor pentatonic")]!;
     const pairs = getTwoStringsIntervalPairs([0, 1], BOARD, pentNotes, pentSemitones, 2, STANDARD_TUNING);
     expect(pairs.length).toBeGreaterThan(0);
   });

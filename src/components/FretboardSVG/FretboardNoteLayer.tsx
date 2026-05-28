@@ -4,8 +4,8 @@ import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
 import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
-import type { NoteData } from "./hooks/useNoteData";
 import type { NoteAnimationMode } from "./motionPolicy";
+import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
 const CHORD_NOTE_CLASSES = new Set([
   "chord-root",
@@ -16,10 +16,24 @@ const CHORD_NOTE_CLASSES = new Set([
   "note-diatonic-chord",
 ]);
 
+const CAGED_SHAPE_CSS_VAR: Record<string, string> = {
+  E: "var(--caged-e)",
+  D: "var(--caged-d)",
+  C: "var(--caged-c)",
+  A: "var(--caged-a)",
+  G: "var(--caged-g)",
+};
+
+const CAGED_SHAPE_TEXT_VAR: Record<string, string> = {
+  E: "var(--caged-e-fg)",
+  D: "var(--caged-d-fg)",
+  C: "var(--caged-c-fg)",
+  A: "var(--caged-a-fg)",
+  G: "var(--caged-g-fg)",
+};
+
 interface FretboardNoteLayerProps {
-  noteData: NoteData[];
-  fretCenterX: (fretIndex: number) => number;
-  stringYAt: (stringIndex: number, x: number) => number;
+  notes: RenderedFretboardNote[];
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
@@ -48,9 +62,7 @@ const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
 export const FretboardNoteLayer = memo(({
-  noteData,
-  fretCenterX,
-  stringYAt,
+  notes,
   noteBubblePx,
   displayFormat,
   degreeColorsEnabled,
@@ -59,11 +71,11 @@ export const FretboardNoteLayer = memo(({
   animationMode = "css",
 }: FretboardNoteLayerProps) => {
   const filteredNotes = filter
-    ? noteData.filter(({ noteClass }) => {
+    ? notes.filter(({ noteClass }) => {
         const isChord = CHORD_NOTE_CLASSES.has(noteClass);
         return filter === "chord" ? isChord : !isChord;
       })
-    : noteData;
+    : notes;
 
   return (
     <g data-motion={animationMode}>
@@ -71,6 +83,8 @@ export const FretboardNoteLayer = memo(({
         stringIndex,
         fretIndex,
         noteName,
+        cx,
+        cy,
         octave,
         noteClass,
         displayValue,
@@ -83,14 +97,28 @@ export const FretboardNoteLayer = memo(({
         degreeColor,
         fullChordShape,
       }) => {
-        const cx = fretCenterX(fretIndex);
-        const cy = stringYAt(stringIndex, cx);
         const baseRadius = noteBubblePx / 2;
         const { radiusScale, noteShape } = getNoteVisuals(noteClass);
         const rawRadius = baseRadius * radiusScale * applyLensEmphasis.radiusBoost;
         const r = noteShape === "squircle"
           ? reduceSquircleRadius(rawRadius)
           : reduceCircleRadius(rawRadius);
+
+        const fullChordStyle = fullChordShape
+          ? {
+              "--shape-fill": CAGED_SHAPE_CSS_VAR[fullChordShape],
+              "--shape-stroke":
+                noteClass === "chord-root"
+                  ? "var(--note-ring-tonic)"
+                  : CAGED_SHAPE_CSS_VAR[fullChordShape],
+              "--shape-stroke-width":
+                noteClass === "chord-root" ? "3.2" : undefined,
+              "--text-fill":
+                noteClass === "chord-root"
+                  ? "#ffffff"
+                  : CAGED_SHAPE_TEXT_VAR[fullChordShape],
+            }
+          : undefined;
 
         const shapeEl =
           noteShape === "squircle" ? (
@@ -162,7 +190,7 @@ export const FretboardNoteLayer = memo(({
             data-note-shape={noteShape}
             data-note-tension={isTension || undefined}
             data-note-guide-tone={isGuideTone || undefined}
-            data-full-chord-shape={fullChordShape}
+            data-full-chord-mode={fullChordShape || undefined}
             data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
             data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
@@ -172,6 +200,7 @@ export const FretboardNoteLayer = memo(({
               ...(degreeColor && degreeColorsEnabled
                 ? { "--degree-color": degreeColor }
                 : undefined),
+              ...(fullChordStyle as React.CSSProperties),
             } as React.CSSProperties}
           >
             {shapeEl}

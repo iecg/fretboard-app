@@ -1,14 +1,9 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { themeAtom } from "../../store/uiAtoms";
 import { FretboardBackground } from "./FretboardBackground";
 import { axe } from "../../test-utils/a11y";
-
-// useWoodGrainTexture uses canvas/createObjectURL which isn't available in jsdom
-vi.mock("./hooks/useWoodGrainTexture", () => ({
-  useWoodGrainTexture: () => null,
-}));
 
 const defaultProps = {
   neckWidthPx: 600,

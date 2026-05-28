@@ -1,13 +1,18 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { Provider } from "jotai";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { useFretboardState } from "./useFretboardState";
-import { fullChordMatchesAtom } from "../store/chordOverlayAtoms";
-import { chordScopeToPositionAtom } from "../store/chordScope";
+import { voicingMatchesAtom } from "../store/chordOverlayAtoms";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { progressionStepsAtom } from "../store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
+import { voicingAtom, chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 function wrapWithStore(store: ReturnType<typeof makeAtomStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -16,11 +21,9 @@ function wrapWithStore(store: ReturnType<typeof makeAtomStore>) {
 }
 
 describe("useFretboardState — chord box bounds gating (Task 7)", () => {
-  it("returns null chordBoxBounds when chordScopeToPositionAtom is off", () => {
+  it("returns null chordBoxBounds when no active position resolves", () => {
     const store = makeAtomStore([
-      [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set(["C"])],
-      [chordScopeToPositionAtom, false],
+      [fingeringPatternAtom, "none"],
     ]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
@@ -28,31 +31,28 @@ describe("useFretboardState — chord box bounds gating (Task 7)", () => {
     expect(result.current.chordBoxBounds).toBeNull();
   });
 
-  it("returns concrete chordBoxBounds when scope is on AND a single CAGED shape is active", () => {
+  it("returns concrete chordBoxBounds when a single CAGED shape is active", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C"])],
-      [chordScopeToPositionAtom, true],
     ]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    // single CAGED shape => activePositionAtom is true
-    // chordScopeToPosition is true => chordBoxBounds should equal boxBounds
+    // single CAGED shape => activePositionAtom is true => chordBoxBounds should equal boxBounds
     expect(result.current.chordBoxBounds).toEqual(result.current.boxBounds);
   });
 
-  it("returns null chordBoxBounds when scope is on but no active position (multi CAGED)", () => {
+  it("returns non-null chordBoxBounds when multiple CAGED shapes are selected", () => {
     const store = makeAtomStore([
       [fingeringPatternAtom, "caged"],
       [cagedShapesAtom, new Set(["C", "A", "G"])],
-      [chordScopeToPositionAtom, true],
     ]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    // multiple CAGED shapes => activePositionAtom is false => chordBoxBounds null
-    expect(result.current.chordBoxBounds).toBeNull();
+    // multiple CAGED shapes => activePositionAtom is true => chordBoxBounds should equal boxBounds
+    expect(result.current.chordBoxBounds).toEqual(result.current.boxBounds);
   });
 });
 
@@ -67,24 +67,23 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
           id: "step-1",
           degree: "I",
           duration: { value: 1, unit: "bar" },
-          qualityOverride: "Major Triad",
+          qualityOverride: "M",
           manualRoot: "C",
         },
       ]],
     ];
   }
 
-  it("filters voicings when scope is on and a 3NPS position is active", () => {
+  it("filters voicings when a 3NPS position is active", () => {
     const store = makeAtomStore([
       ...seedManualChord(),
       [fingeringPatternAtom, "3nps"],
       [npsPositionAtom, 1],
-      [chordScopeToPositionAtom, true],
     ] as Parameters<typeof makeAtomStore>[0]);
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    const raw = store.get(fullChordMatchesAtom);
+    const raw = store.get(voicingMatchesAtom);
     expect(raw.length).toBeGreaterThan(0);
     expect(result.current.fullChordMatches.length).toBeLessThanOrEqual(raw.length);
     // When raw has multiple positions across the neck, the position-1 filter
@@ -95,22 +94,69 @@ describe("useFretboardState — 3NPS voicing scope (Task 3)", () => {
     }
   });
 
-  it("does not filter when scope is off", () => {
+  // Note: npsPositionAtom storage clamps to [1, 7] (constrainedNumberStorage),
+  // so `npsPosition === 0` is unreachable at runtime — `activePositionAtom` is
+  // always true for 3NPS. Position-based filtering is unconditional in 3NPS mode.
+});
+
+describe("useFretboardState — CAGED shape filtering and truncation", () => {
+  it("suppresses spurious chord shape at fret 0 for D shape scale in C Major", () => {
     const store = makeAtomStore([
-      ...seedManualChord(),
-      [fingeringPatternAtom, "3nps"],
-      [npsPositionAtom, 1],
-      [chordScopeToPositionAtom, false],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set(["D"])],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [voicingAtom, "caged"],
+      [chordOverlayHiddenAtom, false],
+      [progressionStepsAtom, [
+        {
+          id: "step-1",
+          degree: "I",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "M",
+          manualRoot: "C",
+        },
+      ]],
+
     ] as Parameters<typeof makeAtomStore>[0]);
+
     const { result } = renderHook(() => useFretboardState(), {
       wrapper: wrapWithStore(store),
     });
-    const raw = store.get(fullChordMatchesAtom);
-    expect(result.current.fullChordMatches).toEqual(raw);
+
+    // The open C Major voicing (shape: "C", position: "0-3") should be filtered out
+    // because the only active D shape polygon near fret 0 is truncated/off-board.
+    const openCMatch = result.current.fullChordMatches.find((m) => m.positionKeys.includes("4-3"));
+    expect(openCMatch).toBeUndefined();
   });
 
-  // Note: npsPositionAtom storage clamps to [1, 7] (constrainedNumberStorage),
-  // so `npsPosition === 0` is unreachable at runtime — `activePositionAtom` is
-  // always true for 3NPS. The scope toggle is the only way to bypass filtering
-  // in 3NPS mode (covered by the "scope off" case above).
+  it("keeps valid open C Major chord at fret 0 for C shape scale in C Major", () => {
+    const store = makeAtomStore([
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set(["C"])],
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [voicingAtom, "caged"],
+      [chordOverlayHiddenAtom, false],
+      [progressionStepsAtom, [
+        {
+          id: "step-1",
+          degree: "I",
+          duration: { value: 1, unit: "bar" },
+          qualityOverride: "M",
+          manualRoot: "C",
+        },
+      ]],
+    ] as Parameters<typeof makeAtomStore>[0]);
+
+    const { result } = renderHook(() => useFretboardState(), {
+      wrapper: wrapWithStore(store),
+    });
+
+    // The open C Major voicing (shape: "C", position: "0-3") should be retained
+    // because the C shape polygon at fret 0 is fully on-board and not truncated.
+    const openCMatch = result.current.fullChordMatches.find((m) => m.positionKeys.includes("4-3"));
+    expect(openCMatch).toBeDefined();
+  });
 });
+

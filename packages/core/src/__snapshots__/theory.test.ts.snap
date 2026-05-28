@@ -1,0 +1,860 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapshot — full structure including member names 1`] = `
+{
+  "5": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "power",
+  },
+  "6": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "6",
+        "semitone": 9,
+      },
+    ],
+    "quality": "sixth",
+  },
+  "7": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "M": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "triad",
+  },
+  "aug": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "#5",
+        "semitone": 8,
+      },
+    ],
+    "quality": "triad",
+  },
+  "dim": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "b5",
+        "semitone": 6,
+      },
+    ],
+    "quality": "triad",
+  },
+  "dim7": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "b5",
+        "semitone": 6,
+      },
+      {
+        "name": "bb7",
+        "semitone": 9,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "m": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "triad",
+  },
+  "m6": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "6",
+        "semitone": 9,
+      },
+    ],
+    "quality": "sixth",
+  },
+  "m7": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "m7b5": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "b5",
+        "semitone": 6,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "mMaj7": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "7",
+        "semitone": 11,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "maj7": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "7",
+        "semitone": 11,
+      },
+    ],
+    "quality": "seventh",
+  },
+  "sus2": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "2",
+        "semitone": 2,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "suspended",
+  },
+  "sus4": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "4",
+        "semitone": 5,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+    ],
+    "quality": "suspended",
+  },
+}
+`;
+
+exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 15 entries 1`] = `
+{
+  "5": [
+    0,
+    7,
+  ],
+  "6": [
+    0,
+    4,
+    7,
+    9,
+  ],
+  "7": [
+    0,
+    4,
+    7,
+    10,
+  ],
+  "M": [
+    0,
+    4,
+    7,
+  ],
+  "aug": [
+    0,
+    4,
+    8,
+  ],
+  "dim": [
+    0,
+    3,
+    6,
+  ],
+  "dim7": [
+    0,
+    3,
+    6,
+    9,
+  ],
+  "m": [
+    0,
+    3,
+    7,
+  ],
+  "m6": [
+    0,
+    3,
+    7,
+    9,
+  ],
+  "m7": [
+    0,
+    3,
+    7,
+    10,
+  ],
+  "m7b5": [
+    0,
+    3,
+    6,
+    10,
+  ],
+  "mMaj7": [
+    0,
+    3,
+    7,
+    11,
+  ],
+  "maj7": [
+    0,
+    4,
+    7,
+    11,
+  ],
+  "sus2": [
+    0,
+    2,
+    7,
+  ],
+  "sus4": [
+    0,
+    5,
+    7,
+  ],
+}
+`;
+
+exports[`catalog snapshots (pre-Tonal-migration lock) > SCALES snapshot — all 28 entries 1`] = `
+{
+  "altered": [
+    0,
+    1,
+    3,
+    4,
+    6,
+    8,
+    10,
+  ],
+  "dorian": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "dorian #4": [
+    0,
+    2,
+    3,
+    6,
+    7,
+    9,
+    10,
+  ],
+  "dorian b2": [
+    0,
+    1,
+    3,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "harmonic minor": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    11,
+  ],
+  "ionian augmented": [
+    0,
+    2,
+    4,
+    5,
+    8,
+    9,
+    11,
+  ],
+  "locrian": [
+    0,
+    1,
+    3,
+    5,
+    6,
+    8,
+    10,
+  ],
+  "locrian #2": [
+    0,
+    2,
+    3,
+    5,
+    6,
+    8,
+    10,
+  ],
+  "locrian 6": [
+    0,
+    1,
+    3,
+    5,
+    6,
+    9,
+    10,
+  ],
+  "lydian": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    11,
+  ],
+  "lydian #9": [
+    0,
+    3,
+    4,
+    6,
+    7,
+    9,
+    11,
+  ],
+  "lydian augmented": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    9,
+    11,
+  ],
+  "lydian dominant": [
+    0,
+    2,
+    4,
+    6,
+    7,
+    9,
+    10,
+  ],
+  "major": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    11,
+  ],
+  "major blues": [
+    0,
+    2,
+    3,
+    4,
+    7,
+    9,
+  ],
+  "major pentatonic": [
+    0,
+    2,
+    4,
+    7,
+    9,
+  ],
+  "melodic minor": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+  ],
+  "minor": [
+    0,
+    2,
+    3,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "minor blues": [
+    0,
+    3,
+    5,
+    6,
+    7,
+    10,
+  ],
+  "minor pentatonic": [
+    0,
+    3,
+    5,
+    7,
+    10,
+  ],
+  "mixolydian": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    9,
+    10,
+  ],
+  "mixolydian b6": [
+    0,
+    2,
+    4,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "phrygian": [
+    0,
+    1,
+    3,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "phrygian dominant": [
+    0,
+    1,
+    4,
+    5,
+    7,
+    8,
+    10,
+  ],
+  "ultralocrian": [
+    0,
+    1,
+    3,
+    4,
+    6,
+    8,
+    9,
+  ],
+}
+`;
+
+exports[`getDivergentNotes > matches snapshot across all scales × {C, F#, Bb} 1`] = `
+{
+  "Bb aeolian": [],
+  "Bb altered": [
+    "B",
+    "C#",
+    "E",
+    "F#",
+    "G#",
+  ],
+  "Bb blues": [],
+  "Bb dorian": [
+    "G",
+  ],
+  "Bb dorian #4": [
+    "E",
+    "G",
+  ],
+  "Bb dorian b2": [
+    "B",
+    "G",
+  ],
+  "Bb harmonic minor": [
+    "A",
+  ],
+  "Bb ionian": [],
+  "Bb ionian augmented": [
+    "F#",
+  ],
+  "Bb locrian": [
+    "B",
+    "E",
+  ],
+  "Bb locrian #2": [
+    "E",
+  ],
+  "Bb locrian 6": [
+    "B",
+    "E",
+    "G",
+  ],
+  "Bb lydian": [
+    "E",
+  ],
+  "Bb lydian #9": [
+    "C#",
+    "E",
+  ],
+  "Bb lydian augmented": [
+    "E",
+    "F#",
+  ],
+  "Bb lydian dominant": [
+    "E",
+    "G#",
+  ],
+  "Bb major": [],
+  "Bb major blues": [],
+  "Bb major pentatonic": [],
+  "Bb melodic minor": [
+    "G",
+    "A",
+  ],
+  "Bb minor": [],
+  "Bb minor blues": [],
+  "Bb minor pentatonic": [],
+  "Bb mixolydian": [
+    "G#",
+  ],
+  "Bb mixolydian b6": [
+    "F#",
+    "G#",
+  ],
+  "Bb phrygian": [
+    "B",
+  ],
+  "Bb phrygian dominant": [
+    "B",
+    "F#",
+    "G#",
+  ],
+  "Bb ultralocrian": [
+    "B",
+    "C#",
+    "E",
+    "F#",
+  ],
+  "C aeolian": [],
+  "C altered": [
+    "C#",
+    "D#",
+    "F#",
+    "G#",
+    "A#",
+  ],
+  "C blues": [],
+  "C dorian": [
+    "A",
+  ],
+  "C dorian #4": [
+    "F#",
+    "A",
+  ],
+  "C dorian b2": [
+    "C#",
+    "A",
+  ],
+  "C harmonic minor": [
+    "B",
+  ],
+  "C ionian": [],
+  "C ionian augmented": [
+    "G#",
+  ],
+  "C locrian": [
+    "C#",
+    "F#",
+  ],
+  "C locrian #2": [
+    "F#",
+  ],
+  "C locrian 6": [
+    "C#",
+    "F#",
+    "A",
+  ],
+  "C lydian": [
+    "F#",
+  ],
+  "C lydian #9": [
+    "D#",
+    "F#",
+  ],
+  "C lydian augmented": [
+    "F#",
+    "G#",
+  ],
+  "C lydian dominant": [
+    "F#",
+    "A#",
+  ],
+  "C major": [],
+  "C major blues": [],
+  "C major pentatonic": [],
+  "C melodic minor": [
+    "A",
+    "B",
+  ],
+  "C minor": [],
+  "C minor blues": [],
+  "C minor pentatonic": [],
+  "C mixolydian": [
+    "A#",
+  ],
+  "C mixolydian b6": [
+    "G#",
+    "A#",
+  ],
+  "C phrygian": [
+    "C#",
+  ],
+  "C phrygian dominant": [
+    "C#",
+    "G#",
+    "A#",
+  ],
+  "C ultralocrian": [
+    "C#",
+    "D#",
+    "F#",
+    "G#",
+  ],
+  "F# aeolian": [],
+  "F# altered": [
+    "G",
+    "A",
+    "C",
+    "D",
+    "E",
+  ],
+  "F# blues": [],
+  "F# dorian": [
+    "D#",
+  ],
+  "F# dorian #4": [
+    "C",
+    "D#",
+  ],
+  "F# dorian b2": [
+    "G",
+    "D#",
+  ],
+  "F# harmonic minor": [
+    "F",
+  ],
+  "F# ionian": [],
+  "F# ionian augmented": [
+    "D",
+  ],
+  "F# locrian": [
+    "G",
+    "C",
+  ],
+  "F# locrian #2": [
+    "C",
+  ],
+  "F# locrian 6": [
+    "G",
+    "C",
+    "D#",
+  ],
+  "F# lydian": [
+    "C",
+  ],
+  "F# lydian #9": [
+    "A",
+    "C",
+  ],
+  "F# lydian augmented": [
+    "C",
+    "D",
+  ],
+  "F# lydian dominant": [
+    "C",
+    "E",
+  ],
+  "F# major": [],
+  "F# major blues": [],
+  "F# major pentatonic": [],
+  "F# melodic minor": [
+    "D#",
+    "F",
+  ],
+  "F# minor": [],
+  "F# minor blues": [],
+  "F# minor pentatonic": [],
+  "F# mixolydian": [
+    "E",
+  ],
+  "F# mixolydian b6": [
+    "D",
+    "E",
+  ],
+  "F# phrygian": [
+    "G",
+  ],
+  "F# phrygian dominant": [
+    "G",
+    "D",
+    "E",
+  ],
+  "F# ultralocrian": [
+    "G",
+    "A",
+    "C",
+    "D",
+  ],
+}
+`;

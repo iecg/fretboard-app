@@ -1,63 +1,40 @@
 import { useCallback, type CSSProperties } from "react";
-import clsx from "clsx";
-import { useProgressionState } from "../../hooks/useProgressionState";
+import { useSetAtom, useAtomValue } from "jotai";
+import {
+  setProgressionActiveStepIndexAtom,
+  activeResolvedProgressionStepAtom,
+} from "../../store/progressionAtoms";
+import { useTimelineViewModel } from "./hooks/useTimelineViewModel";
 import styles from "./ProgressionTrack.module.css";
 import { ProgressionBlock } from "./ProgressionBlock";
 import { ProgressionPlayhead } from "./ProgressionPlayhead";
-
-function durationToBars(
-  duration: { value: number; unit: "bar" | "beat" },
-  beatsPerBar: number,
-): number {
-  return duration.unit === "bar" ? duration.value : duration.value / beatsPerBar;
-}
-
-function getProgressionBlockLayouts(
-  steps: readonly { duration: { value: number; unit: "bar" | "beat" } }[],
-  beatsPerBar: number,
-  totalBarsForDisplay: number,
-): Array<{ durationBars: number; startPercent: number; widthPercent: number }> {
-  let elapsedBars = 0;
-  return steps.map((step) => {
-    const durationBars = durationToBars(step.duration, beatsPerBar);
-    const layout = {
-      durationBars,
-      startPercent: (elapsedBars / totalBarsForDisplay) * 100,
-      widthPercent: (durationBars / totalBarsForDisplay) * 100,
-    };
-    elapsedBars += durationBars;
-    return layout;
-  });
-}
+import { ProgressionRuler } from "./ProgressionRuler";
 
 export function ProgressionTrack() {
   const {
-    progressionPlaying,
-    progressionPlaybackBlockedReason,
-    currentProgressionBar,
-    totalProgressionBars,
-    activeProgressionStepIndex,
-    resolvedProgressionSteps,
-    setActiveProgressionStepIndex,
-    beatsPerBar,
-  } = useProgressionState();
-
-  const canPlay = !progressionPlaybackBlockedReason;
-  const activeStep = resolvedProgressionSteps[activeProgressionStepIndex] ?? null;
-  const totalDurationBars = Math.max(1, totalProgressionBars);
-  const totalBarsForDisplay = Math.max(1, Math.ceil(totalProgressionBars));
-  const subdivisionsPerBar = Math.max(1, Math.floor(beatsPerBar));
-  const blockLayouts = getProgressionBlockLayouts(
-    resolvedProgressionSteps,
-    beatsPerBar,
+    blockLayouts,
+    totalDurationBars,
     totalBarsForDisplay,
-  );
+    subdivisionsPerBar,
+    stepAtoms,
+    displayedStepIndex,
+    canPlay,
+    playing,
+    transportStartBar,
+    playbackBlockedReason,
+  } = useTimelineViewModel();
+
+  const setActiveStep = useSetAtom(setProgressionActiveStepIndexAtom);
+  const activeStep = useAtomValue(activeResolvedProgressionStepAtom);
 
   // Stable callback so memoized ProgressionBlock children don't re-render on
   // every parent render of this component.
   const selectStep = useCallback(
-    (index: number) => setActiveProgressionStepIndex(index),
-    [setActiveProgressionStepIndex],
+    (index: number) => {
+      if (playing) return;
+      setActiveStep(index);
+    },
+    [setActiveStep, playing],
   );
 
   return (
@@ -65,8 +42,8 @@ export function ProgressionTrack() {
       role="group"
       aria-label="Progression track"
       className={styles.track}
-      data-playing={progressionPlaying ? "true" : undefined}
-      title={progressionPlaybackBlockedReason ?? undefined}
+      data-playing={playing ? "true" : undefined}
+      title={playbackBlockedReason ?? undefined}
     >
       <div
         className={styles.timeline}
@@ -76,34 +53,19 @@ export function ProgressionTrack() {
         } as CSSProperties}
         aria-label="Progression timeline"
       >
-        <div className={styles.ruler} aria-hidden="true">
-          {Array.from({ length: totalBarsForDisplay }, (_, i) => (
-            <span key={i} className={styles.rulerBar}>
-              {i > 0 ? <span className={styles.rulerBarTick} /> : null}
-              <span className={styles.rulerBarNumber}>{i + 1}</span>
-              {Array.from({ length: 2 * subdivisionsPerBar - 1 }, (__, j) => {
-                const offset = (j + 1) / (2 * subdivisionsPerBar);
-                const isBeat = (j + 1) % 2 === 0;
-                return (
-                  <span
-                    key={j}
-                    className={clsx(styles.rulerTick, isBeat && styles["rulerTick--beat"])}
-                    style={{ left: `${offset * 100}%` } as CSSProperties}
-                  />
-                );
-              })}
-            </span>
-          ))}
-        </div>
+        <ProgressionRuler
+          totalBarsForDisplay={totalBarsForDisplay}
+          subdivisionsPerBar={subdivisionsPerBar}
+        />
         <div className={styles.lane}>
           <ProgressionPlayhead
-            playing={progressionPlaying && canPlay}
-            stepStartBar={currentProgressionBar}
+            playing={playing && canPlay}
+            stepStartBar={transportStartBar}
             totalDurationBars={totalDurationBars}
             totalBarsForDisplay={totalBarsForDisplay}
           />
           <div className={styles.blocks}>
-            {resolvedProgressionSteps.map((step, index) => {
+            {stepAtoms.map((stepAtom, index) => {
               const layout = blockLayouts[index] ?? {
                 durationBars: 0,
                 startPercent: 0,
@@ -111,10 +73,10 @@ export function ProgressionTrack() {
               };
               return (
                 <ProgressionBlock
-                  key={step.id}
-                  step={step}
+                  key={`${stepAtom}`}
+                  stepAtom={stepAtom}
                   index={index}
-                  active={index === activeProgressionStepIndex}
+                  active={index === displayedStepIndex}
                   durationBars={layout.durationBars}
                   startPercent={layout.startPercent}
                   widthPercent={layout.widthPercent}
@@ -135,8 +97,8 @@ export function ProgressionTrack() {
             ) : null}
           </div>
         </div>
-        {progressionPlaybackBlockedReason ? (
-          <p className={styles.statusNote} role="status">{progressionPlaybackBlockedReason}</p>
+        {playbackBlockedReason ? (
+          <p className={styles.statusNote} role="status">{playbackBlockedReason}</p>
         ) : activeStep?.unavailable ? (
           <p className={styles.statusNote} role="status">{activeStep.unavailableReason}</p>
         ) : null}

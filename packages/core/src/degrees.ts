@@ -1,4 +1,5 @@
 import { SCALES } from "./theoryCatalog";
+import { getModeTriads } from "./lib/tonal";
 import * as Key from "@tonaljs/key";
 
 /**
@@ -50,28 +51,48 @@ function buildDegreesFromIntervals(intervals: number[]): Record<number, string> 
   return result;
 }
 
-// Pre-computed degree maps for the canonical 7-note scales.
-// Mirrors what buildDegreesFromIntervals returns; kept as a fast-path
-// and as documentation of expected output for the named modes.
+/**
+ * Diatonic-degree maps per scale. Built by deriving Tonal triads for
+ * the 7 standard modes; Harmonic Minor is kept hand-coded because
+ * Tonal's harmonic-minor model uses different naming conventions and
+ * FretFlow's table has been stable.
+ */
+function buildModeDegrees(scaleName: string): Record<number, string> {
+  const triads = getModeTriads(scaleName);
+  const semitones = SCALES[scaleName];
+  if (!triads || !semitones || triads.length !== semitones.length) {
+    throw new Error(
+      `buildModeDegrees: ${scaleName} not derivable from Tonal (triads=${triads?.length}, semitones=${semitones?.length})`,
+    );
+  }
+  const result: Record<number, string> = {};
+  for (let i = 0; i < semitones.length; i++) {
+    result[semitones[i]] = triads[i];
+  }
+  return result;
+}
+
 const MODE_DEGREES: Record<string, Record<number, string>> = {
-  Major:           { 0: "I",  2: "ii", 4: "iii",  5: "IV", 7: "V", 9: "vi", 11: "vii°" },
-  Lydian:          { 0: "I",  2: "II", 4: "iii",  6: "iv°", 7: "V", 9: "vi", 11: "vii" },
-  Mixolydian:      { 0: "I",  2: "ii", 4: "iii°", 5: "IV", 7: "v", 9: "vi", 10: "VII" },
-  "Natural Minor": { 0: "i",  2: "ii°", 3: "III", 5: "iv", 7: "v", 8: "VI", 10: "VII" },
-  Dorian:          { 0: "i",  2: "ii", 3: "III",  5: "IV", 7: "v", 9: "vi°", 10: "VII" },
-  Phrygian:        { 0: "i",  1: "II", 3: "III",  5: "iv", 7: "v°", 8: "VI", 10: "vii" },
-  Locrian:         { 0: "i°", 1: "II", 3: "iii",  5: "iv", 6: "V", 8: "VI", 10: "vii" },
-  "Harmonic Minor":{ 0: "i",  2: "ii°", 3: "III+", 5: "iv", 7: "V", 8: "VI", 11: "vii°" },
+  major:            buildModeDegrees("major"),
+  lydian:           buildModeDegrees("lydian"),
+  mixolydian:       buildModeDegrees("mixolydian"),
+  minor:            buildModeDegrees("minor"),
+  dorian:           buildModeDegrees("dorian"),
+  phrygian:         buildModeDegrees("phrygian"),
+  locrian:          buildModeDegrees("locrian"),
+  // Harmonic Minor stays hand-coded — Tonal models it with different
+  // suffix conventions and the table below has been stable.
+  "harmonic minor": { 0: "i",  2: "ii°", 3: "III+", 5: "iv", 7: "V", 8: "VI", 11: "vii°" },
 };
 
 const PENTATONIC_DEGREES: Record<string, Record<number, string>> = {
-  "Major Pentatonic": { 0: "I", 2: "ii", 4: "iii", 7: "V", 9: "vi" },
-  "Minor Pentatonic": { 0: "i", 3: "III", 5: "iv", 7: "v", 10: "VII" },
+  "major pentatonic": { 0: "I", 2: "ii", 4: "iii", 7: "V", 9: "vi" },
+  "minor pentatonic": { 0: "i", 3: "III", 5: "iv", 7: "v", 10: "VII" },
 };
 
 const BLUES_DEGREES: Record<string, Record<number, string>> = {
-  "Major Blues": PENTATONIC_DEGREES["Major Pentatonic"],
-  "Minor Blues": PENTATONIC_DEGREES["Minor Pentatonic"],
+  "major blues": PENTATONIC_DEGREES["major pentatonic"],
+  "minor blues": PENTATONIC_DEGREES["minor pentatonic"],
 };
 
 export const BLUE_NOTE_COLOR = "#0047ff";
@@ -112,18 +133,18 @@ export const DEGREE_COLORS: Record<string, string> = {
 // Diatonic triad quality for each scale degree (semitone offset → chord-name key).
 // Covers the 8 scales explicitly listed in MODE_DEGREES.
 const DEGREE_DIATONIC_QUALITY: Record<string, Record<number, string>> = {
-  'Major':          { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 5: "Major Triad", 7: "Major Triad", 9: "Minor Triad", 11: "Diminished Triad" },
-  'Natural Minor':  { 0: "Minor Triad", 2: "Diminished Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 8: "Major Triad", 10: "Major Triad" },
-  'Dorian':         { 0: "Minor Triad", 2: "Minor Triad", 3: "Major Triad", 5: "Major Triad", 7: "Minor Triad", 9: "Diminished Triad", 10: "Major Triad" },
-  'Phrygian':       { 0: "Minor Triad", 1: "Major Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Diminished Triad", 8: "Major Triad", 10: "Minor Triad" },
-  'Lydian':         { 0: "Major Triad", 2: "Major Triad", 4: "Minor Triad", 6: "Diminished Triad", 7: "Major Triad", 9: "Minor Triad", 11: "Minor Triad" },
-  'Mixolydian':     { 0: "Major Triad", 2: "Minor Triad", 4: "Diminished Triad", 5: "Major Triad", 7: "Minor Triad", 9: "Minor Triad", 10: "Major Triad" },
-  'Locrian':        { 0: "Diminished Triad", 1: "Major Triad", 3: "Minor Triad", 5: "Minor Triad", 6: "Major Triad", 8: "Major Triad", 10: "Minor Triad" },
-  'Harmonic Minor': { 0: "Minor Triad", 2: "Diminished Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Major Triad", 8: "Major Triad", 11: "Diminished Triad" },
-  'Major Pentatonic': { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 7: "Major Triad", 9: "Minor Triad" },
-  'Minor Pentatonic': { 0: "Minor Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 10: "Major Triad" },
-  'Major Blues': { 0: "Major Triad", 2: "Minor Triad", 4: "Minor Triad", 7: "Major Triad", 9: "Minor Triad" },
-  'Minor Blues': { 0: "Minor Triad", 3: "Major Triad", 5: "Minor Triad", 7: "Minor Triad", 10: "Major Triad" },
+  'major':            { 0: "M", 2: "m", 4: "m", 5: "M", 7: "M", 9: "m", 11: "dim" },
+  'minor':            { 0: "m", 2: "dim", 3: "M", 5: "m", 7: "m", 8: "M", 10: "M" },
+  'dorian':           { 0: "m", 2: "m", 3: "M", 5: "M", 7: "m", 9: "dim", 10: "M" },
+  'phrygian':         { 0: "m", 1: "M", 3: "M", 5: "m", 7: "dim", 8: "M", 10: "m" },
+  'lydian':           { 0: "M", 2: "M", 4: "m", 6: "dim", 7: "M", 9: "m", 11: "m" },
+  'mixolydian':       { 0: "M", 2: "m", 4: "dim", 5: "M", 7: "m", 9: "m", 10: "M" },
+  'locrian':          { 0: "dim", 1: "M", 3: "m", 5: "m", 6: "M", 8: "M", 10: "m" },
+  'harmonic minor':   { 0: "m", 2: "dim", 3: "M", 5: "m", 7: "M", 8: "M", 11: "dim" },
+  'major pentatonic': { 0: "M", 2: "m", 4: "m", 7: "M", 9: "m" },
+  'minor pentatonic': { 0: "m", 3: "M", 5: "m", 7: "m", 10: "M" },
+  'major blues':      { 0: "M", 2: "m", 4: "m", 7: "M", 9: "m" },
+  'minor blues':      { 0: "m", 3: "M", 5: "m", 7: "m", 10: "M" },
 };
 
 /**
@@ -162,8 +183,8 @@ export function remapDegreeForScale(
  * Returns the diatonic triad quality (chord-name key) for a given scale degree.
  *
  * @param degreeId - Roman numeral string (e.g., "I", "ii", "vii°", "III+")
- * @param scaleName - Scale name (e.g., "Major", "Natural Minor", "Melodic Minor")
- * @returns The chord-name key (e.g., "Major Triad", "Minor Triad", "Diminished Triad"),
+ * @param scaleName - Scale name (e.g., "major", "minor", "melodic minor")
+ * @returns The chord-name key (Tonal symbol, e.g. "M", "m", "dim"),
  *          or undefined if the scale or degree is not recognised.
  */
 export function getQualityForDegree(
@@ -186,8 +207,8 @@ export function getQualityForDegree(
 
   // Algorithmic fallback for 7-note scales not in DEGREE_DIATONIC_QUALITY
   // (e.g. Melodic Minor and its derived modes, harmonic-minor non-tonic modes).
-  // CHORD_DEFINITIONS has no Augmented Triad, so augmented degrees collapse to
-  // Major Triad here (pragmatic — the visible chord overlay drops the #5).
+  // Augmented degrees collapse to "M" here (pragmatic — the visible chord
+  // overlay drops the #5).
   const intervals = SCALES[scaleName];
   if (!intervals || intervals.length !== 7) return undefined;
 
@@ -199,9 +220,9 @@ export function getQualityForDegree(
   const fifthInterval =
     ((intervals[(degreeIdx + 4) % 7] - semitone + 12) % 12);
 
-  if (thirdInterval === 3 && fifthInterval === 6) return "Diminished Triad";
-  if (thirdInterval === 3) return "Minor Triad";
-  if (thirdInterval === 4) return "Major Triad";
+  if (thirdInterval === 3 && fifthInterval === 6) return "dim";
+  if (thirdInterval === 3) return "m";
+  if (thirdInterval === 4) return "M";
   return undefined;
 }
 
@@ -212,7 +233,7 @@ export function getQualityForDegree(
  * Null input: returns the first degree of the scale (activates overlay at sensible default).
  *
  * @param degreeId  Current Roman numeral (e.g. "I", "ii", "vii°") or null when overlay is off.
- * @param scaleName Scale name (e.g. "Major", "Natural Minor").
+ * @param scaleName Scale name (e.g. "major", "minor").
  * @param direction +1 for next, -1 for previous.
  * @returns Adjacent DegreeId string, wrapping at boundaries.
  */
@@ -236,7 +257,7 @@ export function getAdjacentDegree(
  * Returns an ordered array of DegreeIds for the given scale, sorted ascending by semitone.
  * Safer than Object.values(getDegreesForScale(...)) which relies on JS integer-key ordering.
  *
- * @param scaleName - Scale name (e.g., "Major", "Natural Minor").
+ * @param scaleName - Scale name (e.g., "major", "minor").
  * @returns Ordered array of DegreeIds from lowest semitone to highest (e.g. ["I","ii","iii","IV","V","vi","vii°"]).
  */
 export function getDegreeSequence(scaleName: string): DegreeId[] {
@@ -267,14 +288,14 @@ export function getDegreesForScale(scaleName: string): Record<number, string> {
   if (PENTATONIC_DEGREES[scaleName]) return PENTATONIC_DEGREES[scaleName];
   if (BLUES_DEGREES[scaleName]) return BLUES_DEGREES[scaleName];
   const intervals = SCALES[scaleName];
-  if (!intervals) return MODE_DEGREES["Natural Minor"];
+  if (!intervals) return MODE_DEGREES["minor"];
 
   if (intervals.length === 7) {
     return buildDegreesFromIntervals(intervals);
   }
 
-  if (intervals.includes(4)) return MODE_DEGREES["Major"];
-  return MODE_DEGREES["Natural Minor"];
+  if (intervals.includes(4)) return MODE_DEGREES["major"];
+  return MODE_DEGREES["minor"];
 }
 
 /**
@@ -301,7 +322,7 @@ function extractTriadQuality(chordName: string, tonicNote: string): string {
 export function _validateDiatonicQualitiesAgainstTonal(
   scaleName: string,
 ): boolean {
-  if (scaleName === "Major") {
+  if (scaleName === "major") {
     const key = Key.majorKey("C");
     const expectedTriadQualities = ["M", "m", "m", "M", "M", "m", "dim"];
     return key.triads.every(
@@ -309,7 +330,7 @@ export function _validateDiatonicQualitiesAgainstTonal(
         extractTriadQuality(triad, key.scale[i]) === expectedTriadQualities[i],
     );
   }
-  if (scaleName === "Natural Minor") {
+  if (scaleName === "minor") {
     const key = Key.minorKey("A");
     const expectedTriadQualities = ["m", "dim", "M", "m", "m", "M", "M"];
     return key.natural.triads.every(

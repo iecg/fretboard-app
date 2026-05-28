@@ -1,13 +1,13 @@
-import { startTransition } from "react";
+import { startTransition, useMemo } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Info } from "lucide-react";
 import clsx from "clsx";
-import { ArrowDown, ArrowUp, CopyPlus, Plus, Trash2 } from "lucide-react";
+import { SCALE_FAMILIES, NOTES, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
-  BEATS_PER_BAR_OPTIONS,
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
   MIN_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
-  formatProgressionDurationLabel,
   getAvailableProgressionPresets,
 } from "../../progressions/progressionDomain";
 import { generateCommonProgressions } from "../../progressions/progressionGeneration";
@@ -18,14 +18,53 @@ import type { ProgressionPresetCategory } from "../../progressions/progressionDo
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
-import { PropGrid, Prop, GroupHeader } from "../Inspector/InspectorGrid";
-import { DegreeSelect } from "../shared/DegreeSelect";
-import { ChordQualitySelect } from "../shared/ChordQualitySelect";
+import { PropGrid, Prop } from "../Inspector/InspectorGrid";
+import { InspectorCard } from "../Inspector/InspectorCard";
+import { DegreeGrid } from "../shared/DegreeGrid";
+import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
 import { BackingTrackControls } from "./BackingTrackControls";
+import { buildQualitySelectGroups } from "./qualityGroups";
 import shared from "../shared/shared.module.css";
-import { CHORD_QUALITY_DIATONIC_VALUE } from "../shared/chordControlOptions";
-import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
+import { CUSTOM_PRESET_ID, progressionPlayingAtom, updateProgressionStepRootAtom } from "../../store/progressionAtoms";
 import styles from "./SongControls.module.css";
+
+// Look up a scale family by id; fail loudly at module init if the catalog id
+// drifts. Prevents silent empty optgroups if `theoryCatalog.ts` is renamed.
+function requireFamily(id: ScaleFamilyId): ScaleFamily {
+  const family = SCALE_FAMILIES.find((f) => f.id === id);
+  if (!family) {
+    throw new Error(`theoryCatalog: scale family '${id}' not found`);
+  }
+  return family;
+}
+
+const majorFamily = requireFamily("major");
+const pentatonicFamily = requireFamily("pentatonic");
+const bluesFamily = requireFamily("blues");
+const harmonicMinorFamily = requireFamily("harmonic-minor");
+const melodicMinorFamily = requireFamily("melodic-minor");
+
+function familyOptions(family: ScaleFamily) {
+  return family.members.map((m) => ({
+    value: m.scaleName,
+    label: m.displayLabel,
+  }));
+}
+
+function formatProgressionHelp(text: string, strongClass: string) {
+  const parts = text.split(/(voicing|lens|lente)/i);
+  return parts.map((part, index) => {
+    const isMatch = /^(voicing|lens|lente)$/i.test(part);
+    if (isMatch) {
+      return (
+        <strong key={index} className={strongClass}>
+          {part}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
 
 const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   "pop-rock": "Pop / Rock",
@@ -38,7 +77,48 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
 
 export function SongControls() {
   const { t } = useTranslation();
-  const { scaleName, rootNote } = useScaleState();
+  const {
+    scaleName,
+    rootNote,
+    setRootNote,
+    setScaleName,
+    preferFlats,
+  } = useScaleState();
+
+  const handleRootNote = (note: string) => {
+    startTransition(() => {
+      setRootNote(note);
+    });
+  };
+
+  const handleScaleName = (name: string) => {
+    startTransition(() => {
+      setScaleName(name);
+    });
+  };
+
+  const scaleGroups: LabeledSelectGroup[] = useMemo(
+    () => [
+      { groupLabel: t("inspector.scaleGroupMajorModes"), options: familyOptions(majorFamily) },
+      { groupLabel: t("inspector.scaleGroupPentatonics"), options: familyOptions(pentatonicFamily) },
+      { groupLabel: t("inspector.scaleGroupBlues"), options: familyOptions(bluesFamily) },
+      { groupLabel: t("inspector.scaleGroupHarmonicMinor"), options: familyOptions(harmonicMinorFamily) },
+      { groupLabel: t("inspector.scaleGroupMelodicMinor"), options: familyOptions(melodicMinorFamily) },
+    ],
+    [t],
+  );
+
+  const qualityGroups: LabeledSelectGroup[] = useMemo(
+    () =>
+      buildQualitySelectGroups({
+        triads: t("controls.qualityGroupTriads"),
+        sus: t("controls.qualityGroupSus"),
+        sixths: t("controls.qualityGroupSixths"),
+        sevenths: t("controls.qualityGroupSevenths"),
+      }),
+    [t],
+  );
+
   const {
     progressionSteps,
     resolvedProgressionSteps,
@@ -46,7 +126,6 @@ export function SongControls() {
     activeResolvedProgressionStep,
     loadProgressionPreset,
     loadProgressionSteps,
-    setActiveProgressionStepIndex,
     addProgressionStep,
     duplicateProgressionStep,
     removeProgressionStep,
@@ -54,13 +133,14 @@ export function SongControls() {
     updateProgressionStepDegree,
     updateProgressionStepDuration,
     updateProgressionStepQuality,
-    beatsPerBar,
-    setBeatsPerBar,
     progressionTempoBpm,
     setProgressionTempoBpm,
     currentProgressionPresetId,
-    totalProgressionBars,
+    setActiveProgressionStepIndex,
   } = useProgressionState();
+
+  const updateProgressionStepRoot = useSetAtom(updateProgressionStepRootAtom);
+  const editsLocked = useAtomValue(progressionPlayingAtom);
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
   const availablePresets = getAvailableProgressionPresets(scaleName);
@@ -106,101 +186,139 @@ export function SongControls() {
     }
     startTransition(() => loadProgressionPreset(id));
   };
-  const qualityValue = activeStep?.qualityOverride ?? CHORD_QUALITY_DIATONIC_VALUE;
-  // totalProgressionBars is fractional (beats / beatsPerBar); round up to whole
-  // bars for the read-only Length readout and clamp to a 1-bar minimum.
-  const lengthLabel = formatProgressionDurationLabel({
-    value: Math.ceil(Math.max(1, totalProgressionBars)),
-    unit: "bar",
-  });
-
   return (
-    <PropGrid columns={6}>
-      {/* ── METER ────────────────────────────────────────────────────────── */}
-      {/* One uniform 6-column row: Beats/Bar · Tempo · Length · Preset. */}
-      <GroupHeader>{t("inspector.groupMeter")}</GroupHeader>
-      <Prop label={t("inspector.meterBeats")} span={1}>
-        <StepperControl
-          label="Beats per bar"
-          hideLabel
-          value={beatsPerBar}
-          min={BEATS_PER_BAR_OPTIONS[0]}
-          max={BEATS_PER_BAR_OPTIONS[BEATS_PER_BAR_OPTIONS.length - 1]}
-          step={1}
-          onChange={(next) => {
-            // Cycle through the allowed set directionally
-            const current = beatsPerBar;
-            const idx = BEATS_PER_BAR_OPTIONS.indexOf(current as 3 | 4 | 6 | 8);
-            const dir = next > current ? 1 : -1;
-            const nextIdx = Math.max(0, Math.min(BEATS_PER_BAR_OPTIONS.length - 1, idx + dir));
-            setBeatsPerBar(BEATS_PER_BAR_OPTIONS[nextIdx]);
-          }}
-        />
-      </Prop>
-      <Prop label={t("inspector.meterTempo")} span={1}>
-        <StepperControl
-          label={t("inspector.meterTempo")}
-          hideLabel
-          value={progressionTempoBpm}
-          min={MIN_PROGRESSION_TEMPO_BPM}
-          max={MAX_PROGRESSION_TEMPO_BPM}
-          step={5}
-          formatValue={(bpm) => `${bpm} BPM`}
-          onChange={setProgressionTempoBpm}
-        />
-      </Prop>
-      <Prop label={t("inspector.meterLength")} span={1}>
-        <span className={styles["length-readout"]}>{lengthLabel}</span>
-      </Prop>
-      <Prop label={t("inspector.meterPreset")} span={3}>
-        <LabeledSelect
-          label="Preset"
-          hideLabel
-          value={currentProgressionPresetId}
-          groups={presetGroups}
-          onChange={handlePresetChange}
-        />
-      </Prop>
+    <div className={styles.sections}>
+      {/* ── KEY + TIME flex composer ──────────────────────────────────────── */}
+      <div className={styles.groupRow}>
+        <div className={styles.groupColumn}>
+          <InspectorCard
+            name={t("inspector.groupKey")}
+            description={t("inspector.groupKeyDesc")}
+            labelledById="song-key-heading"
+            locked={editsLocked}
+            lockedHint={t("controls.lockedHint")}
+          >
+            <PropGrid columns={5}>
+              <Prop label={t("controls.root")} span={2}>
+                <LabeledSelect
+                  label={t("controls.root")}
+                  hideLabel
+                  width="fill"
+                  value={rootNote}
+                  onChange={handleRootNote}
+                  options={NOTES.map((note) => ({
+                    value: note,
+                    label: getNoteDisplay(note, rootNote, preferFlats),
+                  }))}
+                />
+              </Prop>
+              <Prop label={t("inspector.scaleLabel")} span={3}>
+                <LabeledSelect
+                  label={t("inspector.scaleLabel")}
+                  value={scaleName}
+                  groups={scaleGroups}
+                  onChange={handleScaleName}
+                  hideLabel
+                />
+              </Prop>
+            </PropGrid>
+          </InspectorCard>
+        </div>
+        <div className={styles.groupColumn}>
+          <InspectorCard
+            name={t("inspector.groupTime")}
+            description={t("inspector.groupTimeDesc")}
+            labelledById="song-time-heading"
+          >
+            <PropGrid columns={5}>
+              <Prop label={t("inspector.timeSignature")} span={1}>
+                <TimeSignaturePicker />
+              </Prop>
+              <Prop label={t("inspector.meterTempo")} span={4}>
+                <StepperControl
+                  label={t("inspector.meterTempo")}
+                  hideLabel
+                  value={progressionTempoBpm}
+                  min={MIN_PROGRESSION_TEMPO_BPM}
+                  max={MAX_PROGRESSION_TEMPO_BPM}
+                  step={5}
+                  formatValue={(bpm) => `${bpm} BPM`}
+                  onChange={setProgressionTempoBpm}
+                  width="fill"
+                />
+              </Prop>
+            </PropGrid>
+          </InspectorCard>
+        </div>
+      </div>
 
-      {/* ── CHORDS ───────────────────────────────────────────────────────── */}
-      <GroupHeader
-        right={
-          <div className={styles["step-actions"]}>
-            <button type="button" className={shared["control-button"]} onClick={() => addProgressionStep()} aria-label="Add chord">
+      {/* ── PROGRESSION ──────────────────────────────────────────────────── */}
+      <InspectorCard
+        name={t("inspector.groupProgression")}
+        description={t("inspector.groupProgressionDesc")}
+        labelledById="song-progression-heading"
+        locked={editsLocked}
+        lockedHint={t("controls.lockedHint")}
+        headClassName={styles["progression-card-head"]}
+        actions={
+          <div className={styles["progression-toolbar"]}>
+            <LabeledSelect
+              label={t("inspector.progressionPreset")}
+              hideLabel
+              value={currentProgressionPresetId}
+              groups={presetGroups}
+              onChange={handlePresetChange}
+            />
+
+            <div className={styles["toolbar-divider"]} />
+
+            <button
+              type="button"
+              className={styles["toolbar-button"]}
+              onClick={() => addProgressionStep()}
+              aria-label="Add chord"
+            >
               <Plus size={16} aria-hidden="true" />
               <span>Add</span>
             </button>
+
+            <div className={styles["toolbar-divider"]} />
+
+            <div className={styles["button-group"]}>
+              <button
+                type="button"
+                className={styles["grouped-button"]}
+                onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
+                disabled={!activeStep || activeProgressionStepIndex === 0}
+                aria-label="Move chord up"
+              >
+                <ArrowUp size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className={styles["grouped-button"]}
+                onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
+                disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
+                aria-label="Move chord down"
+              >
+                <ArrowDown size={16} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className={styles["grouped-button"]}
+                onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
+                disabled={!activeStep}
+                aria-label="Duplicate chord"
+              >
+                <Copy size={16} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className={styles["toolbar-divider"]} />
+
             <button
               type="button"
-              className={shared["control-button"]}
-              onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
-              disabled={!activeStep || activeProgressionStepIndex === 0}
-              aria-label="Move chord up"
-            >
-              <ArrowUp size={16} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={shared["control-button"]}
-              onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
-              disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
-              aria-label="Move chord down"
-            >
-              <ArrowDown size={16} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className={shared["control-button"]}
-              onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
-              disabled={!activeStep}
-              aria-label="Duplicate chord"
-            >
-              <CopyPlus size={16} aria-hidden="true" />
-              <span>Duplicate</span>
-            </button>
-            <button
-              type="button"
-              className={shared["control-button"]}
+              className={styles["delete-button"]}
               onClick={() => activeStep && removeProgressionStep(activeStep.id)}
               disabled={!activeStep}
               aria-label="Remove chord"
@@ -210,116 +328,143 @@ export function SongControls() {
           </div>
         }
       >
-        {t("inspector.groupChords")}
-      </GroupHeader>
-      <Prop span={3}>
-        <div className={styles["chords-cell"]}>
-          {resolvedProgressionSteps.length === 0 ? (
-            <p className={shared["field-hint"]}>Add a chord or load a preset.</p>
-          ) : (
-            <ol className={styles["step-list"]}>
-              {resolvedProgressionSteps.map((step, index) => (
-                <li key={step.id}>
-                  <button
-                    type="button"
-                    className={clsx(styles["step-row"], index === activeProgressionStepIndex && styles["step-row--active"])}
-                    data-unavailable={step.unavailable ? "true" : undefined}
-                    onClick={() => setActiveProgressionStepIndex(index)}
-                  >
-                    <span className={styles["step-index"]}>{index + 1}</span>
-                    <span className={styles["step-degree"]}>{step.degree}</span>
-                    <span className={styles["step-chord"]}>
-                      {step.resolvedChordLabel ?? step.unavailableReason}
+        <PropGrid columns={6}>
+          <Prop span={6}>
+            {activeStep ? (
+              <div className={styles["editor-cell"]}>
+                <header className={styles["editor-header"]}>
+                  <div className={styles["chord-identity"]}>
+                    <span className={styles["active-degree-badge"]} aria-hidden="true">
+                      {activeStep.degree}
                     </span>
-                    <span className={styles["step-duration"]}>
-                      {formatProgressionDurationLabel(step.duration)}
+                    <span className={styles["active-chord-label"]}>
+                      {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
                     </span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
-      </Prop>
-      <Prop span={3}>
-        {activeStep ? (
-          <div className={styles["editor-cell"]}>
-            <span className={styles["editor-selected"]}>
-              Selected — {activeStep.degree} ·{" "}
-              {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
-            </span>
-            <div className={shared["control-section"]}>
-              <span className={styles["field-label"]}>Degree</span>
-              <DegreeSelect
-                scaleName={scaleName}
-                label="Progression degree"
-                value={activeStep.degree}
-                onChange={(degree) => updateProgressionStepDegree({ id: activeStep.id, degree })}
-                activeDegree={activeStep.degree}
-                qualityOverridden={qualityValue !== CHORD_QUALITY_DIATONIC_VALUE}
+                    <Info size={14} className={styles["info-icon"]} aria-hidden="true" />
+                  </div>
+
+                  <span className={shared["sr-only"]}>
+                    {`${t("controls.chordPositionLabel")} ${activeProgressionStepIndex + 1} / ${progressionSteps.length}`}
+                  </span>
+
+                  <div className={styles["pip-nav-container"]}>
+                    <span className={styles["chords-label"]}>CHORDS</span>
+                    <div className={styles["pip-row"]} role="tablist" aria-label="Progression navigation">
+                      {resolvedProgressionSteps.map((step, idx) => {
+                        const isActive = idx === activeProgressionStepIndex;
+                        return (
+                          <button
+                            key={step.id}
+                            type="button"
+                            className={clsx(styles["pip"], isActive && styles["active-pip"])}
+                            onClick={() => setActiveProgressionStepIndex(idx)}
+                            aria-label={`Jump to step ${idx + 1}, ${step.degree}`}
+                            aria-selected={isActive}
+                            role="tab"
+                          >
+                            {step.degree}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </header>
+                <div className={shared["control-section"]}>
+                  <DegreeGrid
+                    scaleName={scaleName}
+                tonicNote={rootNote}
+                selectedNote={activeResolvedProgressionStep?.root ?? rootNote}
+                onSelectInKey={(_note, degree) => {
+                  updateProgressionStepRoot({ id: activeStep.id, manualRoot: null });
+                  updateProgressionStepDegree({ id: activeStep.id, degree });
+                }}
+                onSelectBorrowed={(note) => {
+                  updateProgressionStepRoot({ id: activeStep.id, manualRoot: note });
+                  updateProgressionStepQuality({ id: activeStep.id, qualityOverride: null });
+                }}
+                preferFlats={preferFlats}
               />
             </div>
-            <div className={shared["control-section"]}>
-              <span className={styles["field-label"]}>Duration</span>
-              <div className={styles["duration-row"]}>
-                <StepperControl
-                  label="Duration value"
+            <div className={styles["editor-grid"]}>
+              <div className={shared["control-section"]}>
+                <span className={styles["field-label"]}>Quality</span>
+                <LabeledSelect
+                  label={t("controls.quality")}
                   hideLabel
-                  value={activeStep.duration.value}
-                  min={MIN_PROGRESSION_STEP_DURATION_VALUE}
-                  max={MAX_PROGRESSION_STEP_DURATION_VALUE}
-                  step={1}
-                  onChange={(next) =>
-                    updateProgressionStepDuration({
+                  width="fixed"
+                  widthValue="9rem"
+                  value={
+                    activeStep?.qualityOverride
+                    ?? activeResolvedProgressionStep?.quality
+                    ?? activeResolvedProgressionStep?.diatonicQuality
+                    ?? ""
+                  }
+                  onChange={(quality) =>
+                    updateProgressionStepQuality({
                       id: activeStep.id,
-                      duration: { ...activeStep.duration, value: next },
+                      qualityOverride: quality,
                     })
                   }
+                  groups={qualityGroups}
                 />
-                <div className={styles["duration-unit"]}>
-                  <ToggleBar
-                    label="Duration unit"
-                    value={activeStep.duration.unit}
-                    options={[
-                      { value: "beat", label: "Beat" },
-                      { value: "bar", label: "Bar" },
-                    ]}
-                    onChange={(unit) =>
+              </div>
+              <div className={shared["control-section"]}>
+                <span className={styles["field-label"]}>Duration</span>
+                <div className={styles["duration-row"]}>
+                  <StepperControl
+                    label="Duration value"
+                    hideLabel
+                    value={activeStep.duration.value}
+                    min={MIN_PROGRESSION_STEP_DURATION_VALUE}
+                    max={MAX_PROGRESSION_STEP_DURATION_VALUE}
+                    step={1}
+                    onChange={(next) =>
                       updateProgressionStepDuration({
                         id: activeStep.id,
-                        duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
+                        duration: { ...activeStep.duration, value: next },
                       })
                     }
                   />
+                  <div className={styles["duration-unit"]}>
+                    <ToggleBar
+                      label="Duration unit"
+                      value={activeStep.duration.unit}
+                      options={[
+                        { value: "beat", label: "Beat" },
+                        { value: "bar", label: "Bar" },
+                      ]}
+                      onChange={(unit) =>
+                        updateProgressionStepDuration({
+                          id: activeStep.id,
+                          duration: { ...activeStep.duration, unit: unit as "beat" | "bar" },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={shared["control-section"]}>
-              <span className={styles["field-label"]}>Quality</span>
-              <ChordQualitySelect
-                label="Chord quality"
-                value={qualityValue === CHORD_QUALITY_DIATONIC_VALUE ? "" : qualityValue}
-                onChange={(quality) =>
-                  updateProgressionStepQuality({
-                    id: activeStep.id,
-                    qualityOverride: quality === qualityValue ? null : quality,
-                  })
-                }
-              />
-              <p className={shared["field-hint"]}>
-                {activeResolvedProgressionStep?.qualityOverrideApplied
-                  ? "Custom quality on a degree-derived root."
-                  : "No quality selected uses the diatonic chord from the active scale."}
+              <p className={styles.progressionHelp} data-testid="progression-help-text">
+                {formatProgressionHelp(t("controls.voicingLensCrossRef"), styles.progressionHelpStrong)}
               </p>
             </div>
           </div>
         ) : (
           <p className={shared["field-hint"]}>Select a chord to edit its degree, duration, and quality.</p>
         )}
-      </Prop>
+          </Prop>
+        </PropGrid>
+      </InspectorCard>
 
       {/* ── BACKING TRACK ────────────────────────────────────────────────── */}
-      <BackingTrackControls />
-    </PropGrid>
+      <InspectorCard
+        name={t("inspector.groupBackingTrack")}
+        description={t("inspector.groupBackingTrackDesc")}
+        labelledById="song-backing-heading"
+      >
+        <PropGrid columns={6}>
+          <BackingTrackControls hideHeader />
+        </PropGrid>
+      </InspectorCard>
+    </div>
   );
 }

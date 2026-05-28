@@ -11,8 +11,6 @@ import {
 import {
   chordOverlayHiddenAtom,
   linkChordRootAtom,
-  chordFretSpreadAtom,
-  practiceLensAtom,
 } from "./chordOverlayAtoms";
 import {
   fingeringPatternAtom,
@@ -52,10 +50,6 @@ export const setFingeringPatternAtom = atom(
 );
 
 export const setRootNoteAtom = atom(null, (_get, set, note: string) => {
-  // Phase 2.5: the chord identity is owned by the active progression step,
-  // which auto-resolves its diatonic root against the new scale root. No
-  // explicit chord-sync is needed here — `manualRoot` is transposed by the
-  // root-change listener in `progressionAtoms.ts`.
   set(rootNoteAtom, note);
 });
 
@@ -94,8 +88,6 @@ export const resetAtom = atom(null, (_get, set) => {
   set(scaleVisibleAtom, RESET);
   set(chordOverlayHiddenAtom, RESET);
   set(linkChordRootAtom, RESET);
-  set(chordFretSpreadAtom, RESET);
-  set(practiceLensAtom, RESET);
   set(resetProgressionAtomsAtom);
   set(fingeringPatternAtom, RESET);
   set(cagedShapesAtom, RESET);

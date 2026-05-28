@@ -50,3 +50,7 @@ docs/*
 
 .superpowers/
 .pnpm-store/
+.antigravity
+.antigravitycli
+
+.kiro/

@@ -12,9 +12,9 @@ export { findMainShape, getShapeCenterFret, isShapeOutOfView, hasWrappedNotes } 
 export { get3NPSCoordinates } from "./threeNPS";
 
 export type {
-  Voicing, VoicingNote, VoicingType, VoicingInversion,
+  Voicing, VoicingNote, VoicingType,
   GenerateVoicingsParams,
 } from "./voicings";
 export {
-  generateVoicings, inversionBassPitchClass, openStringMidi,
+  generateVoicings, openStringMidi,
 } from "./voicings";

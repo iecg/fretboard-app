@@ -9,7 +9,10 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
-import { synth } from "./core/audio";
+import {
+  resumeGuitarAudio,
+  setGuitarMutePreference,
+} from "./core/lazyGuitarAudio";
 import { get3NPSCoordinates, STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
@@ -36,31 +39,37 @@ vi.mock("./components/Fretboard/Fretboard", async () => {
   };
 });
 
-vi.mock("./components/CircleOfFifths/CircleOfFifths", async () => {
+// FingeringPatternControls is rendered in the Overlay tab. Mock it so the
+// component-under-test exposes a root-note setter the suite can fire.
+vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async () => {
   const { useAtomValue, useSetAtom } = await import("jotai");
   const { rootNoteAtom } = await import("./store/scaleAtoms");
   const { setRootNoteAtom } = await import("./store/actions");
   return {
-    CircleOfFifths: () => {
+    FingeringPatternControls: () => {
       const rootNote = useAtomValue(rootNoteAtom);
       const setRootNote = useSetAtom(setRootNoteAtom);
       return (
-        <button data-testid="circle-of-fifths" onClick={() => setRootNote("G")}>
-          CoF: {rootNote}
-        </button>
+        <>
+          <div data-testid="fingering-controls">Fingering Controls</div>
+          {/* Test-only root-note setter for assertions below */}
+          <button data-testid="set-root-note" onClick={() => setRootNote("G")}>
+            Set Root: {rootNote}
+          </button>
+        </>
       );
     },
   };
 });
 
-vi.mock("./core/audio", () => ({
-  synth: {
-    setMute: vi.fn(),
-    init: vi.fn(),
-    playNote: vi.fn(),
-    resume: vi.fn(),
-  },
+vi.mock("./core/lazyGuitarAudio", () => ({
+  setGuitarMutePreference: vi.fn(),
+  setGuitarAudioErrorHandler: vi.fn(),
+  resumeGuitarAudio: vi.fn(),
+  playGuitarNote: vi.fn(),
 }));
+
+const mockResumeGuitarAudio = vi.mocked(resumeGuitarAudio);
 
 const setViewport = (width: number, height: number) => {
   Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: width });
@@ -68,8 +77,10 @@ const setViewport = (width: number, height: number) => {
 };
 
 // Inspector tab bodies (Radix Tabs) only mount when active; tests that exercise
-// Scale/Chord tab controls must select the tab first.
-const selectInspectorTab = async (name: "Scale" | "Chord" | "Song") => {
+// Overlay/Song tab controls must select the tab first.
+// v2.0 IA: Scale and Chord groups both live in the "Overlay" tab (renamed from
+// "View" in Plan F to better reflect that it controls fretboard overlays).
+const selectInspectorTab = async (name: "Overlay" | "Song") => {
   await userEvent.click(await screen.findByRole("tab", { name }));
 };
 
@@ -89,16 +100,16 @@ describe("App", () => {
 
     it("loads persisted root and scale from localStorage", async () => {
       localStorage.setItem(k("rootNote"), "G");
-      localStorage.setItem(k("scaleName"), "Minor");
+      localStorage.setItem(k("scaleName.v2"), "minor");
       render(<App />);
-      await selectInspectorTab("Scale");
-      expect(await screen.findByTestId("circle-of-fifths")).toHaveTextContent("CoF: G");
+      // The fretboard mock reflects rootNote directly; no tab selection needed.
+      expect(await screen.findByTestId("fretboard")).toHaveTextContent("Fretboard: G");
     });
 
     it("seeds isMuted in storage and forwards initial mute state to synth", () => {
       localStorage.setItem(k("isMuted"), "true");
       render(<App />);
-      expect(synth.setMute).toHaveBeenCalledWith(true);
+      expect(setGuitarMutePreference).toHaveBeenCalledWith(true);
       expect(localStorage.getItem(k("isMuted"))).toBe("true");
     });
   });
@@ -106,8 +117,8 @@ describe("App", () => {
   describe("root note changes (Circle of Fifths -> Fretboard)", () => {
     it("propagates a new root note to the fretboard", async () => {
       render(<App />);
-      await selectInspectorTab("Scale");
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      await selectInspectorTab("Overlay");
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(screen.getByTestId("fretboard")).toHaveTextContent("Fretboard: G");
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
@@ -118,14 +129,14 @@ describe("App", () => {
       // Seed a single-step progression with manualRoot=C; changing the scale
       // root to G must transpose manualRoot to G via the root-change listener.
       const steps = [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Major Triad", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: "C" },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("Scale");
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      await selectInspectorTab("Overlay");
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
-        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string }>;
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps.v2")) ?? "[]") as Array<{ manualRoot: string }>;
         expect(persisted[0]?.manualRoot).toBe("G");
       });
     });
@@ -136,13 +147,13 @@ describe("App", () => {
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("Scale");
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      await selectInspectorTab("Overlay");
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
         expect(localStorage.getItem(k("rootNote"))).toBe("G");
-        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ manualRoot: string | null }>;
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps.v2")) ?? "[]") as Array<{ manualRoot: string | null }>;
         expect(persisted[0]?.manualRoot).toBeNull();
       });
     });
@@ -155,7 +166,7 @@ describe("App", () => {
       fireEvent.click(muteBtn);
       await waitFor(() => {
         expect(localStorage.getItem(k("isMuted"))).toBe("true");
-        expect(synth.setMute).toHaveBeenCalled();
+        expect(setGuitarMutePreference).toHaveBeenCalled();
       });
     });
 
@@ -169,54 +180,101 @@ describe("App", () => {
         expect(document.documentElement.getAttribute("data-theme")).toBe("modern-light");
       });
     });
+
+    it("keeps the global gesture listeners installed until resume succeeds", async () => {
+      mockResumeGuitarAudio.mockResolvedValue();
+
+      render(<App />);
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+      });
+
+      // After first success, listeners should be removed.
+      fireEvent.click(window);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps the global gesture listeners installed when resume fails", async () => {
+      mockResumeGuitarAudio
+        .mockRejectedValueOnce(new Error("resume failed"))
+        .mockResolvedValueOnce(undefined);
+
+      render(<App />);
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(1);
+      });
+
+      fireEvent.click(window);
+      await waitFor(() => {
+        expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+      });
+
+      fireEvent.click(window);
+      expect(mockResumeGuitarAudio).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe("chord overlay (quality override)", () => {
-    it("clicking a Chord Type option writes through to the active progression step", async () => {
+    it("clicking a Chord quality option in the Song tab writes through to the active progression step", async () => {
+      const user = userEvent.setup();
       const steps = [
         { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       render(<App />);
-      await selectInspectorTab("Chord");
-      const chordTypeGroup = await screen.findByRole("group", { name: "Chord Type" });
-      fireEvent.click(within(chordTypeGroup).getByRole("button", { name: "min" }));
+      // v2.0: Quality override is set in the Song tab's editor pane via a
+      // LabeledSelect combobox (label="Quality"). Click the step to ensure the
+      // editor pane is open, then select "min" from the combobox.
+      await selectInspectorTab("Song");
+      // Click step 1 to activate the editor pane.
+      const stepBtn = await screen.findByRole("button", { name: /step 1/i });
+      await user.click(stepBtn);
+      // The Quality combobox is labeled "Quality" (t("controls.quality")).
+      const qualityCombobox = await screen.findByRole("combobox", { name: /quality/i });
+      await user.click(qualityCombobox);
+      // Select "min" (Minor Triad) from the dropdown.
+      const minOption = await screen.findByRole("option", { name: /^min$/i });
+      await user.click(minOption);
       await waitFor(() => {
-        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps")) ?? "[]") as Array<{ qualityOverride: string | null }>;
-        expect(persisted[0]?.qualityOverride).toBe("Minor Triad");
+        const persisted = JSON.parse(localStorage.getItem(k("progressionSteps.v2")) ?? "[]") as Array<{ qualityOverride: string | null }>;
+        expect(persisted[0]?.qualityOverride).toBe("m");
       });
     });
   });
 
   describe("accidental mode is session-only", () => {
-    it("never writes useFlats or accidentalMode to localStorage", async () => {
+    it("never writes preferFlats or accidentalMode to localStorage", async () => {
       render(<App />);
       fireEvent.click(screen.getByLabelText("Open settings"));
       await screen.findByText("Accidentals");
       fireEvent.click(screen.getByRole("button", { name: "♭" }));
-      expect(localStorage.getItem("useFlats")).toBeNull();
+      expect(localStorage.getItem("preferFlats")).toBeNull();
       expect(localStorage.getItem("accidentalMode")).toBeNull();
     });
   });
 
   describe("scale-derived state reaches the fretboard", () => {
     it.each([
-      ["Minor Blues", "F#"],
-      ["Major Blues", "D#"],
+      ["minor blues", "F#"],
+      ["major blues", "D#"],
     ])("%s scale passes blue note %s to the fretboard", (scaleName, blueNote) => {
       localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), scaleName);
+      localStorage.setItem(k("scaleName.v2"), scaleName);
       render(<App />);
       expect(screen.getByTestId("fretboard")).toHaveAttribute("data-color-notes", blueNote);
     });
 
     it("uses 3NPS coordinates when a position is selected", () => {
       localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major");
+      localStorage.setItem(k("scaleName.v2"), "major");
       localStorage.setItem(k("fingeringPattern"), "3nps");
       localStorage.setItem(k("npsPosition"), "2");
       render(<App />);
-      const expectedCount = get3NPSCoordinates("C", "Major", STANDARD_TUNING, 24, 2).coordinates.length;
+      const expectedCount = get3NPSCoordinates("C", "major", STANDARD_TUNING, 24, 2).coordinates.length;
       expect(screen.getByTestId("fretboard")).toHaveTextContent(`Fretboard: C - ${expectedCount} notes`);
     });
   });
@@ -238,27 +296,27 @@ describe("App", () => {
     function setupHiddenPracticeBar() {
       // Dominant 7th over C Major has Bb outside the scale, so the practice bar renders.
       localStorage.setItem(k("rootNote"), "C");
-      localStorage.setItem(k("scaleName"), "Major");
+      localStorage.setItem(k("scaleName.v2"), "major");
       const steps = [
-        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "Dominant 7th", manualRoot: "C" },
+        { id: "x", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: "7", manualRoot: "C" },
       ];
-      localStorage.setItem(k("progressionSteps"), JSON.stringify(steps));
+      localStorage.setItem(k("progressionSteps.v2"), JSON.stringify(steps));
       localStorage.setItem(k("practiceLens"), "tones");
       localStorage.setItem(k("chordOverlayHidden"), "true");
     }
 
-    it("resets overlay visibility when rootNote changes via Circle of Fifths", async () => {
+    it("preserves overlay visibility when rootNote changes via Circle of Fifths (sticky)", async () => {
       setupHiddenPracticeBar();
       render(<App />);
       // Confirm hidden persists on mount
       await waitFor(() => {
         expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
       });
-      // Changing rootNote via CoF should reset chordOverlayHidden to false
-      await userEvent.click(await screen.findByRole("tab", { name: "Scale" }));
-      fireEvent.click(await screen.findByTestId("circle-of-fifths"));
+      // Root note change no longer resets chordOverlayHidden — user preference is sticky.
+      await userEvent.click(await screen.findByRole("tab", { name: "Overlay" }));
+      fireEvent.click(await screen.findByTestId("set-root-note"));
       await waitFor(() => {
-        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("false");
+        expect(localStorage.getItem(k("chordOverlayHidden"))).toBe("true");
       });
     });
 
