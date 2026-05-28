@@ -27,6 +27,7 @@ const BASE_PROPS = {
   showChordConnectors: true,
   connectorMotionMode: "none" as const,
   clipPathUrl: "url(#test-clip)",
+  pass: "below" as const,
 };
 
 // Capture AnimatePresence modes observed during render (scoped to these tests)
@@ -72,16 +73,27 @@ describe("FretboardConnectorLayer", () => {
       makePolyline("3,10|4,10|5,10", "G"),
     ];
 
-    const { container } = renderInSvg(
-      <FretboardConnectorLayer {...BASE_PROPS} chordPolylines={polylines} />,
+    // pass="below": halo + fill per voicing (2 layers × 3 voicings = 6 paths)
+    const { container: belowContainer } = renderInSvg(
+      <FretboardConnectorLayer {...BASE_PROPS} pass="below" chordPolylines={polylines} />,
     );
+    const belowPaths = belowContainer.querySelectorAll("path");
+    expect(belowPaths.length).toBe(6);
+    for (const path of belowPaths) {
+      expect(path.getAttribute("data-layer")).toMatch(/^(halo|fill)$/);
+      expect(path.classList.contains("chord-connector--primary")).toBe(false);
+      expect(path.classList.contains("chord-connector--secondary")).toBe(false);
+      expect(path.getAttribute("data-voicing-role")).toBeNull();
+    }
 
-    // 3 voicings × 3 layers (halo, fill, outline) = 9 paths total.
-    const paths = container.querySelectorAll("path");
-    expect(paths.length).toBe(9);
-
-    // No primary/secondary class assignment, no data-voicing-role attribute.
-    for (const path of paths) {
+    // pass="above": outline only per voicing (1 layer × 3 voicings = 3 paths)
+    const { container: aboveContainer } = renderInSvg(
+      <FretboardConnectorLayer {...BASE_PROPS} pass="above" chordPolylines={polylines} />,
+    );
+    const abovePaths = aboveContainer.querySelectorAll("path");
+    expect(abovePaths.length).toBe(3);
+    for (const path of abovePaths) {
+      expect(path.getAttribute("data-layer")).toBe("outline");
       expect(path.classList.contains("chord-connector--primary")).toBe(false);
       expect(path.classList.contains("chord-connector--secondary")).toBe(false);
       expect(path.getAttribute("data-voicing-role")).toBeNull();

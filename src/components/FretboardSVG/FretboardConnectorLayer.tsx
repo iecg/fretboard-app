@@ -15,12 +15,14 @@ interface FretboardConnectorLayerProps {
   showChordConnectors: boolean;
   connectorMotionMode: FretboardMotionPolicy["connectorMode"];
   clipPathUrl: string;
+  pass: "below" | "above";
 }
 
 const renderStaticChordConnectorGroup = (
   chordPolylines: ChordConnectorVoicing[],
   connectorSource: "full-chord" | "generated",
   motionKey: string,
+  pass: "below" | "above",
 ) => (
   <g
     key={motionKey}
@@ -31,9 +33,9 @@ const renderStaticChordConnectorGroup = (
     aria-hidden="true"
     pointerEvents="none"
   >
-    {chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {chordPolylines.map((v) => renderChordPath(v, "fill"))}
-    {chordPolylines.map((v) => renderChordPath(v, "outline"))}
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill"))}
+    {pass === "above" && chordPolylines.map((v) => renderChordPath(v, "outline"))}
   </g>
 );
 
@@ -42,6 +44,7 @@ const renderAnimatedChordConnectorGroup = (
   connectorSource: "full-chord" | "generated",
   motionKey: string,
   skipInitial: boolean,
+  pass: "below" | "above",
 ) => (
   <motion.g
     key={motionKey}
@@ -56,9 +59,9 @@ const renderAnimatedChordConnectorGroup = (
     aria-hidden="true"
     pointerEvents="none"
   >
-    {chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {chordPolylines.map((v) => renderChordPath(v, "fill"))}
-    {chordPolylines.map((v) => renderChordPath(v, "outline"))}
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill"))}
+    {pass === "above" && chordPolylines.map((v) => renderChordPath(v, "outline"))}
   </motion.g>
 );
 
@@ -98,6 +101,7 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   showChordConnectors,
   connectorMotionMode,
   clipPathUrl,
+  pass,
 }: FretboardConnectorLayerProps) {
   const [prevMode, setPrevMode] = useState(connectorMotionMode);
   const skipInitial = prevMode === "none" && connectorMotionMode === "group";
@@ -107,7 +111,7 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   }, [connectorMotionMode]);
 
   const polylinesKey = chordPolylines.map((v) => v.voicingKey).sort().join(",");
-  const motionKey = `chord-connectors-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}-${polylinesKey}`;
+  const motionKey = `chord-connectors-${pass}-${connectorSource}-${chordRoot}-${chordTones?.join("-") ?? "none"}-${polylinesKey}`;
   return (
     <g
       className={styles["fretboard-overlays"]}
@@ -118,11 +122,11 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
       <AnimatePresence mode="sync">
         {showChordConnectors && chordPolylines.length > 0 && (
           connectorMotionMode === "group"
-            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey, skipInitial)
-            : renderStaticChordConnectorGroup(chordPolylines, connectorSource, motionKey)
+            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey, skipInitial, pass)
+            : renderStaticChordConnectorGroup(chordPolylines, connectorSource, motionKey, pass)
         )}
       </AnimatePresence>
-      {intervalPolylines.length > 0 && (
+      {pass === "below" && intervalPolylines.length > 0 && (
         <g
           className={styles["interval-connectors"]}
           aria-hidden="true"

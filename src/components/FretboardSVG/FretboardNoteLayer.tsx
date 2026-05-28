@@ -7,15 +7,6 @@ import styles from "./FretboardSVG.module.css";
 import type { NoteAnimationMode } from "./motionPolicy";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
-const CHORD_NOTE_CLASSES = new Set([
-  "chord-root",
-  "chord-tone",
-  "chord-tone-in-scale",
-  "chord-tone-outside-scale",
-  "chord-outside",
-  "note-diatonic-chord",
-]);
-
 const CAGED_SHAPE_CSS_VAR: Record<string, string> = {
   E: "var(--caged-e)",
   D: "var(--caged-d)",
@@ -38,7 +29,6 @@ interface FretboardNoteLayerProps {
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
-  filter?: "chord" | "non-chord";
   animationMode?: NoteAnimationMode;
 }
 
@@ -67,19 +57,11 @@ export const FretboardNoteLayer = memo(({
   displayFormat,
   degreeColorsEnabled,
   onNoteClick,
-  filter,
   animationMode = "css",
 }: FretboardNoteLayerProps) => {
-  const filteredNotes = filter
-    ? notes.filter(({ noteClass }) => {
-        const isChord = CHORD_NOTE_CLASSES.has(noteClass);
-        return filter === "chord" ? isChord : !isChord;
-      })
-    : notes;
-
   return (
     <g data-motion={animationMode}>
-      {filteredNotes.map(({
+      {notes.map(({
         stringIndex,
         fretIndex,
         noteName,

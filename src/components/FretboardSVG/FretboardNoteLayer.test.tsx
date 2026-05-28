@@ -199,25 +199,21 @@ describe("FretboardNoteLayer", () => {
     expect(Number(container.querySelector("circle")!.getAttribute("r"))).toBeCloseTo(expectedRadius);
   });
 
-  it.each<{ filter: "chord" | "non-chord"; third: NoteClass }>([
-    { filter: "chord", third: "chord-tone-in-scale" },
-    { filter: "non-chord", third: "scale-only" },
-  ])("filter='$filter' renders only its matching notes", ({ filter, third }) => {
+  it("renders all notes (no filter) — all notes are in a single layer", () => {
     const { container } = render(
       <svg>
         <FretboardNoteLayer
           notes={[
             makeNote("chord-root", { stringIndex: 0, fretIndex: 0 }),
             makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 150, cy: 30 }),
-            makeNote(third, { stringIndex: 2, fretIndex: 2, cx: 200, cy: 60 }),
+            makeNote("chord-tone-in-scale", { stringIndex: 2, fretIndex: 2, cx: 200, cy: 60 }),
           ]}
           noteBubblePx={40}
           displayFormat="notes"
-          filter={filter}
         />
       </svg>,
     );
-    expect(container.querySelectorAll("text").length).toBe(2);
+    expect(container.querySelectorAll("text").length).toBe(3);
   });
 
   it("marks note groups with CSS animation mode", () => {
