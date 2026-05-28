@@ -1,3 +1,4 @@
+import React from "react";
 import clsx from "clsx";
 import {
   AudioWaveform,
@@ -49,7 +50,9 @@ export function TransportBar() {
       return;
     }
 
-    setProgressionPlaying(true);
+    React.startTransition(() => {
+      setProgressionPlaying(true);
+    });
   };
 
   return (
