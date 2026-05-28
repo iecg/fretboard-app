@@ -228,7 +228,6 @@ export function buildStaticFretboardTopology({
         : effectiveSemantics
           ? classifyNoteFromSemantics(
               effectiveSemantics,
-              isChordInRange,
               isInActiveShape,
               hasChordOverlay,
               isHighlighted,
@@ -240,7 +239,6 @@ export function buildStaticFretboardTopology({
               isHighlighted,
               isChordTone,
               hasChordOverlay,
-              isChordInRange,
               isInActiveShape,
             );
 

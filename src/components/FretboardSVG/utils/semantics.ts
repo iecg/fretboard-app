@@ -127,7 +127,6 @@ export function classifyNote(
   isHighlighted: boolean,
   isChordTone: boolean,
   hasChordOverlay: boolean,
-  isChordInRange: boolean,
   isInActiveShape: boolean,
 ): string {
   if (!hasChordOverlay) {
@@ -141,14 +140,13 @@ export function classifyNote(
   if (isHighlighted && isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (isHighlighted && isColorNote && isInActiveShape) return "color-tone";
   if (isHighlighted && isInActiveShape) return "scale-only";
-  if (!isHighlighted && isChordTone && isChordInRange && isInActiveShape)
+  if (!isHighlighted && isChordTone && isInActiveShape)
     return "chord-tone-outside-scale";
   return "note-inactive";
 }
 
 export function classifyNoteFromSemantics(
   sem: NoteSemantics,
-  isChordInRange: boolean,
   isInActiveShape: boolean,
   hasChordOverlay: boolean,
   isHighlighted: boolean,
@@ -156,7 +154,7 @@ export function classifyNoteFromSemantics(
   if (!hasChordOverlay) {
     return classifyNote(
       sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, isHighlighted,
-      sem.isChordTone, hasChordOverlay, isChordInRange, isInActiveShape,
+      sem.isChordTone, hasChordOverlay, isInActiveShape,
     );
   }
 
@@ -165,7 +163,7 @@ export function classifyNoteFromSemantics(
   if (sem.isInScale && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
   if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
-  if (sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-outside-scale";
+  if (sem.isChordTone && isInActiveShape) return "chord-tone-outside-scale";
   return "note-inactive";
 }
 

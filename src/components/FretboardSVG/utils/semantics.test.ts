@@ -67,12 +67,27 @@ describe("semantics utils", () => {
 
   describe("classifyNote", () => {
     it("classifies key-tonic correctly without chord overlay", () => {
-      const res = classifyNote(true, false, false, true, false, false, true, true);
+      const res = classifyNote(true, false, false, true, false, false, true);
       expect(res).toBe("key-tonic");
     });
 
     it("classifies chord-root correctly with chord overlay", () => {
-      const res = classifyNote(false, true, false, true, true, true, true, true);
+      const res = classifyNote(false, true, false, true, true, true, true);
+      expect(res).toBe("chord-root");
+    });
+
+    it("chord-root in-shape but out-of-voicing-range still returns chord-root", () => {
+      // isChordRootNote: true, isChordTone: true, isInActiveShape: true,
+      // isHighlighted: true — voicing range is no longer part of the signature.
+      const res = classifyNote(
+        /* isScaleRoot */ false,
+        /* isChordRootNote */ true,
+        /* isColorNote */ false,
+        /* isHighlighted */ true,
+        /* isChordTone */ true,
+        /* hasChordOverlay */ true,
+        /* isInActiveShape */ true,
+      );
       expect(res).toBe("chord-root");
     });
   });
@@ -88,7 +103,7 @@ describe("semantics utils", () => {
         isTension: false,
         isGuideTone: false,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, true);
+      const res = classifyNoteFromSemantics(sem, true, true, true);
       expect(res).toBe("chord-root");
     });
 
@@ -103,7 +118,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: true,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false);
+      const res = classifyNoteFromSemantics(sem, true, true, false);
       expect(res).toBe("note-diatonic-chord");
     });
 
@@ -118,7 +133,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: true,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false);
+      const res = classifyNoteFromSemantics(sem, true, true, false);
       expect(res).toBe("chord-root");
     });
 
@@ -133,7 +148,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         isDiatonicChord: false,
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false);
+      const res = classifyNoteFromSemantics(sem, true, true, false);
       expect(res).toBe("chord-tone-in-scale");
     });
 
@@ -147,7 +162,7 @@ describe("semantics utils", () => {
         isTension: false,
         isGuideTone: false,
       };
-      const res = classifyNoteFromSemantics(sem, false, false, false, true);
+      const res = classifyNoteFromSemantics(sem, false, false, true);
       expect(res).toBe("note-blue");
     });
 
@@ -162,7 +177,7 @@ describe("semantics utils", () => {
         isGuideTone: false,
         // isDiatonicChord omitted (undefined)
       };
-      const res = classifyNoteFromSemantics(sem, true, true, true, false);
+      const res = classifyNoteFromSemantics(sem, true, true, false);
       expect(res).toBe("chord-tone-in-scale");
     });
 
@@ -185,12 +200,78 @@ describe("semantics utils", () => {
       };
       const res = classifyNoteFromSemantics(
         sem,
-        /* isChordInRange */ false,
         /* isInActiveShape */ true,
         /* hasChordOverlay */ true,
         /* isHighlighted */ true,
       );
       expect(res).toBe("chord-tone-in-scale");
+    });
+
+    it("chord-root in-shape but out-of-voicing-range still returns chord-root", () => {
+      // Out-of-scale chord tone that is the chord root: must be classified as
+      // chord-root regardless of whether it falls within the voicing range.
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: true,
+        isChordTone: true,
+        isInScale: false,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+        isDiatonicChord: false,
+      };
+      const res = classifyNoteFromSemantics(
+        sem,
+        /* isInActiveShape */ true,
+        /* hasChordOverlay */ true,
+        /* isHighlighted */ true,
+      );
+      expect(res).toBe("chord-root");
+    });
+
+    it("note-diatonic-chord in-shape but out-of-voicing-range still returns note-diatonic-chord", () => {
+      // A diatonic chord tone that the voicing range excludes must still be
+      // highlighted as note-diatonic-chord inside the 3NPS shape.
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: true,
+        isInScale: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+        isDiatonicChord: true,
+      };
+      const res = classifyNoteFromSemantics(
+        sem,
+        /* isInActiveShape */ true,
+        /* hasChordOverlay */ true,
+        /* isHighlighted */ true,
+      );
+      expect(res).toBe("note-diatonic-chord");
+    });
+
+    it("chord-tone-outside-scale in-shape but out-of-voicing-range still returns chord-tone-outside-scale", () => {
+      // e.g. the b7 of a dominant 7th chord: not diatonic, not highlighted,
+      // inside the 3NPS shape but outside the voicing's narrower range window.
+      // The spec contract says it must receive a chord-tone class.
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: true,
+        isInScale: false,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+        isDiatonicChord: false,
+      };
+      const res = classifyNoteFromSemantics(
+        sem,
+        /* isInActiveShape */ true,
+        /* hasChordOverlay */ true,
+        /* isHighlighted */ false,
+      );
+      expect(res).toBe("chord-tone-outside-scale");
     });
   });
 
