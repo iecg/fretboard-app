@@ -37,7 +37,9 @@ import {
   progressionStepDeadlineAtom,
   beatsPerBarAtom,
   progressionLoopEnabledAtom,
+  progressionPlayingAtom,
 } from "./progressionAtoms";
+import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import {
   getProgressionDurationBeats,
   MIN_PROGRESSION_TEMPO_BPM,
@@ -424,6 +426,18 @@ export const activeStepDurationBeatsAtom = atom((get): number => {
   if (!step || step.unavailable) return 0;
   const beatsPerBar = get(beatsPerBarAtom);
   return getProgressionDurationBeats(step.duration, beatsPerBar);
+});
+
+/**
+ * Discrete anticipation phase. Reads the per-frame visual-frame atom but its
+ * VALUE only flips at the last-beat threshold, so Jotai subscribers re-render
+ * at most twice per step instead of every animation frame.
+ */
+export const anticipationActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  return isInAnticipationWindow(frame.localFraction, get(activeStepDurationBeatsAtom));
 });
 
 /**
