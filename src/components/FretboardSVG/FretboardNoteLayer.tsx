@@ -81,7 +81,7 @@ export const FretboardNoteLayer = memo(({
       }) => {
         const baseRadius = noteBubblePx / 2;
         const { radiusScale, noteShape } = getNoteVisuals(noteClass);
-        const rawRadius = baseRadius * radiusScale * applyLensEmphasis.radiusBoost;
+        const rawRadius = baseRadius * radiusScale;
         const r = noteShape === "squircle"
           ? reduceSquircleRadius(rawRadius)
           : reduceCircleRadius(rawRadius);
@@ -178,6 +178,10 @@ export const FretboardNoteLayer = memo(({
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
             style={{
               "--note-r": r,
+              "--emph-scale": applyLensEmphasis.radiusBoost,
+              transformBox: "fill-box",
+              transformOrigin: "center",
+              transform: "scale(var(--emph-scale, 1))",
               opacity: finalOpacity !== 1 ? finalOpacity : undefined,
               ...(degreeColor && degreeColorsEnabled
                 ? { "--degree-color": degreeColor }
@@ -185,6 +189,16 @@ export const FretboardNoteLayer = memo(({
               ...(fullChordStyle as React.CSSProperties),
             } as React.CSSProperties}
           >
+            {applyLensEmphasis.glowColor && (
+              <circle
+                className={styles["note-glow-underlay"]}
+                cx={cx}
+                cy={cy}
+                r={r}
+                style={{ fill: applyLensEmphasis.glowColor }}
+                aria-hidden="true"
+              />
+            )}
             {shapeEl}
             {displayFormat !== "none" && (
               <text x={cx} y={cy}>
