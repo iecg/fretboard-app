@@ -11,7 +11,7 @@ import {
 export type BoxBound = { minFret: number; maxFret: number };
 
 export type LensEmphasis = {
-  glowColor?: "cyan" | "orange" | "violet" | `var(--${string})`;
+  glowColor?: `var(--${string})`;
   radiusBoost: number;
   opacityBoost: number;
 };
@@ -47,15 +47,16 @@ const CHORD_TONE_CLASSES = new Set([
 ]);
 
 /**
- * Applies the Tones lens logic (guide-tone emphasis + scale-only dim).
- * Shared between the "tones" case and the Lead lens fallback path.
+ * Fallback emphasis when no progression is active or no voice-leading
+ * context applies. Boosts guide tones with the hold-glow token and dims
+ * scale-only / color-tone notes.
  */
 function applyTonesBase(
   noteClass: string,
   isGuideTone: boolean,
 ): LensEmphasis {
   if (isGuideTone) {
-    return { glowColor: "cyan", radiusBoost: 1.15, opacityBoost: 1 };
+    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
   }
   if (noteClass === "scale-only" || noteClass === "color-tone") {
     return { radiusBoost: 0.85, opacityBoost: 0.7 };
@@ -126,7 +127,6 @@ export function classifyNote(
   isHighlighted: boolean,
   isChordTone: boolean,
   hasChordOverlay: boolean,
-  isChordInRange: boolean,
   isInActiveShape: boolean,
 ): string {
   if (!hasChordOverlay) {
@@ -136,18 +136,17 @@ export function classifyNote(
     return "note-inactive";
   }
 
-  if (isChordRootNote && isChordTone && isChordInRange && isInActiveShape) return "chord-root";
-  if (isHighlighted && isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
+  if (isChordRootNote && isChordTone && isInActiveShape) return "chord-root";
+  if (isHighlighted && isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (isHighlighted && isColorNote && isInActiveShape) return "color-tone";
   if (isHighlighted && isInActiveShape) return "scale-only";
-  if (!isHighlighted && isChordTone && isChordInRange && isInActiveShape)
+  if (!isHighlighted && isChordTone && isInActiveShape)
     return "chord-tone-outside-scale";
   return "note-inactive";
 }
 
 export function classifyNoteFromSemantics(
   sem: NoteSemantics,
-  isChordInRange: boolean,
   isInActiveShape: boolean,
   hasChordOverlay: boolean,
   isHighlighted: boolean,
@@ -155,16 +154,16 @@ export function classifyNoteFromSemantics(
   if (!hasChordOverlay) {
     return classifyNote(
       sem.isScaleRoot, sem.isChordRoot, sem.isColorTone, isHighlighted,
-      sem.isChordTone, hasChordOverlay, isChordInRange, isInActiveShape,
+      sem.isChordTone, hasChordOverlay, isInActiveShape,
     );
   }
 
-  if (sem.isChordRoot && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-root";
-  if (sem.isDiatonicChord && sem.isChordTone && isChordInRange && isInActiveShape) return "note-diatonic-chord";
-  if (sem.isInScale && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
+  if (sem.isChordRoot && sem.isChordTone && isInActiveShape) return "chord-root";
+  if (sem.isDiatonicChord && sem.isChordTone && isInActiveShape) return "note-diatonic-chord";
+  if (sem.isInScale && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
   if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
-  if (sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-outside-scale";
+  if (sem.isChordTone && isInActiveShape) return "chord-tone-outside-scale";
   return "note-inactive";
 }
 

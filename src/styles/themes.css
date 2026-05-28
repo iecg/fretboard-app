@@ -189,14 +189,24 @@
   --fretboard-bottom-edge-color: rgba(0, 0, 0, 0.15);
   --fretboard-nut-slot-color: rgba(0, 0, 0, 0.2);
   --fretboard-headstock-bg: var(--fretboard-wood-mid);
-  --fretboard-glow-opacity: 0;
+  /* Light-mode glow opacity. Consumed by all three SVG <feDropShadow> filters
+     (glow-cyan, glow-orange, glow-violet) in FretboardDefs.tsx — so this
+     also affects role glows (chord-root orange, note-active cyan, note-blue
+     violet) in light mode, not just the lens-emphasis hold/anticipation
+     glow. 0.45 is the soft-but-clear target against the cream PANEL. */
+  --fretboard-glow-opacity: 0.45;
 
-  /* CAGED shapes — boost visibility for light mode (Okabe-Ito RGB, 0.35 alpha) */
-  --caged-e-bg: rgba(27, 124, 194, 0.35);  /* E #1B7CC2 + 0.35 boost */
-  --caged-d-bg: rgba(153, 153, 153, 0.35); /* D stays neutral gray in light mode too */
-  --caged-c-bg: rgba(0, 158, 115, 0.35);   /* C #009E73 + 0.35 boost */
-  --caged-a-bg: rgba(0, 114, 178, 0.35);   /* A #0072B2 + 0.35 boost */
-  --caged-g-bg: rgba(204, 121, 167, 0.35); /* G #CC79A7 + 0.35 boost */
+  /* CAGED shapes — light mode rebalance round 2.
+     E lifts to its lighter sky-blue rgb so it visibly separates from A's deeper blue.
+     A deepens via alpha (0.45) without changing hue.
+     D moves to a warm taupe in the MUTE-family neighborhood so it doesn't desaturate
+     against the cream PANEL surface. */
+  --caged-d:    #6b5d4f;                    /* warm taupe outline (was inherited #999999) */
+  --caged-e-bg: rgba(86, 180, 233, 0.35);   /* E #56B4E9 light-mode tint */
+  --caged-d-bg: rgba(107, 93, 79, 0.40);    /* D warm taupe tint */
+  --caged-c-bg: rgba(0, 158, 115, 0.35);    /* C #009E73 (unchanged) */
+  --caged-a-bg: rgba(0, 114, 178, 0.45);    /* A #0072B2 deeper alpha for separation from E */
+  --caged-g-bg: rgba(204, 121, 167, 0.35);  /* G #CC79A7 (unchanged) */
 
   /* Lens-emphasis glows — light-mode rebound to the reference palette accents.
      Anticipation = ORANGE rust (warm signal for the incoming chord change).

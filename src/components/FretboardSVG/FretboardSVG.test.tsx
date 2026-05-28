@@ -299,7 +299,7 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelector(".chord-connectors")).toBeNull();
   });
 
-  it("keeps the D-shape light-theme background in the same gray family as dark mode", () => {
+  it("applies the round-2 warm-taupe D-shape background in light mode", () => {
     const themedScope = document.createElement("div");
     themedScope.setAttribute("data-theme", "modern-light");
     document.body.appendChild(themedScope);
@@ -309,7 +309,7 @@ describe("FretboardSVG/FretboardSVG", () => {
         .getPropertyValue("--caged-d-bg")
         .replace(/\s+/g, "")
         .trim(),
-    ).toBe("rgba(153,153,153,0.35)");
+    ).toBe("rgba(107,93,79,0.40)");
 
     themedScope.remove();
   });
