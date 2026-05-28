@@ -24,11 +24,18 @@ export const es: Dictionary = {
       tuning: "Afinación",
       accidentals: "Accidentales",
       enharmonicDisplay: "Visualización enarmónica",
+      soundQuality: "Calidad de sonido",
       theme: "Tema",
       scaleDegreeColorsHint: "Colorea cada nota de escala según su grado.",
       accidentalsHint: "Elige automáticamente sostenidos o bemoles según el contexto musical actual.",
       enharmonicDisplayHint: "Controla si aparecen notas enarmónicas equivalentes cuando aclaran la vista teórica.",
       themeHint: "Elige tu tema de color preferido. Sistema coincide con la configuración de tu dispositivo.",
+    },
+    soundQuality: {
+      auto: "Auto",
+      eco: "Eco",
+      standard: "Estándar",
+      high: "Alta",
     },
   },
   inspector: {

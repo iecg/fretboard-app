@@ -24,11 +24,18 @@ export const en: Dictionary = {
       tuning: "Tuning",
       accidentals: "Accidentals",
       enharmonicDisplay: "Enharmonic Display",
+      soundQuality: "Sound quality",
       theme: "Theme",
       scaleDegreeColorsHint: "Colors each scale note by its degree.",
       accidentalsHint: "Auto chooses sharps or flats based on the current musical context.",
       enharmonicDisplayHint: "Controls whether equivalent note spellings appear when they clarify the theory view.",
       themeHint: "Choose your preferred color theme. System matches your device settings.",
+    },
+    soundQuality: {
+      auto: "Auto",
+      eco: "Eco",
+      standard: "Standard",
+      high: "High",
     },
   },
   inspector: {
