@@ -1,3 +1,15 @@
+import {
+  Channel,
+  Compressor,
+  Limiter,
+  Gain,
+  EQ3,
+  Chebyshev,
+  Distortion,
+  Freeverb,
+  JCReverb,
+  Reverb,
+} from "tone";
 import type { TierProfile } from "./qualityTiers";
 import type { GenreMix, MixInstrument } from "./genreMixPresets";
 import type { InsertSpec } from "./patchTypes";
@@ -50,5 +62,123 @@ export function planSignalGraph(tier: TierProfile, mix: GenreMix): SignalGraphPl
     maxPolyphony: tier.maxPolyphony,
     oversample: tier.oversample,
     master: mix.master,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Materialization layer — turns a SignalGraphPlan into live Tone.js nodes.
+// Requires a real AudioContext; not unit-tested in isolation.
+// ---------------------------------------------------------------------------
+
+export interface MaterializedGraph {
+  /** Native input node each voice family connects into (preserves the
+   *  existing `audio.layers.*` contract — voices call `.connect(node)`). */
+  inputs: Record<MixInstrument, AudioNode>;
+  /** Tear down every constructed Tone node. */
+  dispose: () => void;
+}
+
+function buildReverb(
+  engine: SignalGraphPlan["reverbEngine"],
+  decay: number,
+  wet: number,
+): Reverb | JCReverb | Freeverb {
+  if (engine === "convolution") {
+    const r = new Reverb({ decay, wet });
+    void r.generate(); // async impulse; safe to use before resolve (silent until ready)
+    return r;
+  }
+  if (engine === "jcreverb") {
+    return new JCReverb({ roomSize: Math.min(0.9, decay / 2.5), wet });
+  }
+  return new Freeverb({ roomSize: Math.min(0.95, decay / 2.5), wet });
+}
+
+/**
+ * Materialize the plan against a real AudioContext + the parent destination
+ * (ctx.destination or the existing master bus GainNode). Returns native input
+ * nodes for each instrument family plus a disposer.
+ *
+ * Routing per channel:
+ *   nativeInput(Gain) → [EQ3 → saturation]? → Channel(volume+pan) → masterGlue
+ *                                                   └─(reverbSend)→ reverbBus → masterGlue
+ * masterGlue: Compressor → Limiter → destination
+ * reverbBus:  Reverb → (into masterGlue input, post-compressor pre-limiter)
+ */
+export function materializeSignalGraph(
+  ctx: AudioContext,
+  destination: AudioNode,
+  plan: SignalGraphPlan,
+): MaterializedGraph {
+  const disposers: Array<() => void> = [];
+  const track = <T extends { dispose: () => void }>(n: T): T => {
+    disposers.push(() => n.dispose());
+    return n;
+  };
+
+  // Master glue: Compressor → Limiter → destination
+  const comp = track(new Compressor(plan.master.compressor));
+  const limiter = track(new Limiter(plan.master.limiterThreshold));
+  comp.connect(limiter);
+  limiter.connect(destination);
+
+  // Reverb bus returns into the compressor input (glued with dry signal).
+  const reverb = track(buildReverb(plan.reverbEngine, plan.master.reverb.decay, plan.master.reverb.wet));
+  reverb.connect(comp);
+
+  const inputs = {} as Record<MixInstrument, AudioNode>;
+  for (const ch of ["chord", "bass", "drums", "metronome"] as const) {
+    const cfg = plan.channels[ch];
+    const input = ctx.createGain(); // native node voices connect into
+    const channel = track(new Channel({ volume: cfg.volumeDb, pan: cfg.pan }));
+
+    // Optional insert chain (EQ3 + saturation), built with real Tone nodes.
+    // `head` tracks the last node in the chain; may be native GainNode or a Tone node.
+    let head: AudioNode | EQ3 | Distortion | Chebyshev = input;
+
+    if (cfg.insert?.eq3) {
+      const eq = track(new EQ3(cfg.insert.eq3));
+      // GainNode.connect() only accepts AudioNode; eq.input is MultibandSplit (ToneAudioNode),
+      // so cast through unknown to bridge the native↔Tone boundary.
+      (head as GainNode).connect(eq.input as unknown as AudioNode);
+      head = eq;
+    }
+
+    if (cfg.insert?.saturation) {
+      const sat =
+        cfg.insert.saturation.kind === "distortion"
+          ? track(new Distortion(cfg.insert.saturation.amount))
+          : track(new Chebyshev(Math.max(1, Math.round(cfg.insert.saturation.amount))));
+      // head may be GainNode or EQ3; both have .connect() but with incompatible overloads,
+      // so we use a minimal structural cast to unify the call site.
+      (head as unknown as { connect: (n: unknown) => void }).connect(sat);
+      head = sat;
+    }
+
+    // Head → Channel (volume + pan) → master glue
+    (head as unknown as { connect: (n: unknown) => void }).connect(channel);
+    channel.connect(comp);
+
+    // Reverb send tap off the channel.
+    if (cfg.reverbSend > 0) {
+      const send = track(new Gain(cfg.reverbSend));
+      channel.connect(send);
+      send.connect(reverb);
+    }
+
+    inputs[ch] = input;
+  }
+
+  return {
+    inputs,
+    dispose: () => {
+      for (const d of disposers) {
+        try {
+          d();
+        } catch {
+          /* ignore disposal errors */
+        }
+      }
+    },
   };
 }
