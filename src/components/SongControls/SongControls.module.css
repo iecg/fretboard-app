@@ -321,7 +321,7 @@
 }
 
 .pip:hover {
-  background-color: var(--faceplate-bg-elevated);
+  background-color: var(--chrome-hover-bg);
   color: var(--text-main);
   border-color: var(--dc-border-hover);
 }
