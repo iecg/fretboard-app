@@ -8,27 +8,30 @@ import {
   NOTES,
 } from "@fretflow/core";
 import type { LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
-import { guessQualityForBorrowedRoot, qualityShortForm } from "../../progressions/progressionDomain";
+import { guessQualityForBorrowedRoot } from "../../progressions/progressionDomain";
 
 const QUALITY_HINT: Record<string, string> = { M: "maj", m: "min", dim: "dim", aug: "aug" };
 
-// Quality-neutral chromatic numerals by semitone offset (lowercase = convention
-// neutral). Diatonic-position offsets reuse the scale's own numeral map.
-const FLAT_NUMERAL_BY_OFFSET: Record<number, string> = {
+// Natural-tone scale-degree numerals (same regardless of accidental preference).
+const NATURAL_NUMERAL_BY_OFFSET: Record<number, string> = {
+  2: "ii", 4: "iii", 5: "iv", 7: "v", 9: "vi", 11: "vii",
+};
+// Altered-tone numerals — flat vs sharp spelling.
+const FLAT_ALT_BY_OFFSET: Record<number, string> = {
   1: "♭ii", 3: "♭iii", 6: "♭v", 8: "♭vi", 10: "♭vii",
 };
-const SHARP_NUMERAL_BY_OFFSET: Record<number, string> = {
+const SHARP_ALT_BY_OFFSET: Record<number, string> = {
   1: "♯i", 3: "♯ii", 6: "♯iv", 8: "♯v", 10: "♯vi",
 };
-// Plain (accidental-keyed, uppercase) numerals for annotation lookup.
-const PLAIN_NUMERAL_BY_OFFSET: Record<number, string> = {
-  1: "bII", 3: "bIII", 6: "bV", 8: "bVI", 10: "bVII",
-};
-
 function nonDiatonicNumeral(offset: number, preferFlats: boolean): string {
-  const map = preferFlats ? FLAT_NUMERAL_BY_OFFSET : SHARP_NUMERAL_BY_OFFSET;
-  return map[offset] ?? "";
+  if (offset in NATURAL_NUMERAL_BY_OFFSET) return NATURAL_NUMERAL_BY_OFFSET[offset];
+  return (preferFlats ? FLAT_ALT_BY_OFFSET : SHARP_ALT_BY_OFFSET)[offset] ?? "";
 }
+// Plain ASCII numerals for annotation lookup + cached degree. Covers all non-tonic offsets.
+const PLAIN_NUMERAL_BY_OFFSET: Record<number, string> = {
+  1: "bII", 2: "II", 3: "bIII", 4: "III", 5: "IV", 6: "bV",
+  7: "V", 8: "bVI", 9: "VI", 10: "bVII", 11: "VII",
+};
 
 export function buildChordRootGroups(
   scaleName: string,
@@ -51,7 +54,8 @@ export function buildChordRootGroups(
       diatonic.push({ value: r.note, label: `${numeral} · ${display} · ${hint}` });
     } else if (r.rootClass === "borrowed") {
       const numeral = nonDiatonicNumeral(r.offset, preferFlats);
-      const guessed = qualityShortForm(guessQualityForBorrowedRoot(r.note, scaleName, tonicNote)) || "maj";
+      const guessedKey = guessQualityForBorrowedRoot(r.note, scaleName, tonicNote);
+      const guessed = QUALITY_HINT[guessedKey] ?? guessedKey ?? "maj";
       const move = getHarmonicMoveAnnotation(PLAIN_NUMERAL_BY_OFFSET[r.offset] ?? "");
       const suffix = move ? ` — ${move}` : "";
       borrowed.push({ value: r.note, label: `${numeral} · ${display} · ${guessed}${suffix}` });
