@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getHarmonyParentScale } from "@fretflow/core";
 import {
   DEFAULT_BEATS_PER_BAR,
   PROGRESSION_PRESETS,
@@ -579,5 +580,15 @@ describe("qualityShortForm (Plan H-T9b)", () => {
 
   it("returns empty string for unknown qualities", () => {
     expect(qualityShortForm("UnknownQuality" as never)).toBe("");
+  });
+});
+
+describe("harmony parent-scale source of truth", () => {
+  it("resolveProgressionStep uses the shared core parent map for pentatonic", () => {
+    const step = { id: "x", degree: "I", duration: { value: 1, unit: "bar" as const }, qualityOverride: null, manualRoot: null };
+    const penta = resolveProgressionStep(step, "major pentatonic", "C");
+    const major = resolveProgressionStep(step, "major", "C");
+    expect(penta.root).toBe(major.root);
+    expect(getHarmonyParentScale("major pentatonic")).toBe("major");
   });
 });

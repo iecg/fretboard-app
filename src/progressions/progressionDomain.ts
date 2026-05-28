@@ -4,6 +4,7 @@ import {
   getChordDisplayLabel,
   getDegreeSequence,
   getDiatonicChord,
+  getHarmonyParentScale,
   getNoteDisplay,
   transposeNoteToSharps,
   type DegreeId,
@@ -278,15 +279,8 @@ const ROMAN_ORDINALS: Record<string, number> = {
   VII: 6,
 };
 
-const PROGRESSION_HARMONY_SCALE: Record<string, string> = {
-  "major pentatonic": "major",
-  "major blues": "major",
-  "minor pentatonic": "minor",
-  "minor blues": "minor",
-};
-
 function getProgressionHarmonyScaleName(scaleName: string): string {
-  return PROGRESSION_HARMONY_SCALE[scaleName] ?? scaleName;
+  return getHarmonyParentScale(scaleName);
 }
 
 let fallbackId = 0;
