@@ -10,7 +10,8 @@
   font-family: var(--font-mono);
   font-size: 0.625rem;
   background: var(--dc-bg);
-  border-top: 1px solid var(--dc-border);
+  border-top: 0.5px solid var(--dc-border);
+  border-bottom: 0.5px solid var(--dc-border);
   overflow: hidden;
 }
 

@@ -44,24 +44,24 @@ function brightness(color: string): number {
 test.describe("Theme Contract", () => {
   test("should apply modern-light theme when light is selected", async ({ page }) => {
     await loadVisualState(page, { theme: "light" });
-    
+
     // Check that data-theme is correctly set on documentElement
     const theme = await page.evaluate(() => document.documentElement.getAttribute("data-theme"));
     expect(theme).toBe("modern-light");
-    
-    // Check background color matches modern-light --bg-color (#e4eaef — cool blue-gray shell)
+
+    // Check background color matches modern-light --bg-color (#ebebdc — warm parchment shell)
     // Playwright returns rgb values
     const bgColor = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-color").trim()
     );
-    expect(bgColor.toLowerCase()).toBe("#e4eaef");
+    expect(bgColor.toLowerCase()).toBe("#ebebdc");
 
     // Check a semantic token
     const chromeBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--chrome-bg").trim()
     );
-    // --chrome-bg maps to --surface-shell = #e4eaef in modern-light
-    expect(chromeBg.toLowerCase()).toBe("#e4eaef");
+    // --chrome-bg maps to --surface-shell = #ebebdc in modern-light
+    expect(chromeBg.toLowerCase()).toBe("#ebebdc");
   });
 
   test("modern-light fretboard should use maple tokens", async ({ page }) => {
@@ -83,17 +83,17 @@ test.describe("Theme Contract", () => {
   test("modern-light should use solid active styling for chips", async ({ page }) => {
     await loadVisualState(page, { theme: "light" });
     
-    const activeBg = await page.evaluate(() => 
+    const activeBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-active-bg").trim()
     );
-    // #0e7a93
-    expect(activeBg.toLowerCase()).toBe("#0e7a93");
+    // #147088 — CYAN reference palette accent
+    expect(activeBg.toLowerCase()).toBe("#147088");
 
     const tonicBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--token-chip-tonic-bg").trim()
     );
-    // #c44a1f
-    expect(tonicBg.toLowerCase()).toBe("#c44a1f");
+    // #b1431b — ORANGE reference palette accent
+    expect(tonicBg.toLowerCase()).toBe("#b1431b");
   });
 
   test("light shell vars do not resolve to dark navy defaults", async ({ page }) => {
@@ -102,14 +102,14 @@ test.describe("Theme Contract", () => {
     const bgAppStart = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-start").trim()
     );
-    // modern-light: --bg-app-gradient-start = #fffef9 (Phase 1 surface ladder recalibration; was #fdfcfb)
-    expect(bgAppStart.toLowerCase()).toBe("#fffef9");
+    // modern-light: --bg-app-gradient-start = #f6f2e9 (PANEL — cream top edge, reference palette)
+    expect(bgAppStart.toLowerCase()).toBe("#f6f2e9");
 
     const bgAppMid = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--bg-app-gradient-mid").trim()
     );
-    // modern-light: --bg-app-gradient-mid = #faf8f3 (Phase 1 surface ladder recalibration; was #fcfaf8)
-    expect(bgAppMid.toLowerCase()).toBe("#faf8f3");
+    // modern-light: --bg-app-gradient-mid = #eeead9 (between PANEL and BG, reference palette)
+    expect(bgAppMid.toLowerCase()).toBe("#eeead9");
   });
 
 
@@ -141,8 +141,8 @@ test.describe("Theme Contract", () => {
     const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
     await expect(tonicNote).toBeVisible();
     const tonicNoteStroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
-    // light: --note-ring-tonic = #b45309 -> rgb(180, 83, 9) (Phase 3 light-mode override; was --neon-orange)
-    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(180,83,9)");
+    // light: --note-ring-tonic = #b1431b -> rgb(177, 67, 27) (ORANGE — reference palette)
+    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(177,67,27)");
   });
 
   test("modern-dark should use dark wood tokens", async ({ page }) => {
@@ -216,8 +216,8 @@ test.describe("Theme Contract", () => {
     // Light mode should NOT have a gradient background
     expect(styles.backgroundImage).toBe('none');
 
-    // Light-mode active DAW controls carry the teal accent label: #2EB5CC.
-    expect(styles.color.replace(/\s/g, "")).toBe("rgb(46,181,204)");
+    // Light-mode active DAW controls carry the CYAN teal accent label: #147088.
+    expect(styles.color.replace(/\s/g, "")).toBe("rgb(20,112,136)");
   });
 
   // CoF retired from main app in v2.0; re-evaluate when CoF returns or in v2.1+
@@ -413,9 +413,9 @@ test.describe("Theme Contract", () => {
           });
 
           if (theme === "light") {
-            // DAW hover: teal accent label + teal-tinted border.
-            expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(46,181,204)");
-            expect(hoverStyles.borderColor.replace(/\s/g, "")).toContain("46,181,204");
+            // DAW hover: CYAN teal accent label + CYAN teal-tinted border (#147088).
+            expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(20,112,136)");
+            expect(hoverStyles.borderColor.replace(/\s/g, "")).toContain("20,112,136");
           } else {
             // DAW hover: cyan accent label + cyan-tinted border.
             expect(hoverStyles.color.replace(/\s/g, "")).toBe("rgb(77,228,255)");
@@ -523,13 +523,19 @@ test.describe("Theme Contract", () => {
         });
 
         test("ToggleBar buttons should only change color when unselected", async ({ page }) => {
-          // ToggleBars live inside the Inspector's Overlay tab panel (v2.0).
-          await page.getByRole("tab", { name: "Overlay" }).click();
+          // ToggleBars with reliable active/inactive state live in the Song tab's
+          // duration selector. With the default progression, step 0 is active and
+          // the Duration ToggleBar is visible with both pressed and unpressed buttons.
+          await page.getByRole("tab", { name: "Song" }).click();
           const panel = page.getByRole("tabpanel");
           await expect(panel).toBeVisible();
-          const activeToggle = panel.locator('button[aria-pressed="true"]').first();
-          const inactiveToggle = panel.locator('button[aria-pressed="false"]').first();
-          
+          const activeToggle = panel
+            .locator('[class*="toggle-group"] button[aria-pressed="true"]')
+            .first();
+          const inactiveToggle = panel
+            .locator('[class*="toggle-group"] button[aria-pressed="false"]')
+            .first();
+
           await expect(activeToggle).toBeVisible();
           await expect(inactiveToggle).toBeVisible();
 
@@ -556,8 +562,8 @@ test.describe("Theme Contract", () => {
           await select.hover();
           const hoverBorder = await select.evaluate((el) => getComputedStyle(el).borderColor);
           if (theme === "light") {
-            // Trigger hover: teal-tinted border (--dc-border-hover).
-            expect(hoverBorder.replace(/\s/g, "")).toContain("46,181,204");
+            // Trigger hover: CYAN teal-tinted border (--dc-border-hover = rgb(20 112 136 / 0.50)).
+            expect(hoverBorder.replace(/\s/g, "")).toContain("20,112,136");
           } else {
             expect(isCyanLike(hoverBorder)).toBe(true);
           }
@@ -623,14 +629,13 @@ test.describe("Theme Contract", () => {
         };
       });
 
-      // Exact light-mode values from themes.css surface ladder.
-      // Vite/lightning-css minifies `#ffffff` → `#fff` in production builds, so
-      // canonicalize via colorToHex before comparing.
-      expect(colorToHex(tokens.shell)).toBe("#e4eaef");
-      expect(colorToHex(tokens.cardTop)).toBe("#ffffff");
-      expect(colorToHex(tokens.nested)).toBe("#f3f6f9");
-      expect(colorToHex(tokens.well)).toBe("#dde4eb");
-      expect(colorToHex(tokens.float)).toBe("#ffffff");
+      // Exact light-mode values from themes.css surface ladder (reference/warm palette).
+      // Vite/lightning-css minifies tokens so canonicalize via colorToHex before comparing.
+      expect(colorToHex(tokens.shell)).toBe("#ebebdc");
+      expect(colorToHex(tokens.cardTop)).toBe("#f6f2e9");
+      expect(colorToHex(tokens.nested)).toBe("#f1ede3");
+      expect(colorToHex(tokens.well)).toBe("#ddd8cf");
+      expect(colorToHex(tokens.float)).toBe("#f6f2e9");
 
       // Summary strips intentionally join the card family, while controls remain sunken wells.
       expect(tokens.strip).toBe(tokens.cardTop);
@@ -698,11 +703,11 @@ test.describe("Theme Contract", () => {
     test("faceplate substrate uses the light token in light mode", async ({ page }) => {
       await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
 
-      // The faceplate is theme-adaptive: a pale cool substrate in light mode.
+      // The faceplate is theme-adaptive: a warm cream substrate in light mode.
       const faceplateBg = await page.evaluate(() =>
         getComputedStyle(document.documentElement).getPropertyValue("--faceplate-bg").trim(),
       );
-      expect(colorToHex(faceplateBg)).toBe("#eef2f5");
+      expect(colorToHex(faceplateBg)).toBe("#f6f2e9");
     });
 
     test("faceplate substrate uses the navy token in dark mode", async ({ page }) => {
@@ -723,8 +728,8 @@ test.describe("Theme Contract", () => {
       await expect(drawer).toBeVisible();
 
       const bg = await drawer.evaluate((el) => getComputedStyle(el).backgroundColor);
-      // surface-float = #ffffff → rgb(255, 255, 255) — highest elevation, pure white
-      expect(bg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      // surface-float = #f6f2e9 → rgb(246, 242, 233) — PANEL elevation (warm cream)
+      expect(bg.replace(/\s/g, "")).toBe("rgb(246,242,233)");
     });
 
     test("settings section cards use aligned nested surface tokens in light mode", async ({ page }) => {
@@ -748,11 +753,11 @@ test.describe("Theme Contract", () => {
         };
       });
 
-      // --nested-card-bg = --surface-card-nested = #f3f6f9 → rgb(243, 246, 249)
-      expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(243,246,249)");
+      // --nested-card-bg = --surface-card-nested = #f1ede3 → rgb(241, 237, 227)
+      expect(styles.backgroundColor.replace(/\s/g, "")).toBe("rgb(241,237,227)");
 
-      // --nested-card-border = --surface-card-border = --surface-highlight = #c9d2da → rgb(201, 210, 218)
-      expect(styles.borderColor.replace(/\s/g, "")).toBe("rgb(201,210,218)");
+      // --nested-card-border = --surface-card-border = --surface-highlight = #cdc9c0 → rgb(205, 201, 192)
+      expect(styles.borderColor.replace(/\s/g, "")).toBe("rgb(205,201,192)");
 
       // --nested-card-radius = --radius-lg = 12px
       expect(styles.borderRadius).toBe("12px");
@@ -768,15 +773,15 @@ test.describe("Theme Contract", () => {
       const modal = page.getByTestId("help-modal");
       await expect(modal).toBeVisible();
 
-      // Modal body uses --surface-panel = --surface-card-top = #ffffff → rgb(255, 255, 255)
+      // Modal body uses --surface-panel = --surface-card-top = #f6f2e9 → rgb(246, 242, 233)
       const bodyBg = await modal.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      expect(bodyBg.replace(/\s/g, "")).toBe("rgb(246,242,233)");
 
-      // Modal header uses --surface-float (highest elevation) = #ffffff → rgb(255, 255, 255)
+      // Modal header uses --surface-float (PANEL elevation) = #f6f2e9 → rgb(246, 242, 233)
       const header = modal.locator('[class*="help-modal-header"]');
       await expect(header).toBeVisible();
       const headerBg = await header.evaluate((el) => getComputedStyle(el).backgroundColor);
-      expect(headerBg.replace(/\s/g, "")).toBe("rgb(255,255,255)");
+      expect(headerBg.replace(/\s/g, "")).toBe("rgb(246,242,233)");
     });
 
     test("selected controls use cyan identity in both themes", async ({ page }) => {
@@ -803,8 +808,8 @@ test.describe("Theme Contract", () => {
         });
 
         if (theme === "light") {
-          // Light-mode selected DAW controls: teal accent label (#2EB5CC).
-          expect(styles.color.replace(/\s/g, "")).toBe("rgb(46,181,204)");
+          // Light-mode selected DAW controls: CYAN teal accent label (#147088).
+          expect(styles.color.replace(/\s/g, "")).toBe("rgb(20,112,136)");
         } else {
           // Dark-mode selected DAW controls: cyan accent label (#4DE4FF).
           expect(styles.color.replace(/\s/g, "")).toBe("rgb(77,228,255)");
@@ -823,13 +828,13 @@ test.describe("Theme Contract", () => {
         await expect(tonicNote).toBeVisible();
 
         const stroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
-        // light: --note-ring-tonic = #b45309 → rgb(180, 83, 9) (Phase 3 light-mode override)
+        // light: --note-ring-tonic = #b1431b → rgb(177, 67, 27) (ORANGE — reference palette)
         // dark:  --note-ring-tonic = #FF9A4D → rgb(255, 154, 77)
         const m = stroke.replace(/\s/g, "").match(/rgb\((\d+),(\d+),(\d+)\)/);
         expect(m).not.toBeNull();
         if (m) {
-          // Orange/Rose: high R, low-mid G, low B (light hits R=180 exactly; dark hits R=255)
-          expect(Number(m[1])).toBeGreaterThanOrEqual(180); // R high
+          // Orange/Rose: high R, low-mid G, low B (light #b1431b = R=177; dark #FF9A4D = R=255)
+          expect(Number(m[1])).toBeGreaterThanOrEqual(170); // R high (≥170 covers both light and dark)
           expect(Number(m[2])).toBeLessThan(180);            // G mid
           expect(Number(m[3])).toBeLessThan(100);            // B low
         }
@@ -854,13 +859,14 @@ test.describe("Theme Contract", () => {
         const selectBg = await scaleSelect.evaluate((el) => getComputedStyle(el).backgroundColor);
         expect(selectBg).not.toBe(panelBg);
 
-        // --- Overlay tab: ToggleBar ---
-        await page.getByRole("tab", { name: "Overlay" }).click();
-        const viewPanel = page.getByRole("tabpanel");
-        const toggleGroup = viewPanel.locator('[class*="toggle-group"]').first();
-        await expect(viewPanel).toBeVisible();
+        // --- Song tab: Duration ToggleBar (always present with default progression) ---
+        // Re-click Song (already clicked above, but ensure we are on it after scale check).
+        await page.getByRole("tab", { name: "Song" }).click();
+        const songPanelForToggle = page.getByRole("tabpanel");
+        const toggleGroup = songPanelForToggle.locator('[class*="toggle-group"]').first();
+        await expect(songPanelForToggle).toBeVisible();
         await expect(toggleGroup).toBeVisible();
-        const viewPanelBg = await viewPanel.evaluate((el) => getComputedStyle(el).backgroundColor);
+        const viewPanelBg = await songPanelForToggle.evaluate((el) => getComputedStyle(el).backgroundColor);
         const toggleBg = await toggleGroup.evaluate((el) => getComputedStyle(el).backgroundColor);
         expect(toggleBg).not.toBe(viewPanelBg);
 
