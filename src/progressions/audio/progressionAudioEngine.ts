@@ -1,7 +1,14 @@
 import { getDraw, getTransport } from "tone";
 import type { ProgressionPartHandle } from "./progressionPart";
 
-export { ensureProgressionAudio, resumeProgressionAudio, restoreProgressionBus, silenceProgressionBus } from "./bus";
+export { ensureProgressionAudio, resumeProgressionAudio, restoreProgressionBus, silenceProgressionBus, configureProgressionGraph } from "./bus";
+export { planSignalGraph } from "./sound/buildSignalGraph";
+export type { SignalGraphPlan, MaterializedGraph } from "./sound/buildSignalGraph";
+export { TIER_PROFILES, resolveTier, detectDefaultTier } from "./sound/qualityTiers";
+export type { QualitySetting, QualityTier } from "./sound/qualityTiers";
+export { getGenreMix, DEFAULT_GENRE_MIX } from "./sound/genreMixPresets";
+export { getChordVoiceForInstrument } from "./instruments/index";
+export { getBassPatch, getDrumKitPatch } from "./sound/instrumentPatches";
 export { buildAllLayersAsync } from "./buildAllLayers";
 export type { BassEvent, ChordOnsetEvent, ChordStrumEvent, DrumEvent, MetronomeEvent } from "./buildAllLayers";
 export { createProgressionPart } from "./progressionPart";
