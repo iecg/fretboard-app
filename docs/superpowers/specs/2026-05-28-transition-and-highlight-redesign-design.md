@@ -70,13 +70,15 @@ This removes the existing per-frame note recompute (a measurable win) and is wha
 
 `beatPosition`/`stepDurationBeats` stay in the snapshot for any other consumer but are no longer inputs to emphasis.
 
-### §3 — Step-boundary signal + transition mechanics
+### §3 — Restoring the boundary transition + transition mechanics
 
-**Boundary signal.** Extend motion-policy input to `{ prefersReducedMotion, playbackActive, transitionKey }`:
-- Derive `transitionKey` in `FretboardSVG` from chord identity (chord root + chord tones + voicing keys) — it changes only at boundaries, never on frame ticks.
-- Policy returns `connectorMode: "group"` when the key changes (a short-lived active window) **even during playback**; reduced-motion still forces all `"none"`; steady frames keep connectors static.
+**Enable the connector crossfade during playback.** The connector group already crossfades via `<motion.g>` + `AnimatePresence`, keyed by chord identity (`motionKey`). `b1abff24` disabled it during playback (`connectorMode: "none"`) out of per-frame-cost caution. Two facts make a separate `transitionKey` boundary signal unnecessary:
+- The `<motion.g>` opacity animation is **already GPU-composited** (opacity is a compositor property); the only cost is React/Motion reconciliation.
+- `AnimatePresence` only animates on `motionKey` change (chord identity), which changes **only at boundaries**, never on frame ticks. So enabling the animated branch during playback does not animate on steady frames.
 
-**Connector fade via CSS, not Motion.** Replace `<motion.g>` with a **keyed plain `<g>` whose opacity transitions in CSS** (`AnimatePresence` retained only for mount/unmount timing of the crossfade). The key changes only at boundaries, so there is zero per-frame Motion work — this restores the fade `b1abff24` removed without reintroducing its cost.
+Therefore: change `motionPolicy` so `connectorMode` is `"group"` during playback (reduced-motion still forces `"none"`; `shapeMode` stays `"none"` during playback since shapes don't change mid-playback). Then **guarantee `FretboardConnectorLayer` is frame-stable**: memoize the `chordTones` join key and avoid per-frame prop identity churn so the layer (and its `motion.g`) does not re-render on RAF ticks. This restores the crossfade `b1abff24` removed, for both manual and playback changes, with cost controlled by memoization rather than by disabling animation. Verified in preview at 240 bpm.
+
+> Refinement vs. earlier draft: a from-scratch CSS-`<g>` group rewrite and a `transitionKey` policy input are *not* needed — the memoized `motion.g` + identity-keyed `AnimatePresence` achieve the same boundary-scoped, compositor-driven crossfade at lower risk.
 
 **Single note layer (removes layer-split pop, perf win).** Replace the two membership-split `FretboardNoteLayer` instances with **one** layer of stable-keyed notes (`note-${string}-${fret}`), so no note ever remounts on a role change and CSS transitions always fire. Preserve z-order by splitting the **connector** render instead: halo + fill paint **below** the single note layer, outline paints **above** it. (Minor, acceptable visual change: the thin outline now traces over chord notes too.) This also halves the per-render note mapping (was mapped twice, once per layer).
 
@@ -103,13 +105,13 @@ This removes the existing per-frame note recompute (a measurable win) and is wha
 
 ## Files to touch
 
-- `src/components/FretboardSVG/motionPolicy.ts` — add `transitionKey` to input; return `connectorMode: "group"` on key change during playback. (+test)
+- `src/components/FretboardSVG/motionPolicy.ts` — return `connectorMode: "group"` during playback (keep `shapeMode: "none"`). (+test)
 - `src/store/practiceLensAtoms.ts` (or nearest fitting store module) — add `anticipationActiveAtom`. (+test)
 - `src/components/FretboardSVG/utils/semantics.ts` — `getEmphasis` keys anticipation on a discrete `anticipationActive` boolean instead of `beatPosition`/`stepDurationBeats`; remove root static-glow assumption. (+test)
 - `src/components/FretboardSVG/hooks/useAnimatedFretboardView.ts` + `useFretboardPlaybackSnapshot.ts` — feed discrete phase into emphasis; drop per-frame `beatPosition` dependency for emphasis.
 - `src/components/FretboardSVG/FretboardNoteLayer.tsx` — single-layer render, stable keys, glow underlay element, `transform: scale` for radius emphasis, double-ring root marker.
-- `src/components/FretboardSVG/FretboardConnectorLayer.tsx` — CSS-opacity group fade (drop `motion.g` value animation); halo+fill below / outline above split; ghost incoming-voicing preview.
-- `src/components/FretboardSVG/FretboardSVG.tsx` — derive `transitionKey`; collapse two note layers into one positioned between the connector halo/fill and outline groups; pass next-voicing geometry for the ghost.
+- `src/components/FretboardSVG/FretboardConnectorLayer.tsx` — frame-stable memoization; halo+fill below / outline above split; ghost incoming-voicing preview.
+- `src/components/FretboardSVG/FretboardSVG.tsx` — collapse two note layers into one positioned between the connector halo/fill and outline groups; pass next-voicing geometry for the ghost.
 - `src/components/FretboardSVG/FretboardSVG.module.css` — extend note transition set; glow-underlay rules + pulse `@keyframes` driven by `--beat-duration`; connector group CSS opacity transition; double-ring root rule; remove root static-glow filter.
 - `src/styles/semantic.css` / `src/styles/themes.css` — remove root resting-glow application; add `--note-glow-departing` only if needed.
 - Visual baselines under `e2e/` — refresh after the above land.
@@ -118,17 +120,17 @@ This removes the existing per-frame note recompute (a measurable win) and is wha
 
 ## Performance safeguards
 
-- **No per-frame JS for visuals.** All boundary animation is CSS triggered by discrete key/class/attribute changes (`transitionKey`, `anticipationActive`, single `--beat-duration` write).
+- **No per-frame JS for visuals.** All boundary animation is compositor-driven, triggered by discrete changes (chord-identity `motionKey`, `anticipationActive`, single `--beat-duration` write). The connector `motion.g` animates only `opacity` (compositor) and only on identity change.
 - **Net reduction** of the existing hot path: emphasis recomputes ~twice per step (was 60×/sec); single note layer halves per-render note mapping; connector fade leaves the JS thread (CSS opacity vs `motion.g`).
 - **Reduced-motion authoritative.** `prefersReducedMotion` forces all modes static and suppresses ghost preview + pulse.
 - Verify against the live dev server (preview tools) at 60 bpm and 240 bpm — connectors, notes, and glow must transition together (fixes the documented 240bpm desync).
 
 ## Testing
 
-- **motionPolicy:** reduced-motion → all `none`; playback + unchanged `transitionKey` → connectors static; playback + changed `transitionKey` → `connectorMode: "group"`.
+- **motionPolicy:** reduced-motion → all `none`; playback → `connectorMode: "group"`, `shapeMode: "none"`, `noteMode: "css"`; idle → all `group`/`css`.
 - **anticipationActiveAtom:** false outside last beat; true inside last beat; false when not playing.
 - **getEmphasis:** existing discrete-role assertions stay green; anticipation branch now driven by the boolean (update inputs); departing/base unchanged; root no longer emits a resting glow.
-- **Perf contract:** a frame-tick update (same `transitionKey`, same `anticipationActive`) does not change the emphasis output object identity for a note / does not retrigger the connector fade.
+- **Perf contract:** a frame-tick update (same `stepIndex`, same `anticipationActive`) does not change the emphasis output for a note; `FretboardConnectorLayer` does not re-render on frame ticks (props frame-stable).
 - **Visual regression:** refresh darwin baselines; expect diffs in fretboard-svg, chord-overlay, and playback-frame snapshots (both modes).
 - **Manual/preview smoke:** both modes; root reads as double-ring (no glow); guide vs anticipation vs hold are distinguishable; ghost preview shows the next voicing in the last beat; transition is smooth at 60 and 240 bpm; reduced-motion is fully static.
 
