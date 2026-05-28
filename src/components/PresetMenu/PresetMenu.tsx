@@ -63,6 +63,7 @@ function MenuOption({
   return (
     <DropdownMenu.Item
       className={styles["preset-menu-item"]}
+      aria-current={option.id === currentId ? "true" : undefined}
       onSelect={() => onSelect(option.id)}
     >
       <span className={styles["preset-menu-item-indicator"]}>

@@ -82,6 +82,18 @@ describe("PresetMenu", () => {
     expect(screen.getByRole("button", { name: /Preset/i })).toBeDisabled();
   });
 
+  it("marks the active option with aria-current", async () => {
+    const user = userEvent.setup();
+    render(<PresetMenu {...baseProps} />);
+    await user.click(screen.getByRole("button", { name: /Preset/i }));
+    // Open the Pop / Rock submenu (top-level order: Suggested, Pop / Rock, Jazz).
+    await user.keyboard("{ArrowDown}{ArrowDown}{ArrowRight}");
+    const active = screen.getByRole("menuitem", { name: "I-V-vi-IV" });
+    expect(active).toHaveAttribute("aria-current", "true");
+    const other = screen.getByRole("menuitem", { name: "vi-IV-I-V" });
+    expect(other).not.toHaveAttribute("aria-current");
+  });
+
   it("has no axe violations", async () => {
     const { container } = render(<PresetMenu {...baseProps} />);
     expect(await axe(container)).toHaveNoViolations();
