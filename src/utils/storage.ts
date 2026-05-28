@@ -106,6 +106,21 @@ function migrateLegacyKeys() {
 }
 migrateLegacyKeys();
 
+// One-shot orphan-key sweep. Removes the
+// localStorage entries left behind by `chordSnapToScaleAtom` and
+// `chordScopeToPositionAtom` so they don't bloat user storage indefinitely.
+function sweepRetiredKeys() {
+  if (!hasLocalStorage()) return;
+  for (const key of ["chordSnapToScale", "chordScopeToPosition"]) {
+    try {
+      localStorage.removeItem(k(key));
+    } catch (e) {
+      console.warn("localStorage.removeItem failed", { key, e });
+    }
+  }
+}
+sweepRetiredKeys();
+
 // Sync read from localStorage on atom initialization to prevent default flash.
 export const GET_ON_INIT = { getOnInit: true } as const;
 
@@ -185,6 +200,23 @@ export function createStorage<T>(options: StorageOptions<T> = {}) {
 
 export function rawStringStorage<T extends string>() {
   return createStorage<T>();
+}
+
+export function stringValidator(opts: { nullable?: boolean } = {}) {
+  return (v: unknown): v is string | null =>
+    typeof v === "string" || (opts.nullable === true && v === null);
+}
+
+export function numberValidator(guard?: (n: number) => boolean) {
+  return (v: unknown): v is number =>
+    typeof v === "number" && Number.isFinite(v) && (guard ? guard(v) : true);
+}
+
+export function enumValidator<const T extends readonly (string | number)[]>(
+  values: T,
+) {
+  const set = new Set<T[number]>(values);
+  return (v: unknown): v is T[number] => set.has(v as T[number]);
 }
 
 export const booleanStorage = createStorage<boolean>({

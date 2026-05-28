@@ -6,8 +6,11 @@ import { useShapeState } from "../../hooks/useShapeState";
 import type { FingeringPattern } from "../../store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
+import { StringSetPicker } from "../shared/StringSetPicker";
 import { GroupHeader, Prop } from "../Inspector/InspectorGrid";
 import shared from "../shared/shared.module.css";
+import styles from "./FingeringPatternControls.module.css";
 
 const LONG_PRESS_MS = 500;
 const MOVE_CANCEL_PX = 8;
@@ -16,6 +19,12 @@ const isTouchPrimary =
   typeof window !== "undefined" &&
   window.matchMedia("(pointer: coarse)").matches;
 
+export interface FingeringPatternControlsProps {
+  /** When true, suppresses the internal "Fingering" GroupHeader. Use when the
+   * host already renders its own section heading for this group. */
+  hideHeader?: boolean;
+}
+
 /**
  * Renders the FINGERING property-grid group: the group header plus the
  * pattern selector and its per-pattern sub-controls, as `Prop` cells. It is
@@ -23,7 +32,7 @@ const isTouchPrimary =
  * transparent to CSS grid, so the emitted `GroupHeader`/`Prop` elements become
  * direct grid items.
  */
-export function FingeringPatternControls() {
+export function FingeringPatternControls({ hideHeader = false }: FingeringPatternControlsProps) {
   const { t } = useTranslation();
   const {
     fingeringPattern,
@@ -66,39 +75,31 @@ export function FingeringPatternControls() {
 
   return (
     <>
-      <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>
+      {!hideHeader && <GroupHeader>{t("inspector.groupFingering")}</GroupHeader>}
 
-      <Prop label={t("inspector.positionCluster")} span={2}>
-        <ToggleBar
-          label={t("inspector.positionCluster")}
-          options={[
-            { value: "none", label: "None" },
-            { value: "caged", label: "CAGED" },
-            { value: "3nps", label: "3NPS" },
+      <Prop label={t("inspector.fingeringPatternLabel")} span={3}>
+        <LabeledSelect
+          label={t("inspector.fingeringPatternLabel")}
+          hideLabel
+          width="fill"
+          value={fingeringPattern}
+          groups={[
+            { options: [{ value: "none", label: t("inspector.none") }] },
+            {
+              groupLabel: t("inspector.fingeringGroupBoxShapes"),
+              options: [
+                { value: "caged", label: "CAGED" },
+                { value: "3nps", label: "3NPS" },
+              ],
+            },
+            {
+              groupLabel: t("inspector.fingeringGroupLinear"),
+              options: [
+                { value: "one-string", label: "1-String" },
+                { value: "two-strings", label: "2-Strings" },
+              ],
+            },
           ]}
-          value={
-            fingeringPattern === "none" ||
-            fingeringPattern === "caged" ||
-            fingeringPattern === "3nps"
-              ? fingeringPattern
-              : undefined
-          }
-          onChange={(v) => setFingeringPattern(v as FingeringPattern)}
-        />
-      </Prop>
-
-      <Prop label={t("inspector.stringStudyCluster")} span={2}>
-        <ToggleBar
-          label={t("inspector.stringStudyCluster")}
-          options={[
-            { value: "one-string", label: "1-String" },
-            { value: "two-strings", label: "2-Strings" },
-          ]}
-          value={
-            fingeringPattern === "one-string" || fingeringPattern === "two-strings"
-              ? fingeringPattern
-              : undefined
-          }
           onChange={(v) => setFingeringPattern(v as FingeringPattern)}
         />
       </Prop>
@@ -106,14 +107,16 @@ export function FingeringPatternControls() {
       {fingeringPattern === "caged" && (
         <Prop
           label={t("controls.shape")}
-          span={2}
-          hint={isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")}
+          span={9}
+          labelAccessory={
+            isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")
+          }
         >
           <span id={shapeHelpId} className={shared["sr-only"]}>
             {isTouchPrimary ? t("controls.shapeHintTouch") : t("controls.shapeHintPointer")}
           </span>
           <div
-            className={shared["toggle-group"]}
+            className={styles.shapeToggleBar}
             role="group"
             aria-label={t("controls.shape")}
             aria-describedby={shapeHelpId}
@@ -122,6 +125,7 @@ export function FingeringPatternControls() {
               type="button"
               className={clsx(
                 shared["toggle-btn"],
+                styles.shapeToggleButton,
                 cagedShapes.size === CAGED_SHAPES.length && shared.active,
               )}
               aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
@@ -140,7 +144,11 @@ export function FingeringPatternControls() {
                 <motion.button
                   key={s}
                   type="button"
-                  className={clsx(shared["toggle-btn"], isActive && shared.active)}
+                  className={clsx(
+                    shared["toggle-btn"],
+                    styles.shapeToggleButton,
+                    isActive && shared.active,
+                  )}
                   data-pressing={pressingShape === s || undefined}
                   aria-pressed={isActive}
                   title={
@@ -202,7 +210,7 @@ export function FingeringPatternControls() {
 
       {fingeringPattern === "3nps" && (
         <>
-          <Prop label={t("controls.position")} span={2}>
+          <Prop label={t("controls.position")} span={7}>
             <ToggleBar
               label={t("controls.position")}
               options={[1, 2, 3, 4, 5, 6, 7].map((p) => ({
@@ -229,18 +237,21 @@ export function FingeringPatternControls() {
 
       {fingeringPattern === "one-string" && (
         <>
-          <Prop label={t("controls.string")} span={2}>
-            <ToggleBar
+          <Prop label={t("controls.string")} span={3}>
+            <StringSetPicker
               label={t("controls.string")}
-              options={[1, 2, 3, 4, 5, 6].map((n, i) => ({ value: i, label: String(n) }))}
-              value={oneStringIndex}
-              onChange={(v) => setOneStringIndex(v as number)}
+              value={String(oneStringIndex)}
+              onChange={(v) => setOneStringIndex(Number(v))}
+              options={[0, 1, 2, 3, 4, 5].map((i) => ({
+                id: String(i),
+                strings: [i],
+              }))}
+              width="fill"
             />
           </Prop>
           <Prop
             label={t("controls.connectors")}
-            span={2}
-            hint={oneStringInterval > 0 ? t("controls.showConsecutiveSteps") : undefined}
+            span={6}
           >
             <ToggleBar
               label={t("controls.connectors")}
@@ -257,33 +268,33 @@ export function FingeringPatternControls() {
 
       {fingeringPattern === "two-strings" && (
         <>
-          <Prop label={t("controls.strings")} span={2}>
-            <ToggleBar
+          <Prop label={t("controls.strings")} span={3}>
+            <StringSetPicker
               label={t("controls.strings")}
+              value={String(twoStringsPair)}
+              onChange={(v) => setTwoStringsPair(Number(v))}
               options={
                 twoStringsInterval === 3
                   ? [
-                      { value: 0, label: "1-3" },
-                      { value: 1, label: "2-4" },
-                      { value: 2, label: "3-5" },
-                      { value: 3, label: "4-6" },
+                      { id: "0", strings: [0, 2] },
+                      { id: "1", strings: [1, 3] },
+                      { id: "2", strings: [2, 4] },
+                      { id: "3", strings: [3, 5] },
                     ]
                   : [
-                      { value: 0, label: "1-2" },
-                      { value: 1, label: "2-3" },
-                      { value: 2, label: "3-4" },
-                      { value: 3, label: "4-5" },
-                      { value: 4, label: "5-6" },
+                      { id: "0", strings: [0, 1] },
+                      { id: "1", strings: [1, 2] },
+                      { id: "2", strings: [2, 3] },
+                      { id: "3", strings: [3, 4] },
+                      { id: "4", strings: [4, 5] },
                     ]
               }
-              value={twoStringsPair}
-              onChange={(v) => setTwoStringsPair(v as number)}
+              width="fill"
             />
           </Prop>
           <Prop
             label={t("controls.interval")}
-            span={2}
-            hint={twoStringsInterval > 0 ? t("controls.pairMembersConnected") : undefined}
+            span={6}
           >
             <ToggleBar
               label={t("controls.interval")}

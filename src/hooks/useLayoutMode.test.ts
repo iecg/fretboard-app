@@ -22,11 +22,11 @@ function setViewport(width: number, height: number) {
 
 describe("useLayoutMode", () => {
   describe("returns mobile tier layout for narrow viewport", () => {
-    it("tier is mobile and stringRowPx is 28 at 375x667", () => {
+    it("tier is mobile and stringRowPx is 34 at 375x667", () => {
       setViewport(375, 667);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("mobile");
-      expect(result.current.stringRowPx).toBe(28);
+      expect(result.current.stringRowPx).toBe(34);
     });
   });
 
@@ -49,14 +49,17 @@ describe("useLayoutMode", () => {
   });
 
   describe("updates layout on window resize", () => {
-    it("re-computes tier when viewport changes from mobile to desktop", () => {
+    it("re-computes tier when viewport changes from mobile to desktop", async () => {
       setViewport(375, 667);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("mobile");
 
-      act(() => {
+      await act(async () => {
         setViewport(1280, 900);
         fireEvent(window, new Event("resize"));
+        await new Promise((resolve) =>
+          window.requestAnimationFrame(() => resolve(undefined)),
+        );
       });
 
       expect(result.current.tier).toBe("desktop");
@@ -98,5 +101,34 @@ describe("useLayoutMode showStatusBar", () => {
     const { result } = renderHook(() => useLayoutMode(), { wrapper });
     expect(result.current.variant).toBe("tablet-stacked");
     expect(result.current.showStatusBar).toBe(true);
+  });
+
+  it("coalesces a resize burst into one state commit per animation frame", () => {
+    let rafCallback: FrameRequestCallback | null = null;
+    const originalRaf = window.requestAnimationFrame;
+    window.requestAnimationFrame = ((cb: FrameRequestCallback) => {
+      rafCallback = cb;
+      return 1;
+    }) as typeof window.requestAnimationFrame;
+
+    setViewport(375, 667);
+    const { result } = renderHook(() => useLayoutMode(), { wrapper });
+    expect(result.current.tier).toBe("mobile");
+
+    act(() => {
+      setViewport(768, 1024);
+      fireEvent(window, new Event("resize"));
+      setViewport(1280, 900);
+      fireEvent(window, new Event("resize"));
+    });
+
+    expect(result.current.tier).toBe("mobile");
+
+    act(() => {
+      rafCallback?.(16);
+    });
+
+    expect(result.current.tier).toBe("desktop");
+    window.requestAnimationFrame = originalRaf;
   });
 });

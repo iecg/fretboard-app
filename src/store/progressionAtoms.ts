@@ -1,5 +1,6 @@
 import { atom } from "jotai";
-import { atomWithStorage, RESET } from "jotai/utils";
+import { atomWithStorage, RESET, splitAtom } from "jotai/utils";
+import { getDegreeSequence, getDiatonicChord } from "@fretflow/core";
 import {
   DEFAULT_BEATS_PER_BAR,
   DEFAULT_PROGRESSION_TEMPO_BPM,
@@ -21,10 +22,17 @@ import {
   remapProgressionStepsForScale,
   resolveProgressionStep,
   totalProgressionBars,
+  transposeManualRootForRootChange,
+  type ProgressionPresetCategory,
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "../progressions/progressionDomain";
-import { rootNoteAtom, scaleNameAtom, useFlatsAtom } from "./scaleAtoms";
+import {
+  registerRootChangeListener,
+  rootNoteAtom,
+  scaleNameAtom,
+  preferFlatsAtom,
+} from "./scaleAtoms";
 import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
 import {
@@ -32,27 +40,30 @@ import {
   booleanStorage,
   constrainedNumberStorage,
   createStorage,
+  enumValidator,
   k,
+  numberValidator,
+  stringValidator,
   withStorageErrorBoundary,
 } from "../utils/storage";
 
 const beatsPerBarStorage = createStorage<number>({
   serialize: (v) => String(v),
   deserialize: (raw) => Number(raw),
-  validate: (v): v is number => typeof v === "number" && isBeatsPerBar(v),
+  validate: numberValidator(isBeatsPerBar),
 });
 
 const DEFAULT_STEPS: ProgressionStep[] = [
-  { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
-  { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+  { id: "default-iv", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
 ];
 
 const stringStorage = createStorage<string>({
   serialize: (v) => v,
   deserialize: (raw) => raw,
-  validate: (v): v is string => typeof v === "string",
+  validate: stringValidator(),
 });
 
 const chordInstrumentStorage = createStorage<ChordInstrumentId>({
@@ -81,11 +92,30 @@ const progressionStepsStorage = createStorage<ProgressionStep[]>({
 });
 
 export const progressionStepsAtom = atomWithStorage<ProgressionStep[]>(
-  k("progressionSteps"),
+  k("progressionSteps.v2"),
   DEFAULT_STEPS,
   progressionStepsStorage,
   GET_ON_INIT,
 );
+
+export const progressionStepAtomsAtom = splitAtom(progressionStepsAtom);
+
+/**
+ * Phase 2.2: when the user changes the scale **root**, transpose every step's
+ * `manualRoot` by the interval from the old root to the new root. Steps with
+ * `manualRoot === null` are diatonic and already follow the new key through
+ * their `degree`, so they pass through unchanged.
+ *
+ * Scale-NAME changes (e.g. Major → Natural Minor) intentionally leave
+ * `manualRoot` alone — the absolute pitch the user pinned doesn't move when
+ * the parent scale's quality shifts. That path is handled by
+ * `remapProgressionStepsForScaleAtom`, which only rewrites `degree`.
+ */
+registerRootChangeListener((prev, next, get, set) => {
+  const steps = get(progressionStepsAtom);
+  if (steps.every((step) => step.manualRoot == null)) return;
+  set(progressionStepsAtom, transposeManualRootForRootChange(steps, prev, next));
+});
 
 export const progressionTempoBpmAtom = atomWithStorage<number>(
   k("progressionTempoBpm"),
@@ -141,9 +171,6 @@ export const progressionChordEnabledAtom = atomWithStorage<boolean>(
   chordEnabledStorage,
   GET_ON_INIT,
 );
-// Backwards-compatibility alias — existing consumers still reference progressionStrumEnabledAtom.
-export const progressionStrumEnabledAtom = progressionChordEnabledAtom;
-
 export const progressionBassEnabledAtom = atomWithStorage<boolean>(
   k("progressionBassEnabled"),
   true,
@@ -174,6 +201,20 @@ export const beatsPerBarAtom = atomWithStorage<number>(
   k("progressionBeatsPerBar"),
   DEFAULT_BEATS_PER_BAR,
   beatsPerBarStorage,
+  GET_ON_INIT,
+);
+
+export type TimeSignatureDenominator = 1 | 2 | 4 | 8 | 16;
+const TIME_SIGNATURE_DENOMINATORS: readonly TimeSignatureDenominator[] = [1, 2, 4, 8, 16];
+
+const timeSignatureDenominatorStorage = createStorage<TimeSignatureDenominator>({
+  validate: enumValidator(TIME_SIGNATURE_DENOMINATORS),
+});
+
+export const timeSignatureDenominatorAtom = atomWithStorage<TimeSignatureDenominator>(
+  k("timeSignatureDenominator"),
+  4,
+  timeSignatureDenominatorStorage,
   GET_ON_INIT,
 );
 
@@ -245,15 +286,55 @@ export const applyGenreStyleAtom = atom(null, (_get, set, genreId: string) => {
 });
 
 export const activeProgressionStepIndexAtom = atom(0);
-const progressionPlayingStateAtom = atom(false);
+
+/**
+ * Primitive RAF-written mirror of the active step index. Written by
+ * `visualClock.ts` every animation frame during playback whenever the audio
+ * clock crosses into a new step. Stays whatever value it last held when
+ * playback stops — consumers should read `displayedProgressionStepIndexAtom`
+ * instead, which routes to the logical atom when paused/stopped.
+ *
+ * Exported for tests and for the visual clock module; UI code should NOT
+ * read this directly.
+ */
+export const displayedStepIndexPrimitiveAtom = atom(0);
+
+/**
+ * The step index every chord-visual derivation should read.
+ *
+ * - During playback: returns the RAF-written primitive, which advances on the
+ *   exact frame the audio clock crosses into the next step (same source the
+ *   playhead pulls from). Eliminates the `Tone.Draw` scheduling lag that
+ *   caused the highlight to trail the playhead by 1-2 frames per chord
+ *   transition.
+ * - When stopped/paused: returns the canonical logical index, so editor
+ *   selection and chord overlays reflect whichever step the user has
+ *   clicked on.
+ */
+export const displayedProgressionStepIndexAtom = atom((get) => {
+  if (get(progressionPlayingAtom)) {
+    return get(displayedStepIndexPrimitiveAtom);
+  }
+  return get(activeProgressionStepIndexAtom);
+});
+
+export const progressionPlayingStateAtom = atom(false);
 export const progressionStepDeadlineAtom = atom<number | null>(null);
+
+/**
+ * True from the moment `setProgressionPlaying(true)` is honored until the
+ * first audio callback fires. Drives the spinner overlay on the play button
+ * so the user gets feedback during the AudioContext warm-up + buildAllLayers
+ * window (typically 100–800ms on a cold context). Transient — not persisted.
+ */
+export const progressionPlaybackLoadingAtom = atom<boolean>(false);
 
 export const resolvedProgressionStepsAtom = atom((get) => {
   const scaleName = get(scaleNameAtom);
   const rootNote = get(rootNoteAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
   return get(progressionStepsAtom).map((step, index) =>
-    resolveProgressionStep(step, scaleName, rootNote, index, useFlats),
+    resolveProgressionStep(step, scaleName, rootNote, index, preferFlats),
   );
 });
 
@@ -303,12 +384,12 @@ export const currentProgressionPresetIdAtom = atom<string>((get) => {
 
 export const activeProgressionStepAtom = atom((get) => {
   const steps = get(progressionStepsAtom);
-  return steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
+  return steps[clampProgressionIndex(get(displayedProgressionStepIndexAtom), steps)] ?? null;
 });
 
 export const activeResolvedProgressionStepAtom = atom((get) => {
   const steps = get(resolvedProgressionStepsAtom);
-  return steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
+  return steps[clampProgressionIndex(get(displayedProgressionStepIndexAtom), steps)] ?? null;
 });
 
 export const progressionStepDurationMsAtom = atom((get) => {
@@ -333,6 +414,19 @@ export const setProgressionActiveStepIndexAtom = atom(null, (get, set, index: nu
   set(activeProgressionStepIndexAtom, clampProgressionIndex(index, get(progressionStepsAtom)));
 });
 
+/**
+ * Atomic "stop": set playing=false AND active step index=0. The orchestrator's
+ * Effect 1 tear-down path will dispose the Tone Parts because playing flipped
+ * false; the activeIndex reset is what distinguishes Stop from Pause.
+ */
+export const stopProgressionPlaybackAtom = atom(null, (get, set) => {
+  set(progressionPlayingStateAtom, false);
+  const resolved = get(resolvedProgressionStepsAtom);
+  const firstResolvable = findFirstResolvableStepIndex(resolved);
+  set(activeProgressionStepIndexAtom, firstResolvable ?? 0);
+  set(progressionStepDeadlineAtom, null);
+});
+
 export const setProgressionPlayingAtom = atom(null, (get, set, playing: boolean) => {
   if (playing && get(progressionPlaybackBlockedReasonAtom)) {
     set(progressionPlayingStateAtom, false);
@@ -346,6 +440,18 @@ export const setProgressionPlayingAtom = atom(null, (get, set, playing: boolean)
   );
 });
 
+// Maps a preset category to the genre style whose backing-track defaults best
+// fit the progression. Loading a preset reapplies the matching genre so the
+// backing track (instrument, patterns, swing) follows the preset.
+const PRESET_CATEGORY_GENRE: Record<ProgressionPresetCategory, string> = {
+  "pop-rock": "rock",
+  blues: "blues",
+  jazz: "jazz",
+  folk: "pop",
+  modal: "rock",
+  minor: "ballad",
+};
+
 export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string) => {
   const preset = PROGRESSION_PRESETS.find((entry) => entry.id === presetId);
   if (!preset) return;
@@ -353,6 +459,8 @@ export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string)
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);
+  const genreId = PRESET_CATEGORY_GENRE[preset.category];
+  if (genreId) set(applyGenreStyleAtom, genreId);
 });
 
 export const loadProgressionStepsAtom = atom(
@@ -383,12 +491,23 @@ export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName
 });
 
 export const addProgressionStepAtom = atom(null, (get, set) => {
-  const degrees = get(resolvedProgressionStepsAtom).filter((step) => !step.unavailable);
+  const tonic = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
   const previous = get(activeProgressionStepAtom);
-  const degree = previous?.degree ?? degrees[0]?.degree ?? "I";
+  const sequence = getDegreeSequence(scaleName);
+
+  const previousIdx = previous ? sequence.indexOf(previous.degree) : -1;
+  const nextIdx = previousIdx >= 0
+    ? (previousIdx + 1) % sequence.length
+    : 0;
+  const degree = sequence[nextIdx] ?? "I";
+
+  const diatonic = getDiatonicChord(degree, scaleName, tonic);
+  const qualityOverride = diatonic?.quality ?? null;
+
   const next = [
     ...get(progressionStepsAtom),
-    createProgressionStep({ degree, duration: { value: 1, unit: "bar" }, qualityOverride: null }),
+    createProgressionStep({ degree, duration: { value: 1, unit: "bar" }, qualityOverride }),
   ];
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, next.length - 1);
@@ -445,7 +564,7 @@ export const duplicateProgressionStepAtom = atom(
 
 export const updateProgressionStepDegreeAtom = atom(null, (get, set, update: { id: string; degree: string }) => {
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
-    step.id === update.id ? { ...step, degree: update.degree, qualityOverride: null } : step,
+    step.id === update.id ? { ...step, degree: update.degree } : step,
   ));
 });
 
@@ -462,12 +581,44 @@ export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { 
   ));
 });
 
+/**
+ * Sets `manualRoot` on the target step. When non-null the step is treated as
+ * a manual / out-of-scale chord; when null the step reverts to diatonic
+ * resolution from its `degree`. Consumed via `activeChordRootAtom` (and the
+ * scale-root transposition listener) in songStateAtoms / Phase 2.4–2.5.
+ */
+export const updateProgressionStepRootAtom = atom(
+  null,
+  (get, set, update: { id: string; manualRoot: string | null }) => {
+    const next = get(progressionStepsAtom).map((step) =>
+      step.id === update.id ? { ...step, manualRoot: update.manualRoot } : step,
+    );
+    set(progressionStepsAtom, next);
+  },
+);
+
+/**
+ * Updates the cached `degree` on the target step without touching any other
+ * field. Used when the resolver wants to refresh the degree hint for a
+ * manual-root step or otherwise persist a recomputed degree.
+ */
+export const updateProgressionStepCachedDegreeAtom = atom(
+  null,
+  (get, set, update: { id: string; degree: string }) => {
+    const next = get(progressionStepsAtom).map((step) =>
+      step.id === update.id ? { ...step, degree: update.degree } : step,
+    );
+    set(progressionStepsAtom, next);
+  },
+);
+
 export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
+  const allowWrap = get(progressionPlayingStateAtom) && get(progressionLoopEnabledAtom);
   const next = findNextResolvableStepIndex(
     get(resolvedProgressionStepsAtom),
     get(activeProgressionStepIndexAtom),
     1,
-    get(progressionLoopEnabledAtom),
+    allowWrap,
   );
   if (next === null) {
     set(progressionPlayingStateAtom, false);
@@ -485,17 +636,15 @@ export const advanceProgressionPlaybackAtom = atom(null, (get, set) => {
 });
 
 export const previousProgressionStepAtom = atom(null, (get, set) => {
+  const allowWrap = get(progressionPlayingStateAtom) && get(progressionLoopEnabledAtom);
   const next = findNextResolvableStepIndex(
     get(resolvedProgressionStepsAtom),
     get(activeProgressionStepIndexAtom),
     -1,
-    true,
+    allowWrap,
   );
   if (next === null) return;
   set(activeProgressionStepIndexAtom, next);
-  // Mirror `advanceProgressionPlaybackAtom`: when stepping backward during
-  // active playback, recompute the deadline from the new step's duration so
-  // the playback loop doesn't fire on the previous step's stale timer.
   if (get(progressionPlayingStateAtom)) {
     const nextStep = get(progressionStepsAtom)[next];
     const durationMs = nextStep
@@ -514,6 +663,7 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(progressionDrumsEnabledAtom, RESET);
   set(progressionMetronomeEnabledAtom, RESET);
   set(beatsPerBarAtom, RESET);
+  set(timeSignatureDenominatorAtom, RESET);
   set(progressionGenreStyleAtom, RESET);
   set(progressionChordInstrumentAtom, RESET);
   set(progressionChordPatternAtom, RESET);

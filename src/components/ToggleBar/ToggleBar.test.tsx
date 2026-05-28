@@ -1,9 +1,16 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { axe } from "../../test-utils/a11y";
+
+const sharedCSS = readFileSync(
+  resolve(__dirname, "../shared/shared.module.css"),
+  "utf-8",
+);
 
 const options = [
   { value: "a", label: "Option A" },
@@ -90,6 +97,10 @@ describe("ToggleBar/ToggleBar", () => {
     });
   });
 
+  it("shared toggle group keeps a 32px control height", () => {
+    expect(sharedCSS).toMatch(/\.toggle-group\s*\{[^}]*height:\s*32px/s);
+  });
+
   it("variant defaults to default when omitted", () => {
     const { container } = render(
       <ToggleBar options={options} value="a" onChange={vi.fn()} />,
@@ -150,6 +161,27 @@ describe("ToggleBar/ToggleBar", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
+  it("disabled option uses reduced opacity and not-allowed cursor", () => {
+    render(
+      <ToggleBar
+        options={[{ value: "a", label: "A", disabled: true }]}
+        value={undefined}
+        onChange={() => {}}
+      />,
+    );
+    const btn = screen.getByRole("button", { name: "A" });
+    expect(btn).toBeDisabled();
+    // jsdom does not compute styles from CSS Modules. Verify the rule exists in
+    // the source stylesheet — combined with the DOM-level disabled assertion,
+    // this guarantees the rule fires in a real browser.
+    expect(sharedCSS).toMatch(
+      /\.toggle-btn:disabled[^{]*\{[^}]*cursor:\s*not-allowed/,
+    );
+    expect(sharedCSS).toMatch(
+      /\.toggle-btn:disabled[^{]*\{[^}]*opacity:\s*var\(--disabled-opacity\)/,
+    );
+  });
+
   it.each([
     ["default", undefined],
     ["tabs", "tabs"],
@@ -183,5 +215,23 @@ describe("ToggleBar/ToggleBar", () => {
       const btn = screen.getByRole("button", { name });
       expect(btn.getAttribute("aria-pressed")).toBe("false");
     }
+  });
+
+  it("disables every option button when top-level disabled=true", () => {
+    const onChange = vi.fn();
+    render(
+      <ToggleBar
+        value="a"
+        onChange={onChange}
+        options={options}
+        disabled
+      />,
+    );
+    for (const opt of options) {
+      const btn = screen.getByRole("button", { name: opt.label });
+      expect(btn).toBeDisabled();
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Option B" }));
+    expect(onChange).not.toHaveBeenCalled();
   });
 });

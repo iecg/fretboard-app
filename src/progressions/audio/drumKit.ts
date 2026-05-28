@@ -1,13 +1,20 @@
 /**
- * Synthesized drum kit voices: kick, snare, closed/open hi-hat. Each hit is
- * scheduled at an absolute `AudioContext.currentTime` so the backing track
- * stays sample-accurate even if the React loop drifts.
+ * Synthesized drum kit voices on Tone.js primitives:
  *
- * Voices are short and self-contained: each call builds the oscillators /
- * noise buffers it needs, schedules an envelope, and lets the WebAudio engine
- * tear them down on `onended`. There is no pool — drum hits are cheap and
- * disposable.
+ *  - Kick  → `Tone.MembraneSynth` (sine + pitch-decay)
+ *  - Snare → `Tone.NoiseSynth`    (white noise + envelope)
+ *  - HiHat → `Tone.MetalSynth`    (short decay closed / longer decay open)
+ *  - Ride  → `Tone.MetalSynth`    (long decay)
+ *
+ * Each schedule function constructs a fresh, one-shot voice, triggers it at
+ * `time` (an absolute Tone Transport-compatible seconds value), and returns a
+ * handle whose `cancel()` defers `dispose()` past the voice's release tail to
+ * avoid truncation clicks. This matches the pattern used by `metronome.ts`,
+ * `bass.ts`, and `string.ts` after the Phase 7B migration.
  */
+import * as Tone from "tone";
+import type { ReusableVoiceLease } from "./createReusableVoicePool";
+import { createReusableVoicePool } from "./createReusableVoicePool";
 
 const HIT_VELOCITY_DEFAULT = 1;
 
@@ -16,31 +23,14 @@ function clampVelocity(v: number | undefined): number {
   return Math.max(0, Math.min(1.5, v));
 }
 
-let cachedNoiseBuffer: AudioBuffer | null = null;
-let cachedNoiseCtx: AudioContext | null = null;
-
-/** Build (and memoize) a 1-second white-noise buffer per AudioContext. */
-function getNoiseBuffer(ctx: AudioContext): AudioBuffer {
-  if (cachedNoiseBuffer && cachedNoiseCtx === ctx) return cachedNoiseBuffer;
-  const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-  cachedNoiseBuffer = buffer;
-  cachedNoiseCtx = ctx;
-  return buffer;
-}
-
-function disposeNodes(...nodes: AudioNode[]): void {
-  for (const n of nodes) {
-    try {
-      n.disconnect();
-    } catch {
-      // already disconnected
-    }
-  }
-}
+// Dispose-deferral windows (ms) chosen per voice so the natural release tail
+// is not truncated. Slightly longer than the voice's release time gives the
+// envelope room to settle before we drop the node.
+const KICK_DISPOSE_MS = 600; // kick decay ~350 ms
+const SNARE_DISPOSE_MS = 300; // snare decay ~180 ms
+const HAT_CLOSED_DISPOSE_MS = 150; // closed hat decay ~50 ms
+const HAT_OPEN_DISPOSE_MS = 500; // open hat decay ~350 ms
+const RIDE_DISPOSE_MS = 1500; // ride decay ~1 s
 
 export interface DrumHitOptions {
   velocity?: number;
@@ -50,124 +40,143 @@ export interface DrumVoiceHandle {
   cancel: () => void;
 }
 
-function createDrumVoiceHandle(
-  ctx: AudioContext,
-  sources: readonly AudioScheduledSourceNode[],
-  nodes: readonly AudioNode[],
+function deferredDisposeHandle(
+  lease: ReusableVoiceLease<
+    Tone.MembraneSynth | Tone.NoiseSynth | Tone.MetalSynth
+  >,
+  time: number,
+  busyUntil: number,
+  tailMs: number,
 ): DrumVoiceHandle {
-  let canceled = false;
+  let cancelled = false;
   return {
     cancel: () => {
-      if (canceled) return;
-      canceled = true;
-      for (const source of sources) {
-        try {
-          source.stop(ctx.currentTime);
-        } catch {
-          // Source may already have ended or had an earlier stop time.
-        }
+      if (cancelled) return;
+      cancelled = true;
+      if (!lease.isCurrent()) return;
+
+      const cancelTime = Tone.now();
+      if (cancelTime < time) {
+        lease.dispose();
+        return;
       }
-      disposeNodes(...nodes);
+
+      if (cancelTime >= busyUntil) {
+        return;
+      }
+
+      lease.setBusyUntil(cancelTime + tailMs / 1000);
+      setTimeout(() => {
+        try {
+          lease.dispose();
+        } catch {
+          /* already disposed */
+        }
+      }, tailMs);
     },
   };
 }
 
+const NOOP_HANDLE: DrumVoiceHandle = { cancel: () => {} };
+const kickVoicePool = createReusableVoicePool<Tone.MembraneSynth>({
+  createVoice: () =>
+    new Tone.MembraneSynth({
+      pitchDecay: 0.04,
+      octaves: 6,
+      oscillator: { type: "sine" },
+      envelope: {
+        attack: 0.001,
+        decay: 0.35,
+        sustain: 0,
+        release: 0.1,
+        attackCurve: "exponential",
+      },
+    }),
+});
+const snareVoicePool = createReusableVoicePool<Tone.NoiseSynth>({
+  createVoice: () =>
+    new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: {
+        attack: 0.001,
+        decay: 0.18,
+        sustain: 0,
+        release: 0.05,
+      },
+    }),
+});
+const closedHatVoicePool = createReusableVoicePool<Tone.MetalSynth>({
+  createVoice: () =>
+    new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 0.05, release: 0.02 },
+      harmonicity: 5.1,
+      modulationIndex: 32,
+      resonance: 4000,
+      octaves: 1.5,
+    }),
+});
+const openHatVoicePool = createReusableVoicePool<Tone.MetalSynth>({
+  createVoice: () =>
+    new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 0.35, release: 0.02 },
+      harmonicity: 5.1,
+      modulationIndex: 32,
+      resonance: 4000,
+      octaves: 1.5,
+    }),
+});
+const rideVoicePool = createReusableVoicePool<Tone.MetalSynth>({
+  createVoice: () =>
+    new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 1.0, release: 0.3 },
+      harmonicity: 3.1,
+      modulationIndex: 22,
+      resonance: 2400,
+      octaves: 1.0,
+    }),
+});
+
 /**
- * Schedule a kick drum hit at `time`. Models a punchy 808-style kick: sine
- * oscillator with a fast exponential pitch drop and a short click transient.
+ * Schedule a kick drum hit at `time`. `Tone.MembraneSynth` provides the
+ * punchy 808-style envelope: sine oscillator with an exponential pitch drop,
+ * fast attack, ~350 ms decay.
  */
 export function scheduleKick(
-  ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: DrumHitOptions = {},
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
-  // Zero velocity → silent hit. Bail before scheduling so we never pass 0
-  // into exponentialRampToValueAtTime (which throws on non-positive targets).
-  if (velocity <= 0) return { cancel: () => {} };
-
-  // Body
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = "sine";
-  osc.frequency.setValueAtTime(150, time);
-  osc.frequency.exponentialRampToValueAtTime(40, time + 0.18);
-  gain.gain.setValueAtTime(0.001, time);
-  gain.gain.exponentialRampToValueAtTime(0.9 * velocity, time + 0.005);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
-  osc.connect(gain).connect(dest);
-  osc.start(time);
-  osc.stop(time + 0.4);
-  osc.onended = () => disposeNodes(osc, gain);
-
-  // Click transient (higher harmonic burst)
-  const click = ctx.createOscillator();
-  const clickGain = ctx.createGain();
-  click.type = "triangle";
-  click.frequency.setValueAtTime(1200, time);
-  clickGain.gain.setValueAtTime(0.0001, time);
-  clickGain.gain.exponentialRampToValueAtTime(0.3 * velocity, time + 0.002);
-  clickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.03);
-  click.connect(clickGain).connect(dest);
-  click.start(time);
-  click.stop(time + 0.05);
-  click.onended = () => disposeNodes(click, clickGain);
-
-  return createDrumVoiceHandle(
-    ctx,
-    [osc, click],
-    [osc, gain, click, clickGain],
-  );
+  if (velocity <= 0) return NOOP_HANDLE;
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = kickVoicePool.lease(dest, now);
+  const busyUntil = playbackStartTime + 0.6;
+  lease.setBusyUntil(busyUntil);
+  lease.voice.triggerAttackRelease("C1", 0.5, time, velocity);
+  return deferredDisposeHandle(lease, time, busyUntil, KICK_DISPOSE_MS);
 }
 
 /**
- * Schedule a snare hit. Combines filtered noise (the rattle) with a low
- * triangle wave (the body) for a balanced backbeat snare.
+ * Schedule a snare hit at `time`. Pure `Tone.NoiseSynth` (white noise + AD
+ * envelope) — note: `NoiseSynth.triggerAttackRelease` takes `(duration, time,
+ * velocity)` with no note argument, since noise has no pitch.
  */
 export function scheduleSnare(
-  ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: DrumHitOptions = {},
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
-  if (velocity <= 0) return { cancel: () => {} };
-
-  // Noise rattle
-  const noise = ctx.createBufferSource();
-  noise.buffer = getNoiseBuffer(ctx);
-  const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = "highpass";
-  noiseFilter.frequency.value = 1500;
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.001, time);
-  noiseGain.gain.exponentialRampToValueAtTime(0.55 * velocity, time + 0.003);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
-  noise.connect(noiseFilter).connect(noiseGain).connect(dest);
-  noise.start(time);
-  noise.stop(time + 0.2);
-  noise.onended = () => disposeNodes(noise, noiseFilter, noiseGain);
-
-  // Tonal body
-  const body = ctx.createOscillator();
-  const bodyGain = ctx.createGain();
-  body.type = "triangle";
-  body.frequency.setValueAtTime(220, time);
-  body.frequency.exponentialRampToValueAtTime(140, time + 0.08);
-  bodyGain.gain.setValueAtTime(0.001, time);
-  bodyGain.gain.exponentialRampToValueAtTime(0.35 * velocity, time + 0.004);
-  bodyGain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
-  body.connect(bodyGain).connect(dest);
-  body.start(time);
-  body.stop(time + 0.15);
-  body.onended = () => disposeNodes(body, bodyGain);
-
-  return createDrumVoiceHandle(
-    ctx,
-    [noise, body],
-    [noise, noiseFilter, noiseGain, body, bodyGain],
-  );
+  if (velocity <= 0) return NOOP_HANDLE;
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = snareVoicePool.lease(dest, now);
+  const busyUntil = playbackStartTime + 0.23;
+  lease.setBusyUntil(busyUntil);
+  // NoiseSynth has no pitch — signature is (duration, time, velocity).
+  lease.voice.triggerAttackRelease(0.18, time, velocity);
+  return deferredDisposeHandle(lease, time, busyUntil, SNARE_DISPOSE_MS);
 }
 
 export interface HiHatOptions extends DrumHitOptions {
@@ -176,46 +185,32 @@ export interface HiHatOptions extends DrumHitOptions {
 }
 
 /**
- * Schedule a hi-hat hit. Pure noise through a steep highpass; the `open`
- * variant lets the tail ring out for ~0.3s, the closed variant chokes at
- * ~50ms.
+ * Schedule a hi-hat hit at `time` on `Tone.MetalSynth`. Open variant uses a
+ * ~350 ms decay; closed variant chokes at ~50 ms. The longer dispose-deferral
+ * for the open variant prevents the tail from being truncated on `cancel()`.
  */
 export function scheduleHiHat(
-  ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: HiHatOptions = {},
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
-  if (velocity <= 0) return { cancel: () => {} };
-  const decay = options.open ? 0.3 : 0.05;
-
-  const noise = ctx.createBufferSource();
-  noise.buffer = getNoiseBuffer(ctx);
-
-  const hp = ctx.createBiquadFilter();
-  hp.type = "highpass";
-  hp.frequency.value = 7000;
-
-  const bp = ctx.createBiquadFilter();
-  bp.type = "bandpass";
-  bp.frequency.value = 10000;
-  bp.Q.value = 0.8;
-
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.001, time);
-  gain.gain.exponentialRampToValueAtTime(0.35 * velocity, time + 0.002);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
-
-  noise.connect(hp).connect(bp).connect(gain).connect(dest);
-  noise.start(time);
-  noise.stop(time + decay + 0.05);
-  noise.onended = () => disposeNodes(noise, hp, bp, gain);
-
-  return createDrumVoiceHandle(
-    ctx,
-    [noise],
-    [noise, hp, bp, gain],
+  if (velocity <= 0) return NOOP_HANDLE;
+  const decay = options.open ? 0.35 : 0.05;
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = (options.open ? openHatVoicePool : closedHatVoicePool).lease(
+    dest,
+    now,
+  );
+  const busyUntil = playbackStartTime + decay + 0.02;
+  lease.setBusyUntil(busyUntil);
+  lease.voice.triggerAttackRelease("C6", decay, time, velocity);
+  return deferredDisposeHandle(
+    lease,
+    time,
+    busyUntil,
+    options.open ? HAT_OPEN_DISPOSE_MS : HAT_CLOSED_DISPOSE_MS,
   );
 }
 
@@ -224,42 +219,23 @@ export interface RideOptions extends DrumHitOptions {
 }
 
 /**
- * Schedule a ride cymbal hit. Filtered noise with a longer decay than hi-hat.
- * The optional `bell` mode raises the frequency and tightens the Q for a
- * brighter, more focused ping.
+ * Schedule a ride cymbal hit at `time` on `Tone.MetalSynth`. Longer decay
+ * than the hi-hat (~1 s). The `bell` option is preserved on the public
+ * options shape for call-site compatibility but isn't yet wired into the
+ * Tone voice — bell-mode shading is a future refinement.
  */
 export function scheduleRide(
-  ctx: AudioContext,
   dest: AudioNode,
   time: number,
   options: RideOptions = {},
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
-  if (velocity <= 0) return { cancel: () => {} };
-  const decay = options.bell ? 0.15 : 0.5;
-
-  const noise = ctx.createBufferSource();
-  noise.buffer = getNoiseBuffer(ctx);
-
-  const bp = ctx.createBiquadFilter();
-  bp.type = "bandpass";
-  bp.frequency.value = options.bell ? 6000 : 4000;
-  bp.Q.value = options.bell ? 2 : 0.5;
-
-  const hp = ctx.createBiquadFilter();
-  hp.type = "highpass";
-  hp.frequency.value = 3000;
-
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.001, time);
-  gain.gain.exponentialRampToValueAtTime(0.25 * velocity, time + 0.003);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
-
-  noise.connect(bp).connect(hp).connect(gain).connect(dest);
-  noise.start(time);
-  noise.stop(time + decay + 0.05);
-  noise.onended = () => disposeNodes(noise, bp, hp, gain);
-
-  return createDrumVoiceHandle(ctx, [noise], [noise, bp, hp, gain]);
+  if (velocity <= 0) return NOOP_HANDLE;
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = rideVoicePool.lease(dest, now);
+  const busyUntil = playbackStartTime + 1.3;
+  lease.setBusyUntil(busyUntil);
+  lease.voice.triggerAttackRelease("D6", 1.0, time, velocity);
+  return deferredDisposeHandle(lease, time, busyUntil, RIDE_DISPOSE_MS);
 }
-

@@ -27,10 +27,14 @@ export function PropGrid({ columns = 6, children, className }: PropGridProps) {
 export interface PropProps {
   /** Uppercase micro-label shown above the control. */
   label?: string;
+  /** Optional right-aligned content in the same row as the label. */
+  labelAccessory?: ReactNode;
   /** Column span within the parent PropGrid. Defaults to 1. */
   span?: number;
   /** Optional terse hint shown below the control. */
   hint?: string;
+  /** Optional class applied to the control wrapper for local alignment tweaks. */
+  controlClassName?: string;
   children: ReactNode;
 }
 
@@ -40,11 +44,25 @@ export interface PropProps {
  * mobile tier clamp wide cells to the two available tracks instead of letting
  * the span spill into implicit columns.
  */
-export function Prop({ label, span = 1, hint, children }: PropProps) {
+export function Prop({
+  label,
+  labelAccessory,
+  span = 1,
+  hint,
+  controlClassName,
+  children,
+}: PropProps) {
   return (
     <div className={styles.prop} data-span={span}>
-      {label ? <span className={styles.propLabel}>{label}</span> : null}
-      <div className={styles.propControl}>{children}</div>
+      {label || labelAccessory ? (
+        <span className={styles.propLabelRow}>
+          {label ? <span className={styles.propLabel}>{label}</span> : null}
+          {labelAccessory ? (
+            <span className={styles.propLabelAccessory}>{labelAccessory}</span>
+          ) : null}
+        </span>
+      ) : null}
+      <div className={clsx(styles.propControl, controlClassName)}>{children}</div>
       {hint ? <p className={styles.propHint}>{hint}</p> : null}
     </div>
   );

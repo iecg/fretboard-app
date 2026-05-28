@@ -4,6 +4,16 @@ import {
   SCALE_TO_PARENT_MAJOR_OFFSET,
 } from "./theoryCatalog";
 import { getDegreesForScale, getQualityForDegree, type DegreeId } from "./degrees";
+import * as Note from "@tonaljs/note";
+import * as Interval from "@tonaljs/interval";
+import * as Scale from "@tonaljs/scale";
+import * as Key from "@tonaljs/key";
+import {
+  normalizeToSharps,
+  getChordSemitonesFromTonal,
+} from "./lib/tonal";
+import * as Chord from "@tonaljs/chord";
+import * as Pcset from "@tonaljs/pcset";
 
 export const NOTES = [
   "C",
@@ -21,7 +31,7 @@ export const NOTES = [
 ];
 
 export const INTERVAL_NAMES = [
-  "1",
+  "R",
   "b2",
   "2",
   "b3",
@@ -48,19 +58,10 @@ export const ENHARMONICS: Record<string, string> = {
   Bb: "A#",
 };
 
-// Keys preferring flats for cleaner display
-export const FLAT_KEYS = [
-  "F",
-  "Bb",
-  "A#",
-  "Eb",
-  "D#",
-  "Ab",
-  "G#",
-  "Db",
-  "C#",
-  "Gb",
-];
+export function isFlatKey(rootNote: string): boolean {
+  const key = Key.majorKey(rootNote);
+  return typeof key.alteration === "number" && key.alteration < 0;
+}
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
@@ -110,12 +111,6 @@ export interface ChordRowEntry {
   scaleInterval?: string;
 }
 
-// Practice lenses replace raw viewMode
-export type PracticeLens =
-  | "targets"       // chord root + active chord tones
-  | "guide-tones"   // 3rd/7th — for strong chord definition
-  | "tension";      // outside/altered tones
-
 // Composable note semantics
 export interface NoteSemantics {
   isScaleRoot: boolean;
@@ -144,65 +139,7 @@ export interface ChordMemberFact {
   isChordRoot: boolean;
 }
 
-// Context for lens availability predicates
-export interface LensAvailabilityContext {
-  hasChordOverlay: boolean;
-  /** Chord definition includes a 3rd or 7th member. */
-  hasGuideTones: boolean;
-  /** Scale has characteristic/divergent color notes. */
-  hasColorNotes: boolean;
-  /** At least one active chord tone falls outside the scale. */
-  hasOutsideTones: boolean;
-}
-
-// Practice lens registry entry
-export interface LensRegistryEntry {
-  id: PracticeLens;
-  label: string;
-  description: string;
-  isAvailable: (ctx: LensAvailabilityContext) => boolean;
-  /** Returns a human-readable reason when the lens is unavailable, or null. */
-  unavailableReason: (ctx: LensAvailabilityContext) => string | null;
-  /** When true, hide this lens from the picker instead of showing it disabled. */
-  hideWhenUnavailable?: boolean;
-}
-
-export const LENS_REGISTRY: readonly LensRegistryEntry[] = [
-  {
-    id: "targets",
-    label: "Chord Tones",
-    description: "Shows chord tones — for landing and outlining harmony",
-    isAvailable: (ctx) => ctx.hasChordOverlay,
-    unavailableReason: (ctx) =>
-      ctx.hasChordOverlay ? null : "Requires an active chord overlay",
-  },
-  {
-    id: "guide-tones",
-    label: "Guide Tones",
-    description: "Highlights 3rd and 7th — the voice-leading tones that define chord quality",
-    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasGuideTones,
-    unavailableReason: (ctx) => {
-      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
-      if (!ctx.hasGuideTones) return "Chord has no guide tones (3rd or 7th)";
-      return null;
-    },
-  },
-  {
-    id: "tension",
-    label: "Tension",
-    description: "Highlights chord tones outside the scale — tones that create tension and need resolution",
-    isAvailable: (ctx) => ctx.hasChordOverlay && ctx.hasOutsideTones,
-    unavailableReason: (ctx) => {
-      if (!ctx.hasChordOverlay) return "Requires an active chord overlay";
-      if (!ctx.hasOutsideTones)
-        return "Chord is fully within the scale — no outside tones";
-      return null;
-    },
-    hideWhenUnavailable: true,
-  },
-];
-
-export type PracticeCueKind = "land-on" | "guide-tones" | "color-note" | "tension";
+export type PracticeCueKind = "land-on" | "color-note" | "tension";
 
 export interface PracticeCueNote {
   internalNote: string;
@@ -240,134 +177,45 @@ export interface PracticeBarGroup {
   notes: PracticeBarNote[];
 }
 
+/**
+ * Builds a ChordDefinition by deriving member semitones from Tonal
+ * positionally, keeping the hand-coded member names as the contract
+ * for the chord-tone overlay. Throws if Tonal can't resolve the symbol
+ * or if the member count doesn't match Tonal's interval count.
+ */
+function buildChordDef(
+  tonalSymbol: string,
+  quality: ChordQuality,
+  memberNames: readonly ChordMemberName[],
+): ChordDefinition {
+  const semitones = getChordSemitonesFromTonal(tonalSymbol);
+  if (semitones.length !== memberNames.length) {
+    throw new Error(
+      `buildChordDef: ${tonalSymbol} expects ${memberNames.length} members, Tonal returned ${semitones.length}`,
+    );
+  }
+  return {
+    quality,
+    members: memberNames.map((name, i) => ({ name, semitone: semitones[i] })),
+  };
+}
+
 export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
-  "Major Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Minor Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Diminished Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "b5", semitone: 6 },
-    ],
-  },
-  "Major 6th": {
-    quality: "sixth",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-      { name: "6", semitone: 9 },
-    ],
-  },
-  "Major 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-      { name: "7", semitone: 11 },
-    ],
-  },
-  "Minor 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-      { name: "b7", semitone: 10 },
-    ],
-  },
-  "Dominant 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "5", semitone: 7 },
-      { name: "b7", semitone: 10 },
-    ],
-  },
-  "Sus4": {
-    quality: "suspended",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "4", semitone: 5 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Power Chord (5)": {
-    quality: "power",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Augmented Triad": {
-    quality: "triad",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "3", semitone: 4 },
-      { name: "#5", semitone: 8 },
-    ],
-  },
-  "Sus2": {
-    quality: "suspended",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "2", semitone: 2 },
-      { name: "5", semitone: 7 },
-    ],
-  },
-  "Minor 6th": {
-    quality: "sixth",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-      { name: "6", semitone: 9 },
-    ],
-  },
-  "Diminished 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "b5", semitone: 6 },
-      { name: "bb7", semitone: 9 },
-    ],
-  },
-  "Half-Diminished 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "b5", semitone: 6 },
-      { name: "b7", semitone: 10 },
-    ],
-  },
-  "Minor-Major 7th": {
-    quality: "seventh",
-    members: [
-      { name: "root", semitone: 0 },
-      { name: "b3", semitone: 3 },
-      { name: "5", semitone: 7 },
-      { name: "7", semitone: 11 },
-    ],
-  },
+  M:     buildChordDef("M",     "triad",     ["root", "3", "5"]),
+  m:     buildChordDef("m",     "triad",     ["root", "b3", "5"]),
+  dim:   buildChordDef("dim",   "triad",     ["root", "b3", "b5"]),
+  aug:   buildChordDef("aug",   "triad",     ["root", "3", "#5"]),
+  sus2:  buildChordDef("sus2",  "suspended", ["root", "2", "5"]),
+  sus4:  buildChordDef("sus4",  "suspended", ["root", "4", "5"]),
+  "6":   buildChordDef("6",     "sixth",     ["root", "3", "5", "6"]),
+  m6:    buildChordDef("m6",    "sixth",     ["root", "b3", "5", "6"]),
+  maj7:  buildChordDef("maj7",  "seventh",   ["root", "3", "5", "7"]),
+  m7:    buildChordDef("m7",    "seventh",   ["root", "b3", "5", "b7"]),
+  "7":   buildChordDef("7",     "seventh",   ["root", "3", "5", "b7"]),
+  dim7:  buildChordDef("dim7",  "seventh",   ["root", "b3", "b5", "bb7"]),
+  m7b5:  buildChordDef("m7b5",  "seventh",   ["root", "b3", "b5", "b7"]),
+  mMaj7: buildChordDef("mMaj7", "seventh",   ["root", "b3", "5", "7"]),
+  "5":   buildChordDef("5",     "power",     ["root", "5"]),
 };
 
 // Backward compatibility mapping from CHORD_DEFINITIONS
@@ -396,11 +244,8 @@ export const CIRCLE_OF_FIFTHS = [
 ];
 
 export function getNoteIndex(noteName: string): number {
-  const norm =
-    ENHARMONICS[noteName] && noteName.includes("b")
-      ? ENHARMONICS[noteName]
-      : noteName;
-  return NOTES.indexOf(norm);
+  const chroma = Note.chroma(noteName);
+  return typeof chroma === "number" && !isNaN(chroma) ? chroma : -1;
 }
 
 export function getNoteDisplay(
@@ -408,16 +253,14 @@ export function getNoteDisplay(
   activeRoot: string,
   useFlats?: boolean,
 ): string {
-  const normNote =
-    ENHARMONICS[noteName] && noteName.includes("b")
-      ? ENHARMONICS[noteName]
-      : noteName;
-  const flats = useFlats ?? FLAT_KEYS.includes(activeRoot);
-
-  if (flats && normNote.includes("#")) return ENHARMONICS[normNote] || normNote;
-  if (!flats && normNote.includes("b"))
-    return ENHARMONICS[normNote] || normNote;
-  return normNote;
+  const wantsFlats = useFlats ?? isFlatKey(activeRoot);
+  if (wantsFlats && noteName.includes("#")) {
+    return Note.enharmonic(noteName);
+  }
+  if (!wantsFlats && noteName.includes("b")) {
+    return Note.enharmonic(noteName);
+  }
+  return noteName;
 }
 
 export function formatAccidental(s: string): string {
@@ -429,73 +272,52 @@ export function formatAccidental(s: string): string {
 }
 
 
-const LETTER_NAMES = ["C", "D", "E", "F", "G", "A", "B"];
-const LETTER_PITCHES: Record<string, number> = {
-  C: 0,
-  D: 2,
-  E: 4,
-  F: 5,
-  G: 7,
-  A: 9,
-  B: 11,
-};
-
 export function getNoteDisplayInScale(
   noteName: string,
   rootNote: string,
   scaleIntervals: number[],
   useFlats?: boolean,
 ): string {
-  // Apply scale-aware spelling for 7-note scales
   if (scaleIntervals.length !== 7) {
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  // Normalize to sharps for internal lookup
-  const normNote =
-    noteName.includes("b") && ENHARMONICS[noteName]
-      ? ENHARMONICS[noteName]
-      : noteName;
-  const rootNorm =
-    rootNote.includes("b") && ENHARMONICS[rootNote]
-      ? ENHARMONICS[rootNote]
-      : rootNote;
-
-  const rootIdx = NOTES.indexOf(rootNorm);
-  const noteIdx = NOTES.indexOf(normNote);
-  if (rootIdx === -1 || noteIdx === -1)
+  // Use Tonal for chroma calculation; matches the legacy NOTES.indexOf behavior.
+  const rootChroma = Note.chroma(rootNote);
+  const noteChroma = Note.chroma(noteName);
+  if (
+    typeof rootChroma !== "number" || isNaN(rootChroma) ||
+    typeof noteChroma !== "number" || isNaN(noteChroma)
+  ) {
     return getNoteDisplay(noteName, rootNote, useFlats);
+  }
 
-  const interval = (noteIdx - rootIdx + 12) % 12;
-
+  const interval = (noteChroma - rootChroma + 12) % 12;
   const degreeIndex = scaleIntervals.indexOf(interval);
   if (degreeIndex === -1) {
     return getNoteDisplay(noteName, rootNote, useFlats);
   }
 
-  const rootDisplay = getNoteDisplay(rootNote, rootNote, useFlats);
-  const rootLetter = rootDisplay.charAt(0);
-  const rootLetterIdx = LETTER_NAMES.indexOf(rootLetter);
+  const spelledRoot = getNoteDisplay(rootNote, rootNote, useFlats);
+
+  // Heptatonic letter cycle — used only for scale-aware spelling, scoped to this function.
+  const letterNames = ["C", "D", "E", "F", "G", "A", "B"];
+  const letterPitches: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+
+  const rootLetter = spelledRoot.charAt(0);
+  const rootLetterIdx = letterNames.indexOf(rootLetter);
   if (rootLetterIdx === -1) return getNoteDisplay(noteName, rootNote, useFlats);
 
-  const expectedLetter = LETTER_NAMES[(rootLetterIdx + degreeIndex) % 7];
-  const expectedBasePitch = LETTER_PITCHES[expectedLetter];
-  const targetPitch = (rootIdx + interval) % 12;
-
+  const expectedLetter = letterNames[(rootLetterIdx + degreeIndex) % 7];
+  const expectedBasePitch = letterPitches[expectedLetter];
+  const targetPitch = (rootChroma + interval) % 12;
   const diff = (targetPitch - expectedBasePitch + 12) % 12;
 
-  if (diff === 0) {
-    return expectedLetter;
-  } else if (diff === 1) {
-    return expectedLetter + "#";
-  } else if (diff === 11) {
-    return expectedLetter + "b";
-  } else if (diff === 2) {
-    return expectedLetter + "##";
-  } else if (diff === 10) {
-    return expectedLetter + "bb";
-  }
-
+  if (diff === 0) return expectedLetter;
+  if (diff === 1) return expectedLetter + "#";
+  if (diff === 11) return expectedLetter + "b";
+  if (diff === 2) return expectedLetter + "##";
+  if (diff === 10) return expectedLetter + "bb";
   return getNoteDisplay(noteName, rootNote, useFlats);
 }
 
@@ -503,19 +325,21 @@ export function getIntervalNotes(
   rootNote: string,
   intervals: number[],
 ): string[] {
-  const rootIndex = getNoteIndex(rootNote);
-  if (rootIndex === -1) return [];
-
-  return intervals.map((interval) => {
-    return NOTES[(rootIndex + interval) % 12];
+  if (getNoteIndex(rootNote) === -1) return [];
+  return intervals.map((semitones) => {
+    const t = Note.transpose(rootNote, Interval.fromSemitones(semitones));
+    return normalizeToSharps(t);
   });
 }
 
 export function getScaleNotes(rootNote: string, scaleName: string): string[] {
-  const intervals = SCALES[normalizeScaleName(scaleName)];
-  if (!intervals) return [];
+  const tonalName = normalizeScaleName(scaleName);
+  if (!tonalName) return [];
   if (getNoteIndex(rootNote) === -1) return [];
-  return getIntervalNotes(rootNote, intervals);
+  const tonalScale = Scale.get(`${rootNote} ${tonalName}`);
+  // Tonal returns spelled notes. Normalize to sharps-form to maintain the
+  // legacy contract (consumers do NOTES.indexOf on the result).
+  return tonalScale.notes.map((n) => normalizeToSharps(n));
 }
 
 /**
@@ -532,72 +356,60 @@ export function getScaleSemitones(rootNote: string, scaleName: string): number[]
 }
 
 export function getChordNotes(rootNote: string, chordName: string): string[] {
-  const intervals = CHORDS[chordName];
-  if (!intervals) return [];
-  if (getNoteIndex(rootNote) === -1) return [];
-  return getIntervalNotes(rootNote, intervals);
+  const chroma = Note.chroma(rootNote);
+  if (typeof chroma !== "number" || isNaN(chroma)) return [];
+  const tonalChord = Chord.get(`${rootNote}${chordName}`);
+  if (tonalChord.empty) return [];
+  // Same sharps-form normalization as getIntervalNotes.
+  return tonalChord.notes.map((n) => normalizeToSharps(n));
 }
 
 /**
  * Returns notes in the current scale that diverge from the reference scale.
- * Reference: Major for major-quality modes, Natural Minor for minor-quality modes.
- * Blues scales use their existing blue note logic instead.
+ * Reference: Major for major-quality modes (scale contains a major 3rd),
+ * Natural Minor otherwise.
+ *
+ * Set difference computed via Pcset.chroma() — a 12-bit string where bit i
+ * is "1" iff pitch-class i is present. Iterating the current scale and
+ * filtering by the reference chroma preserves the original note ordering.
  */
 export function getDivergentNotes(
   rootNote: string,
   scaleName: string,
 ): string[] {
   const resolvedScaleName = normalizeScaleName(scaleName);
-  const intervals = SCALES[resolvedScaleName];
-  if (!intervals || resolvedScaleName.includes("Blues")) return [];
+  if (resolvedScaleName.includes("blues")) return [];
+  if (resolvedScaleName === "major pentatonic" || resolvedScaleName === "minor pentatonic") return [];
+  if (resolvedScaleName === "major" || resolvedScaleName === "minor") return [];
 
-  // Pentatonic scales are subsets, not modes — no divergence to show
-  if (
-    resolvedScaleName === "Major Pentatonic" ||
-    resolvedScaleName === "Minor Pentatonic"
-  )
-    return [];
-  // Major and Natural Minor are the references themselves
-  if (resolvedScaleName === "Major" || resolvedScaleName === "Natural Minor")
-    return [];
+  const rootChroma = Note.chroma(rootNote);
+  if (typeof rootChroma !== "number" || isNaN(rootChroma)) return [];
 
-  const isMajorQuality = intervals.includes(4); // contains major 3rd
-  const refIntervals = isMajorQuality
-    ? SCALES["Major"]
-    : SCALES["Natural Minor"];
+  const scaleNotes = getScaleNotes(rootNote, scaleName);
+  if (scaleNotes.length === 0) return [];
 
-  const rootIdx = NOTES.indexOf(rootNote);
-  if (rootIdx === -1) return [];
+  // Determine reference scale: major-quality if scale contains a major 3rd.
+  const relativeIntervals = scaleNotes
+    .map((n) => Note.chroma(n))
+    .filter((c): c is number => typeof c === "number" && !isNaN(c))
+    .map((c) => (c - rootChroma + 12) % 12);
+  const isMajorQuality = relativeIntervals.includes(4);
+  const refName = isMajorQuality ? "major" : "minor";
 
-  const refSet = new Set(refIntervals);
-  return intervals
-    .filter((interval) => !refSet.has(interval))
-    .map((interval) => NOTES[(rootIdx + interval) % 12]);
+  // 12-bit chroma string: "100010010100" etc. Bit i set iff pitch-class i is present.
+  const refChroma = Pcset.get(getScaleNotes(rootNote, refName)).chroma;
+
+  return scaleNotes.filter((note) => {
+    const c = Note.chroma(note);
+    if (typeof c !== "number" || isNaN(c)) return false;
+    return refChroma[c] === "0";
+  });
 }
 
-// Key signature accidental counts (+ sharps, - flats)
-export const KEY_SIGNATURES: Record<string, number> = {
-  C: 0,
-  G: 1,
-  D: 2,
-  A: 3,
-  E: 4,
-  B: 5,
-  "F#": 6,
-  F: -1,
-  Bb: -2,
-  "A#": -2,
-  Eb: -3,
-  "D#": -3,
-  Ab: -4,
-  "G#": -4,
-  Db: -5,
-  "C#": 7,
-  Gb: -6,
-};
-
 export function getKeySignature(rootNote: string): number {
-  return KEY_SIGNATURES[rootNote] ?? 0;
+  const tonalKey = Key.majorKey(rootNote);
+  if (typeof tonalKey.alteration === "number") return tonalKey.alteration;
+  return 0;
 }
 
 export function getKeySignatureForDisplay(
@@ -606,27 +418,37 @@ export function getKeySignatureForDisplay(
   useFlats: boolean,
 ): number {
   const offset = SCALE_TO_PARENT_MAJOR_OFFSET[normalizeScaleName(scaleName)] ?? 0;
+  const rootChroma = Note.chroma(rootNote);
+  if (typeof rootChroma !== "number" || isNaN(rootChroma)) {
+    return getKeySignature(rootNote);
+  }
 
-  const sharpRoot =
-    rootNote.includes("b") && ENHARMONICS[rootNote]
-      ? ENHARMONICS[rootNote]
-      : rootNote;
-  const rootIdx = NOTES.indexOf(sharpRoot);
-  if (rootIdx === -1) return KEY_SIGNATURES[rootNote] ?? 0;
+  // The "parent major" is the major key whose tonic is `offset` semitones above the current root.
+  const parentMajorRoot = Note.transpose(rootNote, Interval.fromSemitones(offset));
+  const parentSimplified = Note.simplify(parentMajorRoot);
+  const parentSharp = parentSimplified.includes("b") ? Note.enharmonic(parentSimplified) : parentSimplified;
 
-  const parentIdx = (rootIdx + offset) % 12;
-  const parentSharp = NOTES[parentIdx];
-
-  // Preserve user's intended root spelling for sharp-side key signatures
   const originalIsSharp = rootNote.includes("#");
-  if (!originalIsSharp && useFlats && ENHARMONICS[parentSharp]) {
-    const flatName = ENHARMONICS[parentSharp];
-    if (KEY_SIGNATURES[flatName] !== undefined) {
-      return KEY_SIGNATURES[flatName];
+
+  // When root is not sharp-spelled, prefer the flat enharmonic for any parent key that is
+  // naturally on the flat side (alteration < 0). This covers both useFlats=true and the case
+  // where the root itself is flat-spelled (e.g. Ab → parent G# → prefer Ab key sig -4).
+  if (!originalIsSharp) {
+    const flatName = Note.enharmonic(parentSharp);
+    const flatKey = Key.majorKey(flatName);
+    if (typeof flatKey.alteration === "number" && flatKey.alteration < 0) {
+      // Only return the flat sig if: useFlats is true, OR the root itself is flat-spelled
+      // (meaning the user's intent is a flat-side key even when useFlats=false).
+      const rootIsFlat = rootNote.includes("b");
+      if (useFlats || rootIsFlat || flatName === parentMajorRoot) {
+        return flatKey.alteration;
+      }
     }
   }
-  const sig = KEY_SIGNATURES[parentSharp] ?? 0;
-  // Convert flat-equivalent negative signature to enharmonic sharp count
+
+  const tonalKey = Key.majorKey(parentSharp);
+  const sig = typeof tonalKey.alteration === "number" ? tonalKey.alteration : getKeySignature(parentSharp);
+
   if (originalIsSharp && sig < 0) {
     return 12 + sig;
   }
@@ -647,7 +469,7 @@ export function resolveAccidentalMode(
   if (mode === "flats") return true;
   // auto
   const isNatural = !rootNote.includes("#") && !rootNote.includes("b");
-  if (isNatural) return FLAT_KEYS.includes(rootNote);
+  if (isNatural) return isFlatKey(rootNote);
 
   const sharpRoot =
     rootNote.includes("b") && ENHARMONICS[rootNote]
@@ -660,7 +482,7 @@ export function resolveAccidentalMode(
 
   const resolvedScaleName = normalizeScaleName(scaleName);
   const intervals = SCALES[resolvedScaleName];
-  if (!intervals) return FLAT_KEYS.includes(rootNote);
+  if (!intervals) return isFlatKey(rootNote);
 
   const countAccidentals = (displays: string[]): number =>
     displays.reduce((sum, s) => {
@@ -685,29 +507,21 @@ export function resolveAccidentalMode(
   return flatCount < sharpCount; // tie → sharps (false)
 }
 
-export const CIRCLE_DISPLAY_LABELS: Record<string, string> = {
-  C: "C",
-  G: "G",
-  D: "D",
-  A: "A",
-  E: "E",
-  B: "B",
-  "F#": "F#/Gb",
-  "C#": "Db",
-  "G#": "Ab",
-  "D#": "Eb",
-  "A#": "Bb",
-  F: "F",
-};
+export function getCircleDisplayLabel(noteName: string): string {
+  if (!noteName.includes("#") && !noteName.includes("b")) return noteName;
+  if (noteName === "F#") return "F#/Gb";
+  const flatName = Note.enharmonic(noteName);
+  return flatName !== noteName ? flatName : noteName;
+}
 
 /**
  * Returns the absolute root note and diatonic triad quality for a given scale degree.
  *
  * @param degreeId   - Roman numeral string (e.g., "I", "ii", "vii°")
- * @param scaleName  - Scale name (e.g., "Major", "Harmonic Minor")
+ * @param scaleName  - Scale name (e.g., "Major", "harmonic minor")
  * @param tonicNote  - The tonic note of the scale in sharps-form (e.g., "C", "A", "C#")
  * @returns `{ root, quality }` where root is always a sharps-form note and quality is a
- *          chord-name key (e.g., "Major Triad"), or undefined for any unrecognised input.
+ *          chord-name key (Tonal symbol, e.g. "M"), or undefined for any unrecognised input.
  */
 export function getDiatonicChord(
   degreeId: string,
@@ -723,10 +537,19 @@ export function getDiatonicChord(
   if (!semitoneEntry) return undefined;
   const semitone = Number(semitoneEntry[0]);
 
-  // Compute the absolute root note (sharps-only via NOTES)
-  const rootIndex = getNoteIndex(tonicNote);
-  if (rootIndex === -1) return undefined;
-  const root = NOTES[(rootIndex + semitone) % 12];
+  // Compute the absolute root note via Tonal transposition.
+  //
+  // Note: Tonal's @tonaljs/progression module is available and tempting here,
+  // but `Progression.fromRomanNumerals(tonic, [degree])` always treats the
+  // tonic as the root of a MAJOR key — so "VI" in a minor-key context returns
+  // the major-key VI (A in C-minor) instead of the minor-key VI (Ab/G#). Our
+  // degree table already encodes the correct semitone offset per mode, so we
+  // transpose by that offset and normalize enharmonics.
+  const tonicChroma = Note.chroma(tonicNote);
+  if (typeof tonicChroma !== "number" || isNaN(tonicChroma)) return undefined;
+  const transposed = Note.transpose(tonicNote, Interval.fromSemitones(semitone));
+  const simplified = Note.simplify(transposed);
+  const root = simplified.includes("b") ? Note.enharmonic(simplified) : simplified;
 
   // Resolve chord quality via the degree quality table
   const quality = getQualityForDegree(degreeId, scaleName);

@@ -7,8 +7,26 @@ import { fileURLToPath, URL } from 'node:url'
 const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
 export default defineConfig({
-  base: '/fretboard-app/',
-  plugins: [react()],
+  base: process.env.VITE_MOBILE === 'true' ? './' : '/fretboard-app/',
+  plugins: [
+    react({
+      // @ts-expect-error - Vite 6 dropped the babel types but we are following the task plan
+      babel: {
+        plugins: [
+          ['babel-plugin-react-compiler', {
+            // Infer mode: compile every component/hook in `sources` unless it
+            // opts out with 'use no memo'.
+            compilationMode: 'infer',
+            // Restrict to app + workspace core. Excludes node_modules and tests.
+            sources: (filename: string) =>
+              (filename.includes('/src/') || filename.includes('/packages/core/src/')) &&
+              !filename.includes('.test.') &&
+              !filename.includes('.spec.'),
+          }],
+        ],
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@fretflow/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
@@ -24,6 +42,7 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
+    chunkSizeWarningLimit: 1000,
     rolldownOptions: {
       output: {
         codeSplitting: {
@@ -34,13 +53,33 @@ export default defineConfig({
               priority: 3,
             },
             {
+              name: 'vendor-state',
+              test: /node_modules[\\/]jotai[\\/]/,
+              priority: 3,
+            },
+            {
+              name: 'song-controls',
+              test: (id: string) => id.includes('src/components/SongControls'),
+              priority: 3,
+            },
+            {
+              name: 'status-bar',
+              test: (id: string) => id.includes('src/components/StatusBar'),
+              priority: 3,
+            },
+            {
               name: 'vendor-motion',
               test: /node_modules[\\/](framer-motion|motion-dom|motion-utils|motion)[\\/]/,
               priority: 2,
             },
             {
+              name: 'vendor-tone',
+              test: /node_modules[\\/]tone[\\/]/,
+              priority: 2,
+            },
+            {
               name: 'vendor',
-              test: /node_modules[\\/]/,
+              test: (id: string) => id.includes('node_modules'),
               priority: 1,
             },
           ],

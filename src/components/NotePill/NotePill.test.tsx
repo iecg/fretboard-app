@@ -59,7 +59,7 @@ describe("NotePill", () => {
     // Rendered inside a <ul> — a NotePill is a list item by design.
     const { container } = render(
       <ul>
-        <NotePill note="C" interval="1" ariaLabel="toggle C" onToggle={() => {}} />
+        <NotePill note="C" interval="R" ariaLabel="toggle C" onToggle={() => {}} />
       </ul>,
     );
     expect(await axe(container)).toHaveNoViolations();

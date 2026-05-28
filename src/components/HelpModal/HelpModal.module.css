@@ -2,14 +2,15 @@
   position: fixed;
   inset: 0;
   background: var(--chrome-scrim);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: var(--z-help-overlay);
-  padding: clamp(0.75rem, 3vw, 1.25rem);
 }
 
 .help-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: calc(var(--z-help-overlay) + 1);
   background: var(--surface-panel);
   border-radius: var(--radius-xl);
   border: 1px solid var(--surface-card-border);
@@ -22,6 +23,7 @@
   display: flex;
   flex-direction: column;
   will-change: transform, opacity;
+  animation: none;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .help-modal {
@@ -43,7 +45,7 @@
   background: var(--surface-float);
 }
 
-.help-modal-header h2 {
+.help-modal-title {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
@@ -103,15 +105,61 @@
   color: var(--chrome-fg);
 }
 
+.help-modal-notice {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-3);
+  background: var(--surface-float);
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.help-modal-notice-title.help-modal-notice-title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chrome-fg-muted);
+}
+
+.help-modal-notice p {
+  margin: 0;
+  line-height: var(--leading-snug);
+  color: var(--chrome-fg);
+  font-size: 0.9375rem;
+}
+
+.help-modal-notice-dismiss {
+  align-self: flex-start;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-card-border);
+  background: var(--surface-panel);
+  color: var(--chrome-fg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.help-modal-notice-dismiss:hover,
+.help-modal-notice-dismiss:focus-visible {
+  background: var(--surface-card-border);
+}
+
 /* stylelint-disable selector-pseudo-class-no-unknown */
 @media (max-height: 520px) {
-  .help-modal-overlay {
-    align-items: flex-start;
-    padding: 0.5rem;
+  .help-modal {
+    top: 0.5rem;
+    translate: -50% 0;
+    max-height: calc(100dvh - 1rem);
   }
 
-  .help-modal {
-    max-height: calc(100dvh - 1rem);
+  .help-modal-overlay {
+    align-items: flex-start;
+    padding: 0;
   }
 
   .help-modal-header {

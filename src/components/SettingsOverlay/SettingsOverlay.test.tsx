@@ -5,16 +5,12 @@ import { Provider, createStore } from "jotai";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import SettingsOverlay from "./SettingsOverlay";
-import { synth } from "../../core/audio";
+import { setGuitarMutePreference } from "../../core/lazyGuitarAudio";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import { settingsOverlayOpenAtom, themeAtom } from "../../store/uiAtoms";
 import styles from "./SettingsOverlay.module.css";
 
-// Spy on AnimatePresence so we can assert the initial={false} prop in the motion-wiring test.
-const { spiedAnimatePresence } = vi.hoisted(() => ({
-  spiedAnimatePresence: vi.fn((props: { children?: unknown; [k: string]: unknown }) => props.children),
-}));
-
+// Mock motion so animations are no-ops in test environment.
 vi.mock("motion/react", async () => {
   const React = await import("react");
   const ANIMATION_PROPS = new Set([
@@ -40,19 +36,18 @@ vi.mock("motion/react", async () => {
   });
   return {
     motion: motionProxy,
-    AnimatePresence: spiedAnimatePresence,
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) => children,
     MotionConfig: ({ children }: { children: React.ReactNode }) => children,
     useReducedMotion: vi.fn().mockReturnValue(null),
   };
 });
 
-// Mock the audio synth singleton — we only care that setMute is called on reset.
-vi.mock("../../core/audio", () => ({
-  synth: {
-    setMute: vi.fn(),
-    init: vi.fn(),
-    playNote: vi.fn(),
-  },
+// Mock the audio lazy facade — we only care that setMute is called on reset.
+vi.mock("../../core/lazyGuitarAudio", () => ({
+  setGuitarMutePreference: vi.fn(),
+  resumeGuitarAudio: vi.fn(),
+  playGuitarNote: vi.fn(),
+  setGuitarAudioErrorHandler: vi.fn(),
 }));
 
 function renderOverlay(store: ReturnType<typeof createStore>) {
@@ -120,7 +115,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     ).map((node) => node.textContent?.trim());
 
     expect(headings).toEqual([
-      "View",
+      "Display",
       "Instrument",
       "Language",
       "Appearance",
@@ -173,7 +168,8 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const { store } = renderOpenOverlay();
 
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
-    fireEvent.keyDown(window, { key: "Escape" });
+    const drawer = screen.getByTestId("settings-drawer");
+    fireEvent.keyDown(drawer, { key: "Escape" });
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
@@ -187,11 +183,14 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(drawer?.getAttribute("data-layout-tier")).toBe("mobile");
   });
 
-  it("closes overlay when backdrop is clicked", () => {
+  it("closes overlay when backdrop is clicked", async () => {
     const { store } = renderOpenOverlay();
     const backdrop = document.querySelector(".settings-overlay-backdrop");
     expect(backdrop).toBeTruthy();
-    fireEvent.click(backdrop!);
+    // DismissableLayer registers its pointerdown listener via setTimeout(0);
+    // wait for the next macrotask so it's in place before we trigger.
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    fireEvent.pointerDown(backdrop!);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
@@ -243,7 +242,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     // Zoom back to default (100) and overlay closed.
     expect(store.get(fretZoomAtom)).toBe(100);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
-    expect(synth.setMute).toHaveBeenCalledWith(false);
+    expect(setGuitarMutePreference).toHaveBeenCalledWith(false);
   });
 
   it("reset confirmation auto-cancels after 3 seconds", () => {
@@ -267,6 +266,16 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
   });
 
+  it("renders Display section with note-label / accidental / fret-range / degree-color controls", () => {
+    renderWithAtoms(<SettingsOverlay />, [[settingsOverlayOpenAtom, true]]);
+    expect(screen.getByRole("region", { name: /display/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/note labels/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/accidentals/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/enharmonic/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/fret range/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/degree colors/i)).toBeInTheDocument();
+  });
+
   it("does not render a Compact Controls group", async () => {
     renderWithAtoms(<SettingsOverlay />, [[settingsOverlayOpenAtom, true]]);
     expect(screen.queryByRole("group", { name: /compact controls/i })).toBeNull();
@@ -285,7 +294,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const kofiLink = screen.getByTitle("Support FretFlow on Ko-fi");
 
     kofiLink.focus();
-    fireEvent.keyDown(window, { key: "Tab" });
+    fireEvent.keyDown(kofiLink, { key: "Tab" });
 
     expect(document.activeElement).toBe(closeButton);
   });
@@ -299,7 +308,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const kofiLink = screen.getByTitle("Support FretFlow on Ko-fi");
 
     kofiLink.focus();
-    fireEvent.keyDown(window, { key: "Tab" });
+    fireEvent.keyDown(kofiLink, { key: "Tab" });
 
     expect(document.activeElement).toBe(closeButton);
   });
@@ -312,49 +321,8 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const kofiLink = screen.getByTitle("Support FretFlow on Ko-fi");
 
     closeButton.focus();
-    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    fireEvent.keyDown(closeButton, { key: "Tab", shiftKey: true });
 
     expect(document.activeElement).toBe(kofiLink);
   });
-
-  it("restores focus to the trigger when the overlay closes", () => {
-    const store = createStore();
-
-    render(
-      <Provider store={store}>
-        <button type="button">Settings trigger</button>
-        <SettingsOverlay />
-      </Provider>,
-    );
-
-    const trigger = screen.getByRole("button", { name: "Settings trigger" });
-    trigger.focus();
-
-    act(() => {
-      store.set(settingsOverlayOpenAtom, true);
-    });
-
-    const closeButton = screen.getByLabelText("Close settings");
-    fireEvent.click(closeButton);
-
-    expect(document.activeElement).toBe(trigger);
-  });
 });
-
-describe("SettingsOverlay/SettingsOverlay motion wiring", () => {
-  it("AnimatePresence wrapper is configured with initial={false}", () => {
-    spiedAnimatePresence.mockClear();
-
-    const store = createStore();
-    store.set(settingsOverlayOpenAtom, true);
-    renderOverlay(store);
-
-    // initial={false} prevents the overlay from replaying its entry animation
-    // on the first render when the app mounts with a previously-open state.
-    const passedInitialFalse = spiedAnimatePresence.mock.calls.some(
-      ([props]) => props.initial === false,
-    );
-    expect(passedInitialFalse).toBe(true);
-  });
-});
-

@@ -7,14 +7,14 @@ import {
 
 describe("buildDegreeToggleOptions", () => {
   it("returns degrees for a scale, plain labels by default", () => {
-    const opts = buildDegreeToggleOptions({ scaleName: "Major" });
+    const opts = buildDegreeToggleOptions({ scaleName: "major" });
     expect(opts.map((o) => o.value)).toEqual(["I", "ii", "iii", "IV", "V", "vi", "vii°"]);
     expect(opts.every((o) => o.label === o.value)).toBe(true);
   });
 
   it("marks the active degree with * when a quality override is in effect", () => {
     const opts = buildDegreeToggleOptions({
-      scaleName: "Major",
+      scaleName: "major",
       qualityOverridden: true,
       activeDegree: "V",
     });

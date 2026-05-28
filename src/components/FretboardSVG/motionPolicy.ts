@@ -4,6 +4,7 @@ type ConnectorAnimationMode = "group" | "none";
 
 export interface FretboardMotionPolicyInput {
   prefersReducedMotion: boolean;
+  playbackActive?: boolean;
 }
 
 export interface FretboardMotionPolicy {
@@ -23,6 +24,9 @@ export function resolveFretboardMotionPolicy(
 ): FretboardMotionPolicy {
   if (input.prefersReducedMotion) {
     return { noteMode: "none", shapeMode: "none", connectorMode: "none" };
+  }
+  if (input.playbackActive ?? false) {
+    return { noteMode: "css", shapeMode: "none", connectorMode: "none" };
   }
   return { noteMode: "css", shapeMode: "group", connectorMode: "group" };
 }

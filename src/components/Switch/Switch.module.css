@@ -19,8 +19,8 @@
     box-shadow 200ms ease;
 }
 
-.switch::before {
-  content: "";
+.thumb {
+  display: block;
   position: absolute;
   top: 1px;
   left: 1px;
@@ -49,7 +49,7 @@
 }
 
 /* On state — cyan (default tone) */
-.switch[data-on]:not([data-tone="warm"]) {
+.switch[data-state="checked"]:not([data-tone="warm"]) {
   background: rgb(77 228 255 / 0.18);
   border-color: rgb(77 228 255 / 0.6);
   box-shadow:
@@ -57,7 +57,7 @@
     inset 0 0 8px rgb(77 228 255 / 0.18);
 }
 
-.switch[data-on]:not([data-tone="warm"])::before {
+.switch[data-state="checked"]:not([data-tone="warm"]) .thumb {
   background: var(--neon-cyan, #4de4ff);
   box-shadow:
     0 0 6px var(--neon-cyan, #4de4ff),
@@ -66,7 +66,7 @@
 }
 
 /* On state — amber (warm tone, used for chord-selected context) */
-.switch[data-on][data-tone="warm"] {
+.switch[data-state="checked"][data-tone="warm"] {
   background: rgb(255 154 77 / 0.18);
   border-color: rgb(255 154 77 / 0.6);
   box-shadow:
@@ -74,7 +74,7 @@
     inset 0 0 8px rgb(255 154 77 / 0.18);
 }
 
-.switch[data-on][data-tone="warm"]::before {
+.switch[data-state="checked"][data-tone="warm"] .thumb {
   background: var(--neon-orange, #ff9a4d);
   box-shadow: 0 0 6px var(--neon-orange, #ff9a4d);
   transform: translateX(16px);
@@ -86,26 +86,27 @@
  * The :root rules above hardcode the dark-mode neon values as a default.
  * ======================================================================== */
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global([data-theme="modern-light"]) .switch[data-on]:not([data-tone="warm"]) {
-  background: rgb(46 181 204 / 0.18);
-  border-color: rgb(46 181 204 / 0.6);
-  box-shadow: 0 0 0 1px rgb(46 181 204 / 0.25);
+/* Light-mode: CYAN #147088 (reference palette) on state, ORANGE #b1431b warm state. */
+:global([data-theme="modern-light"]) .switch[data-state="checked"]:not([data-tone="warm"]) {
+  background: rgb(20 112 136 / 0.14);
+  border-color: rgb(20 112 136 / 0.55);
+  box-shadow: 0 0 0 1px rgb(20 112 136 / 0.20);
 }
 
 :global([data-theme="modern-light"])
-  .switch[data-on]:not([data-tone="warm"])::before {
-  background: #2eb5cc;
-  box-shadow: 0 1px 2px rgb(46 181 204 / 0.4);
+  .switch[data-state="checked"]:not([data-tone="warm"]) .thumb {
+  background: #147088;
+  box-shadow: 0 1px 2px rgb(20 112 136 / 0.35);
 }
 
-:global([data-theme="modern-light"]) .switch[data-on][data-tone="warm"] {
-  background: rgb(234 88 12 / 0.16);
-  border-color: rgb(234 88 12 / 0.55);
-  box-shadow: 0 0 0 1px rgb(234 88 12 / 0.2);
+:global([data-theme="modern-light"]) .switch[data-state="checked"][data-tone="warm"] {
+  background: rgb(177 67 27 / 0.14);
+  border-color: rgb(177 67 27 / 0.50);
+  box-shadow: 0 0 0 1px rgb(177 67 27 / 0.18);
 }
 
-:global([data-theme="modern-light"]) .switch[data-on][data-tone="warm"]::before {
-  background: #ea580c;
-  box-shadow: 0 1px 2px rgb(234 88 12 / 0.4);
+:global([data-theme="modern-light"]) .switch[data-state="checked"][data-tone="warm"] .thumb {
+  background: #b1431b;
+  box-shadow: 0 1px 2px rgb(177 67 27 / 0.35);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */

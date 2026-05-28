@@ -194,3 +194,10 @@
   --practice-pill-guide-blue-bg: rgb(30 60 120 / 0.25);
 }
 
+@media (max-width: 767px) {
+  :root {
+    --size-touch-target: 2.75rem; /* 44px */
+    --control-height: 40px;
+  }
+}
+

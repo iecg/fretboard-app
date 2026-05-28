@@ -1,7 +1,7 @@
 {
   "name": "fretboard-app",
   "private": true,
-  "version": "1.26.0",
+  "version": "1.27.1",
   "type": "module",
   "main": "./packages/core/dist/index.js",
   "types": "./packages/core/dist/index.d.ts",
@@ -18,9 +18,11 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm --filter @fretflow/core run build && tsc -b && vite build",
+    "build:mobile": "VITE_MOBILE=true pnpm run build",
     "build:types": "pnpm --filter @fretflow/core run build && tsc -b",
     "lint": "eslint . && stylelint 'src/**/*.css'",
     "preview": "vite preview",
+    "preview:prod": "pnpm run build && vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -36,16 +38,19 @@
   },
   "dependencies": {
     "@fretflow/core": "workspace:*",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jotai": "^2.20.0",
     "lucide-react": "^1.14.0",
-    "motion": "^12.38.0",
+    "motion": "^12.40.0",
     "react": "^19.2.5",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "tone": "^15.1.22"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.2",
@@ -60,8 +65,10 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.6",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^10.4.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-compiler": "19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",

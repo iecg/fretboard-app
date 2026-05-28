@@ -17,8 +17,8 @@
   /* Note colors (note-blue refers to the musical "blue note") */
   --note-blue: #9333ea;
   --note-blue-glow: rgba(147, 51, 234, 0.5);
-  --caged-e: #E69F00;      /* Okabe-Ito orange, connector slot 1 */
-  --caged-e-fg: #fff1f2;
+  --caged-e: #56B4E9;      /* Okabe-Ito sky blue, decoupled from connector slot 1 */
+  --caged-e-fg: #f0f9ff;
   --caged-d: #999999;      /* Okabe-Ito gray, connector slot 3 */
   --caged-d-fg: #fff8db;
   --caged-c: #009E73;      /* Okabe-Ito bluish green, connector slot 4 */
@@ -27,7 +27,7 @@
   --caged-a-fg: #eff6ff;
   --caged-g: #CC79A7;      /* Okabe-Ito reddish purple, connector slot 7 */
   --caged-g-fg: #faf5ff;
-  --caged-e-bg: rgba(230, 159, 0, 0.18);    /* E #E69F00 + 0.18 */
+  --caged-e-bg: rgba(86, 180, 233, 0.18);   /* E #56B4E9 + 0.18 */
   --caged-d-bg: rgba(153, 153, 153, 0.18);  /* D #999999 + 0.18 */
   --caged-c-bg: rgba(0, 158, 115, 0.18);    /* C #009E73 + 0.18 */
   --caged-a-bg: rgba(0, 114, 178, 0.18);    /* A #0072B2 + 0.18 */
@@ -63,6 +63,10 @@ body {
   -webkit-user-select: none;
   overflow-x: hidden;
   overflow-y: visible;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
 }
 
 .error-fallback {

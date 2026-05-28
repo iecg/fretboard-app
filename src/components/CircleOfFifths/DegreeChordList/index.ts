@@ -1,1 +1,0 @@
-export { DegreeChordList } from "./DegreeChordList";

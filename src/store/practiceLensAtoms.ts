@@ -3,63 +3,98 @@ import {
   NOTES,
   ENHARMONICS,
   INTERVAL_NAMES,
-
-  LENS_REGISTRY,
-  getScaleNotes,
+  CHORD_DEFINITIONS,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
+  getChordNotes,
 } from "@fretflow/core";
 import type {
   ChordMemberName,
-  LensAvailabilityContext,
   NoteSemantics,
   PracticeCue,
   PracticeCueNote,
   ChordRowEntry,
-
-  PracticeBarNote,
-  PracticeBarGroup,
 } from "@fretflow/core";
+import { type DegreeId } from "@fretflow/core";
 import {
-  getDegreesForScale,
-  DEGREE_COLORS,
-  type DegreeId,
-} from "@fretflow/core";
-import {
-  rootNoteAtom,
-  scaleNameAtom,
-  scaleNotesAtom,
+  scaleContextAtom,
   colorNotesAtom,
-  useFlatsAtom,
-  practiceBarColorNotesAtom,
+  preferFlatsAtom,
 } from "./scaleAtoms";
 import {
-  chordRootAtom,
-  chordTypeAtom,
-  chordLabelAtom,
-  chordTonesAtom,
-  chordMembersAtom,
-  practiceLensAtom,
-  chordDegreeAtom,
-  chordOverlayModeAtom,
+  chordLookupAtom,
   chordOverlayHiddenAtom,
   chordHiddenNotesAtom,
   fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
+import { activeChordCachedDegreeAtom } from "./songStateAtoms";
 import {
-  hasOutsideChordMembersAtom,
+  resolvedProgressionStepsAtom,
+  displayedProgressionStepIndexAtom,
+  activeResolvedProgressionStepAtom,
+  progressionTempoBpmAtom,
+  progressionStepDeadlineAtom,
+  beatsPerBarAtom,
+  progressionLoopEnabledAtom,
+} from "./progressionAtoms";
+import {
+  getProgressionDurationBeats,
+  MIN_PROGRESSION_TEMPO_BPM,
+} from "../progressions/progressionDomain";
+import {
   allChordMembersAtom,
 } from "./composableSelectors";
-import { shapeHighlightedNoteSetAtom } from "./shapeAtoms";
-import {
-  activeProgressionStepAtom,
-  activeResolvedProgressionStepAtom,
-} from "./progressionAtoms";
+
+/**
+ * Field-wise equality for two NoteSemantics objects. The atom rebuilds the
+ * Map (and every entry) from scratch on each evaluation, so reference-only
+ * equality would never hit the cache. All NoteSemantics fields are
+ * primitives → a flat field walk is enough.
+ */
+function noteSemanticsEqual(a: NoteSemantics, b: NoteSemantics): boolean {
+  return (
+    a.isScaleRoot === b.isScaleRoot &&
+    a.isChordRoot === b.isChordRoot &&
+    a.isChordTone === b.isChordTone &&
+    a.isInScale === b.isInScale &&
+    a.isColorTone === b.isColorTone &&
+    a.isGuideTone === b.isGuideTone &&
+    a.isTension === b.isTension &&
+    a.memberName === b.memberName &&
+    a.scaleDegree === b.scaleDegree &&
+    a.isDiatonicChord === b.isDiatonicChord &&
+    a.isFullChordMode === b.isFullChordMode
+  );
+}
+
+/**
+ * Module-scoped cache for {@link noteSemanticMapAtom}. Returning the same
+ * Map reference when the recomputed semantics are value-equal lets React
+ * Compiler's downstream auto-memos short-circuit (FretboardSVG, lens
+ * predicates), eliminating render churn on no-op upstream writes.
+ */
+let cachedNoteSemanticMap = new Map<string, NoteSemantics>();
+
+function memoizeNoteSemanticMap(next: Map<string, NoteSemantics>): Map<string, NoteSemantics> {
+  if (cachedNoteSemanticMap === next) return cachedNoteSemanticMap;
+  if (cachedNoteSemanticMap.size === next.size) {
+    let equal = true;
+    for (const [key, value] of next) {
+      const prev = cachedNoteSemanticMap.get(key);
+      if (prev === undefined || !noteSemanticsEqual(prev, value)) {
+        equal = false;
+        break;
+      }
+    }
+    if (equal) return cachedNoteSemanticMap;
+  }
+  cachedNoteSemanticMap = next;
+  return next;
+}
 
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
-const GUIDE_TONE_FORMATTED = new Set(["♭3", "3", "♭7", "7"]);
 
 /**
  * Finds nearest in-scale resolution (≤2 semitones, step-up preferred).
@@ -82,13 +117,6 @@ function findNearestScaleResolution(
   return undefined;
 }
 
-export const practiceBarColorNotesFilteredAtom = atom((get) => {
-  const chordTones = get(chordTonesAtom);
-  const practiceBarColorNotes = get(practiceBarColorNotesAtom);
-  const chordToneSet = new Set(chordTones);
-  return practiceBarColorNotes.filter((n) => !chordToneSet.has(n.internalNote));
-});
-
 const getDisplayLabel = (e: ChordRowEntry): string =>
   e.scaleInterval ?? e.memberName;
 
@@ -110,101 +138,35 @@ function buildLandOnCue(allChordMembers: ChordRowEntry[]): PracticeCue {
 }
 
 const cueBaseInputsAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
+  const { chordType, chordRoot } = get(chordLookupAtom);
   if (!chordType) return null;
+  const { scaleNotes } = get(scaleContextAtom);
   return {
     chordType,
-    chordRoot: get(chordRootAtom),
-    useFlats: get(useFlatsAtom),
+    chordRoot,
+    preferFlats: get(preferFlatsAtom),
     allChordMembers: get(allChordMembersAtom),
-    scaleNotes: get(scaleNotesAtom),
+    scaleNotes,
   };
 });
 
-const targetsCuesAtom = atom((get) => {
-  const base = get(cueBaseInputsAtom);
-  if (!base) return [] as PracticeCue[];
-  const cues: PracticeCue[] = [];
-  if (base.allChordMembers.length > 0) {
-    cues.push(buildLandOnCue(base.allChordMembers));
-  }
-  return cues;
-});
-
-const guideTonesCuesAtom = atom((get) => {
-  const base = get(cueBaseInputsAtom);
-  if (!base) return [] as PracticeCue[];
-  const cues: PracticeCue[] = [];
-  if (base.allChordMembers.length > 0) {
-    cues.push(buildLandOnCue(base.allChordMembers));
-  }
-  const guideNotes = base.allChordMembers.filter((e) =>
-    GUIDE_TONE_FORMATTED.has(e.memberName),
-  );
-  if (guideNotes.length > 0) {
-    cues.push({
-      kind: "guide-tones",
-      label: "Guide tones",
-      notes: guideNotes.map((e) => ({
-        ...toCueNote(e),
-        role: "guide-tone" as const,
-      })),
-    });
-  }
-  return cues;
-});
-
-const tensionCuesAtom = atom((get) => {
-  const base = get(cueBaseInputsAtom);
-  if (!base) return [] as PracticeCue[];
-  const { allChordMembers, chordRoot, useFlats, scaleNotes } = base;
-
-  const displayNote = (note: string) =>
-    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
-
-  const cues: PracticeCue[] = [];
-  if (allChordMembers.length > 0) {
-    cues.push(buildLandOnCue(allChordMembers));
-  }
-  const tensionMembers = allChordMembers.filter((e) => !e.inScale);
-  if (tensionMembers.length > 0) {
-    const tensionNotes = tensionMembers.map((e) => ({
-      ...toCueNote(e),
-      role: "chord-tone-outside-scale" as const,
-      resolvesTo: findNearestScaleResolution(e.internalNote, scaleNotes, displayNote),
-    }));
-    cues.push({
-      kind: "tension",
-      label: "Tension",
-      notes: tensionNotes,
-    });
-  }
-  return cues;
-});
 
 /** Gathers chord-specific inputs. Returns null when there is no active chord or the overlay is hidden. */
 const chordSemanticInputsAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
+  const chordLookup = get(chordLookupAtom);
+  const { chordType } = chordLookup;
   if (!chordType) return null;
   if (get(chordOverlayHiddenAtom)) return null;
-  const progressionStep =
-    !get(activeResolvedProgressionStepAtom)?.unavailable
-      ? get(activeProgressionStepAtom)
-      : null;
   return {
-    chordRoot: get(chordRootAtom),
-    chordMembers: get(chordMembersAtom),
+    chordLookup,
     hiddenNotes: get(chordHiddenNotesAtom),
-    chordDegree: progressionStep?.degree ?? get(chordDegreeAtom),
-    chordOverlayMode: progressionStep ? "degree" : get(chordOverlayModeAtom),
-    chordType,
+    chordDegree: get(activeChordCachedDegreeAtom),
   };
 });
 
 /** Gathers scale-specific inputs. */
 const scaleSemanticInputsAtom = atom((get) => ({
-  rootNote: get(rootNoteAtom),
-  scaleName: get(scaleNameAtom),
+  scaleContext: get(scaleContextAtom),
   colorNotes: get(colorNotesAtom),
 }));
 
@@ -222,13 +184,19 @@ const scaleSemanticInputsAtom = atom((get) => ({
  */
 export const noteSemanticMapAtom = atom((get) => {
   const chordInputs = get(chordSemanticInputsAtom);
-  if (!chordInputs) return new Map<string, NoteSemantics>();
+  if (!chordInputs) return memoizeNoteSemanticMap(new Map<string, NoteSemantics>());
 
   const scaleInputs = get(scaleSemanticInputsAtom);
-  const { rootNote, scaleName, colorNotes } = scaleInputs;
-  const { chordRoot, chordMembers, hiddenNotes, chordDegree, chordOverlayMode, chordType } = chordInputs;
+  const {
+    scaleContext: { rootNote, scaleName, scaleNoteSet, degreesMap },
+    colorNotes,
+  } = scaleInputs;
+  const {
+    chordLookup: { chordRoot, chordMembers, chordType },
+    hiddenNotes,
+    chordDegree,
+  } = chordInputs;
 
-  const scaleNoteSet = new Set(getScaleNotes(rootNote, scaleName));
   const colorNoteSet = new Set(colorNotes);
 
   // Per-note hides: drop hidden notes from chord-tone classification so the
@@ -242,12 +210,10 @@ export const noteSemanticMapAtom = atom((get) => {
   for (const m of visibleMembers) memberByNote.set(m.note, m);
   const activeChordToneSet = new Set(visibleMembers.map((m) => m.note));
 
-  // Phase 04: diatonic chord check (computed once per evaluation)
-  const degreesMap = getDegreesForScale(scaleName);
-
+  // diatonic chord check (computed once per evaluation).
   let diatonicChordRoot: string | undefined;
   let diatonicChordQuality: string | undefined;
-  if (chordDegree !== null && chordOverlayMode === "degree") {
+  if (chordDegree !== null) {
     const diatonicResult = getDiatonicChord(chordDegree, scaleName, rootNote);
     diatonicChordRoot = diatonicResult?.root;
     diatonicChordQuality = diatonicResult?.quality;
@@ -296,170 +262,183 @@ export const noteSemanticMapAtom = atom((get) => {
       });
     }
   }
-  return map;
+  return memoizeNoteSemanticMap(map);
 });
 
 /**
  * Derives the ordered coaching cues rendered in the practice bar.
  *
- * Inputs (read via `get`): the active practice lens (`practiceLensAtom`),
- * chord root/type, scale name, and the chord-row catalog.
+ * Inputs (read via `get`): chord root/type, scale name, and the chord-row
+ * catalog. Emits "Land on" + "Tension" cues (chord notes that fall outside
+ * the active scale, with nearest-in-scale resolution targets).
  *
  * Output: `PracticeCue[]` ordered for left-to-right display. Returns `[]`
  * when no chord is active.
  *
- * See the "Lens & Note Roles" section in `CLAUDE.md` for how cues compose
- * with the base note-role model.
+ * See the "Note Roles" section in `CLAUDE.md` for how cues compose with the
+ * base note-role model.
  */
 export const practiceCuesAtom = atom((get) => {
-  const practiceLens = get(practiceLensAtom);
-  switch (practiceLens) {
-    case "targets": return get(targetsCuesAtom);
-    case "guide-tones": return get(guideTonesCuesAtom);
-    case "tension": return get(tensionCuesAtom);
-    default: return [] as PracticeCue[];
-  }
-});
-
-const entryToBarNote = (e: ChordRowEntry): PracticeBarNote => ({
-  internalNote: e.internalNote,
-  displayNote: e.displayNote,
-  intervalName: getDisplayLabel(e),
-  isChordRoot: e.role === "chord-root",
-  isGuideTone: GUIDE_TONE_FORMATTED.has(e.memberName),
-  isTension: !e.inScale,
-  isInScale: e.inScale,
-  scaleDegree: e.scaleDegree,
-  degreeColor: e.scaleDegree ? DEGREE_COLORS[e.scaleDegree] : undefined,
-});
-
-/**
- * Chord group — lens-independent. Always shows all chord members.
- */
-export const practiceBarChordGroupAtom = atom((get): PracticeBarGroup => {
-  const members = get(allChordMembersAtom);
-  return {
-    label: "Chord",
-    notes: members.map(entryToBarNote),
-  };
-});
-
-/**
- * Land-on group base — lens-driven coaching subset.
- *  - targets: all chord members
- *  - guide-tones: 3rd/7th members (falls back to all if none)
- *  - tension: outside-scale members with resolutions
- *
- * Shape narrowing applied in atoms.ts to avoid circular imports.
- */
-const practiceBarLandOnGroupBaseAtom = atom((get): PracticeBarGroup => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return { label: "Land on", notes: [] };
-
-  const lens = get(practiceLensAtom);
-  const chordRoot = get(chordRootAtom);
-  const useFlats = get(useFlatsAtom);
-  const allMembers = get(allChordMembersAtom);
-  const scaleNotes = get(scaleNotesAtom);
+  const base = get(cueBaseInputsAtom);
+  if (!base) return [] as PracticeCue[];
+  const { allChordMembers, chordRoot, preferFlats, scaleNotes } = base;
 
   const displayNote = (note: string) =>
-    formatAccidental(getNoteDisplay(note, chordRoot, useFlats));
+    formatAccidental(getNoteDisplay(note, chordRoot, preferFlats));
 
-  const findResolution = (note: string) =>
-    findNearestScaleResolution(note, scaleNotes, displayNote);
-
-  let subset: ChordRowEntry[];
-  switch (lens) {
-    case "guide-tones": {
-      const gt = allMembers.filter((e) => GUIDE_TONE_FORMATTED.has(e.memberName));
-      subset = gt.length > 0 ? gt : allMembers;
-      break;
-    }
-    case "tension":
-      subset = allMembers.filter((e) => !e.inScale);
-      break;
-    default:
-      subset = allMembers;
+  const cues: PracticeCue[] = [];
+  if (allChordMembers.length > 0) {
+    cues.push(buildLandOnCue(allChordMembers));
   }
+  const tensionMembers = allChordMembers.filter((e) => !e.inScale);
+  if (tensionMembers.length > 0) {
+    const tensionNotes = tensionMembers.map((e) => ({
+      ...toCueNote(e),
+      role: "chord-tone-outside-scale" as const,
+      resolvesTo: findNearestScaleResolution(e.internalNote, scaleNotes, displayNote),
+    }));
+    cues.push({
+      kind: "tension",
+      label: "Tension",
+      notes: tensionNotes,
+    });
+  }
+  return cues;
+});
 
-  const notes: PracticeBarNote[] = subset.map((e) => {
-    const base = entryToBarNote(e);
-    return lens === "tension"
-      ? { ...base, resolvesTo: findResolution(e.internalNote) }
-      : base;
-  });
 
-  return { label: "Land on", notes };
+/**
+ * Pitch-class set of the chord at the step *after* the active progression step.
+ * Wraps around so that the last step's next is the first step. When the
+ * progression has exactly one step, next wraps to that same step (all its
+ * tones are returned).
+ *
+ * Notes are in the FretFlow sharps convention (C#, D#, …), matching
+ * `getChordNotes` which already performs the same sharp-normalization.
+ *
+ * Returns an empty set when:
+ * - The progression is empty.
+ * - The resolved next step is unavailable in the current scale.
+ * - The step's quality is not a known FretFlow chord quality.
+ */
+export const nextChordTonesAtom = atom((get): Set<string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Set();
+  const active = get(displayedProgressionStepIndexAtom);
+  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
+    return new Set();
+  }
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Set();
+  }
+  const notes = getChordNotes(step.root, step.quality);
+  return new Set(notes);
 });
 
 /**
- * Shape-aware Land-on group. Narrows the base lens subset to notes present in
- * the active shape context (except for tension, which stays global). The
- * Chord group never goes through this — it is always all chord members.
+ * Pitch-class set of notes shared between the active chord and the next chord
+ * in the progression (common tones). Useful for the Lead lens to identify
+ * pivot/guide notes when navigating between chords.
+ *
+ * Reads the active step via `activeResolvedProgressionStepAtom` so the index
+ * is clamped to the current progression length — protects against transient
+ * out-of-range states (e.g. after a step is removed).
+ *
+ * Both sets use the same sharps convention so the intersection is reliable.
+ * Returns an empty set when the progression is empty or the active step is
+ * unresolvable.
  */
-export const practiceBarLandOnGroupAtom = atom((get) => {
-  const base = get(practiceBarLandOnGroupBaseAtom);
-  const lens = get(practiceLensAtom);
-  const shapeHighlightedNoteSet = get(shapeHighlightedNoteSetAtom);
-  if (!shapeHighlightedNoteSet || lens === "tension") return base;
-  const filtered = base.notes.filter((n) =>
-    shapeHighlightedNoteSet.has(n.internalNote),
-  );
-  if (filtered.length === 0) return base;
-  return { ...base, notes: filtered };
-});
-
-export const showChordPracticeBarAtom = atom((get) => {
-  return !!get(chordTypeAtom);
-});
-
-export const practiceBarTitleAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const chordLabel = get(chordLabelAtom);
-  if (!chordType) return "";
-  return chordLabel ?? "";
-});
-
-export const practiceBarBadgeAtom = atom(() => null as string | null);
-
-/**
- * Active lens label from LENS_REGISTRY.
- */
-export const practiceBarLensLabelAtom = atom((get): string | null => {
-  const chordType = get(chordTypeAtom);
-  if (!chordType) return null;
-  const lens = get(practiceLensAtom);
-  const entry = LENS_REGISTRY.find((e) => e.id === lens);
-  return entry?.label ?? null;
+export const commonTonesWithNextAtom = atom((get): Set<string> => {
+  const activeStep = get(activeResolvedProgressionStepAtom);
+  if (!activeStep || activeStep.unavailable || activeStep.root === null || activeStep.quality === null) {
+    return new Set();
+  }
+  const activeTones = new Set(getChordNotes(activeStep.root, activeStep.quality));
+  const next = get(nextChordTonesAtom);
+  return new Set([...activeTones].filter((n) => next.has(n)));
 });
 
 /**
- * Context inputs for LENS_REGISTRY predicates.
+ * Pitch-class set of guide tones (3rd and 7th) for the chord at the *next*
+ * progression step. Used by the Lead lens anticipation window: when the
+ * beat position enters the last beat of the current step, notes matching
+ * these pitch classes receive "anticipation" emphasis.
+ *
+ * Guide tone detection mirrors `chordMembersAtom` / `GUIDE_TONE_RAW`:
+ * filters ChordDefinition members whose name is b3, 3, b7, or 7, then
+ * resolves the note from root + semitone offset.
+ *
+ * Returns an empty set when:
+ * - The progression is empty.
+ * - The next step is unavailable or missing root/quality.
+ * - The next chord has no recognizable guide tones (e.g. power chords).
  */
-export const lensAvailabilityContextAtom = atom((get): LensAvailabilityContext => {
-  const chordType = get(chordTypeAtom);
-  const chordMembers = get(chordMembersAtom);
-  const colorNotes = get(colorNotesAtom);
-  const hasOutsideChordMembers = get(hasOutsideChordMembersAtom);
-
-  return {
-    hasChordOverlay: !!chordType,
-    hasGuideTones: chordMembers.some((m) => GUIDE_TONE_RAW.has(m.name)),
-    hasColorNotes: colorNotes.length > 0,
-    hasOutsideTones: hasOutsideChordMembers,
-  };
+export const nextChordGuideTonesAtom = atom((get): Set<string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Set();
+  const active = get(displayedProgressionStepIndexAtom);
+  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
+    return new Set();
+  }
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Set();
+  }
+  const def = CHORD_DEFINITIONS[step.quality];
+  if (!def) return new Set();
+  const rootIndex = NOTES.indexOf(step.root);
+  if (rootIndex === -1) return new Set();
+  const guideTones = new Set<string>();
+  for (const member of def.members) {
+    if (GUIDE_TONE_RAW.has(member.name)) {
+      guideTones.add(NOTES[(rootIndex + member.semitone) % 12]);
+    }
+  }
+  return guideTones;
 });
 
 /**
- * Resolved list of lenses with availability and reasons.
+ * Duration of the active progression step in beats.
+ *
+ * Exported for reuse in Task 4.5 (anticipation window check:
+ * `beatPosition >= stepDurationBeats - 1`).
  */
-export const lensAvailabilityAtom = atom((get) => {
-  const ctx = get(lensAvailabilityContextAtom);
-  return LENS_REGISTRY.map((entry) => ({
-    id: entry.id,
-    label: entry.label,
-    description: entry.description,
-    available: entry.isAvailable(ctx),
-    reason: entry.unavailableReason(ctx),
-  }));
+export const activeStepDurationBeatsAtom = atom((get): number => {
+  const step = get(activeResolvedProgressionStepAtom);
+  if (!step || step.unavailable) return 0;
+  const beatsPerBar = get(beatsPerBarAtom);
+  return getProgressionDurationBeats(step.duration, beatsPerBar);
+});
+
+/**
+ * Current beat position within the active progression step, derived from
+ * the step deadline and tempo. Beat 0 = just started; `stepDurationBeats` = step ended.
+ *
+ * Formula: `stepDurationBeats - beatsRemaining`, clamped to [0, stepDurationBeats].
+ *
+ * This atom reads `Date.now()` directly and is therefore time-dependent.
+ * In Jotai, derived atoms only recompute when their declared dependencies
+ * (tempo, deadline, step) change — NOT on every clock tick.
+ *
+ * TODO (Task 4.5+): consumers need a 60Hz ticker atom to get live updates;
+ * subscribe a raf-driven atom that sets a dummy counter so this recomputes
+ * on every animation frame.
+ */
+export const beatPositionAtom = atom((get): number => {
+  const tempo = get(progressionTempoBpmAtom);
+  const deadline = get(progressionStepDeadlineAtom);
+  const stepDurationBeats = get(activeStepDurationBeatsAtom);
+  if (deadline == null) return 0;
+  // Guard against tempo === 0 (would yield Infinity for secondsPerBeat).
+  // Storage validation enforces a min, but direct programmatic `set` could
+  // bypass it — mirror `getProgressionDurationMs`'s clamp.
+  const safeTempo = Math.max(MIN_PROGRESSION_TEMPO_BPM, tempo);
+  const secondsRemaining = Math.max(0, (deadline - Date.now()) / 1000);
+  const secondsPerBeat = 60 / safeTempo;
+  const beatsRemaining = secondsRemaining / secondsPerBeat;
+  // Clamp to documented [0, stepDurationBeats] invariant for float safety.
+  return Math.min(stepDurationBeats, Math.max(0, stepDurationBeats - beatsRemaining));
 });

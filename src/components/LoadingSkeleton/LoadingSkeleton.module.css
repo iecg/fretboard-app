@@ -32,13 +32,6 @@
 .bar--lg {
   height: 1rem;
 }
-
-.circle {
-  composes: bone;
-  border-radius: 50%;
-  aspect-ratio: 1;
-}
-
 /* Card-shaped skeleton matching the app's Card component */
 .card-skeleton {
   background: var(--surface-card-top);
@@ -87,16 +80,75 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* Circle of Fifths skeleton */
-.cof-skeleton {
+/* Timeline Skeleton */
+.timeline-skeleton {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0.7rem 0;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.34rem 0.7rem 0.32rem;
+  width: 100%;
 }
 
-.cof-skeleton .circle {
-  width: min(14rem, 100%);
+.timeline-ruler-bone {
+  composes: bone;
+  height: 0.82rem;
+  width: 100%;
+}
+
+.timeline-lane-bone {
+  composes: bone;
+  height: 1.95rem;
+  width: 100%;
+}
+
+/* Control skeleton primitives */
+.skel-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.skel-toggle {
+  composes: bone;
+  height: 1.5rem;
+  width: 2.75rem;
+  border-radius: 1rem;
+}
+
+.skel-controls-grid {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.skel-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 120px;
+}
+
+.skel-dropdown {
+  composes: bone;
+  height: 2.5rem;
+  width: 100%;
+  border-radius: var(--radius-sm);
+}
+
+.skel-segmented {
+  display: flex;
+  gap: 2px;
+  height: 2.5rem;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.skel-segment {
+  composes: bone;
+  flex: 1;
+  border-radius: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

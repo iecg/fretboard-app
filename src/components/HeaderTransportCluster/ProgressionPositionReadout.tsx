@@ -8,17 +8,14 @@ import styles from "./HeaderTransportCluster.module.css";
 
 interface ProgressionPositionReadoutProps {
   playing: boolean;
-  stepStartBar: number;
-  stepBars: number;
-  stepIndex: number;
+  stoppedBar: number;
   totalProgressionBars: number;
   beatsPerBar: number;
+  /** Active tempo in BPM. Drives the imperative tick interval: one render per
+   *  sixteenth-note (`60_000 / tempoBpm / 4` ms) so the subdivision digit
+   *  advances exactly once per sub-beat at any tempo. */
+  tempoBpm: number;
 }
-
-/** Position-write interval. Matches a 60 Hz refresh and is short enough that
- *  the subdivision digit's ~1ms resolution stays smooth. `setInterval` (not
- *  rAF) keeps the headless preview ticking; rAF is paused there. */
-const TICK_MS = 16;
 
 function PositionDigits({
   parts,
@@ -60,11 +57,10 @@ function PositionDigits({
  */
 export function ProgressionPositionReadout({
   playing,
-  stepStartBar,
-  stepBars,
-  stepIndex,
+  stoppedBar,
   totalProgressionBars,
   beatsPerBar,
+  tempoBpm,
 }: ProgressionPositionReadoutProps) {
   const containerRef = useRef<HTMLSpanElement | null>(null);
   const barRef = useRef<HTMLSpanElement | null>(null);
@@ -76,19 +72,20 @@ export function ProgressionPositionReadout({
   const lastBarRef = useRef<string>("");
   const lastBeatRef = useRef<string>("");
   const lastSubRef = useRef<string>("");
+  const lastAriaLabelRef = useRef<string>("");
 
   // Store chord-boundary props in refs so the animation loop can access
   // the latest values without needing to be cleared and restarted
   // at every transition.
-  const propsRef = useRef({ stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar });
+  const propsRef = useRef({ stoppedBar, totalProgressionBars, beatsPerBar });
   useEffect(() => {
-    propsRef.current = { stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar };
-  }, [stepStartBar, stepBars, stepIndex, totalProgressionBars, beatsPerBar]);
+    propsRef.current = { stoppedBar, totalProgressionBars, beatsPerBar };
+  }, [stoppedBar, totalProgressionBars, beatsPerBar]);
 
   // Initial / chord-change static render: the bar/total parts come from
   // props (or a fallback) so SSR and the first paint are correct.
   const initialPosition = formatProgressionPlaybackPosition(
-    stepStartBar,
+    stoppedBar,
     totalProgressionBars,
     beatsPerBar,
   );
@@ -117,32 +114,36 @@ export function ProgressionPositionReadout({
 
       // Update aria-label imperatively so screen readers stay in sync with
       // the high-frequency visual updates.
-      if (containerRef.current) {
+      const currentAriaLabel = `Position ${p.current} of ${p.total}`;
+      if (currentAriaLabel !== lastAriaLabelRef.current && containerRef.current) {
         containerRef.current.setAttribute(
           "aria-label",
-          `Position ${p.current} of ${p.total}`,
+          currentAriaLabel,
         );
+        lastAriaLabelRef.current = currentAriaLabel;
       }
     };
 
     const tick = () => {
       const tl = getTimelinePosition();
       const {
-        stepStartBar: currentStepStartBar,
-        stepBars: currentStepBars,
-        stepIndex: currentStepIndex,
+        stoppedBar: currentStoppedBar,
+        totalProgressionBars: currentTotalBars,
       } = propsRef.current;
 
       const live =
         playing
         && tl
-        && tl.stepIndex === currentStepIndex
         && !tl.paused
-        && currentStepBars > 0;
-      const positionBar = live ? currentStepStartBar + tl.localFraction * currentStepBars : currentStepStartBar;
+        && currentTotalBars > 0;
+      const clampedGlobalFraction = live
+        ? Math.max(0, Math.min(1 - Number.EPSILON, tl.globalFraction))
+        : 0;
+      const positionBar = live
+        ? 1 + clampedGlobalFraction * currentTotalBars
+      : currentStoppedBar;
       write(positionBar);
     };
-
     // Reset the cached digit values so the first tick force-writes after a
     // chord boundary — even if the computed digits happen to match the
     // outgoing chord's last frame, the refs still need to settle to the
@@ -150,12 +151,17 @@ export function ProgressionPositionReadout({
     lastBarRef.current = "";
     lastBeatRef.current = "";
     lastSubRef.current = "";
+    lastAriaLabelRef.current = "";
     tick();
 
     if (!playing) return;
-    const id = window.setInterval(tick, TICK_MS);
+    // One render per sixteenth note at the active tempo: 60_000 ms / BPM / 4.
+    // At 60 BPM → 250 ms; 120 → 125 ms; 240 → 63 ms. Clamp to 16 ms floor
+    // so accidentally-huge tempos (>3750 BPM) don't hammer the main thread.
+    const tickMs = Math.max(16, Math.round(15000 / Math.max(1, tempoBpm)));
+    const id = window.setInterval(tick, tickMs);
     return () => window.clearInterval(id);
-  }, [playing]);
+  }, [playing, tempoBpm]);
 
   return (
     <div className={styles.positionReadout}>

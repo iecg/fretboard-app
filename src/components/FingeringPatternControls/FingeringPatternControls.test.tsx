@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
@@ -9,26 +10,35 @@ import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 
 describe("FingeringPatternControls/FingeringPatternControls", () => {
-  it("renders all fingering pattern options", () => {
+  it("renders all 5 fingering pattern options grouped in the Pattern select", async () => {
     const store = createStore();
     render(
       <Provider store={store}>
         <FingeringPatternControls />
       </Provider>
     );
-    expect(screen.getAllByText("None").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("CAGED")).toBeInTheDocument();
-    expect(screen.getByText("3NPS")).toBeInTheDocument();
+    // Open the grouped Pattern select to surface options + group headings.
+    await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+    // All 5 options present
+    expect(screen.getByRole("option", { name: "None" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "CAGED" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "3NPS" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "1-String" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "2-Strings" })).toBeInTheDocument();
+    // Group labels rendered (Radix Select.Label → plain text inside Select.Group)
+    expect(screen.getByText("Box Shapes")).toBeInTheDocument();
+    expect(screen.getByText("Linear")).toBeInTheDocument();
   });
 
-  it("updates fingering pattern on button click", () => {
+  it("updates fingering pattern when an option is selected", async () => {
     const store = createStore();
     render(
       <Provider store={store}>
         <FingeringPatternControls />
       </Provider>
     );
-    fireEvent.click(screen.getByText("CAGED"));
+    await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+    await userEvent.click(screen.getByRole("option", { name: "CAGED" }));
     expect(store.get(fingeringPatternAtom)).toBe("caged");
   });
 
@@ -93,24 +103,26 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     expect(screen.queryByRole("button", { name: "7" })).toBeNull();
   });
 
-  it("renders Position and String study clusters (Task 5)", () => {
+  it("renders a single unified Pattern combobox (F4)", () => {
     renderWithAtoms(<FingeringPatternControls />);
-    // ToggleBar applies the label as role="group" aria-label
-    expect(screen.getByRole("group", { name: /^position$/i })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: /string study/i })).toBeInTheDocument();
+    // Single combobox replaces the prior Position + String-study ToggleBars.
+    expect(screen.getByRole("combobox", { name: /pattern/i })).toBeInTheDocument();
+    // Old ToggleBar groups must be gone.
+    expect(screen.queryByRole("group", { name: /^position$/i })).toBeNull();
+    expect(screen.queryByRole("group", { name: /string study/i })).toBeNull();
   });
 
-  it("selecting Position clears String study selection (Task 5)", () => {
+  it("selecting a Box-Shapes option from one-string state replaces the linear selection (F4)", async () => {
     renderWithAtoms(<FingeringPatternControls />, [[fingeringPatternAtom, "one-string"]]);
-    // 1-String is initially pressed
-    const oneString = screen.getByRole("button", { name: /^1-String$/ });
-    expect(oneString).toHaveAttribute("aria-pressed", "true");
+    // Current combobox reflects the active "1-String" linear pattern.
+    const combobox = screen.getByRole("combobox", { name: /pattern/i });
+    expect(combobox).toHaveTextContent("1-String");
 
-    fireEvent.click(screen.getByRole("button", { name: /^CAGED$/ }));
+    await userEvent.click(combobox);
+    await userEvent.click(screen.getByRole("option", { name: "CAGED" }));
 
-    // CAGED becomes pressed; 1-String unpresses
-    expect(screen.getByRole("button", { name: /^CAGED$/ })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: /^1-String$/ })).toHaveAttribute("aria-pressed", "false");
+    // Mutual exclusion: combobox now shows CAGED; the linear selection is dropped.
+    expect(screen.getByRole("combobox", { name: /pattern/i })).toHaveTextContent("CAGED");
   });
 
   it("handles shift-click multi-select for CAGED shapes", () => {
@@ -135,23 +147,24 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
   });
 
   describe("fingering patterns", () => {
-    it("renders exactly 5 fingering pattern options", () => {
+    it("renders exactly 5 fingering pattern options", async () => {
       const store = createStore();
       render(
         <Provider store={store}>
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getAllByText("None").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText("CAGED")).toBeInTheDocument();
-      expect(screen.getByText("3NPS")).toBeInTheDocument();
-      expect(screen.getByText("1-String")).toBeInTheDocument();
-      expect(screen.getByText("2-Strings")).toBeInTheDocument();
+      await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+      expect(screen.getByRole("option", { name: "None" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "CAGED" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "3NPS" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "1-String" })).toBeInTheDocument();
+      expect(screen.getByRole("option", { name: "2-Strings" })).toBeInTheDocument();
       // Dropped patterns must not appear
-      expect(screen.queryByText("Dbl Stops")).toBeNull();
-      expect(screen.queryByText("2×4 Box")).toBeNull();
-      expect(screen.queryByText("3×3 Box")).toBeNull();
-      expect(screen.queryByText("Stack")).toBeNull();
+      expect(screen.queryByRole("option", { name: "Dbl Stops" })).toBeNull();
+      expect(screen.queryByRole("option", { name: "2×4 Box" })).toBeNull();
+      expect(screen.queryByRole("option", { name: "3×3 Box" })).toBeNull();
+      expect(screen.queryByRole("option", { name: "Stack" })).toBeNull();
     });
 
     it('shows String section only when fingeringPattern === "one-string"', () => {
@@ -167,8 +180,9 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getByText("String")).toBeInTheDocument();
-      // Switching away hides it
+      // "String" appears as both a Prop label and the LabeledSelect's hidden label span.
+      expect(screen.getAllByText("String").length).toBeGreaterThanOrEqual(1);
+      // Switching away hides both
       act(() => { store.set(fingeringPatternAtom, "none"); });
       rerender(
         <Provider store={store}>
@@ -178,18 +192,19 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.queryByText("String")).toBeNull();
     });
 
-    it("clicking 1-String sets fingeringPattern to one-string", () => {
+    it("selecting 1-String sets fingeringPattern to one-string", async () => {
       const store = createStore();
       render(
         <Provider store={store}>
           <FingeringPatternControls />
         </Provider>
       );
-      fireEvent.click(screen.getByText("1-String"));
+      await userEvent.click(screen.getByRole("combobox", { name: /pattern/i }));
+      await userEvent.click(screen.getByRole("option", { name: "1-String" }));
       expect(store.get(fingeringPatternAtom)).toBe("one-string");
     });
 
-    it("clicking string button in one-string sub-control updates oneStringIndexAtom", () => {
+    it("one-string string chooser is a LabeledSelect (combobox) defaulting to 1", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "one-string"); });
       render(
@@ -197,12 +212,13 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      // String buttons are labelled 1-6; default is 0 (string 1). Click "3" to set index 2.
-      fireEvent.click(screen.getByRole("button", { name: "3" }));
-      expect(store.get(oneStringIndexAtom)).toBe(2);
+      // String chooser is now a StringSetPicker (combobox), not individual buttons.
+      // Default index 0 → selected label "1" (dot-format: single string renders as "1").
+      const combobox = screen.getByRole("combobox", { name: /^String$/i });
+      expect(combobox).toHaveTextContent("1");
     });
 
-    it("clicking pair button in two-strings sub-control updates twoStringsPairAtom", () => {
+    it("two-strings pair chooser is a LabeledSelect (combobox) defaulting to 1·2", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "two-strings"); });
       render(
@@ -210,8 +226,10 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      fireEvent.click(screen.getByRole("button", { name: "3-4" }));
-      expect(store.get(twoStringsPairAtom)).toBe(2);
+      // Pair chooser is now a StringSetPicker (combobox), not individual buttons.
+      // Default pair 0 → selected label "1·2" (dot-separator guitar-numbered).
+      const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
+      expect(combobox).toHaveTextContent("1·2");
     });
 
     it('shows both Strings and Interval sub-controls when fingeringPattern === "two-strings"', () => {
@@ -222,8 +240,10 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getByText("Strings")).toBeInTheDocument();
-      expect(screen.getByText("Interval")).toBeInTheDocument();
+      // "Strings" appears as both a Prop label and the LabeledSelect's hidden label span,
+      // so use getAllByText and assert at least one is in the document.
+      expect(screen.getAllByText("Strings").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("Interval Connectors")).toBeInTheDocument();
     });
 
     it("interval sub-control has 4 options: Off, 3rds, 4ths, 6ths (5ths dropped — UAT-14/R05)", () => {
@@ -243,34 +263,6 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(screen.queryByRole("button", { name: "5ths" })).toBeNull();
     });
 
-    it("does not show 'Pair members connected' hint when interval is Off (0)", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "two-strings");
-        store.set(twoStringsIntervalAtom, 0);
-      });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.queryByText("Pair members connected")).toBeNull();
-    });
-
-    it("shows 'Pair members connected' hint when interval is non-Off", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "two-strings");
-        store.set(twoStringsIntervalAtom, 1);
-      });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.getByText("Pair members connected")).toBeInTheDocument();
-    });
-
     it("clicking interval button updates twoStringsIntervalAtom", () => {
       const store = createStore();
       act(() => { store.set(fingeringPatternAtom, "two-strings"); });
@@ -283,39 +275,38 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(store.get(twoStringsIntervalAtom)).toBe(3);
     });
 
-    it("pair toggle bar shows 5 buttons (adjacent) when interval is Off/3rds/4ths", () => {
+    it("pair select shows '1·2' as default when interval is Off (adjacent topology)", () => {
       const store = createStore();
       act(() => {
         store.set(fingeringPatternAtom, "two-strings");
-        store.set(twoStringsIntervalAtom, 0); // Off
+        store.set(twoStringsIntervalAtom, 0); // Off → adjacent pairs
+        store.set(twoStringsPairAtom, 0);
       });
       render(
         <Provider store={store}>
           <FingeringPatternControls />
         </Provider>
       );
-      // Adjacent pair buttons: 1-2, 2-3, 3-4, 4-5, 5-6
-      expect(screen.getByRole("button", { name: "1-2" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "5-6" })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "1-3" })).toBeNull();
+      // Pair chooser is now a StringSetPicker; default pair 0 → "1·2" (dot-separator)
+      const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
+      expect(combobox).toHaveTextContent("1·2");
     });
 
-    it("pair toggle bar shows 4 buttons (skip-one) when interval is 6ths", () => {
+    it("pair select shows '1·3' when interval is 6ths (skip-one topology)", () => {
       const store = createStore();
       act(() => {
         store.set(fingeringPatternAtom, "two-strings");
-        store.set(twoStringsIntervalAtom, 3); // 6ths
+        store.set(twoStringsIntervalAtom, 3); // 6ths → skip-one
+        store.set(twoStringsPairAtom, 0);
       });
       render(
         <Provider store={store}>
           <FingeringPatternControls />
         </Provider>
       );
-      // Skip-one pair buttons: 1-3, 2-4, 3-5, 4-6
-      expect(screen.getByRole("button", { name: "1-3" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "4-6" })).toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "1-2" })).toBeNull();
-      expect(screen.queryByRole("button", { name: "5-6" })).toBeNull();
+      // Skip-one topology: pair 0 → "1·3" (dot-separator guitar-numbered)
+      const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
+      expect(combobox).toHaveTextContent("1·3");
     });
 
     it("has no axe violations with one-string pattern active", async () => {
@@ -338,7 +329,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
           <FingeringPatternControls />
         </Provider>
       );
-      expect(screen.getByText("Connectors")).toBeInTheDocument();
+      expect(screen.getByText("Interval Connectors")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Off" })).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "On" })).toBeInTheDocument();
       // Old per-class buttons must be gone
@@ -374,32 +365,155 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
       expect(store.get(oneStringIntervalAtom)).toBe(0);
     });
 
-    it("shows connector hint in one-string when interval is On", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "one-string");
-        store.set(oneStringIntervalAtom, 1);
+
+    describe("Task 6.4 — LabeledSelect string-set UX", () => {
+      it("one-string: string chooser is a StringSetPicker (combobox role) with dot-only options 1–6", () => {
+        const store = createStore();
+        act(() => { store.set(fingeringPatternAtom, "one-string"); });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        // The Radix Select trigger has role="combobox"
+        const combobox = screen.getByRole("combobox", { name: /^String$/i });
+        expect(combobox).toBeInTheDocument();
+        // The options are labelled "1" through "6" (dot-format, guitar-numbered)
+        // They are available as options in the listbox when the select is opened
+        // We can verify via aria: the selected value text should show "1" by default
+        expect(combobox).toHaveTextContent("1");
       });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.getByText("Shows consecutive scale steps (2nds)")).toBeInTheDocument();
+
+      it("one-string: selecting a different option updates oneStringIndexAtom", async () => {
+        const store = createStore();
+        act(() => {
+          store.set(fingeringPatternAtom, "one-string");
+          store.set(oneStringIndexAtom, 0);
+        });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        // Open the Radix Select portal and click "3" (index 2, dot-format)
+        await userEvent.click(screen.getByRole("combobox", { name: /^String$/i }));
+        await userEvent.click(screen.getByRole("option", { name: "3" }));
+        expect(store.get(oneStringIndexAtom)).toBe(2);
+      });
+
+      it("1-string mode renders the string selector with dot-only option labels ('1'..'6')", async () => {
+        const store = createStore();
+        act(() => { store.set(fingeringPatternAtom, "one-string"); });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        const trigger = screen.getByRole("combobox", { name: /^String$/i });
+        await userEvent.click(trigger);
+        // All 6 single-string options render as "1", "2", ..., "6" (dot-format)
+        expect(screen.getByRole("option", { name: "1" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "2" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "3" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "4" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "5" })).toBeInTheDocument();
+        expect(screen.getByRole("option", { name: "6" })).toBeInTheDocument();
+        // Negative assertion: the old "String 1" label is gone
+        expect(screen.queryByRole("option", { name: /^String/ })).toBeNull();
+      });
+
+      it("two-strings: pair chooser is a StringSetPicker (combobox role) with dot-separator options", () => {
+        const store = createStore();
+        act(() => {
+          store.set(fingeringPatternAtom, "two-strings");
+          store.set(twoStringsIntervalAtom, 0); // adjacent topology → "N·(N+1)"
+          store.set(twoStringsPairAtom, 0);
+        });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
+        expect(combobox).toBeInTheDocument();
+        // Pair 0 with adjacent topology → "1·2" (dot-separator guitar-numbered)
+        expect(combobox).toHaveTextContent("1·2");
+      });
+
+      it("two-strings skip-one (6ths): pair chooser shows skip-one options (1·3 etc.)", () => {
+        const store = createStore();
+        act(() => {
+          store.set(fingeringPatternAtom, "two-strings");
+          store.set(twoStringsIntervalAtom, 3); // 6ths → skip-one
+          store.set(twoStringsPairAtom, 0);
+        });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        const combobox = screen.getByRole("combobox", { name: /^Strings$/i });
+        expect(combobox).toBeInTheDocument();
+        // Default pair 0 → "1·3" for skip-one topology (dot-separator guitar-numbered)
+        expect(combobox).toHaveTextContent("1·3");
+      });
+
+      it("two-strings: selecting a different pair option updates twoStringsPairAtom", async () => {
+        const store = createStore();
+        act(() => {
+          store.set(fingeringPatternAtom, "two-strings");
+          store.set(twoStringsIntervalAtom, 0); // adjacent topology
+          store.set(twoStringsPairAtom, 0);
+        });
+        render(
+          <Provider store={store}>
+            <FingeringPatternControls />
+          </Provider>
+        );
+        // Open the Radix Select portal and click "3·4" (pair index 2, dot-separator format)
+        await userEvent.click(screen.getByRole("combobox", { name: /^Strings$/i }));
+        await userEvent.click(screen.getByRole("option", { name: "3·4" }));
+        expect(store.get(twoStringsPairAtom)).toBe(2);
+      });
+    });
+  });
+
+  describe("Pattern select width (Plan I-T2)", () => {
+    it("Pattern select fills its field", () => {
+      const { container } = renderWithAtoms(<FingeringPatternControls />);
+      const trigger = container.querySelector("[role='combobox']");
+      expect(trigger).toBeTruthy();
+      expect(trigger?.closest("[data-width='fixed']")).toBeNull();
+      expect(trigger?.closest("[data-width='auto']")).toBeNull();
     });
 
-    it("does not show connector hint in one-string when interval is Off", () => {
-      const store = createStore();
-      act(() => {
-        store.set(fingeringPatternAtom, "one-string");
-        store.set(oneStringIntervalAtom, 0);
-      });
-      render(
-        <Provider store={store}>
-          <FingeringPatternControls />
-        </Provider>
-      );
-      expect(screen.queryByText("Shows consecutive scale steps (2nds)")).toBeNull();
+    it("Pattern Prop cell uses span=3", () => {
+      const { container } = renderWithAtoms(<FingeringPatternControls />);
+      const propCell = container.querySelector("[data-span='3']");
+      expect(propCell).toBeTruthy();
+      // Pattern dropdown lives in that cell
+      expect(propCell?.querySelector("[role='combobox']")).toBeTruthy();
+    });
+  });
+
+  describe("reference design shape controls", () => {
+    it("renders the Shift+click help text in the Shape label row", () => {
+      renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
+      const shapeHelp = screen.getByText("Shift+click to add shapes");
+      const shapeCell = shapeHelp.closest("[data-span='9']");
+      expect(shapeCell).toBeInTheDocument();
+      expect(shapeCell?.querySelector("p")).toBeNull();
+    });
+
+    it("renders CAGED shape controls composed from the shared chip toggle chrome", () => {
+      renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
+      const group = screen.getByRole("group", { name: "Shape" });
+      // Preserves its local class for the multi-select interaction hooks,
+      // and now composes the shared chip-variant chrome so the visual
+      // treatment stays in sync with ChordStringSetToggleBar.
+      expect(group.className).toMatch(/shapeToggleBar/);
+      expect(group.className).toMatch(/toggle-group/);
+      expect(group.className).toMatch(/toggle-group--chip/);
     });
   });
 });

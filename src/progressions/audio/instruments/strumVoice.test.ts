@@ -1,72 +1,26 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getNoteFrequency } from "@fretflow/core";
+
+// After the Tone.PluckSynth migration, `pluckString` no longer creates raw
+// oscillators we can count. Mock it with a spy so we can assert on the
+// (ctx, dest, freq, time, options) tuples strumVoice schedules. Typed loosely
+// so the spy's call args remain inspectable by index.
+const pluckStringSpy = vi.hoisted(() =>
+  vi.fn<(...args: unknown[]) => { cancel: () => void }>(() => ({
+    cancel: vi.fn(),
+  })),
+);
+vi.mock("../string", () => ({
+  pluckString: pluckStringSpy,
+}));
+
 import { strumVoice, STRUM_LAG_SECONDS } from "./strumVoice";
 
-// Minimal Web Audio mock — mirrors the node-creation tracking used in
-// scheduler.test.ts so we can assert oscillator scheduling order.
-function createMockGain() {
-  return {
-    gain: {
-      value: 1,
-      setValueAtTime: vi.fn(),
-      cancelScheduledValues: vi.fn(),
-      linearRampToValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-      setTargetAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-  };
-}
-
-function createMockFilter() {
-  return {
-    type: "lowpass" as BiquadFilterType,
-    Q: { value: 1 },
-    frequency: {
-      value: 0,
-      setValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-    },
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-  };
-}
-
-function createMockOsc() {
-  return {
-    type: "sine" as OscillatorType,
-    frequency: {
-      setValueAtTime: vi.fn(),
-      exponentialRampToValueAtTime: vi.fn(),
-    },
-    setPeriodicWave: vi.fn(),
-    connect: vi.fn().mockReturnThis(),
-    disconnect: vi.fn(),
-    start: vi.fn(),
-    stop: vi.fn(),
-    onended: null as null | (() => void),
-  };
-}
-
-function buildMockCtx() {
-  const oscillators: ReturnType<typeof createMockOsc>[] = [];
-  const ctx = {
-    currentTime: 0,
-    sampleRate: 44100,
-    createGain: vi.fn(createMockGain),
-    createBiquadFilter: vi.fn(createMockFilter),
-    createOscillator: vi.fn(() => {
-      const osc = createMockOsc();
-      oscillators.push(osc);
-      return osc;
-    }),
-    createPeriodicWave: vi.fn().mockReturnValue({} as PeriodicWave),
-  };
-  return { ctx, oscillators: () => oscillators };
-}
-
 describe("strumVoice", () => {
+  beforeEach(() => {
+    pluckStringSpy.mockClear();
+  });
+
   it("implements ChordVoice interface", () => {
     expect(strumVoice.scheduleChord).toBeTypeOf("function");
   });
@@ -76,51 +30,41 @@ describe("strumVoice", () => {
   });
 
   it("strums low-to-high by default (down-stroke)", () => {
-    const mock = buildMockCtx();
-    const bus = createMockGain();
-    const notes = ["C3", "E3", "G3"];
-
     strumVoice.scheduleChord(
-      mock.ctx as unknown as AudioContext,
-      bus as unknown as AudioNode,
-      notes,
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
       0,
       { velocity: 0.8 },
     );
-
-    const freqs = mock
-      .oscillators()
-      .map((osc) => osc.frequency.setValueAtTime.mock.calls[0]?.[0]);
-    expect(freqs).toEqual(notes.map((n) => getNoteFrequency(n)));
+    expect(pluckStringSpy).toHaveBeenCalledTimes(3);
+    // pluckString(dest, freq, time, options) — freq is arg[1].
+    const freqs = pluckStringSpy.mock.calls.map((c) => c[1]);
+    expect(freqs).toEqual(["C3", "E3", "G3"].map(getNoteFrequency));
   });
 
   it("reverses voicing order for an up-strum", () => {
-    const mock = buildMockCtx();
-    const bus = createMockGain();
-    const notes = ["C3", "E3", "G3"];
-
     strumVoice.scheduleChord(
-      mock.ctx as unknown as AudioContext,
-      bus as unknown as AudioNode,
-      notes,
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
       0,
       { velocity: 0.8, direction: "up" },
     );
+    expect(pluckStringSpy).toHaveBeenCalledTimes(3);
+    const freqs = pluckStringSpy.mock.calls.map((c) => c[1]);
+    expect(freqs).toEqual(["G3", "E3", "C3"].map(getNoteFrequency));
+  });
 
-    const oscillators = mock.oscillators();
-    expect(oscillators).toHaveLength(3);
-
-    // First scheduled note is the LAST note of the input array.
-    const firstFreq = oscillators[0].frequency.setValueAtTime.mock.calls[0]?.[0];
-    expect(firstFreq).toBe(getNoteFrequency("G3"));
-
-    const freqs = oscillators.map(
-      (osc) => osc.frequency.setValueAtTime.mock.calls[0]?.[0],
+  it("staggers strums by STRUM_LAG_SECONDS", () => {
+    strumVoice.scheduleChord(
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
+      1.0,
+      { velocity: 0.8 },
     );
-    expect(freqs).toEqual([
-      getNoteFrequency("G3"),
-      getNoteFrequency("E3"),
-      getNoteFrequency("C3"),
-    ]);
+    // pluckString(dest, freq, time, options) — time is arg[2].
+    const times = pluckStringSpy.mock.calls.map((c) => c[2]);
+    expect(times[0]).toBeCloseTo(1.0, 4);
+    expect(times[1]).toBeCloseTo(1.0 + STRUM_LAG_SECONDS, 4);
+    expect(times[2]).toBeCloseTo(1.0 + 2 * STRUM_LAG_SECONDS, 4);
   });
 });

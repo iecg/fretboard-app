@@ -1,61 +1,49 @@
-import { describe, expect, it } from "vitest";
-import { buildStringSetOptions } from "./voicingStringSets";
+import { describe, it, expect } from "vitest";
+import {
+  buildStringSetOptions,
+} from "./voicingStringSets";
 
 describe("buildStringSetOptions", () => {
-  it("offers All plus four windows for a triad (toneCount 3)", () => {
-    const options = buildStringSetOptions(3);
-    expect(options.map((o) => o.id)).toEqual([
-      "all", "4·5·6", "3·4·5", "2·3·4", "1·2·3",
-    ]);
-    expect(options.map((o) => o.labelKey)).toEqual([
-      "inspector.stringSetAll",
-      "inspector.stringSetBass",
-      "inspector.stringSetLowerMid",
-      "inspector.stringSetUpperMid",
-      "inspector.stringSetTreble",
-    ]);
+  it("does not emit an option with id 'all'", () => {
+    expect(buildStringSetOptions(3).every((o) => o.id !== "all")).toBe(true);
+    expect(buildStringSetOptions(4).every((o) => o.id !== "all")).toBe(true);
+    expect(buildStringSetOptions(5).every((o) => o.id !== "all")).toBe(true);
   });
 
-  it("offers All plus three windows for a seventh chord (toneCount 4)", () => {
-    const options = buildStringSetOptions(4);
-    expect(options.map((o) => o.id)).toEqual([
-      "all", "3·4·5·6", "2·3·4·5", "1·2·3·4",
-    ]);
-    expect(options.map((o) => o.labelKey)).toEqual([
-      "inspector.stringSetAll",
-      "inspector.stringSetBass",
-      "inspector.stringSetMiddle",
-      "inspector.stringSetTreble",
+  it("emits 3 windows for a 4-note chord (Top 4 / Middle 4 / Bottom 4)", () => {
+    const opts = buildStringSetOptions(4);
+    expect(opts).toHaveLength(3); // 3 sets
+    expect(opts.map((o) => o.strings)).toEqual([
+      [0, 1, 2, 3],
+      [1, 2, 3, 4],
+      [2, 3, 4, 5],
     ]);
   });
 
-  it("maps each window id to the correct string-index array (0=high E … 5=low E)", () => {
-    const triad = buildStringSetOptions(3);
-    // Bass window "4·5·6" → guitar strings 4,5,6 → indices 3,4,5.
-    expect(triad[1].strings).toEqual([3, 4, 5]);
-    // Treble window "1·2·3" → guitar strings 1,2,3 → indices 0,1,2.
-    expect(triad[4].strings).toEqual([0, 1, 2]);
-    expect(triad[0].strings).toEqual([0, 1, 2, 3, 4, 5]);
-  });
-
-  it("offers only All for a chord with six or more tones", () => {
-    expect(buildStringSetOptions(6).map((o) => o.id)).toEqual(["all"]);
-    expect(buildStringSetOptions(7).map((o) => o.id)).toEqual(["all"]);
-  });
-
-  it("offers only All when the tone count is unknown (0)", () => {
-    expect(buildStringSetOptions(0).map((o) => o.id)).toEqual(["all"]);
-  });
-
-  it("offers five windows for a dyad (toneCount 2)", () => {
-    const options = buildStringSetOptions(2);
-    expect(options.map((o) => o.labelKey)).toEqual([
-      "inspector.stringSetAll",
-      "inspector.stringSetBass",
-      "inspector.stringSetLowerMid",
-      "inspector.stringSetMiddle",
-      "inspector.stringSetUpperMid",
-      "inspector.stringSetTreble",
+  it("emits 4 windows for a triad", () => {
+    const opts = buildStringSetOptions(3);
+    expect(opts).toHaveLength(4); // 4 sets
+    expect(opts.map((o) => o.strings)).toEqual([
+      [0, 1, 2],
+      [1, 2, 3],
+      [2, 3, 4],
+      [3, 4, 5],
     ]);
+  });
+
+  it("emits 2 windows for a pentad", () => {
+    const opts = buildStringSetOptions(5);
+    expect(opts).toHaveLength(2); // 2 sets
+    expect(opts.map((o) => o.strings)).toEqual([
+      [0, 1, 2, 3, 4],
+      [1, 2, 3, 4, 5],
+    ]);
+  });
+
+  it("each option has a stable id derived from strings", () => {
+    const opts = buildStringSetOptions(4);
+    expect(opts[0].id).toBe("0-1-2-3");
+    expect(opts[1].id).toBe("1-2-3-4");
+    expect(opts[2].id).toBe("2-3-4-5");
   });
 });

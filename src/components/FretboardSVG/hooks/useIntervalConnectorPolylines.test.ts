@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyConnectorRadiusFloor, CHORD_CONNECTOR_RADIUS_FACTORS } from "./useChordConnectorPolylines";
+import { applyConnectorRadiusFloor, CHORD_CONNECTOR_RADIUS_FACTORS } from "../utils/connectorRadius";
 import { buildIntervalConnectorPolylines } from "./useIntervalConnectorPolylines";
 import { offsetOutlinePath } from "../utils/pathGeometry";
 

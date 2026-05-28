@@ -1,9 +1,10 @@
-import { atom, type Atom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atom, type Atom, type Getter, type Setter } from "jotai";
+import { atomWithStorage, RESET } from "jotai/utils";
 import {
   normalizeScaleName,
-  type ScaleBrowseMode,
   getActiveScaleBrowseOption,
+  getScaleFamily,
+  type ScaleFamilyId,
 } from "@fretflow/core";
 import {
   resolveAccidentalMode,
@@ -22,27 +23,67 @@ import { gatedAtom, EMPTY_SET, setsEqual } from "./atomUtils";
 import type { CagedShape } from "@fretflow/core";
 import type { PracticeBarColorNote } from "@fretflow/core";
 
-const SCALE_BROWSE_MODES = ["parallel", "relative"] as const;
-
-const scaleBrowseModeStorage = createStorage<ScaleBrowseMode>({
-  validate: (v) => (SCALE_BROWSE_MODES as readonly string[]).includes(v),
-});
+// One-shot cleanup: remove any stale scaleBrowseMode value from localStorage.
+withStorageErrorBoundary(k("scaleBrowseMode"), null).remove();
 
 const scaleNameStorage = createStorage<string>({
   onRead: normalizeScaleName,
   onWrite: normalizeScaleName,
 });
 
-export const rootNoteAtom = atomWithStorage(
+export const baseRootNoteAtom = atomWithStorage(
   k("rootNote"),
   "C",
   rawStringStorage(),
   GET_ON_INIT,
 );
 
+/**
+ * Side-effect listeners invoked when `rootNoteAtom` is written with a value
+ * that differs from the current root. Modules wanting to react to a root
+ * change (e.g. transposing manual-root progression steps) register here at
+ * module load. Listeners run inside the same setter as the atom write, so
+ * they share the same store / transaction.
+ */
+type RootChangeListener = (
+  prevRoot: string,
+  nextRoot: string,
+  get: Getter,
+  set: Setter,
+) => void;
+
+const rootChangeListeners: RootChangeListener[] = [];
+
+export function registerRootChangeListener(listener: RootChangeListener): () => void {
+  rootChangeListeners.push(listener);
+  return () => {
+    const idx = rootChangeListeners.indexOf(listener);
+    if (idx !== -1) rootChangeListeners.splice(idx, 1);
+  };
+}
+
+/**
+ * Writable wrapper around `baseRootNoteAtom` that fans out to registered
+ * listeners on change. Direct writes (e.g. `store.set(rootNoteAtom, "G")`)
+ * trigger the side effects, so reactions stay wired regardless of whether
+ * callers go through the `setRootNoteAtom` action.
+ */
+export const rootNoteAtom = atom(
+  (get) => get(baseRootNoteAtom),
+  (get, set, value: string | typeof RESET) => {
+    const prev = get(baseRootNoteAtom);
+    set(baseRootNoteAtom, value);
+    const next = get(baseRootNoteAtom);
+    if (prev === next) return;
+    for (const listener of rootChangeListeners) {
+      listener(prev, next, get, set);
+    }
+  },
+);
+
 export const baseScaleNameAtom = atomWithStorage(
-  k("scaleName"),
-  "Major",
+  k("scaleName.v2"),
+  "major",
   scaleNameStorage,
   GET_ON_INIT,
 );
@@ -62,11 +103,13 @@ export const scaleNameAtom = atom(
   },
 );
 
-export const scaleBrowseModeAtom = atomWithStorage<ScaleBrowseMode>(
-  k("scaleBrowseMode"),
-  "parallel",
-  scaleBrowseModeStorage,
-  GET_ON_INIT,
+/**
+ * Derived from `scaleNameAtom` — returns the granular `ScaleFamilyId` for the
+ * currently active scale. No storage key needed; the family is fully determined
+ * by the scale name.
+ */
+export const scaleFamilyAtom = atom<ScaleFamilyId>(
+  (get) => getScaleFamily(get(scaleNameAtom)).id,
 );
 
 // Translates legacy "useFlats" to new mode and clears the stale key.
@@ -83,7 +126,7 @@ export const accidentalModeAtom = atom<"sharps" | "flats" | "auto">(
   readLegacyAccidentalMode(),
 );
 
-export const useFlatsAtom = atom((get) =>
+export const preferFlatsAtom = atom((get) =>
   resolveAccidentalMode(
     get(rootNoteAtom),
     get(scaleNameAtom),
@@ -95,17 +138,47 @@ export const scaleNotesAtom = atom((get) =>
   getScaleNotes(get(rootNoteAtom), get(scaleNameAtom)),
 );
 
+export interface ScaleContext {
+  rootNote: string;
+  scaleName: string;
+  scaleNotes: readonly string[];
+  scaleNoteSet: ReadonlySet<string>;
+  degreesMap: Readonly<Record<number, string>>;
+}
+
+const scaleContextCache = new Map<string, ScaleContext>();
+
+export const scaleContextAtom = atom((get): ScaleContext => {
+  const rootNote = get(rootNoteAtom);
+  const scaleName = get(scaleNameAtom);
+  const scaleNotes = get(scaleNotesAtom);
+  const key = `${rootNote}|${scaleName}|${scaleNotes.join(",")}`;
+
+  const cached = scaleContextCache.get(key);
+  if (cached) return cached;
+
+  const next: ScaleContext = {
+    rootNote,
+    scaleName,
+    scaleNotes,
+    scaleNoteSet: new Set(scaleNotes),
+    degreesMap: getDegreesForScale(scaleName),
+  };
+  scaleContextCache.set(key, next);
+  return next;
+});
+
 export const colorNotesAtom = atom((get) => {
   const scaleName = get(scaleNameAtom);
   const rootNote = get(rootNoteAtom);
   const intervals = SCALES[scaleName];
   if (!intervals) return [];
   // Blue note is b5 in Minor Blues, b3 in Major Blues.
-  if (scaleName === "Minor Blues") {
+  if (scaleName === "minor blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 6) % 12]] : [];
   }
-  if (scaleName === "Major Blues") {
+  if (scaleName === "major blues") {
     const rootIdx = NOTES.indexOf(rootNote);
     return rootIdx >= 0 ? [NOTES[(rootIdx + 3) % 12]] : [];
   }
@@ -117,8 +190,8 @@ export const activeBrowseOptionAtom = atom((get) =>
   getActiveScaleBrowseOption(
     get(rootNoteAtom),
     get(scaleNameAtom),
-    get(scaleBrowseModeAtom),
-    get(useFlatsAtom),
+    "parallel",
+    get(preferFlatsAtom),
   ),
 );
 
@@ -130,7 +203,7 @@ export const degreeChipsAtom = atom((get) => {
   const rootNote = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const scaleNotes = get(scaleNotesAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
   const intervals = SCALES[scaleName] || [];
   const degreesMap = getDegreesForScale(scaleName);
 
@@ -145,7 +218,7 @@ export const degreeChipsAtom = atom((get) => {
     return {
       internalNote: note,
       note: formatAccidental(
-        getNoteDisplayInScale(note, rootNote, intervals, useFlats),
+        getNoteDisplayInScale(note, rootNote, intervals, preferFlats),
       ),
       interval: formatAccidental(interval),
       scaleDegree,
@@ -226,7 +299,7 @@ export const effectiveColorNotesAtom: Atom<string[]> = gatedAtom(
 export const practiceBarColorNotesAtom = atom((get) => {
   const colorNotes = get(colorNotesAtom);
   const rootNote = get(rootNoteAtom);
-  const useFlats = get(useFlatsAtom);
+  const preferFlats = get(preferFlatsAtom);
 
   if (colorNotes.length === 0) return [] as PracticeBarColorNote[];
   const rootIdx = NOTES.indexOf(rootNote);
@@ -237,7 +310,7 @@ export const practiceBarColorNotesAtom = atom((get) => {
     const intervalName = INTERVAL_NAMES[interval] ?? "";
     return {
       internalNote: note,
-      displayNote: formatAccidental(getNoteDisplay(note, rootNote, useFlats)),
+      displayNote: formatAccidental(getNoteDisplay(note, rootNote, preferFlats)),
       intervalName: formatAccidental(intervalName),
     };
   });

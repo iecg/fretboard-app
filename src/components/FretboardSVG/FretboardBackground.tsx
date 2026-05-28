@@ -2,7 +2,6 @@ import { memo, type ReactNode } from "react";
 import { clsx } from "clsx";
 import { NUT_WIDTH } from "@fretflow/core";
 import { useResolvedTheme } from "../../hooks/useResolvedTheme";
-import { useWoodGrainTexture } from "./hooks/useWoodGrainTexture";
 import styles from "./FretboardSVG.module.css";
 
 interface FretboardBackgroundProps {
@@ -36,8 +35,6 @@ export const FretboardBackground = memo(
     const theme = useResolvedTheme();
     const woodGrainFilterId =
       theme === "modern-light" ? "wood-grain-filter-light" : "wood-grain-filter";
-    const woodGrainDataUrl = useWoodGrainTexture(neckWidthPx, neckHeight, theme);
-
     const woodStack = (
       <>
         <rect
@@ -47,46 +44,33 @@ export const FretboardBackground = memo(
           height={neckHeight}
           fill={svgDefUrl("fretboard-wood")}
         />
-        {woodGrainDataUrl ? (
-          <image
-            href={woodGrainDataUrl}
-            x={0}
-            y={0}
-            width={neckWidthPx}
-            height={neckHeight}
-            preserveAspectRatio="none"
-          />
-        ) : (
-          <>
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill="#000"
-              filter={svgDefUrl(woodGrainFilterId)}
-              opacity={0.92}
-            />
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill="#000"
-              filter={svgDefUrl("wood-highlights-filter")}
-              opacity={0.6}
-            />
-            <rect
-              x={0}
-              y={0}
-              width={neckWidthPx}
-              height={neckHeight}
-              fill="#000"
-              filter={svgDefUrl("wood-pores-filter")}
-              opacity={0.5}
-            />
-          </>
-        )}
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill="#000"
+          filter={svgDefUrl(woodGrainFilterId)}
+          opacity={0.92}
+        />
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill="#000"
+          filter={svgDefUrl("wood-highlights-filter")}
+          opacity={0.6}
+        />
+        <rect
+          x={0}
+          y={0}
+          width={neckWidthPx}
+          height={neckHeight}
+          fill="#000"
+          filter={svgDefUrl("wood-pores-filter")}
+          opacity={0.5}
+        />
         <rect
           x={0}
           y={0}

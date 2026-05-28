@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useAtom } from "jotai";
-import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
+import clsx from "clsx";
 import { settingsOverlayOpenAtom } from "../../store/uiAtoms";
 import {
   getResponsiveLayout,
   getResponsiveTier,
   type ResponsiveTier,
 } from "../../layout/responsive";
-import { useFocusTrap } from "../../hooks/useFocusTrap";
 import {
   ANIMATION_DURATION_STANDARD,
   ANIMATION_EASE,
 } from "@fretflow/core";
 import { OverlaySection } from "./shared";
-import ViewSettingsSection from "./sections/ViewSettingsSection";
+import DisplaySettingsSection from "./sections/DisplaySettingsSection";
 import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";
 import AppearanceSettingsSection from "./sections/AppearanceSettingsSection";
 import ResetSettingsSection from "./sections/ResetSettingsSection";
@@ -34,103 +34,10 @@ function getViewportSnapshot() {
   if (typeof window === "undefined") {
     return { width: 1440, height: 900 };
   }
-
   return {
     width: window.innerWidth,
     height: window.innerHeight,
   };
-}
-
-function SettingsOverlaySurface({
-  layout,
-  setIsOpen,
-}: {
-  /** Resolved responsive layout used to set data-layout-tier on the drawer. */
-  layout: ReturnType<typeof getResponsiveLayout>;
-  /** Callback to open or close the settings drawer. */
-  setIsOpen: (value: boolean) => void;
-}) {
-  const drawerRef = useRef<HTMLDivElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const triggerRef = useRef<HTMLElement | null>(null);
-  const { t } = useTranslation();
-
-  const close = () => {
-    setIsOpen(false);
-  };
-
-  useEffect(() => {
-    triggerRef.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-  }, []);
-
-  /* Trap focus inside drawer. */
-  useFocusTrap({
-    containerRef: drawerRef,
-    active: true,
-    onEscape: () => {
-      setIsOpen(false);
-    },
-    restoreFocusRef: triggerRef,
-  });
-
-  return (
-    <>
-      <motion.div
-        className={styles["settings-overlay-backdrop"]}
-        onClick={close}
-        aria-hidden="true"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
-      />
-      <motion.div
-        className={styles["settings-overlay-drawer"]}
-        data-testid="settings-drawer"
-        ref={drawerRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={t("settings.title")}
-        data-layout-tier={layout.tier}
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-        initial={{ x: "100%" }}
-        animate={{ x: 0 }}
-        exit={{ x: "100%" }}
-        transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
-      >
-        <div className={styles["settings-overlay-header"]}>
-          <span className={styles["settings-overlay-title"]}>{t("settings.title")}</span>
-          <button
-            type="button"
-            ref={closeButtonRef}
-            className={clsx(sharedStyles["icon-button"], styles["settings-overlay-close"])}
-            onClick={close}
-            aria-label={t("settings.close")}
-          >
-            <X className="icon" />
-          </button>
-        </div>
-        <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
-          <OverlaySection id="view" title={t("settings.sections.view")}>
-            <ViewSettingsSection />
-          </OverlaySection>
-          <OverlaySection id="instrument" title={t("settings.sections.instrument")}>
-            <InstrumentSettingsSection />
-          </OverlaySection>
-          <LanguageSettingsSection />
-          <AppearanceSettingsSection />
-          <OverlaySection id="reset" title={t("settings.sections.reset")} tone="danger">
-            <ResetSettingsSection onClose={close} />
-          </OverlaySection>
-          <VersionBadge />
-        </div>
-      </motion.div>
-    </>
-  );
 }
 
 export default function SettingsOverlay() {
@@ -138,11 +45,11 @@ export default function SettingsOverlay() {
   const [viewport, setViewport] = useState(getViewportSnapshot);
   const openTierRef = useRef<ResponsiveTier | null>(null);
   const layout = getResponsiveLayout(viewport.width, viewport.height);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const onResize = () => setViewport(getViewportSnapshot());
     window.addEventListener("resize", onResize);
-
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
@@ -159,10 +66,63 @@ export default function SettingsOverlay() {
   }, [isOpen, layout.tier, setIsOpen]);
 
   return (
-    <AnimatePresence initial={false}>
-      {isOpen ? (
-        <SettingsOverlaySurface layout={layout} setIsOpen={setIsOpen} />
-      ) : null}
-    </AnimatePresence>
+    <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+      <AnimatePresence>
+        {isOpen ? (
+          <Dialog.Portal forceMount>
+            <Dialog.Overlay asChild>
+              <motion.div
+                className={styles["settings-overlay-backdrop"]}
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
+              />
+            </Dialog.Overlay>
+            <Dialog.Content asChild>
+              <motion.div
+                className={styles["settings-overlay-drawer"]}
+                data-testid="settings-drawer"
+                data-layout-tier={layout.tier}
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
+              >
+                <div className={styles["settings-overlay-header"]}>
+                  <Dialog.Title className={styles["settings-overlay-title"]}>
+                    {t("settings.title")}
+                  </Dialog.Title>
+                  <Dialog.Close asChild>
+                    <button
+                      type="button"
+                      className={clsx(sharedStyles["icon-button"], styles["settings-overlay-close"])}
+                      aria-label={t("settings.close")}
+                    >
+                      <X className="icon" />
+                    </button>
+                  </Dialog.Close>
+                </div>
+                <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
+                  <OverlaySection id="display" title={t("settings.sections.display")}>
+                    <DisplaySettingsSection />
+                  </OverlaySection>
+                  <OverlaySection id="instrument" title={t("settings.sections.instrument")}>
+                    <InstrumentSettingsSection />
+                  </OverlaySection>
+                  <LanguageSettingsSection />
+                  <AppearanceSettingsSection />
+                  <OverlaySection id="reset" title={t("settings.sections.reset")} tone="danger">
+                    <ResetSettingsSection onClose={() => setIsOpen(false)} />
+                  </OverlaySection>
+                  <VersionBadge />
+                </div>
+              </motion.div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        ) : null}
+      </AnimatePresence>
+    </Dialog.Root>
   );
 }

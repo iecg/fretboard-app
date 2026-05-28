@@ -1,9 +1,11 @@
 import {
   CHORD_DEFINITIONS,
   formatAccidental,
+  getChordDisplayLabel,
   getDegreeSequence,
   getDiatonicChord,
   getNoteDisplay,
+  transposeNoteToSharps,
   type DegreeId,
 } from "@fretflow/core";
 
@@ -58,18 +60,18 @@ export function formatProgressionDurationLabel(duration: ProgressionStepDuration
 }
 
 const CHORD_QUALITY_SUFFIX: Record<string, string> = {
-  "Major Triad": "",
-  "Minor Triad": "m",
-  "Diminished Triad": "°",
-  "Augmented Triad": "+",
-  "Major 6th": "6",
-  "Minor 6th": "m6",
-  "Major 7th": "maj7",
-  "Minor 7th": "m7",
-  "Dominant 7th": "7",
-  "Diminished 7th": "°7",
-  "Half-Diminished 7th": "ø7",
-  "Minor-Major 7th": "mMaj7",
+  M: "",
+  m: "m",
+  dim: "°",
+  aug: "+",
+  "6": "6",
+  m6: "m6",
+  maj7: "maj7",
+  m7: "m7",
+  "7": "7",
+  dim7: "°7",
+  m7b5: "ø7",
+  mMaj7: "mMaj7",
 };
 
 /**
@@ -98,25 +100,26 @@ export interface FormattedPlaybackPosition {
 /**
  * Format the DAW-style position readout for the progression track.
  *
- * Returns a bar.beat.subdivision pair such as `01.2.067 / 05.4.000` where:
- * - bar is the 1-indexed bar (zero-padded to width 2)
+ * Returns a bar.beat.sixteenth pair such as `1.2.3 / 4.0.0` where:
+ * - bar is the 1-indexed bar (no padding)
  * - beat is the 1-indexed beat within the current bar
- * - subdivision is the thousandths offset past the current beat
+ * - subdivision is the 1-indexed sixteenth-note within the current beat (1..4)
  *
- * The total uses the rounded-up total bar count and pins beat/subdivision to
- * the meter's last beat, matching how DAWs display the project end position.
+ * The total uses duration semantics — `${bars}.0.0` for a `bars`-long
+ * progression — matching how Logic and Ableton display song length.
  */
 export function formatProgressionPlaybackPosition(
   currentProgressionBar: number,
   totalProgressionBars: number,
   beatsPerBar: number,
 ): FormattedPlaybackPosition {
+  const SIXTEENTHS_PER_BEAT = 4;
   const safeBeats = Math.max(1, Math.floor(beatsPerBar));
   const totalBars = Math.max(1, Math.ceil(totalProgressionBars));
   // Position can range over [1, totalBars + 1). bar 1.0 is the first beat of
-  // bar 1, bar N + 1 - ε is the final subdivision of the last bar. Clamping
-  // to `totalBars` would freeze the readout at `0N.1.000` for the entire
-  // last bar instead of advancing through its beats.
+  // bar 1, bar N + 1 - ε is the final sixteenth of the last bar. Clamping to
+  // `totalBars` would freeze the readout at `N.1.1` for the entire last bar
+  // instead of advancing through its beats and subdivisions.
   const maxBar = totalBars + 1 - 1e-9;
   const clampedBar = Math.max(1, Math.min(currentProgressionBar, maxBar));
   const bar = Math.floor(clampedBar);
@@ -124,23 +127,24 @@ export function formatProgressionPlaybackPosition(
   const beatPos = positionInBar * safeBeats;
   const beatIndex = Math.min(safeBeats - 1, Math.floor(beatPos));
   const beat = beatIndex + 1;
+  const subInBeatFloat = (beatPos - Math.floor(beatPos)) * SIXTEENTHS_PER_BEAT;
   const subdivision = Math.min(
-    999,
-    Math.max(0, Math.round((beatPos - Math.floor(beatPos)) * 1000)),
+    SIXTEENTHS_PER_BEAT,
+    Math.max(1, Math.floor(subInBeatFloat) + 1),
   );
 
-  const pad2 = (n: number) => String(n).padStart(2, "0");
-  const pad3 = (n: number) => String(n).padStart(3, "0");
-
   const currentParts: FormattedPlaybackPositionParts = {
-    bar: pad2(bar),
+    bar: String(bar),
     beat: String(beat),
-    subdivision: pad3(subdivision),
+    subdivision: String(subdivision),
   };
+  // Total uses duration semantics: `${bars}.0.0` rather than the position of
+  // the final tick. Matches Logic/Ableton "song length" displays where a
+  // 4-bar loop reads "4.0.0" — i.e. four full bars have elapsed at the end.
   const totalParts: FormattedPlaybackPositionParts = {
-    bar: pad2(totalBars),
-    beat: String(safeBeats),
-    subdivision: "000",
+    bar: String(totalBars),
+    beat: "0",
+    subdivision: "0",
   };
 
   return {
@@ -155,6 +159,14 @@ export interface ProgressionStep {
   degree: DegreeId;
   duration: ProgressionStepDuration;
   qualityOverride: string | null;
+  /**
+   * When non-null, this step is a manual / out-of-scale chord. The chord's
+   * root is `manualRoot`, the quality comes from `qualityOverride`, and
+   * `degree` is treated as a best-effort cached hint (e.g. for relabelling
+   * if the scale changes). When null, the step resolves diatonically from
+   * `degree` against the active scale + key.
+   */
+  manualRoot: string | null;
 }
 
 export type ProgressionPresetCategory =
@@ -197,7 +209,7 @@ export const MAX_PROGRESSION_TEMPO_BPM = 240;
 // Preset steps are stored as a compact DSL string of space-separated tokens.
 // Token grammar: DEGREE[*BARS][:7]
 //   *N  → step lasts N bars (default 1)
-//   :7  → quality override is "Dominant 7th"
+//   :7  → quality override is "7" (dominant seventh)
 // Examples: "I V vi IV"  ·  "I*4:7 IV*2:7 V:7"
 function parseSteps(spec: string): Array<Omit<ProgressionStep, "id">> {
   return spec.split(/\s+/).filter(Boolean).map((tok) => {
@@ -207,7 +219,8 @@ function parseSteps(spec: string): Array<Omit<ProgressionStep, "id">> {
     return {
       degree: degree as DegreeId,
       duration: { value: value ? Number(value) : 1, unit: "bar" as const },
-      qualityOverride: q === "7" ? "Dominant 7th" : null,
+      qualityOverride: q === "7" ? "7" : null,
+      manualRoot: null,
     };
   });
 }
@@ -266,10 +279,10 @@ const ROMAN_ORDINALS: Record<string, number> = {
 };
 
 const PROGRESSION_HARMONY_SCALE: Record<string, string> = {
-  "Major Pentatonic": "Major",
-  "Major Blues": "Major",
-  "Minor Pentatonic": "Natural Minor",
-  "Minor Blues": "Natural Minor",
+  "major pentatonic": "major",
+  "major blues": "major",
+  "minor pentatonic": "minor",
+  "minor blues": "minor",
 };
 
 function getProgressionHarmonyScaleName(scaleName: string): string {
@@ -279,7 +292,7 @@ function getProgressionHarmonyScaleName(scaleName: string): string {
 let fallbackId = 0;
 
 export function createProgressionStep(
-  step: Omit<ProgressionStep, "id">,
+  step: Omit<ProgressionStep, "id" | "manualRoot"> & { manualRoot?: string | null },
   id = createProgressionStepId(),
 ): ProgressionStep {
   return {
@@ -287,6 +300,7 @@ export function createProgressionStep(
     degree: step.degree,
     duration: step.duration,
     qualityOverride: step.qualityOverride,
+    manualRoot: step.manualRoot ?? null,
   };
 }
 
@@ -304,7 +318,12 @@ export function isValidProgressionStep(value: unknown): value is ProgressionStep
   return typeof candidate.id === "string"
     && typeof candidate.degree === "string"
     && isProgressionDuration(candidate.duration)
-    && (candidate.qualityOverride === null || typeof candidate.qualityOverride === "string");
+    && (candidate.qualityOverride === null || typeof candidate.qualityOverride === "string")
+    // `manualRoot` is additive: treat absent/undefined as null so
+    // pre-Phase-2 persisted shapes and legacy literal seeds still validate.
+    && (candidate.manualRoot === null
+      || candidate.manualRoot === undefined
+      || typeof candidate.manualRoot === "string");
 }
 
 export function normalizeProgressionStep(value: unknown): ProgressionStep | null {
@@ -312,11 +331,18 @@ export function normalizeProgressionStep(value: unknown): ProgressionStep | null
   const candidate = value as ProgressionStep & { duration: unknown };
   if (typeof candidate.id !== "string" || typeof candidate.degree !== "string") return null;
   if (candidate.qualityOverride !== null && typeof candidate.qualityOverride !== "string") return null;
+  const manualRoot =
+    candidate.manualRoot === undefined || candidate.manualRoot === null
+      ? null
+      : typeof candidate.manualRoot === "string"
+        ? candidate.manualRoot
+        : null;
   return {
     id: candidate.id,
     degree: candidate.degree,
     duration: migrateLegacyDuration(candidate.duration),
     qualityOverride: candidate.qualityOverride ?? null,
+    manualRoot,
   };
 }
 
@@ -341,6 +367,30 @@ export function remapProgressionStepsForScale(
     ...step,
     degree: remapDegreeByOrdinal(step.degree, toScaleName),
   }));
+}
+
+/**
+ * Transpose each step's `manualRoot` by the interval from `oldRoot` to
+ * `newRoot`. Steps with `manualRoot === null` pass through unchanged — their
+ * resolved root already follows the active key through `degree`.
+ *
+ * Result roots are normalized to FretFlow's sharps-form contract (e.g. `Eb`
+ * → `D#`) so that downstream consumers indexing into `NOTES` keep working.
+ *
+ * Returns identity-mapped steps when `oldRoot === newRoot` to keep the call
+ * cheap and side-effect-free on no-op changes.
+ */
+export function transposeManualRootForRootChange(
+  steps: readonly ProgressionStep[],
+  oldRoot: string,
+  newRoot: string,
+): ProgressionStep[] {
+  if (oldRoot === newRoot) return steps.map((step) => step);
+  return steps.map((step) =>
+    step.manualRoot == null
+      ? step
+      : { ...step, manualRoot: transposeNoteToSharps(step.manualRoot, oldRoot, newRoot) },
+  );
 }
 
 export function createStepsFromPreset(
@@ -387,7 +437,7 @@ export function getAvailableProgressionPresets(
 }
 
 export const DEFAULT_BEATS_PER_BAR = 4 as const;
-export const BEATS_PER_BAR_OPTIONS = [3, 4, 6, 8] as const;
+const BEATS_PER_BAR_OPTIONS = [3, 4, 6, 8] as const;
 export type BeatsPerBar = (typeof BEATS_PER_BAR_OPTIONS)[number];
 
 export function isBeatsPerBar(value: unknown): value is BeatsPerBar {
@@ -425,19 +475,59 @@ export function totalProgressionBars(
   return totalBeats / beatsPerBar;
 }
 
+/**
+ * When a borrowed (out-of-scale) root is picked without a quality override,
+ * fall back to "M" (major triad) as the safest audible default.
+ *
+ * TODO(plan-g11a): refine with a real parallel-scale lookup if/when one
+ * exists in @fretflow/core (e.g. getDiatonicChordForNote(root, scale, tonic)).
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string, _tonicNote?: string): string {
+  return "M";
+}
+
+/** Compact display string for a chord quality, suitable for inline tags
+ * (e.g. the borrowed-cell quality strip in DegreeGrid). Returns "" if the
+ * quality is unrecognized — callers may choose to suppress in that case. */
+export function qualityShortForm(quality: string): string {
+  switch (quality) {
+    case "M": return "M";
+    case "m": return "m";
+    case "dim": return "°";
+    case "aug": return "+";
+    case "5": return "5";
+    case "6": return "6";
+    case "m6": return "m6";
+    case "7": return "7";
+    case "maj7": return "M7";
+    case "m7": return "m7";
+    case "mMaj7": return "mM7";
+    case "m7b5": return "ø7";
+    case "dim7": return "°7";
+    default: return "";
+  }
+}
+
 export function resolveProgressionStep(
   step: ProgressionStep,
   scaleName: string,
   rootNote: string,
   index = 0,
-  useFlats = false,
+  preferFlats = false,
 ): ResolvedProgressionStep {
   const diatonic = getDiatonicChord(
     step.degree,
     getProgressionHarmonyScaleName(scaleName),
     rootNote,
   );
-  if (!diatonic) {
+
+  // When manualRoot is set we bypass the diatonic resolver for root + quality.
+  // The diatonic result is only needed to gate the "unavailable" path when
+  // manualRoot is null, and to supply diatonicQuality when applicable.
+  const usingManualRoot = step.manualRoot != null;
+
+  if (!diatonic && !usingManualRoot) {
     return {
       ...step,
       index,
@@ -456,21 +546,32 @@ export function resolveProgressionStep(
 
   const overrideValid =
     step.qualityOverride !== null && CHORD_DEFINITIONS[step.qualityOverride] !== undefined;
-  const quality = overrideValid ? step.qualityOverride! : diatonic.quality;
-  const rootLabel = formatAccidental(getNoteDisplay(diatonic.root, rootNote, useFlats));
+
+  // Resolve root: manualRoot takes precedence over the diatonic root.
+  const root = usingManualRoot ? step.manualRoot! : diatonic!.root;
+
+  // Resolve quality: qualityOverride > manualRoot default > diatonic quality.
+  const quality = overrideValid
+    ? step.qualityOverride!
+    : usingManualRoot
+      ? guessQualityForBorrowedRoot(step.manualRoot ?? undefined, scaleName, rootNote)
+      : diatonic!.quality;
+
+  const diatonicQuality = diatonic?.quality ?? null;
+  const rootLabel = formatAccidental(getNoteDisplay(root, rootNote, preferFlats));
 
   return {
     ...step,
     index,
-    root: diatonic.root,
+    root,
     quality,
-    diatonicQuality: diatonic.quality,
+    diatonicQuality,
     label: step.degree,
-    resolvedChordLabel: `${rootLabel} ${quality}`,
+    resolvedChordLabel: `${rootLabel} ${getChordDisplayLabel(quality)}`,
     shortChordLabel: formatChordShortLabel(rootLabel, quality),
     unavailable: false,
     unavailableReason: null,
-    qualityOverrideApplied: overrideValid && quality !== diatonic.quality,
+    qualityOverrideApplied: overrideValid && quality !== diatonicQuality,
     invalidQualityOverride: step.qualityOverride !== null && !overrideValid,
   };
 }

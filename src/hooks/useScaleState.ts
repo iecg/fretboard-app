@@ -1,6 +1,6 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { setRootNoteAtom, setScaleNameAtom } from "../store/actions";
-import { rootNoteAtom, scaleNameAtom, scaleBrowseModeAtom, scaleNotesAtom, colorNotesAtom, activeBrowseOptionAtom, scaleLabelAtom, useFlatsAtom, hiddenNotesAtom, toggleHiddenNoteAtom, degreeChipsAtom, scaleVisibleAtom, toggleScaleVisibleAtom } from "../store/scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, scaleNotesAtom, colorNotesAtom, scaleLabelAtom, preferFlatsAtom, hiddenNotesAtom, toggleHiddenNoteAtom, degreeChipsAtom, scaleVisibleAtom, toggleScaleVisibleAtom } from "../store/scaleAtoms";
 
 export function useScaleState() {
   const rootNote = useAtomValue(rootNoteAtom);
@@ -9,14 +9,12 @@ export function useScaleState() {
   // remaps the active chord degree by semitone-equivalence instead of leaving
   // the user with an invalid Roman numeral that doesn't exist in the new mode.
   const setScaleName = useSetAtom(setScaleNameAtom);
-  const [scaleBrowseMode, setScaleBrowseMode] = useAtom(scaleBrowseModeAtom);
   const setRootNote = useSetAtom(setRootNoteAtom);
 
   const scaleNotes = useAtomValue(scaleNotesAtom);
   const colorNotes = useAtomValue(colorNotesAtom);
-  const activeBrowseOption = useAtomValue(activeBrowseOptionAtom);
   const scaleLabel = useAtomValue(scaleLabelAtom);
-  const useFlats = useAtomValue(useFlatsAtom);
+  const preferFlats = useAtomValue(preferFlatsAtom);
   const [hiddenNotes, setHiddenNotes] = useAtom(hiddenNotesAtom);
   const toggleHiddenNote = useSetAtom(toggleHiddenNoteAtom);
   const degreeChips = useAtomValue(degreeChipsAtom);
@@ -27,14 +25,11 @@ export function useScaleState() {
     rootNote,
     scaleName,
     setScaleName,
-    scaleBrowseMode,
-    setScaleBrowseMode,
     setRootNote,
     scaleNotes,
     colorNotes,
-    activeBrowseOption,
     scaleLabel,
-    useFlats,
+    preferFlats,
     hiddenNotes,
     setHiddenNotes,
     toggleHiddenNote,

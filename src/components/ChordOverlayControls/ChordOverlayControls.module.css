@@ -4,50 +4,39 @@
   gap: 0.75rem;
 }
 
-/* On mobile, collapse the 6-column PropGrid so every child spans full width. */
+.grid {
+  align-items: start;
+}
+
+/* On mobile, collapse the 12-column PropGrid so every child spans full width. */
 :global(.app-container[data-layout-tier="mobile"]) .grid > * {
   grid-column: 1 / -1 !important;
 }
 
-/* VOICING-header "Connectors" toggle — a micro-label paired with the Switch,
-   sitting in the GroupHeader right slot. */
-.connectorsToggle {
+/* Close-voicing position cycle — prev / counter / next stepper that lives
+   next to the Voicing dropdown when `voicingAtom === "close"`. */
+.cycle {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
+  gap: var(--space-2, 0.5rem);
 }
 
-.connectorsToggleLabel {
+.cycleCounter {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 12px;
+  min-width: 3.5em;
+  text-align: center;
+}
+
+.lensHelp {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--dc-fg-muted);
+}
+
+.lensHelpStrong {
   color: var(--faceplate-accent);
-  line-height: 1;
-}
-
-.voicingDisclosure {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: none;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  /* Keep the chevron + label legible while still meeting the mobile compact
-     touch-target floor (≥ 24px) enforced by e2e/css-scoping.spec.ts. */
-  min-height: 24px;
-  padding: 0;
-}
-
-.voicingChevron {
-  display: inline-flex;
-  transition: transform 120ms ease;
-}
-
-.voicingChevron[data-open] {
-  transform: rotate(90deg);
+  font-weight: 700;
 }

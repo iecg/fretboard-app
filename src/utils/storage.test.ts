@@ -1,5 +1,53 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { withStorageErrorBoundary } from "./storage";
+import { enumValidator, numberValidator, stringValidator, withStorageErrorBoundary } from "./storage";
+
+describe("enumValidator", () => {
+  const isDirection = enumValidator(["up", "down"] as const);
+  it("accepts members", () => {
+    expect(isDirection("up")).toBe(true);
+    expect(isDirection("down")).toBe(true);
+  });
+  it("rejects non-members", () => {
+    expect(isDirection("left")).toBe(false);
+    expect(isDirection(1)).toBe(false);
+    expect(isDirection(null)).toBe(false);
+  });
+});
+
+describe("numberValidator", () => {
+  it("accepts finite numbers by default", () => {
+    const isNum = numberValidator();
+    expect(isNum(0)).toBe(true);
+    expect(isNum(-1.5)).toBe(true);
+    expect(isNum(NaN)).toBe(false);
+    expect(isNum(Infinity)).toBe(false);
+    expect(isNum("1")).toBe(false);
+  });
+  it("supports an additional guard", () => {
+    const isPositiveInt = numberValidator((n) => Number.isInteger(n) && n > 0);
+    expect(isPositiveInt(3)).toBe(true);
+    expect(isPositiveInt(0)).toBe(false);
+    expect(isPositiveInt(1.5)).toBe(false);
+  });
+});
+
+describe("stringValidator", () => {
+  const isStr = stringValidator();
+  it("accepts strings", () => expect(isStr("hello")).toBe(true));
+  it("accepts empty strings", () => expect(isStr("")).toBe(true));
+  it("rejects non-strings", () => {
+    expect(isStr(1)).toBe(false);
+    expect(isStr(null)).toBe(false);
+    expect(isStr(undefined)).toBe(false);
+    expect(isStr({})).toBe(false);
+  });
+  it("supports nullable variant", () => {
+    const nullable = stringValidator({ nullable: true });
+    expect(nullable(null)).toBe(true);
+    expect(nullable("x")).toBe(true);
+    expect(nullable(1)).toBe(false);
+  });
+});
 
 describe("withStorageErrorBoundary", () => {
   afterEach(() => {

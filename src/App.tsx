@@ -3,28 +3,29 @@ import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai"
 import { AnimatePresence, motion } from "motion/react";
 import { Fretboard } from "./components/Fretboard/Fretboard";
 import { HelpCircle, Moon, Settings2, Sun, Volume2, VolumeX } from "lucide-react";
-import { synth } from "./core/audio";
+import {
+  resumeGuitarAudio,
+  setGuitarAudioErrorHandler,
+  setGuitarMutePreference,
+} from "./core/lazyGuitarAudio";
 import { isMutedAtom, toggleMuteAtom, audioErrorAtom } from "./store/audioAtoms";
-import { chordRootAtom, chordTypeAtom, chordOverlayHiddenAtom } from "./store/chordOverlayAtoms";
-import { rootNoteAtom, scaleNameAtom } from "./store/scaleAtoms";
+import { chordTypeAtom } from "./store/chordOverlayAtoms";
 import { settingsOverlayOpenAtom, themeAtom } from "./store/uiAtoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { HeaderTransportCluster } from "./components/HeaderTransportCluster/HeaderTransportCluster";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
-import { Inspector } from "./components/Inspector/Inspector";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
-import { StatusBar } from "./components/StatusBar/StatusBar";
-import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
-import { FretboardLensOverlay } from "./components/FretboardLensOverlay/FretboardLensOverlay";
+
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
-import { ControlsPanelSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
+import { ControlsPanelSkeleton, TimelineSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
 import "./styles/App.css";
@@ -32,6 +33,15 @@ import "./styles/App.css";
 const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/SettingsOverlay"));
 const HelpModal = lazy(() =>
   import("./components/HelpModal/HelpModal").then((m) => ({ default: m.HelpModal }))
+);
+const Inspector = lazy(() =>
+  import("./components/Inspector/Inspector").then((m) => ({ default: m.Inspector }))
+);
+const StatusBar = lazy(() =>
+  import("./components/StatusBar/StatusBar").then((m) => ({ default: m.StatusBar }))
+);
+const ProgressionSummarySlot = lazy(() =>
+  import("./components/ProgressionSummarySlot/ProgressionSummarySlot").then((m) => ({ default: m.ProgressionSummarySlot }))
 );
 
 function AppContent() {
@@ -41,10 +51,6 @@ function AppContent() {
   const isMuted = useAtomValue(isMutedAtom);
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
-  const chordRoot = useAtomValue(chordRootAtom);
-  const rootNote = useAtomValue(rootNoteAtom);
-  const scaleName = useAtomValue(scaleNameAtom);
-  const setChordOverlayHidden = useSetAtom(chordOverlayHiddenAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const setTheme = useSetAtom(themeAtom);
 
@@ -52,53 +58,45 @@ function AppContent() {
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
+  useKeyboardShortcuts();
 
   useLayoutEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   useEffect(() => {
-    synth.setMute(isMuted);
+    setGuitarMutePreference(isMuted);
   }, [isMuted]);
 
   useEffect(() => {
-    synth.onError = (msg) => setAudioError(msg);
+    setGuitarAudioErrorHandler((msg) => setAudioError(msg));
     return () => {
-      synth.onError = undefined;
+      setGuitarAudioErrorHandler(undefined);
     };
   }, [setAudioError]);
 
   // Safari/iOS robustness: resume AudioContext on first interaction
   useEffect(() => {
-    const handleGesture = () => {
-      void synth.resume();
+    const removeGestureListeners = () => {
       window.removeEventListener("click", handleGesture);
       window.removeEventListener("touchstart", handleGesture);
+    };
+
+    const handleGesture = () => {
+      void Promise.resolve(resumeGuitarAudio())
+        .then(() => {
+          removeGestureListeners();
+        })
+        .catch(() => {
+          // Keep listeners installed so the next gesture can retry resume.
+        });
     };
     window.addEventListener("click", handleGesture);
     window.addEventListener("touchstart", handleGesture);
     return () => {
-      window.removeEventListener("click", handleGesture);
-      window.removeEventListener("touchstart", handleGesture);
+      removeGestureListeners();
     };
   }, []);
-
-  // Reset chord overlay visibility whenever chord or scale identity changes.
-  // Skip resets that fire during the initial mount + atom hydration cycle so
-  // that persisted hidden=true is honoured on reload. A one-tick defer via
-  // setTimeout(0) lets all atomWithStorage onMount callbacks settle first;
-  // only after that does the dep-change effect actually call setChordOverlayHidden.
-  const overlayResetReadyRef = useRef(false);
-  useEffect(() => {
-    const id = setTimeout(() => {
-      overlayResetReadyRef.current = true;
-    }, 0);
-    return () => clearTimeout(id);
-  }, []);
-  useEffect(() => {
-    if (!overlayResetReadyRef.current) return;
-    setChordOverlayHidden(false);
-  }, [chordRoot, chordType, rootNote, scaleName, setChordOverlayHidden]);
 
   return (
   <TooltipProvider>
@@ -191,8 +189,16 @@ function AppContent() {
           }
         />
       }
-      summary={<ProgressionSummarySlot />}
-      statusBar={<StatusBar />}
+      summary={
+        <Suspense fallback={<TimelineSkeleton />}>
+          <ProgressionSummarySlot />
+        </Suspense>
+      }
+      statusBar={
+        <Suspense fallback={null}>
+          <StatusBar />
+        </Suspense>
+      }
       helpModal={
         <Suspense fallback={null}>
           <HelpModal
@@ -218,7 +224,6 @@ function AppContent() {
         </Suspense>
       }
     >
-      <FretboardLensOverlay />
       <Fretboard
         stringRowPx={layout.stringRowPx}
       />

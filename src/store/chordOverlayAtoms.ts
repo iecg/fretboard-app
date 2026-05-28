@@ -1,361 +1,112 @@
-import { atom, type Getter } from "jotai";
-import { atomWithStorage, RESET } from "jotai/utils";
+import { atom, type Atom } from "jotai";
+import { atomWithStorage, selectAtom } from "jotai/utils";
 import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
-  LENS_REGISTRY,
   getChordNotes,
   getNoteDisplay,
   formatAccidental,
-  getDiatonicChord,
   generateVoicings,
 } from "@fretflow/core";
 import type {
   ChordMemberFact,
   ResolvedChordMember,
-  PracticeLens,
+  ShapePolygon,
+  Voicing,
   VoicingType,
-  VoicingInversion,
-} from "@fretflow/core";
-import {
-  getDegreesForScale,
-  getQualityForDegree,
-  type DegreeId,
 } from "@fretflow/core";
 import {
   k,
   createStorage,
-  rawStringStorage,
   booleanStorage,
-  constrainedNumberStorage,
+  enumValidator,
   GET_ON_INIT,
-  withStorageErrorBoundary,
 } from "../utils/storage";
 import {
-  useFlatsAtom,
-  rootNoteAtom,
-  scaleNameAtom,
-} from "./scaleAtoms";
+  buildStringSetOptions,
+  type StringSetOption,
+} from "./voicingStringSets";
+import { preferFlatsAtom } from "./scaleAtoms";
+import { activeResolvedProgressionStepAtom } from "./progressionAtoms";
 import {
-  activeResolvedProgressionStepAtom,
-  activeProgressionStepAtom,
-  updateProgressionStepDegreeAtom,
-  updateProgressionStepQualityAtom,
-} from "./progressionAtoms";
+  activeChordRootAtom,
+  activeChordQualityAtom,
+} from "./songStateAtoms";
+import { getCachedFretboardLayout } from "../core/fretboardLayoutCache";
 import { currentTuningAtom } from "./layoutAtoms";
-import { buildStringSetOptions, ALL_STRINGS } from "./voicingStringSets";
+import {
+  cagedShapesAtom,
+  fingeringPatternAtom,
+} from "./fingeringAtoms";
+import { shapeDataAtom, autoCenterTargetAtom } from "./shapeAtoms";
+import { activePositionAtom } from "./chordScope";
+import {
+  selectFullChordMatchesForCagedPosition,
+  selectFullChordMatchesForThreeNpsPosition,
+  selectCloseFallbacksForCagedPosition,
+  selectCloseFallbacksForThreeNpsPosition,
+} from "../hooks/voicingSelection";
 import { formatChordShortLabel } from "../progressions/progressionDomain";
+import { fallbackVoicingMatchesAtom } from "./voicingFallbackAtoms";
+import { buildPolygonCoverage } from "../core/polygonCoverage";
 
-const chordFretSpreadStorage = constrainedNumberStorage({
-  min: 0,
-  max: 4,
-  integer: true,
-});
-
-const PRACTICE_LENS_VALUES = LENS_REGISTRY.map((e) => e.id) as PracticeLens[];
-
-function migrateViewModeToLens(viewMode: string): PracticeLens {
-  switch (viewMode) {
-    case "chord": return "targets";
-    case "outside": return "tension";
-    default: return "targets";
-  }
+export interface ShapeInstanceRange {
+  minFret: number;
+  maxFret: number;
 }
 
-const practiceLensStorage = createStorage<PracticeLens>({
-  validate: (v) => (PRACTICE_LENS_VALUES as string[]).includes(v),
-  migrate: () => {
-    const oldViewMode =
-      readLocalStorage(k("viewMode")) ?? readLocalStorage("viewMode");
-    if (oldViewMode) return migrateViewModeToLens(oldViewMode);
-    return undefined;
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Backing atoms for degree-based chord overlay (Phase 02)
-// ---------------------------------------------------------------------------
-
-/**
- * Helper: read a raw localStorage string value without subscribing to atoms.
- * Used inside migrate() callbacks where atom subscriptions are not allowed.
- * Note: legacy atom values (chordRoot, chordType, rootNote, scaleName) are stored as
- * plain strings — not JSON-encoded — by rawStringStorage/chordTypeStorage serializers.
- */
-function readLocalStorage(key: string): string | null {
-  const raw = withStorageErrorBoundary<string | null>(key, null).getRaw();
-  if (raw === null) return null;
-  // Return empty string as null (chordTypeStorage serializes null → "")
-  return raw === "" ? null : raw;
+export interface ChordLookup {
+  chordRoot: string;
+  chordType: string | null;
+  chordTones: readonly string[];
+  chordToneSet: ReadonlySet<string>;
+  chordMembers: readonly ResolvedChordMember[];
+  memberByNote: ReadonlyMap<string, ResolvedChordMember>;
 }
 
-/** Diatonic triad quality names — the only types that can be inferred from degree. */
-const DIATONIC_TRIAD_QUALITIES = new Set([
-  "Major Triad",
-  "Minor Triad",
-  "Diminished Triad",
-]);
-
-const chordDegreeStorage = createStorage<DegreeId | null>({
-  serialize: (v) => v ?? "",
-  deserialize: (v) => (v === "" ? null : (v as DegreeId)),
-  validate: (v) => v === null || typeof v === "string",
-  migrate: (): DegreeId | null | undefined => {
-    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
-    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
-    // This is intentional — not a bug. Diatonic inference is triad-only.
-    const chordType = readLocalStorage(k("chordType"));
-
-    // (a) Overlay was off — no migration needed; default null is correct.
-    if (!chordType) return undefined;
-
-    // (b) Only triads can be inferred diatonically.
-    if (!DIATONIC_TRIAD_QUALITIES.has(chordType)) return undefined;
-
-    // Read legacy state from localStorage (no atom subscriptions inside migrate).
-    const chordRoot = readLocalStorage(k("chordRoot")) ?? "C";
-    const tonicNote = readLocalStorage(k("rootNote")) ?? "C";
-    const scaleName = readLocalStorage(k("scaleName")) ?? "Major";
-
-    const tonicIdx = NOTES.indexOf(tonicNote);
-    const rootIdx = NOTES.indexOf(chordRoot);
-    if (tonicIdx === -1 || rootIdx === -1) return undefined;
-
-    const semitone = (rootIdx - tonicIdx + 12) % 12;
-    const degreesMap = getDegreesForScale(scaleName);
-    const degreeId = degreesMap[semitone] as DegreeId | undefined;
-    if (!degreeId) return undefined;
-
-    // Validate: the diatonic quality must match the stored chord type exactly.
-    const expectedQuality = getQualityForDegree(degreeId, scaleName);
-    if (expectedQuality !== chordType) return undefined;
-
-    return degreeId;
-  },
-});
-
-/** The user's chosen scale degree for the chord overlay. null = overlay off. */
-export const chordDegreeAtom = atomWithStorage<DegreeId | null>(
-  k("chordDegree"),
-  null,
-  chordDegreeStorage,
-  GET_ON_INIT,
-);
-
-const chordOverlayModeStorage = createStorage<ChordOverlayMode>({
-  validate: (v) => v === "off" || v === "degree" || v === "manual",
-  migrate: (): ChordOverlayMode | undefined => {
-    // NOTE: Seventh chords ("Major 7th", "Minor 7th", "Dominant 7th") and "Power Chord (5)"
-    // are NOT in the DEGREE_DIATONIC_QUALITY table and always fall back to manual mode here.
-    // This is intentional — not a bug. Diatonic inference is triad-only.
-    const chordType = readLocalStorage(k("chordType"));
-
-    // No legacy chord type stored → default degree mode.
-    if (!chordType) return "degree";
-
-    // Diatonic triads → degree mode.
-    if (DIATONIC_TRIAD_QUALITIES.has(chordType)) return "degree";
-
-    // Seventh chords, Power Chord, or any other non-diatonic type → manual mode.
-    return "manual";
-  },
-});
-
-export type ChordOverlayMode = "off" | "degree" | "manual";
-
-export const chordOverlayModeAtom = atomWithStorage<ChordOverlayMode>(
-  k("chordOverlayMode"),
-  "degree",
-  chordOverlayModeStorage,
-  GET_ON_INIT,
-);
-
-/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
-export const chordRootOverrideAtom = atomWithStorage<string>(
-  k("chordRootOverride"),
-  "C",
-  rawStringStorage(),
-  GET_ON_INIT,
-);
-
-const chordQualityOverrideStorage = createStorage<string | null>({
-  serialize: (v) => v ?? "",
-  deserialize: (v) => (v === "" ? null : v),
-  migrate: (): string | null | undefined => {
-    const chordType = readLocalStorage(k("chordType"));
-    // Preserve the chord type for manual-mode users.
-    if (chordType) return chordType;
-    return undefined;
-  },
-});
-
-/** Populated only when chordOverlayMode is 'manual'. Ignored in degree mode. */
-export const chordQualityOverrideAtom = atomWithStorage<string | null>(
-  k("chordQualityOverride"),
-  null,
-  chordQualityOverrideStorage,
-  GET_ON_INIT,
-);
-
-const progressionIsActiveChordSource = (get: Getter) => {
-  const activeStep = get(activeResolvedProgressionStepAtom);
-  return (
-    !!activeStep &&
-    !activeStep.unavailable
-  );
-};
-
-export const effectiveChordDegreeAtom = atom((get): DegreeId | null => {
-  if (!progressionIsActiveChordSource(get)) return get(chordDegreeAtom);
-  return get(activeProgressionStepAtom)?.degree ?? null;
-});
-
-export const effectiveChordOverlayModeAtom = atom((get): ChordOverlayMode => {
-  if (progressionIsActiveChordSource(get)) return "degree";
-  return get(chordOverlayModeAtom);
-});
-
-export const effectiveChordQualityOverrideAtom = atom((get): string | null => {
-  if (!progressionIsActiveChordSource(get)) return get(chordQualityOverrideAtom);
-  return get(activeProgressionStepAtom)?.qualityOverride ?? null;
-});
-
 /**
- * True when the active chord source is a progression step (progression mode on,
- * a resolvable active step exists). Drives the Chord tab's cyan→orange accent switch.
+ * True when a single `"string-fret"` position key falls within any
+ * non-truncated polygon's diagonal vertex bounds.
  */
-export const chordSourceIsProgressionAtom = atom((get) =>
-  progressionIsActiveChordSource(get),
-);
+export function isInAnyPolygon(
+  positionKey: string,
+  polygons: readonly ShapePolygon[],
+): boolean {
+  return buildPolygonCoverage(polygons, 24).coveredPositions.has(positionKey);
+}
 
 // ---------------------------------------------------------------------------
-// Public writable derived atoms — chordRootAtom and chordTypeAtom
+// Public read-only chord identity atoms.
 //
-// Read path: composes the four backing atoms via getDiatonicChord.
-// Write path: persists the value into override atoms and flips mode to "manual".
-// RESET path: cascades RESET to all four backing atoms.
+// Phase 2.5: the "chord under edit" is always the active progression step.
+// These atoms compose the unified `activeChord*` selectors so legacy
+// consumers (voicing engine, lens availability, practice-bar) keep reading
+// `chordRootAtom` / `chordTypeAtom` without knowing about the song-state
+// layer. Writes go through `updateActiveChordAtom` in songStateAtoms.
 // ---------------------------------------------------------------------------
 
-export const chordRootAtom = atom(
-  (get): string => {
-    if (progressionIsActiveChordSource(get)) {
-      const progressionStep = get(activeResolvedProgressionStepAtom);
-      if (progressionStep?.root) {
-        return progressionStep.root;
-      }
-    }
+/**
+ * Resolved chord root for the active progression step. Falls back to "C" so
+ * downstream NOTES-index lookups stay valid when no chord is active.
+ */
+export const chordRootAtom = atom((get): string => {
+  return get(activeChordRootAtom) ?? "C";
+});
 
-    const mode = get(chordOverlayModeAtom);
-    if (mode === "off" || mode === "manual") return get(chordRootOverrideAtom);
-    const degree = get(chordDegreeAtom);
-    if (!degree) return get(chordRootOverrideAtom); // no degree selected yet
-    const rootNote = get(rootNoteAtom);
-    const scaleName = get(scaleNameAtom);
-    const result = getDiatonicChord(degree, scaleName, rootNote);
-    return result?.root ?? get(chordRootOverrideAtom);
-  },
-  (get, set, value: string | typeof RESET) => {
-    if (value === RESET) {
-      set(chordDegreeAtom, RESET);
-      set(chordOverlayModeAtom, RESET);
-      set(chordRootOverrideAtom, RESET);
-      set(chordQualityOverrideAtom, RESET);
-      return;
-    }
-    if (progressionIsActiveChordSource(get)) {
-      return;
-    }
-    set(chordRootOverrideAtom, value);
-    set(chordOverlayModeAtom, "manual");
-  },
-);
-
-export const chordTypeAtom = atom(
-  (get): string | null => {
-    if (progressionIsActiveChordSource(get)) {
-      const progressionStep = get(activeResolvedProgressionStepAtom);
-      return progressionStep?.quality ?? null;
-    }
-
-    const mode = get(chordOverlayModeAtom);
-    if (mode === "off") return null;
-    if (mode === "manual") return get(chordQualityOverrideAtom) ?? "Major Triad";
-    const degree = get(chordDegreeAtom);
-    if (!degree) return null; // no degree selected yet
-    // Degree mode: prefer the user's quality override when set so the user can
-    // pin a specific quality (e.g. Dominant 7th on V) while keeping the chord
-    // root bound to the active scale degree. Without an override, fall back to
-    // the diatonic default for this degree + scale.
-    const override = get(chordQualityOverrideAtom);
-    if (override) return override;
-    const rootNote = get(rootNoteAtom);
-    const scaleName = get(scaleNameAtom);
-    const result = getDiatonicChord(degree, scaleName, rootNote);
-    return result?.quality ?? null;
-  },
-  (get, set, value: string | null | typeof RESET) => {
-    if (value === RESET) {
-      if (progressionIsActiveChordSource(get)) {
-        const step = get(activeProgressionStepAtom);
-        if (step) {
-          set(updateProgressionStepQualityAtom, {
-            id: step.id,
-            qualityOverride: null,
-          });
-        }
-      }
-      set(chordDegreeAtom, RESET);
-      set(chordOverlayModeAtom, RESET);
-      set(chordRootOverrideAtom, RESET);
-      set(chordQualityOverrideAtom, RESET);
-      return;
-    }
-    if (progressionIsActiveChordSource(get)) {
-      const step = get(activeProgressionStepAtom);
-      if (step) {
-        set(updateProgressionStepQualityAtom, {
-          id: step.id,
-          qualityOverride: value,
-        });
-      }
-      return;
-    }
-    set(chordQualityOverrideAtom, value);
-    // In degree mode with a degree active, preserve the degree binding —
-    // the override applies on top of the derived chord root. Manual mode
-    // behavior is unchanged: a chord-type write flips the overlay to manual.
-    if (get(chordOverlayModeAtom) === "degree" && get(chordDegreeAtom)) {
-      return;
-    }
-    set(chordOverlayModeAtom, "manual");
-  },
-);
+/** Resolved chord quality for the active progression step. */
+export const chordTypeAtom = atom((get): string | null => {
+  return get(activeChordQualityAtom);
+});
 
 /**
- * Action atom for changing the active scale degree in degree mode. Always
- * clears any `chordQualityOverride` so each click on a degree button starts
- * at its diatonic default (e.g. picking V resolves to Major Triad even if a
- * Dominant 7th override was active, and re-clicking the same degree clears
- * the override too).
+ * True when the active chord source is a resolvable progression step.
+ * Drives the Chord tab's cyan→orange accent switch.
  */
-export const setChordDegreeAtom = atom(
-  null,
-  (get, set, value: DegreeId | null) => {
-    if (progressionIsActiveChordSource(get)) {
-      const step = get(activeProgressionStepAtom);
-      if (step) {
-        set(updateProgressionStepDegreeAtom, {
-          id: step.id,
-          degree: value ?? step.degree,
-        });
-      }
-      return;
-    }
-    set(chordDegreeAtom, value);
-    set(chordQualityOverrideAtom, null);
-  },
-);
+export const chordSourceIsProgressionAtom = atom((get) => {
+  const activeStep = get(activeResolvedProgressionStepAtom);
+  return !!activeStep && !activeStep.unavailable;
+});
 
 export const linkChordRootAtom = atomWithStorage(
   k("linkChordRoot"),
@@ -399,33 +150,6 @@ export const chordHiddenNotesAtom = atom(
   },
 );
 
-export const toggleChordHiddenNoteAtom = atom(null, (_get, set, note: string) => {
-  set(chordHiddenNotesAtom, (prev) => {
-    const next = new Set(prev);
-    if (next.has(note)) next.delete(note);
-    else next.add(note);
-    return next;
-  });
-});
-
-// Mirrors toggleScaleVisibleAtom — collapsing clears per-note hides for a clean re-expand.
-export const toggleChordOverlayHiddenAtom = atom(null, (get, set) => {
-  const hidden = get(chordOverlayHiddenAtom);
-  if (!hidden) {
-    set(chordHiddenNotesAtom, new Set<string>());
-    set(chordOverlayHiddenAtom, true);
-  } else {
-    set(chordOverlayHiddenAtom, false);
-  }
-});
-
-export const chordFretSpreadAtom = atomWithStorage(
-  k("chordFretSpread"),
-  0,
-  chordFretSpreadStorage,
-  GET_ON_INIT,
-);
-
 export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   k("fullChordsEnabled"),
   false,
@@ -433,130 +157,499 @@ export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   GET_ON_INIT,
 );
 
-const VOICING_INVERSIONS: VoicingInversion[] = ["root", "1st", "2nd", "3rd"];
-const VOICING_TYPES: VoicingType[] = ["caged", "drop2", "triad"];
+const VOICING_VALUES = ["off", "full", "close"] as const satisfies readonly VoicingType[];
 
-// Validated storage — a stale or corrupt localStorage entry that is not a
-// member of the union falls back to the atom's default at read time.
-const voicingTypeStorage = createStorage<VoicingType>({
-  validate: (v) => (VOICING_TYPES as string[]).includes(v),
-});
-const voicingInversionStorage = createStorage<VoicingInversion>({
-  validate: (v) => (VOICING_INVERSIONS as string[]).includes(v),
+const voicingValueStorage = createStorage<VoicingType>({
+  validate: enumValidator(VOICING_VALUES),
 });
 
-export const voicingTypeAtom = atomWithStorage<VoicingType>(
-  k("voicingType"),
-  "caged",
-  voicingTypeStorage,
-  GET_ON_INIT,
-);
+const voicingStringSetStorage = createStorage<string>({
+  validate: (v): v is string => typeof v === "string",
+});
 
-export const voicingInversionAtom = atomWithStorage<VoicingInversion>(
-  k("voicingInversion"),
-  "root",
-  voicingInversionStorage,
+/**
+ * The single Voicing control. Off = no connector polygons. Full = CAGED full-
+ * chord polygon at the active scale shape's position (or all 5 positions when
+ * no scale shape is active). Close = compact 3–5-string polygon at the active
+ * cycle index inside the scale-shape window (or anywhere on the neck when no
+ * scale shape).
+ */
+export const voicingAtom = atomWithStorage<VoicingType>(
+  k("voicing"),
+  "full",
+  voicingValueStorage,
   GET_ON_INIT,
 );
 
 /**
- * The selected string set, stored as a stable id ("all" or a string-number
- * window like "4·5·6"). The id encodes the exact strings, so it survives a
- * chord change when still valid; `effectiveStringSetAtom` resolves it and
- * falls back to "all" when it no longer exists for the active chord.
+ * The user's string-set selection for Close voicings. Stored as the option id
+ * ("all" or "0-1-2-3" style). The active option list depends on the active
+ * chord's voice count; if the stored id no longer matches any option,
+ * {@link effectiveStringSetAtom} falls back to ALL.
  */
 export const voicingStringSetAtom = atomWithStorage<string>(
   k("voicingStringSet"),
   "all",
-  rawStringStorage(),
+  voicingStringSetStorage,
   GET_ON_INIT,
 );
 
-/**
- * The ordered String Set options for the active chord. The option list
- * rebuilds whenever the chord's tone count changes.
- */
-export const stringSetOptionsAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
-  return buildStringSetOptions(def ? def.members.length : 0);
+export const activeScaleInstanceRangesAtom = atom<ShapeInstanceRange[]>((get) => {
+  const pattern = get(fingeringPatternAtom);
+  const { shapePolygons, boxBounds } = get(shapeDataAtom);
+
+  if (pattern === "caged" && shapePolygons.length > 0) {
+    return shapePolygons.map((p) => ({
+      minFret: p.intendedMin,
+      maxFret: p.intendedMax,
+    }));
+  }
+  if (pattern === "3nps" && boxBounds.length > 0) {
+    return boxBounds.map((b) => ({
+      minFret: b.minFret,
+      maxFret: b.maxFret,
+    }));
+  }
+  return [];
 });
 
 /**
- * The stored string-set id resolved to its string-index array against the
- * active chord. When the id is not a current option (the chord changed),
- * this falls back to all six strings — the engine and picker both self-heal.
+ * All close voicings the chord generates — unscoped to position or string set.
+ * Scoping happens at {@link visibleVoicingMatchesAtom} / {@link chordHighlightPositionsAtom} level.
+ * Used by {@link stringSetOptionsAtom} to probe each string-set window for
+ * availability independently of the user's current selection.
  */
-export const effectiveStringSetAtom = atom((get): readonly number[] => {
-  const options = get(stringSetOptionsAtom);
-  const stored = get(voicingStringSetAtom);
-  const match = options.find((o) => o.id === stored);
-  return match ? match.strings : ALL_STRINGS;
-});
-
-/**
- * Whether the voicing connector lines render on the fretboard. Drives the
- * Chord tab's VOICING-header "Connectors" toggle. Default on so the voicing
- * engine's output is visible without an extra click.
- */
-export const voicingConnectorsAtom = atomWithStorage<boolean>(
-  k("voicingConnectors"),
-  true,
-  booleanStorage,
-  GET_ON_INIT,
-);
-
-/** Inversions valid for the active chord — triads drop "3rd", dyads keep "root" only. */
-export const availableInversionsAtom = atom((get): VoicingInversion[] => {
-  const chordType = get(chordTypeAtom);
-  const def = chordType ? CHORD_DEFINITIONS[chordType] : undefined;
-  const count = def ? def.members.length : 4;
-  // Dyads (e.g. power chords) expose only the root position.
-  if (count <= 2) return VOICING_INVERSIONS.slice(0, 1);
-  return VOICING_INVERSIONS.slice(0, Math.min(count, 4));
-});
-
-/** The renderer's voicing source. */
-export const voicingMatchesAtom = atom((get) => {
-  if (get(chordOverlayHiddenAtom)) return [];
+export const closeCandidatesAllStringSetsAtom = atom((get): Voicing[] => {
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];
-  const voicingType = get(voicingTypeAtom);
-  const isCaged = voicingType === "caged";
-  const available = get(availableInversionsAtom);
-  const inversion = get(voicingInversionAtom);
   return generateVoicings({
     chordRoot: get(chordRootAtom),
     chordType,
     tuning: get(currentTuningAtom),
     maxFret: 24,
-    voicingType,
-    // A CAGED shape is a fixed root-position object — it has no meaningful
-    // string subset or inversion, so caged ignores both controls.
-    inversion: isCaged
-      ? "root"
-      : available.includes(inversion)
-        ? inversion
-        : "root",
-    stringSet: isCaged ? ALL_STRINGS : get(effectiveStringSetAtom),
+    voicingType: "close",
   });
 });
 
-// Back-compat alias: existing consumers read fullChordMatchesAtom; the voicing
-// engine is now the source. Drop2/triad voicings have no CAGED `shape`.
-export const fullChordMatchesAtom = atom((get) => get(voicingMatchesAtom));
+/**
+ * Options the picker offers for the current chord: always "All" + every
+ * consecutive-string window for the chord's voice count.
+ *
+ * Two disable layers compose:
+ *   1. **Close-mode (position-scoped):** when a CAGED shape or 3NPS position
+ *      is active, options with zero candidates fitting any active polygon/box
+ *      are disabled.
+ *   2. **Full-mode fallback:** if any active position needs a close-voicing
+ *      fallback (see `fallbackPolygonsAtom`), options whose candidates can't
+ *      fit any fallback-needing polygon are disabled. Prevents the user from
+ *      picking a string set that yields zero connectors while the picker
+ *      still claims it's a valid choice.
+ */
+export const stringSetOptionsAtom = atom((get): readonly StringSetOption[] => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  const def = CHORD_DEFINITIONS[chordType];
+  const base = buildStringSetOptions(def?.members.length ?? 4);
 
-export const fullChordPositionsAtom = atom((get) =>
-  get(fullChordMatchesAtom).flatMap((match) => match.positionKeys),
-);
+  // Imports below are at the bottom of this file to break a top-of-file
+  // circular import (voicingFallbackAtoms imports from this module). The
+  // bindings are live at getter-evaluation time.
+  const fallbackPolygons = get(fallbackPolygonsAtom);
+  const fallback3Nps = get(fallback3NpsBoxBoundsAtom);
+  const fallbackActive = fallbackPolygons.length > 0 || fallback3Nps !== null;
 
-// Migrates from legacy viewMode value on first access.
-export const practiceLensAtom = atomWithStorage<PracticeLens>(
-  k("practiceLens"),
-  "targets",
-  practiceLensStorage,
-  GET_ON_INIT,
-);
+  const allCandidates = get(closeCandidatesAllStringSetsAtom);
+  const { shapePolygons } = get(shapeDataAtom);
+  const fingeringPattern = get(fingeringPatternAtom);
+  const cagedShapes = get(cagedShapesAtom);
+  const activePosition = get(activePositionAtom);
+  const snapActive = activePosition && (fingeringPattern === "caged" || fingeringPattern === "3nps");
+
+  if (!snapActive && !fallbackActive) return base;
+
+  return base.map((opt) => {
+    if (opt.id === "all") return opt;
+    const optStringSet = new Set(opt.strings);
+    const candidatesOnSet = allCandidates.filter((v) =>
+      v.notes.every((n) => optStringSet.has(n.stringIndex)),
+    );
+
+    if (snapActive) {
+      let fitsAnyScope: boolean;
+      if (fingeringPattern === "caged") {
+        const activePolygons = shapePolygons.filter(
+          (p) => p.shape !== undefined && cagedShapes.has(p.shape) && !p.truncated,
+        );
+        fitsAnyScope = activePolygons.some(
+          (polygon) => selectCloseFallbacksForCagedPosition(candidatesOnSet, polygon).length > 0,
+        );
+      } else {
+        const { highlightNotes } = get(shapeDataAtom);
+        const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
+        fitsAnyScope = selectCloseFallbacksForThreeNpsPosition(candidatesOnSet, patternPositions).length > 0;
+      }
+      if (!fitsAnyScope) {
+        return { ...opt, disabled: true, disabledReason: "No voicing in current position" };
+      }
+    }
+
+    if (fallbackActive) {
+      // At least one candidate must fit at least one fallback-needing position.
+      let fits = false;
+      if (fallback3Nps !== null) {
+        fits = candidatesOnSet.some((v) =>
+          v.notes.every((n) => {
+            const b = fallback3Nps[n.stringIndex];
+            return b !== undefined && n.fretIndex >= b.minFret && n.fretIndex <= b.maxFret;
+          }),
+        );
+      } else {
+        fits = candidatesOnSet.some((v) =>
+          fallbackPolygons.some((polygon) =>
+            v.notes.every((n) => {
+              const leftFret = polygon.vertices[n.stringIndex]?.fret;
+              const rightFret = polygon.vertices[polygon.vertices.length - 1 - n.stringIndex]?.fret;
+              if (leftFret === undefined || rightFret === undefined) return false;
+              const minFret = Math.min(leftFret, rightFret);
+              const maxFret = Math.max(leftFret, rightFret);
+              return n.fretIndex >= minFret && n.fretIndex <= maxFret;
+            }),
+          ),
+        );
+      }
+      if (!fits) {
+        return { ...opt, disabled: true, disabledReason: "No voicing fits this position" };
+      }
+    }
+
+    return opt;
+  });
+});
+
+const ALL_SIX_STRINGS: readonly number[] = [0, 1, 2, 3, 4, 5];
+
+/**
+ * The string indices the engine renders close-voicing candidates against.
+ * Voicing-mode aware:
+ *   - voicing === "full":  returns ALL_SIX_STRINGS unconditionally. Full mode
+ *     uses the full board; the user's stored window is irrelevant.
+ *   - voicing === "close": returns stored window's strings if it matches an
+ *     enabled option; else first enabled option's strings (auto-heal);
+ *     else stored window's strings unchanged (engine renders nothing, toggle
+ *     bar honestly shows the dead-end).
+ */
+export const effectiveStringSetAtom = atom((get): readonly number[] => {
+  if (get(voicingAtom) === "full") return ALL_SIX_STRINGS;
+  const options = get(stringSetOptionsAtom);
+  const stored = get(voicingStringSetAtom);
+  const match = options.find((o) => o.id === stored);
+  if (match && !match.disabled) return match.strings;
+  const firstEnabled = options.find((o) => !o.disabled);
+  if (firstEnabled) return firstEnabled.strings;
+  // Dead-end: stored option may still exist (just disabled) — return its
+  // strings so the toggle bar's selected button stays consistent. Engine
+  // renders nothing because the stored window doesn't fit the position.
+  if (match) return match.strings;
+  // Final fallback: stored id matches nothing at all (e.g. after chord swap
+  // shrunk voice count). Return empty so engine renders nothing.
+  return [];
+});
+
+const FRET_WINDOW_BUFFER = 1;
+
+/**
+ * All Full (CAGED) voicings for the active chord. Internal — used by both the
+ * `voicingMatchesAtom` 'full' branch and `activeScaleWindowAtom`'s CAGED
+ * window derivation. Centralises the engine call so a chord change recomputes
+ * once per store, not once per consumer.
+ */
+const fullVoicingsAtom = atom((get): Voicing[] => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  return generateVoicings({
+    chordRoot: get(chordRootAtom),
+    chordType,
+    tuning: get(currentTuningAtom),
+    maxFret: 24,
+    voicingType: "full",
+  });
+});
+
+/**
+ * Returns the fret window of the active scale shape, or null when no single
+ * shape is active. For CAGED, derive from the matched full-chord polygon (no
+ * standalone window table exists in @fretflow/core); for 3NPS, use the
+ * stored position. Buffer ±1 fret either side.
+ */
+export const activeScaleWindowAtom = atom((get): { lo: number; hi: number } | null => {
+  const pattern = get(fingeringPatternAtom);
+  if (pattern === "caged") {
+    const shapes = get(cagedShapesAtom);
+    if (shapes.size !== 1) return null;
+  }
+  if (pattern === "caged" || pattern === "3nps") {
+    const target = get(autoCenterTargetAtom);
+    if (target) {
+      return {
+        lo: Math.max(0, target.minFret - FRET_WINDOW_BUFFER),
+        hi: target.maxFret + FRET_WINDOW_BUFFER,
+      };
+    }
+    const { highlightNotes } = get(shapeDataAtom);
+    const positionKeys = highlightNotes.filter((n) => n.includes("-"));
+    const fretted = positionKeys.map((k) => Number(k.split("-")[1])).filter((f) => f > 0);
+    if (fretted.length === 0) return null;
+    const lo = Math.max(0, Math.min(...fretted) - FRET_WINDOW_BUFFER);
+    const hi = Math.max(...fretted) + FRET_WINDOW_BUFFER;
+    return { lo, hi };
+  }
+  return null;
+});
+
+/**
+ * The set of `"string-fret"` position keys covered by the active scale
+ * pattern. Returns the full position-key set for CAGED and 3NPS patterns
+ * (sourced from `shapeDataAtom.highlightNotes`, which are already coord
+ * strings). Returns an empty set for patterns that don't define a positional
+ * window (none, one-string, two-strings), so the snap filter becomes a no-op.
+ */
+export const activeScalePatternPositionsAtom = atom<Set<string>>((get) => {
+  const pattern = get(fingeringPatternAtom);
+  if (pattern === "caged" || pattern === "3nps") {
+    const { highlightNotes } = get(shapeDataAtom);
+    return new Set(highlightNotes.filter((n) => n.includes("-")));
+  }
+  // none, one-string, two-strings have no positional pattern to lock to.
+  return new Set();
+});
+
+/**
+ * All close voicings for the active chord, filtered only by the user's selected
+ * string-set window. The snap-to-scale / position-scoping filter has moved
+ * upstream to {@link visibleVoicingMatchesAtom} and
+ * {@link chordHighlightPositionsAtom}.
+ */
+export const closeCandidatesAtom = atom((get): Voicing[] => {
+  const chordType = get(chordTypeAtom);
+  if (!chordType) return [];
+  const all = generateVoicings({
+    chordRoot: get(chordRootAtom),
+    chordType,
+    tuning: get(currentTuningAtom),
+    maxFret: 24,
+    voicingType: "close",
+  });
+  const stringSet = new Set(get(effectiveStringSetAtom));
+  if (stringSet.size === 6) return all;
+  return all.filter((v) => v.notes.every((n) => stringSet.has(n.stringIndex)));
+});
+
+/**
+ * The renderer's voicing source. For Full, returns CAGED matches (optionally
+ * narrowed to the active CAGED shape). For Close, returns ALL fitting
+ * candidates — the renderer paints every polyline uniformly.
+ */
+export const voicingMatchesAtom = atom((get): Voicing[] => {
+  const voicing = get(voicingAtom);
+  if (voicing === "off") return [];
+  if (get(chordOverlayHiddenAtom)) return [];
+  if (voicing === "full") {
+    const all = get(fullVoicingsAtom);
+    if (all.length === 0) return [];
+
+    return all;
+  }
+  // close: return every fitting candidate.
+  return get(closeCandidatesAtom);
+});
+
+/**
+ * The voicing matches actually shown on the board — filtered to the active
+ * CAGED / 3NPS position via the same selectors the connector source uses.
+ * When no active position exists (or in modes without a positional pattern),
+ * falls back to the unfiltered matches from voicingMatchesAtom.
+ *
+ * This atom lets the highlight-position pipeline scope to the same voicings
+ * the connector renders, instead of every voicing match across the whole
+ * neck — eliminating the asymmetry where a connector polyline arcs through
+ * a position whose chord-tone bubble was independently filtered out.
+ */
+// Module-scoped cache for visibleVoicingMatchesAtom. Two visible-voicing
+// arrays are treated as value-equal when each entry has the same shape and
+// the same ordered list of position-keys — enough for downstream consumers
+// (connector renderer, chord-tone highlight set) to short-circuit when an
+// upstream invalidation produces no observable change.
+let cachedVisibleVoicings: Voicing[] = [];
+let cachedVisibleVoicingsKey = "<uninitialized>";
+
+function memoizeVoicings(next: readonly Voicing[]): Voicing[] {
+  const fingerprint = next
+    .map((voicing) => `${voicing.shape ?? "none"}:${voicing.positionKeys.join(",")}`)
+    .join("|");
+
+  if (fingerprint === cachedVisibleVoicingsKey) {
+    return cachedVisibleVoicings;
+  }
+
+  cachedVisibleVoicingsKey = fingerprint;
+  cachedVisibleVoicings = [...next];
+  return cachedVisibleVoicings;
+}
+
+export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
+  const matches = get(voicingMatchesAtom);
+  const fallbacks = get(fallbackVoicingMatchesAtom);
+  if (matches.length === 0 && fallbacks.length === 0) return memoizeVoicings(matches);
+
+  const pattern = get(fingeringPatternAtom);
+  const activePosition = get(activePositionAtom);
+
+  const voicing = get(voicingAtom);
+  let scoped: Voicing[];
+  if (pattern === "caged" && activePosition) {
+    const { shapePolygons } = get(shapeDataAtom);
+    const cagedShapes = get(cagedShapesAtom);
+    if (voicing === "full") {
+      scoped = selectFullChordMatchesForCagedPosition(matches, shapePolygons, cagedShapes);
+    } else {
+      // close: strict in-polygon fit. Dedupe across polygon instances —
+      // a single voicing may fit multiple octave instances of the same shape;
+      // emitting it once per polygon would create phantom conflicts in
+      // assignConflictOffsets and assign non-zero offsets to non-overlapping voicings.
+      // Truncated polygons (e.g. the open D-shape clipped at the nut) are
+      // valid hosts — selectCloseFallbacksForCagedPosition only accepts
+      // voicings whose notes fit per-string vertex bounds, so the visible
+      // portion of a truncated polygon can still host an open-position
+      // close voicing (e.g. open C on strings 0-1-2 inside the open D-shape).
+      const activePolygons = shapePolygons.filter(
+        (p) => p.shape !== undefined && cagedShapes.has(p.shape),
+      );
+      const seen = new Set<string>();
+      scoped = activePolygons
+        .flatMap((polygon) => selectCloseFallbacksForCagedPosition(matches, polygon))
+        .filter((v) => {
+          const key = v.positionKeys.slice().sort().join("|");
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+    }
+  } else if (pattern === "3nps" && activePosition) {
+    const { highlightNotes } = get(shapeDataAtom);
+    const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
+    if (voicing === "full") {
+      scoped = selectFullChordMatchesForThreeNpsPosition(matches, patternPositions, 0);
+    } else {
+      scoped = selectCloseFallbacksForThreeNpsPosition(matches, patternPositions);
+    }
+  } else {
+    scoped = matches;
+  }
+
+  return memoizeVoicings(fallbacks.length > 0 ? [...scoped, ...fallbacks] : scoped);
+});
+
+/**
+ * The set of fretboard positions that should render the "chord tone"
+ * emphasis. Decoupled from {@link voicingMatchesAtom} so that the Close
+ * voicing picker can change selection (which updates the connector polyline
+ * only) without disturbing which notes are highlighted on the neck.
+ *
+ * For Full: union of every matched full-chord polygon's positions.
+ * For Close: union of every fitting candidate's positions (so users see all
+ * the available voicing options highlighted in the active window).
+ */
+// Module-scoped cache: holds the last computed Set + a fingerprint of its
+// position-key content. Returning the cached reference (instead of a fresh
+// Set each evaluation) lets React Compiler's auto-memoization actually
+// short-circuit downstream consumers (FretboardSVG, useChordConnectorPolylines,
+// useNoteData) when the chord highlight set is value-equal across Jotai
+// re-evaluations triggered by upstream dep churn.
+let cachedHighlightSet: Set<string> = new Set();
+let cachedHighlightKey = "<uninitialized>";
+
+function memoizedHighlightSet(positionKeys: Iterable<string>): Set<string> {
+  const sorted = [...new Set(positionKeys)].sort();
+  const fingerprint = sorted.join("|");
+  if (fingerprint === cachedHighlightKey) {
+    return cachedHighlightSet;
+  }
+  cachedHighlightKey = fingerprint;
+  cachedHighlightSet = new Set(sorted);
+  return cachedHighlightSet;
+}
+
+export const chordHighlightPositionsAtom = atom((get): Set<string> => {
+  const voicing = get(voicingAtom);
+  if (get(chordOverlayHiddenAtom)) return memoizedHighlightSet([]);
+
+  if (voicing === "full") {
+    // Derive position keys from the *visible* voicings only — this matches
+    // the selection the connector renderer uses (filtered to the active
+    // CAGED/3NPS position via visibleVoicingMatchesAtom). Always supplement
+    // with addChordTonesWithinPolygon so in-polygon chord tones light up
+    // for every position the active pattern covers. The per-position polygon
+    // filter is gone — visibleVoicingMatchesAtom's voicing-level selection
+    // already keeps neck-spanning voicings from leaking in, and
+    // connector-vertex positions outside the polygon now survive (matching
+    // what the connector polyline draws through).
+    const visibleMatches = get(visibleVoicingMatchesAtom);
+    const result = new Set(visibleMatches.flatMap((v) => v.positionKeys));
+    const { shapePolygons } = get(shapeDataAtom);
+    if (shapePolygons.length > 0) {
+      addChordTonesWithinPolygon(get, result, shapePolygons);
+    }
+    return memoizedHighlightSet(result);
+  }
+
+  if (voicing === "close") {
+    // Mirror the full branch: derive from visible (position-scoped) voicings
+    // so chord-tone highlights stay confined to the active CAGED/3NPS window.
+    const visibleMatches = get(visibleVoicingMatchesAtom);
+    const result = new Set(visibleMatches.flatMap((v) => v.positionKeys));
+    const { shapePolygons } = get(shapeDataAtom);
+    if (shapePolygons.length > 0) {
+      addChordTonesWithinPolygon(get, result, shapePolygons);
+    }
+    return memoizedHighlightSet(result);
+  }
+
+  // voicing === "off": always highlight chord tones restricted to the pattern when one is active
+  if (voicing === "off") {
+    const { shapePolygons } = get(shapeDataAtom);
+    if (shapePolygons.length > 0) {
+      const result = new Set<string>();
+      addChordTonesWithinPolygon(get, result, shapePolygons);
+      return memoizedHighlightSet(result);
+    }
+  }
+
+  return memoizedHighlightSet([]);
+});
+
+/** Fill `result` with every fretboard position whose note is a chord tone
+ *  and lies within at least one scale-pattern polygon. */
+function addChordTonesWithinPolygon(
+  get: <T>(a: Atom<T>) => T,
+  result: Set<string>,
+  shapePolygons: readonly ShapePolygon[],
+): void {
+  const tones = get(chordTonesAtom);
+  if (tones.length === 0) return;
+  const tuning = get(currentTuningAtom);
+  const layout = getCachedFretboardLayout(tuning, 24);
+  const polygonCoverage = buildPolygonCoverage(shapePolygons, 24);
+  for (let s = 0; s < tuning.length; s++) {
+    for (let f = 0; f <= 24; f++) {
+      if (tones.includes(layout[s][f])) {
+        const key = `${s}-${f}`;
+        if (polygonCoverage.coveredPositions.has(key)) {
+          result.add(key);
+        }
+      }
+    }
+  }
+}
 
 export const chordTonesAtom = atom((get) => {
   if (get(chordOverlayHiddenAtom)) return [];
@@ -569,7 +662,7 @@ export const chordTonesAtom = atom((get) => {
   return tones.filter((n) => !hidden.has(n));
 });
 
-export const chordMembersAtom = atom((get) => {
+const rawChordMembersAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
   if (!chordType) return [] as ResolvedChordMember[];
@@ -583,56 +676,75 @@ export const chordMembersAtom = atom((get) => {
   }));
 });
 
-export const chordLabelAtom = atom((get) => {
+const chordLookupCache = new Map<string, ChordLookup>();
+
+export const chordLookupAtom = atom((get): ChordLookup => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
-  const useFlats = get(useFlatsAtom);
-  if (!chordType) return null;
-  return `${formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats))} ${chordType}`;
+  const chordTones = get(chordTonesAtom);
+  const chordMembers = get(rawChordMembersAtom);
+  const key = `${chordRoot}|${chordType ?? "none"}|${chordTones.join(",")}`;
+
+  const cached = chordLookupCache.get(key);
+  if (cached) return cached;
+
+  const next: ChordLookup = {
+    chordRoot,
+    chordType,
+    chordTones,
+    chordToneSet: new Set(chordTones),
+    chordMembers,
+    memberByNote: new Map(chordMembers.map((member) => [member.note, member])),
+  };
+  chordLookupCache.set(key, next);
+  return next;
 });
+
+export const chordMembersAtom = atom((get) => get(chordLookupAtom).chordMembers);
+
+/** Stable slice: chord root letter alone. Re-emits only when the root changes. */
+export const chordLookupRootAtom = selectAtom(
+  chordLookupAtom,
+  (lookup) => lookup.chordRoot,
+);
+
+/** Stable slice: chord quality/type alone. Re-emits only when the type changes. */
+export const chordLookupTypeAtom = selectAtom(
+  chordLookupAtom,
+  (lookup) => lookup.chordType,
+);
 
 /** Compact chord symbol (e.g. "Am", "Cmaj7", "G7") for tight readouts. */
 export const chordShortLabelAtom = atom((get) => {
-  const chordRoot = get(chordRootAtom);
-  const chordType = get(chordTypeAtom);
-  const useFlats = get(useFlatsAtom);
+  const chordRoot = get(chordLookupRootAtom);
+  const chordType = get(chordLookupTypeAtom);
+  const preferFlats = get(preferFlatsAtom);
   if (!chordType) return null;
-  const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, useFlats));
+  const rootLabel = formatAccidental(getNoteDisplay(chordRoot, chordRoot, preferFlats));
   return formatChordShortLabel(rootLabel, chordType);
 });
-
-export const chordSummaryNotesAtom = atom((get) => {
-  const chordType = get(chordTypeAtom);
-  const chordTones = get(chordTonesAtom);
-  const chordRoot = get(chordRootAtom);
-  if (!chordType || chordTones.length === 0) return [] as string[];
-  const chordRootIdx = NOTES.indexOf(chordRoot);
-  const chordToneSet = new Set(chordTones);
-  return NOTES.slice(chordRootIdx)
-    .concat(NOTES.slice(0, chordRootIdx))
-    .filter((n) => chordToneSet.has(n));
-});
-
 /**
  * Scale-independent chord facts.
  * displayNote uses chord-root-relative accidentals, NOT scale-derived accidentals.
  */
 export const chordMemberFactsAtom = atom((get): ChordMemberFact[] => {
-  const chordRoot = get(chordRootAtom);
-  const chordType = get(chordTypeAtom);
+  const { chordRoot, chordType, chordMembers } = get(chordLookupAtom);
   if (!chordType) return [];
-  const def = CHORD_DEFINITIONS[chordType];
-  if (!def) return [];
-  const rootIndex = NOTES.indexOf(chordRoot);
-  if (rootIndex === -1) return [];
-  return def.members.map((m): ChordMemberFact => {
-    const note = NOTES[(rootIndex + m.semitone) % 12];
-    return {
-      internalNote: note,
-      displayNote: formatAccidental(getNoteDisplay(note, chordRoot)),
-      memberName: m.name === "root" ? "1" : formatAccidental(m.name),
-      semitone: m.semitone,
-      isChordRoot: m.name === "root",
-    };
-  });
+  return chordMembers.map((member): ChordMemberFact => ({
+    internalNote: member.note,
+    displayNote: formatAccidental(getNoteDisplay(member.note, chordRoot)),
+    memberName: member.name === "root" ? "R" : formatAccidental(member.name),
+    semitone: member.semitone,
+    isChordRoot: member.name === "root",
+  }));
 });
+
+// Circular-import-safe re-imports — see comment in `stringSetOptionsAtom`.
+// Placed at file bottom so chordOverlayAtoms's exports are fully bound before
+// voicingFallbackAtoms re-enters this module. Atoms read these only inside
+// getter bodies, so the bindings are live by the time they're dereferenced.
+
+import {
+  fallbackPolygonsAtom,
+  fallback3NpsBoxBoundsAtom,
+} from "./voicingFallbackAtoms";

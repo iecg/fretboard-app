@@ -39,8 +39,7 @@
 .eye-toggle svg { transform: scale(1.2); }
 
 /* ===== Shared Card Section Header ===== */
-/* Compact header pattern used by sections nested inside a unified card
-   (e.g., DegreeChipStrip + ChordPracticeBar inside TopBandSummary). */
+/* Compact header pattern used by sections nested inside a unified card. */
 .card-section-header {
   display: flex;
   align-items: center;
@@ -166,11 +165,12 @@
   display: flex;
   align-items: stretch;
   gap: 0.1rem;
-  min-height: var(--control-height);
+  height: 32px;
+  box-sizing: border-box;
   background-color: var(--dc-bg);
   border: 1px solid var(--dc-border);
   border-radius: calc(var(--dc-radius) - 1px);
-  padding: 0.1rem;
+  padding: 2px;
 }
 
 .toggle-group--default {
@@ -179,11 +179,41 @@
   width: 100%;
 }
 
+/* "chip" variant: segmented buttons, no group-level chrome.
+   Each button carries its own background + border (see .toggle-btn--chip).
+   Used by the CAGED shape toggle and the chord string-set toggle. */
+.toggle-group--chip {
+  width: 100%;
+  gap: 0.45rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.toggle-btn--chip {
+  background: var(--dc-bg);
+  border: 1px solid var(--dc-border);
+  border-radius: calc(var(--dc-radius) - 1px);
+}
+
+/* Chip-variant active state. The default .toggle-btn.active glow extends
+   14px outside the box, which (without the default toggle-group's 2px
+   padding to absorb it) makes an active chip look taller than its siblings.
+   Strip the outer glow; keep the accent-color background + border for
+   emphasis. */
+.toggle-btn--chip.active {
+  box-shadow: none;
+}
+
 .toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 1 1 0;
   min-width: 0;
-  min-height: 1.4rem;
-  padding: 0.1rem 0.4rem;
+  height: 100%;
+  min-height: 0;
+  padding: 0 0.4rem;
   font-size: 0.78rem;
   line-height: 1.1;
   font-weight: 500;
@@ -224,6 +254,18 @@
   color: var(--dc-fg-strong);
   border: 1px solid var(--dc-border-active);
   box-shadow: var(--dc-glow-active);
+}
+
+.toggle-btn:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+  color: var(--dc-fg-muted);
+}
+
+.toggle-btn:disabled:hover:not(.active) {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--dc-fg-muted);
 }
 
 /* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
@@ -285,6 +327,12 @@
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 0.22rem;
+}
+
+/* Wrap to 2 rows × 6 cells on mobile so each touch target meets the
+   WCAG 2.5.5 44×44 minimum (12 columns at ~390px viewport = ~32px wide). */
+:global(.app-container[data-layout-tier="mobile"]) .note-grid {
+  grid-template-columns: repeat(6, minmax(44px, 1fr));
 }
 
 .note-btn {
@@ -529,9 +577,9 @@
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 /* ===== Shared DAW faceplate surface ===== */
-/* Theme-adaptive panel chrome shared by the Inspector and TopBandSummary.
-   Surface treatment only — consumers add their own layout. Driven entirely by
-   the --faceplate-* tokens in semantic.css, so it follows the active theme. */
+/* Theme-adaptive panel chrome used by the Inspector and other faceplate
+   consumers. Surface treatment only — consumers add their own layout. Driven
+   entirely by the --faceplate-* tokens in semantic.css. */
 .faceplate {
   border: 1px solid var(--faceplate-border);
   border-radius: 12px;

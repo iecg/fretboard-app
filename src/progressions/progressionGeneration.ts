@@ -43,6 +43,7 @@ function buildPreset(
       degree,
       duration: { value: 1, unit: "bar" },
       qualityOverride: null,
+      manualRoot: null,
     });
   }
   return { id, label, category: "suggested", steps };

@@ -33,6 +33,22 @@
   line-height: var(--leading-normal);
   cursor: pointer;
   transition: var(--dc-transition);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Width modes — opt-in via the `width` prop. */
+.labeled-select[data-width="auto"] .labeled-select-trigger {
+  width: auto;
+  max-width: 100%;
+  min-width: var(--labeled-select-min-width, 5rem);
+  align-self: flex-start;
+}
+
+.labeled-select[data-width="fixed"] .labeled-select-trigger {
+  width: var(--labeled-select-width, 6rem);
+  max-width: 100%;
+  align-self: flex-start;
 }
 
 .labeled-select-trigger:hover:not([data-disabled]) {
@@ -65,6 +81,13 @@
   transform: rotate(180deg);
 }
 
+.labeled-select-trigger > [data-radix-select-value] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
 .labeled-select--disabled {
   opacity: var(--disabled-opacity);
 }
@@ -90,8 +113,10 @@
 .labeled-select-content {
   z-index: var(--z-dropdown);
   overflow: hidden;
+  width: max-content;
   min-width: var(--radix-select-trigger-width);
-  max-height: var(--radix-select-content-available-height);
+  max-width: min(90vw, 30rem);
+  max-height: min(60vh, 480px);
   background:
     radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
     linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));
@@ -99,6 +124,17 @@
   border-radius: var(--dc-radius);
   box-shadow: var(--elevation-overlay);
 }
+
+/* Light-mode dropdown: cream float surface with warm border. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .labeled-select-content {
+  background:
+    radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
+    linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));
+  border-color: rgb(133 124 108 / 0.30);
+  box-shadow: 0 4px 12px rgb(42 37 29 / 0.10), 0 1px 4px rgb(42 37 29 / 0.06);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .labeled-select-viewport {
   padding: 0.25rem;
@@ -155,4 +191,15 @@
   height: 1px;
   margin: 0.25rem 0.3rem;
   background: var(--faceplate-divider);
+}
+
+.labeled-select-scroll-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  background: var(--faceplate-bg-elevated, var(--bg-2));
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 10px;
 }

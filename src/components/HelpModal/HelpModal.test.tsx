@@ -1,29 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, act } from "@testing-library/react";
-import { useRef } from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
 import { HelpModal } from "../HelpModal/HelpModal";
 import styles from "./HelpModal.module.css";
-
-// Wrapper component that renders a trigger button + HelpModal together
-// so that the triggerRef can be attached to a real DOM button.
-function HelpModalWithTrigger({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  return (
-    <>
-      <button ref={triggerRef} type="button" aria-label="Trigger button">
-        Open help
-      </button>
-      <HelpModal isOpen={isOpen} onClose={onClose} triggerRef={triggerRef} />
-    </>
-  );
-}
+import {
+  makeAtomStore,
+  renderWithStore,
+} from "../../test-utils/renderWithAtoms";
+import { seenChordModeRemovalNoticeAtom } from "../../store/uiAtoms";
 
 describe("HelpModal/HelpModal", () => {
   it("renders dialog when isOpen=true", () => {
@@ -57,34 +42,46 @@ describe("HelpModal/HelpModal", () => {
     expect(focusLabels).toHaveLength(0);
   });
 
-  it("lists current lens names matching LENS_REGISTRY labels", () => {
+  it("does not mention 'Tones' or 'Lead' as lens names", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    expect(screen.getAllByText("Chord Tones").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Guide Tones").length).toBeGreaterThan(0);
-    // "Tension" appears as both <strong> and <em> in the description
-    expect(screen.getAllByText("Tension").length).toBeGreaterThan(0);
-    // Removed lenses — must not appear
-    expect(screen.queryByText("Chord + Color")).toBeNull();
-    expect(screen.queryByText("Color Notes")).toBeNull();
+    // Lens picker was removed; help text should not mention the old lens names.
+    expect(screen.queryByText(/Tones lens/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Lead lens/i)).not.toBeInTheDocument();
   });
 
-  it("restores focus to trigger button when modal closes", () => {
-    const onClose = vi.fn();
-    const { rerender } = render(
-      <HelpModalWithTrigger isOpen={true} onClose={onClose} />
+  it("renders the chord-mode-removed notice when not yet seen", () => {
+    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, false]]);
+    renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
+    expect(
+      screen.getByText(/manual chord mode has been removed/i),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the chord-mode-removed notice when already seen", () => {
+    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, true]]);
+    renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
+    expect(
+      screen.queryByText(/manual chord mode has been removed/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("dismissing the notice sets the seen flag and hides the notice", async () => {
+    const user = userEvent.setup();
+    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, false]]);
+    const { rerender } = renderWithStore(
+      <HelpModal isOpen={true} onClose={vi.fn()} />,
+      store,
     );
+    await user.click(screen.getByRole("button", { name: /got it/i }));
+    expect(store.get(seenChordModeRemovalNoticeAtom)).toBe(true);
+    rerender(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    expect(
+      screen.queryByText(/manual chord mode has been removed/i),
+    ).not.toBeInTheDocument();
+  });
 
-    // Focus the close button inside the modal so focus is inside the trap
-    const closeBtn = screen.getByLabelText("Close help");
-    closeBtn.focus();
-    expect(document.activeElement).toBe(closeBtn);
-
-    // Close the modal (set isOpen=false)
-    act(() => {
-      rerender(<HelpModalWithTrigger isOpen={false} onClose={onClose} />);
-    });
-
-    // Focus should be restored to the trigger button
-    expect(document.activeElement).toBe(screen.getByLabelText("Trigger button"));
+  it("moves focus to the close button when dialog opens", () => {
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    expect(document.activeElement).toBe(screen.getByLabelText("Close help"));
   });
 });

@@ -4,6 +4,7 @@
   min-width: 0;
 }
 
+
 .summary-shell {
   display: flex;
   justify-content: center;
@@ -11,8 +12,21 @@
 }
 
 .status-bar-shell {
-  width: 100%;
+  /* Escape the .app-container 1rem padding (src/styles/App.css) so the status
+     bar's background + top border reach the viewport edges. Mobile parent uses
+     0.65rem padding (App.css media query) — matched below. */
+  width: calc(100% + 2rem);
+  margin-left: -1rem;
+  margin-right: -1rem;
   flex: 0 0 auto;
+}
+
+@media (max-width: 767px) {
+  .status-bar-shell {
+    width: calc(100% + 1.3rem);
+    margin-left: -0.65rem;
+    margin-right: -0.65rem;
+  }
 }
 
 /* Pull summary closer to header for tighter top band. Same value across every

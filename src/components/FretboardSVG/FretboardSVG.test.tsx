@@ -8,6 +8,7 @@ import type { CagedShape, ShapePolygon } from "@fretflow/core";
 import type { NoteSemantics } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
+import * as buildTopologyModule from "./hooks/buildStaticFretboardTopology";
 
 vi.mock("./motionPolicy", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./motionPolicy")>();
@@ -67,6 +68,19 @@ const E_SHAPE_C_MAJOR_VOICING = {
 };
 
 describe("FretboardSVG/FretboardSVG", () => {
+  describe("resolveFretboardMotionPolicy", () => {
+    it("disables group fades for shapes and connectors while playback is active", () => {
+      expect(resolveFretboardMotionPolicy({
+        prefersReducedMotion: false,
+        playbackActive: true,
+      })).toEqual({
+        noteMode: "css",
+        shapeMode: "none",
+        connectorMode: "none",
+      });
+    });
+  });
+
   it("renders note circles when highlightNotes are provided", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
     const activeNotes = document.querySelectorAll(".note-active, .key-tonic");
@@ -148,15 +162,15 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll(".chord-tone-outside-scale").length).toBeGreaterThan(0);
   });
 
-  it("tension lens keeps in-scale chord root and outside chord tones visible", () => {
-    const { container } = renderCMajor({ chordTones: ["C", "A#"], practiceLens: "tension" });
+  it("keeps in-scale chord root and outside chord tones visible", () => {
+    const { container } = renderCMajor({ chordTones: ["C", "A#"] });
     expect(container.querySelectorAll(".chord-root.hidden").length).toBe(0);
     expect(container.querySelectorAll(".chord-tone-outside-scale:not(.hidden)").length).toBeGreaterThan(0);
   });
 
-  it("outside chord root is visible and not hidden in tension lens", () => {
+  it("outside chord root is visible and not hidden", () => {
     const { container } = renderCMajor({
-      chordTones: ["D", "F#", "A"], chordRoot: "D", practiceLens: "tension",
+      chordTones: ["D", "F#", "A"], chordRoot: "D",
     });
     expect(container.querySelectorAll(".chord-root:not(.hidden)").length).toBeGreaterThan(0);
   });
@@ -214,24 +228,24 @@ describe("FretboardSVG/FretboardSVG", () => {
       .sort();
 
     expect(chordRoleLabels).toEqual([
-      "C on string 1, fret 8",
-      "C on string 4, fret 10",
-      "C on string 6, fret 8",
-      "E on string 3, fret 9",
-      "G on string 2, fret 8",
-      "G on string 5, fret 10",
+      "C on string 1, fret 8, root",
+      "C on string 4, fret 10, root",
+      "C on string 6, fret 8, root",
+      "E on string 3, fret 9, chord tone",
+      "G on string 2, fret 8, chord tone",
+      "G on string 5, fret 10, chord tone",
     ]);
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
-    expect(container.querySelector('.chord-root[data-full-chord-shape="E"]')).not.toBeNull();
+    expect(container.querySelector('.chord-root[data-full-chord-mode]')).not.toBeNull();
     expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
+    const rootG = container.querySelector('.chord-root[data-full-chord-mode]');
+    expect(rootG).toHaveStyle({ "--shape-fill": "var(--caged-e)" });
+    expect(rootG).toHaveStyle({ "--shape-stroke": "var(--note-ring-tonic)" });
     expect(
-      container.querySelector('.chord-root[data-full-chord-shape="E"] path:last-of-type'),
-    ).toHaveStyle({ fill: "var(--caged-e)" });
-    expect(
-      container.querySelector('.chord-root[data-full-chord-shape="E"] text'),
-    ).toHaveStyle({ fill: "var(--caged-e-fg)" });
+      container.querySelector('.chord-root[data-full-chord-mode] text'),
+    ).toHaveStyle({ "--text-fill": "#ffffff" });
   });
 
   it("hides chord connectors when showChordConnectors is false", () => {
@@ -449,6 +463,23 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
+  it("renders playback state from the snapshot prop instead of direct playback atom reads", () => {
+    const { container } = renderCMajor({
+      playbackSnapshot: {
+        playing: true,
+        activeStepIndex: 0,
+        globalFraction: 0.25,
+        localFraction: 0.75,
+        stepDurationBeats: 4,
+        beatPosition: 3,
+        commonWithNext: new Set(["G"]),
+        nextGuideTones: new Set(["B", "F"]),
+      },
+    });
+
+    expect(container.querySelectorAll('[data-lens-emphasis="var(--note-glow-anticipation)"]').length).toBeGreaterThan(0);
+  });
+
   describe("shape scope and membership", () => {
     const singleShapePolygon = polyRect("E" as CagedShape, 0, 4);
     const fullShapePolygon = polyRect("C" as CagedShape, 3, 5, 5);
@@ -604,16 +635,14 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  describe("lens leakage — no lens effect when chord overlay is off", () => {
-    it("data-practice-lens only present when chord overlay is active", () => {
-      const { container, rerender } = render(<FretboardSVG {...BASE_PROPS} practiceLens="guide-tones" />);
+  describe("no lens data attribute", () => {
+    it("data-practice-lens is not present (lens removed)", () => {
+      const { container } = render(<FretboardSVG {...BASE_PROPS} />);
       expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBeNull();
-      rerender(<FretboardSVG {...BASE_PROPS} chordTones={["C", "E", "G"]} chordRoot="C" practiceLens="guide-tones" />);
-      expect(container.querySelector('.fretboard-board')?.getAttribute('data-practice-lens')).toBe('guide-tones');
     });
 
-    it("scale notes have normal opacity with no chord overlay regardless of practiceLens", () => {
-      const { container } = render(<FretboardSVG {...BASE_PROPS} practiceLens="guide-tones" />);
+    it("scale notes have normal opacity with no chord overlay", () => {
+      const { container } = render(<FretboardSVG {...BASE_PROPS} />);
       container.querySelectorAll('.fretboard-note:not(.hidden)').forEach((el) => {
         expect(parseFloat(getComputedStyle(el as Element).opacity)).toBeGreaterThanOrEqual(1);
       });
@@ -622,6 +651,16 @@ describe("FretboardSVG/FretboardSVG", () => {
 
   describe("motion policy wiring", () => {
     const MINIMAL_POLYGON = polyRect("E" as CagedShape, 0, 4, 1);
+    const PLAYBACK_SNAPSHOT = {
+      playing: true,
+      activeStepIndex: 0,
+      globalFraction: 0.125,
+      localFraction: 0.25,
+      stepDurationBeats: 4,
+      beatPosition: 1,
+      commonWithNext: new Set(["G"]),
+      nextGuideTones: new Set(["B", "F"]),
+    };
 
     it("uses group-mode wrappers when policy returns group modes", () => {
       const { container } = renderCMajor({ shapePolygons: [MINIMAL_POLYGON] });
@@ -636,6 +675,15 @@ describe("FretboardSVG/FretboardSVG", () => {
       const { container } = renderCMajor({ shapePolygons: [MINIMAL_POLYGON] });
       expect(container.querySelector('[data-motion="group"]')).toBeNull();
       expect(container.querySelectorAll('[data-motion="none"]').length).toBeGreaterThan(0);
+    });
+
+    it("passes playback activity into motion policy resolution", () => {
+      renderCMajor({ shapePolygons: [MINIMAL_POLYGON], playbackSnapshot: PLAYBACK_SNAPSHOT });
+
+      expect(resolveFretboardMotionPolicy).toHaveBeenCalledWith({
+        prefersReducedMotion: false,
+        playbackActive: true,
+      });
     });
   });
 
@@ -689,5 +737,77 @@ describe("FretboardSVG/FretboardSVG", () => {
       fireEvent.keyDown(note, { key: "Tab" });
       expect(onNoteClick).not.toHaveBeenCalled();
     });
+  });
+
+  it("does not rebuild static fretboard topology when only the playback snapshot changes", () => {
+    const topologySpy = vi.spyOn(buildTopologyModule, "buildStaticFretboardTopology");
+    const firstSnapshot = {
+      playing: true,
+      activeStepIndex: 0,
+      globalFraction: 0.125,
+      localFraction: 0.25,
+      stepDurationBeats: 4,
+      beatPosition: 1,
+      commonWithNext: new Set(["G"]),
+      nextGuideTones: new Set(["B", "F"]),
+    };
+
+    const { rerender } = renderCMajor({ playbackSnapshot: firstSnapshot });
+    const countAfterInitialRender = topologySpy.mock.calls.length;
+    expect(countAfterInitialRender).toBeGreaterThan(0);
+
+    rerender(
+      <FretboardSVG
+        {...BASE_PROPS}
+        {...C_MAJOR}
+        
+        playbackSnapshot={{
+          ...firstSnapshot,
+          globalFraction: 0.25,
+          localFraction: 0.75,
+          beatPosition: 3,
+        }}
+      />,
+    );
+
+    expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
+    topologySpy.mockRestore();
+  });
+
+  it("does not rebuild static fretboard topology when only the playback snapshot changes and no chord overlay is active", () => {
+    const topologySpy = vi.spyOn(buildTopologyModule, "buildStaticFretboardTopology");
+    const firstSnapshot = {
+      playing: true,
+      activeStepIndex: 0,
+      globalFraction: 0.0,
+      localFraction: 0.0,
+      stepDurationBeats: 4,
+      beatPosition: 1,
+      commonWithNext: new Set<string>(),
+      nextGuideTones: new Set<string>(),
+    };
+
+    // Render without chordTones — default path (DEFAULT_CHORD_TONES stable reference)
+    const { rerender } = render(
+      <FretboardSVG {...BASE_PROPS}  playbackSnapshot={firstSnapshot} />,
+    );
+    const countAfterInitialRender = topologySpy.mock.calls.length;
+    expect(countAfterInitialRender).toBeGreaterThan(0);
+
+    rerender(
+      <FretboardSVG
+        {...BASE_PROPS}
+        
+        playbackSnapshot={{
+          ...firstSnapshot,
+          globalFraction: 0.5,
+          localFraction: 0.5,
+          beatPosition: 3,
+        }}
+      />,
+    );
+
+    expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
+    topologySpy.mockRestore();
   });
 });

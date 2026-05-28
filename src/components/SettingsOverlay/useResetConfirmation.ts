@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
 import { resetAtom } from "../../store/actions";
-import { synth } from "../../core/audio";
+import { setGuitarMutePreference } from "../../core/lazyGuitarAudio";
 
 export function useResetConfirmation(onConfirm: () => void) {
   const [resetConfirming, setResetConfirming] = useState(false);
@@ -10,7 +10,7 @@ export function useResetConfirmation(onConfirm: () => void) {
   const handleResetClick = () => {
     if (resetConfirming) {
       dispatchReset();
-      synth.setMute(false);
+      setGuitarMutePreference(false);
       onConfirm();
     } else {
       setResetConfirming(true);

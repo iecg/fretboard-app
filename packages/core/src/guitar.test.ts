@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   parseNote,
   getFretNote,
@@ -10,6 +10,14 @@ import {
 } from './guitar';
 import { MAX_FRET } from './constants';
 
+describe('parseNote caching', () => {
+  it('returns the exact same parsed object instance for identical inputs', () => {
+    const note1 = parseNote('E4');
+    const note2 = parseNote('E4');
+    expect(note1).toBe(note2); // reference equality proves cache hit
+  });
+});
+
 describe('parseNote', () => {
   it('parses note with octave', () => {
     expect(parseNote('E4')).toEqual({ noteName: 'E', octave: 4 });
@@ -20,6 +28,12 @@ describe('parseNote', () => {
     expect(parseNote('X')).toBeNull();
     expect(parseNote('E')).toBeNull();
     expect(parseNote('H4')).toBeNull();
+  });
+
+  it('normalizes flats to sharps', () => {
+    expect(parseNote('Db4')).toEqual({ noteName: 'C#', octave: 4 });
+    expect(parseNote('Bb3')).toEqual({ noteName: 'A#', octave: 3 });
+    expect(parseNote('Eb2')).toEqual({ noteName: 'D#', octave: 2 });
   });
 });
 
@@ -117,6 +131,19 @@ describe('getFretboardNotes', () => {
     const layout = getFretboardNotes(STANDARD_TUNING, 24);
     // A string is index 4 (tuning: E4, B3, G3, D3, A2, E2)
     expect(layout[4][3]).toBe('C');
+  });
+
+  it('warns when a tuning note cannot be parsed', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    getFretboardNotes(['X1', 'E4', 'A3', 'D3', 'G3', 'B3'], 5);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('invalid tuning'));
+    warn.mockRestore();
+  });
+
+  it('treats flat-spelled tuning notes as their sharp equivalents', () => {
+    const flatLayout = getFretboardNotes(['Eb4'], 12);
+    const sharpLayout = getFretboardNotes(['D#4'], 12);
+    expect(flatLayout[0]).toEqual(sharpLayout[0]);
   });
 });
 

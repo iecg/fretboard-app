@@ -14,10 +14,6 @@ interface ProgressionPlayheadProps {
   totalBarsForDisplay: number;
 }
 
-/** ~60 Hz position write interval. Keeping this interval alive while playing
- * lets the playhead recover when playback starts before the audio timeline is
- * armed by the sibling audio effect. */
-const TICK_MS = 16;
 
 /**
  * Renders the playhead and drives its horizontal motion by sampling the
@@ -77,9 +73,14 @@ export function ProgressionPlayhead({
     write();
 
     if (!playing) return;
-    const id = window.setInterval(write, TICK_MS);
-    return () => window.clearInterval(id);
-  }, [playing]);
+    let frameId: number;
+    const loop = () => {
+      write();
+      frameId = window.requestAnimationFrame(loop);
+    };
+    frameId = window.requestAnimationFrame(loop);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [playing, stepStartBar, totalDurationBars, totalBarsForDisplay]);
 
   return (
     <span

@@ -21,24 +21,21 @@ test.describe("App Components Visual", () => {
     await expectLocatorVisual(locator, "fretboard-light-1280x900");
   });
 
-  test("circle-of-fifths-desktop-1280x900", async ({ page }) => {
-    // CircleOfFifths now lives in the Inspector's Scale tab — activate it
-    // before the panel is mounted into the DOM.
-    await page.getByRole("tab", { name: "Scale" }).click();
-    const locator = page.getByTestId("circle-of-fifths-svg");
+  test("overlay-tab-desktop-1280x900", async ({ page }) => {
+    await page.getByRole("tab", { name: "Overlay" }).click();
+    const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
-    // Scroll locator into view before capturing as requested
     await locator.scrollIntoViewIfNeeded();
-    await expectLocatorVisual(locator, "circle-of-fifths-desktop-1280x900");
+    await expectLocatorVisual(locator, "overlay-tab-desktop-1280x900");
   });
 
-  test("circle-of-fifths-light-1280x900", async ({ page }) => {
+  test("overlay-tab-light-1280x900", async ({ page }) => {
     await loadVisualState(page, { theme: "light" }, { width: 1280, height: 900 });
-    await page.getByRole("tab", { name: "Scale" }).click();
-    const locator = page.getByTestId("circle-of-fifths-svg");
+    await page.getByRole("tab", { name: "Overlay" }).click();
+    const locator = page.getByTestId("view-tab");
     await locator.waitFor({ state: "visible" });
     await locator.scrollIntoViewIfNeeded();
-    await expectLocatorVisual(locator, "circle-of-fifths-light-1280x900");
+    await expectLocatorVisual(locator, "overlay-tab-light-1280x900");
   });
 });
 

@@ -9,11 +9,6 @@ import {
   allChordMembersAtom,
 } from "./composableSelectors";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
-import {
-  chordOverlayModeAtom,
-  chordRootOverrideAtom,
-  chordQualityOverrideAtom,
-} from "./chordOverlayAtoms";
 import { progressionStepsAtom } from "./progressionAtoms";
 import type { ResolvedChordMember } from "@fretflow/core";
 
@@ -56,7 +51,7 @@ describe("pure predicates", () => {
       { name: "3", semitone: 4, note: "E" },
       { name: "5", semitone: 7, note: "G" },
     ];
-    const entries = buildChordRowEntries(members, "C", "C", "Major", false);
+    const entries = buildChordRowEntries(members, "C", "C", "major", false);
     expect(entries).toHaveLength(3);
     expect(entries[0]).toMatchObject({
       internalNote: "C",
@@ -73,7 +68,7 @@ describe("pure predicates", () => {
       { name: "root", semitone: 0, note: "C" },
       { name: "b3", semitone: 3, note: "D#" }, // not in C major
     ];
-    const entries = buildChordRowEntries(members, "C", "C", "Major", false);
+    const entries = buildChordRowEntries(members, "C", "C", "major", false);
     expect(entries[1].inScale).toBe(false);
     expect(entries[1].role).toBe("chord-tone-outside-scale");
     expect(entries[1].scaleDegree).toBeUndefined();
@@ -81,47 +76,56 @@ describe("pure predicates", () => {
 });
 
 describe("cross-domain derived atoms", () => {
-  function setupManualChord(root: string, quality: string) {
+  function setupManualChord(root: string, quality: string | null) {
     const store = createStore();
-    store.set(progressionStepsAtom, []);
-    store.set(chordOverlayModeAtom, "manual");
-    store.set(chordRootOverrideAtom, root);
-    store.set(chordQualityOverrideAtom, quality);
+    store.set(progressionStepsAtom, [
+      {
+        id: "step-1",
+        degree: "I",
+        duration: { value: 1, unit: "bar" },
+        qualityOverride: quality,
+        manualRoot: root,
+      },
+    ]);
     return store;
   }
 
+  function disableChordOverlay(store: ReturnType<typeof createStore>) {
+    store.set(progressionStepsAtom, []);
+  }
+
   it("hasOutsideChordMembersAtom: false for diatonic C major triad in C major", () => {
-    const store = setupManualChord("C", "Major Triad");
+    const store = setupManualChord("C", "M");
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     expect(store.get(hasOutsideChordMembersAtom)).toBe(false);
   });
 
   it("hasOutsideChordMembersAtom: true for D major triad in C major (F# is outside)", () => {
-    const store = setupManualChord("D", "Major Triad");
+    const store = setupManualChord("D", "M");
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     expect(store.get(hasOutsideChordMembersAtom)).toBe(true);
   });
 
   it("hasOutsideChordMembersAtom: false when chord overlay is off", () => {
-    const store = setupManualChord("C", "");
-    store.set(chordOverlayModeAtom, "off");
+    const store = setupManualChord("C", null);
+    disableChordOverlay(store);
     expect(store.get(hasOutsideChordMembersAtom)).toBe(false);
   });
 
   it("allChordMembersAtom: returns ChordRowEntry[] composed from chord + scale", () => {
-    const store = setupManualChord("C", "Major Triad");
+    const store = setupManualChord("C", "M");
     store.set(rootNoteAtom, "C");
-    store.set(scaleNameAtom, "Major");
+    store.set(scaleNameAtom, "major");
     const rows = store.get(allChordMembersAtom);
     expect(rows.map((r) => r.internalNote)).toEqual(["C", "E", "G"]);
     expect(rows.every((r) => r.inScale)).toBe(true);
   });
 
   it("allChordMembersAtom: empty when chord overlay is off", () => {
-    const store = setupManualChord("C", "");
-    store.set(chordOverlayModeAtom, "off");
+    const store = setupManualChord("C", null);
+    disableChordOverlay(store);
     expect(store.get(allChordMembersAtom)).toEqual([]);
   });
 });

@@ -9,6 +9,7 @@ const toggleBarVariants = cva(shared["toggle-group"], {
   variants: {
     variant: {
       default: shared["toggle-group--default"],
+      chip: shared["toggle-group--chip"],
       tabs: styles["mobile-tab-bar"],
     },
   },
@@ -21,6 +22,7 @@ const toggleButtonVariants = cva("", {
   variants: {
     variant: {
       default: shared["toggle-btn"],
+      chip: `${shared["toggle-btn"]} ${shared["toggle-btn--chip"]}`,
       tabs: styles["mobile-tab"],
     },
     isActive: {
@@ -49,10 +51,12 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   options: readonly ToggleBarOption<Value>[];
   value: Value | undefined;
   onChange: (value: Value) => void;
-  variant?: "default" | "tabs";
+  variant?: "default" | "chip" | "tabs";
   label?: string;
   /** When "scroll" — the toggle group scrolls horizontally instead of shrinking buttons. */
   overflow?: "scroll";
+  /** When true, every option button is disabled regardless of per-option `disabled`. */
+  disabled?: boolean;
 }
 
 export function ToggleBar<Value extends string | number>({
@@ -62,6 +66,7 @@ export function ToggleBar<Value extends string | number>({
   variant = "default",
   label,
   overflow,
+  disabled = false,
 }: ToggleBarProps<Value>) {
   const isTabs = variant === "tabs";
   const descPrefix = useId();
@@ -84,7 +89,7 @@ export function ToggleBar<Value extends string | number>({
               : { "aria-pressed": isActive })}
             className={toggleButtonVariants({ variant, isActive })}
             onClick={() => onChange(option.value)}
-            disabled={option.disabled}
+            disabled={disabled || option.disabled}
             title={option.title}
             aria-describedby={descId}
             whileTap={{ scale: 0.96 }}
