@@ -85,9 +85,17 @@ function buildReverb(
 ): Reverb | JCReverb | Freeverb {
   if (engine === "convolution") {
     const r = new Reverb({ decay, wet });
-    void r.generate(); // async impulse; safe to use before resolve (silent until ready)
+    // async impulse; safe to use before resolve (silent until ready)
+    void r.generate().catch((err) => {
+      if (import.meta.env.DEV) console.warn("[buildSignalGraph] Reverb.generate() failed:", err);
+    });
     return r;
   }
+  // JCReverb/Freeverb take a normalized roomSize rather than a decay time, so we
+  // map decay seconds → roomSize via `decay / 2.5` (a rough perceptual fit). The
+  // clamps differ per algorithm: JCReverb caps ~0.9 because higher room sizes
+  // destabilize its feedback comb filters, while Freeverb tolerates up to ~0.95
+  // before it self-oscillates.
   if (engine === "jcreverb") {
     return new JCReverb({ roomSize: Math.min(0.9, decay / 2.5), wet });
   }
@@ -104,6 +112,17 @@ function buildReverb(
  *                                                   └─(reverbSend)→ reverbBus → masterGlue
  * masterGlue: Compressor → Limiter → destination
  * reverbBus:  Reverb → (into masterGlue input, post-compressor pre-limiter)
+ *
+ * INVARIANT: `ctx` MUST be the same AudioContext that Tone is bound to. The app
+ * binds Tone to the progression AudioContext via `Tone.setContext(audio.ctx)`
+ * in `toneBus.ts` (see also `bus.ts`); the native input GainNodes created here
+ * with `ctx.createGain()` and the Tone effect nodes must share one context, or
+ * the cross-graph `.connect()` calls below will silently fail to route audio.
+ *
+ * NOTE: `SignalGraphPlan.delayBus` / `ChannelPlan.delaySend` are carried in the
+ * plan but intentionally NOT materialized in this slice — delay sends are
+ * reserved for a later iteration. The gap is explicit so it isn't mistaken for
+ * a bug; no delay bus is constructed and the per-channel `delaySend` is unused.
  */
 export function materializeSignalGraph(
   ctx: AudioContext,
@@ -115,6 +134,10 @@ export function materializeSignalGraph(
     disposers.push(() => n.dispose());
     return n;
   };
+  // Native input GainNodes aren't Tone nodes, so they have no `.dispose()`.
+  // Track them separately to `.disconnect()` on teardown (otherwise old inputs
+  // stay wired across a graph rebuild on tier/genre change).
+  const nativeInputs: GainNode[] = [];
 
   // Master glue: Compressor → Limiter → destination
   const comp = track(new Compressor(plan.master.compressor));
@@ -130,11 +153,12 @@ export function materializeSignalGraph(
   for (const ch of ["chord", "bass", "drums", "metronome"] as const) {
     const cfg = plan.channels[ch];
     const input = ctx.createGain(); // native node voices connect into
+    nativeInputs.push(input);
     const channel = track(new Channel({ volume: cfg.volumeDb, pan: cfg.pan }));
 
     // Optional insert chain (EQ3 + saturation), built with real Tone nodes.
     // `head` tracks the last node in the chain; may be native GainNode or a Tone node.
-    let head: AudioNode | EQ3 | Distortion | Chebyshev = input;
+    let head: GainNode | EQ3 | Distortion | Chebyshev = input;
 
     if (cfg.insert?.eq3) {
       const eq = track(new EQ3(cfg.insert.eq3));
@@ -177,6 +201,14 @@ export function materializeSignalGraph(
           d();
         } catch {
           /* ignore disposal errors */
+        }
+      }
+      // Native GainNodes have no dispose(); just unwire them.
+      for (const node of nativeInputs) {
+        try {
+          node.disconnect();
+        } catch {
+          /* ignore disconnect errors */
         }
       }
     },
