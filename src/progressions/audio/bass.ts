@@ -85,10 +85,11 @@ export function scheduleBassNote(
       if (!lease.isCurrent()) return;
 
       const cancelTime = Tone.now();
-      if (cancelTime <= time) {
-        // Note hasn't started yet — mark idle so the pool can reuse this
-        // voice immediately, rather than disposing and discarding it.
-        lease.setBusyUntil(0);
+      if (cancelTime < time) {
+        // Note was scheduled for a future `time` but cancelled before it
+        // starts — dispose to KILL the pending triggerAttackRelease on this
+        // monophonic voice. Merely marking it idle would let the note fire.
+        lease.dispose();
         return;
       }
 
