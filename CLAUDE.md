@@ -24,6 +24,17 @@ pnpm run preview               # preview build locally
 
 - **Branching:** Trunk-based. `main` = trunk. PRs required.
 - **Commits:** Conventional Commits with scope. `type(scope): message`.
+- **Breaking changes:** The Auto Release workflow uses the Angular preset, which does **not** recognize the `!` shorthand (e.g. `feat!:`). To trigger a major version bump you **must** include a `BREAKING CHANGE:` footer in the commit body:
+
+  ```text
+  feat(scope): short subject
+
+  Optional body.
+
+  BREAKING CHANGE: explanation of what breaks and how to migrate.
+  ```
+
+  When merging a PR via squash, ensure the squash commit body (not just the title) carries the footer — GitHub does not append PR body to the commit by default. Without the footer, breaking PRs will be released as a minor bump.
 - **Releases:** Triggered via GitHub Actions (Auto Release). Never tag manually.
 
 ## Architecture
