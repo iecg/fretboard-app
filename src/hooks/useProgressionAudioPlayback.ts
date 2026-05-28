@@ -424,7 +424,9 @@ export function useProgressionAudioPlayback() {
       primsRef.current = { parts, endEventId, totalDurationSec };
     }).catch((err) => {
       console.error("Playback getEngine failed:", err);
-      setLoading(false);
+      if (gen !== genRef.current) return;
+      tearDown();
+      setPlaying(false);
     });
 
     const genRefSnapshot = genRef;
