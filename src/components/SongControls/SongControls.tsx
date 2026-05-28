@@ -18,6 +18,11 @@ import type { ProgressionPresetCategory } from "../../progressions/progressionDo
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
+import {
+  PresetMenu,
+  type PresetMenuCategory,
+  type PresetMenuSuggestionGroup,
+} from "../PresetMenu/PresetMenu";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { InspectorCard } from "../Inspector/InspectorCard";
 import { DegreeGrid } from "../shared/DegreeGrid";
@@ -73,6 +78,12 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   folk: "Folk / Country",
   modal: "Modal",
   minor: "Minor",
+};
+
+const SUGGESTION_FEEL_LABELS: Record<string, string> = {
+  cadential: "Cadential",
+  vamp: "Vamps",
+  modal: "Modal",
 };
 
 export function SongControls() {
@@ -152,31 +163,24 @@ export function SongControls() {
     }))
     .filter((g) => g.presets.length > 0);
   const suggestedPresets = generateCommonProgressions(scaleName, rootNote);
-  const presetGroups: LabeledSelectGroup[] = [
-    // Show "Custom" only when it's the current value — the option is not
-    // user-selectable; it just reflects an edited (non-preset) progression.
-    ...(currentProgressionPresetId === CUSTOM_PRESET_ID
-      ? [{ options: [{ value: CUSTOM_PRESET_ID, label: "Custom" }] }]
-      : []),
-    ...groupedPresets.map((group) => ({
-      groupLabel: group.label,
-      options: group.presets.map((preset) => ({
-        value: preset.id,
-        label: preset.label,
-      })),
+  const categories: PresetMenuCategory[] = groupedPresets.map((group) => ({
+    label: group.label,
+    options: group.presets.map((preset) => ({
+      id: preset.id,
+      label: preset.label,
     })),
-    ...(suggestedPresets.length > 0
-      ? [
-          {
-            groupLabel: `Suggested for ${scaleName}`,
-            options: suggestedPresets.map((preset) => ({
-              value: preset.id,
-              label: preset.label,
-            })),
-          },
-        ]
-      : []),
-  ];
+  }));
+
+  const suggestionGroups: PresetMenuSuggestionGroup[] = Object.entries(
+    suggestedPresets.reduce<Record<string, typeof suggestedPresets>>((acc, p) => {
+      (acc[p.feel] ??= []).push(p);
+      return acc;
+    }, {}),
+  ).map(([feel, presets]) => ({
+    feel: feel as PresetMenuSuggestionGroup["feel"],
+    label: SUGGESTION_FEEL_LABELS[feel] ?? feel,
+    options: presets.map((p) => ({ id: p.id, label: p.label })),
+  }));
   const handlePresetChange = (id: string) => {
     if (id === CUSTOM_PRESET_ID) return;
     const suggested = suggestedPresets.find((p) => p.id === id);
@@ -262,12 +266,15 @@ export function SongControls() {
         headClassName={styles["progression-card-head"]}
         actions={
           <div className={styles["progression-toolbar"]}>
-            <LabeledSelect
-              label={t("inspector.progressionPreset")}
-              hideLabel
-              value={currentProgressionPresetId}
-              groups={presetGroups}
-              onChange={handlePresetChange}
+            <PresetMenu
+              triggerLabel={t("inspector.progressionPreset")}
+              customLabel="Custom"
+              scaleName={scaleName}
+              currentId={currentProgressionPresetId}
+              categories={categories}
+              suggestionGroups={suggestionGroups}
+              disabled={editsLocked}
+              onSelect={handlePresetChange}
             />
 
             <div className={styles["toolbar-divider"]} />

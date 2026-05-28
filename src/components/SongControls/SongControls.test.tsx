@@ -18,6 +18,35 @@ const BASE_SEEDS = [
   ]],
 ] as const;
 
+// PresetMenu uses radix submenus, which only open via keyboard navigation
+// under jsdom. Open the trigger, walk ArrowDown to the named subtrigger, then
+// ArrowRight to open it. Subtriggers are menuitems whose accessible name is the
+// category/suggestion label.
+async function openPresetSubmenu(
+  user: ReturnType<typeof userEvent.setup>,
+  subtriggerName: string | RegExp,
+) {
+  await user.click(screen.getByRole("button", { name: "Preset" }));
+  const matches = (name: string) =>
+    typeof subtriggerName === "string"
+      ? name === subtriggerName
+      : subtriggerName.test(name);
+  // Top-level subtriggers, in render order.
+  const subtriggers = screen
+    .getAllByRole("menuitem")
+    .filter((el) => el.getAttribute("aria-haspopup") === "menu");
+  const index = subtriggers.findIndex((el) =>
+    matches((el.textContent ?? "").trim()),
+  );
+  if (index < 0) {
+    throw new Error(`No preset subtrigger matching ${String(subtriggerName)}`);
+  }
+  for (let i = 0; i <= index; i += 1) {
+    await user.keyboard("{ArrowDown}");
+  }
+  await user.keyboard("{ArrowRight}");
+}
+
 describe("SongControls", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -27,7 +56,7 @@ describe("SongControls", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
 
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Preset" })).toBeInTheDocument();
     // Step list is gone (ProgressionTrack handles navigation); editor pane still present
     expect(screen.getByRole("group", { name: "Chord root" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
@@ -40,10 +69,12 @@ describe("SongControls", () => {
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    // Both the catalog "ii-V-I" preset and the generated suggestion resolve to
-    // the same ii-V-I degrees, so either option is a valid pick.
-    await user.click(screen.getAllByRole("option", { name: "ii-V-I" })[0]);
+    // PresetMenu is a radix DropdownMenu. radix only opens submenus via
+    // keyboard nav under jsdom (no pointer-hover). Open the menu, focus the
+    // "Suggested for major" subtrigger, open it, and pick the cadential ii-V-I
+    // suggestion — it resolves to the same ii-V-I degrees as the catalog preset.
+    await openPresetSubmenu(user, "Suggested for major");
+    await user.click(await screen.findByRole("menuitem", { name: "ii-V-I" }));
 
     expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["ii", "V", "I"]);
   });
@@ -218,13 +249,13 @@ describe("SongControls PRESET", () => {
     localStorage.clear();
   });
 
-  it("renders a LabeledSelect with the default preset value", () => {
+  it("renders a PresetMenu reflecting the default preset value", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
-    const trigger = screen.getByRole("combobox", { name: "Preset" });
+    const trigger = screen.getByRole("button", { name: "Preset" });
     // default I-V-vi-IV preset — the trigger reflects the selected label.
     expect(within(trigger).getByText("I-V-vi-IV")).toBeInTheDocument();
   });
@@ -237,8 +268,9 @@ describe("SongControls PRESET", () => {
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    expect(screen.getByText("Pop / Rock")).toBeInTheDocument();
+    // "Pop / Rock" is a top-level submenu trigger, visible once the menu opens.
+    await user.click(screen.getByRole("button", { name: "Preset" }));
+    expect(screen.getByRole("menuitem", { name: "Pop / Rock" })).toBeInTheDocument();
   });
 
   it("renders a suggested presets group for the current scale", async () => {
@@ -249,8 +281,9 @@ describe("SongControls PRESET", () => {
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    expect(screen.getByText(/^Suggested for/)).toBeInTheDocument();
+    // "Suggested for <scale>" is a top-level submenu trigger.
+    await user.click(screen.getByRole("button", { name: "Preset" }));
+    expect(screen.getByRole("menuitem", { name: /^Suggested for/ })).toBeInTheDocument();
   });
 
   it("only lists presets that are available for the selected scale", async () => {
@@ -261,11 +294,32 @@ describe("SongControls PRESET", () => {
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    const optionLabels = screen
-      .getAllByRole("option")
-      .map((option) => option.textContent);
-    expect(optionLabels[0]).toBe("Custom");
+    // Walk every category submenu and collect the leaf option labels. The
+    // catalog availability filter (groupedPresets -> categories) still governs
+    // which presets surface; only the control's shape changed.
+    await user.click(screen.getByRole("button", { name: "Preset" }));
+    const subtriggers = screen
+      .getAllByRole("menuitem")
+      .filter((el) => el.getAttribute("aria-haspopup") === "menu");
+    const optionLabels: string[] = [];
+    for (let i = 0; i < subtriggers.length; i += 1) {
+      // Re-open the menu fresh for each category to avoid stale focus state.
+      if (i > 0) {
+        await user.keyboard("{Escape}");
+        await user.click(screen.getByRole("button", { name: "Preset" }));
+      }
+      for (let j = 0; j <= i; j += 1) {
+        await user.keyboard("{ArrowDown}");
+      }
+      await user.keyboard("{ArrowRight}");
+      const items = screen
+        .getAllByRole("menuitem")
+        .filter((el) => el.getAttribute("aria-haspopup") !== "menu");
+      for (const item of items) optionLabels.push((item.textContent ?? "").trim());
+      await user.keyboard("{ArrowLeft}");
+    }
+    // "Custom" is no longer a selectable option — the trigger shows it as a
+    // label when no preset matches. The available presets still surface.
     expect(optionLabels).toEqual(
       expect.arrayContaining([
         "I-V-vi-IV",
@@ -383,10 +437,10 @@ describe("SongControls KEY section layout", () => {
     expect(autoWrapper).toBeNull();
   });
 
-  it("Progression Preset select uses fill width (no data-width attribute)", () => {
+  it("Progression Preset control uses fill width (no fixed-width wrapper)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const presetTrigger = screen.getByRole("combobox", { name: "Preset" });
-    // fill mode means no data-width attribute on the wrapper
+    const presetTrigger = screen.getByRole("button", { name: "Preset" });
+    // PresetMenu is not wrapped in a width-mode container — it fills its slot.
     const fixedWrapper = presetTrigger.closest("[data-width='fixed']");
     const autoWrapper = presetTrigger.closest("[data-width='auto']");
     expect(fixedWrapper).toBeNull();
@@ -588,17 +642,12 @@ describe("SongControls width sweep (Plan H-T3)", () => {
     expect(scaleCombo?.closest("[data-width='fixed']")).toBeNull();
   });
 
-  it("Preset select uses fill width (no data-width='fixed')", () => {
-    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const allCombos = container.querySelectorAll("[role='combobox']");
-    const presetCombo = Array.from(allCombos).find((el) => {
-      const labelledBy = el.getAttribute("aria-labelledby");
-      if (!labelledBy) return false;
-      const labelEl = container.querySelector(`#${CSS.escape(labelledBy)}`);
-      return labelEl?.textContent?.trim() === "Preset";
-    });
-    expect(presetCombo).toBeTruthy();
-    expect(presetCombo?.closest("[data-width='fixed']")).toBeNull();
+  it("Preset control uses fill width (no data-width='fixed')", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    // PresetMenu trigger is a button labelled "Preset" (aria-label, not a combobox).
+    const presetTrigger = screen.getByRole("button", { name: "Preset" });
+    expect(presetTrigger).toBeTruthy();
+    expect(presetTrigger.closest("[data-width='fixed']")).toBeNull();
   });
 });
 
