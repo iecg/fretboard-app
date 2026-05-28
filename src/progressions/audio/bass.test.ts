@@ -1,44 +1,101 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const ctorCalls: unknown[] = [];
-let nowValue = 0;
-vi.mock("tone", () => {
-  class FakeMonoSynth {
-    constructor(opts: unknown) { ctorCalls.push(opts); }
-    connect() { return this; }
-    triggerAttackRelease() {}
-    triggerRelease() {}
-    dispose() {}
-  }
-  return { __esModule: true, MonoSynth: FakeMonoSynth, now: () => nowValue };
+// Shared hoisted-spy Tone mock (same pattern as metronome.test.ts). The helper
+// exposes setNow/now so we can advance the audio clock to exercise pool reuse.
+const synth = vi.hoisted(async () => {
+  const { createToneSynthSpies } = await import("../../test-utils/toneMocks");
+  return createToneSynthSpies();
+});
+
+vi.mock("tone", async () => {
+  const s = await synth;
+  return {
+    MonoSynth: s.spies.ctorSpy,
+    now: () => s.now(),
+  };
 });
 
 import { scheduleBassNote } from "./bass";
 import { getBassPatch } from "./sound/instrumentPatches";
 
-beforeEach(() => { ctorCalls.length = 0; nowValue = 0; });
+describe("scheduleBassNote — patch-driven Tone backend", () => {
+  let s: Awaited<typeof synth>;
+  let spies: Awaited<typeof synth>["spies"];
 
-describe("patch-driven bass", () => {
-  it("builds a MonoSynth using the supplied patch's oscillator + live filter env", () => {
-    const dest = {} as unknown as AudioNode;
-    const patch = getBassPatch("bass-finger")!;
-    scheduleBassNote(dest, 110, 0, { velocity: 0.9, patch });
-    expect(ctorCalls.length).toBe(1);
-    const opts = ctorCalls[0] as { oscillator: { type: string }; filterEnvelope: { octaves: number } };
+  beforeEach(async () => {
+    s = await synth;
+    spies = s.spies;
+    vi.useFakeTimers();
+    s.reset();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("defaults to the bass-finger patch: sawtooth + live lowpass filter envelope", () => {
+    scheduleBassNote({} as AudioNode, 220, 1.0);
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    const [opts] = spies.ctorSpy.mock.calls[0]!;
     expect(opts.oscillator.type).toBe("sawtooth");
+    expect(opts.filter.type).toBe("lowpass");
+    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(250, 0);
     expect(opts.filterEnvelope.octaves).toBeGreaterThan(0);
   });
 
+  it("uses the supplied patch's oscillator + filter envelope", () => {
+    const upright = getBassPatch("bass-upright")!;
+    scheduleBassNote({} as AudioNode, 110, 0, { velocity: 0.9, patch: upright });
+    const [opts] = spies.ctorSpy.mock.calls[0]!;
+    expect(opts.oscillator.type).toBe("triangle");
+    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(180, 0);
+    expect(opts.filterEnvelope.octaves).toBeGreaterThan(0);
+  });
+
+  it("triggers at the requested frequency, time, and velocity", () => {
+    scheduleBassNote({} as AudioNode, 110, 2.5, { velocity: 0.8 });
+    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+    const [pitch, , time, velocity] = spies.triggerAttackRelease.mock.calls[0]!;
+    expect(Number(pitch)).toBeCloseTo(110, 1);
+    expect(time).toBeCloseTo(2.5, 3);
+    expect(velocity).toBeCloseTo(0.8, 2);
+  });
+
+  it("skips zero-velocity notes (no synth constructed)", () => {
+    scheduleBassNote({} as AudioNode, 110, 0, { velocity: 0 });
+    expect(spies.ctorSpy).not.toHaveBeenCalled();
+    expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
+  });
+
+  it("cancel() releases then disposes the synth after the envelope settles", () => {
+    const handle = scheduleBassNote({} as AudioNode, 110, 0);
+    handle.cancel();
+    expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
+    expect(spies.dispose).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(60); // > DISPOSE_TAIL_MS (50)
+    expect(spies.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancel() is idempotent — release/dispose happen only once", () => {
+    const handle = scheduleBassNote({} as AudioNode, 110, 0);
+    handle.cancel();
+    handle.cancel();
+    handle.cancel();
+    vi.advanceTimersByTime(60);
+    expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
+    expect(spies.dispose).toHaveBeenCalledTimes(1);
+  });
+
   it("reuses one pool per patch id and separates pools across patches", () => {
-    const dest = {} as unknown as AudioNode;
+    const dest = {} as AudioNode;
     const finger = getBassPatch("bass-finger")!;
     const upright = getBassPatch("bass-upright")!;
-    scheduleBassNote(dest, 110, 0, { velocity: 0.9, patch: finger }); // builds synth #1
-    expect(ctorCalls.length).toBe(1);
-    nowValue = 5; // advance past the first note's busy window so the voice is idle
+    scheduleBassNote(dest, 110, 0, { velocity: 0.9, patch: finger }); // synth #1
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    s.setNow(5); // advance past the first note's busy window so the voice is idle
     scheduleBassNote(dest, 110, 5, { velocity: 0.9, patch: finger }); // reuses #1
-    expect(ctorCalls.length).toBe(1);
-    scheduleBassNote(dest, 110, 5, { velocity: 0.9, patch: upright }); // different patch → synth #2
-    expect(ctorCalls.length).toBe(2);
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    scheduleBassNote(dest, 110, 5, { velocity: 0.9, patch: upright }); // different patch → #2
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
   });
 });
