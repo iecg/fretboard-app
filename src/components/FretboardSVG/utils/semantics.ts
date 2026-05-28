@@ -29,10 +29,8 @@ export type LeadLensContext = {
   commonWithNext: Set<string>;
   /** Guide tones (3rd/7th) of the next chord — shown as anticipation in the last beat. */
   nextGuideTones: Set<string>;
-  /** Current beat position within the active progression step (0 = just started). */
-  beatPosition: number;
-  /** Total duration of the active step in beats. */
-  stepDurationBeats: number;
+  /** Discrete phase: true only during the final beat of the active step. */
+  anticipationActive: boolean;
 };
 
 /**
@@ -83,23 +81,12 @@ export function getEmphasis(
     return applyTonesBase(noteClass, isGuideTone);
   }
 
-  const {
-    notePc,
-    commonWithNext,
-    nextGuideTones,
-    beatPosition,
-    stepDurationBeats,
-  } = leadContext;
+  const { notePc, commonWithNext, nextGuideTones, anticipationActive } = leadContext;
 
   const isCurrentChordTone = CHORD_TONE_CLASSES.has(noteClass);
 
-  // 1. Anticipation: next chord's guide tone in the last-beat window.
-  //    Applies regardless of current-chord membership.
-  if (
-    stepDurationBeats > 0 &&
-    beatPosition >= stepDurationBeats - 1 &&
-    nextGuideTones.has(notePc)
-  ) {
+  // 1. Anticipation: next chord's guide tone during the last-beat window.
+  if (anticipationActive && nextGuideTones.has(notePc)) {
     return { glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 };
   }
 
