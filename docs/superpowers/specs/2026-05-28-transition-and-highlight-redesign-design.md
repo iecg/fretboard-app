@@ -92,10 +92,14 @@ Therefore: change `motionPolicy` so `connectorMode` is `"group"` during playback
 
 ### §4 — Stronger next-chord preview
 
-- During the anticipation window, render the **incoming voicing's connector polyline as a ghost** — low opacity, dashed — alongside the current connector, so the next shape is visibly forming. The incoming voicing geometry is already computed by the connector engine for the next step's chord; the preview reuses it.
-- At the boundary, the ghost resolves to full via the §3 connector crossfade; the outgoing connector fades.
-- Paired with the §3 anticipation pulse on the next chord's guide tones, the user both sees and feels what's coming.
-- Preview is suppressed under reduced-motion and when not playing.
+**Refined during implementation (lower-risk, same intent).** The original idea ghosted the incoming *voicing connector*. But the voicing-matching pipeline (`voicingMatchesAtom` → `visibleVoicingMatchesAtom` → polylines) is hardwired to the **active** chord; resolving full connector geometry for a non-active chord would duplicate that pipeline — a large, fragile change the plan didn't scope. Instead, preview the next chord's **notes**:
+
+- During the last-beat anticipation window, **every** pitch class of the *next* chord (not only its guide tones) receives the anticipation treatment (rust glow underlay + tempo-matched pulse), so the full incoming chord lights up across the board before it arrives.
+- Reuses the existing `nextChordTonesAtom` (full next-chord pitch classes) and the §2 discrete `anticipationActive` phase — no new pipeline, no per-frame cost.
+- Paired with the §3 connector crossfade at the boundary, the user sees the next chord forming (its notes pulse in) and feels the handoff (connectors crossfade).
+- Suppressed under reduced-motion (pulse off) and when not playing.
+
+The literal incoming-voicing connector ghost remains a possible future enhancement if the note-level preview proves insufficient.
 
 ### §5 — Tokens
 
