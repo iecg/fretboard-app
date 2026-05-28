@@ -109,11 +109,13 @@
   fill: var(--text-fill, #ffffff);
 }
 
-/* Light-theme text on shape colors: the shape colors are already saturated,
-   so white labels with dark outline follow the same treatment as chord-root. */
+/* Light-theme full-chord-mode labels: shape colors are saturated, so revert
+   to the dark-mode treatment — white fill + 45%-opacity black stroke — instead
+   of the global light-mode INK + cream halo (which washes out against the
+   saturated shape fills). */
 :global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] text {
-  fill: var(--text-fill, var(--note-label-on-color));
-  stroke: var(--note-label-on-color-stroke);
+  fill: var(--text-fill, #ffffff);
+  stroke: rgb(0 0 0 / 0.45);
 }
 
 .fretboard-note.note-active :is(circle, path, polygon) {
