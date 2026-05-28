@@ -223,10 +223,10 @@
      the TransportBar --tb-* pattern for shared input controls (toggles,
      steppers, note grid, select trigger). :root carries the dark-mode values;
      the [data-theme] blocks below override per theme. */
-  --dc-bg: rgb(77 228 255 / 0.03);
+  --dc-bg: rgb(77 228 255 / 0.05);
   --dc-bg-hover: rgb(77 228 255 / 0.08);
   --dc-bg-active: rgb(77 228 255 / 0.1);
-  --dc-border: rgb(77 228 255 / 0.18);
+  --dc-border: rgb(77 228 255 / 0.28);
   --dc-border-hover: rgb(77 228 255 / 0.45);
   --dc-border-active: rgb(77 228 255 / 0.6);
   --dc-fg: rgb(193 218 235 / 0.55);
@@ -282,10 +282,10 @@
 
   /* DAW control — light mode: warm cream surfaces with CYAN teal accents.
      Reference palette: BG #ebebdc, PANEL #f6f2e9, CYAN #147088, INK #2a251d. */
-  --dc-bg: rgb(20 112 136 / 0.04);
+  --dc-bg: rgb(20 112 136 / 0.06);
   --dc-bg-hover: rgb(20 112 136 / 0.08);
   --dc-bg-active: rgb(20 112 136 / 0.10);
-  --dc-border: rgb(20 112 136 / 0.22);
+  --dc-border: rgb(20 112 136 / 0.32);
   --dc-border-hover: rgb(20 112 136 / 0.50);
   --dc-border-active: rgb(20 112 136 / 0.65);
   --dc-fg: rgb(42 37 29 / 0.65);
@@ -340,10 +340,10 @@
 
   /* DAW control — dark mode: navy substrate, bright cyan accent, neon glow.
      Re-declared explicitly to mirror the faceplate token convention. */
-  --dc-bg: rgb(77 228 255 / 0.03);
+  --dc-bg: rgb(77 228 255 / 0.05);
   --dc-bg-hover: rgb(77 228 255 / 0.08);
   --dc-bg-active: rgb(77 228 255 / 0.1);
-  --dc-border: rgb(77 228 255 / 0.18);
+  --dc-border: rgb(77 228 255 / 0.28);
   --dc-border-hover: rgb(77 228 255 / 0.45);
   --dc-border-active: rgb(77 228 255 / 0.6);
   --dc-fg: rgb(193 218 235 / 0.55);
