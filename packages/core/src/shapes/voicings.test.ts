@@ -231,3 +231,27 @@ describe("Voicing Generation Caching", () => {
   });
 });
 
+describe("Voicing Search Space Complexity Scaling Guardrail", () => {
+  it("bounds voicing search space linearly relative to fretboard size, preventing exponential scaling", () => {
+    const baseParams = {
+      chordRoot: "C",
+      chordType: "M",
+      tuning: ["E4", "B3", "G3", "D3", "A2", "E2"],
+      maxFret: 12, // 1x scale: 12 frets
+      voicingType: "close" as const,
+    };
+
+    const doubleParams = {
+      ...baseParams,
+      maxFret: 24, // 2x scale: 24 frets (doubled fret range)
+    };
+
+    const baseResult = generateVoicings(baseParams);
+    const doubleResult = generateVoicings(doubleParams);
+
+    // Linear scaling constraint: doubling the fretboard range must scale results <= 2.2x
+    expect(doubleResult.length).toBeLessThanOrEqual(baseResult.length * 2.2);
+  });
+});
+
+
