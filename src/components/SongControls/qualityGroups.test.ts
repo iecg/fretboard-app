@@ -16,11 +16,20 @@ describe("buildQualityGroupsWithDiatonic — in-key root", () => {
     const vals = groups[0].options.map((o) => o.value);
     expect(vals).toContain("M");    // IV triad
     expect(vals).toContain("maj7"); // IV seventh
+    expect(vals).toEqual(["M", "maj7"]); // exactly 2 options, triad first
   });
   it("keeps the existing quality groups after Diatonic", () => {
     expect(groups.map((g) => g.groupLabel)).toEqual(
       ["Diatonic", "Triads", "Sus", "Sixths", "Sevenths"],
     );
+  });
+});
+
+describe("buildQualityGroupsWithDiatonic — diminished diatonic root", () => {
+  it("vii° (B in C major) yields dim triad + m7b5 seventh", () => {
+    const groups = buildQualityGroupsWithDiatonic("major", "C", "B", labels);
+    expect(groups[0].groupLabel).toBe("Diatonic");
+    expect(groups[0].options.map((o) => o.value)).toEqual(["dim", "m7b5"]);
   });
 });
 

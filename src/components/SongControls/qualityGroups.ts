@@ -52,8 +52,8 @@ function toOptions(keys: readonly string[]) {
 const SEVENTH_FOR_TRIAD: Record<string, string> = {
   M: "maj7",
   m: "m7",
-  dim: "m7b5",
-  aug: "maj7",
+  dim: "m7b5", // diatonic 7th of a dim triad is half-diminished (m7♭5), not dim7
+  aug: "maj7", // unreachable for standard scales (aug degrees collapse to "M"); placeholder
 };
 
 export interface QualityGroupLabelsWithDiatonic extends QualityGroupLabels {
