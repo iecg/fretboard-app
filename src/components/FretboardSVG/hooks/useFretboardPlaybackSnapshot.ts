@@ -14,7 +14,6 @@ export interface FretboardPlaybackSnapshot {
   globalFraction: number;
   localFraction: number;
   stepDurationBeats: number;
-  beatPosition: number;
   commonWithNext: Set<string>;
   nextGuideTones: Set<string>;
 }
@@ -36,7 +35,6 @@ export function useFretboardPlaybackSnapshot(
       globalFraction: frame.globalFraction,
       localFraction: frame.localFraction,
       stepDurationBeats,
-      beatPosition: frame.localFraction * stepDurationBeats,
       commonWithNext,
       nextGuideTones,
     };

@@ -556,7 +556,6 @@ export function FretboardSVG({
   });
   const { renderedNotes } = useAnimatedFretboardView({
     topology,
-    playbackSnapshot,
     hasChordOverlay,
     displayFormat,
     degreeColorsEnabled,

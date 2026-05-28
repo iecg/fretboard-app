@@ -46,7 +46,6 @@ describe("useFretboardPlaybackSnapshot", () => {
       globalFraction: 0.125,
       localFraction: 0.75,
       stepDurationBeats: 4,
-      beatPosition: 3,
     });
     expect(result.current!.commonWithNext).toBeInstanceOf(Set);
     expect(result.current!.nextGuideTones).toBeInstanceOf(Set);
