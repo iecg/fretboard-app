@@ -13,8 +13,24 @@
   display: flex;
   align-items: center;
   gap: var(--space-3, 0.75rem);
+  /* Full-bleed extension: escape app-container's 1rem horizontal padding so
+     the border-bottom hairline reaches the viewport edges. Padding-inline
+     restores the inset for the tab pills themselves. */
+  width: calc(100% + 2rem);
+  margin-inline: -1rem;
+  padding-inline: 1rem;
   padding-bottom: 0;
   border-bottom: 1px solid var(--faceplate-divider);
+}
+
+/* Mobile tier: app-container uses 0.65rem padding (App.css media query).
+   Match the escape on narrow viewports so the bleed still reaches edge. */
+@media (max-width: 767px) {
+  .tabHeader {
+    width: calc(100% + 1.3rem);
+    margin-inline: -0.65rem;
+    padding-inline: 0.65rem;
+  }
 }
 
 /* Light-mode tab header: warm hairline divider, full-bleed via negative margin.
