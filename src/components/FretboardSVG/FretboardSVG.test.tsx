@@ -86,14 +86,14 @@ const E_SHAPE_C_MAJOR_VOICING = {
 
 describe("FretboardSVG/FretboardSVG", () => {
   describe("resolveFretboardMotionPolicy", () => {
-    it("disables group fades for shapes and connectors while playback is active", () => {
+    it("freezes shapes but keeps the connector crossfade while playback is active", () => {
       expect(resolveFretboardMotionPolicy({
         prefersReducedMotion: false,
         playbackActive: true,
       })).toEqual({
         noteMode: "css",
         shapeMode: "none",
-        connectorMode: "none",
+        connectorMode: "group",
       });
     });
   });
