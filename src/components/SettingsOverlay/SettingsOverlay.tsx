@@ -97,7 +97,7 @@ export default function SettingsOverlay() {
                   <Dialog.Close asChild>
                     <button
                       type="button"
-                      className={clsx(sharedStyles["icon-button"], styles["settings-overlay-close"])}
+                      className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"], styles["settings-overlay-close"])}
                       aria-label={t("settings.close")}
                     >
                       <X className="icon" />

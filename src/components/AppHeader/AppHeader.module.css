@@ -175,15 +175,6 @@
   border-inline-start: none;
 }
 
-/* The header utility buttons are round and compact — sized down from the
-   shared `.icon-button` default so the header reads as one slim chrome row
-   (always-on DAW design reference). */
-.app-header-actions button {
-  width: clamp(1.7rem, 2.5vw, 1.95rem);
-  height: clamp(1.7rem, 2.5vw, 1.95rem);
-  border-radius: 50%;
-}
-
 /* Light-mode header chrome — warm divider tones instead of faceplate-divider dark navy */
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .app-header-transport {
@@ -205,12 +196,6 @@
   border-bottom: 1px solid rgb(133 124 108 / 0.22);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
-
-/* stylelint-disable-next-line selector-pseudo-class-no-unknown */
-.app-header-actions button :global(.icon) {
-  width: 0.95rem;
-  height: 0.95rem;
-}
 
 :global(.app-container[data-layout-tier="mobile"]) .app-header {
   padding-inline: 0.75rem;
