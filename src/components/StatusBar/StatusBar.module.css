@@ -17,8 +17,9 @@
 /* Light-mode: cream BG, warm hairline divider. Reference palette: BG #ebebdc, MUTE #857c6c. */
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .status-bar {
-  background: rgb(235 235 220 / 0.60);
+  background: var(--surface-card-soft); /* PANEL-SOFT — visible recessed band */
   border-top-color: rgb(133 124 108 / 0.25);
+  border-bottom: 1px solid rgb(133 124 108 / 0.25);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
