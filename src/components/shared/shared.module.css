@@ -207,6 +207,7 @@
 }
 .tone--destructive:hover {
   background: var(--destructive-control-hover-bg);
+  border-color: var(--destructive-control-border);
 }
 
 /* Base toggle group: intentionally supplies the resting surface chrome

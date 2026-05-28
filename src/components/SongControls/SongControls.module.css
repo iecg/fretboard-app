@@ -149,6 +149,7 @@
 }
 
 .toolbar-button {
+  composes: surface--control from "../shared/shared.module.css";
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -156,19 +157,13 @@
   min-height: var(--control-height);
   padding: 0 var(--space-2);
   font-size: var(--text-xs);
-  background-color: var(--dc-bg);
-  border: 1px solid var(--dc-border);
-  border-radius: var(--dc-radius);
   color: var(--dc-fg);
   cursor: pointer;
-  transition: var(--dc-transition);
   line-height: 1.2;
 }
 
 .toolbar-button:hover:not(:disabled) {
-  background-color: var(--dc-bg-hover);
   color: var(--dc-fg-strong);
-  border-color: var(--dc-border-hover);
 }
 
 .button-group {
@@ -212,29 +207,24 @@
 }
 
 .delete-button {
+  composes: surface--control tone--destructive from "../shared/shared.module.css";
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: var(--control-height);
   padding: 0 var(--space-2);
-  background-color: var(--dc-bg);
-  border: 1px solid var(--dc-border);
-  border-radius: var(--dc-radius);
-  color: var(--dc-fg);
   cursor: pointer;
-  transition: var(--dc-transition);
   margin-left: auto; /* Push to far-right in flex row */
-}
-
-.delete-button:hover:not(:disabled) {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.4);
 }
 
 .delete-button:disabled {
   opacity: var(--disabled-opacity);
   cursor: default;
+}
+
+.delete-button:disabled:hover {
+  background: var(--destructive-control-bg);
+  border-color: var(--destructive-control-border);
 }
 
 /* ===== Stronger Chord Identity ===== */
