@@ -62,6 +62,14 @@
   cursor: not-allowed;
 }
 
+/* Suppress the composable's .surface--control:hover lift for disabled triggers
+   (the composable hover has no disabled guard). Mirrors the pre-refactor
+   :not([data-disabled]) hover guard. */
+.labeled-select-trigger[data-disabled]:hover {
+  background-color: var(--dc-bg);
+  border-color: var(--dc-border);
+}
+
 .labeled-select-chevron {
   display: inline-flex;
   flex-shrink: 0;
