@@ -16,6 +16,7 @@
 
 /* ===== Trigger ===== */
 .labeled-select-trigger {
+  composes: surface--control from "../shared/shared.module.css";
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -23,16 +24,12 @@
   width: 100%;
   min-height: var(--control-height);
   padding: 0.25rem 0.7rem;
-  background-color: var(--dc-bg);
-  border: 1px solid var(--dc-border);
-  border-radius: var(--dc-radius);
   font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
   color: var(--dc-fg-strong);
   line-height: var(--leading-normal);
   cursor: pointer;
-  transition: var(--dc-transition);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -49,11 +46,6 @@
   width: var(--labeled-select-width, 6rem);
   max-width: 100%;
   align-self: flex-start;
-}
-
-.labeled-select-trigger:hover:not([data-disabled]) {
-  background-color: var(--dc-bg-hover);
-  border-color: var(--dc-border-hover);
 }
 
 .labeled-select-trigger:focus-visible {
