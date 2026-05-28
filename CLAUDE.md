@@ -42,6 +42,8 @@ pnpm run preview               # preview build locally
   - Any "token: value" paragraph that comes after `BREAKING CHANGE:`.
 
   Keep the body plain text and put `BREAKING CHANGE:` as the last paragraph. If the squash UI appends trailers, use **Rebase and merge** instead to preserve the body verbatim. After merging, dispatch Auto Release and confirm the dry-run prints `Type: major` before the tag step runs.
+
+  When squashing, GitHub fills the squash body from the PR description by default. Confirmed failure mode: PR #463 and PR #465 both squashed with a PR description that contained markdown rules and ended with a `Co-authored-by:` paragraph, and the analyzer scored both as non-breaking. The safe path for any breaking PR is to use **Rebase and merge** so the branch commit body lands on `main` verbatim.
 - **Releases:** Triggered via GitHub Actions (Auto Release). Never tag manually.
 
 ## Architecture
