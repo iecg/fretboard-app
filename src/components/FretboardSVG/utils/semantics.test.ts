@@ -165,6 +165,33 @@ describe("semantics utils", () => {
       const res = classifyNoteFromSemantics(sem, true, true, true, false);
       expect(res).toBe("chord-tone-in-scale");
     });
+
+    it("classifies in-shape chord tones outside the voicing range as chord-tone (3NPS bug fix)", () => {
+      // Repros the 3NPS bug: a fret position sits inside the active 3NPS shape
+      // (isInActiveShape: true), its pitch class is a chord tone (sem.isChordTone),
+      // it's in the active scale (sem.isInScale), the user has a chord overlay
+      // active (hasChordOverlay: true), but the chord-voicing engine's range
+      // constraint excludes it (isChordInRange: false). The expected behavior
+      // is to still classify it as a chord-tone-in-scale, not note-inactive.
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: true,
+        isInScale: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+        isDiatonicChord: false,
+      };
+      const res = classifyNoteFromSemantics(
+        sem,
+        /* isChordInRange */ false,
+        /* isInActiveShape */ true,
+        /* hasChordOverlay */ true,
+        /* isHighlighted */ true,
+      );
+      expect(res).toBe("chord-tone-in-scale");
+    });
   });
 
   describe("getNoteVisuals", () => {

@@ -137,8 +137,8 @@ export function classifyNote(
     return "note-inactive";
   }
 
-  if (isChordRootNote && isChordTone && isChordInRange && isInActiveShape) return "chord-root";
-  if (isHighlighted && isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
+  if (isChordRootNote && isChordTone && isInActiveShape) return "chord-root";
+  if (isHighlighted && isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (isHighlighted && isColorNote && isInActiveShape) return "color-tone";
   if (isHighlighted && isInActiveShape) return "scale-only";
   if (!isHighlighted && isChordTone && isChordInRange && isInActiveShape)
@@ -160,9 +160,9 @@ export function classifyNoteFromSemantics(
     );
   }
 
-  if (sem.isChordRoot && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-root";
-  if (sem.isDiatonicChord && sem.isChordTone && isChordInRange && isInActiveShape) return "note-diatonic-chord";
-  if (sem.isInScale && sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-in-scale";
+  if (sem.isChordRoot && sem.isChordTone && isInActiveShape) return "chord-root";
+  if (sem.isDiatonicChord && sem.isChordTone && isInActiveShape) return "note-diatonic-chord";
+  if (sem.isInScale && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
   if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
   if (sem.isChordTone && isChordInRange && isInActiveShape) return "chord-tone-outside-scale";
