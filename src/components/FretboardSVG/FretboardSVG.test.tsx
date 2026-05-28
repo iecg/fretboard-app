@@ -300,7 +300,7 @@ describe("FretboardSVG/FretboardSVG", () => {
         .getPropertyValue("--caged-d-bg")
         .replace(/\s+/g, "")
         .trim(),
-    ).toBe("rgba(153,153,153,0.35)");
+    ).toBe("rgba(107,93,79,0.40)");
 
     themedScope.remove();
   });
