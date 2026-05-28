@@ -9,10 +9,12 @@ import {
   beatsPerBarAtom,
   currentProgressionBarAtom,
   currentProgressionPresetIdAtom,
+  CUSTOM_PRESET_ID,
   displayedProgressionStepIndexAtom,
   displayedStepIndexPrimitiveAtom,
   duplicateProgressionStepAtom,
   loadProgressionPresetAtom,
+  loadProgressionStepsAtom,
   moveProgressionStepAtom,
   progressionLoopEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
@@ -36,6 +38,7 @@ import {
 } from "./progressionAtoms";
 import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
+import { generateCommonProgressions } from "../progressions/progressionGeneration";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 
 describe("progressionAtoms", () => {
@@ -591,5 +594,26 @@ describe("displayedProgressionStepIndexAtom", () => {
     store.set(setProgressionActiveStepIndexAtom, 0);
     store.set(displayedStepIndexPrimitiveAtom, 1);
     expect(store.get(displayedProgressionStepIndexAtom)).toBe(0);
+  });
+});
+
+describe("currentProgressionPresetIdAtom — suggestion matching", () => {
+  it("returns a suggestion id when its steps are loaded", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    const suggestion = generateCommonProgressions("major", "C")[0];
+    store.set(loadProgressionStepsAtom, suggestion.steps);
+    expect(store.get(currentProgressionPresetIdAtom)).toBe(suggestion.id);
+  });
+
+  it("falls back to custom for an unmatched progression", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(loadProgressionStepsAtom, [
+      { degree: "I", duration: { value: 3, unit: "bar" }, qualityOverride: "7", manualRoot: null },
+    ]);
+    expect(store.get(currentProgressionPresetIdAtom)).toBe(CUSTOM_PRESET_ID);
   });
 });

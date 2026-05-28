@@ -33,6 +33,7 @@ import {
   scaleNameAtom,
   preferFlatsAtom,
 } from "./scaleAtoms";
+import { generateCommonProgressions } from "../progressions/progressionGeneration";
 import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
 import {
@@ -376,10 +377,19 @@ export const CUSTOM_PRESET_ID = "custom" as const;
 export const currentProgressionPresetIdAtom = atom<string>((get) => {
   const steps = get(progressionStepsAtom);
   const scaleName = get(scaleNameAtom);
-  const match = getAvailableProgressionPresets(scaleName).find((preset) =>
+  const rootNote = get(rootNoteAtom);
+
+  const presetMatch = getAvailableProgressionPresets(scaleName).find((preset) =>
     stepsMatchPreset(steps, getProgressionPresetStepsForScale(preset, scaleName)),
   );
-  return match?.id ?? CUSTOM_PRESET_ID;
+  if (presetMatch) return presetMatch.id;
+
+  const suggestionMatch = generateCommonProgressions(scaleName, rootNote).find(
+    (suggestion) => stepsMatchPreset(steps, suggestion.steps),
+  );
+  if (suggestionMatch) return suggestionMatch.id;
+
+  return CUSTOM_PRESET_ID;
 });
 
 export const activeProgressionStepAtom = atom((get) => {
