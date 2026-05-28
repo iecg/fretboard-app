@@ -93,6 +93,19 @@ function memoizeNoteSemanticMap(next: Map<string, NoteSemantics>): Map<string, N
   return next;
 }
 
+/**
+ * True when the playhead is inside the final beat of the active step — the
+ * window in which the next chord's guide tones are previewed (anticipation).
+ * Pure so it can be unit-tested without atom plumbing.
+ */
+export function isInAnticipationWindow(
+  localFraction: number,
+  stepDurationBeats: number,
+): boolean {
+  if (stepDurationBeats <= 0) return false;
+  return localFraction >= (stepDurationBeats - 1) / stepDurationBeats;
+}
+
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
 
