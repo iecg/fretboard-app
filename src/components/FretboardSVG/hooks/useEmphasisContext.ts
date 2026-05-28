@@ -3,12 +3,15 @@ import {
   anticipationActiveAtom,
   commonTonesWithNextAtom,
   nextChordGuideTonesAtom,
+  nextChordTonesAtom,
 } from "../../../store/practiceLensAtoms";
 import { progressionPlayingAtom } from "../../../store/progressionAtoms";
 
 export interface EmphasisContext {
   commonWithNext: Set<string>;
   nextGuideTones: Set<string>;
+  /** ALL pitch classes of the next chord — used as the full anticipation gate. */
+  nextChordTones: Set<string>;
   anticipationActive: boolean;
 }
 
@@ -22,6 +25,7 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
   const anticipationActive = useAtomValue(anticipationActiveAtom);
   const commonWithNext = useAtomValue(commonTonesWithNextAtom);
   const nextGuideTones = useAtomValue(nextChordGuideTonesAtom);
+  const nextChordTones = useAtomValue(nextChordTonesAtom);
   if (!enabled || !playing) return null;
-  return { commonWithNext, nextGuideTones, anticipationActive };
+  return { commonWithNext, nextGuideTones, nextChordTones, anticipationActive };
 }

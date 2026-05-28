@@ -303,6 +303,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     notePc: "A",
     commonWithNext: new Set<string>(),
     nextGuideTones: new Set<string>(),
+    nextChordTones: new Set<string>(),
     anticipationActive: false,
   };
 
@@ -395,6 +396,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       ...baseLeadContext,
       notePc: "F",
       nextGuideTones: new Set(["F"]),
+      nextChordTones: new Set(["F"]),
       anticipationActive: true,
     };
     const result = getEmphasis("scale-only", false, ctx);
@@ -406,6 +408,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       ...baseLeadContext,
       notePc: "F",
       nextGuideTones: new Set(["F"]),
+      nextChordTones: new Set(["F"]),
       commonWithNext: new Set(["A"]),
       anticipationActive: true,
     };
@@ -419,6 +422,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "A",
       commonWithNext: new Set(["A"]),
       nextGuideTones: new Set(["A"]),
+      nextChordTones: new Set(["A"]),
       anticipationActive: true,
     };
     const result = getEmphasis("chord-tone-in-scale", false, ctx);
@@ -430,6 +434,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       ...baseLeadContext,
       notePc: "F",
       nextGuideTones: new Set(["F"]),
+      nextChordTones: new Set(["F"]),
       anticipationActive: false,
     };
     const result = getEmphasis("scale-only", false, ctx);
@@ -442,6 +447,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "B",
       commonWithNext: new Set<string>(),
       nextGuideTones: new Set(["B"]),
+      nextChordTones: new Set(["B"]),
       anticipationActive: true,
     };
     expect(getEmphasis("scale-only", false, ctx)).toEqual({
@@ -454,10 +460,24 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "B",
       commonWithNext: new Set<string>(),
       nextGuideTones: new Set(["B"]),
+      nextChordTones: new Set(["B"]),
       anticipationActive: false,
     };
     // Falls through to tones-base (scale-only dim).
     expect(getEmphasis("scale-only", false, ctx)).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
+  });
+
+  it("anticipation: any next-chord tone (not just guide tones) glows in the window", () => {
+    const ctx: LeadLensContext = {
+      notePc: "G",                              // e.g. the 5th of the next chord, not a guide tone
+      commonWithNext: new Set<string>(),
+      nextGuideTones: new Set<string>(["B"]),   // G is NOT a guide tone here
+      nextChordTones: new Set<string>(["G", "B", "D"]),
+      anticipationActive: true,
+    };
+    expect(getEmphasis("scale-only", false, ctx)).toEqual({
+      glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1,
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -495,6 +515,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "G",
       commonWithNext: new Set<string>(),
       nextGuideTones: new Set(["G"]),
+      nextChordTones: new Set(["G"]),
       anticipationActive: true,
     };
     const result = getEmphasis("scale-only", false, leadCtx);
@@ -506,6 +527,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "C",
       commonWithNext: new Set(["C"]),
       nextGuideTones: new Set<string>(),
+      nextChordTones: new Set<string>(),
       anticipationActive: false,
     };
     const result = getEmphasis("chord-tone-in-scale", false, leadCtx);

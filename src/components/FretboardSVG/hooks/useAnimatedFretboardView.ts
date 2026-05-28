@@ -45,6 +45,7 @@ export function buildAnimatedFretboardNotes({
         notePc: note.noteName,
         commonWithNext: emphasisContext.commonWithNext,
         nextGuideTones: emphasisContext.nextGuideTones,
+        nextChordTones: emphasisContext.nextChordTones,
         anticipationActive: emphasisContext.anticipationActive,
       };
     }
