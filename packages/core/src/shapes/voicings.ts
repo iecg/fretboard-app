@@ -41,13 +41,18 @@ export interface GenerateVoicingsParams {
   voicingType: VoicingType;
 }
 
+const MAX_CACHE_ENTRIES = 100;
 const voicingCache = new Map<string, Voicing[]>();
 
 export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
   const cacheKey = `${params.chordRoot}-${params.chordType}-${params.tuning.join(",")}-${params.maxFret}-${params.voicingType}`;
   
   if (voicingCache.has(cacheKey)) {
-    return voicingCache.get(cacheKey)!;
+    const cachedResult = voicingCache.get(cacheKey)!;
+    // Move key to the end of insertion order to keep it most-recently-used
+    voicingCache.delete(cacheKey);
+    voicingCache.set(cacheKey, cachedResult);
+    return cachedResult;
   }
   
   let result: Voicing[];
@@ -63,6 +68,13 @@ export function generateVoicings(params: GenerateVoicingsParams): Voicing[] {
       break;
     default:
       result = [];
+  }
+  
+  if (voicingCache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = voicingCache.keys().next().value;
+    if (oldestKey !== undefined) {
+      voicingCache.delete(oldestKey);
+    }
   }
   
   voicingCache.set(cacheKey, result);

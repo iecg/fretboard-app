@@ -164,6 +164,38 @@ const areConnectorPropsEqual = (prev: any, next: any) => {
   if (!strArrayEqual(prev.chordToneNames, next.chordToneNames)) return false;
   if (!strArrayEqual(prev.chordTones, next.chordTones)) return false;
 
+  // Compare explicitVoicings (used by useChordConnectorPolylines)
+  if (prev.explicitVoicings !== next.explicitVoicings) {
+    if (!prev.explicitVoicings || !next.explicitVoicings) return false;
+    if (prev.explicitVoicings.length !== next.explicitVoicings.length) return false;
+    for (let i = 0; i < prev.explicitVoicings.length; i++) {
+      const pv = prev.explicitVoicings[i];
+      const nv = next.explicitVoicings[i];
+      if (pv.voicingKey !== nv.voicingKey || pv.isFallback !== nv.isFallback || pv.shape !== nv.shape) return false;
+      if (pv.notes.length !== nv.notes.length) return false;
+      for (let j = 0; j < pv.notes.length; j++) {
+        if (
+          pv.notes[j].stringIndex !== nv.notes[j].stringIndex ||
+          pv.notes[j].fretIndex !== nv.notes[j].fretIndex ||
+          pv.notes[j].noteName !== nv.notes[j].noteName
+        ) {
+          return false;
+        }
+      }
+    }
+  }
+
+  // Compare intervalPolylines (passed into FretboardConnectorLayer)
+  if (prev.intervalPolylines !== next.intervalPolylines) {
+    if (!prev.intervalPolylines || !next.intervalPolylines) return false;
+    if (prev.intervalPolylines.length !== next.intervalPolylines.length) return false;
+    for (let i = 0; i < prev.intervalPolylines.length; i++) {
+      const pi = prev.intervalPolylines[i];
+      const ni = next.intervalPolylines[i];
+      if (pi.key !== ni.key || pi.paletteIndex !== ni.paletteIndex) return false;
+    }
+  }
+
   if (prev.noteData === next.noteData) return true;
   if (!prev.noteData || !next.noteData) return false;
   if (prev.noteData.length !== next.noteData.length) return false;

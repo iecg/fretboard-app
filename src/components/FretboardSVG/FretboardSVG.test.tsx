@@ -851,6 +851,7 @@ describe("FretboardSVG Connector Decoupling", () => {
     );
 
     const initialCallCount = spy.mock.calls.length;
+    expect(initialCallCount).toBeGreaterThan(0);
 
     // Rerender with a different playbackSnapshot position (simulating animation frames)
     rerender(

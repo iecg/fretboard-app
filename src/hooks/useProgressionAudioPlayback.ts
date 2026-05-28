@@ -220,6 +220,8 @@ export function useProgressionAudioPlayback() {
         } catch (err) {
           console.error("Background audio build failed:", err);
         }
+      }).catch((err) => {
+        console.error("Background getEngine failed:", err);
       });
     };
 
@@ -420,6 +422,9 @@ export function useProgressionAudioPlayback() {
       }
 
       primsRef.current = { parts, endEventId, totalDurationSec };
+    }).catch((err) => {
+      console.error("Playback getEngine failed:", err);
+      setLoading(false);
     });
 
     const genRefSnapshot = genRef;
