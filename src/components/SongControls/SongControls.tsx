@@ -2,7 +2,7 @@ import { startTransition, useMemo } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Info } from "lucide-react";
 import clsx from "clsx";
-import { SCALE_FAMILIES, NOTES, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
+import { SCALE_FAMILIES, NOTES, getNoteDisplay, getScaleDisplayLabel, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
@@ -207,7 +207,7 @@ export function SongControls() {
                 <PresetMenu
                   triggerLabel={t("inspector.progressionLabel")}
                   customLabel="Custom"
-                  scaleName={scaleName}
+                  scaleLabel={getScaleDisplayLabel(scaleName)}
                   currentId={currentProgressionPresetId}
                   categories={categories}
                   suggestionGroups={suggestionGroups}
@@ -227,12 +227,12 @@ export function SongControls() {
             locked={editsLocked}
             lockedHint={t("controls.lockedHint")}
           >
-            <PropGrid columns={5}>
-              <Prop label={t("controls.root")} span={2}>
+            <PropGrid columns={4}>
+              <Prop label={t("controls.root")} span={1}>
                 <LabeledSelect
                   label={t("controls.root")}
                   hideLabel
-                  width="auto"
+                  width="fill"
                   value={rootNote}
                   onChange={handleRootNote}
                   options={NOTES.map((note) => ({

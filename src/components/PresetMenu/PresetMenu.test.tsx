@@ -8,7 +8,7 @@ import { PresetMenu, type PresetMenuProps } from "./PresetMenu";
 const baseProps: PresetMenuProps = {
   triggerLabel: "Preset",
   customLabel: "Custom",
-  scaleName: "major",
+  scaleLabel: "Major (Ionian)",
   currentId: "one-five-six-four",
   disabled: false,
   categories: [
@@ -54,8 +54,7 @@ describe("PresetMenu", () => {
     // click. Drive selection via keyboard navigation (which radix handles in
     // jsdom): open the menu, arrow to the "Jazz" subtrigger, open it, then pick.
     await user.click(screen.getByRole("button", { name: /Preset/i }));
-    // Top-level order: Suggested, Pop / Rock, Jazz.
-    await user.keyboard("{ArrowDown}"); // -> Suggested for major
+    // Top-level order: Pop / Rock, Jazz, then Suggested (suggestions last).
     await user.keyboard("{ArrowDown}"); // -> Pop / Rock
     await user.keyboard("{ArrowDown}"); // -> Jazz
     await user.keyboard("{ArrowRight}"); // open Jazz submenu
@@ -68,9 +67,12 @@ describe("PresetMenu", () => {
     const onSelect = vi.fn();
     const user = userEvent.setup();
     render(<PresetMenu {...baseProps} onSelect={onSelect} />);
-    // Keyboard navigation (see category test for rationale).
+    // Keyboard navigation (see category test for rationale). Suggestions are
+    // the last top-level group: Pop / Rock, Jazz, then Suggested.
     await user.click(screen.getByRole("button", { name: /Preset/i }));
-    await user.keyboard("{ArrowDown}"); // -> Suggested for major
+    await user.keyboard("{ArrowDown}"); // -> Pop / Rock
+    await user.keyboard("{ArrowDown}"); // -> Jazz
+    await user.keyboard("{ArrowDown}"); // -> Suggested for <scale>
     await user.keyboard("{ArrowRight}"); // open suggestions submenu
     await user.keyboard("{ArrowDown}"); // -> IV-V-I
     await user.keyboard("{Enter}");
@@ -86,8 +88,8 @@ describe("PresetMenu", () => {
     const user = userEvent.setup();
     render(<PresetMenu {...baseProps} />);
     await user.click(screen.getByRole("button", { name: /Preset/i }));
-    // Open the Pop / Rock submenu (top-level order: Suggested, Pop / Rock, Jazz).
-    await user.keyboard("{ArrowDown}{ArrowDown}{ArrowRight}");
+    // Open the Pop / Rock submenu (it's the first top-level group now).
+    await user.keyboard("{ArrowDown}{ArrowRight}");
     const active = screen.getByRole("menuitem", { name: "I-V-vi-IV" });
     expect(active).toHaveAttribute("aria-current", "true");
     const other = screen.getByRole("menuitem", { name: "vi-IV-I-V" });

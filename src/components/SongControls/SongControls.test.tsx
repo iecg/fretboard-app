@@ -73,7 +73,7 @@ describe("SongControls", () => {
     // keyboard nav under jsdom (no pointer-hover). Open the menu, focus the
     // "Suggested for major" subtrigger, open it, and pick the cadential ii-V-I
     // suggestion — it resolves to the same ii-V-I degrees as the catalog preset.
-    await openPresetSubmenu(user, "Suggested for major");
+    await openPresetSubmenu(user, /^Suggested for/);
     await user.click(await screen.findByRole("menuitem", { name: "ii-V-I" }));
 
     expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["ii", "V", "I"]);

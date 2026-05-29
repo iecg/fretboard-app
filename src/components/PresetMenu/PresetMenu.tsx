@@ -25,8 +25,9 @@ export interface PresetMenuProps {
   triggerLabel: string;
   /** Text shown on the trigger when no option matches `currentId`. */
   customLabel: string;
-  /** Used in the "Suggested for <scaleName>" submenu heading. */
-  scaleName: string;
+  /** Display label of the active scale, used in the "Suggested for <scaleLabel>"
+   * submenu heading (e.g. "Natural Minor (Aeolian)"). */
+  scaleLabel: string;
   /** Id of the active preset/suggestion (or a custom sentinel). */
   currentId: string;
   categories: PresetMenuCategory[];
@@ -81,7 +82,7 @@ function MenuOption({
 export function PresetMenu({
   triggerLabel,
   customLabel,
-  scaleName,
+  scaleLabel,
   currentId,
   categories,
   suggestionGroups,
@@ -119,43 +120,6 @@ export function PresetMenu({
           sideOffset={4}
           align="start"
         >
-          {suggestionGroups.length > 0 && (
-            <DropdownMenu.Sub>
-              <DropdownMenu.SubTrigger className={styles["preset-menu-subtrigger"]}>
-                <span>{`Suggested for ${scaleName}`}</span>
-                <ChevronRight size={14} aria-hidden="true" />
-              </DropdownMenu.SubTrigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.SubContent
-                  className={styles["preset-menu-content"]}
-                  sideOffset={2}
-                  alignOffset={-4}
-                >
-                  {suggestionGroups.map((group, index) => (
-                    <DropdownMenu.Group key={group.feel}>
-                      {index > 0 && (
-                        <DropdownMenu.Separator
-                          className={styles["preset-menu-separator"]}
-                        />
-                      )}
-                      <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
-                        {group.label}
-                      </DropdownMenu.Label>
-                      {group.options.map((option) => (
-                        <MenuOption
-                          key={option.id}
-                          option={option}
-                          currentId={currentId}
-                          onSelect={onSelect}
-                        />
-                      ))}
-                    </DropdownMenu.Group>
-                  ))}
-                </DropdownMenu.SubContent>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Sub>
-          )}
-
           {categories.map((category) => (
             <DropdownMenu.Sub key={category.label}>
               <DropdownMenu.SubTrigger className={styles["preset-menu-subtrigger"]}>
@@ -180,6 +144,46 @@ export function PresetMenu({
               </DropdownMenu.Portal>
             </DropdownMenu.Sub>
           ))}
+
+          {suggestionGroups.length > 0 && (
+            <>
+              <DropdownMenu.Separator className={styles["preset-menu-separator"]} />
+              <DropdownMenu.Sub>
+                <DropdownMenu.SubTrigger className={styles["preset-menu-subtrigger"]}>
+                  <span>{`Suggested for ${scaleLabel}`}</span>
+                  <ChevronRight size={14} aria-hidden="true" />
+                </DropdownMenu.SubTrigger>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.SubContent
+                    className={styles["preset-menu-content"]}
+                    sideOffset={2}
+                    alignOffset={-4}
+                  >
+                    {suggestionGroups.map((group, index) => (
+                      <DropdownMenu.Group key={group.feel}>
+                        {index > 0 && (
+                          <DropdownMenu.Separator
+                            className={styles["preset-menu-separator"]}
+                          />
+                        )}
+                        <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
+                          {group.label}
+                        </DropdownMenu.Label>
+                        {group.options.map((option) => (
+                          <MenuOption
+                            key={option.id}
+                            option={option}
+                            currentId={currentId}
+                            onSelect={onSelect}
+                          />
+                        ))}
+                      </DropdownMenu.Group>
+                    ))}
+                  </DropdownMenu.SubContent>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Sub>
+            </>
+          )}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
