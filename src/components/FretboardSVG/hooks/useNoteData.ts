@@ -12,7 +12,8 @@ import {
   useStaticFretboardTopology,
   type UseStaticFretboardTopologyProps,
 } from "./useStaticFretboardTopology";
-import { buildAnimatedFretboardNotes, type LeadLensSnapshot } from "./useAnimatedFretboardView";
+import { buildAnimatedFretboardNotes } from "./useAnimatedFretboardView";
+import type { EmphasisContext } from "./useEmphasisContext";
 
 export interface NoteData {
   stringIndex: number;
@@ -63,7 +64,7 @@ export interface UseNoteDataProps {
    * Compatibility surface for non-SVG callers. FretboardSVG now drives playback
    * visuals through useAnimatedFretboardView instead of this wrapper.
    */
-  leadLensData?: LeadLensSnapshot;
+  leadLensData?: EmphasisContext | null;
 }
 
 export function useNoteData({
@@ -129,6 +130,6 @@ export function useNoteData({
   return useMemo(() => buildAnimatedFretboardNotes({
     topology,
     hasChordOverlay,
-    leadLensSnapshot: leadLensData,
+    emphasisContext: leadLensData,
   }), [topology, hasChordOverlay, leadLensData]);
 }

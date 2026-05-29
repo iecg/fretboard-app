@@ -9,6 +9,7 @@ import {
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
+import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -144,6 +145,7 @@ interface FretboardSVGProps {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const areConnectorPropsEqual = (prev: any, next: any) => {
+  if (prev.pass !== next.pass) return false;
   if (prev.fretCenterX !== next.fretCenterX) return false;
   if (prev.stringYAt !== next.stringYAt) return false;
   if (prev.stringRowPx !== next.stringRowPx) return false;
@@ -235,6 +237,7 @@ interface ChordConnectorEvaluatorProps {
   showChordConnectors: boolean;
   connectorMotionMode: import("./motionPolicy").FretboardMotionPolicy["connectorMode"];
   clipPathUrl: string;
+  pass: "below" | "above";
 }
 
 const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
@@ -252,6 +255,7 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
   showChordConnectors,
   connectorMotionMode,
   clipPathUrl,
+  pass,
 }: ChordConnectorEvaluatorProps) {
   const chordPolylines = useChordConnectorPolylines({
     noteData,
@@ -276,6 +280,7 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
       showChordConnectors={showChordConnectors}
       connectorMotionMode={connectorMotionMode}
       clipPathUrl={clipPathUrl}
+      pass={pass}
     />
   );
 }, areConnectorPropsEqual);
@@ -320,10 +325,16 @@ export function FretboardSVG({
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
+  const bpm = useAtomValue(progressionTempoBpmAtom);
+  const beatDurationSec = bpm > 0 ? 60 / bpm : 0.5;
 
   // Playback snapshot is subscribed here (inside the lazy boundary) so that
-  // frame ticks do not re-render the Fretboard shell. Tests may inject the
-  // snapshot directly via the prop to avoid atom setup.
+  // frame ticks stay contained to FretboardSVG rather than re-rendering the
+  // Fretboard shell above it. FretboardSVG itself DOES re-render per frame
+  // (it subscribes to progressionVisualFrameAtom via this hook), but note
+  // emphasis is decoupled from frame ticks by useEmphasisContext, so the
+  // per-note getEmphasis pass does not recompute on every frame. Tests may
+  // inject the snapshot directly via the prop to avoid atom setup.
   const internalPlaybackSnapshot = useFretboardPlaybackSnapshot(
     playbackSnapshotProp === undefined,
   );
@@ -556,7 +567,6 @@ export function FretboardSVG({
   });
   const { renderedNotes } = useAnimatedFretboardView({
     topology,
-    playbackSnapshot,
     hasChordOverlay,
     displayFormat,
     degreeColorsEnabled,
@@ -609,6 +619,7 @@ export function FretboardSVG({
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       data-full-chord-mode={fullChordVoicings?.length ? "true" : undefined}
       data-testid="fretboard-svg"
+      style={{ "--beat-duration": `${beatDurationSec}s` } as CSSProperties}
     >
       <div
         className={styles["fretboard-neck"]}
@@ -662,61 +673,48 @@ export function FretboardSVG({
             <FretboardShapeLayer svgPolygons={svgPolygons} animationMode={motionPolicy.shapeMode} />
           </g>
 
-          {/* Non-chord notes render BEFORE connectors so connectors paint on top. */}
-          {hasChordOverlay && (
-            <g clipPath={svgDefUrl("fretboard-taper")}>
-              <FretboardNoteLayer
-                notes={renderedNotes}
-                noteBubblePx={noteBubblePx}
-                displayFormat={displayFormat}
-                degreeColorsEnabled={degreeColorsEnabled}
-                onNoteClick={onNoteClick}
-                filter="non-chord"
-                animationMode={motionPolicy.noteMode}
-              />
-            </g>
-          )}
-
-          {/* Chord + interval connectors render OUTSIDE the wood `fretboard-taper`
-              clip so geometry that crosses the wood's tapered top/bottom + nut/body
-              edges near the outer strings stays visible. They are clipped to the
-              SVG's bounding box (`fretboard-svg-box`). Connector pixels that land
-              in the taper-carved corner gaps paint on the app-container backdrop —
-              that's an accepted trade-off; the wood gradient stays clipped to the
-              taper and does not overflow. */}
-          <ChordConnectorEvaluator
-            noteData={chordNoteData}
-            chordToneNames={
-              fingeringPattern === "one-string" || fingeringPattern === "two-strings"
-                ? []
-                : chordTones
-            }
-            fretCenterX={fretCenterX}
-            stringYAt={stringYAt}
-            stringRowPx={stringRowPx}
-            yBounds={connectorYBounds}
-            explicitVoicings={fullChordVoicings}
-            voicingSourceActive={hasChordOverlay}
-            intervalPolylines={intervalConnectorPolylines}
-            chordRoot={chordRoot}
-            chordTones={chordTones}
-            showChordConnectors={showChordConnectors}
-            connectorMotionMode={motionPolicy.connectorMode}
-            clipPathUrl={svgDefUrl("fretboard-svg-box")}
-          />
-
-          {/* Chord notes (or all notes when no overlay) render LAST — on top of connectors. */}
-          <g clipPath={svgDefUrl("fretboard-taper")}>
-            <FretboardNoteLayer
-              notes={renderedNotes}
-              noteBubblePx={noteBubblePx}
-              displayFormat={displayFormat}
-              degreeColorsEnabled={degreeColorsEnabled}
-              onNoteClick={onNoteClick}
-              filter={hasChordOverlay ? "chord" : undefined}
-              animationMode={motionPolicy.noteMode}
-            />
-          </g>
+          {/* Connector "below" pass (halo + fill + interval connectors) renders BEFORE notes.
+              Connector "above" pass (outline only) renders AFTER notes.
+              Both passes render OUTSIDE the wood `fretboard-taper` clip so connector
+              geometry crossing the tapered edges near outer strings stays visible.
+              They are clipped to the SVG's bounding box (`fretboard-svg-box`). */}
+          {(() => {
+            const connectorProps = {
+              noteData: chordNoteData,
+              chordToneNames:
+                fingeringPattern === "one-string" || fingeringPattern === "two-strings"
+                  ? []
+                  : chordTones,
+              fretCenterX,
+              stringYAt,
+              stringRowPx,
+              yBounds: connectorYBounds,
+              explicitVoicings: fullChordVoicings,
+              voicingSourceActive: hasChordOverlay,
+              intervalPolylines: intervalConnectorPolylines,
+              chordRoot,
+              chordTones,
+              showChordConnectors,
+              connectorMotionMode: motionPolicy.connectorMode,
+              clipPathUrl: svgDefUrl("fretboard-svg-box"),
+            };
+            return (
+              <>
+                <ChordConnectorEvaluator {...connectorProps} pass="below" />
+                <g clipPath={svgDefUrl("fretboard-taper")}>
+                  <FretboardNoteLayer
+                    notes={renderedNotes}
+                    noteBubblePx={noteBubblePx}
+                    displayFormat={displayFormat}
+                    degreeColorsEnabled={degreeColorsEnabled}
+                    onNoteClick={onNoteClick}
+                    animationMode={motionPolicy.noteMode}
+                  />
+                </g>
+                <ChordConnectorEvaluator {...connectorProps} pass="above" />
+              </>
+            );
+          })()}
         </svg>
 
         <FretboardHitTargetLayer

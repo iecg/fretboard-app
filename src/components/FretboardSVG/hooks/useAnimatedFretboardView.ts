@@ -1,25 +1,18 @@
 import { useMemo } from "react";
 import { getEmphasis, type LeadLensContext } from "../utils/semantics";
-import type { FretboardPlaybackSnapshot } from "./useFretboardPlaybackSnapshot";
 import type { NoteData } from "./useNoteData";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
+import { useEmphasisContext, type EmphasisContext } from "./useEmphasisContext";
 
 export interface RenderedFretboardNote extends NoteData {
   cx: number;
   cy: number;
 }
 
-export interface LeadLensSnapshot {
-  commonWithNext: Set<string>;
-  nextGuideTones: Set<string>;
-  beatPosition: number;
-  stepDurationBeats: number;
-}
-
 interface BuildAnimatedFretboardNotesProps {
   topology: StaticFretboardTopologyNote[];
   hasChordOverlay: boolean;
-  leadLensSnapshot?: LeadLensSnapshot;
+  emphasisContext?: EmphasisContext | null;
 }
 
 interface BuildRenderedFretboardNotesProps {
@@ -30,7 +23,6 @@ interface BuildRenderedFretboardNotesProps {
 
 export interface UseAnimatedFretboardViewProps {
   topology: StaticFretboardTopologyNote[];
-  playbackSnapshot?: FretboardPlaybackSnapshot | null;
   hasChordOverlay: boolean;
   displayFormat?: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
@@ -41,35 +33,20 @@ export interface UseAnimatedFretboardViewProps {
   stringYAt: (stringIndex: number, x: number) => number;
 }
 
-function buildLeadLensSnapshot(
-  playbackSnapshot: FretboardPlaybackSnapshot | null | undefined,
-): LeadLensSnapshot | undefined {
-  if (!playbackSnapshot) {
-    return undefined;
-  }
-
-  return {
-    commonWithNext: playbackSnapshot.commonWithNext,
-    nextGuideTones: playbackSnapshot.nextGuideTones,
-    beatPosition: playbackSnapshot.beatPosition,
-    stepDurationBeats: playbackSnapshot.stepDurationBeats,
-  };
-}
-
 export function buildAnimatedFretboardNotes({
   topology,
   hasChordOverlay,
-  leadLensSnapshot,
+  emphasisContext,
 }: BuildAnimatedFretboardNotesProps): NoteData[] {
   return topology.map((note) => {
     let leadContext: LeadLensContext | undefined;
-    if (hasChordOverlay && leadLensSnapshot) {
+    if (hasChordOverlay && emphasisContext) {
       leadContext = {
         notePc: note.noteName,
-        commonWithNext: leadLensSnapshot.commonWithNext,
-        nextGuideTones: leadLensSnapshot.nextGuideTones,
-        beatPosition: leadLensSnapshot.beatPosition,
-        stepDurationBeats: leadLensSnapshot.stepDurationBeats,
+        commonWithNext: emphasisContext.commonWithNext,
+        nextGuideTones: emphasisContext.nextGuideTones,
+        nextChordTones: emphasisContext.nextChordTones,
+        anticipationActive: emphasisContext.anticipationActive,
       };
     }
 
@@ -101,7 +78,6 @@ function buildRenderedFretboardNotes({
 
 export function useAnimatedFretboardView({
   topology,
-  playbackSnapshot,
   hasChordOverlay,
   displayFormat,
   degreeColorsEnabled,
@@ -117,16 +93,13 @@ export function useAnimatedFretboardView({
   void scaleName;
   void rootNote;
 
-  const playbackEmphasisSnapshot = useMemo(
-    () => buildLeadLensSnapshot(playbackSnapshot),
-    [playbackSnapshot],
-  );
+  const emphasisContext = useEmphasisContext(hasChordOverlay);
 
   const noteData = useMemo(() => buildAnimatedFretboardNotes({
     topology,
     hasChordOverlay,
-    leadLensSnapshot: playbackEmphasisSnapshot,
-  }), [topology, hasChordOverlay, playbackEmphasisSnapshot]);
+    emphasisContext,
+  }), [topology, hasChordOverlay, emphasisContext]);
 
   const renderedNotes = useMemo(() => buildRenderedFretboardNotes({
     noteData,

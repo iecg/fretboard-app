@@ -27,12 +27,12 @@ export type LeadLensContext = {
   notePc: string;
   /** Notes shared between the active chord and the next chord (common tones). */
   commonWithNext: Set<string>;
-  /** Guide tones (3rd/7th) of the next chord — shown as anticipation in the last beat. */
+  /** Guide tones (3rd/7th) of the next chord — kept for clarity / future use. */
   nextGuideTones: Set<string>;
-  /** Current beat position within the active progression step (0 = just started). */
-  beatPosition: number;
-  /** Total duration of the active step in beats. */
-  stepDurationBeats: number;
+  /** ALL pitch classes of the next chord — used as the full anticipation gate. */
+  nextChordTones: Set<string>;
+  /** Discrete phase: true only during the final beat of the active step. */
+  anticipationActive: boolean;
 };
 
 /**
@@ -83,23 +83,13 @@ export function getEmphasis(
     return applyTonesBase(noteClass, isGuideTone);
   }
 
-  const {
-    notePc,
-    commonWithNext,
-    nextGuideTones,
-    beatPosition,
-    stepDurationBeats,
-  } = leadContext;
+  const { notePc, commonWithNext, nextChordTones, anticipationActive } = leadContext;
 
   const isCurrentChordTone = CHORD_TONE_CLASSES.has(noteClass);
 
-  // 1. Anticipation: next chord's guide tone in the last-beat window.
-  //    Applies regardless of current-chord membership.
-  if (
-    stepDurationBeats > 0 &&
-    beatPosition >= stepDurationBeats - 1 &&
-    nextGuideTones.has(notePc)
-  ) {
+  // 1. Anticipation: any pitch class of the next chord during the last-beat window.
+  //    Guide tones are a subset of nextChordTones, so they are naturally included.
+  if (anticipationActive && nextChordTones.has(notePc)) {
     return { glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 };
   }
 
