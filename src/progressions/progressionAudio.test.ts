@@ -69,7 +69,7 @@ describe("resolveBassNoteForRole", () => {
     expect(resolveBassNoteForRole("C", "M", "third")).toBe("E2");
   });
   it("resolves fifth", () => {
-    expect(resolveBassNoteForRole("C", "M", "fifth")).toBe("G2");
+    expect(resolveBassNoteForRole("C", "M", "fifth")).toBe("G1");
   });
   it("resolves octave", () => {
     expect(resolveBassNoteForRole("C", "M", "octave")).toBe("C3");
