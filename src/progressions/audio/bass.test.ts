@@ -33,11 +33,11 @@ describe("scheduleBassNote — patch-driven Tone backend", () => {
     vi.useRealTimers();
   });
 
-  it("defaults to the bass-finger patch: amtriangle + live lowpass filter envelope", () => {
+  it("defaults to the bass-finger patch: triangle + live lowpass filter envelope", () => {
     scheduleBassNote({} as AudioNode, 220, 1.0);
     expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     const [opts] = spies.ctorSpy.mock.calls[0]!;
-    expect(opts.oscillator.type).toBe("amtriangle");
+    expect(opts.oscillator.type).toBe("triangle");
     expect(opts.filter.type).toBe("lowpass");
     expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(250, 0);
     expect(opts.filterEnvelope.octaves).toBeGreaterThan(0);
@@ -47,8 +47,8 @@ describe("scheduleBassNote — patch-driven Tone backend", () => {
     const upright = getBassPatch("bass-upright")!;
     scheduleBassNote({} as AudioNode, 110, 0, { velocity: 0.9, patch: upright });
     const [opts] = spies.ctorSpy.mock.calls[0]!;
-    expect(opts.oscillator.type).toBe("fmsine");
-    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(120, 0);
+    expect(opts.oscillator.type).toBe("fatsine");
+    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(150, 0);
     expect(opts.filterEnvelope.octaves).toBeGreaterThan(0);
   });
 

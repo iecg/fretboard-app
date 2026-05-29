@@ -3,7 +3,7 @@
 
 export type OscillatorType =
   | "sine" | "triangle" | "square" | "sawtooth"
-  | "fatsawtooth" | "fmsine" | "amtriangle";
+  | "fatsawtooth" | "fmsine" | "amtriangle" | "fatsine" | "fatsquare";
 
 export interface EnvelopeSpec {
   attack: number;
