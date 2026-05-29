@@ -69,6 +69,7 @@ function buildPreset(
     label: labelParts.join("-"),
     category: "suggested",
     feel: template.feel,
+    scale: scaleName,
     steps,
   };
 }

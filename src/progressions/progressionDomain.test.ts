@@ -608,3 +608,34 @@ describe("resolveProgressionStep — quality pin", () => {
     expect(r.unavailable).toBe(true);
   });
 });
+
+const PRESET_HOME_SCALE: Record<string, string> = {
+  "one-five-six-four": "major", "two-five-one": "major", "one-six-four-five": "major",
+  "one-four-five": "major", "twelve-bar-blues": "major", "vi-iv-i-v": "major",
+  "i-iv-vi-v": "major", "canon": "major", "eight-bar-blues": "major",
+  "minor-blues": "minor", "one-six-two-five": "major", "three-six-two-five": "major",
+  "two-five-one-six": "major", "one-four-two-five": "major", "one-four-one-five": "major",
+  "one-five-one-four-one-five-one": "major", "dorian-i-iv": "dorian", "dorian-i-vii-iv": "dorian",
+  "mixolydian-i-vii-iv": "mixolydian", "phrygian-i-ii": "phrygian", "lydian-i-ii": "lydian",
+  "minor-i-iv-v": "minor", "minor-i-vi-vii": "minor", "andalusian": "minor",
+  "minor-i-iv-vii-iii": "minor",
+};
+
+describe("PROGRESSION_PRESETS — home scale", () => {
+  it("declares the expected scale for every preset", () => {
+    for (const p of PROGRESSION_PRESETS) {
+      expect(p.scale).toBe(PRESET_HOME_SCALE[p.id]);
+    }
+  });
+
+  it("every preset's steps resolve (not unavailable) in its home scale", () => {
+    const problems: string[] = [];
+    for (const p of PROGRESSION_PRESETS) {
+      p.steps.forEach((s, i) => {
+        const r = resolveProgressionStep({ id: `${p.id}-${i}`, ...s }, p.scale, "C");
+        if (r.unavailable) problems.push(`${p.id}[${p.scale}] #${i} ${s.degree}`);
+      });
+    }
+    expect(problems).toEqual([]);
+  });
+});
