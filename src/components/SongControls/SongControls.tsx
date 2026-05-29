@@ -1,4 +1,4 @@
-import { startTransition, useMemo } from "react";
+import { useMemo } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Info } from "lucide-react";
 import clsx from "clsx";
@@ -85,16 +85,16 @@ export function SongControls() {
     preferFlats,
   } = useScaleState();
 
+  // Discrete user selections write Jotai atoms directly. Wrapping these in
+  // startTransition tagged every atom subscriber's rerender to the transition
+  // and tripped React's ">10 fibers inside startTransition" subscription
+  // warning for no real benefit (a single click commits fine synchronously).
   const handleRootNote = (note: string) => {
-    startTransition(() => {
-      setRootNote(note);
-    });
+    setRootNote(note);
   };
 
   const handleScaleName = (name: string) => {
-    startTransition(() => {
-      setScaleName(name);
-    });
+    setScaleName(name);
   };
 
   const scaleGroups: LabeledSelectGroup[] = useMemo(
@@ -181,10 +181,10 @@ export function SongControls() {
     if (id === CUSTOM_PRESET_ID) return;
     const suggested = suggestedPresets.find((p) => p.id === id);
     if (suggested) {
-      startTransition(() => loadProgressionSteps(suggested.steps));
+      loadProgressionSteps(suggested.steps);
       return;
     }
-    startTransition(() => loadProgressionPreset(id));
+    loadProgressionPreset(id);
   };
   return (
     <div className={styles.sections}>

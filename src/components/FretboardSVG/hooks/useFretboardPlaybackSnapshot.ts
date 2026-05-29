@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { progressionPlayingAtom } from "../../../store/progressionAtoms";
 import { activeStepDurationBeatsAtom } from "../../../store/practiceLensAtoms";
@@ -16,7 +16,11 @@ export function useFretboardPlaybackSnapshot(
   enabled: boolean,
 ): FretboardPlaybackSnapshot | null {
   const playing = useAtomValue(progressionPlayingAtom);
-  const frame = useAtomValue(progressionVisualFrameAtom);
+  // The frame atom is written synchronously every rAF tick by the visual clock.
+  // Defer it here (React-provided hook) so the expensive per-frame fretboard
+  // playhead render is deprioritized under load and can drop frames gracefully,
+  // without wrapping the external-store write in startTransition.
+  const frame = useDeferredValue(useAtomValue(progressionVisualFrameAtom));
   const stepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
 
   return useMemo(() => {

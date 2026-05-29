@@ -238,14 +238,21 @@ describe("TransportBar", () => {
 });
 
 describe("Concurrent UI Transitions", () => {
-  it("performs active step updates inside a transition", () => {
+  // Regression guard: the play click must NOT wrap the Jotai setter in
+  // React.startTransition. Doing so tagged every progression-atom subscriber's
+  // rerender to the transition and tripped React's ">10 fibers inside
+  // startTransition" subscription warning. The state change commits directly.
+  it("starts playback without wrapping the write in startTransition", () => {
     const startTransitionSpy = vi.spyOn(React, "startTransition");
     const store = makeAtomStore([...playableAtoms]);
     renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
-    fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
+    act(() => {
+      fireEvent.click(screen.getByRole("button", { name: "Play progression" }));
+    });
 
-    expect(startTransitionSpy).toHaveBeenCalled();
+    expect(startTransitionSpy).not.toHaveBeenCalled();
+    expect(store.get(progressionPlayingAtom)).toBe(true);
     startTransitionSpy.mockRestore();
   });
 });
