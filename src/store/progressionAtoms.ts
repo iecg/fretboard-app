@@ -50,6 +50,9 @@ const beatsPerBarStorage = createStorage<number>({
   validate: numberValidator(isBeatsPerBar),
 });
 
+// Must stay in sync with DEFAULT_STEPS (the I-V-vi-IV major progression).
+const DEFAULT_PRESET_ID = "one-five-six-four";
+
 const DEFAULT_STEPS: ProgressionStep[] = [
   { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
   { id: "default-v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -364,7 +367,7 @@ export const CUSTOM_PRESET_ID = "custom" as const;
  */
 export const loadedPresetIdAtom = atomWithStorage<string | null>(
   k("loadedPresetId"),
-  null,
+  DEFAULT_PRESET_ID,
 );
 
 export const currentProgressionPresetIdAtom = atom<string>(

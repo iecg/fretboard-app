@@ -313,8 +313,9 @@ describe("derived progression atoms", () => {
     expect(store.get(currentProgressionBarAtom)).toBe(3); // bars 1, 2 elapsed
   });
 
-  it("currentProgressionPresetIdAtom returns 'custom' after any edit", () => {
+  it("currentProgressionPresetIdAtom returns 'custom' with no loaded id", () => {
     const store = createStore();
+    store.set(loadedPresetIdAtom, null);
     const steps = store.get(progressionStepsAtom);
     store.set(progressionStepsAtom, [...steps, { id: "new", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null }]);
     expect(store.get(currentProgressionPresetIdAtom)).toBe("custom");
@@ -629,9 +630,15 @@ describe("progression loading — scale coupling", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "major");
+    store.set(loadedPresetIdAtom, null);
     store.set(progressionStepsAtom, [
       { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
     expect(store.get(currentProgressionPresetIdAtom)).toBe(CUSTOM_PRESET_ID);
+  });
+
+  it("a fresh store reflects the default progression preset id", () => {
+    const store = createStore();
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
   });
 });
