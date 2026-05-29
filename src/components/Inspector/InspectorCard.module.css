@@ -108,26 +108,6 @@
   cursor: not-allowed !important;
 }
 
-.cardBodyOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  background: var(--chrome-scrim);
-  color: var(--dc-fg-strong);
-  font-size: 0.825rem;
-  font-weight: 500;
-  line-height: 1.4;
-  padding: 1rem;
-}
-
-:global([data-theme="modern-light"]) .cardBodyOverlay {
-  color: var(--dc-fg);
-}
-
 .cardBody {
   transition: opacity 300ms ease;
 }

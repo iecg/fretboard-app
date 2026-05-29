@@ -31,17 +31,11 @@ export interface InspectorCardProps {
   /**
    * When true, the card body becomes non-interactive (HTML5 `inert`) and
    * the card shows a `locked` data attribute. Independent of `active` (which
-   * dims the body via the master toggle). Typically paired with `overlay` to
-   * communicate why the card is locked.
+   * dims the body via the master toggle). The lock is communicated visually by
+   * the header lock icon + body scrim, and to assistive tech by the global
+   * `aria-live` region in the TransportBar.
    */
   locked?: boolean;
-  /**
-   * Optional overlay rendered inside the card body when the card is locked
-   * during playback. Absolutely positioned on top of the body content with
-   * backdrop blur. Replaces the earlier `lockedHint` approach (which caused
-   * layout shift by swapping description text).
-   */
-  overlay?: ReactNode;
   /** Card body contents — typically a PropGrid. */
   children: ReactNode;
 }
@@ -68,7 +62,6 @@ export function InspectorCard({
   bodyClassName,
   headClassName,
   locked = false,
-  overlay,
   children,
 }: InspectorCardProps) {
   const hasToggle = onToggle !== undefined && toggleLabel !== undefined && active !== undefined;
@@ -119,11 +112,6 @@ export function InspectorCard({
       >
         {children}
       </div>
-      {overlay ? (
-        <div className={styles.cardBodyOverlay} role="status" aria-live="polite">
-          {overlay}
-        </div>
-      ) : null}
     </section>
   );
 }

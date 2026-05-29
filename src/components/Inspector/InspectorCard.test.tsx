@@ -27,21 +27,14 @@ describe("InspectorCard", () => {
   });
 
   it("sets data-locked on the card section when locked=true", () => {
-    const { container } = renderCard({ locked: true, overlay: "Pause to edit" });
+    const { container } = renderCard({ locked: true });
     expect(container.querySelector("section[data-locked='true']")).toBeInTheDocument();
   });
 
   it("makes the card body inert when locked=true", () => {
-    const { container } = renderCard({ locked: true, overlay: "Pause to edit" });
+    const { container } = renderCard({ locked: true });
     // The body div carries both data-locked and inert; the section also gets data-locked.
     expect(container.querySelector("div[data-locked='true']")).toHaveAttribute("inert");
-  });
-
-  it("renders the overlay content inside the body overlay when locked=true", () => {
-    renderCard({ locked: true, overlay: "Pause to edit" });
-    const overlay = document.querySelector("[role='status']");
-    expect(overlay).toBeInTheDocument();
-    expect(overlay).toHaveTextContent("Pause to edit");
   });
 
   it("body is interactive when locked=false (default)", () => {
@@ -78,7 +71,6 @@ describe("InspectorCard", () => {
   it("has no accessibility violations when locked", async () => {
     const { container } = renderCard({
       locked: true,
-      overlay: "Pause playback to edit",
     });
     const results = await axe(container);
     expect(results).toHaveNoViolations();
