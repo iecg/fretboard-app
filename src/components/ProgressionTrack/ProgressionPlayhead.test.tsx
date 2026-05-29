@@ -90,12 +90,10 @@ describe("ProgressionPlayhead", () => {
     );
 
     const playhead = container.querySelector("[data-testid='progression-playhead']") as HTMLElement;
-    
+
     // t=0.5 -> globalFraction = 0.5/4 = 0.125. 12.5%
     act(() => {
       mockTime = 0.5;
-      // Trigger rAF. In jsdom with fake timers, we might need to manually trigger or advance timers.
-      // Vitest's fake timers handle rAF via advanceTimersByTime.
       vi.advanceTimersByTime(16);
     });
     expect(playhead.style.left).toBe("12.5%");
@@ -103,7 +101,7 @@ describe("ProgressionPlayhead", () => {
     // Transition to Step 1 (at bar 2)
     // Even if React rerenders, the playhead should use the latest tl.globalFraction.
     setActiveStep(1, 1.0, 1.0, 1.0, 4.0);
-    
+
     rerender(
       <ProgressionPlayhead
         playing={true}

@@ -14,17 +14,22 @@ interface ProgressionPlayheadProps {
   totalBarsForDisplay: number;
 }
 
-
 /**
  * Renders the playhead and drives its horizontal motion by sampling the
- * shared audio-clock `timeline` at roughly 60 Hz. Reads
- * `AudioContext.currentTime` indirectly via `getTimelinePosition()`, so the
- * visual position is locked to whatever the user is hearing — the metronome's
- * audible click and the arrow's pixel position cannot drift.
+ * shared audio-clock `timeline` at roughly 60 Hz via its own lightweight
+ * requestAnimationFrame loop. Reads `AudioContext.currentTime` indirectly
+ * through `getTimelinePosition()`, so the visual position is locked to
+ * whatever the user is hearing.
  *
  * Style writes happen directly on the DOM ref to avoid React reconciliation
  * cost on every animation frame; the component renders only when its props
- * change (e.g. a new step boundary or total duration).
+ * change.
+ *
+ * The fretboard SVG has its own lightweight rAF loop in
+ * useFretboardPlaybackSnapshot that polls getTimelinePosition() and writes
+ * to progressionVisualFrameAtom. This playhead loop reads the timeline
+ * directly — no dependency on the atom — and therefore always updates the
+ * playhead position before the browser paints.
  */
 export function ProgressionPlayhead({
   playing,
@@ -45,7 +50,6 @@ export function ProgressionPlayhead({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    el.style.transition = "none";
 
     const write = () => {
       const tl = getTimelinePosition();
@@ -58,12 +62,9 @@ export function ProgressionPlayhead({
       const safeDisplayTotal = Math.max(1, currentTotalBarsForDisplay);
 
       if (playing && tl && !tl.paused) {
-        // Linear motion across the whole track, scaled to display bars.
-        // Uses globalFraction which is perfectly continuous across audio steps.
         const pct = (tl.globalFraction * currentTotalDurationBars / safeDisplayTotal) * 100;
         el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
       } else {
-        // Paused or stopped: snap to current chord's start bar.
         const bar = currentStepStartBar;
         const pct = ((bar - 1) / safeDisplayTotal) * 100;
         el.style.left = `${Math.max(0, Math.min(100, pct))}%`;

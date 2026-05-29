@@ -3,13 +3,16 @@ import { useEffect } from "react";
 import { act, render } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
 import { describe, expect, it } from "vitest";
-import { useFretboardPlaybackSnapshot } from "../components/FretboardSVG/hooks/useFretboardPlaybackSnapshot";
 import { progressionVisualFrameAtom } from "../store/progressionVisualAtoms";
 import { useFretboardTopologyModel } from "./useFretboardTopologyModel";
+import {
+  setProgressionPlayingAtom,
+} from "../store/progressionAtoms";
 
 describe("useFretboardTopologyModel", () => {
-  it("does not rerender on playback tick while a sibling playback hook does", () => {
+  it("does not rerender on playback tick", () => {
     const store = createStore();
+    store.set(setProgressionPlayingAtom, true);
     store.set(progressionVisualFrameAtom, {
       stepIndex: 0,
       globalFraction: 0,
@@ -18,13 +21,10 @@ describe("useFretboardTopologyModel", () => {
     });
 
     let topologyCommits = 0;
-    let playbackCommits = 0;
     let topologySnapshot: ReturnType<typeof useFretboardTopologyModel> | undefined;
 
     function TopologyProbe() {
       const model = useFretboardTopologyModel();
-      // Effect-time increment keeps the component body pure (React Compiler safe)
-      // while observing one increment per committed render.
       useEffect(() => {
         topologyCommits += 1;
         topologySnapshot = model;
@@ -32,25 +32,16 @@ describe("useFretboardTopologyModel", () => {
       return null;
     }
 
-    function PlaybackProbe() {
-      useFretboardPlaybackSnapshot(true);
-      useEffect(() => {
-        playbackCommits += 1;
-      });
-      return null;
-    }
-
     render(
       <Provider store={store}>
         <TopologyProbe />
-        <PlaybackProbe />
       </Provider>,
     );
 
     const topologyBaseline = topologyCommits;
-    const playbackBaseline = playbackCommits;
     const initialTopologySnapshot = topologySnapshot;
 
+    // Simulate a frame tick: same stepIndex, different globalFraction.
     act(() => {
       store.set(progressionVisualFrameAtom, {
         stepIndex: 0,
@@ -60,7 +51,7 @@ describe("useFretboardTopologyModel", () => {
       });
     });
 
-    expect(playbackCommits).toBeGreaterThan(playbackBaseline);
+    // Topology model should not re-render — it doesn't read the frame atom.
     expect(topologyCommits).toBe(topologyBaseline);
     expect(topologySnapshot).toBe(initialTopologySnapshot);
   });

@@ -1,8 +1,10 @@
-import { useDeferredValue, useMemo } from "react";
-import { useAtomValue } from "jotai";
-import { progressionPlayingAtom } from "../../../store/progressionAtoms";
+import { useEffect, useState } from "react";
+import { useAtomValue, useStore } from "jotai";
+import { useDeferredValue } from "react";
+import { progressionPlayingAtom, displayedStepIndexPrimitiveAtom } from "../../../store/progressionAtoms";
 import { activeStepDurationBeatsAtom } from "../../../store/practiceLensAtoms";
 import { progressionVisualFrameAtom } from "../../../store/progressionVisualAtoms";
+import { getTimelinePosition } from "../../../progressions/audio/timeline";
 
 export interface FretboardPlaybackSnapshot {
   playing: boolean;
@@ -16,21 +18,41 @@ export function useFretboardPlaybackSnapshot(
   enabled: boolean,
 ): FretboardPlaybackSnapshot | null {
   const playing = useAtomValue(progressionPlayingAtom);
-  // The frame atom is written synchronously every rAF tick by the visual clock.
-  // Defer it here (React-provided hook) so the expensive per-frame fretboard
-  // playhead render is deprioritized under load and can drop frames gracefully,
-  // without wrapping the external-store write in startTransition.
-  const frame = useDeferredValue(useAtomValue(progressionVisualFrameAtom));
   const stepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
+  const store = useStore();
+  const [snapshot, setSnapshot] = useState<FretboardPlaybackSnapshot | null>(null);
 
-  return useMemo(() => {
-    if (!enabled || !playing || !frame) return null;
-    return {
-      playing,
-      activeStepIndex: frame.stepIndex,
-      globalFraction: frame.globalFraction,
-      localFraction: frame.localFraction,
-      stepDurationBeats,
+  useEffect(() => {
+    if (!enabled || !playing) return;
+
+    let rafId: number;
+    let lastStepIndex = -1;
+
+    const loop = () => {
+      const tl = getTimelinePosition();
+      if (tl) {
+        setSnapshot({
+          playing: true,
+          activeStepIndex: tl.stepIndex,
+          globalFraction: tl.globalFraction,
+          localFraction: tl.localFraction,
+          stepDurationBeats,
+        });
+        store.set(progressionVisualFrameAtom, tl);
+        if (!tl.paused && tl.stepIndex !== lastStepIndex) {
+          lastStepIndex = tl.stepIndex;
+          store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
+        }
+      }
+      rafId = requestAnimationFrame(loop);
     };
-  }, [enabled, playing, frame, stepDurationBeats]);
+
+    rafId = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(rafId);
+      store.set(progressionVisualFrameAtom, null);
+    };
+  }, [enabled, playing, stepDurationBeats, store]);
+
+  return useDeferredValue(enabled && playing ? snapshot : null);
 }

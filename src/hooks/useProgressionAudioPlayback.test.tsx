@@ -19,16 +19,6 @@ import {
 } from "../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../store/scaleAtoms";
 
-// visualClock mocks: spy on startVisualClock / stopVisualClock.
-const visualClockMocks = vi.hoisted(() => ({
-  startVisualClock: vi.fn(),
-  stopVisualClock: vi.fn(),
-}));
-vi.mock("../progressions/audio/visualClock", () => ({
-  startVisualClock: visualClockMocks.startVisualClock,
-  stopVisualClock: visualClockMocks.stopVisualClock,
-}));
-
 // Tone mocks: capture all Parts and Loops constructed; expose for assertions.
 const toneMocks = vi.hoisted(() => {
   const contextNowRef = { fn: () => 0 };
@@ -670,38 +660,6 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       });
 
       spy.mockRestore();
-    });
-  });
-
-  describe("visual clock lifecycle", () => {
-    beforeEach(() => {
-      visualClockMocks.startVisualClock.mockClear();
-      visualClockMocks.stopVisualClock.mockClear();
-    });
-
-    it("starts visual clock on playback and stops it on teardown", async () => {
-      const store = makeAtomStore([
-        [rootNoteAtom, "C"],
-        [scaleNameAtom, "major"],
-        [progressionStepsAtom, threeBars],
-        [progressionTempoBpmAtom, 60],
-        [beatsPerBarAtom, 4],
-      ]);
-      store.set(setProgressionPlayingAtom, true);
-      const { unmount } = renderWithStore(<Harness />, store);
-
-      // Wait for the engine to build (Parts appear after dynamic import).
-      await vi.waitFor(() => {
-        expect(toneMocks.parts.length).toBeGreaterThan(0);
-      });
-
-      // startVisualClock should have been called with the store.
-      expect(visualClockMocks.startVisualClock).toHaveBeenCalledWith(store);
-
-      unmount();
-
-      // stopVisualClock should have been called on teardown.
-      expect(visualClockMocks.stopVisualClock).toHaveBeenCalled();
     });
   });
 
