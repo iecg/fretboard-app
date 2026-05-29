@@ -5,6 +5,7 @@ import {
   getDegreeSequence,
   getDiatonicChord,
   getNoteDisplay,
+  getScaleNotes,
   transposeNoteToSharps,
   type DegreeId,
 } from "@fretflow/core";
@@ -516,18 +517,29 @@ export function resolveProgressionStep(
   index = 0,
   preferFlats = false,
 ): ResolvedProgressionStep {
-  const diatonic = getDiatonicChord(
-    step.degree,
-    getProgressionHarmonyScaleName(scaleName),
-    rootNote,
-  );
+  const harmonyScale = getProgressionHarmonyScaleName(scaleName);
+  const diatonic = getDiatonicChord(step.degree, harmonyScale, rootNote);
 
   // When manualRoot is set we bypass the diatonic resolver for root + quality.
-  // The diatonic result is only needed to gate the "unavailable" path when
-  // manualRoot is null, and to supply diatonicQuality when applicable.
   const usingManualRoot = step.manualRoot != null;
 
-  if (!diatonic && !usingManualRoot) {
+  const overrideValid =
+    step.qualityOverride !== null && CHORD_DEFINITIONS[step.qualityOverride] !== undefined;
+
+  // Quality pin: a valid override resolves a non-diatonic degree on its
+  // scale-position root (e.g. a dominant V in natural minor). Relative to the
+  // scale degree, so it transposes with the root. Resolved against the active
+  // scale (not the harmony parent) so a degree whose ordinal exceeds the
+  // scale length (e.g. VII in a 5-note pentatonic) stays unavailable.
+  let pinnedRoot: string | null = null;
+  if (!diatonic && !usingManualRoot && overrideValid) {
+    const ordinal = getDegreeOrdinal(step.degree);
+    if (ordinal !== null) {
+      pinnedRoot = getScaleNotes(rootNote, scaleName)[ordinal] ?? null;
+    }
+  }
+
+  if (!diatonic && !usingManualRoot && pinnedRoot === null) {
     return {
       ...step,
       index,
@@ -544,11 +556,8 @@ export function resolveProgressionStep(
     };
   }
 
-  const overrideValid =
-    step.qualityOverride !== null && CHORD_DEFINITIONS[step.qualityOverride] !== undefined;
-
-  // Resolve root: manualRoot takes precedence over the diatonic root.
-  const root = usingManualRoot ? step.manualRoot! : diatonic!.root;
+  // Resolve root: manualRoot > diatonic > pinned scale-degree root.
+  const root = usingManualRoot ? step.manualRoot! : (diatonic?.root ?? pinnedRoot!);
 
   // Resolve quality: qualityOverride > manualRoot default > diatonic quality.
   const quality = overrideValid

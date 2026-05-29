@@ -581,3 +581,30 @@ describe("qualityShortForm (Plan H-T9b)", () => {
     expect(qualityShortForm("UnknownQuality" as never)).toBe("");
   });
 });
+
+describe("resolveProgressionStep — quality pin", () => {
+  const step = (degree: string, qualityOverride: string | null) => ({
+    id: "t", degree, duration: { value: 1, unit: "bar" as const }, qualityOverride, manualRoot: null,
+  });
+
+  it("pins a dominant V in natural minor on the perfect-5th root", () => {
+    const c = resolveProgressionStep(step("V", "7"), "minor", "C");
+    expect(c.unavailable).toBe(false);
+    expect(c.root).toBe("G");
+    expect(c.quality).toBe("7");
+
+    const a = resolveProgressionStep(step("V", "7"), "minor", "A");
+    expect(a.unavailable).toBe(false);
+    expect(a.root).toBe("E");
+  });
+
+  it("leaves a non-diatonic degree unavailable when there is no override", () => {
+    const r = resolveProgressionStep(step("V", null), "minor", "C");
+    expect(r.unavailable).toBe(true);
+  });
+
+  it("stays unavailable when the degree's ordinal exceeds the scale length", () => {
+    const r = resolveProgressionStep(step("VII", "7"), "major pentatonic", "C");
+    expect(r.unavailable).toBe(true);
+  });
+});
