@@ -116,20 +116,27 @@
   opacity: 0.75;
 }
 
-.card[data-locked="true"] {
-  box-shadow: inset 2px 0 0 0 var(--faceplate-accent);
+/* Animated left accent line: a 2px bar that wipes in from the top, synced with
+   the body dim. Transform-based so it never touches the card's box-shadow — the
+   light-mode elevation shadow on .card stays intact without special-casing. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 2px;
+  background: var(--faceplate-accent);
+  transform: scaleY(0);
+  transform-origin: top;
+  opacity: 0;
+  transition: transform 300ms ease, opacity 300ms ease;
+  pointer-events: none;
 }
 
-/* Light mode already carries a soft elevation shadow on .card; combine both so
-   the accent line and the elevation coexist while locked (equal specificity,
-   later source order would otherwise drop the elevation shadow). */
-/* stylelint-disable selector-pseudo-class-no-unknown */
-:global([data-theme="modern-light"]) .card[data-locked="true"] {
-  box-shadow:
-    inset 2px 0 0 0 var(--faceplate-accent),
-    0 1px 4px rgb(42 37 29 / 0.06);
+.card[data-locked="true"]::before {
+  transform: scaleY(1);
+  opacity: 1;
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .lockIcon {
   color: var(--faceplate-accent);
