@@ -195,6 +195,32 @@ export interface Dictionary {
     playProgressionTooltip: string;
     stopProgression: string;
     stopProgressionTooltip: string;
+    presetCustom: string;
+    add: string;
+    addChord: string;
+    moveChordUp: string;
+    moveChordDown: string;
+    duplicateChord: string;
+    removeChord: string;
+    duration: string;
+    durationValue: string;
+    durationUnit: string;
+    durationBeat: string;
+    durationBar: string;
+    emptyProgressionCta: string;
+    emptyProgressionSuffix: string;
+    emptySelectChord: string;
+    presetCategoryPopRock: string;
+    presetCategoryBlues: string;
+    presetCategoryJazz: string;
+    presetCategoryFolk: string;
+    presetCategoryModal: string;
+    presetCategoryMinor: string;
+    suggestionFeelCadential: string;
+    suggestionFeelVamp: string;
+    suggestionFeelModal: string;
+    chordSelected: string;
+    chordUnavailable: string;
   };
 }
 

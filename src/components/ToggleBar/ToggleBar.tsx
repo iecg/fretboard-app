@@ -54,7 +54,6 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   options: readonly ToggleBarOption<Value>[];
   value: Value | undefined;
   onChange: (value: Value) => void;
-  variant?: "default" | "chip" | "tabs";
   label?: string;
   /** When "scroll" — the toggle group scrolls horizontally instead of shrinking buttons. */
   overflow?: "scroll";

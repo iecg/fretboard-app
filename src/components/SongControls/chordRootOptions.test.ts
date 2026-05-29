@@ -79,6 +79,32 @@ describe("buildChordRootGroups — auto-accidental scale spelling (C minor)", ()
   });
 });
 
+describe("buildChordRootGroups — quality lock keeps diatonic degrees stable", () => {
+  // C minor, locked to major, preferFlats=false. Diatonic roots must keep their
+  // in-scale degree string (III / VI / VII), NOT be respelled from the chromatic
+  // offset (which would surface E♭ as ♯II). Only the hint follows the lock.
+  const groups = buildChordRootGroups(
+    "minor",
+    "C",
+    false,
+    { diatonic: "Diatonic", borrowed: "Borrowed", chromatic: "Chromatic" },
+    "M",
+  );
+  const diatonic = groups[0].options;
+
+  it("preserves diatonic numerals under the lock", () => {
+    expect(diatonic.find((o) => o.value === "D#")?.label).toBe("III · E♭ · maj");
+    expect(diatonic.find((o) => o.value === "G#")?.label).toBe("VI · A♭ · maj");
+    expect(diatonic.find((o) => o.value === "A#")?.label).toBe("VII · B♭ · maj");
+  });
+
+  it("never relabels a diatonic root as a chromatic alteration", () => {
+    for (const o of diatonic) {
+      expect(o.label.startsWith("♯")).toBe(false);
+    }
+  });
+});
+
 describe("classifyRoot", () => {
   it("returns inScale + numeral for diatonic, manual + quality-aware numeral for non-diatonic", () => {
     expect(classifyRoot("major", "C", "F")).toEqual({ inScale: true, numeral: "IV" });

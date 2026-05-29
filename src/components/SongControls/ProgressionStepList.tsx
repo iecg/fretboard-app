@@ -4,6 +4,7 @@ import {
   formatProgressionDurationLabel,
   type ResolvedProgressionStep,
 } from "../../progressions/progressionDomain";
+import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./ProgressionStepList.module.css";
 
 interface ProgressionStepListProps {
@@ -28,6 +29,7 @@ interface ProgressionStepListProps {
  * hints appear only when the list overflows in that direction.
  */
 export function ProgressionStepList({ steps, activeIndex, onSelect, label, caption, meta }: ProgressionStepListProps) {
+  const { t } = useTranslation();
   const listRef = useRef<HTMLUListElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
 
@@ -56,7 +58,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, label, capti
         <ul className={styles.list} aria-label={label} ref={listRef}>
           {steps.map((step, index) => {
             const active = index === activeIndex;
-            const name = step.resolvedChordLabel ?? "Unavailable";
+            const name = step.resolvedChordLabel ?? t("controls.chordUnavailable");
             const duration = formatProgressionDurationLabel(step.duration);
             return (
               <li key={step.id}>
@@ -66,7 +68,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, label, capti
                   className={clsx(styles.row, { [styles.active]: active })}
                   aria-current={active ? "true" : undefined}
                   data-unavailable={step.unavailable || undefined}
-                  aria-label={`Chord ${index + 1}, ${step.degree}, ${name}, ${duration}${active ? ", selected" : ""}`}
+                  aria-label={`${t("controls.chordPositionLabel")} ${index + 1}, ${step.degree}, ${name}, ${duration}${active ? `, ${t("controls.chordSelected")}` : ""}`}
                   onClick={() => onSelect(index)}
                 >
                   <span className={styles.index} aria-hidden="true">{index + 1}</span>

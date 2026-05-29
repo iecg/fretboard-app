@@ -100,7 +100,14 @@ export function buildChordRootGroups(
     let hint: string;
     if (lockedQuality) {
       hint = QUALITY_HINT[lockedQuality] ?? lockedQuality;
-      numeral = formatChromaticNumeral(r.offset, lockedQuality, preferFlats);
+      // A diatonic root keeps its in-scale degree string — running it through
+      // formatChromaticNumeral would respell it from the chromatic offset +
+      // preferFlats (e.g. C minor's diatonic E♭/III would surface as ♯II).
+      // Borrowed/chromatic roots have no scale degree, so they still derive
+      // their numeral (and case) from the locked quality.
+      numeral = r.rootClass === "diatonic"
+        ? (degreesMap[r.offset] ?? "")
+        : formatChromaticNumeral(r.offset, lockedQuality, preferFlats);
     } else if (r.rootClass === "diatonic") {
       numeral = degreesMap[r.offset] ?? "";
       hint = QUALITY_HINT[r.defaultQuality ?? "M"] ?? r.defaultQuality ?? "";

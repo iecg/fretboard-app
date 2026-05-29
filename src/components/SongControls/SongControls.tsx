@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Lock, LockOpen, Plus, Trash2 } from "lucide-react";
 import clsx from "clsx";
@@ -58,19 +57,21 @@ function familyOptions(family: ScaleFamily) {
   }));
 }
 
-const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
-  "pop-rock": "Pop / Rock",
-  blues: "Blues",
-  jazz: "Jazz",
-  folk: "Folk / Country",
-  modal: "Modal",
-  minor: "Minor",
+// Preset categories in display order; labels resolve through i18n at render so
+// the preset menu stays localized (the keys, not the copy, live here).
+const PRESET_CATEGORY_LABEL_KEYS: Record<ProgressionPresetCategory, string> = {
+  "pop-rock": "controls.presetCategoryPopRock",
+  blues: "controls.presetCategoryBlues",
+  jazz: "controls.presetCategoryJazz",
+  folk: "controls.presetCategoryFolk",
+  modal: "controls.presetCategoryModal",
+  minor: "controls.presetCategoryMinor",
 };
 
-const SUGGESTION_FEEL_LABELS: Record<SuggestionFeel, string> = {
-  cadential: "Cadential",
-  vamp: "Vamps",
-  modal: "Modal",
+const SUGGESTION_FEEL_LABEL_KEYS: Record<SuggestionFeel, string> = {
+  cadential: "controls.suggestionFeelCadential",
+  vamp: "controls.suggestionFeelVamp",
+  modal: "controls.suggestionFeelModal",
 };
 
 export function SongControls() {
@@ -89,16 +90,15 @@ export function SongControls() {
   const handleRootNote = (note: string) => setRootNote(note);
   const handleScaleName = (name: string) => setScaleName(name);
 
-  const scaleGroups: LabeledSelectGroup[] = useMemo(
-    () => [
-      { groupLabel: t("inspector.scaleGroupMajorModes"), options: familyOptions(majorFamily) },
-      { groupLabel: t("inspector.scaleGroupPentatonics"), options: familyOptions(pentatonicFamily) },
-      { groupLabel: t("inspector.scaleGroupBlues"), options: familyOptions(bluesFamily) },
-      { groupLabel: t("inspector.scaleGroupHarmonicMinor"), options: familyOptions(harmonicMinorFamily) },
-      { groupLabel: t("inspector.scaleGroupMelodicMinor"), options: familyOptions(melodicMinorFamily) },
-    ],
-    [t],
-  );
+  // Plain derivations — the React Compiler memoizes these automatically; manual
+  // useMemo is unnecessary here and only added dependency-array bookkeeping.
+  const scaleGroups: LabeledSelectGroup[] = [
+    { groupLabel: t("inspector.scaleGroupMajorModes"), options: familyOptions(majorFamily) },
+    { groupLabel: t("inspector.scaleGroupPentatonics"), options: familyOptions(pentatonicFamily) },
+    { groupLabel: t("inspector.scaleGroupBlues"), options: familyOptions(bluesFamily) },
+    { groupLabel: t("inspector.scaleGroupHarmonicMinor"), options: familyOptions(harmonicMinorFamily) },
+    { groupLabel: t("inspector.scaleGroupMelodicMinor"), options: familyOptions(melodicMinorFamily) },
+  ];
 
   const {
     progressionSteps,
@@ -123,29 +123,33 @@ export function SongControls() {
   } = useProgressionState();
 
   const activeRoot = activeResolvedProgressionStep?.root ?? rootNote;
-  const qualityGroups: LabeledSelectGroup[] = useMemo(
-    () =>
-      buildQualityGroupsWithDiatonic(scaleName, rootNote, activeRoot, {
-        diatonic: t("controls.qualityGroupDiatonic"),
-        triads: t("controls.qualityGroupTriads"),
-        sus: t("controls.qualityGroupSus"),
-        sixths: t("controls.qualityGroupSixths"),
-        sevenths: t("controls.qualityGroupSevenths"),
-      }),
-    [scaleName, rootNote, activeRoot, t],
+  const qualityGroups: LabeledSelectGroup[] = buildQualityGroupsWithDiatonic(
+    scaleName,
+    rootNote,
+    activeRoot,
+    {
+      diatonic: t("controls.qualityGroupDiatonic"),
+      triads: t("controls.qualityGroupTriads"),
+      sus: t("controls.qualityGroupSus"),
+      sixths: t("controls.qualityGroupSixths"),
+      sevenths: t("controls.qualityGroupSevenths"),
+    },
   );
   // When the quality lock is engaged, the root dropdown previews the *locked*
   // quality for every root (and the Roman-numeral case follows it) — so the
   // list reads "pick any root, it stays <locked quality>", making the lock's
   // effect visible before you act. Unlocked → per-root diatonic default.
   const lockedQuality = qualityLock ? (activeResolvedProgressionStep?.quality ?? null) : null;
-  const chordRootGroups: LabeledSelectGroup[] = useMemo(
-    () => buildChordRootGroups(scaleName, rootNote, preferFlats, {
+  const chordRootGroups: LabeledSelectGroup[] = buildChordRootGroups(
+    scaleName,
+    rootNote,
+    preferFlats,
+    {
       diatonic: t("controls.chordRootGroupDiatonic"),
       borrowed: t("controls.chordRootGroupBorrowed"),
       chromatic: t("controls.chordRootGroupChromatic"),
-    }, lockedQuality),
-    [scaleName, rootNote, preferFlats, t, lockedQuality],
+    },
+    lockedQuality,
   );
 
   const editsLocked = useAtomValue(progressionPlayingAtom);
@@ -154,10 +158,10 @@ export function SongControls() {
 
   // Preset picker data (PresetMenu): catalog presets grouped by category +
   // key-aware suggestions grouped by feel.
-  const groupedPresets = (Object.keys(CATEGORY_LABELS) as ProgressionPresetCategory[])
+  const groupedPresets = (Object.keys(PRESET_CATEGORY_LABEL_KEYS) as ProgressionPresetCategory[])
     .map((cat) => ({
       cat,
-      label: CATEGORY_LABELS[cat],
+      label: t(PRESET_CATEGORY_LABEL_KEYS[cat]),
       presets: PROGRESSION_PRESETS.filter((p) => p.category === cat),
     }))
     .filter((g) => g.presets.length > 0);
@@ -173,7 +177,7 @@ export function SongControls() {
     }, {}),
   ).map(([feel, presets]) => ({
     feel: feel as SuggestionFeel,
-    label: SUGGESTION_FEEL_LABELS[feel as SuggestionFeel] ?? feel,
+    label: t(SUGGESTION_FEEL_LABEL_KEYS[feel as SuggestionFeel]) ?? feel,
     options: presets.map((p) => ({ id: p.id, label: p.label })),
   }));
   const handlePresetChange = (id: string) => {
@@ -236,7 +240,7 @@ export function SongControls() {
               <Prop label={t("inspector.progressionLabel")}>
                 <PresetMenu
                   triggerLabel={t("inspector.progressionLabel")}
-                  customLabel="Custom"
+                  customLabel={t("controls.presetCustom")}
                   scaleLabel={getScaleDisplayLabel(scaleName)}
                   currentId={currentProgressionPresetId}
                   categories={categories}
@@ -322,10 +326,10 @@ export function SongControls() {
               type="button"
               className={styles["toolbar-button"]}
               onClick={() => addProgressionStep()}
-              aria-label="Add chord"
+              aria-label={t("controls.addChord")}
             >
               <Plus size={16} aria-hidden="true" />
-              <span>Add</span>
+              <span>{t("controls.add")}</span>
             </button>
 
             <div className={styles["toolbar-divider"]} />
@@ -336,7 +340,7 @@ export function SongControls() {
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: -1 })}
                 disabled={!activeStep || activeProgressionStepIndex === 0}
-                aria-label="Move chord up"
+                aria-label={t("controls.moveChordUp")}
               >
                 <ArrowUp size={16} aria-hidden="true" />
               </button>
@@ -345,7 +349,7 @@ export function SongControls() {
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && moveProgressionStep({ id: activeStep.id, direction: 1 })}
                 disabled={!activeStep || activeProgressionStepIndex === progressionSteps.length - 1}
-                aria-label="Move chord down"
+                aria-label={t("controls.moveChordDown")}
               >
                 <ArrowDown size={16} aria-hidden="true" />
               </button>
@@ -354,7 +358,7 @@ export function SongControls() {
                 className={styles["grouped-button"]}
                 onClick={() => activeStep && duplicateProgressionStep(activeStep.id)}
                 disabled={!activeStep}
-                aria-label="Duplicate chord"
+                aria-label={t("controls.duplicateChord")}
               >
                 <Copy size={16} aria-hidden="true" />
               </button>
@@ -367,7 +371,7 @@ export function SongControls() {
               className={styles["delete-button"]}
               onClick={() => activeStep && removeProgressionStep(activeStep.id)}
               disabled={!activeStep}
-              aria-label="Remove chord"
+              aria-label={t("controls.removeChord")}
             >
               <Trash2 size={16} aria-hidden="true" />
             </button>
@@ -499,11 +503,11 @@ export function SongControls() {
                     </div>
                     <div className={shared["control-section"]}>
                       <div className={styles["field-label-row"]}>
-                        <span className={styles["field-label"]}>Duration</span>
+                        <span className={styles["field-label"]}>{t("controls.duration")}</span>
                       </div>
                       <div className={styles["duration-row"]}>
                         <StepperControl
-                          label="Duration value"
+                          label={t("controls.durationValue")}
                           hideLabel
                           value={activeStep.duration.value}
                           min={MIN_PROGRESSION_STEP_DURATION_VALUE}
@@ -518,11 +522,11 @@ export function SongControls() {
                         />
                         <div className={styles["duration-unit"]}>
                           <ToggleBar
-                            label="Duration unit"
+                            label={t("controls.durationUnit")}
                             value={activeStep.duration.unit}
                             options={[
-                              { value: "beat", label: "Beat" },
-                              { value: "bar", label: "Bar" },
+                              { value: "beat", label: t("controls.durationBeat") },
+                              { value: "bar", label: t("controls.durationBar") },
                             ]}
                             onChange={(unit) =>
                               updateProgressionStepDuration({
@@ -544,13 +548,13 @@ export function SongControls() {
                   className={styles.linkButton}
                   onClick={() => addProgressionStep()}
                 >
-                  Add a chord
+                  {t("controls.emptyProgressionCta")}
                 </button>{" "}
-                to start building your progression.
+                {t("controls.emptyProgressionSuffix")}
               </p>
             ) : (
               <p className={styles.progressionHint}>
-                Select a chord to edit its degree, duration, and quality.
+                {t("controls.emptySelectChord")}
               </p>
             )}
           </Prop>
