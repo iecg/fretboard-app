@@ -724,4 +724,41 @@ describe("SongControls grid layout", () => {
     expect(within(hint).getByText("Voicing")).toHaveClass("progressionHelpStrong");
     expect(within(hint).getByText("lens")).toHaveClass("progressionHelpStrong");
   });
+
+  it("asks the user to add a chord when the progression is empty", () => {
+    renderWithStore(
+      <SongControls />,
+      makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, []],
+        [activeProgressionStepIndexAtom, 0],
+      ]),
+    );
+
+    expect(screen.getByRole("button", { name: "Add a chord" })).toBeInTheDocument();
+    expect(screen.getByText(/to start building your progression/)).toBeInTheDocument();
+    expect(
+      screen.queryByText("Select a chord to edit its degree, duration, and quality."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("asks the user to select a chord when steps exist but none is active", () => {
+    renderWithStore(
+      <SongControls />,
+      makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, [
+          { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ]],
+        [activeProgressionStepIndexAtom, -1], // out of bounds / inactive
+      ]),
+    );
+
+    expect(
+      screen.getByText("Select a chord to edit its degree, duration, and quality."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add a chord" })).not.toBeInTheDocument();
+  });
 });
