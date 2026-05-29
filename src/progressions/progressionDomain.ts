@@ -481,28 +481,6 @@ export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string,
   return "M";
 }
 
-/** Compact display string for a chord quality, suitable for inline tags
- * (e.g. an inline chord-quality tag). Returns "" if the
- * quality is unrecognized — callers may choose to suppress in that case. */
-export function qualityShortForm(quality: string): string {
-  switch (quality) {
-    case "M": return "M";
-    case "m": return "m";
-    case "dim": return "°";
-    case "aug": return "+";
-    case "5": return "5";
-    case "6": return "6";
-    case "m6": return "m6";
-    case "7": return "7";
-    case "maj7": return "M7";
-    case "m7": return "m7";
-    case "mMaj7": return "mM7";
-    case "m7b5": return "ø7";
-    case "dim7": return "°7";
-    default: return "";
-  }
-}
-
 export function resolveProgressionStep(
   step: ProgressionStep,
   scaleName: string,
