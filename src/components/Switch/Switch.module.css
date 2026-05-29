@@ -44,7 +44,7 @@
 }
 
 .switch:disabled {
-  opacity: 0.45;
+  opacity: var(--control-disabled-opacity);
   cursor: not-allowed;
 }
 
