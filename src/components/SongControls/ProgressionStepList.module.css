@@ -2,6 +2,7 @@
    index" of chord rows. Flex item that shares the row when wide, stacks when
    the inspector is narrow (intrinsic flex-wrap, no media query). */
 .col {
+  --scrollbar-width: 6px;
   flex: 5 1 13rem;
   min-width: 12rem;
   display: flex;
@@ -35,7 +36,13 @@
   opacity: 0.8;
 }
 
-/* Scroll region: holds the fade hints (gradient overlays) above the list. */
+/* Scroll region: a positioned shell holding the edge-fade overlays above the
+   list. The fades are driven entirely by a CSS scroll-driven animation (the
+   list's own `scroll-timeline`) — no JS scroll listener, no React state. They
+   overlay the content (visible on any theme, unlike a background shadow on a
+   near-black faceplate) and only appear when there is overflow in that
+   direction. Browsers without scroll-driven animations fall back to no fade
+   (the `@supports` block below never applies), which degrades gracefully. */
 .scroll {
   position: relative;
   flex: 1 1 0;
@@ -47,12 +54,11 @@
   content: "";
   position: absolute;
   left: 0;
-  right: 6px;
+  right: var(--scrollbar-width);
   height: 1.4rem;
   pointer-events: none;
   z-index: 2;
   opacity: 0;
-  transition: opacity 0.15s;
 }
 
 .scroll::before {
@@ -63,14 +69,6 @@
 .scroll::after {
   bottom: 0;
   background: linear-gradient(0deg, var(--faceplate-bg), transparent);
-}
-
-.showTop::before {
-  opacity: 1;
-}
-
-.showBot::after {
-  opacity: 1;
 }
 
 .list {
@@ -87,7 +85,51 @@
 }
 
 .list::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-width);
+}
+
+/* Reveal the top fade once scrolled away from the top, and hide the bottom fade
+   on reaching the end — purely from the scroll position. */
+@supports (animation-timeline: scroll()) {
+  .scroll {
+    timeline-scope: --chord-list-scroll;
+  }
+
+  .list {
+    scroll-timeline: --chord-list-scroll block;
+  }
+
+  .scroll::before {
+    animation: chord-list-fade-in linear both;
+    animation-timeline: --chord-list-scroll;
+    animation-range: 0 1.5rem;
+  }
+
+  .scroll::after {
+    animation: chord-list-fade-out linear both;
+    animation-timeline: --chord-list-scroll;
+    animation-range: calc(100% - 1.5rem) 100%;
+  }
+}
+
+@keyframes chord-list-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chord-list-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
 }
 
 .list::-webkit-scrollbar-track {

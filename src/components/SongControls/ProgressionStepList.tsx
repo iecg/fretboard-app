@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import {
   formatProgressionDurationLabel,
@@ -30,23 +30,21 @@ interface ProgressionStepListProps {
 export function ProgressionStepList({ steps, activeIndex, onSelect, label, caption, meta }: ProgressionStepListProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
-  const [fade, setFade] = useState({ top: false, bot: false });
 
-  const updateFades = useCallback(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const max = el.scrollHeight - el.clientHeight;
-    setFade({ top: el.scrollTop > 2, bot: max > 2 && el.scrollTop < max - 2 });
-  }, []);
-
+  // Keep the active row visible *within the list's own scrollport* only. We
+  // adjust `listRef.scrollTop` by hand instead of `scrollIntoView`, which would
+  // also scroll every ancestor scroll container (incl. the page) and yank the
+  // card header out of view on any activeIndex change — including changes that
+  // originate from the remote ProgressionTrack navigator pip.
   useEffect(() => {
-    updateFades();
-  }, [steps, updateFades]);
-
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: "nearest" });
-    updateFades();
-  }, [activeIndex, updateFades]);
+    const listEl = listRef.current;
+    const rowEl = activeRef.current;
+    if (!listEl || !rowEl) return;
+    const lr = listEl.getBoundingClientRect();
+    const rr = rowEl.getBoundingClientRect();
+    if (rr.top < lr.top) listEl.scrollTop -= lr.top - rr.top;
+    else if (rr.bottom > lr.bottom) listEl.scrollTop += rr.bottom - lr.bottom;
+  }, [activeIndex]);
 
   return (
     <div className={styles.col}>
@@ -54,8 +52,8 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, label, capti
         <span className={styles.captionTitle}>{caption}</span>
         {meta ? <span className={styles.captionMeta}>{meta}</span> : null}
       </div>
-      <div className={clsx(styles.scroll, { [styles.showTop]: fade.top, [styles.showBot]: fade.bot })}>
-        <ul className={styles.list} aria-label={label} ref={listRef} onScroll={updateFades}>
+      <div className={styles.scroll}>
+        <ul className={styles.list} aria-label={label} ref={listRef}>
           {steps.map((step, index) => {
             const active = index === activeIndex;
             const name = step.resolvedChordLabel ?? "Unavailable";
