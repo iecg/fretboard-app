@@ -206,25 +206,32 @@
   cursor: default;
 }
 
+/* Neutral control surface at rest; reveals the destructive (red) tone only on
+   hover — the "danger on hover" affordance the editor toolbar uses. */
 .delete-button {
-  composes: surface--control tone--destructive from "../shared/shared.module.css";
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: var(--control-height);
   padding: 0 var(--space-2);
+  background-color: var(--dc-bg);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius);
+  color: var(--dc-fg);
   cursor: pointer;
+  transition: var(--dc-transition);
   margin-left: auto; /* Push to far-right in flex row */
+}
+
+.delete-button:hover:not(:disabled) {
+  background-color: var(--destructive-control-hover-bg);
+  border-color: var(--destructive-control-border);
+  color: var(--destructive-control-fg);
 }
 
 .delete-button:disabled {
   opacity: var(--disabled-opacity);
   cursor: default;
-}
-
-.delete-button:disabled:hover {
-  background: var(--destructive-control-bg);
-  border-color: var(--destructive-control-border);
 }
 
 /* ===== Stronger Chord Identity ===== */
@@ -260,16 +267,6 @@
   letter-spacing: -0.01em;
 }
 
-.info-icon {
-  color: var(--dc-fg-muted);
-  opacity: 0.7;
-  transition: opacity 120ms ease;
-}
-
-.info-icon:hover {
-  opacity: 1;
-}
-
 /* ===== Degree Pip Navigation ===== */
 .pip-nav-container {
   display: flex;
@@ -286,16 +283,22 @@
   color: var(--dc-fg-muted);
 }
 
+/* Fixed height keeps the Quality / Lock / Duration field labels on one baseline
+   so the controls beneath them (dropdown, switch, stepper) align across the row. */
 .field-label-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  min-height: 1.25rem;
 }
 
-.lock-toggle {
-  width: 1.75rem;
-  height: 1.75rem;
+/* Quality-lock switch: vertically centered in a control-height slot so it lines
+   up with the adjacent dropdown and stepper. */
+.lock-switch {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
 }
 
 /* Progression card header — tighter vertical padding than the default 10px */

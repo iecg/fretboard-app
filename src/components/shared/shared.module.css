@@ -245,8 +245,23 @@
 }
 
 .toggle-btn--chip {
-  composes: surface--control;
   border-radius: calc(var(--dc-radius) - 1px);
+}
+
+/* Chip buttons own their resting border + fill because the group chrome is
+   stripped (`.toggle-group--chip`). The base `.toggle-btn` sets a transparent
+   border for the group-chrome variants and appears LATER in this file, so a
+   plain `.toggle-btn--chip` (or a composed surface) loses on source order.
+   The compound `.toggle-btn.toggle-btn--chip` selector raises specificity so
+   the chip's border wins regardless of source/bundle order. */
+.toggle-btn.toggle-btn--chip:not(.active) {
+  background-color: var(--dc-bg);
+  border-color: var(--dc-border);
+}
+
+.toggle-btn.toggle-btn--chip:not(.active):hover {
+  background-color: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
 }
 
 /* Chip-variant active state. The default .toggle-btn.active glow extends

@@ -1,7 +1,6 @@
 import { startTransition, useMemo } from "react";
 import { useAtomValue } from "jotai";
-import { ArrowDown, ArrowUp, Copy, Plus, Trash2, Info, Pin, PinOff } from "lucide-react";
-import clsx from "clsx";
+import { ArrowDown, ArrowUp, Copy, Plus, Trash2 } from "lucide-react";
 import { SCALE_FAMILIES, NOTES, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
   MIN_PROGRESSION_STEP_DURATION_VALUE,
@@ -16,6 +15,7 @@ import { useScaleState } from "../../hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
 import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
+import { Switch } from "../Switch/Switch";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
@@ -351,7 +351,6 @@ export function SongControls() {
                     <span className={styles["active-chord-label"]}>
                       {activeResolvedProgressionStep?.resolvedChordLabel ?? "—"}
                     </span>
-                    <Info size={14} className={styles["info-icon"]} aria-hidden="true" />
                   </div>
 
                   <span className={shared["sr-only"]}>
@@ -374,7 +373,8 @@ export function SongControls() {
                   <LabeledSelect
                     label={t("controls.chordRootLabel")}
                     hideLabel
-                    width="fill"
+                    width="fixed"
+                    widthValue="13rem"
                     value={activeResolvedProgressionStep?.root ?? rootNote}
                     groups={chordRootGroups}
                     onChange={(note) => {
@@ -388,16 +388,6 @@ export function SongControls() {
               <div className={shared["control-section"]}>
                 <div className={styles["field-label-row"]}>
                   <span className={styles["field-label"]}>{t("controls.quality")}</span>
-                  <button
-                    type="button"
-                    className={clsx(shared["icon-button"], shared["icon-button--sm"], styles["lock-toggle"])}
-                    onClick={() => setQualityLock(!qualityLock)}
-                    aria-pressed={qualityLock}
-                    aria-label={t("controls.lockQuality")}
-                    title={t("controls.lockQualityHint")}
-                  >
-                    {qualityLock ? <Pin size={14} aria-hidden="true" /> : <PinOff size={14} aria-hidden="true" />}
-                  </button>
                 </div>
                 <LabeledSelect
                   label={t("controls.quality")}
@@ -420,7 +410,21 @@ export function SongControls() {
                 />
               </div>
               <div className={shared["control-section"]}>
-                <span className={styles["field-label"]}>Duration</span>
+                <div className={styles["field-label-row"]}>
+                  <span className={styles["field-label"]}>{t("controls.lockQualityShort")}</span>
+                </div>
+                <span className={styles["lock-switch"]} title={t("controls.lockQualityHint")}>
+                  <Switch
+                    checked={qualityLock}
+                    onChange={setQualityLock}
+                    label={t("controls.lockQuality")}
+                  />
+                </span>
+              </div>
+              <div className={shared["control-section"]}>
+                <div className={styles["field-label-row"]}>
+                  <span className={styles["field-label"]}>Duration</span>
+                </div>
                 <div className={styles["duration-row"]}>
                   <StepperControl
                     label="Duration value"

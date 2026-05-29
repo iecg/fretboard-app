@@ -45,14 +45,12 @@
   color: var(--text-on-accent);
 }
 
+/* Bare flex row — no container chrome (the variant does not include the
+   shared `toggle-group` base). Pips are spaced as standalone chips. */
 .pip-group {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  height: auto;
-  background-color: transparent;
-  border: none;
-  padding: 0;
+  gap: 0.4rem;
 }
 
 .pip-btn {

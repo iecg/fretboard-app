@@ -8,7 +8,10 @@ describe("SongControls button chrome", () => {
   it("toolbar button composes the control surface", () => {
     expect(css).toMatch(/\.toolbar-button\s*\{[^}]*composes:\s*surface--control/s);
   });
-  it("delete button composes the control surface with the destructive tone", () => {
-    expect(css).toMatch(/\.delete-button\s*\{[^}]*composes:\s*surface--control\s+tone--destructive/s);
+  it("delete button is neutral at rest and turns destructive on hover", () => {
+    // Neutral resting surface (no destructive tone at rest)…
+    expect(css).toMatch(/\.delete-button\s*\{[^}]*background-color:\s*var\(--dc-bg\)/s);
+    // …revealing the destructive tone only on hover.
+    expect(css).toMatch(/\.delete-button:hover:not\(:disabled\)\s*\{[^}]*var\(--destructive-control-fg\)/s);
   });
 });

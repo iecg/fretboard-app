@@ -172,6 +172,7 @@ export const es: Dictionary = {
     qualityGroupSevenths: "Acordes de 7ª",
     qualityGroupDiatonic: "Diatónico",
     lockQuality: "Bloquear cualidad",
+    lockQualityShort: "Bloquear",
     lockQualityHint: "Mantén esta cualidad al cambiar la fundamental del acorde",
     chordRootLabel: "Fundamental del acorde",
     chordRootGroupDiatonic: "Diatónico",

@@ -169,6 +169,7 @@ export interface Dictionary {
     qualityGroupSevenths: string;
     qualityGroupDiatonic: string;
     lockQuality: string;
+    lockQualityShort: string;
     lockQualityHint: string;
     chordRootLabel: string;
     chordRootGroupDiatonic: string;

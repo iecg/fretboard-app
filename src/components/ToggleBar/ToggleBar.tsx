@@ -5,11 +5,15 @@ import { ANIMATION_DURATION_FAST } from "@fretflow/core";
 import styles from "./ToggleBar.module.css";
 import shared from "../shared/shared.module.css";
 
-const toggleBarVariants = cva(shared["toggle-group"], {
+// Each variant supplies its OWN group class. `default` and `chip` opt into the
+// shared `toggle-group` base chrome; `tabs` and `pip` are fully self-contained
+// (they intentionally have no group container), so the base is NOT applied
+// globally — that previously leaked dc-* container chrome onto the pip row.
+const toggleBarVariants = cva("", {
   variants: {
     variant: {
-      default: shared["toggle-group--default"],
-      chip: shared["toggle-group--chip"],
+      default: `${shared["toggle-group"]} ${shared["toggle-group--default"]}`,
+      chip: `${shared["toggle-group"]} ${shared["toggle-group--chip"]}`,
       tabs: styles["mobile-tab-bar"],
       pip: styles["pip-group"],
     },

@@ -130,9 +130,9 @@ describe("SongControls", () => {
     expect(screen.getByRole("combobox", { name: "Chord root" })).toBeInTheDocument();
   });
 
-  it("renders a quality lock toggle", () => {
+  it("renders a quality lock switch", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByRole("button", { name: /lock quality/i })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: /lock quality/i })).toBeInTheDocument();
   });
 
   it("has no accessibility violations", async () => {

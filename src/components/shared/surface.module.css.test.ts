@@ -31,3 +31,16 @@ describe("shared.module.css icon-button size scale", () => {
     expect(css).toMatch(/\.icon-button\s*\{[^}]*composes:\s*surface--chrome/s);
   });
 });
+
+describe("shared.module.css chip resting border (regression)", () => {
+  const css = readFileSync(join(__dirname, "shared.module.css"), "utf8");
+  // The base `.toggle-btn` sets `border: 1px solid transparent` and appears
+  // later in the file, so a single-class `.toggle-btn--chip` border loses on
+  // source order. The chip border must be declared with the higher-specificity
+  // compound `.toggle-btn.toggle-btn--chip` selector so it actually renders.
+  it("declares the chip resting border via the compound selector", () => {
+    expect(css).toMatch(
+      /\.toggle-btn\.toggle-btn--chip:not\(\.active\)\s*\{[^}]*border-color:\s*var\(--dc-border\)/s,
+    );
+  });
+});
