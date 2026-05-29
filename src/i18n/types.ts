@@ -171,6 +171,7 @@ export interface Dictionary {
     lockQuality: string;
     lockQualityHint: string;
     chordRootLabel: string;
+    chordRootGroupDiatonic: string;
     chordRootGroupBorrowed: string;
     chordRootGroupChromatic: string;
     pauseProgressionTooltip: string;

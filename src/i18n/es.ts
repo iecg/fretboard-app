@@ -174,6 +174,7 @@ export const es: Dictionary = {
     lockQuality: "Bloquear cualidad",
     lockQualityHint: "Mantén esta cualidad al cambiar la fundamental del acorde",
     chordRootLabel: "Fundamental del acorde",
+    chordRootGroupDiatonic: "Diatónico",
     chordRootGroupBorrowed: "Prestado",
     chordRootGroupChromatic: "Cromático",
     pauseProgressionTooltip: "Pausar",

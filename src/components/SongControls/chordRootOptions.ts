@@ -37,6 +37,9 @@ export function buildChordRootGroups(
   scaleName: string,
   tonicNote: string,
   preferFlats: boolean,
+  labels: { diatonic: string; borrowed: string; chromatic: string } = {
+    diatonic: "Diatonic", borrowed: "Borrowed", chromatic: "Chromatic",
+  },
 ): LabeledSelectGroup[] {
   const parent = getHarmonyParentScale(scaleName);
   const degreesMap = getDegreesForScale(parent);
@@ -65,9 +68,9 @@ export function buildChordRootGroups(
     }
   }
 
-  const groups: LabeledSelectGroup[] = [{ groupLabel: "Diatonic", options: diatonic }];
-  if (borrowed.length) groups.push({ groupLabel: "Borrowed", options: borrowed });
-  if (chromatic.length) groups.push({ groupLabel: "Chromatic", options: chromatic });
+  const groups: LabeledSelectGroup[] = [{ groupLabel: labels.diatonic, options: diatonic }];
+  if (borrowed.length) groups.push({ groupLabel: labels.borrowed, options: borrowed });
+  if (chromatic.length) groups.push({ groupLabel: labels.chromatic, options: chromatic });
   return groups;
 }
 

@@ -143,8 +143,12 @@ export function SongControls() {
     [scaleName, rootNote, activeRoot, t],
   );
   const chordRootGroups: LabeledSelectGroup[] = useMemo(
-    () => buildChordRootGroups(scaleName, rootNote, preferFlats),
-    [scaleName, rootNote, preferFlats],
+    () => buildChordRootGroups(scaleName, rootNote, preferFlats, {
+      diatonic: t("controls.chordRootGroupDiatonic"),
+      borrowed: t("controls.chordRootGroupBorrowed"),
+      chromatic: t("controls.chordRootGroupChromatic"),
+    }),
+    [scaleName, rootNote, preferFlats, t],
   );
 
   const editsLocked = useAtomValue(progressionPlayingAtom);
