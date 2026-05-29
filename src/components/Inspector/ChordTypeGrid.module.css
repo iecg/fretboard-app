@@ -30,7 +30,7 @@
 }
 
 .cell:disabled {
-  opacity: 0.4;
+  opacity: var(--control-disabled-opacity);
   cursor: not-allowed;
 }
 

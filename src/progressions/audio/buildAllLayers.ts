@@ -13,6 +13,7 @@ import {
   type CatalogDrumPattern,
   type DrumHit,
 } from "./patterns";
+import { applyJitter } from "./humanize";
 
 type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride";
 type StrumStyle = "staccato" | "sustained";
@@ -123,6 +124,8 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   const metronome: Array<{ time: number; value: MetronomeEvent }> = [];
 
   let cumulativeSec = 0;
+  let lastVoicing: string[] | undefined = undefined;
+  let lastBassNote: string | undefined = undefined;
 
   for (let stepIndex = 0; stepIndex < input.steps.length; stepIndex++) {
     const step = input.steps[stepIndex];
@@ -147,7 +150,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     const nextStep = input.steps[stepIndex + 1];
     const nextRoot = nextStep?.root ?? undefined;
 
-    const voicing = resolveChordVoicing(root, quality);
+    const voicing = resolveChordVoicing(root, quality, undefined, lastVoicing);
+    if (voicing.length > 0) {
+      lastVoicing = voicing;
+    }
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
     const isBarUnit = step.duration.unit === "bar";
@@ -177,12 +183,17 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       if (chordPattern && voicing.length > 0) {
         const hits = repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
-          const hitTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          const { time: hitTime, velocity } = applyJitter({
+            time: baseTime,
+            velocity: hit.velocity,
+            seed: stepIndex * 10000 + bar * 100 + hit.beat,
+          });
           chordStrums.push({
             time: hitTime,
             value: {
               voicing,
-              velocity: hit.velocity,
+              velocity,
               style: hit.style,
               direction: hit.direction,
             },
@@ -198,11 +209,19 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             quality,
             hit.note,
             isLast ? nextRoot : root,
+            undefined,
+            lastBassNote,
           );
-          const hitTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          lastBassNote = note;
+          const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          const { time: hitTime, velocity } = applyJitter({
+            time: baseTime,
+            velocity: hit.velocity,
+            seed: stepIndex * 10000 + bar * 100 + hit.beat + 1, // slight offset for bass
+          });
           bass.push({
             time: hitTime,
-            value: { note, velocity: hit.velocity },
+            value: { note, velocity },
           });
         }
       }
@@ -210,10 +229,17 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       if (drumHits.length > 0) {
         const hits = repeatPatternToBeats(drumHits, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
-          const hitTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
+          const { time: hitTime, velocity } = applyJitter({
+            time: baseTime,
+            velocity: hit.velocity,
+            seed: stepIndex * 10000 + bar * 100 + hit.beat + 2, // offset for drums
+            timeAmountSec: 0.005, // tighter timing jitter for drums
+            velocityAmount: 0.05,
+          });
           drums.push({
             time: hitTime,
-            value: { type: hit.type, velocity: hit.velocity },
+            value: { type: hit.type, velocity },
           });
         }
       }

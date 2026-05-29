@@ -52,6 +52,7 @@ export interface Dictionary {
     none: string;
     auto: string;
     groupKey: string;
+    groupPreset: string;
     groupWheel: string;
     scaleLabel: string;
     scaleGroupMajorModes: string;
@@ -73,6 +74,7 @@ export interface Dictionary {
     meterTempo: string;
     meterLoop: string;
     progressionPreset: string;
+    progressionLabel: string;
     timeSignature: string;
     timeSignatureAriaLabel: string;
     btGenre: string;
@@ -104,6 +106,7 @@ export interface Dictionary {
     groupScaleFingeringDesc: string;
     groupChordVoicingDesc: string;
     groupKeyDesc: string;
+    groupPresetDesc: string;
     groupTimeDesc: string;
     groupProgressionDesc: string;
     groupBackingTrackDesc: string;
@@ -144,7 +147,7 @@ export interface Dictionary {
     strings: string;
     connectors: string;
     interval: string;
-    lockedHint: string;
+    lockedAnnouncement: string;
     noteLabels: string;
     longPressToAdd: string;
     shiftClickToAdd: string;

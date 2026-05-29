@@ -18,6 +18,35 @@ const BASE_SEEDS = [
   ]],
 ] as const;
 
+// PresetMenu uses radix submenus, which only open via keyboard navigation
+// under jsdom. Open the trigger, walk ArrowDown to the named subtrigger, then
+// ArrowRight to open it. Subtriggers are menuitems whose accessible name is the
+// category/suggestion label.
+async function openPresetSubmenu(
+  user: ReturnType<typeof userEvent.setup>,
+  subtriggerName: string | RegExp,
+) {
+  await user.click(screen.getByRole("button", { name: "Sequence" }));
+  const matches = (name: string) =>
+    typeof subtriggerName === "string"
+      ? name === subtriggerName
+      : subtriggerName.test(name);
+  // Top-level subtriggers, in render order.
+  const subtriggers = screen
+    .getAllByRole("menuitem")
+    .filter((el) => el.getAttribute("aria-haspopup") === "menu");
+  const index = subtriggers.findIndex((el) =>
+    matches((el.textContent ?? "").trim()),
+  );
+  if (index < 0) {
+    throw new Error(`No preset subtrigger matching ${String(subtriggerName)}`);
+  }
+  for (let i = 0; i <= index; i += 1) {
+    await user.keyboard("{ArrowDown}");
+  }
+  await user.keyboard("{ArrowRight}");
+}
+
 describe("SongControls", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -27,7 +56,7 @@ describe("SongControls", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
 
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sequence" })).toBeInTheDocument();
     // Step list is gone (ProgressionTrack handles navigation); editor pane still present
     expect(screen.queryByRole("group", { name: "Chord root" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Chord root" })).toBeInTheDocument();
@@ -41,10 +70,12 @@ describe("SongControls", () => {
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    // Both the catalog "ii-V-I" preset and the generated suggestion resolve to
-    // the same ii-V-I degrees, so either option is a valid pick.
-    await user.click(screen.getAllByRole("option", { name: "ii-V-I" })[0]);
+    // PresetMenu is a radix DropdownMenu. radix only opens submenus via
+    // keyboard nav under jsdom (no pointer-hover). Open the menu, focus the
+    // "Suggested for major" subtrigger, open it, and pick the cadential ii-V-I
+    // suggestion — it resolves to the same ii-V-I degrees as the catalog preset.
+    await openPresetSubmenu(user, /^Suggested for/);
+    await user.click(await screen.findByRole("menuitem", { name: "ii-V-I" }));
 
     expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual(["ii", "V", "I"]);
   });
@@ -130,6 +161,15 @@ describe("SongControls", () => {
     expect(screen.getByRole("combobox", { name: "Chord root" })).toBeInTheDocument();
   });
 
+  it("renders the Preset in its own card before Key, menu out of the Progression header", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const presetHeading = screen.getByRole("heading", { name: "Preset" });
+    const keyHeading = screen.getByRole("heading", { name: "Key" });
+    expect(presetHeading).toBeInTheDocument();
+    expect(presetHeading.compareDocumentPosition(keyHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Sequence" })).toBeInTheDocument();
+  });
+
   it("renders a quality lock toggle button (unpressed by default)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const lock = screen.getByRole("button", { name: /lock quality/i });
@@ -190,16 +230,28 @@ describe("SongControls playback lock (R1-T2)", () => {
     expect(addButton.closest("[inert]")).not.toBeNull();
   });
 
-  it("Progression card surfaces the locked hint text during playback", () => {
+  it("routes Key and Progression card controls through an inert ancestor during playback (shared disabled cascade)", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(
       <TooltipProvider><SongControls /></TooltipProvider>,
       store,
     );
     act(() => { store.set(setProgressionPlayingAtom, true); });
-    // Both Key and Progression cards are locked — expect at least one hint to appear.
-    const hints = screen.getAllByText(/Pause playback to edit/i);
-    expect(hints.length).toBeGreaterThan(0);
+
+    const keyCard = screen.getByRole("region", { name: /key/i });
+    const progressionCard = screen.getByRole("region", { name: /progression/i });
+
+    // Every interactive control in a locked card resolves to an inert ancestor —
+    // that is what drives the shared disabled appearance (controls.css), so no
+    // per-control `disabled` prop is required.
+    const keyControl = keyCard.querySelector("button");
+    expect(keyControl).not.toBeNull();
+    expect(keyControl!.closest("[inert]")).not.toBeNull();
+
+    // Lock icons are always rendered now (visibility is CSS-driven); presence is
+    // a secondary check.
+    expect(keyCard.querySelector(".lucide-lock")).toBeInTheDocument();
+    expect(progressionCard.querySelector(".lucide-lock")).toBeInTheDocument();
   });
 
   it("Progression card section has data-locked=true during playback", () => {
@@ -233,13 +285,13 @@ describe("SongControls PRESET", () => {
     localStorage.clear();
   });
 
-  it("renders a LabeledSelect with the default preset value", () => {
+  it("renders a PresetMenu reflecting the default preset value", () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
-    const trigger = screen.getByRole("combobox", { name: "Preset" });
+    const trigger = screen.getByRole("button", { name: "Sequence" });
     // default I-V-vi-IV preset — the trigger reflects the selected label.
     expect(within(trigger).getByText("I-V-vi-IV")).toBeInTheDocument();
   });
@@ -252,8 +304,9 @@ describe("SongControls PRESET", () => {
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    expect(screen.getByText("Pop / Rock")).toBeInTheDocument();
+    // "Pop / Rock" is a top-level submenu trigger, visible once the menu opens.
+    await user.click(screen.getByRole("button", { name: "Sequence" }));
+    expect(screen.getByRole("menuitem", { name: "Pop / Rock" })).toBeInTheDocument();
   });
 
   it("renders a suggested presets group for the current scale", async () => {
@@ -264,32 +317,22 @@ describe("SongControls PRESET", () => {
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
 
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    expect(screen.getByText(/^Suggested for/)).toBeInTheDocument();
+    // "Suggested for <scale>" is a top-level submenu trigger.
+    await user.click(screen.getByRole("button", { name: "Sequence" }));
+    expect(screen.getByRole("menuitem", { name: /^Suggested for/ })).toBeInTheDocument();
   });
 
-  it("only lists presets that are available for the selected scale", async () => {
+  it("lists all preset categories regardless of the active scale", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "minor blues"],
+      [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
-
-    await user.click(screen.getByRole("combobox", { name: "Preset" }));
-    const optionLabels = screen
-      .getAllByRole("option")
-      .map((option) => option.textContent);
-    expect(optionLabels[0]).toBe("Custom");
-    expect(optionLabels).toEqual(
-      expect.arrayContaining([
-        "I-V-vi-IV",
-        "ii-V-I",
-        "I-vi-IV-V",
-        "I-IV-V",
-        "12-bar blues",
-      ]),
-    );
+    await user.click(screen.getByRole("button", { name: "Sequence" }));
+    for (const cat of ["Pop / Rock", "Jazz", "Modal", "Minor"]) {
+      expect(screen.getByRole("menuitem", { name: cat })).toBeInTheDocument();
+    }
   });
 });
 
@@ -402,10 +445,10 @@ describe("SongControls KEY section layout", () => {
     expect(autoWrapper).toBeNull();
   });
 
-  it("Progression Preset select uses fill width (no data-width attribute)", () => {
+  it("Progression Preset control uses fill width (no fixed-width wrapper)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const presetTrigger = screen.getByRole("combobox", { name: "Preset" });
-    // fill mode means no data-width attribute on the wrapper
+    const presetTrigger = screen.getByRole("button", { name: "Sequence" });
+    // PresetMenu is not wrapped in a width-mode container — it fills its slot.
     const fixedWrapper = presetTrigger.closest("[data-width='fixed']");
     const autoWrapper = presetTrigger.closest("[data-width='auto']");
     expect(fixedWrapper).toBeNull();
@@ -475,10 +518,10 @@ describe("SongControls v2.0", () => {
     expect(screen.getByLabelText(/time signature/i)).toBeInTheDocument();
   });
 
-  it("renders the Preset picker (inside the Progression group's right slot)", () => {
+  it("renders the Preset picker (inside its own Preset card)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByText("Progression")).toBeInTheDocument();
-    expect(screen.getByLabelText(/preset/i)).toBeVisible();
+    expect(screen.getByText("Sequence")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sequence" })).toBeVisible();
   });
 });
 
@@ -605,17 +648,12 @@ describe("SongControls width sweep (Plan H-T3)", () => {
     expect(scaleCombo?.closest("[data-width='fixed']")).toBeNull();
   });
 
-  it("Preset select uses fill width (no data-width='fixed')", () => {
-    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const allCombos = container.querySelectorAll("[role='combobox']");
-    const presetCombo = Array.from(allCombos).find((el) => {
-      const labelledBy = el.getAttribute("aria-labelledby");
-      if (!labelledBy) return false;
-      const labelEl = container.querySelector(`#${CSS.escape(labelledBy)}`);
-      return labelEl?.textContent?.trim() === "Preset";
-    });
-    expect(presetCombo).toBeTruthy();
-    expect(presetCombo?.closest("[data-width='fixed']")).toBeNull();
+  it("Preset control uses fill width (no data-width='fixed')", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    // PresetMenu trigger is a button labelled "Preset" (aria-label, not a combobox).
+    const presetTrigger = screen.getByRole("button", { name: "Sequence" });
+    expect(presetTrigger).toBeTruthy();
+    expect(presetTrigger.closest("[data-width='fixed']")).toBeNull();
   });
 });
 
@@ -640,22 +678,25 @@ describe("SongControls G11b: step-list removal", () => {
 });
 
 describe("Top-row group composer (Plan I-T5)", () => {
-  it("wraps KEY + TIME groups in a flex composer container", () => {
+  it("wraps PRESET + KEY + TIME groups in a flex composer container", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const composer = container.querySelector("[class*='groupRow']");
     expect(composer).toBeTruthy();
     expect(getComputedStyle(composer as Element).display).toBe("flex");
     const columns = composer?.querySelectorAll("[class*='groupColumn']");
-    expect(columns?.length).toBe(2);
+    expect(columns?.length).toBe(3);
   });
 
-  it("each group column has flex: 1 1 24rem (grow + shrink with sensible basis)", () => {
+  it("the Key + Time columns have flex: 1 1 24rem (grow + shrink with sensible basis)", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const columns = container.querySelectorAll("[class*='groupColumn']");
     expect(columns.length).toBeGreaterThan(0);
-    const styles = getComputedStyle(columns[0]);
-    // Computed style for `flex: 1 1 24rem` is usually "1 1 384px" (24*16)
-    expect(styles.flex).toMatch(/1\s+1\s+(24rem|384px)/);
+    // The narrower Preset column uses a 16rem basis; the Key + Time columns
+    // keep the 24rem basis. Assert on the wider columns specifically.
+    const wideColumns = Array.from(columns).filter((col) =>
+      /1\s+1\s+(24rem|384px)/.test(getComputedStyle(col).flex),
+    );
+    expect(wideColumns.length).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -711,5 +752,42 @@ describe("SongControls grid layout", () => {
     expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
     expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
+  });
+
+  it("asks the user to add a chord when the progression is empty", () => {
+    renderWithStore(
+      <SongControls />,
+      makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, []],
+        [activeProgressionStepIndexAtom, 0],
+      ]),
+    );
+
+    expect(screen.getByRole("button", { name: "Add a chord" })).toBeInTheDocument();
+    expect(screen.getByText(/to start building your progression/)).toBeInTheDocument();
+    expect(
+      screen.queryByText("Select a chord to edit its degree, duration, and quality."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("asks the user to select a chord when steps exist but none is active", () => {
+    renderWithStore(
+      <SongControls />,
+      makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, [
+          { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ]],
+        [activeProgressionStepIndexAtom, -1], // out of bounds / inactive
+      ]),
+    );
+
+    expect(
+      screen.getByText("Select a chord to edit its degree, duration, and quality."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add a chord" })).not.toBeInTheDocument();
   });
 });

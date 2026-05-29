@@ -3,6 +3,7 @@ import { useSetAtom, useAtomValue } from "jotai";
 import {
   setProgressionActiveStepIndexAtom,
   activeResolvedProgressionStepAtom,
+  addProgressionStepAtom,
 } from "../../store/progressionAtoms";
 import { useTimelineViewModel } from "./hooks/useTimelineViewModel";
 import styles from "./ProgressionTrack.module.css";
@@ -26,6 +27,7 @@ export function ProgressionTrack() {
 
   const setActiveStep = useSetAtom(setProgressionActiveStepIndexAtom);
   const activeStep = useAtomValue(activeResolvedProgressionStepAtom);
+  const addProgressionStep = useSetAtom(addProgressionStepAtom);
 
   // Stable callback so memoized ProgressionBlock children don't re-render on
   // every parent render of this component.
@@ -95,9 +97,28 @@ export function ProgressionTrack() {
                 aria-hidden="true"
               />
             ) : null}
+            {stepAtoms.length === 0 && (
+              <button
+                type="button"
+                className={styles.emptyStateBlock}
+                style={{
+                  "--duration-bars": "1",
+                  left: "0%",
+                  width: "calc(100% - 3px)",
+                } as CSSProperties}
+                onClick={() => addProgressionStep()}
+                aria-label="Add a chord to start playback"
+              >
+                <span className={styles.degreeBadge}>+</span>
+                <span className={styles.blockText}>
+                  <span className={styles.chordName}>Add a chord</span>
+                  <span className={styles.duration}>To start playback</span>
+                </span>
+              </button>
+            )}
           </div>
         </div>
-        {playbackBlockedReason ? (
+        {playbackBlockedReason && stepAtoms.length > 0 ? (
           <p className={styles.statusNote} role="status">{playbackBlockedReason}</p>
         ) : activeStep?.unavailable ? (
           <p className={styles.statusNote} role="status">{activeStep.unavailableReason}</p>

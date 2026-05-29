@@ -86,8 +86,8 @@ describe("buildMetronomePattern", () => {
 });
 
 describe("pattern catalog", () => {
-  it("has 6 chord patterns with unique IDs", () => {
-    expect(CHORD_PATTERNS).toHaveLength(6);
+  it("has 7 chord patterns with unique IDs", () => {
+    expect(CHORD_PATTERNS).toHaveLength(7);
     const ids = CHORD_PATTERNS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });

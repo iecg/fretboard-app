@@ -40,6 +40,18 @@ describe("ProgressionTrack", () => {
     expect(screen.queryByText("Position")).toBeNull();
   });
 
+  it("renders the empty state overlay inside the track when empty", () => {
+    const { container } = renderWithAtoms(<ProgressionTrack />, [
+      [progressionStepsAtom, []],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    expect(screen.getByText("Add a chord")).toBeTruthy();
+    expect(screen.getByText("To start playback")).toBeTruthy();
+    // Verify that the statusNote is NOT rendered below the track (so it doesn't take extra space/shift layout)
+    expect(container.querySelector("[class*='statusNote']")).toBeNull();
+  });
+
   it("renders short chord labels (e.g. C, G7, Am, F) in the visible block text", () => {
     renderWithAtoms(<ProgressionTrack />, [
       [progressionStepsAtom, fourStepProgression],

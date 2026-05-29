@@ -11,9 +11,7 @@ import {
   formatProgressionPlaybackPosition,
   getProgressionDurationBeats,
   getProgressionDurationMs,
-  getAvailableProgressionPresets,
   isProgressionDuration,
-  isProgressionPresetAvailableForScale,
   isValidProgressionStep,
   migrateLegacyDuration,
   normalizeProgressionStep,
@@ -168,13 +166,6 @@ describe("progressionDomain", () => {
     expect(blues?.steps.every((step) => step.qualityOverride === "7")).toBe(true);
   });
 
-  it("filters presets to scales where every preset degree can resolve", () => {
-    const oneFiveSixFour = PROGRESSION_PRESETS.find((preset) => preset.id === "one-five-six-four");
-    expect(oneFiveSixFour).toBeDefined();
-    expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "major")).toBe(true);
-    expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "minor blues")).toBe(true);
-    expect(getAvailableProgressionPresets("minor blues")).toEqual(PROGRESSION_PRESETS);
-  });
 });
 
 describe("expanded preset catalog", () => {
@@ -571,5 +562,63 @@ describe("harmony parent-scale source of truth", () => {
     const major = resolveProgressionStep(step, "major", "C");
     expect(penta.root).toBe(major.root);
     expect(getHarmonyParentScale("major pentatonic")).toBe("major");
+  });
+});
+
+describe("resolveProgressionStep — quality pin", () => {
+  const step = (degree: string, qualityOverride: string | null) => ({
+    id: "t", degree, duration: { value: 1, unit: "bar" as const }, qualityOverride, manualRoot: null,
+  });
+
+  it("pins a dominant V in natural minor on the perfect-5th root", () => {
+    const c = resolveProgressionStep(step("V", "7"), "minor", "C");
+    expect(c.unavailable).toBe(false);
+    expect(c.root).toBe("G");
+    expect(c.quality).toBe("7");
+
+    const a = resolveProgressionStep(step("V", "7"), "minor", "A");
+    expect(a.unavailable).toBe(false);
+    expect(a.root).toBe("E");
+  });
+
+  it("leaves a non-diatonic degree unavailable when there is no override", () => {
+    const r = resolveProgressionStep(step("V", null), "minor", "C");
+    expect(r.unavailable).toBe(true);
+  });
+
+  it("stays unavailable when the degree's ordinal exceeds the scale length", () => {
+    const r = resolveProgressionStep(step("VII", "7"), "major pentatonic", "C");
+    expect(r.unavailable).toBe(true);
+  });
+});
+
+const PRESET_HOME_SCALE: Record<string, string> = {
+  "one-five-six-four": "major", "two-five-one": "major", "one-six-four-five": "major",
+  "one-four-five": "major", "twelve-bar-blues": "major", "vi-iv-i-v": "major",
+  "i-iv-vi-v": "major", "canon": "major", "eight-bar-blues": "major",
+  "minor-blues": "minor", "one-six-two-five": "major", "three-six-two-five": "major",
+  "two-five-one-six": "major", "one-four-two-five": "major", "one-four-one-five": "major",
+  "one-five-one-four-one-five-one": "major", "dorian-i-iv": "dorian", "dorian-i-vii-iv": "dorian",
+  "mixolydian-i-vii-iv": "mixolydian", "phrygian-i-ii": "phrygian", "lydian-i-ii": "lydian",
+  "minor-i-iv-v": "minor", "minor-i-vi-vii": "minor", "andalusian": "minor",
+  "minor-i-iv-vii-iii": "minor",
+};
+
+describe("PROGRESSION_PRESETS — home scale", () => {
+  it("declares the expected scale for every preset", () => {
+    for (const p of PROGRESSION_PRESETS) {
+      expect(p.scale).toBe(PRESET_HOME_SCALE[p.id]);
+    }
+  });
+
+  it("every preset's steps resolve (not unavailable) in its home scale", () => {
+    const problems: string[] = [];
+    for (const p of PROGRESSION_PRESETS) {
+      p.steps.forEach((s, i) => {
+        const r = resolveProgressionStep({ id: `${p.id}-${i}`, ...s }, p.scale, "C");
+        if (r.unavailable) problems.push(`${p.id}[${p.scale}] #${i} ${s.degree}`);
+      });
+    }
+    expect(problems).toEqual([]);
   });
 });

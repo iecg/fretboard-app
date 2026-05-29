@@ -1,16 +1,16 @@
-import { startTransition, useMemo } from "react";
+import { useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Lock, LockOpen, Plus, Trash2 } from "lucide-react";
 import clsx from "clsx";
-import { SCALE_FAMILIES, NOTES, getChordDisplayLabel, getNoteDisplay, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
+import { SCALE_FAMILIES, NOTES, getChordDisplayLabel, getNoteDisplay, getScaleDisplayLabel, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
   MIN_PROGRESSION_STEP_DURATION_VALUE,
   MAX_PROGRESSION_STEP_DURATION_VALUE,
   MIN_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
-  getAvailableProgressionPresets,
+  PROGRESSION_PRESETS,
 } from "../../progressions/progressionDomain";
-import { generateCommonProgressions } from "../../progressions/progressionGeneration";
+import { generateCommonProgressions, type SuggestionFeel } from "../../progressions/progressionGeneration";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -18,6 +18,11 @@ import type { ProgressionPresetCategory } from "../../progressions/progressionDo
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
+import {
+  PresetMenu,
+  type PresetMenuCategory,
+  type PresetMenuSuggestionGroup,
+} from "../PresetMenu/PresetMenu";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { InspectorCard } from "../Inspector/InspectorCard";
 import { TimeSignaturePicker } from "../shared/TimeSignaturePicker";
@@ -53,7 +58,6 @@ function familyOptions(family: ScaleFamily) {
   }));
 }
 
-
 const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   "pop-rock": "Pop / Rock",
   blues: "Blues",
@@ -61,6 +65,12 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   folk: "Folk / Country",
   modal: "Modal",
   minor: "Minor",
+};
+
+const SUGGESTION_FEEL_LABELS: Record<SuggestionFeel, string> = {
+  cadential: "Cadential",
+  vamp: "Vamps",
+  modal: "Modal",
 };
 
 export function SongControls() {
@@ -73,17 +83,11 @@ export function SongControls() {
     preferFlats,
   } = useScaleState();
 
-  const handleRootNote = (note: string) => {
-    startTransition(() => {
-      setRootNote(note);
-    });
-  };
-
-  const handleScaleName = (name: string) => {
-    startTransition(() => {
-      setScaleName(name);
-    });
-  };
+  // Discrete user selections write Jotai atoms directly (no startTransition —
+  // a single click commits fine synchronously, and wrapping tripped React's
+  // ">10 fibers inside startTransition" subscription warning).
+  const handleRootNote = (note: string) => setRootNote(note);
+  const handleScaleName = (name: string) => setScaleName(name);
 
   const scaleGroups: LabeledSelectGroup[] = useMemo(
     () => [
@@ -102,7 +106,7 @@ export function SongControls() {
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
     loadProgressionPreset,
-    loadProgressionSteps,
+    loadProgressionSuggestion,
     addProgressionStep,
     duplicateProgressionStep,
     removeProgressionStep,
@@ -147,48 +151,39 @@ export function SongControls() {
   const editsLocked = useAtomValue(progressionPlayingAtom);
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
-  const availablePresets = getAvailableProgressionPresets(scaleName);
+
+  // Preset picker data (PresetMenu): catalog presets grouped by category +
+  // key-aware suggestions grouped by feel.
   const groupedPresets = (Object.keys(CATEGORY_LABELS) as ProgressionPresetCategory[])
     .map((cat) => ({
       cat,
       label: CATEGORY_LABELS[cat],
-      presets: availablePresets.filter((p) => p.category === cat),
+      presets: PROGRESSION_PRESETS.filter((p) => p.category === cat),
     }))
     .filter((g) => g.presets.length > 0);
   const suggestedPresets = generateCommonProgressions(scaleName, rootNote);
-  const presetGroups: LabeledSelectGroup[] = [
-    // Show "Custom" only when it's the current value — the option is not
-    // user-selectable; it just reflects an edited (non-preset) progression.
-    ...(currentProgressionPresetId === CUSTOM_PRESET_ID
-      ? [{ options: [{ value: CUSTOM_PRESET_ID, label: "Custom" }] }]
-      : []),
-    ...groupedPresets.map((group) => ({
-      groupLabel: group.label,
-      options: group.presets.map((preset) => ({
-        value: preset.id,
-        label: preset.label,
-      })),
-    })),
-    ...(suggestedPresets.length > 0
-      ? [
-          {
-            groupLabel: `Suggested for ${scaleName}`,
-            options: suggestedPresets.map((preset) => ({
-              value: preset.id,
-              label: preset.label,
-            })),
-          },
-        ]
-      : []),
-  ];
+  const categories: PresetMenuCategory[] = groupedPresets.map((group) => ({
+    label: group.label,
+    options: group.presets.map((preset) => ({ id: preset.id, label: preset.label })),
+  }));
+  const suggestionGroups: PresetMenuSuggestionGroup[] = Object.entries(
+    suggestedPresets.reduce<Record<string, typeof suggestedPresets>>((acc, p) => {
+      (acc[p.feel] ??= []).push(p);
+      return acc;
+    }, {}),
+  ).map(([feel, presets]) => ({
+    feel: feel as SuggestionFeel,
+    label: SUGGESTION_FEEL_LABELS[feel as SuggestionFeel] ?? feel,
+    options: presets.map((p) => ({ id: p.id, label: p.label })),
+  }));
   const handlePresetChange = (id: string) => {
     if (id === CUSTOM_PRESET_ID) return;
     const suggested = suggestedPresets.find((p) => p.id === id);
     if (suggested) {
-      startTransition(() => loadProgressionSteps(suggested.steps));
+      loadProgressionSuggestion(suggested);
       return;
     }
-    startTransition(() => loadProgressionPreset(id));
+    loadProgressionPreset(id);
   };
 
   // List caption summary: chord count + total bars (beats don't count as bars).
@@ -228,18 +223,40 @@ export function SongControls() {
 
   return (
     <div className={styles.sections}>
-      {/* ── KEY + TIME flex composer ──────────────────────────────────────── */}
+      {/* ── PRESET + KEY + TIME flex composer ─────────────────────────────── */}
       <div className={styles.groupRow}>
+        <div className={styles.groupColumn}>
+          <InspectorCard
+            name={t("inspector.groupPreset")}
+            description={t("inspector.groupPresetDesc")}
+            labelledById="song-preset-heading"
+            locked={editsLocked}
+          >
+            <PropGrid columns={1}>
+              <Prop label={t("inspector.progressionLabel")}>
+                <PresetMenu
+                  triggerLabel={t("inspector.progressionLabel")}
+                  customLabel="Custom"
+                  scaleLabel={getScaleDisplayLabel(scaleName)}
+                  currentId={currentProgressionPresetId}
+                  categories={categories}
+                  suggestionGroups={suggestionGroups}
+                  width="fill"
+                  onSelect={handlePresetChange}
+                />
+              </Prop>
+            </PropGrid>
+          </InspectorCard>
+        </div>
         <div className={styles.groupColumn}>
           <InspectorCard
             name={t("inspector.groupKey")}
             description={t("inspector.groupKeyDesc")}
             labelledById="song-key-heading"
             locked={editsLocked}
-            lockedHint={t("controls.lockedHint")}
           >
-            <PropGrid columns={5}>
-              <Prop label={t("controls.root")} span={2}>
+            <PropGrid columns={4}>
+              <Prop label={t("controls.root")} span={1}>
                 <LabeledSelect
                   label={t("controls.root")}
                   hideLabel
@@ -271,10 +288,10 @@ export function SongControls() {
             labelledById="song-time-heading"
           >
             <PropGrid columns={5}>
-              <Prop label={t("inspector.timeSignature")} span={1}>
+              <Prop label={t("inspector.timeSignature")} span={2}>
                 <TimeSignaturePicker />
               </Prop>
-              <Prop label={t("inspector.meterTempo")} span={4}>
+              <Prop label={t("inspector.meterTempo")} span={3}>
                 <StepperControl
                   label={t("inspector.meterTempo")}
                   hideLabel
@@ -284,7 +301,7 @@ export function SongControls() {
                   step={5}
                   formatValue={(bpm) => `${bpm} BPM`}
                   onChange={setProgressionTempoBpm}
-                  width="fill"
+                  width="auto"
                 />
               </Prop>
             </PropGrid>
@@ -298,20 +315,9 @@ export function SongControls() {
         description={t("inspector.groupProgressionDesc")}
         labelledById="song-progression-heading"
         locked={editsLocked}
-        lockedHint={t("controls.lockedHint")}
         headClassName={styles["progression-card-head"]}
         actions={
           <div className={styles["progression-toolbar"]}>
-            <LabeledSelect
-              label={t("inspector.progressionPreset")}
-              hideLabel
-              value={currentProgressionPresetId}
-              groups={presetGroups}
-              onChange={handlePresetChange}
-            />
-
-            <div className={styles["toolbar-divider"]} />
-
             <button
               type="button"
               className={styles["toolbar-button"]}
@@ -531,9 +537,22 @@ export function SongControls() {
                   </div>
                 </div>
               </div>
-        ) : (
-          <p className={shared["field-hint"]}>Select a chord to edit its degree, duration, and quality.</p>
-        )}
+            ) : progressionSteps.length === 0 ? (
+              <p className={styles.progressionHint}>
+                <button
+                  type="button"
+                  className={styles.linkButton}
+                  onClick={() => addProgressionStep()}
+                >
+                  Add a chord
+                </button>{" "}
+                to start building your progression.
+              </p>
+            ) : (
+              <p className={styles.progressionHint}>
+                Select a chord to edit its degree, duration, and quality.
+              </p>
+            )}
           </Prop>
         </PropGrid>
       </InspectorCard>

@@ -1,4 +1,3 @@
-import React from "react";
 import clsx from "clsx";
 import {
   AudioWaveform,
@@ -11,6 +10,7 @@ import {
 } from "lucide-react";
 import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
 import { useTranslation } from "../../hooks/useTranslation";
+import shared from "../shared/shared.module.css";
 import styles from "./TransportBar.module.css";
 
 /**
@@ -50,13 +50,17 @@ export function TransportBar() {
       return;
     }
 
-    React.startTransition(() => {
-      setProgressionPlaying(true);
-    });
+    // Direct synchronous write. Wrapping this Jotai setter in startTransition
+    // tagged every progression-atom subscriber's rerender to the transition and
+    // tripped React's ">10 fibers inside startTransition" subscription warning.
+    setProgressionPlaying(true);
   };
 
   return (
     <div className={styles.transportBar} data-testid="transport-bar">
+      <span className={shared["sr-only"]} role="status" aria-live="polite">
+        {progressionPlaying ? t("controls.lockedAnnouncement") : ""}
+      </span>
       <div className={styles.statusLights} aria-label="Playback status">
         <span className={styles.statusLight} data-active={progressionPlaying ? "true" : undefined}>
           <span className={styles.statusDot} aria-hidden="true" />

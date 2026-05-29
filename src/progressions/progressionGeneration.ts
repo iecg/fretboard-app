@@ -5,94 +5,92 @@ import {
 } from "@fretflow/core";
 import type { ProgressionPreset, ProgressionStep } from "./progressionDomain";
 
-interface GeneratedPreset extends Omit<ProgressionPreset, "category"> {
+export type SuggestionFeel = "cadential" | "vamp" | "modal";
+
+export interface SuggestedPreset extends Omit<ProgressionPreset, "category"> {
   category: "suggested";
+  feel: SuggestionFeel;
 }
 
 interface ProgressionTemplate {
-  label: string;
+  feel: SuggestionFeel;
   ordinals: number[];
 }
 
+// NOTE: We deliberately do NOT use @tonaljs/progression here. Its
+// fromRomanNumerals/toRomanNumerals API assumes a major-key roman-numeral
+// frame, whereas getDiatonicChord is modal-aware (modes, borrowed chords,
+// quality overrides). Routing generation through Tonal would be a downgrade.
+// Revisit only if a "import from chord names" feature is added.
+
 const CADENTIAL_TEMPLATES: ProgressionTemplate[] = [
-  { label: "IV-V-I", ordinals: [3, 4, 0] },
-  { label: "ii-V-I", ordinals: [1, 4, 0] },
-  { label: "I-IV-V-I", ordinals: [0, 3, 4, 0] },
+  { feel: "cadential", ordinals: [3, 4, 0] }, // IV-V-I
+  { feel: "cadential", ordinals: [1, 4, 0] }, // ii-V-I
+  { feel: "cadential", ordinals: [0, 3, 4, 0] }, // I-IV-V-I
 ];
 
 const CYCLE_TEMPLATES: ProgressionTemplate[] = [
-  { label: "vi-ii-V-I", ordinals: [5, 1, 4, 0] },
-  { label: "iii-vi-ii-V-I", ordinals: [2, 5, 1, 4, 0] },
+  { feel: "cadential", ordinals: [5, 1, 4, 0] }, // vi-ii-V-I
+  { feel: "cadential", ordinals: [2, 5, 1, 4, 0] }, // iii-vi-ii-V-I
+];
+
+const VAMP_TEMPLATES: ProgressionTemplate[] = [
+  { feel: "vamp", ordinals: [0, 3] }, // I-IV shuttle
+];
+
+// Tonic to the scale's natural 7th degree — a modal vamp whose colour follows
+// the selected mode (e.g. flat-VII in Dorian/Mixolydian/Aeolian).
+const MODAL_TEMPLATES: ProgressionTemplate[] = [
+  { feel: "modal", ordinals: [0, 6] }, // I-VII
 ];
 
 function buildPreset(
-  id: string,
-  label: string,
+  template: ProgressionTemplate,
   degrees: DegreeId[],
-  ordinals: number[],
   scaleName: string,
   rootNote: string,
-): GeneratedPreset | null {
+): SuggestedPreset | null {
   const steps: Array<Omit<ProgressionStep, "id">> = [];
-  for (const ordinal of ordinals) {
+  const labelParts: string[] = [];
+  for (const ordinal of template.ordinals) {
     const degree = degrees[ordinal];
     if (!degree) return null;
-    const chord = getDiatonicChord(degree, scaleName, rootNote);
-    if (!chord) return null;
+    if (!getDiatonicChord(degree, scaleName, rootNote)) return null;
     steps.push({
       degree,
       duration: { value: 1, unit: "bar" },
       qualityOverride: null,
       manualRoot: null,
     });
+    labelParts.push(degree);
   }
-  return { id, label, category: "suggested", steps };
+  return {
+    id: `suggested-${template.feel}-${template.ordinals.join("")}`,
+    label: labelParts.join("-"),
+    category: "suggested",
+    feel: template.feel,
+    scale: scaleName,
+    steps,
+  };
 }
 
 export function generateCommonProgressions(
   scaleName: string,
   rootNote: string,
-): GeneratedPreset[] {
+): SuggestedPreset[] {
   const degrees = getDegreeSequence(scaleName);
   if (degrees.length < 3) return [];
 
-  const results: GeneratedPreset[] = [];
-  let counter = 0;
+  const templates: ProgressionTemplate[] = [...CADENTIAL_TEMPLATES];
+  if (degrees.length >= 6) templates.push(...CYCLE_TEMPLATES);
+  if (degrees.length >= 4) templates.push(...VAMP_TEMPLATES);
+  if (degrees.length >= 7) templates.push(...MODAL_TEMPLATES);
 
-  const tryTemplate = (template: ProgressionTemplate) => {
-    if (template.ordinals.every((o) => o < degrees.length)) {
-      const preset = buildPreset(
-        `generated-${counter}`,
-        template.label,
-        degrees,
-        template.ordinals,
-        scaleName,
-        rootNote,
-      );
-      if (preset) {
-        results.push(preset);
-        counter += 1;
-      }
-    }
-  };
-
-  for (const t of CADENTIAL_TEMPLATES) tryTemplate(t);
-  if (degrees.length >= 6) {
-    for (const t of CYCLE_TEMPLATES) tryTemplate(t);
-  }
-  if (degrees.length >= 4) {
-    const shuttle = buildPreset(
-      `generated-${counter}`,
-      `${degrees[0]}-${degrees[3]}`,
-      degrees,
-      [0, 3],
-      scaleName,
-      rootNote,
-    );
-    if (shuttle) {
-      results.push(shuttle);
-      counter += 1;
-    }
+  const results: SuggestedPreset[] = [];
+  for (const template of templates) {
+    if (!template.ordinals.every((o) => o < degrees.length)) continue;
+    const preset = buildPreset(template, degrees, scaleName, rootNote);
+    if (preset) results.push(preset);
   }
   return results;
 }

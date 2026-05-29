@@ -43,7 +43,7 @@ test.describe("Progression Visual", () => {
     // Navigate to the Song tab in the Inspector bottom tab bar.
     await page.getByRole("tab", { name: "Song" }).click();
 
-    await expect(page.getByRole("combobox", { name: "Preset" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sequence" })).toBeVisible();
     await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });

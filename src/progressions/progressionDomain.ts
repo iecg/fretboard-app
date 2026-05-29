@@ -7,6 +7,7 @@ import {
   getHarmonyParentScale,
   getNoteDisplay,
   getScaleRoots,
+  getScaleNotes,
   transposeNoteToSharps,
   type DegreeId,
 } from "@fretflow/core";
@@ -183,6 +184,8 @@ export interface ProgressionPreset {
   id: string;
   label: string;
   category: ProgressionPresetCategory;
+  /** The scale this progression is written in; loading it sets the active scale. */
+  scale: string;
   steps: Array<Omit<ProgressionStep, "id">>;
 }
 
@@ -231,43 +234,44 @@ const PRESET_SPECS: ReadonlyArray<{
   id: string;
   label: string;
   category: ProgressionPresetCategory;
+  scale: string;
   spec: string;
 }> = [
-  { id: "one-five-six-four", label: "I-V-vi-IV", category: "pop-rock", spec: "I V vi IV" },
-  { id: "two-five-one", label: "ii-V-I", category: "jazz", spec: "ii V:7 I" },
-  { id: "one-six-four-five", label: "I-vi-IV-V", category: "pop-rock", spec: "I vi IV V" },
-  { id: "one-four-five", label: "I-IV-V", category: "folk", spec: "I IV V" },
-  { id: "twelve-bar-blues", label: "12-bar blues", category: "blues",
+  { id: "one-five-six-four", label: "I-V-vi-IV", category: "pop-rock", scale: "major", spec: "I V vi IV" },
+  { id: "two-five-one", label: "ii-V-I", category: "jazz", scale: "major", spec: "ii V:7 I" },
+  { id: "one-six-four-five", label: "I-vi-IV-V", category: "pop-rock", scale: "major", spec: "I vi IV V" },
+  { id: "one-four-five", label: "I-IV-V", category: "folk", scale: "major", spec: "I IV V" },
+  { id: "twelve-bar-blues", label: "12-bar blues", category: "blues", scale: "major",
     spec: "I*4:7 IV*2:7 I*2:7 V:7 IV:7 I:7 V:7" },
-  { id: "vi-iv-i-v", label: "vi-IV-I-V", category: "pop-rock", spec: "vi IV I V" },
-  { id: "i-iv-vi-v", label: "I-IV-vi-V", category: "pop-rock", spec: "I IV vi V" },
-  { id: "canon", label: "Canon (I-V-vi-iii-IV-I-IV-V)", category: "pop-rock",
+  { id: "vi-iv-i-v", label: "vi-IV-I-V", category: "pop-rock", scale: "major", spec: "vi IV I V" },
+  { id: "i-iv-vi-v", label: "I-IV-vi-V", category: "pop-rock", scale: "major", spec: "I IV vi V" },
+  { id: "canon", label: "Canon (I-V-vi-iii-IV-I-IV-V)", category: "pop-rock", scale: "major",
     spec: "I V vi iii IV I IV V" },
-  { id: "eight-bar-blues", label: "8-bar blues", category: "blues",
+  { id: "eight-bar-blues", label: "8-bar blues", category: "blues", scale: "major",
     spec: "I*2:7 IV*2:7 I:7 V:7 I:7 V:7" },
-  { id: "minor-blues", label: "Minor blues", category: "blues",
-    spec: "i*4 iv*2 i*2 V iv i V" },
-  { id: "one-six-two-five", label: "I-vi-ii-V (turnaround)", category: "jazz", spec: "I vi ii V" },
-  { id: "three-six-two-five", label: "iii-vi-ii-V", category: "jazz", spec: "iii vi ii V" },
-  { id: "two-five-one-six", label: "ii-V-I-vi (rhythm changes)", category: "jazz",
+  { id: "minor-blues", label: "Minor blues", category: "blues", scale: "minor",
+    spec: "i*4 iv*2 i*2 V:7 iv i V:7" },
+  { id: "one-six-two-five", label: "I-vi-ii-V (turnaround)", category: "jazz", scale: "major", spec: "I vi ii V" },
+  { id: "three-six-two-five", label: "iii-vi-ii-V", category: "jazz", scale: "major", spec: "iii vi ii V" },
+  { id: "two-five-one-six", label: "ii-V-I-vi (rhythm changes)", category: "jazz", scale: "major",
     spec: "ii V:7 I vi" },
-  { id: "one-four-two-five", label: "I-IV-ii-V", category: "jazz", spec: "I IV ii V" },
-  { id: "one-four-one-five", label: "I-IV-I-V", category: "folk", spec: "I IV I V" },
-  { id: "one-five-one-four-one-five-one", label: "I-V-I-IV-I-V-I", category: "folk",
+  { id: "one-four-two-five", label: "I-IV-ii-V", category: "jazz", scale: "major", spec: "I IV ii V" },
+  { id: "one-four-one-five", label: "I-IV-I-V", category: "folk", scale: "major", spec: "I IV I V" },
+  { id: "one-five-one-four-one-five-one", label: "I-V-I-IV-I-V-I", category: "folk", scale: "major",
     spec: "I V I IV I V I" },
-  { id: "dorian-i-iv", label: "Dorian i-IV", category: "modal", spec: "i IV" },
-  { id: "dorian-i-vii-iv", label: "Dorian i-VII-IV", category: "modal", spec: "i VII IV" },
-  { id: "mixolydian-i-vii-iv", label: "Mixolydian I-VII-IV", category: "modal", spec: "I VII IV" },
-  { id: "phrygian-i-ii", label: "Phrygian i-II", category: "modal", spec: "i II" },
-  { id: "lydian-i-ii", label: "Lydian I-II", category: "modal", spec: "I II" },
-  { id: "minor-i-iv-v", label: "i-iv-v", category: "minor", spec: "i iv v" },
-  { id: "minor-i-vi-vii", label: "i-VI-VII", category: "minor", spec: "i VI VII" },
-  { id: "andalusian", label: "Andalusian (i-VII-VI-V)", category: "minor", spec: "i VII VI V" },
-  { id: "minor-i-iv-vii-iii", label: "i-iv-VII-III", category: "minor", spec: "i iv VII III" },
+  { id: "dorian-i-iv", label: "Dorian i-IV", category: "modal", scale: "dorian", spec: "i IV" },
+  { id: "dorian-i-vii-iv", label: "Dorian i-VII-IV", category: "modal", scale: "dorian", spec: "i VII IV" },
+  { id: "mixolydian-i-vii-iv", label: "Mixolydian I-VII-IV", category: "modal", scale: "mixolydian", spec: "I VII IV" },
+  { id: "phrygian-i-ii", label: "Phrygian i-II", category: "modal", scale: "phrygian", spec: "i II" },
+  { id: "lydian-i-ii", label: "Lydian I-II", category: "modal", scale: "lydian", spec: "I II" },
+  { id: "minor-i-iv-v", label: "i-iv-v", category: "minor", scale: "minor", spec: "i iv v" },
+  { id: "minor-i-vi-vii", label: "i-VI-VII", category: "minor", scale: "minor", spec: "i VI VII" },
+  { id: "andalusian", label: "Andalusian (i-VII-VI-V)", category: "minor", scale: "minor", spec: "i VII VI V:7" },
+  { id: "minor-i-iv-vii-iii", label: "i-iv-VII-III", category: "minor", scale: "minor", spec: "i iv VII III" },
 ];
 
 export const PROGRESSION_PRESETS: readonly ProgressionPreset[] = PRESET_SPECS.map(
-  ({ id, label, category, spec }) => ({ id, label, category, steps: parseSteps(spec) }),
+  ({ id, label, category, scale, spec }) => ({ id, label, category, scale, steps: parseSteps(spec) }),
 );
 
 const ROMAN_ORDINALS: Record<string, number> = {
@@ -388,49 +392,6 @@ export function transposeManualRootForRootChange(
   );
 }
 
-export function createStepsFromPreset(
-  preset: ProgressionPreset,
-  scaleName: string,
-): ProgressionStep[] {
-  return getProgressionPresetStepsForScale(preset, scaleName).map((step) =>
-    createProgressionStep({
-      ...step,
-    }),
-  );
-}
-
-export function getProgressionPresetStepsForScale(
-  preset: ProgressionPreset,
-  scaleName: string,
-): Array<Omit<ProgressionStep, "id">> {
-  return preset.steps.map((step) => ({
-    ...step,
-    degree: remapDegreeByOrdinal(step.degree, scaleName),
-  }));
-}
-
-export function isProgressionPresetAvailableForScale(
-  preset: ProgressionPreset,
-  scaleName: string,
-): boolean {
-  return getProgressionPresetStepsForScale(preset, scaleName).every((step, index) => {
-    const resolved = resolveProgressionStep(
-      { id: `preset-availability-${index}`, ...step },
-      scaleName,
-      "C",
-    );
-    return !resolved.unavailable;
-  });
-}
-
-export function getAvailableProgressionPresets(
-  scaleName: string,
-): ProgressionPreset[] {
-  return PROGRESSION_PRESETS.filter((preset) =>
-    isProgressionPresetAvailableForScale(preset, scaleName),
-  );
-}
-
 export const DEFAULT_BEATS_PER_BAR = 4 as const;
 const BEATS_PER_BAR_OPTIONS = [3, 4, 6, 8] as const;
 export type BeatsPerBar = (typeof BEATS_PER_BAR_OPTIONS)[number];
@@ -498,18 +459,29 @@ export function resolveProgressionStep(
   index = 0,
   preferFlats = false,
 ): ResolvedProgressionStep {
-  const diatonic = getDiatonicChord(
-    step.degree,
-    getProgressionHarmonyScaleName(scaleName),
-    rootNote,
-  );
+  const harmonyScale = getProgressionHarmonyScaleName(scaleName);
+  const diatonic = getDiatonicChord(step.degree, harmonyScale, rootNote);
 
   // When manualRoot is set we bypass the diatonic resolver for root + quality.
-  // The diatonic result is only needed to gate the "unavailable" path when
-  // manualRoot is null, and to supply diatonicQuality when applicable.
   const usingManualRoot = step.manualRoot != null;
 
-  if (!diatonic && !usingManualRoot) {
+  const overrideValid =
+    step.qualityOverride !== null && CHORD_DEFINITIONS[step.qualityOverride] !== undefined;
+
+  // Quality pin: a valid override resolves a non-diatonic degree on its
+  // scale-position root (e.g. a dominant V in natural minor). Relative to the
+  // scale degree, so it transposes with the root. Resolved against the active
+  // scale (not the harmony parent) so a degree whose ordinal exceeds the
+  // scale length (e.g. VII in a 5-note pentatonic) stays unavailable.
+  let pinnedRoot: string | null = null;
+  if (!diatonic && !usingManualRoot && overrideValid) {
+    const ordinal = getDegreeOrdinal(step.degree);
+    if (ordinal !== null) {
+      pinnedRoot = getScaleNotes(rootNote, scaleName)[ordinal] ?? null;
+    }
+  }
+
+  if (!diatonic && !usingManualRoot && pinnedRoot === null) {
     return {
       ...step,
       index,
@@ -526,11 +498,8 @@ export function resolveProgressionStep(
     };
   }
 
-  const overrideValid =
-    step.qualityOverride !== null && CHORD_DEFINITIONS[step.qualityOverride] !== undefined;
-
-  // Resolve root: manualRoot takes precedence over the diatonic root.
-  const root = usingManualRoot ? step.manualRoot! : diatonic!.root;
+  // Resolve root: manualRoot > diatonic > pinned scale-degree root.
+  const root = usingManualRoot ? step.manualRoot! : (diatonic?.root ?? pinnedRoot!);
 
   // Resolve quality: qualityOverride > manualRoot default > diatonic quality.
   const quality = overrideValid

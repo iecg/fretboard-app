@@ -9,11 +9,8 @@ import {
   PROGRESSION_PRESETS,
   clampProgressionIndex,
   createProgressionStep,
-  createStepsFromPreset,
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
-  getAvailableProgressionPresets,
-  getProgressionPresetStepsForScale,
   getProgressionDurationMs,
   isBeatsPerBar,
   isProgressionDuration,
@@ -52,6 +49,9 @@ const beatsPerBarStorage = createStorage<number>({
   deserialize: (raw) => Number(raw),
   validate: numberValidator(isBeatsPerBar),
 });
+
+// Must stay in sync with DEFAULT_STEPS (the I-V-vi-IV major progression).
+const DEFAULT_PRESET_ID = "one-five-six-four";
 
 const DEFAULT_STEPS: ProgressionStep[] = [
   { id: "default-i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -357,30 +357,22 @@ export const currentProgressionBarAtom = atom((get) => {
   return elapsedBars + 1;
 });
 
-function stepsMatchPreset(
-  steps: readonly ProgressionStep[],
-  presetSteps: readonly Omit<ProgressionStep, "id">[],
-): boolean {
-  if (steps.length !== presetSteps.length) return false;
-  return steps.every((step, i) => {
-    const p = presetSteps[i];
-    return step.degree === p.degree
-      && step.duration.value === p.duration.value
-      && step.duration.unit === p.duration.unit
-      && step.qualityOverride === p.qualityOverride;
-  });
-}
-
 export const CUSTOM_PRESET_ID = "custom" as const;
 
-export const currentProgressionPresetIdAtom = atom<string>((get) => {
-  const steps = get(progressionStepsAtom);
-  const scaleName = get(scaleNameAtom);
-  const match = getAvailableProgressionPresets(scaleName).find((preset) =>
-    stepsMatchPreset(steps, getProgressionPresetStepsForScale(preset, scaleName)),
-  );
-  return match?.id ?? CUSTOM_PRESET_ID;
-});
+/**
+ * The id of the preset / suggestion most recently loaded. Loading establishes
+ * the "current selection" the picker reflects; any subsequent step edit clears
+ * it (see step-mutation atoms), falling the picker back to "custom". Persisted
+ * so a returning user sees the same selection they left with.
+ */
+export const loadedPresetIdAtom = atomWithStorage<string | null>(
+  k("loadedPresetId"),
+  DEFAULT_PRESET_ID,
+);
+
+export const currentProgressionPresetIdAtom = atom<string>(
+  (get) => get(loadedPresetIdAtom) ?? CUSTOM_PRESET_ID,
+);
 
 export const activeProgressionStepAtom = atom((get) => {
   const steps = get(progressionStepsAtom);
@@ -452,25 +444,31 @@ const PRESET_CATEGORY_GENRE: Record<ProgressionPresetCategory, string> = {
   minor: "ballad",
 };
 
-export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string) => {
+export const loadProgressionPresetAtom = atom(null, (_get, set, presetId: string) => {
   const preset = PROGRESSION_PRESETS.find((entry) => entry.id === presetId);
   if (!preset) return;
-  set(progressionStepsAtom, createStepsFromPreset(preset, get(scaleNameAtom)));
+  // Loading establishes harmonic context: set the home scale (base write — no
+  // remap) and load degrees verbatim so qualities follow the scale.
+  set(scaleNameAtom, preset.scale);
+  set(progressionStepsAtom, preset.steps.map((step) => createProgressionStep({ ...step })));
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);
+  set(loadedPresetIdAtom, preset.id);
   const genreId = PRESET_CATEGORY_GENRE[preset.category];
   if (genreId) set(applyGenreStyleAtom, genreId);
 });
 
-export const loadProgressionStepsAtom = atom(
+export const loadProgressionSuggestionAtom = atom(
   null,
-  (_get, set, steps: ReadonlyArray<Omit<ProgressionStep, "id">>) => {
-    if (steps.length === 0) return;
-    set(progressionStepsAtom, steps.map((step) => createProgressionStep({ ...step })));
+  (_get, set, suggestion: { id: string; steps: ReadonlyArray<Omit<ProgressionStep, "id">> }) => {
+    if (suggestion.steps.length === 0) return;
+    // Suggestions are generated in the current scale, so no scale switch.
+    set(progressionStepsAtom, suggestion.steps.map((step) => createProgressionStep({ ...step })));
     set(activeProgressionStepIndexAtom, 0);
     set(progressionPlayingStateAtom, false);
     set(progressionStepDeadlineAtom, null);
+    set(loadedPresetIdAtom, suggestion.id);
   },
 );
 
@@ -491,6 +489,7 @@ export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName
 });
 
 export const addProgressionStepAtom = atom(null, (get, set) => {
+  set(loadedPresetIdAtom, null);
   const tonic = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const previous = get(activeProgressionStepAtom);
@@ -514,6 +513,7 @@ export const addProgressionStepAtom = atom(null, (get, set) => {
 });
 
 export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {
+  set(loadedPresetIdAtom, null);
   const next = get(progressionStepsAtom).filter((step) => step.id !== id);
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, clampProgressionIndex(get(activeProgressionStepIndexAtom), next));
@@ -535,6 +535,7 @@ export const moveProgressionStepAtom = atom(null, (get, set, update: { id: strin
   const next = [...steps];
   const [moved] = next.splice(from, 1);
   next.splice(to, 0, moved!);
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, to);
 });
@@ -547,6 +548,7 @@ export const duplicateProgressionStepAtom = atom(
     if (index === -1) {
       return;
     }
+    set(loadedPresetIdAtom, null);
     const source = steps[index];
     const copy = createProgressionStep({
       degree: source.degree,
@@ -563,6 +565,7 @@ export const duplicateProgressionStepAtom = atom(
 );
 
 export const updateProgressionStepDegreeAtom = atom(null, (get, set, update: { id: string; degree: string }) => {
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, degree: update.degree } : step,
   ));
@@ -570,12 +573,14 @@ export const updateProgressionStepDegreeAtom = atom(null, (get, set, update: { i
 
 export const updateProgressionStepDurationAtom = atom(null, (get, set, update: { id: string; duration: ProgressionStepDuration }) => {
   if (!isProgressionDuration(update.duration)) return;
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, duration: update.duration } : step,
   ));
 });
 
 export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { id: string; qualityOverride: string | null }) => {
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, qualityOverride: update.qualityOverride } : step,
   ));
@@ -615,6 +620,7 @@ export const selectProgressionStepRootAtom = atom(
 export const updateProgressionStepRootAtom = atom(
   null,
   (get, set, update: { id: string; manualRoot: string | null }) => {
+    set(loadedPresetIdAtom, null);
     const next = get(progressionStepsAtom).map((step) =>
       step.id === update.id ? { ...step, manualRoot: update.manualRoot } : step,
     );
@@ -700,6 +706,7 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(progressionDrumPatternAtom, RESET);
   set(progressionDrumVariationsAtom, RESET);
   set(progressionSwingAtom, RESET);
+  set(loadedPresetIdAtom, RESET);
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);

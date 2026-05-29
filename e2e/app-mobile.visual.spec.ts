@@ -55,7 +55,7 @@ test.describe("App Mobile Visual", () => {
     // mobileTabAtom was removed in the mobile rehost; navigate via tab click.
     await page.getByRole("tab", { name: "Song" }).click();
 
-    await expect(page.getByRole("combobox", { name: "Preset" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sequence" })).toBeVisible();
     await expectFullPageVisual(page, "app-mobile-progression-tab-portrait-390x844");
   });
 });
