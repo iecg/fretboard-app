@@ -54,3 +54,6 @@ docs/*
 .antigravitycli
 
 .kiro/
+
+# === Worktrees ===
+.worktrees/
