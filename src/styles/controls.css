@@ -19,7 +19,10 @@
   [inert] button,
   [inert] [role="button"],
   [inert] select,
-  [inert] input {
+  [inert] input,
+  [inert] textarea,
+  [inert] [role="combobox"],
+  [inert] [role="spinbutton"] {
     transition: opacity 300ms ease;
   }
 }
