@@ -236,9 +236,9 @@ describe("TransportBar", () => {
     }
   });
 
-  it("swaps the status label to Playing while the progression plays", () => {
+  it("keeps the status label as Play while the progression plays (no text swap)", () => {
     const store = makeAtomStore([...playableAtoms]);
-    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+    const { container } = renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
     expect(screen.getByText("Play")).toBeTruthy();
 
@@ -246,8 +246,10 @@ describe("TransportBar", () => {
       store.set(setProgressionPlayingAtom, true);
     });
 
-    expect(screen.getByText("Playing")).toBeTruthy();
-    expect(screen.queryByText("Play")).toBeNull();
+    // Label text is static; playback is signalled by the active status dot, not a word swap.
+    expect(screen.getByText("Play")).toBeTruthy();
+    expect(screen.queryByText("Playing")).toBeNull();
+    expect(container.querySelector('[data-active="true"]')).toBeInTheDocument();
   });
 
   it("announces the global edit lock via an aria-live region while playing", () => {

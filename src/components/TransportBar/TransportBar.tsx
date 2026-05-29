@@ -64,7 +64,7 @@ export function TransportBar() {
       <div className={styles.statusLights} aria-label="Playback status">
         <span className={styles.statusLight} data-active={progressionPlaying ? "true" : undefined}>
           <span className={styles.statusDot} aria-hidden="true" />
-          <span className={styles.statusLabel}>{progressionPlaying ? "Playing" : "Play"}</span>
+          <span className={styles.statusLabel}>Play</span>
         </span>
         <span className={styles.statusLight} data-active={progressionLoopEnabled ? "true" : undefined}>
           <span className={styles.statusDot} aria-hidden="true" />
