@@ -147,8 +147,16 @@ export function materializeSignalGraph(
   limiter.connect(destination);
 
   // Reverb bus returns into the compressor input (glued with dry signal).
-  const reverb = track(buildReverb(plan.reverbEngine, plan.master.reverb.decay, plan.master.reverb.wet));
-  reverb.connect(comp);
+  // Build the reverb FULLY WET — it's a parallel aux send, not an insert — and
+  // control the return level with a dedicated gain. Tone's reverbs crossfade
+  // dry/wet internally, so a `wet < 1` here would pass a dry copy of each
+  // channel's send back into the master, doubling the dry signal in proportion
+  // to that channel's reverbSend. Forcing wet=1 keeps the send 100% wet and the
+  // return gain (= the genre's reverb `wet` amount) sets how much room returns.
+  const reverb = track(buildReverb(plan.reverbEngine, plan.master.reverb.decay, 1));
+  const reverbReturn = track(new Gain(plan.master.reverb.wet));
+  reverb.connect(reverbReturn);
+  reverbReturn.connect(comp);
 
   const inputs = {} as Record<MixInstrument, AudioNode>;
   for (const ch of ["chord", "bass", "drums", "metronome"] as const) {

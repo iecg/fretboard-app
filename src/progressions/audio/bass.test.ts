@@ -67,6 +67,17 @@ describe("scheduleBassNote — patch-driven Tone backend", () => {
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
+  it("cancel() before the scheduled start disposes the voice without releasing (kills the pending note)", () => {
+    // now (0) < scheduled time (5): the note is queued but hasn't started, so
+    // the monophonic voice is disposed outright to cancel the pending
+    // triggerAttackRelease — otherwise the next chord's bass would bleed in.
+    const handle = scheduleBassNote({} as AudioNode, 110, 5, { velocity: 0.9 });
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    handle.cancel();
+    expect(spies.triggerRelease).not.toHaveBeenCalled();
+    expect(spies.dispose).toHaveBeenCalledTimes(1);
+  });
+
   it("cancel() releases then disposes the synth after the envelope settles", () => {
     const handle = scheduleBassNote({} as AudioNode, 110, 0);
     handle.cancel();

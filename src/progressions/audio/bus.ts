@@ -157,15 +157,18 @@ export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGr
   const audio = ensureProgressionAudio();
   if (!audio) return null;
 
+  // Build the new graph FIRST. If materialization throws (Tone node
+  // construction can fail on some devices/plans), we must not have already torn
+  // down the prior routing — otherwise the four layer buses would be left
+  // disconnected from the master bus and the backing track would go permanently
+  // silent. Materializing before the swap means a failure propagates with the
+  // old graph + layer connections still intact.
+  const graph = materializeSignalGraph(audio.ctx, audio.bus, plan);
+
   for (const layer of GRAPH_LAYERS) {
     try { audio.layers[layer].disconnect(); } catch { /* not connected */ }
   }
-  if (currentGraph) {
-    currentGraph.dispose();
-    currentGraph = null;
-  }
-
-  const graph = materializeSignalGraph(audio.ctx, audio.bus, plan);
+  if (currentGraph) currentGraph.dispose();
   for (const layer of GRAPH_LAYERS) {
     audio.layers[layer].connect(graph.inputs[layer] as AudioNode);
   }

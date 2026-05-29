@@ -18,7 +18,7 @@ export const toggleMuteAtom = atom(null, (get, set) => {
   set(isMutedAtom, !get(isMutedAtom));
 });
 
-const QUALITY_VALUES = ["auto", "eco", "standard", "high"] as const;
+const QUALITY_VALUES = ["auto", "eco", "standard", "high"] as const satisfies readonly QualitySetting[];
 
 export const audioQualityAtom = atomWithStorage<QualitySetting>(
   k("audioQuality"),
