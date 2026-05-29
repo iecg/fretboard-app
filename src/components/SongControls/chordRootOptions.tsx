@@ -10,8 +10,33 @@ import {
 } from "@fretflow/core";
 import type { LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
 import { guessQualityForBorrowedRoot } from "../../progressions/progressionDomain";
+import styles from "./chordRootOptions.module.css";
+import shared from "../shared/shared.module.css";
 
 const QUALITY_HINT: Record<string, string> = { M: "maj", m: "min", dim: "dim", aug: "aug" };
+
+/** Columnar option content so degrees / notes / qualities line up across rows.
+ *  `srLabel` carries the readable text for the accessible name + typeahead while
+ *  the visual grid is aria-hidden (its concatenated text would be unreadable). */
+function rootContent(
+  srLabel: string,
+  degree: string,
+  note: string,
+  quality?: string,
+  move?: string,
+) {
+  return (
+    <>
+      <span className={shared["sr-only"]}>{srLabel}</span>
+      <span className={styles.row} aria-hidden="true">
+        <span className={styles.degree}>{degree}</span>
+        <span className={styles.note}>{note}</span>
+        {quality ? <span className={styles.quality}>{quality}</span> : null}
+        {move ? <span className={styles.move}>{move}</span> : null}
+      </span>
+    </>
+  );
+}
 
 // Natural-tone scale-degree numerals (same regardless of accidental preference).
 const NATURAL_NUMERAL_BY_OFFSET: Record<number, string> = {
@@ -62,17 +87,35 @@ export function buildChordRootGroups(
     if (r.rootClass === "diatonic") {
       const numeral = degreesMap[r.offset] ?? "";
       const hint = QUALITY_HINT[r.defaultQuality ?? "M"] ?? r.defaultQuality ?? "";
-      diatonic.push({ value: r.note, label: `${numeral} · ${display} · ${hint}` });
+      diatonic.push({
+        value: r.note,
+        label: `${numeral} · ${display} · ${hint}`,
+        content: rootContent(`${numeral} · ${display} · ${hint}`, numeral, display, hint),
+      });
     } else if (r.rootClass === "borrowed") {
       const numeral = nonDiatonicNumeral(r.offset, preferFlats);
       const guessedKey = guessQualityForBorrowedRoot(r.note, scaleName, tonicNote);
       const guessed = QUALITY_HINT[guessedKey] ?? guessedKey ?? "maj";
       const move = getHarmonicMoveAnnotation(PLAIN_NUMERAL_BY_OFFSET[r.offset] ?? "");
       const suffix = move ? ` — ${move}` : "";
-      borrowed.push({ value: r.note, label: `${numeral} · ${display} · ${guessed}${suffix}` });
+      borrowed.push({
+        value: r.note,
+        label: `${numeral} · ${display} · ${guessed}${suffix}`,
+        content: rootContent(
+          `${numeral} · ${display} · ${guessed}${suffix}`,
+          numeral,
+          display,
+          guessed,
+          move ?? undefined,
+        ),
+      });
     } else {
       const numeral = nonDiatonicNumeral(r.offset, preferFlats);
-      chromatic.push({ value: r.note, label: `${numeral} · ${display}` });
+      chromatic.push({
+        value: r.note,
+        label: `${numeral} · ${display}`,
+        content: rootContent(`${numeral} · ${display}`, numeral, display),
+      });
     }
   }
 

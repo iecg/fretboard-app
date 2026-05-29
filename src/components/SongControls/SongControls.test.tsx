@@ -361,7 +361,7 @@ describe("SongControls QUALITY dropdown", () => {
     renderWithStore(<SongControls />, store);
     // The chord-root combobox reflects the resolved root (G for V in C Major).
     const rootCombo = screen.getByRole("combobox", { name: "Chord root" });
-    expect(within(rootCombo).getByText(/G/)).toBeInTheDocument();
+    expect(rootCombo).toHaveTextContent(/G/);
   });
 });
 

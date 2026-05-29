@@ -8,6 +8,12 @@ export interface LabeledSelectOption {
   value: string;
   label: string;
   disabled?: boolean;
+  /**
+   * Optional rich content rendered in the dropdown item (and the trigger when
+   * selected). When provided, `label` is still used as the typeahead / accessible
+   * text. Use for columnar / multi-part option layouts.
+   */
+  content?: React.ReactNode;
 }
 
 export interface LabeledSelectGroup {
@@ -50,14 +56,15 @@ export type LabeledSelectProps = LabeledSelectBaseProps &
     | { groups: LabeledSelectGroup[]; options?: never }
   );
 
-function LabeledSelectItem({ value, label, disabled }: LabeledSelectOption) {
+function LabeledSelectItem({ value, label, disabled, content }: LabeledSelectOption) {
   return (
     <Select.Item
       value={value}
       disabled={disabled}
+      textValue={label}
       className={styles['labeled-select-item']}
     >
-      <Select.ItemText>{label}</Select.ItemText>
+      <Select.ItemText>{content ?? label}</Select.ItemText>
       <Select.ItemIndicator className={styles['labeled-select-item-indicator']}>
         <Check size={14} aria-hidden="true" />
       </Select.ItemIndicator>
