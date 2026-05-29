@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
+import { Lock } from "lucide-react";
 import { Switch } from "../Switch/Switch";
 import styles from "./InspectorCard.module.css";
 
@@ -29,13 +30,18 @@ export interface InspectorCardProps {
   headClassName?: string;
   /**
    * When true, the card body becomes non-interactive (HTML5 `inert`) and
-   * visually dims. Pair with `lockedHint` to show an inline hint in the
-   * header explaining how the user unlocks. Independent of `active` (which
-   * dims the body via the master toggle).
+   * the card shows a `locked` data attribute. Independent of `active` (which
+   * dims the body via the master toggle). Typically paired with `overlay` to
+   * communicate why the card is locked.
    */
   locked?: boolean;
-  /** Inline hint shown in the header when `locked=true`. Replaces `description` while locked. */
-  lockedHint?: ReactNode;
+  /**
+   * Optional overlay rendered inside the card body when the card is locked
+   * during playback. Absolutely positioned on top of the body content with
+   * backdrop blur. Replaces the earlier `lockedHint` approach (which caused
+   * layout shift by swapping description text).
+   */
+  overlay?: ReactNode;
   /** Card body contents — typically a PropGrid. */
   children: ReactNode;
 }
@@ -62,7 +68,7 @@ export function InspectorCard({
   bodyClassName,
   headClassName,
   locked = false,
-  lockedHint,
+  overlay,
   children,
 }: InspectorCardProps) {
   const hasToggle = onToggle !== undefined && toggleLabel !== undefined && active !== undefined;
@@ -83,16 +89,15 @@ export function InspectorCard({
         <h3 id={labelledById} className={styles.cardName}>
           {name}
         </h3>
+        {locked ? (
+          <Lock size={11} className={styles.lockIcon} aria-hidden="true" />
+        ) : null}
         {stateLabel ? (
           <span className={styles.cardState} aria-hidden="true">
             {stateLabel}
           </span>
         ) : null}
-        {locked && lockedHint ? (
-          <span className={styles.cardLockedHint} aria-live="polite">
-            {lockedHint}
-          </span>
-        ) : description ? (
+        {description ? (
           <span className={styles.cardDesc}>{description}</span>
         ) : (
           <span className={styles.cardDesc} aria-hidden="true" />
@@ -114,6 +119,11 @@ export function InspectorCard({
       >
         {children}
       </div>
+      {overlay ? (
+        <div className={styles.cardBodyOverlay} role="status" aria-live="polite">
+          {overlay}
+        </div>
+      ) : null}
     </section>
   );
 }

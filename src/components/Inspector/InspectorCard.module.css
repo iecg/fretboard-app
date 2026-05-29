@@ -3,6 +3,7 @@
   border-radius: 10px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent);
   overflow: hidden;
+  position: relative;
 }
 
 .cardHead {
@@ -74,7 +75,7 @@
 
 .cardBody {
   padding: 1rem;
-  transition: opacity 160ms ease;
+  position: relative;
 }
 
 .card[data-active="false"] .cardState {
@@ -98,23 +99,64 @@
   display: none;
 }
 
-.card[data-locked="true"] .cardBody,
 .card[data-locked="true"] .cardHeadActions {
-  opacity: 0.55;
   cursor: not-allowed;
 }
 
-.card[data-locked="true"] .cardBody *,
 .card[data-locked="true"] .cardHeadActions * {
   /* stylelint-disable-next-line declaration-no-important */
   cursor: not-allowed !important;
 }
 
-.cardLockedHint {
-  color: var(--text-muted, var(--dc-fg-muted));
-  font-size: 0.75rem;
-  font-style: italic;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.cardBodyOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  background: var(--chrome-scrim);
+  color: var(--dc-fg-strong);
+  font-size: 0.825rem;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 1rem;
+}
+
+:global([data-theme="modern-light"]) .cardBodyOverlay {
+  color: var(--dc-fg);
+}
+
+.cardBody {
+  transition: opacity 300ms ease;
+}
+
+.card[data-locked="true"] .cardBody {
+  opacity: 0.75;
+}
+
+.card[data-locked="true"] {
+  box-shadow: inset 2px 0 0 0 var(--faceplate-accent);
+}
+
+/* Light mode already carries a soft elevation shadow on .card; combine both so
+   the accent line and the elevation coexist while locked (equal specificity,
+   later source order would otherwise drop the elevation shadow). */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .card[data-locked="true"] {
+  box-shadow:
+    inset 2px 0 0 0 var(--faceplate-accent),
+    0 1px 4px rgb(42 37 29 / 0.06);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+.lockIcon {
+  color: var(--faceplate-accent);
+  opacity: 0;
+  transition: opacity 300ms ease 50ms;
+}
+
+.card[data-locked="true"] .lockIcon {
+  opacity: 1;
 }
