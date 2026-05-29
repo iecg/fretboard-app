@@ -34,6 +34,7 @@ import type {
   ProgressionPartHandle,
 } from "../progressions/audio/progressionAudioEngine";
 import type { BuiltLayers } from "../progressions/audio/buildAllLayers";
+import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
@@ -272,6 +273,7 @@ export function useProgressionAudioPlayback() {
 
   useEffect(() => {
     const tearDown = () => {
+      stopVisualClock();
       engine?.disposeAll(primsRef.current);
       primsRef.current = null;
       if (engine) engine.silenceProgressionBus();
@@ -281,6 +283,7 @@ export function useProgressionAudioPlayback() {
 
     if (blocked || muted) { tearDown(); return; }
     if (!playing) { tearDown(); engine?.pauseTimeline(); return; }
+    startVisualClock(store);
 
     const gen = ++genRef.current;
     setLoading(true);
@@ -459,6 +462,7 @@ export function useProgressionAudioPlayback() {
 
     const genRefSnapshot = genRef;
     return () => {
+      stopVisualClock();
       // Bumping genRef in cleanup IS the point — it invalidates any still-
       // pending `getEngine().then(...)` so it bails instead of building Parts
       // after teardown. The snapshot variable above captures the ref object
