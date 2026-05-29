@@ -29,7 +29,8 @@ describe("SongControls", () => {
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Preset" })).toBeInTheDocument();
     // Step list is gone (ProgressionTrack handles navigation); editor pane still present
-    expect(screen.getByRole("group", { name: "Chord root" })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Chord root" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Chord root" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Quality" })).toBeInTheDocument();
@@ -57,7 +58,8 @@ describe("SongControls", () => {
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
-    await user.click(within(screen.getByRole("group", { name: "Chord root" })).getByRole("button", { name: "A vi" }));
+    await user.click(screen.getByRole("combobox", { name: "Chord root" }));
+    await user.click(screen.getByRole("option", { name: /^vi\b.*\bA\b.*min/ }));
     // Set duration value to 2 via stepper
     fireEvent.click(screen.getByLabelText(/Increase Duration value/i));
     // Set duration unit to Bar
@@ -120,6 +122,17 @@ describe("SongControls", () => {
   it("does not render a progression on/off toggle", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
+  });
+
+  it("renders the chord root as a grouped dropdown (no DegreeGrid)", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByRole("group", { name: "Chord root" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Chord root" })).toBeInTheDocument();
+  });
+
+  it("renders a quality lock toggle", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByRole("button", { name: /lock quality/i })).toBeInTheDocument();
   });
 
   it("has no accessibility violations", async () => {
@@ -338,7 +351,7 @@ describe("SongControls QUALITY dropdown", () => {
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("maj7");
   });
 
-  it("shows the selected root in the DegreeGrid when a quality override is set", () => {
+  it("shows the selected root in the chord-root dropdown when a quality override is set", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
@@ -346,21 +359,23 @@ describe("SongControls QUALITY dropdown", () => {
       ]],
     ]);
     renderWithStore(<SongControls />, store);
-    // DegreeGrid shows the resolved root (G for V in C Major) as pressed
-    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
-    expect(within(degreeGroup).getByRole("button", { name: "G V", pressed: true })).toBeInTheDocument();
+    // The chord-root combobox reflects the resolved root (G for V in C Major).
+    const rootCombo = screen.getByRole("combobox", { name: "Chord root" });
+    expect(within(rootCombo).getByText(/G/)).toBeInTheDocument();
   });
 });
 
 describe("SongControls DEGREE", () => {
-  it("renders the DegreeGrid with all 12 chromatic root cells", () => {
+  it("renders the chord-root dropdown with all 12 chromatic roots", async () => {
     const { getByRole } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const group = getByRole("group", { name: "Chord root" });
-    expect(group).toBeTruthy();
-    // DegreeGrid always renders all 12 notes; no Off sentinel
-    const cells = within(group).getAllByRole("button");
-    expect(cells.length).toBe(12);
-    expect(within(group).queryByRole("button", { name: "Off" })).toBeNull();
+    const user = userEvent.setup();
+    const combo = getByRole("combobox", { name: "Chord root" });
+    expect(combo).toBeTruthy();
+    await user.click(combo);
+    // The grouped dropdown lists all 12 chromatic roots; no Off sentinel.
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBe(12);
+    expect(screen.queryByRole("option", { name: "Off" })).toBeNull();
   });
 });
 
@@ -464,11 +479,12 @@ describe("SongControls v2.0", () => {
 });
 
 describe("SongControls v2.0 chord-edit pane", () => {
-  it("renders a 12-cell DegreeGrid (no separate Degree ToggleBar in the edit pane)", () => {
+  it("renders a 12-root chord-root dropdown (no separate Degree ToggleBar in the edit pane)", async () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const degreeGrid = screen.getByRole("group", { name: "Chord root" });
-    const cells = within(degreeGrid).getAllByRole("button");
-    expect(cells.length).toBeGreaterThanOrEqual(12);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("combobox", { name: "Chord root" }));
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBeGreaterThanOrEqual(12);
   });
 
   it("does not render a Roman-numeral-only Degree ToggleBar in the edit pane", () => {
@@ -501,7 +517,7 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
     expect(editorGrid).toBeTruthy();
   });
 
-  it("selecting a borrowed degree cell clears any existing quality override", () => {
+  it("selecting a borrowed/chromatic root clears any existing quality override", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -511,19 +527,15 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
       [activeProgressionStepIndexAtom, 0],
     ]);
     renderWithStore(<SongControls />, store);
+    const user = userEvent.setup();
 
-    // In C Major, D# / Eb is a borrowed (chromatic) cell — not in key
-    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
-    // Borrowed cells have aria-label pattern: "numeral note" (e.g. "♯ii D#" or "♭iii Eb")
-    const borrowedCells = within(degreeGroup)
-      .getAllByRole("button")
-      .filter((btn) => btn.getAttribute("data-in-key") === "false");
-    // Click the first borrowed cell (D#/Eb, offset 3 from C)
-    const ebCell = borrowedCells.find((btn) =>
-      /d#|eb|d♯|e♭/i.test(btn.getAttribute("aria-label") ?? ""),
-    );
-    expect(ebCell).toBeTruthy();
-    fireEvent.click(ebCell!);
+    // In C Major, D# / Eb is a borrowed/chromatic (out-of-scale) root.
+    await user.click(screen.getByRole("combobox", { name: "Chord root" }));
+    const ebOption = screen
+      .getAllByRole("option")
+      .find((opt) => /d#|eb|d♯|e♭/i.test(opt.textContent ?? ""));
+    expect(ebOption).toBeTruthy();
+    await user.click(ebOption!);
 
     const step = store.get(progressionStepsAtom)[0];
     expect(step.qualityOverride).toBeNull();

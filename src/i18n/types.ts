@@ -167,6 +167,12 @@ export interface Dictionary {
     qualityGroupSus: string;
     qualityGroupSixths: string;
     qualityGroupSevenths: string;
+    qualityGroupDiatonic: string;
+    lockQuality: string;
+    lockQualityHint: string;
+    chordRootLabel: string;
+    chordRootGroupBorrowed: string;
+    chordRootGroupChromatic: string;
     pauseProgressionTooltip: string;
     playProgressionTooltip: string;
     stopProgression: string;
