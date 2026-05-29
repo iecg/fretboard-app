@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
 import { useTranslation } from "../../hooks/useTranslation";
+import shared from "../shared/shared.module.css";
 import styles from "./TransportBar.module.css";
 
 /**
@@ -57,10 +58,13 @@ export function TransportBar() {
 
   return (
     <div className={styles.transportBar} data-testid="transport-bar">
+      <span className={shared["sr-only"]} role="status" aria-live="polite">
+        {progressionPlaying ? t("controls.lockedAnnouncement") : ""}
+      </span>
       <div className={styles.statusLights} aria-label="Playback status">
         <span className={styles.statusLight} data-active={progressionPlaying ? "true" : undefined}>
           <span className={styles.statusDot} aria-hidden="true" />
-          <span className={styles.statusLabel}>Play</span>
+          <span className={styles.statusLabel}>{progressionPlaying ? "Playing" : "Play"}</span>
         </span>
         <span className={styles.statusLight} data-active={progressionLoopEnabled ? "true" : undefined}>
           <span className={styles.statusDot} aria-hidden="true" />

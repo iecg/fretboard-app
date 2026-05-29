@@ -235,6 +235,38 @@ describe("TransportBar", () => {
       expect(screen.queryByRole("tooltip")).toBeNull();
     }
   });
+
+  it("swaps the status label to Playing while the progression plays", () => {
+    const store = makeAtomStore([...playableAtoms]);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+
+    expect(screen.getByText("Play")).toBeTruthy();
+
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    expect(screen.getByText("Playing")).toBeTruthy();
+    expect(screen.queryByText("Play")).toBeNull();
+  });
+
+  it("announces the global edit lock via an aria-live region while playing", () => {
+    const store = makeAtomStore([...playableAtoms]);
+    const { container } = renderWithStore(
+      <TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>,
+      store,
+    );
+
+    const liveRegion = container.querySelector("[aria-live='polite']");
+    expect(liveRegion).toBeInTheDocument();
+    expect(liveRegion).toHaveTextContent("");
+
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    expect(liveRegion).toHaveTextContent("Editing locked during playback");
+  });
 });
 
 describe("Concurrent UI Transitions", () => {
