@@ -194,6 +194,26 @@ export function SongControls() {
     <div className={styles.sections}>
       {/* ── KEY + TIME flex composer ──────────────────────────────────────── */}
       <div className={styles.groupRow}>
+        <div className={clsx(styles.groupColumn, styles["groupColumn--preset"])}>
+          <InspectorCard
+            name={t("inspector.groupPreset")}
+            description={t("inspector.groupPresetDesc")}
+            labelledById="song-preset-heading"
+            locked={editsLocked}
+            lockedHint={t("controls.lockedHint")}
+          >
+            <PresetMenu
+              triggerLabel={t("inspector.progressionPreset")}
+              customLabel="Custom"
+              scaleName={scaleName}
+              currentId={currentProgressionPresetId}
+              categories={categories}
+              suggestionGroups={suggestionGroups}
+              disabled={editsLocked}
+              onSelect={handlePresetChange}
+            />
+          </InspectorCard>
+        </div>
         <div className={styles.groupColumn}>
           <InspectorCard
             name={t("inspector.groupKey")}
@@ -266,19 +286,6 @@ export function SongControls() {
         headClassName={styles["progression-card-head"]}
         actions={
           <div className={styles["progression-toolbar"]}>
-            <PresetMenu
-              triggerLabel={t("inspector.progressionPreset")}
-              customLabel="Custom"
-              scaleName={scaleName}
-              currentId={currentProgressionPresetId}
-              categories={categories}
-              suggestionGroups={suggestionGroups}
-              disabled={editsLocked}
-              onSelect={handlePresetChange}
-            />
-
-            <div className={styles["toolbar-divider"]} />
-
             <button
               type="button"
               className={styles["toolbar-button"]}

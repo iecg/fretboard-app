@@ -45,6 +45,7 @@ export interface Dictionary {
     none: string;
     auto: string;
     groupKey: string;
+    groupPreset: string;
     groupWheel: string;
     scaleLabel: string;
     scaleGroupMajorModes: string;
@@ -97,6 +98,7 @@ export interface Dictionary {
     groupScaleFingeringDesc: string;
     groupChordVoicingDesc: string;
     groupKeyDesc: string;
+    groupPresetDesc: string;
     groupTimeDesc: string;
     groupProgressionDesc: string;
     groupBackingTrackDesc: string;

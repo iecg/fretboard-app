@@ -153,6 +153,17 @@ describe("SongControls", () => {
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
   });
 
+  it("renders the Preset in its own card before Key, menu out of the Progression header", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const presetHeading = screen.getByRole("heading", { name: "Preset" });
+    const keyHeading = screen.getByRole("heading", { name: "Key" });
+    expect(presetHeading).toBeInTheDocument();
+    // Preset heading comes before Key heading in document order.
+    expect(presetHeading.compareDocumentPosition(keyHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The preset trigger button still exists (now inside the Preset card).
+    expect(screen.getByRole("button", { name: "Preset" })).toBeInTheDocument();
+  });
+
   it("has no accessibility violations", async () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(await axe(container)).toHaveNoViolations();
@@ -478,10 +489,10 @@ describe("SongControls v2.0", () => {
     expect(screen.getByLabelText(/time signature/i)).toBeInTheDocument();
   });
 
-  it("renders the Preset picker (inside the Progression group's right slot)", () => {
+  it("renders the Preset picker (inside its own Preset card)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByText("Progression")).toBeInTheDocument();
-    expect(screen.getByLabelText(/preset/i)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Preset" })).toBeVisible();
   });
 });
 
@@ -640,22 +651,25 @@ describe("SongControls G11b: step-list removal", () => {
 });
 
 describe("Top-row group composer (Plan I-T5)", () => {
-  it("wraps KEY + TIME groups in a flex composer container", () => {
+  it("wraps PRESET + KEY + TIME groups in a flex composer container", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const composer = container.querySelector("[class*='groupRow']");
     expect(composer).toBeTruthy();
     expect(getComputedStyle(composer as Element).display).toBe("flex");
     const columns = composer?.querySelectorAll("[class*='groupColumn']");
-    expect(columns?.length).toBe(2);
+    expect(columns?.length).toBe(3);
   });
 
-  it("each group column has flex: 1 1 24rem (grow + shrink with sensible basis)", () => {
+  it("the Key + Time columns have flex: 1 1 24rem (grow + shrink with sensible basis)", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const columns = container.querySelectorAll("[class*='groupColumn']");
     expect(columns.length).toBeGreaterThan(0);
-    const styles = getComputedStyle(columns[0]);
-    // Computed style for `flex: 1 1 24rem` is usually "1 1 384px" (24*16)
-    expect(styles.flex).toMatch(/1\s+1\s+(24rem|384px)/);
+    // The narrower Preset column uses a 16rem basis; the Key + Time columns
+    // keep the 24rem basis. Assert on the wider columns specifically.
+    const wideColumns = Array.from(columns).filter((col) =>
+      /1\s+1\s+(24rem|384px)/.test(getComputedStyle(col).flex),
+    );
+    expect(wideColumns.length).toBeGreaterThanOrEqual(2);
   });
 });
 
