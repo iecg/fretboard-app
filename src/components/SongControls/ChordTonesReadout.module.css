@@ -1,0 +1,78 @@
+/* Chord-tones readout: a sunken strip of the active chord's notes + interval
+   degrees. The "Notes" caption is divided off on the left; the root tone gets
+   the faceplate accent. */
+.readout {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--faceplate-divider);
+  border-radius: 8px;
+  background-color: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+}
+
+.caption {
+  align-self: center;
+  flex-shrink: 0;
+  padding-right: 0.7rem;
+  margin-right: 0.2rem;
+  border-right: 1px solid var(--faceplate-divider);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dc-fg-muted);
+}
+
+.tones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 2.9rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--faceplate-divider);
+  border-radius: 7px;
+  background-color: color-mix(in srgb, var(--text-main) 3%, transparent);
+}
+
+.tone.root {
+  border-color: color-mix(in srgb, var(--faceplate-accent) 45%, var(--faceplate-divider));
+  background-color: color-mix(in srgb, var(--faceplate-accent) 8%, transparent);
+}
+
+.note {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.tone.root .note {
+  color: var(--faceplate-accent);
+}
+
+.degree {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--dc-fg-muted);
+}
+
+.tone.root .degree {
+  color: color-mix(in srgb, var(--faceplate-accent) 80%, var(--text-main));
+}

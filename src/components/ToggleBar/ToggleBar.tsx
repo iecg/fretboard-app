@@ -6,16 +6,14 @@ import styles from "./ToggleBar.module.css";
 import shared from "../shared/shared.module.css";
 
 // Each variant supplies its OWN group class. `default` and `chip` opt into the
-// shared `toggle-group` base chrome; `tabs` and `pip` are fully self-contained
-// (they intentionally have no group container), so the base is NOT applied
-// globally — that previously leaked dc-* container chrome onto the pip row.
+// shared `toggle-group` base chrome; `tabs` is fully self-contained (no group
+// container), so the base is NOT applied globally.
 const toggleBarVariants = cva("", {
   variants: {
     variant: {
       default: `${shared["toggle-group"]} ${shared["toggle-group--default"]}`,
       chip: `${shared["toggle-group"]} ${shared["toggle-group--chip"]}`,
       tabs: styles["mobile-tab-bar"],
-      pip: styles["pip-group"],
     },
   },
   defaultVariants: {
@@ -29,7 +27,6 @@ const toggleButtonVariants = cva("", {
       default: shared["toggle-btn"],
       chip: `${shared["toggle-btn"]} ${shared["toggle-btn--chip"]}`,
       tabs: styles["mobile-tab"],
-      pip: styles["pip-btn"],
     },
     isActive: {
       true: shared.active,
@@ -57,7 +54,7 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   options: readonly ToggleBarOption<Value>[];
   value: Value | undefined;
   onChange: (value: Value) => void;
-  variant?: "default" | "chip" | "tabs" | "pip";
+  variant?: "default" | "chip" | "tabs";
   label?: string;
   /** When "scroll" — the toggle group scrolls horizontally instead of shrinking buttons. */
   overflow?: "scroll";
@@ -74,7 +71,7 @@ export function ToggleBar<Value extends string | number>({
   overflow,
   disabled = false,
 }: ToggleBarProps<Value>) {
-  const isTablist = variant === "tabs" || variant === "pip";
+  const isTablist = variant === "tabs";
   const descPrefix = useId();
   return (
     <div

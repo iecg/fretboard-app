@@ -113,7 +113,6 @@ export interface Dictionary {
   statusBar: {
     key: string;
     chord: string;
-    lens: string;
     pattern: string;
     frets: string;
     tempo: string;
@@ -153,13 +152,10 @@ export interface Dictionary {
     pairMembersConnected: string;
     quality: string;
     qualityAriaLabel: string;
-    lensHint: string;
     degree: string;
     degreeAriaLabel: string;
     chordType: string;
     root: string;
-    lens: string;
-    lensAriaLabel: string;
     disabled: string;
     off: string;
     on: string;
@@ -168,7 +164,6 @@ export interface Dictionary {
     customChordHint: string;
     diatonicDefaultHint: string;
     manualQualityHint: string;
-    voicingLensCrossRef: string;
     chordPositionLabel: string;
     qualityGroupTriads: string;
     qualityGroupSus: string;
@@ -176,12 +171,23 @@ export interface Dictionary {
     qualityGroupSevenths: string;
     qualityGroupDiatonic: string;
     lockQuality: string;
-    lockQualityShort: string;
     lockQualityHint: string;
+    lockAdapts: string;
+    lockLocked: string;
+    lockHintAdapts: string;
+    lockHintPinnedPrefix: string;
+    lockHintPinnedSuffix: string;
+    editingChord: string;
+    stepsLabel: string;
+    prevChord: string;
+    nextChord: string;
+    chordsWord: string;
+    barsWord: string;
     chordRootLabel: string;
     chordRootGroupDiatonic: string;
     chordRootGroupBorrowed: string;
     chordRootGroupChromatic: string;
+    progressionNavigation: string;
     pauseProgressionTooltip: string;
     playProgressionTooltip: string;
     stopProgression: string;

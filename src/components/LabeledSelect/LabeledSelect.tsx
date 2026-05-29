@@ -10,10 +10,17 @@ export interface LabeledSelectOption {
   disabled?: boolean;
   /**
    * Optional rich content rendered in the dropdown item (and the trigger when
-   * selected). When provided, `label` is still used as the typeahead / accessible
-   * text. Use for columnar / multi-part option layouts.
+   * selected, unless `triggerContent` is also given). When provided, `label` is
+   * still used as the typeahead / accessible text. Use for columnar / multi-part
+   * option layouts.
    */
   content?: React.ReactNode;
+  /**
+   * Optional compact content rendered in the *trigger* when this option is
+   * selected, distinct from the (richer) dropdown `content`. Lets the closed
+   * control show a tighter value than the list rows.
+   */
+  triggerContent?: React.ReactNode;
 }
 
 export interface LabeledSelectGroup {
@@ -42,6 +49,8 @@ interface LabeledSelectBaseProps {
   width?: "fill" | "fixed" | "auto";
   /** Required when width="fixed". CSS length applied to the trigger. */
   widthValue?: string;
+  /** Render the selected value in the accent color (e.g. the chord ROOT). */
+  accentValue?: boolean;
   /**
    * @deprecated use `width="auto"`. Kept as an alias for back-compat during
    * the Plan H sweep.
@@ -86,6 +95,7 @@ export function LabeledSelect({
   hideLabel,
   width,
   widthValue,
+  accentValue,
   fit,
 }: LabeledSelectProps) {
   const generatedId = useId();
@@ -94,6 +104,12 @@ export function LabeledSelect({
 
   const resolvedWidth: "fill" | "fixed" | "auto" =
     width ?? (fit ? "auto" : "fill");
+
+  // When the selected option supplies `triggerContent`, render it in the closed
+  // trigger (a tighter value than the list rows). Otherwise let Radix render the
+  // selected item's text/content by default.
+  const allOptions = groups ? groups.flatMap((g) => g.options) : (options ?? []);
+  const selectedTriggerContent = allOptions.find((o) => o.value === value)?.triggerContent;
 
   return (
     <div
@@ -118,12 +134,17 @@ export function LabeledSelect({
       <Select.Root value={value} onValueChange={onChange} disabled={disabled}>
         <Select.Trigger
           id={selectId}
-          className={styles['labeled-select-trigger']}
+          className={clsx(
+            styles['labeled-select-trigger'],
+            accentValue && styles['labeled-select-trigger--accent-value'],
+          )}
           aria-labelledby={labelId}
           aria-describedby={ariaDescribedBy}
           data-testid={dataTestId}
         >
-          <Select.Value />
+          {selectedTriggerContent
+            ? <Select.Value>{selectedTriggerContent}</Select.Value>
+            : <Select.Value />}
           <Select.Icon className={styles['labeled-select-chevron']}>
             <ChevronDown size={16} aria-hidden="true" />
           </Select.Icon>

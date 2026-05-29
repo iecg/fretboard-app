@@ -7,7 +7,10 @@ const css = readFileSync(join(__dirname, "shared.module.css"), "utf8");
 describe("shared.module.css surface composables", () => {
   it("defines the control surface and its interaction states", () => {
     expect(css).toMatch(/\.surface--control\s*\{/);
-    expect(css).toMatch(/\.surface--control:hover\s*\{/);
+    // Hover lift is guarded against disabled consumers (single source of truth —
+    // no per-consumer reset). Match the hover selector regardless of guards.
+    expect(css).toMatch(/\.surface--control:hover[^{]*\{/);
+    expect(css).toMatch(/\.surface--control:hover:not\(:disabled\):not\(\[data-disabled\]\)/);
     expect(css).toMatch(/\.surface--control:focus-within\s*\{/);
   });
 

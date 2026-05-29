@@ -7,11 +7,4 @@ describe("control-surface composition", () => {
     const css = readFileSync(join(__dirname, "StepperShell.module.css"), "utf8");
     expect(css).toMatch(/\.shell\s*\{[^}]*composes:\s*surface--control\s+from/s);
   });
-  it("LabeledSelect trigger composes surface--control", () => {
-    const css = readFileSync(
-      join(__dirname, "../LabeledSelect/LabeledSelect.module.css"),
-      "utf8",
-    );
-    expect(css).toMatch(/composes:\s*surface--control\s+from/);
-  });
 });

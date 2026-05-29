@@ -172,7 +172,10 @@
   border-radius: var(--dc-radius);
   transition: var(--dc-transition);
 }
-.surface--control:hover {
+/* Guard the hover lift against disabled consumers (`:disabled` for native
+   buttons, `[data-disabled]` for Radix triggers) so this stays the single
+   source of truth — no per-consumer reset needed. */
+.surface--control:hover:not(:disabled):not([data-disabled]) {
   background-color: var(--dc-bg-hover);
   border-color: var(--dc-border-hover);
 }

@@ -185,7 +185,6 @@ describe("ToggleBar/ToggleBar", () => {
   it.each([
     ["default", undefined],
     ["tabs", "tabs"],
-    ["pip", "pip"],
   ] as const)("%s variant has no a11y violations", async (_label, variant) => {
     const { container } = render(
       <ToggleBar
@@ -237,29 +236,3 @@ describe("ToggleBar/ToggleBar", () => {
   });
 });
 
-describe("ToggleBar pip variant", () => {
-  const opts = [
-    { value: 0, label: "I" },
-    { value: 1, label: "V" },
-  ];
-
-  it("renders a tablist with mono degree labels", () => {
-    render(<ToggleBar variant="pip" options={opts} value={0} onChange={vi.fn()} label="nav" />);
-    expect(screen.getByRole("tablist", { name: "nav" })).toBeInTheDocument();
-    expect(screen.getAllByRole("tab")).toHaveLength(2);
-  });
-
-  it("marks the active pip with aria-selected", () => {
-    render(<ToggleBar variant="pip" options={opts} value={1} onChange={vi.fn()} label="nav" />);
-    const tabs = screen.getAllByRole("tab");
-    expect(tabs[0]).toHaveAttribute("aria-selected", "false");
-    expect(tabs[1]).toHaveAttribute("aria-selected", "true");
-  });
-
-  it("calls onChange with the selected value", () => {
-    const onChange = vi.fn();
-    render(<ToggleBar variant="pip" options={opts} value={0} onChange={onChange} label="nav" />);
-    fireEvent.click(screen.getByText("V"));
-    expect(onChange).toHaveBeenCalledWith(1);
-  });
-});

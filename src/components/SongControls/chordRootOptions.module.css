@@ -36,3 +36,25 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Compact trigger value: note + accent degree (e.g. "A  i") as one select value.
+   The note keeps full text strength; the degree numeral carries the accent. */
+.triggerRow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.triggerNote {
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.triggerDegree {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--faceplate-accent);
+  white-space: nowrap;
+}

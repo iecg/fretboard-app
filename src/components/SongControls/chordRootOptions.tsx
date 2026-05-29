@@ -39,6 +39,21 @@ function rootContent(
   );
 }
 
+/** Compact trigger value: note + accent degree (quality lives in its own control
+ *  and can be overridden, so showing it here would go stale). One control —
+ *  facets are aria-hidden; the sr-only label carries the readable name. */
+function triggerContent(srLabel: string, degree: string, note: string) {
+  return (
+    <>
+      <span className={shared["sr-only"]}>{srLabel}</span>
+      <span className={styles.triggerRow} aria-hidden="true">
+        <span className={styles.triggerNote}>{note}</span>
+        <span className={styles.triggerDegree}>{degree}</span>
+      </span>
+    </>
+  );
+}
+
 // Plain ASCII numerals, keyed by offset, used only to look up colloquial
 // harmonic-move annotations (HARMONIC_MOVES keys are quality-neutral ASCII).
 const PLAIN_NUMERAL_BY_OFFSET: Record<number, string> = {
@@ -53,6 +68,10 @@ export function buildChordRootGroups(
   labels: { diatonic: string; borrowed: string; chromatic: string } = {
     diatonic: "Diatonic", borrowed: "Borrowed", chromatic: "Chromatic",
   },
+  // When set (quality lock engaged), every root previews this quality instead
+  // of its per-root default, and the Roman-numeral case follows it — so the
+  // list reads "pick any root, it stays <lockedQuality>".
+  lockedQuality: string | null = null,
 ): LabeledSelectGroup[] {
   const parent = getHarmonyParentScale(scaleName);
   const degreesMap = getDegreesForScale(parent);
@@ -71,43 +90,40 @@ export function buildChordRootGroups(
     const display = formatAccidental(
       getNoteDisplayInScale(r.note, tonicNote, scaleIntervals, preferFlats),
     );
-    if (r.rootClass === "diatonic") {
-      const numeral = degreesMap[r.offset] ?? "";
-      const hint = QUALITY_HINT[r.defaultQuality ?? "M"] ?? r.defaultQuality ?? "";
-      diatonic.push({
-        value: r.note,
-        label: `${numeral} · ${display} · ${hint}`,
-        content: rootContent(`${numeral} · ${display} · ${hint}`, numeral, display, hint),
-      });
+
+    // Resolve the previewed quality + numeral for this root:
+    //  - locked → the locked quality, uniformly (numeral case follows it)
+    //  - diatonic → the scale's degree string + its default quality
+    //  - borrowed/chromatic → real parallel-key quality (or "M"), numeral case
+    //    follows it so the hint and numeral never disagree.
+    let numeral: string;
+    let hint: string;
+    if (lockedQuality) {
+      hint = QUALITY_HINT[lockedQuality] ?? lockedQuality;
+      numeral = formatChromaticNumeral(r.offset, lockedQuality, preferFlats);
+    } else if (r.rootClass === "diatonic") {
+      numeral = degreesMap[r.offset] ?? "";
+      hint = QUALITY_HINT[r.defaultQuality ?? "M"] ?? r.defaultQuality ?? "";
     } else {
-      // Borrowed + chromatic share the same shape: the default quality (real
-      // parallel-key quality for borrowed, "M" for chromatic) drives both the
-      // quality hint AND the Roman-numeral case so they never disagree.
       const qualityKey = guessQualityForBorrowedRoot(r.note, scaleName, tonicNote);
-      const hint = QUALITY_HINT[qualityKey] ?? qualityKey ?? "maj";
-      const numeral = formatChromaticNumeral(r.offset, qualityKey, preferFlats);
-      if (r.rootClass === "borrowed") {
-        const move = getHarmonicMoveAnnotation(PLAIN_NUMERAL_BY_OFFSET[r.offset] ?? "");
-        const suffix = move ? ` — ${move}` : "";
-        borrowed.push({
-          value: r.note,
-          label: `${numeral} · ${display} · ${hint}${suffix}`,
-          content: rootContent(
-            `${numeral} · ${display} · ${hint}${suffix}`,
-            numeral,
-            display,
-            hint,
-            move ?? undefined,
-          ),
-        });
-      } else {
-        chromatic.push({
-          value: r.note,
-          label: `${numeral} · ${display} · ${hint}`,
-          content: rootContent(`${numeral} · ${display} · ${hint}`, numeral, display, hint),
-        });
-      }
+      hint = QUALITY_HINT[qualityKey] ?? qualityKey ?? "maj";
+      numeral = formatChromaticNumeral(r.offset, qualityKey, preferFlats);
     }
+
+    const move = r.rootClass === "borrowed"
+      ? getHarmonicMoveAnnotation(PLAIN_NUMERAL_BY_OFFSET[r.offset] ?? "")
+      : null;
+    const suffix = move ? ` — ${move}` : "";
+    const srLabel = `${numeral} · ${display} · ${hint}${suffix}`;
+    const option = {
+      value: r.note,
+      label: srLabel,
+      content: rootContent(srLabel, numeral, display, hint, move ?? undefined),
+      triggerContent: triggerContent(`${display} — ${numeral}`, numeral, display),
+    };
+    (r.rootClass === "diatonic" ? diatonic
+      : r.rootClass === "borrowed" ? borrowed
+      : chromatic).push(option);
   }
 
   const groups: LabeledSelectGroup[] = [{ groupLabel: labels.diatonic, options: diatonic }];

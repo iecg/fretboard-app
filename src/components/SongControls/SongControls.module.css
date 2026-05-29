@@ -36,7 +36,8 @@
 .editor-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem 1rem;
+  /* Roomy separation between the Root / Quality / Duration groups. */
+  gap: 0.9rem 2.25rem;
   align-items: flex-start;
 }
 
@@ -123,19 +124,6 @@
   text-transform: uppercase;
   color: var(--dc-fg);
   line-height: 1;
-}
-
-.progressionHelp {
-  width: 100%;
-  margin: 0.25rem 0 0;
-  font-size: 0.6875rem;
-  line-height: 1.4;
-  color: var(--dc-fg-muted);
-}
-
-.progressionHelpStrong {
-  color: var(--faceplate-accent);
-  font-weight: 700;
 }
 
 /* ===== Grouped Header Toolbar ===== */
@@ -234,53 +222,141 @@
   cursor: default;
 }
 
-/* ===== Stronger Chord Identity ===== */
-.chord-identity {
+/* ===== Master–detail progression editor ===== */
+/* Chord list (left) + editor (right) share a row when wide, stack when the
+   inspector is narrow — intrinsic flex-wrap, no media query. */
+.progression-master-detail {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 1rem 1.25rem;
+  align-items: flex-start;
 }
 
-.active-degree-badge {
+/* Right pane: the bordered cyan-glow editor card. */
+.editor-panel {
+  flex: 7 1 19rem;
+  min-width: 17rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--faceplate-accent) 45%, var(--faceplate-divider));
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--faceplate-accent) 5%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--faceplate-accent) 12%, transparent);
+}
+
+.editor-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+/* Focal Roman-numeral chip — the editor's anchor: larger, accent-filled, glowing. */
+.editor-degree-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.75rem;
-  height: 1.75rem;
-  padding: 0 0.5rem;
-  background-color: color-mix(in srgb, var(--faceplate-accent) 12%, transparent);
-  border: 1.5px solid var(--faceplate-accent);
-  border-radius: 6px;
+  min-width: 2.75rem;
+  height: 2.5rem;
+  padding: 0 0.6rem;
+  background-color: color-mix(in srgb, var(--faceplate-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--faceplate-accent) 55%, var(--faceplate-divider));
+  border-radius: 9px;
   color: var(--faceplate-accent);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--faceplate-accent) 14%, transparent);
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 16px -5px color-mix(in srgb, var(--faceplate-accent) 45%, transparent);
 }
 
-.active-chord-label {
-  font-family: var(--font-sans);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.01em;
-}
-
-/* ===== Degree Pip Navigation ===== */
-.pip-nav-container {
+.editor-title {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
-.chords-label {
+.editor-eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
+  line-height: 1;
+  color: color-mix(in srgb, var(--faceplate-accent) 75%, var(--dc-fg-muted));
+}
+
+/* Chord identity stated once, big: note in full strength, quality word dimmed. */
+.editor-chord-name {
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.editor-quality-word {
+  font-weight: 500;
+  color: var(--dc-fg);
+}
+
+/* Pager: ‹ prev · n / N · next › — a quick secondary step-through. */
+.editor-pager {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 3px;
+  background-color: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  border: 1px solid var(--faceplate-divider);
+  border-radius: 8px;
+}
+
+.pager-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.6rem;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: var(--dc-fg);
+  cursor: pointer;
+  transition: var(--dc-transition);
+}
+
+.pager-button:hover:not(:disabled) {
+  color: var(--faceplate-accent);
+  background-color: color-mix(in srgb, var(--faceplate-accent) 10%, transparent);
+}
+
+.pager-button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.pager-button:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: default;
+}
+
+.editor-position {
+  padding: 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
   color: var(--dc-fg-muted);
+}
+
+.editor-position b {
+  color: var(--faceplate-accent);
+  font-weight: 700;
 }
 
 /* Fixed height keeps the Quality / Lock / Duration field labels on one baseline
@@ -293,12 +369,60 @@
   min-height: 1.25rem;
 }
 
-/* Quality-lock switch: vertically centered in a control-height slot so it lines
-   up with the adjacent dropdown and stepper. */
-.lock-switch {
+/* Quality + its inline lock toggle form one unit on the editor row. */
+.quality-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Labeled lock toggle, bound to the Quality dropdown: a padlock icon + a status
+   word ("Adapts" / "Locked") rather than an orphaned square. Quiet at rest,
+   faceplate accent when engaged. The padlock shape (open vs closed) carries the
+   state independently of color (WCAG 1.4.1), reinforced by the text label. */
+.lock-toggle {
   display: inline-flex;
   align-items: center;
+  gap: 0.4rem;
   min-height: var(--control-height);
+  padding: 0 0.7rem;
+  white-space: nowrap;
+  /* Quiet at rest so the engaged (cyan) state reads as the only "on" affordance. */
+  color: var(--dc-fg-muted);
+}
+
+.lock-toggle:hover:not(.lock-toggle--on) {
+  color: var(--dc-fg-strong);
+}
+
+.lock-label {
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+/* State hint under the Quality field: "Adopts the diatonic quality" /
+   "Pinned to <quality> on root change". Reserves a line so toggling the lock
+   doesn't reflow the editor row. */
+.lock-hint {
+  margin: 0;
+  min-height: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  color: var(--dc-fg-muted);
+}
+
+/* Compound selector (0,2,0) so the engaged accent wins over the single-class
+   .surface--control chrome regardless of CSS-module bundle order. */
+.lock-toggle.lock-toggle--on {
+  background-color: color-mix(in srgb, var(--faceplate-accent) 14%, transparent);
+  border-color: var(--faceplate-accent);
+  color: var(--faceplate-accent);
+}
+.lock-toggle.lock-toggle--on:hover {
+  background-color: color-mix(in srgb, var(--faceplate-accent) 20%, transparent);
+  border-color: var(--faceplate-accent);
 }
 
 /* Progression card header — tighter vertical padding than the default 10px */

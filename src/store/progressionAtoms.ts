@@ -680,6 +680,10 @@ export const previousProgressionStepAtom = atom(null, (get, set) => {
 });
 
 export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
+  // Session-only lock isn't an atomWithStorage, so reset it explicitly to its
+  // default rather than via RESET — otherwise it survives a progression reset
+  // and keeps preserving qualityOverride on the next root change.
+  set(qualityLockAtom, false);
   set(progressionStepsAtom, RESET);
   set(progressionTempoBpmAtom, RESET);
   set(progressionLoopEnabledAtom, RESET);

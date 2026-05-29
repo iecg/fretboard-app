@@ -58,17 +58,18 @@
   border-color: var(--dc-border-active);
 }
 
+/* Accent-colored value (e.g. the chord ROOT) — the chevron keeps its own
+   muted color via its dedicated rule. */
+.labeled-select-trigger--accent-value {
+  color: var(--faceplate-accent);
+}
+
 .labeled-select-trigger[data-disabled] {
   cursor: not-allowed;
 }
 
-/* Suppress the composable's .surface--control:hover lift for disabled triggers
-   (the composable hover has no disabled guard). Mirrors the pre-refactor
-   :not([data-disabled]) hover guard. */
-.labeled-select-trigger[data-disabled]:hover {
-  background-color: var(--dc-bg);
-  border-color: var(--dc-border);
-}
+/* The composable `.surface--control:hover` is now guarded against
+   `[data-disabled]`, so no per-trigger hover reset is needed here. */
 
 .labeled-select-chevron {
   display: inline-flex;
