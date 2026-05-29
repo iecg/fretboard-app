@@ -467,8 +467,21 @@ export function SongControls() {
               </p>
             </div>
           </div>
+        ) : progressionSteps.length === 0 ? (
+          <p className={styles.progressionHint}>
+            <button
+              type="button"
+              className={styles.linkButton}
+              onClick={() => addProgressionStep()}
+            >
+              Add a chord
+            </button>{" "}
+            to start building your progression.
+          </p>
         ) : (
-          <p className={shared["field-hint"]}>Select a chord to edit its degree, duration, and quality.</p>
+          <p className={styles.progressionHint}>
+            Select a chord to edit its degree, duration, and quality.
+          </p>
         )}
           </Prop>
         </PropGrid>

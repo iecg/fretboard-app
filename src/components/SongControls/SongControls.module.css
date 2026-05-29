@@ -346,3 +346,29 @@
   padding-top: 4px;
   padding-bottom: 4px;
 }
+
+.progressionHint {
+  width: 100%;
+  margin: 0.25rem 0 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--dc-fg-muted);
+  text-align: center;
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--faceplate-accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.linkButton:hover {
+  color: color-mix(in srgb, var(--faceplate-accent) 80%, white);
+}

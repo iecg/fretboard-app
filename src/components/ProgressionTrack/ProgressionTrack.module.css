@@ -414,6 +414,74 @@
   font-size: var(--text-xs);
 }
 
+.emptyStateBlock {
+  --duration-bars: 1;
+  position: absolute;
+  inset-block: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.18rem 0.38rem 0.18rem 0.32rem;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 220ms ease,
+    transform 120ms ease;
+
+  border: 1px dotted rgb(193 218 235 / 0.15);
+  background: rgba(255, 255, 255, 0.015);
+  color: var(--track-text-dim);
+}
+
+.emptyStateBlock:hover {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--track-accent-dim);
+  box-shadow: inset 0 0 10px rgb(77 228 255 / 0.03);
+}
+
+.emptyStateBlock:hover .degreeBadge {
+  border-color: var(--track-accent-dim);
+  color: var(--track-accent);
+  background: rgb(77 228 255 / 0.08);
+}
+
+.emptyStateBlock:hover .chordName {
+  color: var(--track-accent);
+}
+
+.emptyStateBlock:active {
+  transform: translateY(0.5px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* =========================================================================
+   Light-mode emptyState overrides
+   ========================================================================= */
+:global([data-theme="modern-light"]) .emptyStateBlock {
+  border-color: rgb(133 124 108 / 0.28);
+  background: rgb(246 242 233 / 0.50);
+  color: rgb(42 37 29 / 0.65);
+}
+
+:global([data-theme="modern-light"]) .emptyStateBlock:hover {
+  background: rgb(246 242 233 / 0.80);
+  border-color: var(--track-accent);
+}
+
+:global([data-theme="modern-light"]) .emptyStateBlock:hover .degreeBadge {
+  border-color: var(--track-accent-dim);
+  color: var(--track-accent);
+  background: rgb(20 112 136 / 0.07);
+}
+
+:global([data-theme="modern-light"]) .emptyStateBlock:hover .chordName {
+  color: var(--track-accent);
+}
+
 /* ----------------------------------------------------------------------------
  * Responsive — tighten on narrow viewports without losing identity.
  *
