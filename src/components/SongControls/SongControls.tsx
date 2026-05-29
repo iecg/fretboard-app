@@ -8,7 +8,7 @@ import {
   MAX_PROGRESSION_STEP_DURATION_VALUE,
   MIN_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
-  getAvailableProgressionPresets,
+  PROGRESSION_PRESETS,
 } from "../../progressions/progressionDomain";
 import { generateCommonProgressions } from "../../progressions/progressionGeneration";
 import { useProgressionState } from "../../hooks/useProgressionState";
@@ -136,7 +136,7 @@ export function SongControls() {
     activeProgressionStepIndex,
     activeResolvedProgressionStep,
     loadProgressionPreset,
-    loadProgressionSteps,
+    loadProgressionSuggestion,
     addProgressionStep,
     duplicateProgressionStep,
     removeProgressionStep,
@@ -154,7 +154,7 @@ export function SongControls() {
   const editsLocked = useAtomValue(progressionPlayingAtom);
 
   const activeStep = progressionSteps[activeProgressionStepIndex] ?? null;
-  const availablePresets = getAvailableProgressionPresets(scaleName);
+  const availablePresets = PROGRESSION_PRESETS;
   const groupedPresets = (Object.keys(CATEGORY_LABELS) as ProgressionPresetCategory[])
     .map((cat) => ({
       cat,
@@ -185,7 +185,7 @@ export function SongControls() {
     if (id === CUSTOM_PRESET_ID) return;
     const suggested = suggestedPresets.find((p) => p.id === id);
     if (suggested) {
-      startTransition(() => loadProgressionSteps(suggested.steps));
+      startTransition(() => loadProgressionSuggestion(suggested));
       return;
     }
     startTransition(() => loadProgressionPreset(id));

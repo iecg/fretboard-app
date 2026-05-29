@@ -286,49 +286,17 @@ describe("SongControls PRESET", () => {
     expect(screen.getByRole("menuitem", { name: /^Suggested for/ })).toBeInTheDocument();
   });
 
-  it("only lists presets that are available for the selected scale", async () => {
+  it("lists all preset categories regardless of the active scale", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
-      [scaleNameAtom, "minor blues"],
+      [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
-
-    // Walk every category submenu and collect the leaf option labels. The
-    // catalog availability filter (groupedPresets -> categories) still governs
-    // which presets surface; only the control's shape changed.
     await user.click(screen.getByRole("button", { name: "Preset" }));
-    const subtriggers = screen
-      .getAllByRole("menuitem")
-      .filter((el) => el.getAttribute("aria-haspopup") === "menu");
-    const optionLabels: string[] = [];
-    for (let i = 0; i < subtriggers.length; i += 1) {
-      // Re-open the menu fresh for each category to avoid stale focus state.
-      if (i > 0) {
-        await user.keyboard("{Escape}");
-        await user.click(screen.getByRole("button", { name: "Preset" }));
-      }
-      for (let j = 0; j <= i; j += 1) {
-        await user.keyboard("{ArrowDown}");
-      }
-      await user.keyboard("{ArrowRight}");
-      const items = screen
-        .getAllByRole("menuitem")
-        .filter((el) => el.getAttribute("aria-haspopup") !== "menu");
-      for (const item of items) optionLabels.push((item.textContent ?? "").trim());
-      await user.keyboard("{ArrowLeft}");
+    for (const cat of ["Pop / Rock", "Jazz", "Modal", "Minor"]) {
+      expect(screen.getByRole("menuitem", { name: cat })).toBeInTheDocument();
     }
-    // "Custom" is no longer a selectable option — the trigger shows it as a
-    // label when no preset matches. The available presets still surface.
-    expect(optionLabels).toEqual(
-      expect.arrayContaining([
-        "I-V-vi-IV",
-        "ii-V-I",
-        "I-vi-IV-V",
-        "I-IV-V",
-        "12-bar blues",
-      ]),
-    );
   });
 });
 

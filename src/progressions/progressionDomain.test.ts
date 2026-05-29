@@ -10,9 +10,7 @@ import {
   formatProgressionPlaybackPosition,
   getProgressionDurationBeats,
   getProgressionDurationMs,
-  getAvailableProgressionPresets,
   isProgressionDuration,
-  isProgressionPresetAvailableForScale,
   isValidProgressionStep,
   migrateLegacyDuration,
   normalizeProgressionStep,
@@ -168,13 +166,6 @@ describe("progressionDomain", () => {
     expect(blues?.steps.every((step) => step.qualityOverride === "7")).toBe(true);
   });
 
-  it("filters presets to scales where every preset degree can resolve", () => {
-    const oneFiveSixFour = PROGRESSION_PRESETS.find((preset) => preset.id === "one-five-six-four");
-    expect(oneFiveSixFour).toBeDefined();
-    expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "major")).toBe(true);
-    expect(isProgressionPresetAvailableForScale(oneFiveSixFour!, "minor blues")).toBe(true);
-    expect(getAvailableProgressionPresets("minor blues")).toEqual(PROGRESSION_PRESETS);
-  });
 });
 
 describe("expanded preset catalog", () => {

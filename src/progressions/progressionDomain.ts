@@ -397,49 +397,6 @@ export function transposeManualRootForRootChange(
   );
 }
 
-export function createStepsFromPreset(
-  preset: ProgressionPreset,
-  scaleName: string,
-): ProgressionStep[] {
-  return getProgressionPresetStepsForScale(preset, scaleName).map((step) =>
-    createProgressionStep({
-      ...step,
-    }),
-  );
-}
-
-export function getProgressionPresetStepsForScale(
-  preset: ProgressionPreset,
-  scaleName: string,
-): Array<Omit<ProgressionStep, "id">> {
-  return preset.steps.map((step) => ({
-    ...step,
-    degree: remapDegreeByOrdinal(step.degree, scaleName),
-  }));
-}
-
-export function isProgressionPresetAvailableForScale(
-  preset: ProgressionPreset,
-  scaleName: string,
-): boolean {
-  return getProgressionPresetStepsForScale(preset, scaleName).every((step, index) => {
-    const resolved = resolveProgressionStep(
-      { id: `preset-availability-${index}`, ...step },
-      scaleName,
-      "C",
-    );
-    return !resolved.unavailable;
-  });
-}
-
-export function getAvailableProgressionPresets(
-  scaleName: string,
-): ProgressionPreset[] {
-  return PROGRESSION_PRESETS.filter((preset) =>
-    isProgressionPresetAvailableForScale(preset, scaleName),
-  );
-}
-
 export const DEFAULT_BEATS_PER_BAR = 4 as const;
 const BEATS_PER_BAR_OPTIONS = [3, 4, 6, 8] as const;
 export type BeatsPerBar = (typeof BEATS_PER_BAR_OPTIONS)[number];
