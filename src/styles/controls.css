@@ -1,0 +1,25 @@
+/* Canonical disabled appearance for control-like elements inside an inert
+   (e.g. locked) region. `inert` already blocks interaction; this gives the
+   subtree the matching visual state so it reads as disabled, not merely
+   unresponsive. Explicit element selectors (specificity 0,1,1) deliberately
+   outrank component module classes (0,1,0) so they win at rest, without
+   needing !important or a per-call `disabled` prop. */
+[inert] button,
+[inert] [role="button"],
+[inert] select,
+[inert] input,
+[inert] textarea,
+[inert] [role="combobox"],
+[inert] [role="spinbutton"] {
+  opacity: var(--control-disabled-opacity);
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [inert] button,
+  [inert] [role="button"],
+  [inert] select,
+  [inert] input {
+    transition: opacity 300ms ease;
+  }
+}
