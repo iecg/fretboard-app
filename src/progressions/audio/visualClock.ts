@@ -1,4 +1,3 @@
-import { startTransition } from "react";
 import type { Store } from "../../store/storeTypes";
 import { displayedStepIndexPrimitiveAtom } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
@@ -12,18 +11,20 @@ function frame(): void {
   const store = storeRef;
   if (!store) return;
   const tl = getTimelinePosition();
+  // Write the frame atom synchronously. This is a per-frame external (rAF)
+  // source, so wrapping it in React's startTransition just tags every
+  // subscriber's rerender to the transition and trips React's
+  // ">10 fibers updated inside startTransition" subscription warning. Deferral
+  // of the expensive playhead render is instead handled at the consumer via
+  // useDeferredValue (see useFretboardPlaybackSnapshot).
   if (tl) {
-    startTransition(() => {
-      store.set(progressionVisualFrameAtom, tl);
-      if (!tl.paused && tl.stepIndex !== lastWritten) {
-        lastWritten = tl.stepIndex;
-        store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
-      }
-    });
+    store.set(progressionVisualFrameAtom, tl);
+    if (!tl.paused && tl.stepIndex !== lastWritten) {
+      lastWritten = tl.stepIndex;
+      store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
+    }
   } else {
-    startTransition(() => {
-      store.set(progressionVisualFrameAtom, null);
-    });
+    store.set(progressionVisualFrameAtom, null);
   }
   rafId = window.requestAnimationFrame(frame);
 }
