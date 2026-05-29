@@ -151,7 +151,6 @@ export const en: Dictionary = {
     strings: "Strings",
     connectors: "Interval Connectors",
     interval: "Interval Connectors",
-    lockedHint: "Stop playback to edit",
     lockedAnnouncement: "Editing locked during playback",
     noteLabels: "Note Labels",
     longPressToAdd: "Long press to add shapes",

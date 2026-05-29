@@ -151,7 +151,6 @@ export const es: Dictionary = {
     strings: "Cuerdas",
     connectors: "Conectores de intervalo",
     interval: "Conectores de intervalo",
-    lockedHint: "Detén la reproducción para editar",
     lockedAnnouncement: "Edición bloqueada durante la reproducción",
     noteLabels: "Etiquetas de nota",
     longPressToAdd: "Mantén presionado para añadir formas",
