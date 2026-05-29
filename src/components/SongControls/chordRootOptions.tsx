@@ -5,6 +5,7 @@ import {
   getDegreesForScale,
   getNoteDisplayInScale,
   formatAccidental,
+  formatChromaticNumeral,
   SCALES,
   NOTES,
 } from "@fretflow/core";
@@ -38,22 +39,8 @@ function rootContent(
   );
 }
 
-// Natural-tone scale-degree numerals (same regardless of accidental preference).
-const NATURAL_NUMERAL_BY_OFFSET: Record<number, string> = {
-  2: "ii", 4: "iii", 5: "iv", 7: "v", 9: "vi", 11: "vii",
-};
-// Altered-tone numerals — flat vs sharp spelling.
-const FLAT_ALT_BY_OFFSET: Record<number, string> = {
-  1: "♭ii", 3: "♭iii", 6: "♭v", 8: "♭vi", 10: "♭vii",
-};
-const SHARP_ALT_BY_OFFSET: Record<number, string> = {
-  1: "♯i", 3: "♯ii", 6: "♯iv", 8: "♯v", 10: "♯vi",
-};
-function nonDiatonicNumeral(offset: number, preferFlats: boolean): string {
-  if (offset in NATURAL_NUMERAL_BY_OFFSET) return NATURAL_NUMERAL_BY_OFFSET[offset];
-  return (preferFlats ? FLAT_ALT_BY_OFFSET : SHARP_ALT_BY_OFFSET)[offset] ?? "";
-}
-// Plain ASCII numerals for annotation lookup + cached degree. Covers all non-tonic offsets.
+// Plain ASCII numerals, keyed by offset, used only to look up colloquial
+// harmonic-move annotations (HARMONIC_MOVES keys are quality-neutral ASCII).
 const PLAIN_NUMERAL_BY_OFFSET: Record<number, string> = {
   1: "bII", 2: "II", 3: "bIII", 4: "III", 5: "IV", 6: "bV",
   7: "V", 8: "bVI", 9: "VI", 10: "bVII", 11: "VII",
@@ -92,30 +79,34 @@ export function buildChordRootGroups(
         label: `${numeral} · ${display} · ${hint}`,
         content: rootContent(`${numeral} · ${display} · ${hint}`, numeral, display, hint),
       });
-    } else if (r.rootClass === "borrowed") {
-      const numeral = nonDiatonicNumeral(r.offset, preferFlats);
-      const guessedKey = guessQualityForBorrowedRoot(r.note, scaleName, tonicNote);
-      const guessed = QUALITY_HINT[guessedKey] ?? guessedKey ?? "maj";
-      const move = getHarmonicMoveAnnotation(PLAIN_NUMERAL_BY_OFFSET[r.offset] ?? "");
-      const suffix = move ? ` — ${move}` : "";
-      borrowed.push({
-        value: r.note,
-        label: `${numeral} · ${display} · ${guessed}${suffix}`,
-        content: rootContent(
-          `${numeral} · ${display} · ${guessed}${suffix}`,
-          numeral,
-          display,
-          guessed,
-          move ?? undefined,
-        ),
-      });
     } else {
-      const numeral = nonDiatonicNumeral(r.offset, preferFlats);
-      chromatic.push({
-        value: r.note,
-        label: `${numeral} · ${display}`,
-        content: rootContent(`${numeral} · ${display}`, numeral, display),
-      });
+      // Borrowed + chromatic share the same shape: the default quality (real
+      // parallel-key quality for borrowed, "M" for chromatic) drives both the
+      // quality hint AND the Roman-numeral case so they never disagree.
+      const qualityKey = guessQualityForBorrowedRoot(r.note, scaleName, tonicNote);
+      const hint = QUALITY_HINT[qualityKey] ?? qualityKey ?? "maj";
+      const numeral = formatChromaticNumeral(r.offset, qualityKey, preferFlats);
+      if (r.rootClass === "borrowed") {
+        const move = getHarmonicMoveAnnotation(PLAIN_NUMERAL_BY_OFFSET[r.offset] ?? "");
+        const suffix = move ? ` — ${move}` : "";
+        borrowed.push({
+          value: r.note,
+          label: `${numeral} · ${display} · ${hint}${suffix}`,
+          content: rootContent(
+            `${numeral} · ${display} · ${hint}${suffix}`,
+            numeral,
+            display,
+            hint,
+            move ?? undefined,
+          ),
+        });
+      } else {
+        chromatic.push({
+          value: r.note,
+          label: `${numeral} · ${display} · ${hint}`,
+          content: rootContent(`${numeral} · ${display} · ${hint}`, numeral, display, hint),
+        });
+      }
     }
   }
 
@@ -126,11 +117,14 @@ export function buildChordRootGroups(
 }
 
 /** Classify a chosen root note (used by the selection handler to decide
- *  diatonic vs manual-root). */
+ *  diatonic vs manual-root) and produce the degree numeral cached on the step.
+ *  Non-diatonic numerals use the same canonical formatter as the dropdown so
+ *  the progression nav pip, chord title, and fretboard stay in sync. */
 export function classifyRoot(
   scaleName: string,
   tonicNote: string,
   note: string,
+  preferFlats = false,
 ): { inScale: boolean; numeral: string } {
   const parent = getHarmonyParentScale(scaleName);
   const degreesMap = getDegreesForScale(parent);
@@ -140,5 +134,6 @@ export function classifyRoot(
     return { inScale: true, numeral: degreesMap[match.offset] ?? "" };
   }
   const offset = match?.offset ?? ((NOTES.indexOf(note) - NOTES.indexOf(tonicNote) + 12) % 12);
-  return { inScale: false, numeral: PLAIN_NUMERAL_BY_OFFSET[offset] ?? "" };
+  const qualityKey = guessQualityForBorrowedRoot(note, scaleName, tonicNote);
+  return { inScale: false, numeral: formatChromaticNumeral(offset, qualityKey, preferFlats) };
 }

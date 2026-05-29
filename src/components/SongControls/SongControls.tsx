@@ -378,7 +378,7 @@ export function SongControls() {
                     value={activeResolvedProgressionStep?.root ?? rootNote}
                     groups={chordRootGroups}
                     onChange={(note) => {
-                      const { inScale, numeral } = classifyRoot(scaleName, rootNote, note);
+                      const { inScale, numeral } = classifyRoot(scaleName, rootNote, note, preferFlats);
                       selectProgressionStepRoot({ id: activeStep.id, root: note, numeral, inScale });
                     }}
                     data-testid="chord-root-select"

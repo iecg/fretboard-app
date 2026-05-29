@@ -59,13 +59,30 @@ function chromaOffset(note: string, tonicChroma: number): number | null {
   return ((c - tonicChroma) % 12 + 12) % 12;
 }
 
-function parallelRoots(parentScale: string, tonic: string): string[] {
+/** Maps Tonal's chord-quality words to FretFlow's compact quality keys. */
+function tonalQualityToKey(quality: string): string {
+  switch (quality) {
+    case "Major": return "M";
+    case "Minor": return "m";
+    case "Diminished": return "dim";
+    case "Augmented": return "aug";
+    default: return "M";
+  }
+}
+
+interface ParallelRoot {
+  tonic: string;
+  /** FretFlow quality key (M / m / dim / aug) of the parallel-key triad. */
+  quality: string;
+}
+
+function parallelRoots(parentScale: string, tonic: string): ParallelRoot[] {
   const which = parallelKeyFor(parentScale);
-  const out: string[] = [];
+  const out: ParallelRoot[] = [];
   const collect = (chordNames: readonly string[] = []) => {
     for (const name of chordNames) {
-      const t = Chord.get(name).tonic;
-      if (t) out.push(t);
+      const chord = Chord.get(name);
+      if (chord.tonic) out.push({ tonic: chord.tonic, quality: tonalQualityToKey(chord.quality) });
     }
   };
   if (which === "major" || which === "both") {
@@ -73,6 +90,8 @@ function parallelRoots(parentScale: string, tonic: string): string[] {
   }
   if (which === "minor" || which === "both") {
     const mk = Key.minorKey(tonic);
+    // Natural first so its triad qualities win for offsets the harmonic minor
+    // also covers (e.g. the natural ♭III major over the harmonic ♭III aug).
     collect(mk.natural?.triads);
     collect(mk.harmonic?.triads);
   }
@@ -94,11 +113,11 @@ export function getScaleRoots(scaleName: string, tonicNote: string): ScaleRootIn
     }
   }
 
-  const borrowedOffsets = new Set<number>();
-  for (const root of parallelRoots(parent, tonicNote)) {
-    const off = chromaOffset(root, tonicChroma);
-    if (off != null && !diatonicQualityByOffset.has(off)) {
-      borrowedOffsets.add(off);
+  const borrowedQualityByOffset = new Map<number, string>();
+  for (const { tonic, quality } of parallelRoots(parent, tonicNote)) {
+    const off = chromaOffset(tonic, tonicChroma);
+    if (off != null && !diatonicQualityByOffset.has(off) && !borrowedQualityByOffset.has(off)) {
+      borrowedQualityByOffset.set(off, quality);
     }
   }
 
@@ -107,8 +126,11 @@ export function getScaleRoots(scaleName: string, tonicNote: string): ScaleRootIn
     if (diatonicQualityByOffset.has(offset)) {
       return { note, offset, rootClass: "diatonic", defaultQuality: diatonicQualityByOffset.get(offset)! };
     }
-    if (borrowedOffsets.has(offset)) {
-      return { note, offset, rootClass: "borrowed", defaultQuality: null };
+    if (borrowedQualityByOffset.has(offset)) {
+      // Borrowed roots carry the parallel-key triad quality so the editor can
+      // both label them correctly (Roman-numeral case) and default the created
+      // chord to the musically-expected quality.
+      return { note, offset, rootClass: "borrowed", defaultQuality: borrowedQualityByOffset.get(offset)! };
     }
     return { note, offset, rootClass: "chromatic", defaultQuality: null };
   });
@@ -126,4 +148,50 @@ const HARMONIC_MOVES: Record<string, string> = {
 
 export function getHarmonicMoveAnnotation(plainNumeral: string): string | null {
   return HARMONIC_MOVES[plainNumeral] ?? null;
+}
+
+// Case-neutral (uppercase) Roman base per chromatic offset from the tonic.
+// Natural tones share one numeral regardless of accidental preference;
+// altered tones are spelled with a flat or a sharp accidental.
+const ROMAN_NATURAL_BY_OFFSET: Record<number, string> = {
+  0: "I", 2: "II", 4: "III", 5: "IV", 7: "V", 9: "VI", 11: "VII",
+};
+const ROMAN_FLAT_BY_OFFSET: Record<number, string> = {
+  1: "♭II", 3: "♭III", 6: "♭V", 8: "♭VI", 10: "♭VII",
+};
+const ROMAN_SHARP_BY_OFFSET: Record<number, string> = {
+  1: "♯I", 3: "♯II", 6: "♯IV", 8: "♯V", 10: "♯VI",
+};
+
+/**
+ * Canonical Roman-numeral label for a chromatic offset (0–11) from the tonic,
+ * with case + figured suffix reflecting the chord quality — uppercase for
+ * major/augmented, lowercase for minor/diminished, `°` for diminished and `+`
+ * for augmented. Used for both borrowed/chromatic dropdown options *and* the
+ * cached step degree shown in the progression nav, title, and fretboard, so a
+ * single source keeps every surface in sync.
+ *
+ * `quality` is a FretFlow quality key (M / m / dim / aug); unknown values are
+ * treated as major.
+ */
+export function formatChromaticNumeral(
+  offset: number,
+  quality: string,
+  preferFlats: boolean,
+): string {
+  const base =
+    ROMAN_NATURAL_BY_OFFSET[offset] ??
+    (preferFlats ? ROMAN_FLAT_BY_OFFSET : ROMAN_SHARP_BY_OFFSET)[offset] ??
+    "";
+  if (!base) return "";
+  switch (quality) {
+    case "m":
+      return base.toLowerCase();
+    case "dim":
+      return `${base.toLowerCase()}°`;
+    case "aug":
+      return `${base}+`;
+    default:
+      return base;
+  }
 }

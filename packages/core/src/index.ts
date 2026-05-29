@@ -40,6 +40,7 @@ export {
   getScaleRoots,
   getHarmonyParentScale,
   getHarmonicMoveAnnotation,
+  formatChromaticNumeral,
   HARMONY_PARENT_SCALE,
   type ScaleRootInfo,
   type RootClass,

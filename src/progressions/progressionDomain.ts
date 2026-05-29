@@ -6,6 +6,7 @@ import {
   getDiatonicChord,
   getHarmonyParentScale,
   getNoteDisplay,
+  getScaleRoots,
   transposeNoteToSharps,
   type DegreeId,
 } from "@fretflow/core";
@@ -470,14 +471,23 @@ export function totalProgressionBars(
 }
 
 /**
- * When a borrowed (out-of-scale) root is picked without a quality override,
- * fall back to "M" (major triad) as the safest audible default.
+ * Default quality for an out-of-scale root picked without an explicit override.
  *
- * TODO(plan-g11a): refine with a real parallel-scale lookup if/when one
- * exists in @fretflow/core (e.g. getDiatonicChordForNote(root, scale, tonic)).
+ * Borrowed roots resolve to the quality of the matching parallel-key triad
+ * (e.g. iv in major borrows the minor subdominant), so the created chord
+ * matches the quality shown in the editor. Chromatic roots (no parallel-key
+ * context) and unresolvable lookups fall back to "M" (major) as the safest
+ * audible default.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string, _tonicNote?: string): string {
+export function guessQualityForBorrowedRoot(
+  root?: string,
+  scaleName?: string,
+  tonicNote?: string,
+): string {
+  if (root && scaleName && tonicNote) {
+    const match = getScaleRoots(scaleName, tonicNote).find((r) => r.note === root);
+    if (match?.defaultQuality) return match.defaultQuality;
+  }
   return "M";
 }
 
