@@ -680,4 +680,14 @@ describe("loadedPresetId clearing", () => {
     store.set(resetProgressionAtomsAtom);
     expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
   });
+
+  it("keeps the loaded id when a move is a no-op at the boundary", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(loadProgressionPresetAtom, "one-five-six-four");
+    const firstId = store.get(progressionStepsAtom)[0].id;
+    store.set(moveProgressionStepAtom, { id: firstId, direction: -1 }); // already at top → no-op
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
+  });
 });

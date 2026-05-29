@@ -539,7 +539,6 @@ export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {
 });
 
 export const moveProgressionStepAtom = atom(null, (get, set, update: { id: string; direction: -1 | 1 }) => {
-  set(loadedPresetIdAtom, null);
   const steps = get(progressionStepsAtom);
   const from = steps.findIndex((step) => step.id === update.id);
   const to = from + update.direction;
@@ -547,6 +546,7 @@ export const moveProgressionStepAtom = atom(null, (get, set, update: { id: strin
   const next = [...steps];
   const [moved] = next.splice(from, 1);
   next.splice(to, 0, moved!);
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, to);
 });
@@ -554,12 +554,12 @@ export const moveProgressionStepAtom = atom(null, (get, set, update: { id: strin
 export const duplicateProgressionStepAtom = atom(
   null,
   (get, set, stepId: string) => {
-    set(loadedPresetIdAtom, null);
     const steps = get(progressionStepsAtom);
     const index = steps.findIndex((step) => step.id === stepId);
     if (index === -1) {
       return;
     }
+    set(loadedPresetIdAtom, null);
     const source = steps[index];
     const copy = createProgressionStep({
       degree: source.degree,
@@ -583,8 +583,8 @@ export const updateProgressionStepDegreeAtom = atom(null, (get, set, update: { i
 });
 
 export const updateProgressionStepDurationAtom = atom(null, (get, set, update: { id: string; duration: ProgressionStepDuration }) => {
-  set(loadedPresetIdAtom, null);
   if (!isProgressionDuration(update.duration)) return;
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, duration: update.duration } : step,
   ));
