@@ -26,7 +26,7 @@ async function openPresetSubmenu(
   user: ReturnType<typeof userEvent.setup>,
   subtriggerName: string | RegExp,
 ) {
-  await user.click(screen.getByRole("button", { name: "Preset" }));
+  await user.click(screen.getByRole("button", { name: "Sequence" }));
   const matches = (name: string) =>
     typeof subtriggerName === "string"
       ? name === subtriggerName
@@ -56,7 +56,7 @@ describe("SongControls", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
 
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Preset" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sequence" })).toBeInTheDocument();
     // Step list is gone (ProgressionTrack handles navigation); editor pane still present
     expect(screen.getByRole("group", { name: "Chord root" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
@@ -161,7 +161,7 @@ describe("SongControls", () => {
     // Preset heading comes before Key heading in document order.
     expect(presetHeading.compareDocumentPosition(keyHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     // The preset trigger button still exists (now inside the Preset card).
-    expect(screen.getByRole("button", { name: "Preset" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sequence" })).toBeInTheDocument();
   });
 
   it("has no accessibility violations", async () => {
@@ -266,7 +266,7 @@ describe("SongControls PRESET", () => {
       [scaleNameAtom, "major"],
     ]);
     renderWithStore(<SongControls />, store);
-    const trigger = screen.getByRole("button", { name: "Preset" });
+    const trigger = screen.getByRole("button", { name: "Sequence" });
     // default I-V-vi-IV preset — the trigger reflects the selected label.
     expect(within(trigger).getByText("I-V-vi-IV")).toBeInTheDocument();
   });
@@ -280,7 +280,7 @@ describe("SongControls PRESET", () => {
     const user = userEvent.setup();
 
     // "Pop / Rock" is a top-level submenu trigger, visible once the menu opens.
-    await user.click(screen.getByRole("button", { name: "Preset" }));
+    await user.click(screen.getByRole("button", { name: "Sequence" }));
     expect(screen.getByRole("menuitem", { name: "Pop / Rock" })).toBeInTheDocument();
   });
 
@@ -293,7 +293,7 @@ describe("SongControls PRESET", () => {
     const user = userEvent.setup();
 
     // "Suggested for <scale>" is a top-level submenu trigger.
-    await user.click(screen.getByRole("button", { name: "Preset" }));
+    await user.click(screen.getByRole("button", { name: "Sequence" }));
     expect(screen.getByRole("menuitem", { name: /^Suggested for/ })).toBeInTheDocument();
   });
 
@@ -304,7 +304,7 @@ describe("SongControls PRESET", () => {
     ]);
     renderWithStore(<SongControls />, store);
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: "Preset" }));
+    await user.click(screen.getByRole("button", { name: "Sequence" }));
     for (const cat of ["Pop / Rock", "Jazz", "Modal", "Minor"]) {
       expect(screen.getByRole("menuitem", { name: cat })).toBeInTheDocument();
     }
@@ -418,7 +418,7 @@ describe("SongControls KEY section layout", () => {
 
   it("Progression Preset control uses fill width (no fixed-width wrapper)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const presetTrigger = screen.getByRole("button", { name: "Preset" });
+    const presetTrigger = screen.getByRole("button", { name: "Sequence" });
     // PresetMenu is not wrapped in a width-mode container — it fills its slot.
     const fixedWrapper = presetTrigger.closest("[data-width='fixed']");
     const autoWrapper = presetTrigger.closest("[data-width='auto']");
@@ -491,8 +491,8 @@ describe("SongControls v2.0", () => {
 
   it("renders the Preset picker (inside its own Preset card)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    expect(screen.getByText("Progression")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Preset" })).toBeVisible();
+    expect(screen.getByText("Sequence")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sequence" })).toBeVisible();
   });
 });
 
@@ -624,7 +624,7 @@ describe("SongControls width sweep (Plan H-T3)", () => {
   it("Preset control uses fill width (no data-width='fixed')", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     // PresetMenu trigger is a button labelled "Preset" (aria-label, not a combobox).
-    const presetTrigger = screen.getByRole("button", { name: "Preset" });
+    const presetTrigger = screen.getByRole("button", { name: "Sequence" });
     expect(presetTrigger).toBeTruthy();
     expect(presetTrigger.closest("[data-width='fixed']")).toBeNull();
   });

@@ -112,9 +112,6 @@
   gap: 0.5rem;
 }
 
-.groupColumn--preset {
-  flex: 1 1 16rem;
-}
 
 /* Editor sub-section labels (Degree / Duration / Quality) — matches the
    inspector's mono micro-label (.propLabel) so every label in the panel

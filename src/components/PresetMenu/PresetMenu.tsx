@@ -1,5 +1,6 @@
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
+import clsx from "clsx";
 import type { SuggestionFeel } from "../../progressions/progressionGeneration";
 import styles from "./PresetMenu.module.css";
 
@@ -31,6 +32,9 @@ export interface PresetMenuProps {
   categories: PresetMenuCategory[];
   suggestionGroups: PresetMenuSuggestionGroup[];
   disabled?: boolean;
+  /** Sizing for the trigger. "auto" (default) is intrinsic; "fill" stretches
+   * to the parent width, matching `LabeledSelect width="fill"`. */
+  width?: "fill" | "auto";
   onSelect: (id: string) => void;
 }
 
@@ -82,6 +86,7 @@ export function PresetMenu({
   categories,
   suggestionGroups,
   disabled,
+  width = "auto",
   onSelect,
 }: PresetMenuProps) {
   const currentLabel = findLabel(
@@ -94,7 +99,9 @@ export function PresetMenu({
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
-        className={styles["preset-menu-trigger"]}
+        className={clsx(styles["preset-menu-trigger"], {
+          [styles["preset-menu-trigger--fill"]]: width === "fill",
+        })}
         aria-label={triggerLabel}
         disabled={disabled}
       >

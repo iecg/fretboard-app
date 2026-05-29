@@ -194,7 +194,7 @@ export function SongControls() {
     <div className={styles.sections}>
       {/* ── PRESET + KEY + TIME flex composer ─────────────────────────────── */}
       <div className={styles.groupRow}>
-        <div className={clsx(styles.groupColumn, styles["groupColumn--preset"])}>
+        <div className={styles.groupColumn}>
           <InspectorCard
             name={t("inspector.groupPreset")}
             description={t("inspector.groupPresetDesc")}
@@ -202,16 +202,21 @@ export function SongControls() {
             locked={editsLocked}
             lockedHint={t("controls.lockedHint")}
           >
-            <PresetMenu
-              triggerLabel={t("inspector.progressionPreset")}
-              customLabel="Custom"
-              scaleName={scaleName}
-              currentId={currentProgressionPresetId}
-              categories={categories}
-              suggestionGroups={suggestionGroups}
-              disabled={editsLocked}
-              onSelect={handlePresetChange}
-            />
+            <PropGrid columns={1}>
+              <Prop label={t("inspector.progressionLabel")}>
+                <PresetMenu
+                  triggerLabel={t("inspector.progressionLabel")}
+                  customLabel="Custom"
+                  scaleName={scaleName}
+                  currentId={currentProgressionPresetId}
+                  categories={categories}
+                  suggestionGroups={suggestionGroups}
+                  disabled={editsLocked}
+                  width="fill"
+                  onSelect={handlePresetChange}
+                />
+              </Prop>
+            </PropGrid>
           </InspectorCard>
         </div>
         <div className={styles.groupColumn}>
@@ -227,7 +232,7 @@ export function SongControls() {
                 <LabeledSelect
                   label={t("controls.root")}
                   hideLabel
-                  width="fill"
+                  width="auto"
                   value={rootNote}
                   onChange={handleRootNote}
                   options={NOTES.map((note) => ({
@@ -255,10 +260,10 @@ export function SongControls() {
             labelledById="song-time-heading"
           >
             <PropGrid columns={5}>
-              <Prop label={t("inspector.timeSignature")} span={1}>
+              <Prop label={t("inspector.timeSignature")} span={2}>
                 <TimeSignaturePicker />
               </Prop>
-              <Prop label={t("inspector.meterTempo")} span={4}>
+              <Prop label={t("inspector.meterTempo")} span={3}>
                 <StepperControl
                   label={t("inspector.meterTempo")}
                   hideLabel
@@ -268,7 +273,7 @@ export function SongControls() {
                   step={5}
                   formatValue={(bpm) => `${bpm} BPM`}
                   onChange={setProgressionTempoBpm}
-                  width="fill"
+                  width="auto"
                 />
               </Prop>
             </PropGrid>

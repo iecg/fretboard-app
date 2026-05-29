@@ -21,6 +21,11 @@
   white-space: nowrap;
 }
 
+.preset-menu-trigger--fill {
+  width: 100%;
+  min-width: 0;
+}
+
 .preset-menu-trigger:hover:not([data-disabled]) {
   background-color: var(--dc-bg-hover);
   border-color: var(--dc-border-hover);

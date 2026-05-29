@@ -67,6 +67,7 @@ export interface Dictionary {
     meterTempo: string;
     meterLoop: string;
     progressionPreset: string;
+    progressionLabel: string;
     timeSignature: string;
     timeSignatureAriaLabel: string;
     btGenre: string;
