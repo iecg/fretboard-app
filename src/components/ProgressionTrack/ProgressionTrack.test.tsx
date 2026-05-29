@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
@@ -26,6 +26,15 @@ const twoBarLeadingProgression = [
 ] as const;
 
 describe("ProgressionTrack", () => {
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 1000 });
+  });
+
   it("renders the timeline group, ruler, and chord blocks", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
       [progressionStepsAtom, fourStepProgression],
@@ -104,7 +113,7 @@ describe("ProgressionTrack", () => {
 
     const { container } = renderWithStore(<ProgressionTrack />, store);
 
-    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("12.5%");
+    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.transform).toBe("translateX(125px)");
   });
 
   it("positions chord blocks by exact cumulative bar percentages", () => {
@@ -213,11 +222,11 @@ describe("ProgressionTrack", () => {
     renderWithStore(<ProgressionTrack />, store);
 
     const playhead = document.querySelector<HTMLElement>("[data-testid='progression-playhead']");
-    expect(playhead?.style.left).toBe("0%");
+    expect(playhead?.style.transform).toBe("translateX(0px)");
 
     fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A minor, 1 bar/i }));
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
-    expect(playhead?.style.left).toBe("0%");
+    expect(playhead?.style.transform).toBe("translateX(0px)");
   });
 });

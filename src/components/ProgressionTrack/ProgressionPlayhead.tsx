@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { getTimelinePosition } from "../../progressions/audio/timeline";
+import { subscribeVisualClock } from "../../progressions/audio/visualClock";
 import styles from "./ProgressionTrack.module.css";
 
 interface ProgressionPlayheadProps {
@@ -39,49 +39,48 @@ export function ProgressionPlayhead({
 }: ProgressionPlayheadProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
 
-  // Store chord-boundary props in refs so the animation loop can access
-  // the latest values without needing to be cleared and restarted
-  // at every transition.
-  const propsRef = useRef({ stepStartBar, totalDurationBars, totalBarsForDisplay });
-  useEffect(() => {
-    propsRef.current = { stepStartBar, totalDurationBars, totalBarsForDisplay };
-  }, [stepStartBar, totalDurationBars, totalBarsForDisplay]);
-
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    const parent = el?.parentElement;
+    if (!el || !parent) return;
 
-    const write = () => {
-      const tl = getTimelinePosition();
-      const {
-        stepStartBar: currentStepStartBar,
-        totalDurationBars: currentTotalDurationBars,
-        totalBarsForDisplay: currentTotalBarsForDisplay,
-      } = propsRef.current;
-
-      const safeDisplayTotal = Math.max(1, currentTotalBarsForDisplay);
-
-      if (playing && tl && !tl.paused) {
-        const pct = (tl.globalFraction * currentTotalDurationBars / safeDisplayTotal) * 100;
-        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
-      } else {
-        const bar = currentStepStartBar;
-        const pct = ((bar - 1) / safeDisplayTotal) * 100;
-        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
+    let parentWidth = parent.clientWidth;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        parentWidth = entry.contentRect.width;
       }
+    });
+    observer.observe(parent);
+
+    const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
+
+    const setFallbackPosition = () => {
+      const pct = (stepStartBar - 1) / safeDisplayTotal;
+      el.style.transform = `translateX(${pct * parentWidth}px)`;
     };
 
-    write();
+    if (!playing) {
+      setFallbackPosition();
+      return () => observer.disconnect();
+    }
 
-    if (!playing) return;
-    let frameId: number;
-    const loop = () => {
-      write();
-      frameId = window.requestAnimationFrame(loop);
+    setFallbackPosition();
+
+    const unsubscribe = subscribeVisualClock((tl) => {
+      if (!tl.paused) {
+        const pct = (tl.globalFraction * totalDurationBars / safeDisplayTotal);
+        const clampedPct = Math.max(0, Math.min(1, pct));
+        el.style.transform = `translateX(${clampedPct * parentWidth}px)`;
+      } else {
+        setFallbackPosition();
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+      unsubscribe();
     };
-    frameId = window.requestAnimationFrame(loop);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [playing, stepStartBar, totalDurationBars, totalBarsForDisplay]);
+  }, [playing, stepStartBar, totalBarsForDisplay, totalDurationBars]);
 
   return (
     <span
@@ -90,6 +89,10 @@ export function ProgressionPlayhead({
       data-testid="progression-playhead"
       data-animated={playing ? "true" : undefined}
       aria-hidden="true"
+      style={{
+        left: 0,
+        willChange: "transform"
+      }}
     >
       <span className={styles.playheadArrow} aria-hidden="true" />
       <span className={styles.playheadLine} aria-hidden="true" />
