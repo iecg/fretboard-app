@@ -116,28 +116,6 @@
   opacity: 0.75;
 }
 
-/* Animated left accent line: a 2px bar that wipes in from the top, synced with
-   the body dim. Transform-based so it never touches the card's box-shadow — the
-   light-mode elevation shadow on .card stays intact without special-casing. */
-.card::before {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  width: 2px;
-  background: var(--faceplate-accent);
-  transform: scaleY(0);
-  transform-origin: top;
-  opacity: 0;
-  transition: transform 300ms ease, opacity 300ms ease;
-  pointer-events: none;
-}
-
-.card[data-locked="true"]::before {
-  transform: scaleY(1);
-  opacity: 1;
-}
-
 .cardTitle {
   display: inline-flex;
   align-items: center;
@@ -178,7 +156,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card::before,
   .lockSlot,
   .lockIcon,
   .cardBody {
