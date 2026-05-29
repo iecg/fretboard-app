@@ -482,7 +482,7 @@ export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string,
 }
 
 /** Compact display string for a chord quality, suitable for inline tags
- * (e.g. the borrowed-cell quality strip in DegreeGrid). Returns "" if the
+ * (e.g. an inline chord-quality tag). Returns "" if the
  * quality is unrecognized — callers may choose to suppress in that case. */
 export function qualityShortForm(quality: string): string {
   switch (quality) {
