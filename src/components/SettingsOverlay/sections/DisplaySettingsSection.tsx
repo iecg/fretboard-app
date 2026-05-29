@@ -10,7 +10,7 @@ import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import { useTranslation } from "../../../hooks/useTranslation";
 import { accidentalModeAtom } from "../../../store/scaleAtoms";
-import { enharmonicDisplayAtom } from "../../../store/audioAtoms";
+import { enharmonicDisplayAtom, audioQualityAtom } from "../../../store/audioAtoms";
 import { scaleDegreeColorsEnabledAtom, displayFormatAtom } from "../../../store/uiAtoms";
 import styles from "../SettingsOverlay.module.css";
 
@@ -22,6 +22,7 @@ export default function DisplaySettingsSection() {
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
+  const [audioQuality, setAudioQuality] = useAtom(audioQualityAtom);
   const [scaleDegreeColors, setScaleDegreeColors] = useAtom(scaleDegreeColorsEnabledAtom);
 
   const NOTE_LABEL_OPTIONS = [
@@ -40,6 +41,13 @@ export default function DisplaySettingsSection() {
     { label: t("inspector.auto"), value: "auto" },
     { label: t("controls.on"), value: "on" },
     { label: t("controls.off"), value: "off" },
+  ] as const;
+
+  const SOUND_QUALITY_OPTIONS = [
+    { label: t("settings.soundQuality.auto"), value: "auto" },
+    { label: t("settings.soundQuality.eco"), value: "eco" },
+    { label: t("settings.soundQuality.standard"), value: "standard" },
+    { label: t("settings.soundQuality.high"), value: "high" },
   ] as const;
 
   return (
@@ -74,6 +82,17 @@ export default function DisplaySettingsSection() {
             options={ENHARMONIC_OPTIONS}
             value={enharmonicDisplay}
             onChange={(v) => setEnharmonicDisplay(v as typeof enharmonicDisplay)}
+          />
+        </div>
+      </div>
+      <div className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}>
+        <OverlayFieldHeader label={t("settings.fields.soundQuality")} />
+        <div className={styles["overlay-field-control"]}>
+          <ToggleBar
+            label={t("settings.fields.soundQuality")}
+            options={SOUND_QUALITY_OPTIONS}
+            value={audioQuality}
+            onChange={(v) => setAudioQuality(v as typeof audioQuality)}
           />
         </div>
       </div>

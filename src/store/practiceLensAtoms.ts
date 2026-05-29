@@ -37,7 +37,9 @@ import {
   progressionStepDeadlineAtom,
   beatsPerBarAtom,
   progressionLoopEnabledAtom,
+  progressionPlayingAtom,
 } from "./progressionAtoms";
+import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import {
   getProgressionDurationBeats,
   MIN_PROGRESSION_TEMPO_BPM,
@@ -91,6 +93,19 @@ function memoizeNoteSemanticMap(next: Map<string, NoteSemantics>): Map<string, N
   }
   cachedNoteSemanticMap = next;
   return next;
+}
+
+/**
+ * True when the playhead is inside the final beat of the active step — the
+ * window in which the next chord's guide tones are previewed (anticipation).
+ * Pure so it can be unit-tested without atom plumbing.
+ */
+export function isInAnticipationWindow(
+  localFraction: number,
+  stepDurationBeats: number,
+): boolean {
+  if (stepDurationBeats <= 0) return false;
+  return localFraction >= (stepDurationBeats - 1) / stepDurationBeats;
 }
 
 // Guide tone members: 3rd and 7th
@@ -411,6 +426,18 @@ export const activeStepDurationBeatsAtom = atom((get): number => {
   if (!step || step.unavailable) return 0;
   const beatsPerBar = get(beatsPerBarAtom);
   return getProgressionDurationBeats(step.duration, beatsPerBar);
+});
+
+/**
+ * Discrete anticipation phase. Reads the per-frame visual-frame atom but its
+ * VALUE only flips at the last-beat threshold, so Jotai subscribers re-render
+ * at most twice per step instead of every animation frame.
+ */
+export const anticipationActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  return isInAnticipationWindow(frame.localFraction, get(activeStepDurationBeatsAtom));
 });
 
 /**

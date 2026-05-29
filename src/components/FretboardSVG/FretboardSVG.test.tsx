@@ -9,10 +9,27 @@ import type { NoteSemantics } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
 import * as buildTopologyModule from "./hooks/buildStaticFretboardTopology";
+import * as useChordConnectorHooks from "./hooks/useChordConnectorPolylines";
+import { renderWithStore } from "../../test-utils/renderWithAtoms";
+import { createStore } from "jotai";
+import {
+  setProgressionPlayingAtom,
+  progressionStepsAtom,
+  beatsPerBarAtom,
+} from "../../store/progressionAtoms";
+import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 
 vi.mock("./motionPolicy", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./motionPolicy")>();
   return { ...actual, resolveFretboardMotionPolicy: vi.fn().mockImplementation(actual.resolveFretboardMotionPolicy) };
+});
+
+vi.mock("./hooks/useChordConnectorPolylines", async () => {
+  const actual = await vi.importActual<typeof useChordConnectorHooks>("./hooks/useChordConnectorPolylines");
+  return {
+    ...actual,
+    useChordConnectorPolylines: vi.fn(actual.useChordConnectorPolylines),
+  };
 });
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
@@ -69,14 +86,14 @@ const E_SHAPE_C_MAJOR_VOICING = {
 
 describe("FretboardSVG/FretboardSVG", () => {
   describe("resolveFretboardMotionPolicy", () => {
-    it("disables group fades for shapes and connectors while playback is active", () => {
+    it("freezes shapes but keeps the connector crossfade while playback is active", () => {
       expect(resolveFretboardMotionPolicy({
         prefersReducedMotion: false,
         playbackActive: true,
       })).toEqual({
         noteMode: "css",
         shapeMode: "none",
-        connectorMode: "none",
+        connectorMode: "group",
       });
     });
   });
@@ -463,19 +480,26 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  it("renders playback state from the snapshot prop instead of direct playback atom reads", () => {
-    const { container } = renderCMajor({
-      playbackSnapshot: {
-        playing: true,
-        activeStepIndex: 0,
-        globalFraction: 0.25,
-        localFraction: 0.75,
-        stepDurationBeats: 4,
-        beatPosition: 3,
-        commonWithNext: new Set(["G"]),
-        nextGuideTones: new Set(["B", "F"]),
-      },
+  it("renders anticipation emphasis when the playback frame crosses the last-beat threshold", () => {
+    // Seed a I→V progression at localFraction=0.75 (beat 3 of 4 = anticipation active)
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(beatsPerBarAtom, 4);
+    store.set(setProgressionPlayingAtom, true);
+    store.set(progressionVisualFrameAtom, {
+      stepIndex: 0,
+      globalFraction: 0.375,
+      localFraction: 0.75,
+      paused: false,
     });
+
+    const { container } = renderWithStore(
+      <FretboardSVG {...BASE_PROPS} {...C_MAJOR} />,
+      store,
+    );
 
     expect(container.querySelectorAll('[data-lens-emphasis="var(--note-glow-anticipation)"]').length).toBeGreaterThan(0);
   });
@@ -657,9 +681,6 @@ describe("FretboardSVG/FretboardSVG", () => {
       globalFraction: 0.125,
       localFraction: 0.25,
       stepDurationBeats: 4,
-      beatPosition: 1,
-      commonWithNext: new Set(["G"]),
-      nextGuideTones: new Set(["B", "F"]),
     };
 
     it("uses group-mode wrappers when policy returns group modes", () => {
@@ -747,9 +768,6 @@ describe("FretboardSVG/FretboardSVG", () => {
       globalFraction: 0.125,
       localFraction: 0.25,
       stepDurationBeats: 4,
-      beatPosition: 1,
-      commonWithNext: new Set(["G"]),
-      nextGuideTones: new Set(["B", "F"]),
     };
 
     const { rerender } = renderCMajor({ playbackSnapshot: firstSnapshot });
@@ -760,12 +778,11 @@ describe("FretboardSVG/FretboardSVG", () => {
       <FretboardSVG
         {...BASE_PROPS}
         {...C_MAJOR}
-        
+
         playbackSnapshot={{
           ...firstSnapshot,
           globalFraction: 0.25,
           localFraction: 0.75,
-          beatPosition: 3,
         }}
       />,
     );
@@ -782,9 +799,6 @@ describe("FretboardSVG/FretboardSVG", () => {
       globalFraction: 0.0,
       localFraction: 0.0,
       stepDurationBeats: 4,
-      beatPosition: 1,
-      commonWithNext: new Set<string>(),
-      nextGuideTones: new Set<string>(),
     };
 
     // Render without chordTones — default path (DEFAULT_CHORD_TONES stable reference)
@@ -797,17 +811,70 @@ describe("FretboardSVG/FretboardSVG", () => {
     rerender(
       <FretboardSVG
         {...BASE_PROPS}
-        
+
         playbackSnapshot={{
           ...firstSnapshot,
           globalFraction: 0.5,
           localFraction: 0.5,
-          beatPosition: 3,
         }}
       />,
     );
 
     expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
     topologySpy.mockRestore();
+  });
+});
+
+describe("FretboardSVG Connector Decoupling", () => {
+  it("does not re-evaluate useChordConnectorPolylines when animation data changes", () => {
+    const spy = vi.spyOn(useChordConnectorHooks, "useChordConnectorPolylines");
+    const mockTuning = ["E4", "B3", "G3", "D3", "A2", "E2"];
+    const mockLayout = getFretboardNotes(mockTuning, 12);
+
+    const { rerender } = render(
+      <FretboardSVG
+        effectiveZoom={100}
+        neckWidthPx={1000}
+        startFret={0}
+        endFret={12}
+        fretboardLayout={mockLayout}
+        tuning={mockTuning}
+        highlightNotes={["E", "G"]}
+        rootNote="E"
+        playbackSnapshot={{
+          playing: true,
+          activeStepIndex: 0,
+          globalFraction: 0,
+          localFraction: 0,
+          stepDurationBeats: 4,
+        }}
+      />
+    );
+
+    const initialCallCount = spy.mock.calls.length;
+    expect(initialCallCount).toBeGreaterThan(0);
+
+    // Rerender with a different playbackSnapshot position (simulating animation frames)
+    rerender(
+      <FretboardSVG
+        effectiveZoom={100}
+        neckWidthPx={1000}
+        startFret={0}
+        endFret={12}
+        fretboardLayout={mockLayout}
+        tuning={mockTuning}
+        highlightNotes={["E", "G"]}
+        rootNote="E"
+        playbackSnapshot={{
+          playing: true,
+          activeStepIndex: 0,
+          globalFraction: 0.1,
+          localFraction: 0.1, // Only local fraction changes
+          stepDurationBeats: 4,
+        }}
+      />
+    );
+
+    expect(spy.mock.calls.length).toBe(initialCallCount);
   });
 });

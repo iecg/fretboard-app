@@ -212,3 +212,46 @@ describe("closeVoicings span cap", () => {
     expect(voicings.length).toBeGreaterThan(0);
   });
 });
+
+describe("Voicing Generation Caching", () => {
+  it("retrieves voicings from memory cache if parameters are identical", () => {
+    const params = {
+      chordRoot: "C",
+      chordType: "maj7",
+      tuning: ["E4", "B3", "G3", "D3", "A2", "E2"],
+      maxFret: 24,
+      voicingType: "close" as const,
+    };
+
+    const firstResult = generateVoicings(params);
+    const secondResult = generateVoicings(params);
+    
+    // They must point to the exact same array reference in memory
+    expect(firstResult).toBe(secondResult);
+  });
+});
+
+describe("Voicing Search Space Complexity Scaling Guardrail", () => {
+  it("bounds voicing search space linearly relative to fretboard size, preventing exponential scaling", () => {
+    const baseParams = {
+      chordRoot: "C",
+      chordType: "M",
+      tuning: ["E4", "B3", "G3", "D3", "A2", "E2"],
+      maxFret: 12, // 1x scale: 12 frets
+      voicingType: "close" as const,
+    };
+
+    const doubleParams = {
+      ...baseParams,
+      maxFret: 24, // 2x scale: 24 frets (doubled fret range)
+    };
+
+    const baseResult = generateVoicings(baseParams);
+    const doubleResult = generateVoicings(doubleParams);
+
+    // Linear scaling constraint: doubling the fretboard range must scale results <= 2.2x
+    expect(doubleResult.length).toBeLessThanOrEqual(baseResult.length * 2.2);
+  });
+});
+
+

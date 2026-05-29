@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-// Same hoisted-spy pattern as metronome.test.ts. We use the shared
-// createToneSynthSpies helper because MonoSynth exposes the same call
-// surface we care about (ctor, triggerAttackRelease, triggerRelease,
-// connect, dispose). Routing the helper's ctor spy through `Tone.MonoSynth`
-// in the mock keeps the test surface aligned with the metronome suite.
+// Shared hoisted-spy Tone mock (same pattern as metronome.test.ts). The helper
+// exposes setNow/now so we can advance the audio clock to exercise pool reuse.
 const synth = vi.hoisted(async () => {
   const { createToneSynthSpies } = await import("../../test-utils/toneMocks");
   return createToneSynthSpies();
@@ -18,40 +15,45 @@ vi.mock("tone", async () => {
   };
 });
 
-describe("scheduleBassNote — Tone backend", () => {
+import { scheduleBassNote } from "./bass";
+import { getBassPatch } from "./sound/instrumentPatches";
+
+describe("scheduleBassNote — patch-driven Tone backend", () => {
+  let s: Awaited<typeof synth>;
   let spies: Awaited<typeof synth>["spies"];
-  let tone: Awaited<typeof synth>;
-  let scheduleBassNote: typeof import("./bass").scheduleBassNote;
 
   beforeEach(async () => {
-    tone = await synth;
-    spies = tone.spies;
+    s = await synth;
+    spies = s.spies;
     vi.useFakeTimers();
-    tone.reset();
-    vi.resetModules();
-    ({ scheduleBassNote } = await import("./bass"));
+    s.reset();
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it("constructs MonoSynth with sawtooth oscillator + lowpass filter envelope", () => {
+  it("defaults to the bass-finger patch: sawtooth + live lowpass filter envelope", () => {
     scheduleBassNote({} as AudioNode, 220, 1.0);
     expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     const [opts] = spies.ctorSpy.mock.calls[0]!;
     expect(opts.oscillator.type).toBe("sawtooth");
     expect(opts.filter.type).toBe("lowpass");
-    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(1200, 0);
+    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(250, 0);
+    expect(opts.filterEnvelope.octaves).toBeGreaterThan(0);
   });
 
-  it("triggers at the requested frequency and time", () => {
-    scheduleBassNote(
-      {} as AudioNode,
-      110,
-      2.5,
-      { velocity: 0.8 },
-    );
+  it("uses the supplied patch's oscillator + filter envelope", () => {
+    const upright = getBassPatch("bass-upright")!;
+    scheduleBassNote({} as AudioNode, 110, 0, { velocity: 0.9, patch: upright });
+    const [opts] = spies.ctorSpy.mock.calls[0]!;
+    expect(opts.oscillator.type).toBe("triangle");
+    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(180, 0);
+    expect(opts.filterEnvelope.octaves).toBeGreaterThan(0);
+  });
+
+  it("triggers at the requested frequency, time, and velocity", () => {
+    scheduleBassNote({} as AudioNode, 110, 2.5, { velocity: 0.8 });
     expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
     const [pitch, , time, velocity] = spies.triggerAttackRelease.mock.calls[0]!;
     expect(Number(pitch)).toBeCloseTo(110, 1);
@@ -59,88 +61,52 @@ describe("scheduleBassNote — Tone backend", () => {
     expect(velocity).toBeCloseTo(0.8, 2);
   });
 
-  it("reuses one MonoSynth for non-overlapping notes on the same destination", () => {
-    const dest = {} as AudioNode;
-    scheduleBassNote(dest, 110, 0, { velocity: 0.8 });
-    tone.setNow(1.2);
-    scheduleBassNote(dest, 146.83, 1.3, { velocity: 0.75 });
-
-    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
-    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
-  });
-
-  it("allocates separate MonoSynths for future notes scheduled in one pass", () => {
-    const dest = {} as AudioNode;
-    scheduleBassNote(dest, 110, 2, { velocity: 0.8 });
-    scheduleBassNote(dest, 146.83, 3, { velocity: 0.75 });
-
-    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
-    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
-  });
-
-  it("keeps different destinations on different leased synths", () => {
-    const firstDest = {} as AudioNode;
-    const secondDest = {} as AudioNode;
-
-    scheduleBassNote(firstDest, 110, 0, { velocity: 0.8 });
-    tone.setNow(1.2);
-    scheduleBassNote(secondDest, 146.83, 1.3, { velocity: 0.75 });
-
-    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
-    expect(tone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
-    expect(tone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
-  });
-
   it("skips zero-velocity notes (no synth constructed)", () => {
-    scheduleBassNote(
-      {} as AudioNode,
-      110,
-      0,
-      { velocity: 0 },
-    );
+    scheduleBassNote({} as AudioNode, 110, 0, { velocity: 0 });
     expect(spies.ctorSpy).not.toHaveBeenCalled();
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
-  it("cancel() releases then disposes the synth after the envelope settles", () => {
-    const handle = scheduleBassNote(
-      {} as AudioNode,
-      110,
-      0,
-    );
+  it("cancel() before the scheduled start disposes the voice without releasing (kills the pending note)", () => {
+    // now (0) < scheduled time (5): the note is queued but hasn't started, so
+    // the monophonic voice is disposed outright to cancel the pending
+    // triggerAttackRelease — otherwise the next chord's bass would bleed in.
+    const handle = scheduleBassNote({} as AudioNode, 110, 5, { velocity: 0.9 });
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     handle.cancel();
-    // Release fires immediately so the envelope can decay naturally.
-    expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
-    // Dispose is deferred via setTimeout so the release tail isn't truncated.
-    expect(spies.dispose).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(60); // matches the dispose-deferral window in production
+    expect(spies.triggerRelease).not.toHaveBeenCalled();
     expect(spies.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it("cancel() prevents a future-scheduled note from ever being attacked", async () => {
-    const handle = scheduleBassNote({} as AudioNode, 110, 2, { velocity: 0.8 });
-
-    expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(1);
-    expect(spies.playbackAttackRelease).not.toHaveBeenCalled();
-
+  it("cancel() releases then disposes the synth after the envelope settles", () => {
+    const handle = scheduleBassNote({} as AudioNode, 110, 0);
     handle.cancel();
-    await vi.advanceTimersByTimeAsync(2_500);
-    tone.setNow(2.5);
-
-    expect(spies.playbackAttackRelease).not.toHaveBeenCalled();
+    expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
+    expect(spies.dispose).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(60); // > DISPOSE_TAIL_MS (50)
+    expect(spies.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
-    const handle = scheduleBassNote(
-      {} as AudioNode,
-      110,
-      0,
-    );
+  it("cancel() is idempotent — release/dispose happen only once", () => {
+    const handle = scheduleBassNote({} as AudioNode, 110, 0);
     handle.cancel();
     handle.cancel();
     handle.cancel();
     vi.advanceTimersByTime(60);
     expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
     expect(spies.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("reuses one pool per patch id and separates pools across patches", () => {
+    const dest = {} as AudioNode;
+    const finger = getBassPatch("bass-finger")!;
+    const upright = getBassPatch("bass-upright")!;
+    scheduleBassNote(dest, 110, 0, { velocity: 0.9, patch: finger }); // synth #1
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    s.setNow(5); // advance past the first note's busy window so the voice is idle
+    scheduleBassNote(dest, 110, 5, { velocity: 0.9, patch: finger }); // reuses #1
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
+    scheduleBassNote(dest, 110, 5, { velocity: 0.9, patch: upright }); // different patch → #2
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
   });
 });
