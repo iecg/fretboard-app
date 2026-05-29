@@ -53,7 +53,7 @@
 }
 
 .button:disabled {
-  opacity: 0.3;
+  opacity: var(--control-disabled-opacity);
   cursor: default;
 }
 

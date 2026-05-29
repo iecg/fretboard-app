@@ -110,6 +110,7 @@
   --chrome-hover-bg-tint: color-mix(in srgb, var(--neon-cyan) 12%, transparent);
 
   --disabled-opacity: var(--token-disabled-opacity);
+  --control-disabled-opacity: var(--disabled-opacity); /* one knob for all control-like disabled states */
   --note-hidden-opacity: 0.4;
 
   /* Nav active tokens — theme-aware active/selected state for navigation */

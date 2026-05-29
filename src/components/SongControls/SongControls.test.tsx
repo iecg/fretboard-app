@@ -217,16 +217,28 @@ describe("SongControls playback lock (R1-T2)", () => {
     expect(addButton.closest("[inert]")).not.toBeNull();
   });
 
-  it("Progression card surfaces the locked hint text during playback", () => {
+  it("routes Key and Progression card controls through an inert ancestor during playback (shared disabled cascade)", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(
       <TooltipProvider><SongControls /></TooltipProvider>,
       store,
     );
     act(() => { store.set(setProgressionPlayingAtom, true); });
-    // Both Key and Progression cards are locked — expect at least one hint to appear.
-    const hints = screen.getAllByText(/Pause playback to edit/i);
-    expect(hints.length).toBeGreaterThan(0);
+
+    const keyCard = screen.getByRole("region", { name: /key/i });
+    const progressionCard = screen.getByRole("region", { name: /progression/i });
+
+    // Every interactive control in a locked card resolves to an inert ancestor —
+    // that is what drives the shared disabled appearance (controls.css), so no
+    // per-control `disabled` prop is required.
+    const keyControl = keyCard.querySelector("button");
+    expect(keyControl).not.toBeNull();
+    expect(keyControl!.closest("[inert]")).not.toBeNull();
+
+    // Lock icons are always rendered now (visibility is CSS-driven); presence is
+    // a secondary check.
+    expect(keyCard.querySelector(".lucide-lock")).toBeInTheDocument();
+    expect(progressionCard.querySelector(".lucide-lock")).toBeInTheDocument();
   });
 
   it("Progression card section has data-locked=true during playback", () => {

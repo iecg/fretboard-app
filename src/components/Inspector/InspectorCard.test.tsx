@@ -27,19 +27,14 @@ describe("InspectorCard", () => {
   });
 
   it("sets data-locked on the card section when locked=true", () => {
-    const { container } = renderCard({ locked: true, lockedHint: "Pause to edit" });
+    const { container } = renderCard({ locked: true });
     expect(container.querySelector("section[data-locked='true']")).toBeInTheDocument();
   });
 
   it("makes the card body inert when locked=true", () => {
-    const { container } = renderCard({ locked: true, lockedHint: "Pause to edit" });
+    const { container } = renderCard({ locked: true });
     // The body div carries both data-locked and inert; the section also gets data-locked.
     expect(container.querySelector("div[data-locked='true']")).toHaveAttribute("inert");
-  });
-
-  it("renders the lockedHint inline in the header when locked=true", () => {
-    renderCard({ locked: true, lockedHint: "Pause to edit" });
-    expect(screen.getByText("Pause to edit")).toBeInTheDocument();
   });
 
   it("body is interactive when locked=false (default)", () => {
@@ -76,9 +71,25 @@ describe("InspectorCard", () => {
   it("has no accessibility violations when locked", async () => {
     const { container } = renderCard({
       locked: true,
-      lockedHint: "Pause playback to edit",
     });
     const results = await axe(container);
     expect(results).toHaveNoViolations();
+  });
+
+  it("always renders the header lock icon (visibility is CSS-driven by data-locked)", () => {
+    const lockedRender = renderCard({ locked: true });
+    expect(lockedRender.container.querySelector(".lucide-lock")).toBeInTheDocument();
+    lockedRender.unmount();
+
+    const unlockedRender = renderCard();
+    expect(unlockedRender.container.querySelector(".lucide-lock")).toBeInTheDocument();
+  });
+
+  it("marks the lock icon decorative and leaves the card un-locked when locked=false", () => {
+    const { container } = renderCard();
+    expect(container.querySelector("section[data-locked='true']")).toBeNull();
+    const icon = container.querySelector(".lucide-lock");
+    expect(icon).toBeInTheDocument();
+    expect(icon!.closest("[aria-hidden='true']")).not.toBeNull();
   });
 });

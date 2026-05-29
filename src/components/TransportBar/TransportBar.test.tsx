@@ -235,6 +235,40 @@ describe("TransportBar", () => {
       expect(screen.queryByRole("tooltip")).toBeNull();
     }
   });
+
+  it("keeps the status label as Play while the progression plays (no text swap)", () => {
+    const store = makeAtomStore([...playableAtoms]);
+    const { container } = renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+
+    expect(screen.getByText("Play")).toBeTruthy();
+
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    // Label text is static; playback is signalled by the active status dot, not a word swap.
+    expect(screen.getByText("Play")).toBeTruthy();
+    expect(screen.queryByText("Playing")).toBeNull();
+    expect(container.querySelector('[data-active="true"]')).toBeInTheDocument();
+  });
+
+  it("announces the global edit lock via an aria-live region while playing", () => {
+    const store = makeAtomStore([...playableAtoms]);
+    const { container } = renderWithStore(
+      <TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>,
+      store,
+    );
+
+    const liveRegion = container.querySelector("[aria-live='polite']");
+    expect(liveRegion).toBeInTheDocument();
+    expect(liveRegion).toHaveTextContent("");
+
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    expect(liveRegion).toHaveTextContent("Editing locked during playback");
+  });
 });
 
 describe("Concurrent UI Transitions", () => {

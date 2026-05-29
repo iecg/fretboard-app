@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
+import { Lock } from "lucide-react";
 import { Switch } from "../Switch/Switch";
 import styles from "./InspectorCard.module.css";
 
@@ -29,13 +30,12 @@ export interface InspectorCardProps {
   headClassName?: string;
   /**
    * When true, the card body becomes non-interactive (HTML5 `inert`) and
-   * visually dims. Pair with `lockedHint` to show an inline hint in the
-   * header explaining how the user unlocks. Independent of `active` (which
-   * dims the body via the master toggle).
+   * the card shows a `locked` data attribute. Independent of `active` (which
+   * dims the body via the master toggle). The lock is communicated visually by
+   * the header lock icon + body scrim, and to assistive tech by the global
+   * `aria-live` region in the TransportBar.
    */
   locked?: boolean;
-  /** Inline hint shown in the header when `locked=true`. Replaces `description` while locked. */
-  lockedHint?: ReactNode;
   /** Card body contents — typically a PropGrid. */
   children: ReactNode;
 }
@@ -62,7 +62,6 @@ export function InspectorCard({
   bodyClassName,
   headClassName,
   locked = false,
-  lockedHint,
   children,
 }: InspectorCardProps) {
   const hasToggle = onToggle !== undefined && toggleLabel !== undefined && active !== undefined;
@@ -80,19 +79,20 @@ export function InspectorCard({
         {hasToggle ? (
           <Switch label={toggleLabel} checked={active} onChange={onToggle} />
         ) : null}
-        <h3 id={labelledById} className={styles.cardName}>
-          {name}
-        </h3>
+        <div className={styles.cardTitle}>
+          <h3 id={labelledById} className={styles.cardName}>
+            {name}
+          </h3>
+          <span className={styles.lockSlot} aria-hidden="true">
+            <Lock size={11} className={styles.lockIcon} />
+          </span>
+        </div>
         {stateLabel ? (
           <span className={styles.cardState} aria-hidden="true">
             {stateLabel}
           </span>
         ) : null}
-        {locked && lockedHint ? (
-          <span className={styles.cardLockedHint} aria-live="polite">
-            {lockedHint}
-          </span>
-        ) : description ? (
+        {description ? (
           <span className={styles.cardDesc}>{description}</span>
         ) : (
           <span className={styles.cardDesc} aria-hidden="true" />
