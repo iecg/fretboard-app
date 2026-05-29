@@ -35,7 +35,7 @@ export function applyJitter({
   const jitterT = (r1 * 2) - 1;
   const jitterV = (r2 * 2) - 1;
 
-  const newTime = time + jitterT * timeAmountSec;
+  const newTime = Math.max(0, time + jitterT * timeAmountSec);
   const newVelocity = Math.max(0, Math.min(1, velocity + jitterV * velocityAmount));
 
   return { time: newTime, velocity: newVelocity };

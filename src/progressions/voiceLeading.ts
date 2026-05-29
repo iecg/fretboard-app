@@ -85,8 +85,9 @@ export function getNearestInversion(prevNotes: string[], baseNotes: string[], ro
         const noteIndex = (inv + i) % baseNotes.length;
         // If we wrap around, increment octave
         if (i > 0) {
+          const prevIndex = (inv + i - 1 + baseNotes.length) % baseNotes.length;
           const currChroma = getChroma(baseNotes[noteIndex]);
-          const prevChroma = getChroma(baseNotes[(noteIndex - 1 + baseNotes.length) % baseNotes.length]);
+          const prevChroma = getChroma(baseNotes[prevIndex]);
           if (currChroma !== null && prevChroma !== null && currChroma < prevChroma) {
             currentOctave++;
           }

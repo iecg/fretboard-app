@@ -131,10 +131,11 @@ export function resolveBassNoteForRole(
   
   if (isOctaveAbove && role === "octave") {
     // If explicitly asked for an octave, we shift it up one from whatever the base logic decided
-    // Very simple bump
+    // Bounded bump so it doesn't leave the E1-E3 range
     const noteName = resolved.replace(/[0-9]/g, "");
     const oct = parseInt(resolved.replace(/[^0-9]/g, ""), 10);
-    return `${noteName}${oct + 1}`;
+    const newOct = Math.min(oct + 1, 3); // upper bound E3
+    return `${noteName}${newOct}`;
   }
 
   return resolved;
