@@ -10,7 +10,7 @@ import {
   MAX_PROGRESSION_TEMPO_BPM,
   PROGRESSION_PRESETS,
 } from "../../progressions/progressionDomain";
-import { generateCommonProgressions } from "../../progressions/progressionGeneration";
+import { generateCommonProgressions, type SuggestionFeel } from "../../progressions/progressionGeneration";
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -80,7 +80,7 @@ const CATEGORY_LABELS: Record<ProgressionPresetCategory, string> = {
   minor: "Minor",
 };
 
-const SUGGESTION_FEEL_LABELS: Record<string, string> = {
+const SUGGESTION_FEEL_LABELS: Record<SuggestionFeel, string> = {
   cadential: "Cadential",
   vamp: "Vamps",
   modal: "Modal",
@@ -177,8 +177,8 @@ export function SongControls() {
       return acc;
     }, {}),
   ).map(([feel, presets]) => ({
-    feel: feel as PresetMenuSuggestionGroup["feel"],
-    label: SUGGESTION_FEEL_LABELS[feel] ?? feel,
+    feel: feel as SuggestionFeel,
+    label: SUGGESTION_FEEL_LABELS[feel as SuggestionFeel] ?? feel,
     options: presets.map((p) => ({ id: p.id, label: p.label })),
   }));
   const handlePresetChange = (id: string) => {
