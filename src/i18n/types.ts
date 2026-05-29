@@ -22,11 +22,18 @@ export interface Dictionary {
       tuning: string;
       accidentals: string;
       enharmonicDisplay: string;
+      soundQuality: string;
       theme: string;
       scaleDegreeColorsHint: string;
       accidentalsHint: string;
       enharmonicDisplayHint: string;
       themeHint: string;
+    };
+    soundQuality: {
+      auto: string;
+      eco: string;
+      standard: string;
+      high: string;
     };
   };
   inspector: {

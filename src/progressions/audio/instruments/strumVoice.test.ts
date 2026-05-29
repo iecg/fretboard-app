@@ -14,11 +14,14 @@ vi.mock("../string", () => ({
   pluckString: pluckStringSpy,
 }));
 
-import { strumVoice, STRUM_LAG_SECONDS } from "./strumVoice";
+import { createStrumVoice, STRUM_LAG_SECONDS } from "./strumVoice";
 
 describe("strumVoice", () => {
+  let strumVoice: ReturnType<typeof createStrumVoice>;
+
   beforeEach(() => {
     pluckStringSpy.mockClear();
+    strumVoice = createStrumVoice();
   });
 
   it("implements ChordVoice interface", () => {

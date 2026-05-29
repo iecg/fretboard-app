@@ -1,23 +1,20 @@
 /**
- * Synthesized drum kit voices on Tone.js primitives:
+ * Synthesized drum kit voices on Tone.js primitives, parameterized per genre
+ * via DrumKitPatch. When no kit is supplied, the defaults reproduce the prior
+ * fixed kit exactly. Pools are keyed by (voice, kit id) so switching kits swaps
+ * to a fresh pool; the old pool idles and is GC'd.
  *
  *  - Kick  → `Tone.MembraneSynth` (sine + pitch-decay)
  *  - Snare → `Tone.NoiseSynth`    (white noise + envelope)
  *  - HiHat → `Tone.MetalSynth`    (short decay closed / longer decay open)
  *  - Ride  → `Tone.MetalSynth`    (long decay)
- *
- * Each schedule function constructs a fresh, one-shot voice, triggers it at
- * `time` (an absolute Tone Transport-compatible seconds value), and returns a
- * handle whose `cancel()` defers `dispose()` past the voice's release tail to
- * avoid truncation clicks. This matches the pattern used by `metronome.ts`,
- * `bass.ts`, and `string.ts` after the Phase 7B migration.
  */
 import * as Tone from "tone";
 import type { ReusableVoiceLease } from "./createReusableVoicePool";
 import { createReusableVoicePool } from "./createReusableVoicePool";
+import type { DrumKitPatch } from "./sound/patchTypes";
 
 const HIT_VELOCITY_DEFAULT = 1;
-
 function clampVelocity(v: number | undefined): number {
   if (v === undefined) return HIT_VELOCITY_DEFAULT;
   return Math.max(0, Math.min(1.5, v));
@@ -32,8 +29,11 @@ const HAT_CLOSED_DISPOSE_MS = 150; // closed hat decay ~50 ms
 const HAT_OPEN_DISPOSE_MS = 500; // open hat decay ~350 ms
 const RIDE_DISPOSE_MS = 1500; // ride decay ~1 s
 
+const kitKey = (kit?: DrumKitPatch) => kit?.id ?? "__default";
+
 export interface DrumHitOptions {
   velocity?: number;
+  kit?: DrumKitPatch;
 }
 
 export interface DrumVoiceHandle {
@@ -78,63 +78,36 @@ function deferredDisposeHandle(
 }
 
 const NOOP_HANDLE: DrumVoiceHandle = { cancel: () => {} };
-const kickVoicePool = createReusableVoicePool<Tone.MembraneSynth>({
-  createVoice: () =>
-    new Tone.MembraneSynth({
-      pitchDecay: 0.04,
-      octaves: 6,
-      oscillator: { type: "sine" },
-      envelope: {
-        attack: 0.001,
-        decay: 0.35,
-        sustain: 0,
-        release: 0.1,
-        attackCurve: "exponential",
-      },
-    }),
-});
-const snareVoicePool = createReusableVoicePool<Tone.NoiseSynth>({
-  createVoice: () =>
-    new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: {
-        attack: 0.001,
-        decay: 0.18,
-        sustain: 0,
-        release: 0.05,
-      },
-    }),
-});
-const closedHatVoicePool = createReusableVoicePool<Tone.MetalSynth>({
-  createVoice: () =>
-    new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.05, release: 0.02 },
-      harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5,
-    }),
-});
-const openHatVoicePool = createReusableVoicePool<Tone.MetalSynth>({
-  createVoice: () =>
-    new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.35, release: 0.02 },
-      harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5,
-    }),
-});
-const rideVoicePool = createReusableVoicePool<Tone.MetalSynth>({
-  createVoice: () =>
-    new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 1.0, release: 0.3 },
-      harmonicity: 3.1,
-      modulationIndex: 22,
-      resonance: 2400,
-      octaves: 1.0,
-    }),
-});
+
+// ── Kick ───────────────────────────────────────────────────────────────────
+const DEFAULT_KICK_ENV = {
+  attack: 0.001,
+  decay: 0.35,
+  sustain: 0,
+  release: 0.1,
+  attackCurve: "exponential" as const,
+};
+const kickPools = new Map<
+  string,
+  ReturnType<typeof createReusableVoicePool<Tone.MembraneSynth>>
+>();
+function kickPool(kit?: DrumKitPatch) {
+  const key = kitKey(kit);
+  const existing = kickPools.get(key);
+  if (existing) return existing;
+  const ov = kit?.voices.kick;
+  const pool = createReusableVoicePool<Tone.MembraneSynth>({
+    createVoice: () =>
+      new Tone.MembraneSynth({
+        pitchDecay: ov?.pitchDecay ?? 0.04,
+        octaves: ov?.octaves ?? 6,
+        oscillator: { type: "sine" },
+        envelope: { ...DEFAULT_KICK_ENV, ...(ov?.envelope ?? {}) },
+      }),
+  });
+  kickPools.set(key, pool);
+  return pool;
+}
 
 /**
  * Schedule a kick drum hit at `time`. `Tone.MembraneSynth` provides the
@@ -150,11 +123,38 @@ export function scheduleKick(
   if (velocity <= 0) return NOOP_HANDLE;
   const now = Tone.now();
   const playbackStartTime = Math.max(now, time);
-  const lease = kickVoicePool.lease(dest, now);
+  const lease = kickPool(options.kit).lease(dest, now);
   const busyUntil = playbackStartTime + 0.6;
   lease.setBusyUntil(busyUntil);
   lease.voice.triggerAttackRelease("C1", 0.5, time, velocity);
   return deferredDisposeHandle(lease, time, busyUntil, KICK_DISPOSE_MS);
+}
+
+// ── Snare ────────────────────────────────────────────────────────────────────
+const snarePools = new Map<
+  string,
+  ReturnType<typeof createReusableVoicePool<Tone.NoiseSynth>>
+>();
+function snarePool(kit?: DrumKitPatch) {
+  const key = kitKey(kit);
+  const existing = snarePools.get(key);
+  if (existing) return existing;
+  const ov = kit?.voices.snare;
+  const pool = createReusableVoicePool<Tone.NoiseSynth>({
+    createVoice: () =>
+      new Tone.NoiseSynth({
+        noise: { type: ov?.noiseType ?? "white" },
+        envelope: {
+          attack: 0.001,
+          decay: 0.18,
+          sustain: 0,
+          release: 0.05,
+          ...(ov?.envelope ?? {}),
+        },
+      }),
+  });
+  snarePools.set(key, pool);
+  return pool;
 }
 
 /**
@@ -169,19 +169,57 @@ export function scheduleSnare(
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
+  const duration = options.kit?.voices.snare?.envelope?.decay ?? 0.18;
   const now = Tone.now();
   const playbackStartTime = Math.max(now, time);
-  const lease = snareVoicePool.lease(dest, now);
+  const lease = snarePool(options.kit).lease(dest, now);
   const busyUntil = playbackStartTime + 0.23;
   lease.setBusyUntil(busyUntil);
   // NoiseSynth has no pitch — signature is (duration, time, velocity).
-  lease.voice.triggerAttackRelease(0.18, time, velocity);
+  lease.voice.triggerAttackRelease(duration, time, velocity);
   return deferredDisposeHandle(lease, time, busyUntil, SNARE_DISPOSE_MS);
 }
 
+// ── Hi-Hat (closed + open) ──────────────────────────────────────────────────
 export interface HiHatOptions extends DrumHitOptions {
   /** Open hat has a longer decay tail. Default false (closed). */
   open?: boolean;
+}
+
+const closedHatPools = new Map<
+  string,
+  ReturnType<typeof createReusableVoicePool<Tone.MetalSynth>>
+>();
+const openHatPools = new Map<
+  string,
+  ReturnType<typeof createReusableVoicePool<Tone.MetalSynth>>
+>();
+
+function hatDecay(open: boolean, kit?: DrumKitPatch): number {
+  return open
+    ? (kit?.voices.openHat?.decay ?? 0.35)
+    : (kit?.voices.hihat?.decay ?? 0.05);
+}
+
+function hatPool(open: boolean, kit?: DrumKitPatch) {
+  const map = open ? openHatPools : closedHatPools;
+  const key = kitKey(kit);
+  const existing = map.get(key);
+  if (existing) return existing;
+  const ov = kit?.voices.hihat;
+  const decay = hatDecay(open, kit);
+  const pool = createReusableVoicePool<Tone.MetalSynth>({
+    createVoice: () =>
+      new Tone.MetalSynth({
+        envelope: { attack: 0.001, decay, release: 0.02 },
+        harmonicity: 5.1,
+        modulationIndex: 32,
+        resonance: ov?.resonance ?? 4000,
+        octaves: ov?.octaves ?? 1.5,
+      }),
+  });
+  map.set(key, pool);
+  return pool;
 }
 
 /**
@@ -196,13 +234,11 @@ export function scheduleHiHat(
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
-  const decay = options.open ? 0.35 : 0.05;
+  const open = options.open ?? false;
+  const decay = hatDecay(open, options.kit);
   const now = Tone.now();
   const playbackStartTime = Math.max(now, time);
-  const lease = (options.open ? openHatVoicePool : closedHatVoicePool).lease(
-    dest,
-    now,
-  );
+  const lease = hatPool(open, options.kit).lease(dest, now);
   const busyUntil = playbackStartTime + decay + 0.02;
   lease.setBusyUntil(busyUntil);
   lease.voice.triggerAttackRelease("C6", decay, time, velocity);
@@ -210,12 +246,37 @@ export function scheduleHiHat(
     lease,
     time,
     busyUntil,
-    options.open ? HAT_OPEN_DISPOSE_MS : HAT_CLOSED_DISPOSE_MS,
+    open ? HAT_OPEN_DISPOSE_MS : HAT_CLOSED_DISPOSE_MS,
   );
 }
 
+// ── Ride ─────────────────────────────────────────────────────────────────────
 export interface RideOptions extends DrumHitOptions {
+  /** Bell-mode shading is a future refinement; preserved for call-site compat. */
   bell?: boolean;
+}
+
+const ridePools = new Map<
+  string,
+  ReturnType<typeof createReusableVoicePool<Tone.MetalSynth>>
+>();
+function ridePool(kit?: DrumKitPatch) {
+  const key = kitKey(kit);
+  const existing = ridePools.get(key);
+  if (existing) return existing;
+  const ov = kit?.voices.ride;
+  const pool = createReusableVoicePool<Tone.MetalSynth>({
+    createVoice: () =>
+      new Tone.MetalSynth({
+        envelope: { attack: 0.001, decay: ov?.decay ?? 1.0, release: 0.3 },
+        harmonicity: ov?.harmonicity ?? 3.1,
+        modulationIndex: 22,
+        resonance: ov?.resonance ?? 2400,
+        octaves: 1.0,
+      }),
+  });
+  ridePools.set(key, pool);
+  return pool;
 }
 
 /**
@@ -231,11 +292,12 @@ export function scheduleRide(
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
+  const decay = options.kit?.voices.ride?.decay ?? 1.0;
   const now = Tone.now();
   const playbackStartTime = Math.max(now, time);
-  const lease = rideVoicePool.lease(dest, now);
+  const lease = ridePool(options.kit).lease(dest, now);
   const busyUntil = playbackStartTime + 1.3;
   lease.setBusyUntil(busyUntil);
-  lease.voice.triggerAttackRelease("D6", 1.0, time, velocity);
+  lease.voice.triggerAttackRelease("D6", decay, time, velocity);
   return deferredDisposeHandle(lease, time, busyUntil, RIDE_DISPOSE_MS);
 }

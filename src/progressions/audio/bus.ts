@@ -14,6 +14,7 @@
 import { getDraw } from "tone";
 import { buildLayerBuses, type LayerBuses } from "./layerBuses";
 import { _resetToneBusForTests, bindToneToProgressionContext } from "./toneBus";
+import { materializeSignalGraph, type MaterializedGraph, type SignalGraphPlan } from "./sound/buildSignalGraph";
 
 const BUS_GAIN = 0.55;
 const SILENCE_RAMP_SECONDS = 0.02;
@@ -138,8 +139,46 @@ export function restoreProgressionBus(): void {
   bus.gain.linearRampToValueAtTime(BUS_GAIN, now + RESUME_RAMP_SECONDS);
 }
 
+const GRAPH_LAYERS = ["chord", "bass", "drums", "metronome"] as const;
+
+let currentGraph: MaterializedGraph | null = null;
+
+/**
+ * (Re)build the per-instrument mix graph for the active tier+genre and route
+ * the four layer buses into it. Disposes any prior graph. Returns the graph, or
+ * null when audio is unavailable. Call on play and whenever (quality, genre)
+ * changes — never mid-step.
+ *
+ * The layer buses connect to the master `bus` by default (buildLayerBuses);
+ * this disconnects them from that (or the prior graph) and reconnects them into
+ * the new graph's native input nodes.
+ */
+export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGraph | null {
+  const audio = ensureProgressionAudio();
+  if (!audio) return null;
+
+  // Build the new graph FIRST. If materialization throws (Tone node
+  // construction can fail on some devices/plans), we must not have already torn
+  // down the prior routing — otherwise the four layer buses would be left
+  // disconnected from the master bus and the backing track would go permanently
+  // silent. Materializing before the swap means a failure propagates with the
+  // old graph + layer connections still intact.
+  const graph = materializeSignalGraph(audio.ctx, audio.bus, plan);
+
+  for (const layer of GRAPH_LAYERS) {
+    try { audio.layers[layer].disconnect(); } catch { /* not connected */ }
+  }
+  if (currentGraph) currentGraph.dispose();
+  for (const layer of GRAPH_LAYERS) {
+    audio.layers[layer].connect(graph.inputs[layer] as AudioNode);
+  }
+  currentGraph = graph;
+  return graph;
+}
+
 /** Test-only reset hook so the module behaves predictably across `vitest` runs. */
 export function _resetProgressionAudioForTests(): void {
+  if (currentGraph) { try { currentGraph.dispose(); } catch { /* */ } currentGraph = null; }
   ctx = null;
   bus = null;
   layers = null;

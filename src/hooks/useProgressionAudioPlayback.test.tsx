@@ -124,6 +124,16 @@ const toneMocks = vi.hoisted(() => {
   const drawCancel = vi.fn();
   const draw = { expiration: 5, schedule: drawSchedule, cancel: drawCancel };
 
+  class FakeAudioNode {
+    input: FakeAudioNode = this;
+    connect() { return this; }
+    disconnect() { return this; }
+    dispose() {}
+  }
+  class FakeReverb extends FakeAudioNode {
+    generate() { return Promise.resolve(this); }
+  }
+
   return {
     contextNowRef,
     parts,
@@ -141,6 +151,8 @@ const toneMocks = vi.hoisted(() => {
     transport,
     drawSchedule,
     drawCancel,
+    FakeAudioNode,
+    FakeReverb,
   };
 });
 vi.mock("tone", () => ({
@@ -151,6 +163,18 @@ vi.mock("tone", () => ({
   getContext: toneMocks.getContext,
   now: toneMocks.now,
   setContext: toneMocks.setContext,
+  Channel: toneMocks.FakeAudioNode,
+  Compressor: toneMocks.FakeAudioNode,
+  Limiter: toneMocks.FakeAudioNode,
+  Gain: toneMocks.FakeAudioNode,
+  EQ3: toneMocks.FakeAudioNode,
+  Chebyshev: toneMocks.FakeAudioNode,
+  Distortion: toneMocks.FakeAudioNode,
+  Freeverb: toneMocks.FakeAudioNode,
+  JCReverb: toneMocks.FakeAudioNode,
+  Reverb: toneMocks.FakeReverb,
+  // Tone's native↔Tone connect bridge used by materializeSignalGraph.
+  connect: () => {},
 }));
 
 import { _resetProgressionAudioForTests, ensureProgressionAudio } from "../progressions/audio/bus";
