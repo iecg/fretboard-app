@@ -41,6 +41,19 @@ describe("buildChordRootGroups — A minor borrowed numerals", () => {
   });
 });
 
+describe("buildChordRootGroups — auto-accidental scale spelling (C minor)", () => {
+  // preferFlats=false on purpose: proper per-degree spelling must NOT depend on
+  // the global flat/sharp flag — C natural minor spells one of each letter
+  // (C D E♭ F G A♭ B♭), never D♯/G♯/A♯, regardless.
+  const groups = buildChordRootGroups("minor", "C", false);
+  const diatonic = groups[0].options;
+  it("spells the diatonic roots with proper flats, not sharps", () => {
+    expect(diatonic.find((o) => o.value === "D#")?.label).toBe("III · E♭ · maj");
+    expect(diatonic.find((o) => o.value === "G#")?.label).toBe("VI · A♭ · maj");
+    expect(diatonic.find((o) => o.value === "A#")?.label).toBe("VII · B♭ · maj");
+  });
+});
+
 describe("classifyRoot", () => {
   it("returns inScale + numeral for diatonic, manual + numeral for non-diatonic", () => {
     expect(classifyRoot("major", "C", "F")).toEqual({ inScale: true, numeral: "IV" });

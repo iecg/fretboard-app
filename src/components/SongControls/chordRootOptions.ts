@@ -3,8 +3,9 @@ import {
   getHarmonyParentScale,
   getHarmonicMoveAnnotation,
   getDegreesForScale,
-  getNoteDisplay,
+  getNoteDisplayInScale,
   formatAccidental,
+  SCALES,
   NOTES,
 } from "@fretflow/core";
 import type { LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
@@ -44,13 +45,20 @@ export function buildChordRootGroups(
   const parent = getHarmonyParentScale(scaleName);
   const degreesMap = getDegreesForScale(parent);
   const roots = getScaleRoots(scaleName, tonicNote);
+  // Relative scale intervals drive auto-accidental spelling: in-scale roots are
+  // spelled by the heptatonic letter cycle (one letter per degree — C minor's
+  // 3rd is E♭, not D♯), matching the fretboard. Out-of-scale (borrowed /
+  // chromatic) roots fall back to the preferFlats flip inside this helper.
+  const scaleIntervals = SCALES[parent] ?? [];
 
   const diatonic: LabeledSelectGroup["options"] = [];
   const borrowed: LabeledSelectGroup["options"] = [];
   const chromatic: LabeledSelectGroup["options"] = [];
 
   for (const r of roots) {
-    const display = formatAccidental(getNoteDisplay(r.note, tonicNote, preferFlats));
+    const display = formatAccidental(
+      getNoteDisplayInScale(r.note, tonicNote, scaleIntervals, preferFlats),
+    );
     if (r.rootClass === "diatonic") {
       const numeral = degreesMap[r.offset] ?? "";
       const hint = QUALITY_HINT[r.defaultQuality ?? "M"] ?? r.defaultQuality ?? "";
