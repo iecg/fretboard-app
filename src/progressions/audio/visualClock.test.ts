@@ -11,6 +11,7 @@ describe("visualClock", () => {
   let rafCb: FrameRequestCallback | null = null;
   let rafId = 0;
   beforeEach(() => {
+    vi.useFakeTimers();
     rafId = 0;
     rafCb = null;
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
@@ -30,6 +31,7 @@ describe("visualClock", () => {
     const cb = rafCb;
     rafCb = null;
     cb?.(performance.now());
+    vi.advanceTimersByTime(0);
   }
 
   it("writes stepIndex to the primitive atom every frame stepIndex changes", () => {
