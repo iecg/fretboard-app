@@ -189,35 +189,53 @@ describe("FretboardNoteLayer", () => {
     expect(container.querySelector("g[aria-hidden='true']")).toBeTruthy();
   });
 
-  it("lens emphasis radiusBoost scales the final rendered radius", () => {
+  it("lens emphasis radiusBoost is applied as CSS transform scale, not baked into SVG geometry", () => {
     const noteBubblePx = 40, radiusBoost = 1.15;
-    const expectedRadius = (noteBubblePx / 2) * RADIUS_SCALE_NOTE_ACTIVE * radiusBoost - CIRCLE_RADIUS_REDUCTION_PX;
+    // Radius is computed WITHOUT radiusBoost — boost goes to --emph-scale CSS var instead
+    const expectedBaseRadius = (noteBubblePx / 2) * RADIUS_SCALE_NOTE_ACTIVE - CIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer(
       [makeNote("note-active", { applyLensEmphasis: { radiusBoost, opacityBoost: 1 } })],
       { bubblePx: noteBubblePx },
     );
-    expect(Number(container.querySelector("circle")!.getAttribute("r"))).toBeCloseTo(expectedRadius);
+    // Circle r should be the base radius (no boost baked in)
+    expect(Number(container.querySelector("circle")!.getAttribute("r"))).toBeCloseTo(expectedBaseRadius);
+    // The note <g> should carry --emph-scale set to the boost value
+    const noteG = container.querySelector("g[data-note-shape]") as HTMLElement;
+    expect(noteG.style.getPropertyValue("--emph-scale")).toBe(String(radiusBoost));
   });
 
-  it.each<{ filter: "chord" | "non-chord"; third: NoteClass }>([
-    { filter: "chord", third: "chord-tone-in-scale" },
-    { filter: "non-chord", third: "scale-only" },
-  ])("filter='$filter' renders only its matching notes", ({ filter, third }) => {
+  it("renders all notes (no filter) — all notes are in a single layer", () => {
     const { container } = render(
       <svg>
         <FretboardNoteLayer
           notes={[
             makeNote("chord-root", { stringIndex: 0, fretIndex: 0 }),
             makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 150, cy: 30 }),
-            makeNote(third, { stringIndex: 2, fretIndex: 2, cx: 200, cy: 60 }),
+            makeNote("chord-tone-in-scale", { stringIndex: 2, fretIndex: 2, cx: 200, cy: 60 }),
           ]}
           noteBubblePx={40}
           displayFormat="notes"
-          filter={filter}
         />
       </svg>,
     );
-    expect(container.querySelectorAll("text").length).toBe(2);
+    expect(container.querySelectorAll("text").length).toBe(3);
+  });
+
+  it("renders glow underlay circle when glowColor is set", () => {
+    const glowColor = "var(--note-glow-hold)" as `var(--${string})`;
+    const { container } = renderLayer(
+      [makeNote("note-active", { applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor } })],
+    );
+    const underlay = container.querySelector(".note-glow-underlay");
+    expect(underlay).not.toBeNull();
+    expect(underlay?.getAttribute("aria-hidden")).toBe("true");
+    // Inline style fill is set to the glowColor token
+    expect(underlay?.getAttribute("style")).toContain("fill");
+  });
+
+  it("does not render glow underlay when glowColor is absent", () => {
+    const { container } = renderLayer([makeNote("note-active")]);
+    expect(container.querySelector(".note-glow-underlay")).toBeNull();
   });
 
   it("marks note groups with CSS animation mode", () => {

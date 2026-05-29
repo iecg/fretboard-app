@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
 import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 import { getNoteFrequency } from "@fretflow/core";
-import { isMutedAtom } from "../store/audioAtoms";
+import { audioQualityAtom, isMutedAtom } from "../store/audioAtoms";
 import {
   beatsPerBarAtom,
   progressionBassEnabledAtom,
@@ -13,6 +13,7 @@ import {
   progressionDrumPatternAtom,
   progressionDrumsEnabledAtom,
   progressionDrumVariationsAtom,
+  progressionGenreStyleAtom,
   progressionLoopEnabledAtom,
   progressionMetronomeEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
@@ -36,6 +37,27 @@ import type {
 import type { BuiltLayers } from "../progressions/audio/buildAllLayers";
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
+
+function readLayoutTier(): "mobile" | "tablet" | "desktop" {
+  if (typeof document === "undefined") return "desktop";
+  const t = document
+    .querySelector("[data-layout-tier]")
+    ?.getAttribute("data-layout-tier");
+  return t === "mobile" || t === "tablet" ? t : "desktop";
+}
+
+function resolveActiveTier(
+  eng: AudioEngine,
+  quality: "auto" | "eco" | "standard" | "high",
+) {
+  return eng.resolveTier(quality, () =>
+    eng.detectDefaultTier({
+      cores: navigator.hardwareConcurrency,
+      memoryGb: (navigator as unknown as { deviceMemory?: number }).deviceMemory,
+      layoutTier: readLayoutTier(),
+    }),
+  );
+}
 
 type AudioEngine = typeof import("../progressions/audio/progressionAudioEngine");
 
@@ -93,6 +115,8 @@ export function useProgressionAudioPlayback() {
   const bassOn = useAtomValue(progressionBassEnabledAtom);
   const drumsOn = useAtomValue(progressionDrumsEnabledAtom);
   const metronomeOn = useAtomValue(progressionMetronomeEnabledAtom);
+  const genreId = useAtomValue(progressionGenreStyleAtom);
+  const quality = useAtomValue(audioQualityAtom);
 
   const setActiveStepIndex = useSetAtom(setProgressionActiveStepIndexAtom);
   const setPlaying = useSetAtom(setProgressionPlayingAtom);
@@ -276,6 +300,13 @@ export function useProgressionAudioPlayback() {
       eng.setLayerGain(audio.layers, "drums", store.get(progressionDrumsEnabledAtom));
       eng.setLayerGain(audio.layers, "metronome", store.get(progressionMetronomeEnabledAtom));
 
+      const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
+      const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
+      eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
+      const bassPatch = eng.getBassPatch(mix.patches.bass);
+      const drumKit = eng.getDrumKitPatch(mix.patches.drumKit);
+      const chordPatchId = mix.patches.chord;
+
       const inputs = buildInputsRef.current;
 
       // Apply tempo/swing/time-signature BEFORE constructing Parts so
@@ -358,7 +389,7 @@ export function useProgressionAudioPlayback() {
       const chordStrumPart = eng.createProgressionPart<ChordStrumEvent>({
         events: built.chordStrums, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, value) => {
-          const voice = eng.getChordVoice(instrumentRef.current);
+          const voice = eng.getChordVoiceForInstrument(instrumentRef.current, chordPatchId);
           voice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
             velocity: value.velocity, style: value.style, direction: value.direction,
           });
@@ -372,7 +403,7 @@ export function useProgressionAudioPlayback() {
         onEvent: (audioTime, value) => {
           const freq = getNoteFrequency(value.note);
           if (!Number.isFinite(freq) || freq <= 0) return;
-          eng.scheduleBassNote(audio.layers.bass, freq, audioTime, { velocity: value.velocity });
+          eng.scheduleBassNote(audio.layers.bass, freq, audioTime, { velocity: value.velocity, patch: bassPatch });
         },
       });
       bassPart.start(partStart, 0);
@@ -382,11 +413,11 @@ export function useProgressionAudioPlayback() {
         events: built.drums, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, value) => {
           switch (value.type) {
-            case "kick": eng.scheduleKick(audio.layers.drums, audioTime, { velocity: value.velocity }); break;
-            case "snare": eng.scheduleSnare(audio.layers.drums, audioTime, { velocity: value.velocity }); break;
-            case "hihat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity }); break;
-            case "openHat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, open: true }); break;
-            case "ride": eng.scheduleRide(audio.layers.drums, audioTime, { velocity: value.velocity }); break;
+            case "kick": eng.scheduleKick(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
+            case "snare": eng.scheduleSnare(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
+            case "hihat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
+            case "openHat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, open: true, kit: drumKit }); break;
+            case "ride": eng.scheduleRide(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
           }
         },
       });
@@ -505,4 +536,13 @@ export function useProgressionAudioPlayback() {
       }
     }
   }, [loopEnabled, setPlaying]);
+
+  // Quality/genre change → rebuild the mix graph in place (no Part rebuild).
+  useEffect(() => {
+    if (!engine || !playing) return;
+    const eng = engine;
+    const mix = eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX;
+    const tier = resolveActiveTier(eng, quality);
+    eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
+  }, [genreId, quality, playing]);
 }

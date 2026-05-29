@@ -7,15 +7,6 @@ import styles from "./FretboardSVG.module.css";
 import type { NoteAnimationMode } from "./motionPolicy";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
-const CHORD_NOTE_CLASSES = new Set([
-  "chord-root",
-  "chord-tone",
-  "chord-tone-in-scale",
-  "chord-tone-outside-scale",
-  "chord-outside",
-  "note-diatonic-chord",
-]);
-
 const CAGED_SHAPE_CSS_VAR: Record<string, string> = {
   E: "var(--caged-e)",
   D: "var(--caged-d)",
@@ -38,7 +29,6 @@ interface FretboardNoteLayerProps {
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
-  filter?: "chord" | "non-chord";
   animationMode?: NoteAnimationMode;
 }
 
@@ -67,19 +57,11 @@ export const FretboardNoteLayer = memo(({
   displayFormat,
   degreeColorsEnabled,
   onNoteClick,
-  filter,
   animationMode = "css",
 }: FretboardNoteLayerProps) => {
-  const filteredNotes = filter
-    ? notes.filter(({ noteClass }) => {
-        const isChord = CHORD_NOTE_CLASSES.has(noteClass);
-        return filter === "chord" ? isChord : !isChord;
-      })
-    : notes;
-
   return (
     <g data-motion={animationMode}>
-      {filteredNotes.map(({
+      {notes.map(({
         stringIndex,
         fretIndex,
         noteName,
@@ -99,7 +81,7 @@ export const FretboardNoteLayer = memo(({
       }) => {
         const baseRadius = noteBubblePx / 2;
         const { radiusScale, noteShape } = getNoteVisuals(noteClass);
-        const rawRadius = baseRadius * radiusScale * applyLensEmphasis.radiusBoost;
+        const rawRadius = baseRadius * radiusScale;
         const r = noteShape === "squircle"
           ? reduceSquircleRadius(rawRadius)
           : reduceCircleRadius(rawRadius);
@@ -130,8 +112,8 @@ export const FretboardNoteLayer = memo(({
                     fill: "none",
                     stroke: isTension
                       ? "var(--neon-orange-dim)"
-                      : "color-mix(in srgb, var(--neon-orange) 22%, transparent)",
-                    strokeWidth: isTension ? 1.8 : 1.5,
+                      : "var(--note-ring-tonic)",
+                    strokeWidth: 1.8,
                     strokeDasharray: isTension ? "6 3" : undefined,
                     paintOrder: "stroke",
                   }}
@@ -151,7 +133,17 @@ export const FretboardNoteLayer = memo(({
               }).join(" ")}
             />
           ) : (
-            <circle cx={cx} cy={cy} r={r} />
+            <>
+              {noteClass === "key-tonic" && (
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={r + CHORD_ROOT_HALO_RADIUS_PX}
+                  style={{ fill: "none", stroke: "var(--note-ring-tonic)", strokeWidth: 1.8, paintOrder: "stroke" }}
+                />
+              )}
+              <circle cx={cx} cy={cy} r={r} />
+            </>
           );
 
         const baseOpacity = applyDimOpacity ? 0.8 : 1;
@@ -196,6 +188,10 @@ export const FretboardNoteLayer = memo(({
             data-degree-colors={degreeColorsEnabled ? "true" : undefined}
             style={{
               "--note-r": r,
+              "--emph-scale": applyLensEmphasis.radiusBoost,
+              transformBox: "fill-box",
+              transformOrigin: "center",
+              transform: "scale(var(--emph-scale, 1))",
               opacity: finalOpacity !== 1 ? finalOpacity : undefined,
               ...(degreeColor && degreeColorsEnabled
                 ? { "--degree-color": degreeColor }
@@ -203,6 +199,16 @@ export const FretboardNoteLayer = memo(({
               ...(fullChordStyle as React.CSSProperties),
             } as React.CSSProperties}
           >
+            {applyLensEmphasis.glowColor && (
+              <circle
+                className={styles["note-glow-underlay"]}
+                cx={cx}
+                cy={cy}
+                r={r}
+                style={{ fill: applyLensEmphasis.glowColor }}
+                aria-hidden="true"
+              />
+            )}
             {shapeEl}
             {displayFormat !== "none" && (
               <text x={cx} y={cy}>

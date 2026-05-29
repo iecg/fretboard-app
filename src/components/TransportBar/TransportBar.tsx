@@ -1,4 +1,3 @@
-import React from "react";
 import clsx from "clsx";
 import {
   AudioWaveform,
@@ -50,9 +49,10 @@ export function TransportBar() {
       return;
     }
 
-    React.startTransition(() => {
-      setProgressionPlaying(true);
-    });
+    // Direct synchronous write. Wrapping this Jotai setter in startTransition
+    // tagged every progression-atom subscriber's rerender to the transition and
+    // tripped React's ">10 fibers inside startTransition" subscription warning.
+    setProgressionPlaying(true);
   };
 
   return (

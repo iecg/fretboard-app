@@ -35,9 +35,12 @@
   outline: none;
 }
 
-/* CSS-mode note layer: animate opacity via CSS transitions instead of per-node JS animation */
+/* CSS-mode note layer: animate opacity and transform via CSS transitions instead of per-node JS animation */
 [data-motion="css"] .fretboard-note {
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+[data-motion="css"] .fretboard-note :is(circle, path, polygon) {
+  transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
 }
 
 .fretboard-note :is(circle, path, polygon) {
@@ -267,8 +270,8 @@
   r: calc(var(--note-r) * 1px - 0.4px);
 }
 
-.fretboard-note[data-note-role="key-tonic"],
-.fretboard-note[data-note-role="chord-root"],
+/* Root roles (key-tonic, chord-root) are intentionally glow-free —
+   their identity reads via the structural double-ring, not glow. */
 .fretboard-note[data-note-role="chord-tone-in-scale"],
 .fretboard-note[data-note-role="note-diatonic-chord"],
 .fretboard-note[data-note-role="chord-tone-outside-scale"] {
@@ -381,18 +384,40 @@
 }
 
 /* Lead lens emphasis — applied via data-lens-emphasis attribute (Task 4.5).
-   radiusBoost/opacityBoost are already applied inline by FretboardNoteLayer.tsx;
-   these rules add the glow filter on top. */
+   radiusBoost/opacityBoost are applied inline by FretboardNoteLayer.tsx via CSS transform scale.
+   Glow is now a dedicated underlay element (.note-glow-underlay) instead of an SVG filter. */
 
-/* Hold: common tone carried into next chord — hold-glow token (stable/sustained).
-   Applied unconditionally after Lens Consolidation made always-Lead the default. */
-.fretboard-note[data-lens-emphasis="var(--note-glow-hold)"] {
-  filter: var(--fretboard-svg-glow-cyan-url);
+/* Voice-leading glow underlay — fades/scales on the compositor (no SVG filter animation).
+   Selector is `.fretboard-note circle.note-glow-underlay` (specificity 0,2,1, placed after
+   the role stroke rules) so `stroke: none` and the opacity transition win over the inherited
+   role `:is(circle, …)` stroke + transition — the underlay must read as a pure soft glow,
+   not a crisp ring. */
+.fretboard-note circle.note-glow-underlay {
+  pointer-events: none;
+  /* The underlay must read as a pure soft glow. Role/full-chord stroke rules
+     (e.g. the 0,4,1 [data-full-chord-mode] rule) outrank any practical class
+     specificity here, so !important is the robust, intent-correct exemption
+     (the file already uses !important for the focus-visible stroke). */
+  stroke: none !important;
+  opacity: 0.55;
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: blur(3px);
+  transition: opacity 0.15s ease, fill 0.15s ease;
 }
 
-/* Anticipation: next chord's guide tone in the last-beat window — anticipation-glow token (incoming). */
-.fretboard-note[data-lens-emphasis="var(--note-glow-anticipation)"] {
-  filter: var(--fretboard-svg-glow-orange-url);
+/* Anticipation pulse — duration matched to one beat via --beat-duration. */
+.fretboard-note[data-lens-emphasis="var(--note-glow-anticipation)"] .note-glow-underlay {
+  animation: note-anticipation-pulse var(--beat-duration, 0.5s) ease-in-out infinite alternate;
+}
+
+@keyframes note-anticipation-pulse {
+  from { opacity: 0.4; transform: scale(1); }
+  to   { opacity: 0.85; transform: scale(1.18); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fretboard-note[data-lens-emphasis="var(--note-glow-anticipation)"] .note-glow-underlay { animation: none; }
 }
 
 /* Departing: chord tone not in next chord — no glow (opacity already reduced inline). */

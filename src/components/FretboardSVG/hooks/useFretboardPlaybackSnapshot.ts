@@ -1,11 +1,7 @@
-import { useMemo } from "react";
+import { useDeferredValue, useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { progressionPlayingAtom } from "../../../store/progressionAtoms";
-import {
-  activeStepDurationBeatsAtom,
-  commonTonesWithNextAtom,
-  nextChordGuideTonesAtom,
-} from "../../../store/practiceLensAtoms";
+import { activeStepDurationBeatsAtom } from "../../../store/practiceLensAtoms";
 import { progressionVisualFrameAtom } from "../../../store/progressionVisualAtoms";
 
 export interface FretboardPlaybackSnapshot {
@@ -14,19 +10,18 @@ export interface FretboardPlaybackSnapshot {
   globalFraction: number;
   localFraction: number;
   stepDurationBeats: number;
-  beatPosition: number;
-  commonWithNext: Set<string>;
-  nextGuideTones: Set<string>;
 }
 
 export function useFretboardPlaybackSnapshot(
   enabled: boolean,
 ): FretboardPlaybackSnapshot | null {
   const playing = useAtomValue(progressionPlayingAtom);
-  const frame = useAtomValue(progressionVisualFrameAtom);
+  // The frame atom is written synchronously every rAF tick by the visual clock.
+  // Defer it here (React-provided hook) so the expensive per-frame fretboard
+  // playhead render is deprioritized under load and can drop frames gracefully,
+  // without wrapping the external-store write in startTransition.
+  const frame = useDeferredValue(useAtomValue(progressionVisualFrameAtom));
   const stepDurationBeats = useAtomValue(activeStepDurationBeatsAtom);
-  const commonWithNext = useAtomValue(commonTonesWithNextAtom);
-  const nextGuideTones = useAtomValue(nextChordGuideTonesAtom);
 
   return useMemo(() => {
     if (!enabled || !playing || !frame) return null;
@@ -36,9 +31,6 @@ export function useFretboardPlaybackSnapshot(
       globalFraction: frame.globalFraction,
       localFraction: frame.localFraction,
       stepDurationBeats,
-      beatPosition: frame.localFraction * stepDurationBeats,
-      commonWithNext,
-      nextGuideTones,
     };
-  }, [enabled, playing, frame, stepDurationBeats, commonWithNext, nextGuideTones]);
+  }, [enabled, playing, frame, stepDurationBeats]);
 }

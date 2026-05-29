@@ -303,8 +303,8 @@ describe("getEmphasis - voice-leading emphasis", () => {
     notePc: "A",
     commonWithNext: new Set<string>(),
     nextGuideTones: new Set<string>(),
-    beatPosition: 0,
-    stepDurationBeats: 4,
+    nextChordTones: new Set<string>(),
+    anticipationActive: false,
   };
 
   // -------------------------------------------------------------------------
@@ -389,15 +389,15 @@ describe("getEmphasis - voice-leading emphasis", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Anticipation: next chord's guide tone in the last-beat window
+  // Anticipation: next chord's guide tone during the last-beat window
   // -------------------------------------------------------------------------
-  it("marks next-chord guide tones as anticipation in the last beat (beatPosition=3.6, stepDuration=4)", () => {
+  it("marks next-chord guide tones as anticipation when anticipationActive is true", () => {
     const ctx: LeadLensContext = {
       ...baseLeadContext,
       notePc: "F",
       nextGuideTones: new Set(["F"]),
-      beatPosition: 3.6,
-      stepDurationBeats: 4,
+      nextChordTones: new Set(["F"]),
+      anticipationActive: true,
     };
     const result = getEmphasis("scale-only", false, ctx);
     expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
@@ -408,9 +408,9 @@ describe("getEmphasis - voice-leading emphasis", () => {
       ...baseLeadContext,
       notePc: "F",
       nextGuideTones: new Set(["F"]),
+      nextChordTones: new Set(["F"]),
       commonWithNext: new Set(["A"]),
-      beatPosition: 3.1,
-      stepDurationBeats: 4,
+      anticipationActive: true,
     };
     const result = getEmphasis("note-inactive", false, ctx);
     expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
@@ -422,60 +422,62 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "A",
       commonWithNext: new Set(["A"]),
       nextGuideTones: new Set(["A"]),
-      beatPosition: 3.5,
-      stepDurationBeats: 4,
+      nextChordTones: new Set(["A"]),
+      anticipationActive: true,
     };
     const result = getEmphasis("chord-tone-in-scale", false, ctx);
     expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
   });
 
-  it("does NOT mark anticipation outside the last-beat window (beatPosition=2.5)", () => {
+  it("does NOT mark anticipation when anticipationActive is false", () => {
     const ctx: LeadLensContext = {
       ...baseLeadContext,
       notePc: "F",
       nextGuideTones: new Set(["F"]),
-      beatPosition: 2.5,
-      stepDurationBeats: 4,
+      nextChordTones: new Set(["F"]),
+      anticipationActive: false,
     };
     const result = getEmphasis("scale-only", false, ctx);
     expect(result).not.toMatchObject({ glowColor: "var(--note-glow-anticipation)" });
     expect(result).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
-  it("does NOT mark anticipation when stepDurationBeats is 0 (guard against division edge)", () => {
+  it("anticipation: next-chord guide tone while anticipationActive", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "F",
-      nextGuideTones: new Set(["F"]),
-      beatPosition: 0,
-      stepDurationBeats: 0,
+      notePc: "B",
+      commonWithNext: new Set<string>(),
+      nextGuideTones: new Set(["B"]),
+      nextChordTones: new Set(["B"]),
+      anticipationActive: true,
     };
-    const result = getEmphasis("scale-only", false, ctx);
-    expect(result).not.toMatchObject({ glowColor: "var(--note-glow-anticipation)" });
+    expect(getEmphasis("scale-only", false, ctx)).toEqual({
+      glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1,
+    });
   });
 
-  it("does NOT mark anticipation exactly at the window boundary (beatPosition=2.999, stepDuration=4)", () => {
+  it("no anticipation when anticipationActive is false", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "F",
-      nextGuideTones: new Set(["F"]),
-      beatPosition: 2.999,
-      stepDurationBeats: 4,
+      notePc: "B",
+      commonWithNext: new Set<string>(),
+      nextGuideTones: new Set(["B"]),
+      nextChordTones: new Set(["B"]),
+      anticipationActive: false,
     };
-    const result = getEmphasis("scale-only", false, ctx);
-    expect(result).not.toMatchObject({ glowColor: "var(--note-glow-anticipation)" });
+    // Falls through to tones-base (scale-only dim).
+    expect(getEmphasis("scale-only", false, ctx)).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
-  it("DOES mark anticipation exactly at the window boundary (beatPosition=3.0, stepDuration=4)", () => {
+  it("anticipation: any next-chord tone (not just guide tones) glows in the window", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "F",
-      nextGuideTones: new Set(["F"]),
-      beatPosition: 3.0,
-      stepDurationBeats: 4,
+      notePc: "G",                              // e.g. the 5th of the next chord, not a guide tone
+      commonWithNext: new Set<string>(),
+      nextGuideTones: new Set<string>(["B"]),   // G is NOT a guide tone here
+      nextChordTones: new Set<string>(["G", "B", "D"]),
+      anticipationActive: true,
     };
-    const result = getEmphasis("scale-only", false, ctx);
-    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
+    expect(getEmphasis("scale-only", false, ctx)).toEqual({
+      glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1,
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -513,8 +515,8 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "G",
       commonWithNext: new Set<string>(),
       nextGuideTones: new Set(["G"]),
-      beatPosition: 3,
-      stepDurationBeats: 4,
+      nextChordTones: new Set(["G"]),
+      anticipationActive: true,
     };
     const result = getEmphasis("scale-only", false, leadCtx);
     expect(result.glowColor).toBe("var(--note-glow-anticipation)");
@@ -525,8 +527,8 @@ describe("getEmphasis - voice-leading emphasis", () => {
       notePc: "C",
       commonWithNext: new Set(["C"]),
       nextGuideTones: new Set<string>(),
-      beatPosition: 0,
-      stepDurationBeats: 4,
+      nextChordTones: new Set<string>(),
+      anticipationActive: false,
     };
     const result = getEmphasis("chord-tone-in-scale", false, leadCtx);
     expect(result.glowColor).toBe("var(--note-glow-hold)");

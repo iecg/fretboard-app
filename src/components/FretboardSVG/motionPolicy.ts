@@ -26,7 +26,10 @@ export function resolveFretboardMotionPolicy(
     return { noteMode: "none", shapeMode: "none", connectorMode: "none" };
   }
   if (input.playbackActive ?? false) {
-    return { noteMode: "css", shapeMode: "none", connectorMode: "none" };
+    // Connector crossfade stays on: motion.g animates only opacity (compositor)
+    // and AnimatePresence only fires on chord-identity key changes, never on
+    // RAF frame ticks. Shapes stay frozen — they don't change mid-playback.
+    return { noteMode: "css", shapeMode: "none", connectorMode: "group" };
   }
   return { noteMode: "css", shapeMode: "group", connectorMode: "group" };
 }

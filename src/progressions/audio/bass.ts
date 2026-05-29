@@ -1,21 +1,15 @@
 /**
- * Bass voice for the progression backing track. Sawtooth oscillator with a
- * lowpass filter envelope (1200 Hz cutoff) and a percussive amplitude
- * envelope. Implemented on Tone.MonoSynth, which gives us per-voice filter
- * motion for free — the prior raw-Web-Audio version did the same with a
- * manual BiquadFilter.
+ * Bass voice for the progression backing track. Patch-driven: each BassPatch
+ * supplies oscillator type, amplitude envelope, and a LIVE filter envelope
+ * (octaves > 0). One voice pool per patch id ensures voices are reused across
+ * notes that share the same patch.
  */
 import * as Tone from "tone";
 import { createReusableVoicePool } from "./createReusableVoicePool";
+import type { BassPatch } from "./sound/patchTypes";
+import { getBassPatch } from "./sound/instrumentPatches";
 
-const ATTACK = 0.005;
-const DECAY = 0.4;
-const RELEASE = 0.25;
-const FILTER_CUTOFF_HZ = 1200;
-const FILTER_Q = 2;
-const RELEASE_TAIL_SEC = RELEASE;
-// Match the metronome's cancel-tail dispose-deferral window. Slightly longer
-// than the metronome because the bass envelope's release is ~250 ms.
+const DEFAULT_BASS_PATCH_ID = "bass-finger";
 const DISPOSE_TAIL_MS = 50;
 const DISPOSE_TAIL_SEC = DISPOSE_TAIL_MS / 1000;
 
@@ -23,28 +17,32 @@ export interface BassNoteOptions {
   velocity?: number;
   /** Custom note length in seconds (clamps to 0.05–2.0). */
   durationSec?: number;
+  patch?: BassPatch;
 }
 
 export interface BassVoiceHandle {
   cancel: () => void;
 }
 
-const bassVoicePool = createReusableVoicePool({
-  createVoice: () =>
-    new Tone.MonoSynth({
-      oscillator: { type: "sawtooth" },
-      envelope: { attack: ATTACK, decay: DECAY, sustain: 0, release: RELEASE },
-      filter: { Q: FILTER_Q, type: "lowpass" },
-      filterEnvelope: {
-        attack: ATTACK,
-        decay: DECAY,
-        sustain: 0,
-        release: RELEASE,
-        baseFrequency: FILTER_CUTOFF_HZ,
-        octaves: 0,
-      },
-    }),
-});
+type BassPool = ReturnType<typeof createReusableVoicePool<Tone.MonoSynth>>;
+const poolsByPatchId = new Map<string, BassPool>();
+
+function poolForPatch(patch: BassPatch): BassPool {
+  const existing = poolsByPatchId.get(patch.id);
+  if (existing) return existing;
+  const pool = createReusableVoicePool<Tone.MonoSynth>({
+    createVoice: () =>
+      new Tone.MonoSynth({
+        volume: patch.volumeDb,
+        oscillator: { type: patch.oscillator.type } as Tone.MonoSynthOptions["oscillator"],
+        envelope: patch.envelope,
+        filter: { type: patch.filter.type, Q: patch.filter.Q },
+        filterEnvelope: patch.filterEnvelope,
+      }),
+  });
+  poolsByPatchId.set(patch.id, pool);
+  return pool;
+}
 
 /**
  * Schedule a single bass note. Returns a handle that can be cancelled on
@@ -63,11 +61,17 @@ export function scheduleBassNote(
   if (velocity <= 0) {
     return { cancel: () => {} };
   }
-  const noteLen = Math.max(0.05, Math.min(2, options.durationSec ?? DECAY + RELEASE));
+
+  const patch = options.patch ?? getBassPatch(DEFAULT_BASS_PATCH_ID)!;
+  const releaseTailSec = patch.envelope.release;
+  const noteLen = Math.max(
+    0.05,
+    Math.min(2, options.durationSec ?? patch.envelope.decay + patch.envelope.release),
+  );
   const now = Tone.now();
   const playbackStartTime = Math.max(now, time);
-  const lease = bassVoicePool.lease(dest, now);
-  let busyUntil = playbackStartTime + noteLen + RELEASE_TAIL_SEC;
+  const lease = poolForPatch(patch).lease(dest, now);
+  let busyUntil = playbackStartTime + noteLen + releaseTailSec;
   lease.setBusyUntil(busyUntil);
   // Route through the progression bus so silenceProgressionBus() mutes the
   // bass along with the rest of the backing track.
@@ -82,6 +86,9 @@ export function scheduleBassNote(
 
       const cancelTime = Tone.now();
       if (cancelTime < time) {
+        // Note was scheduled for a future `time` but cancelled before it
+        // starts — dispose to KILL the pending triggerAttackRelease on this
+        // monophonic voice. Merely marking it idle would let the note fire.
         lease.dispose();
         return;
       }
