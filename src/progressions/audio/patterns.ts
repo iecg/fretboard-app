@@ -120,6 +120,16 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     ],
   },
   {
+    id: "pop-syncopated-push",
+    label: "Pop Syncopated Push",
+    hits: [
+      { beat: 0, velocity: 0.9, direction: "down" },
+      { beat: 1.5, velocity: 0.7, direction: "up" },
+      { beat: 2.5, velocity: 0.8, direction: "down" },
+      { beat: 3.5, velocity: 0.85, direction: "up" },
+    ],
+  },
+  {
     id: "straight-quarters",
     label: "Straight Quarters",
     hits: [
@@ -202,10 +212,12 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
     label: "Rock",
     kicks: [
       { beat: 0, velocity: 1 },
+      { beat: 1.5, velocity: 0.4 },
       { beat: 2, velocity: 0.9 },
     ],
     snares: [
       { beat: 1, velocity: 1 },
+      { beat: 2.75, velocity: 0.3 },
       { beat: 3, velocity: 1 },
     ],
     hats: EIGHTH_HATS,
@@ -219,6 +231,7 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
     ],
     snares: [
       { beat: 1, velocity: 1 },
+      { beat: 2.5, velocity: 0.2 },
       { beat: 3, velocity: 1 },
     ],
     hats: EIGHTH_HATS,
@@ -244,7 +257,10 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
       { beat: 2.5, velocity: 0.5 },
     ],
     snares: [{ beat: 3, velocity: 0.4 }],
-    hats: [],
+    hats: [
+      { beat: 1, velocity: 0.6 },
+      { beat: 3, velocity: 0.6 },
+    ],
     ride: [
       { beat: 0, velocity: 0.6 },
       { beat: 1, velocity: 0.5 },
@@ -260,13 +276,15 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
     kicks: [
       { beat: 0, velocity: 0.8 },
       { beat: 1.5, velocity: 0.7 },
-      { beat: 3, velocity: 0.75 },
+      { beat: 2, velocity: 0.8 },
+      { beat: 3.5, velocity: 0.7 },
     ],
     snares: [
-      { beat: 1, velocity: 0.5 },
-      { beat: 2.5, velocity: 0.5 },
+      { beat: 0, velocity: 0.7 },
+      { beat: 1.5, velocity: 0.6 },
+      { beat: 3, velocity: 0.7 },
     ],
-    hats: [],
+    hats: EIGHTH_HATS,
   },
   {
     id: "ballad",
