@@ -138,12 +138,50 @@
   opacity: 1;
 }
 
+.cardTitle {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Collapses to zero width when unlocked (no reserved gap on never-locked cards),
+   animates open when locked so the description slides instead of jumping. */
+.lockSlot {
+  display: inline-flex;
+  align-items: center;
+  width: 0;
+  overflow: hidden;
+  transition: width 300ms ease;
+}
+
+.card[data-locked="true"] .lockSlot {
+  width: calc(11px + 0.4rem); /* icon width + its leading gap */
+}
+
 .lockIcon {
+  margin-inline-start: 0.4rem;
   color: var(--faceplate-accent);
   opacity: 0;
-  transition: opacity 300ms ease 50ms;
+  transform: scale(0.6);
+  transition: opacity 240ms ease 60ms, transform 240ms ease 60ms;
 }
 
 .card[data-locked="true"] .lockIcon {
   opacity: 1;
+  transform: scale(1);
+}
+
+/* On unlock, fade the icon immediately (no delay) so the collapsing slot never
+   clips a still-opaque icon. */
+.card:not([data-locked="true"]) .lockIcon {
+  transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card::before,
+  .lockSlot,
+  .lockIcon,
+  .cardBody {
+    transition: none;
+  }
 }

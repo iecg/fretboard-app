@@ -79,12 +79,14 @@ export function InspectorCard({
         {hasToggle ? (
           <Switch label={toggleLabel} checked={active} onChange={onToggle} />
         ) : null}
-        <h3 id={labelledById} className={styles.cardName}>
-          {name}
-        </h3>
-        {locked ? (
-          <Lock size={11} className={styles.lockIcon} aria-hidden="true" />
-        ) : null}
+        <div className={styles.cardTitle}>
+          <h3 id={labelledById} className={styles.cardName}>
+            {name}
+          </h3>
+          <span className={styles.lockSlot} aria-hidden="true">
+            <Lock size={11} className={styles.lockIcon} />
+          </span>
+        </div>
         {stateLabel ? (
           <span className={styles.cardState} aria-hidden="true">
             {stateLabel}

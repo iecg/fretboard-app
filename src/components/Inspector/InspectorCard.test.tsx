@@ -76,13 +76,20 @@ describe("InspectorCard", () => {
     expect(results).toHaveNoViolations();
   });
 
-  it("renders a header lock icon when locked=true", () => {
-    const { container } = renderCard({ locked: true });
-    expect(container.querySelector(".lucide-lock")).toBeInTheDocument();
+  it("always renders the header lock icon (visibility is CSS-driven by data-locked)", () => {
+    const lockedRender = renderCard({ locked: true });
+    expect(lockedRender.container.querySelector(".lucide-lock")).toBeInTheDocument();
+    lockedRender.unmount();
+
+    const unlockedRender = renderCard();
+    expect(unlockedRender.container.querySelector(".lucide-lock")).toBeInTheDocument();
   });
 
-  it("does not render a lock icon when locked=false (default)", () => {
+  it("marks the lock icon decorative and leaves the card un-locked when locked=false", () => {
     const { container } = renderCard();
-    expect(container.querySelector(".lucide-lock")).toBeNull();
+    expect(container.querySelector("section[data-locked='true']")).toBeNull();
+    const icon = container.querySelector(".lucide-lock");
+    expect(icon).toBeInTheDocument();
+    expect(icon!.closest("[aria-hidden='true']")).not.toBeNull();
   });
 });
