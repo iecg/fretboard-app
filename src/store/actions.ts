@@ -19,6 +19,7 @@ import {
   npsOctaveAtom,
 } from "./fingeringAtoms";
 import {
+  loadedPresetIdAtom,
   remapProgressionStepsForScaleAtom,
   resetProgressionAtomsAtom,
 } from "./progressionAtoms";
@@ -70,6 +71,7 @@ export const setScaleNameAtom = atom(null, (get, set, value: string) => {
   const newScale = get(scaleNameAtom); // normalized via scaleNameAtom write
   if (newScale === prevScale) return;
   set(remapProgressionStepsForScaleAtom, newScale);
+  set(loadedPresetIdAtom, null);
 });
 
 export const resetAtom = atom(null, (_get, set) => {

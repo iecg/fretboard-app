@@ -500,6 +500,7 @@ export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName
 });
 
 export const addProgressionStepAtom = atom(null, (get, set) => {
+  set(loadedPresetIdAtom, null);
   const tonic = get(rootNoteAtom);
   const scaleName = get(scaleNameAtom);
   const previous = get(activeProgressionStepAtom);
@@ -523,6 +524,7 @@ export const addProgressionStepAtom = atom(null, (get, set) => {
 });
 
 export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {
+  set(loadedPresetIdAtom, null);
   const next = get(progressionStepsAtom).filter((step) => step.id !== id);
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, clampProgressionIndex(get(activeProgressionStepIndexAtom), next));
@@ -537,6 +539,7 @@ export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {
 });
 
 export const moveProgressionStepAtom = atom(null, (get, set, update: { id: string; direction: -1 | 1 }) => {
+  set(loadedPresetIdAtom, null);
   const steps = get(progressionStepsAtom);
   const from = steps.findIndex((step) => step.id === update.id);
   const to = from + update.direction;
@@ -551,6 +554,7 @@ export const moveProgressionStepAtom = atom(null, (get, set, update: { id: strin
 export const duplicateProgressionStepAtom = atom(
   null,
   (get, set, stepId: string) => {
+    set(loadedPresetIdAtom, null);
     const steps = get(progressionStepsAtom);
     const index = steps.findIndex((step) => step.id === stepId);
     if (index === -1) {
@@ -572,12 +576,14 @@ export const duplicateProgressionStepAtom = atom(
 );
 
 export const updateProgressionStepDegreeAtom = atom(null, (get, set, update: { id: string; degree: string }) => {
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, degree: update.degree } : step,
   ));
 });
 
 export const updateProgressionStepDurationAtom = atom(null, (get, set, update: { id: string; duration: ProgressionStepDuration }) => {
+  set(loadedPresetIdAtom, null);
   if (!isProgressionDuration(update.duration)) return;
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, duration: update.duration } : step,
@@ -585,6 +591,7 @@ export const updateProgressionStepDurationAtom = atom(null, (get, set, update: {
 });
 
 export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { id: string; qualityOverride: string | null }) => {
+  set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, get(progressionStepsAtom).map((step) =>
     step.id === update.id ? { ...step, qualityOverride: update.qualityOverride } : step,
   ));
@@ -599,6 +606,7 @@ export const updateProgressionStepQualityAtom = atom(null, (get, set, update: { 
 export const updateProgressionStepRootAtom = atom(
   null,
   (get, set, update: { id: string; manualRoot: string | null }) => {
+    set(loadedPresetIdAtom, null);
     const next = get(progressionStepsAtom).map((step) =>
       step.id === update.id ? { ...step, manualRoot: update.manualRoot } : step,
     );
@@ -680,6 +688,7 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(progressionDrumPatternAtom, RESET);
   set(progressionDrumVariationsAtom, RESET);
   set(progressionSwingAtom, RESET);
+  set(loadedPresetIdAtom, RESET);
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);

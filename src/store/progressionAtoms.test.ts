@@ -42,6 +42,7 @@ import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
 import { generateCommonProgressions } from "../progressions/progressionGeneration";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
+import { setScaleNameAtom } from "./actions";
 
 describe("progressionAtoms", () => {
   beforeEach(() => {
@@ -639,6 +640,44 @@ describe("progression loading — scale coupling", () => {
 
   it("a fresh store reflects the default progression preset id", () => {
     const store = createStore();
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
+  });
+});
+
+describe("loadedPresetId clearing", () => {
+  it("clears to custom after editing a step", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(loadProgressionPresetAtom, "one-five-six-four");
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
+    const firstId = store.get(progressionStepsAtom)[0].id;
+    store.set(updateProgressionStepDegreeAtom, { id: firstId, degree: "ii" });
+    expect(store.get(currentProgressionPresetIdAtom)).toBe(CUSTOM_PRESET_ID);
+  });
+
+  it("clears to custom after adding a step", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(loadProgressionPresetAtom, "one-five-six-four");
+    store.set(addProgressionStepAtom);
+    expect(store.get(currentProgressionPresetIdAtom)).toBe(CUSTOM_PRESET_ID);
+  });
+
+  it("clears to custom after a manual scale change", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(loadProgressionPresetAtom, "one-five-six-four");
+    store.set(setScaleNameAtom, "dorian");
+    expect(store.get(currentProgressionPresetIdAtom)).toBe(CUSTOM_PRESET_ID);
+  });
+
+  it("reset restores the default loaded preset id", () => {
+    const store = createStore();
+    store.set(loadedPresetIdAtom, "two-five-one");
+    store.set(resetProgressionAtomsAtom);
     expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
   });
 });
