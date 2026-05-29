@@ -221,6 +221,7 @@ export interface Dictionary {
     suggestionFeelModal: string;
     chordSelected: string;
     chordUnavailable: string;
+    playingChord: string;
   };
 }
 

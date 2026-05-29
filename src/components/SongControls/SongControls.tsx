@@ -104,6 +104,7 @@ export function SongControls() {
     progressionSteps,
     resolvedProgressionSteps,
     activeProgressionStepIndex,
+    displayedProgressionStepIndex,
     activeResolvedProgressionStep,
     loadProgressionPreset,
     loadProgressionSuggestion,
@@ -393,10 +394,12 @@ export function SongControls() {
                 <div className={styles["editor-panel"]}>
                   <header className={styles["editor-panel-header"]}>
                     <span className={styles["editor-degree-badge"]} aria-hidden="true">
-                      {activeStep.degree}
+                      {activeResolvedProgressionStep?.degree ?? activeStep.degree}
                     </span>
                     <span className={styles["editor-title"]}>
-                      <span className={styles["editor-eyebrow"]}>{t("controls.editingChord")}</span>
+                      <span className={styles["editor-eyebrow"]}>
+                        {editsLocked ? t("controls.playingChord") : t("controls.editingChord")}
+                      </span>
                       <span className={styles["editor-chord-name"]}>
                         {editorNote}{" "}
                         <span className={styles["editor-quality-word"]}>{editorQualityWord}</span>
@@ -413,7 +416,7 @@ export function SongControls() {
                         <ChevronLeft size={14} aria-hidden="true" />
                       </button>
                       <span className={styles["editor-position"]}>
-                        <b>{activeProgressionStepIndex + 1}</b> / {stepCount}
+                        <b>{displayedProgressionStepIndex + 1}</b> / {stepCount}
                       </span>
                       <button
                         type="button"
@@ -464,6 +467,7 @@ export function SongControls() {
                           hideLabel
                           width="fixed"
                           widthValue="7rem"
+                          accentValue={qualityLock}
                           value={
                             activeStep?.qualityOverride
                             ?? activeResolvedProgressionStep?.quality

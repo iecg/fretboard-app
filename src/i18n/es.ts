@@ -224,5 +224,6 @@ export const es: Dictionary = {
     suggestionFeelModal: "Modales",
     chordSelected: "seleccionado",
     chordUnavailable: "No disponible",
+    playingChord: "Reproduciendo",
   },
 };

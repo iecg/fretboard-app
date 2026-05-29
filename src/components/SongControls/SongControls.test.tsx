@@ -203,6 +203,21 @@ describe("SongControls playback lock (R1-T2)", () => {
     expect(progressionCard.querySelector("[data-locked='true']")).toBeInTheDocument();
   });
 
+  it("editor eyebrow reads 'Playing' during playback and 'Editing' otherwise", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    const { container } = renderWithStore(
+      <TooltipProvider><SongControls /></TooltipProvider>,
+      store,
+    );
+    const header = () =>
+      container.querySelector('[class*="editor-panel-header"]') as HTMLElement;
+    expect(within(header()).getByText(/^Editing$/i)).toBeInTheDocument();
+
+    act(() => { store.set(setProgressionPlayingAtom, true); });
+    expect(within(header()).getByText(/^Playing$/i)).toBeInTheDocument();
+    expect(within(header()).queryByText(/^Editing$/i)).not.toBeInTheDocument();
+  });
+
   it("does NOT lock the TIME or BACKING TRACK cards while playing", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     store.set(setProgressionPlayingAtom, true);

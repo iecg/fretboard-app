@@ -402,16 +402,12 @@
 }
 
 /* State hint under the Quality field: "Adopts the diatonic quality" /
-   "Pinned to <quality> on root change". Reserves a line so toggling the lock
-   doesn't reflow the editor row. */
+   "Pinned to <quality> on root change". Uses the shared field-hint style;
+   reserves a line so toggling the lock doesn't reflow the editor row. */
 .lock-hint {
-  margin: 0;
+  composes: field-hint from "../shared/shared.module.css";
   min-height: 0.85rem;
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
-  color: var(--dc-fg-muted);
+  text-align: left;
 }
 
 /* Compound selector (0,2,0) so the engaged accent wins over the single-class
