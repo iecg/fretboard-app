@@ -472,17 +472,6 @@ export const loadProgressionSuggestionAtom = atom(
   },
 );
 
-export const loadProgressionStepsAtom = atom(
-  null,
-  (_get, set, steps: ReadonlyArray<Omit<ProgressionStep, "id">>) => {
-    if (steps.length === 0) return;
-    set(progressionStepsAtom, steps.map((step) => createProgressionStep({ ...step })));
-    set(activeProgressionStepIndexAtom, 0);
-    set(progressionPlayingStateAtom, false);
-    set(progressionStepDeadlineAtom, null);
-  },
-);
-
 export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName: string) => {
   const steps = get(progressionStepsAtom);
   const nextSteps = remapProgressionStepsForScale(steps, scaleName);

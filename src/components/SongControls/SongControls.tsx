@@ -192,7 +192,7 @@ export function SongControls() {
   };
   return (
     <div className={styles.sections}>
-      {/* ── KEY + TIME flex composer ──────────────────────────────────────── */}
+      {/* ── PRESET + KEY + TIME flex composer ─────────────────────────────── */}
       <div className={styles.groupRow}>
         <div className={clsx(styles.groupColumn, styles["groupColumn--preset"])}>
           <InspectorCard
