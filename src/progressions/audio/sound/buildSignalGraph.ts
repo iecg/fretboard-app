@@ -109,10 +109,12 @@ function buildReverb(
  * nodes for each instrument family plus a disposer.
  *
  * Routing per channel:
- *   nativeInput(Gain) → [EQ3 → saturation]? → Channel(volume+pan) → masterGlue
- *                                                   └─(reverbSend)→ reverbBus → masterGlue
+ *   nativeInput(Gain) → [EQ3 → saturation]? → Channel(volume+pan) → Compressor
+ *                                                   └─(reverbSend Gain)→ reverbBus
  * masterGlue: Compressor → Limiter → destination
- * reverbBus:  Reverb → (into masterGlue input, post-compressor pre-limiter)
+ * reverbBus:  reverbSend(Gain) → Reverb(wet=1) → reverbReturn(Gain) → Compressor
+ *             input. The wet return enters PRE-compressor, so the room tail is
+ *             glued by the same compressor as the dry channels.
  *
  * INVARIANT: `ctx` MUST be the same AudioContext that Tone is bound to. The app
  * binds Tone to the progression AudioContext via `Tone.setContext(audio.ctx)`
