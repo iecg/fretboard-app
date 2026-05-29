@@ -210,7 +210,6 @@ export function SongControls() {
                   currentId={currentProgressionPresetId}
                   categories={categories}
                   suggestionGroups={suggestionGroups}
-                  disabled={editsLocked}
                   width="fill"
                   onSelect={handlePresetChange}
                 />
