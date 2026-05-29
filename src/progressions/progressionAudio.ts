@@ -1,5 +1,7 @@
 import { CHORD_DEFINITIONS, NOTES } from "@fretflow/core";
 import type { BassNoteRole } from "./audio/patterns";
+import { getNearestInversion } from "./voiceLeading";
+import { resolveBassNoteInRange } from "./bassLogic";
 
 /**
  * Reasonable default octave for the root note of a strummed chord. Chosen
@@ -28,15 +30,21 @@ export function resolveChordVoicing(
   root: string,
   quality: string,
   rootOctave: number = PROGRESSION_CHORD_ROOT_OCTAVE,
+  prevNotes?: string[],
 ): string[] {
   const definition = CHORD_DEFINITIONS[quality];
   if (!definition) return [];
   const rootIndex = NOTES.indexOf(root);
   if (rootIndex < 0) return [];
 
+  if (prevNotes && prevNotes.length > 0) {
+    const baseNotes = definition.members.map(member => 
+      NOTES[(((rootIndex + member.semitone) % 12) + 12) % 12]
+    );
+    return getNearestInversion(prevNotes, baseNotes, rootOctave);
+  }
+
   return definition.members.map((member) => {
-    // Absolute distance from C0 in semitones, then split back into
-    // note-name + octave so each chord tone sits above the previous root.
     const absolute = rootOctave * 12 + rootIndex + member.semitone;
     const note = NOTES[((absolute % 12) + 12) % 12];
     const octave = Math.floor(absolute / 12);
@@ -73,44 +81,62 @@ export function resolveBassNoteForRole(
   role: BassNoteRole,
   nextChordRoot?: string,
   rootOctave: number = PROGRESSION_BASS_ROOT_OCTAVE,
+  prevBassNote?: string,
 ): string {
   const rootIndex = NOTES.indexOf(root);
-  if (rootIndex < 0) return `${root}${rootOctave}`;
+  if (rootIndex < 0) return resolveBassNoteInRange(root, "E1", "E3", prevBassNote || `${root}${rootOctave}`);
 
   const definition = CHORD_DEFINITIONS[quality];
   const rootAbsolute = rootOctave * 12 + rootIndex;
 
-  const toNote = (absolute: number) => {
-    const note = NOTES[((absolute % 12) + 12) % 12];
-    const oct = Math.floor(absolute / 12);
-    return `${note}${oct}`;
-  };
+  const toNoteName = (absolute: number) => NOTES[((absolute % 12) + 12) % 12];
+
+  let targetNoteName = toNoteName(rootAbsolute);
+  let isOctaveAbove = false;
 
   switch (role) {
     case "root":
-      return toNote(rootAbsolute);
+      targetNoteName = toNoteName(rootAbsolute);
+      break;
     case "third": {
       const third = definition?.members.find((m) => m.name === "3" || m.name === "b3");
-      return third ? toNote(rootAbsolute + third.semitone) : toNote(rootAbsolute);
+      if (third) targetNoteName = toNoteName(rootAbsolute + third.semitone);
+      break;
     }
     case "fifth": {
       const fifth = definition?.members.find((m) => m.name === "5" || m.name === "b5" || m.name === "#5");
-      return fifth ? toNote(rootAbsolute + fifth.semitone) : toNote(rootAbsolute);
+      if (fifth) targetNoteName = toNoteName(rootAbsolute + fifth.semitone);
+      break;
     }
     case "octave":
-      return toNote(rootAbsolute + 12);
+      targetNoteName = toNoteName(rootAbsolute);
+      isOctaveAbove = true;
+      break;
     case "chromatic-approach": {
       if (nextChordRoot) {
         const nextIndex = NOTES.indexOf(nextChordRoot);
         if (nextIndex >= 0) {
-          const nextAbsolute = rootOctave * 12 + nextIndex;
-          return toNote(nextAbsolute - 1);
+          targetNoteName = toNoteName(rootOctave * 12 + nextIndex - 1);
         }
+      } else {
+        targetNoteName = toNoteName(rootAbsolute - 1);
       }
-      return toNote(rootAbsolute - 1);
+      break;
     }
-    default:
-      return toNote(rootAbsolute);
   }
+
+  // Use register-aware logic to pick the best octave within E1-E3
+  const fallbackBassNote = prevBassNote || `${root}${rootOctave}`;
+  const resolved = resolveBassNoteInRange(targetNoteName, "E1", "E3", fallbackBassNote);
+  
+  if (isOctaveAbove && role === "octave") {
+    // If explicitly asked for an octave, we shift it up one from whatever the base logic decided
+    // Very simple bump
+    const noteName = resolved.replace(/[0-9]/g, "");
+    const oct = parseInt(resolved.replace(/[^0-9]/g, ""), 10);
+    return `${noteName}${oct + 1}`;
+  }
+
+  return resolved;
 }
 

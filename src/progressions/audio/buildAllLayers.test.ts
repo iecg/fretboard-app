@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { buildAllLayersAsync } from "./buildAllLayers";
 import type { ResolvedProgressionStep } from "../progressionDomain";
+
+vi.mock("./humanize", () => ({
+  applyJitter: (params: { time: number; velocity: number }) => ({ time: params.time, velocity: params.velocity })
+}));
 
 const step = (over: Partial<ResolvedProgressionStep> = {}): ResolvedProgressionStep => ({
   id: "x",
