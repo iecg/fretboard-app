@@ -173,6 +173,8 @@ vi.mock("tone", () => ({
   Freeverb: toneMocks.FakeAudioNode,
   JCReverb: toneMocks.FakeAudioNode,
   Reverb: toneMocks.FakeReverb,
+  // Tone's native↔Tone connect bridge used by materializeSignalGraph.
+  connect: () => {},
 }));
 
 import { _resetProgressionAudioForTests, ensureProgressionAudio } from "../progressions/audio/bus";

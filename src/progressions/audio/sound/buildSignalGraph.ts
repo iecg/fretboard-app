@@ -9,6 +9,7 @@ import {
   Freeverb,
   JCReverb,
   Reverb,
+  connect,
 } from "tone";
 import type { TierProfile } from "./qualityTiers";
 import type { GenreMix, MixInstrument } from "./genreMixPresets";
@@ -157,14 +158,19 @@ export function materializeSignalGraph(
     const channel = track(new Channel({ volume: cfg.volumeDb, pan: cfg.pan }));
 
     // Optional insert chain (EQ3 + saturation), built with real Tone nodes.
-    // `head` tracks the last node in the chain; may be native GainNode or a Tone node.
-    let head: GainNode | EQ3 | Distortion | Chebyshev = input;
+    // `head` tracks the last node in the chain; starts as the native GainNode
+    // input and then becomes a Tone node. We route every hop through Tone's
+    // top-level `connect()` helper rather than the native `AudioNode.connect()`:
+    // a native node's `.connect()` only accepts native AudioNodes and throws
+    // "Overload resolution failed" when handed a Tone node (a ToneAudioNode is
+    // not a native AudioNode). Tone's `connect()` accepts a native OR Tone
+    // source and routes into the Tone node's underlying native input, so it is
+    // the correct native↔Tone bridge.
+    let head: AudioNode | EQ3 | Distortion | Chebyshev = input;
 
     if (cfg.insert?.eq3) {
       const eq = track(new EQ3(cfg.insert.eq3));
-      // GainNode.connect() only accepts AudioNode; eq.input is MultibandSplit (ToneAudioNode),
-      // so cast through unknown to bridge the native↔Tone boundary.
-      (head as GainNode).connect(eq.input as unknown as AudioNode);
+      connect(head, eq);
       head = eq;
     }
 
@@ -173,14 +179,12 @@ export function materializeSignalGraph(
         cfg.insert.saturation.kind === "distortion"
           ? track(new Distortion(cfg.insert.saturation.amount))
           : track(new Chebyshev(Math.max(1, Math.round(cfg.insert.saturation.amount))));
-      // head may be GainNode or EQ3; both have .connect() but with incompatible overloads,
-      // so we use a minimal structural cast to unify the call site.
-      (head as unknown as { connect: (n: unknown) => void }).connect(sat);
+      connect(head, sat);
       head = sat;
     }
 
     // Head → Channel (volume + pan) → master glue
-    (head as unknown as { connect: (n: unknown) => void }).connect(channel);
+    connect(head, channel);
     channel.connect(comp);
 
     // Reverb send tap off the channel.
