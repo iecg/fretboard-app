@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { act } from "@testing-library/react";
 import { makeAtomStore, renderWithStore } from "../test-utils/renderWithAtoms";
 import { isMutedAtom } from "../store/audioAtoms";
@@ -196,6 +196,16 @@ const threeBars = [
 ] as const;
 
 describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
+  // Warm the lazily dynamic-imported audio engine once, up front. Without this
+  // the FIRST test alone pays the module-compile cost; under parallel-CI CPU
+  // contention that pushed it past vi.waitFor's 1000ms default and flaked
+  // ("expected [] to have a length of 5"). Pre-loading levels every test to the
+  // same warm baseline as the (stable) rest. The hook's getEngine() reset in
+  // beforeEach still re-imports, but now resolves instantly from the module cache.
+  beforeAll(async () => {
+    await import("../progressions/audio/progressionAudioEngine");
+  });
+
   beforeEach(() => {
     __resetProgressionAudioPlaybackForTests();
     localStorage.clear();
