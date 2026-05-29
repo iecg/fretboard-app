@@ -217,16 +217,19 @@ describe("SongControls playback lock (R1-T2)", () => {
     expect(addButton.closest("[inert]")).not.toBeNull();
   });
 
-  it("Progression card surfaces the locked hint text during playback", () => {
+  it("shows lock icons in the Key and Progression card headers during playback", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(
       <TooltipProvider><SongControls /></TooltipProvider>,
       store,
     );
     act(() => { store.set(setProgressionPlayingAtom, true); });
-    // Both Key and Progression cards are locked — expect at least one hint to appear.
-    const hints = screen.getAllByText(/Pause playback to edit/i);
-    expect(hints.length).toBeGreaterThan(0);
+
+    const keyCard = screen.getByRole("region", { name: /key/i });
+    const progressionCard = screen.getByRole("region", { name: /progression/i });
+
+    expect(keyCard.querySelector(".lucide-lock")).toBeInTheDocument();
+    expect(progressionCard.querySelector(".lucide-lock")).toBeInTheDocument();
   });
 
   it("Progression card section has data-locked=true during playback", () => {

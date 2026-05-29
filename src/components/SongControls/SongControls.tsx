@@ -200,7 +200,6 @@ export function SongControls() {
             description={t("inspector.groupPresetDesc")}
             labelledById="song-preset-heading"
             locked={editsLocked}
-            lockedHint={t("controls.lockedHint")}
           >
             <PropGrid columns={1}>
               <Prop label={t("inspector.progressionLabel")}>
@@ -225,7 +224,6 @@ export function SongControls() {
             description={t("inspector.groupKeyDesc")}
             labelledById="song-key-heading"
             locked={editsLocked}
-            lockedHint={t("controls.lockedHint")}
           >
             <PropGrid columns={4}>
               <Prop label={t("controls.root")} span={1}>
@@ -287,7 +285,6 @@ export function SongControls() {
         description={t("inspector.groupProgressionDesc")}
         labelledById="song-progression-heading"
         locked={editsLocked}
-        lockedHint={t("controls.lockedHint")}
         headClassName={styles["progression-card-head"]}
         actions={
           <div className={styles["progression-toolbar"]}>
