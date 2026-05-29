@@ -14,7 +14,9 @@ import {
   displayedStepIndexPrimitiveAtom,
   duplicateProgressionStepAtom,
   loadProgressionPresetAtom,
-  loadProgressionStepsAtom,
+  loadProgressionSuggestionAtom,
+  loadedPresetIdAtom,
+  resolvedProgressionStepsAtom,
   moveProgressionStepAtom,
   progressionLoopEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
@@ -62,17 +64,20 @@ describe("progressionAtoms", () => {
     });
   });
 
-  it("loads a preset and remaps labels to the active scale", () => {
+  it("loads a preset's home scale and degrees verbatim", () => {
     const store = createStore();
     store.set(scaleNameAtom, "minor");
 
     store.set(loadProgressionPresetAtom, "one-five-six-four");
 
+    // Loading sets the preset's home scale and loads its degrees verbatim —
+    // no ordinal remap into the previously active scale.
+    expect(store.get(scaleNameAtom)).toBe("major");
     expect(store.get(progressionStepsAtom).map((step) => step.degree)).toEqual([
-      "i",
-      "v",
-      "VI",
-      "iv",
+      "I",
+      "V",
+      "vi",
+      "IV",
     ]);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
     expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
@@ -306,17 +311,6 @@ describe("derived progression atoms", () => {
     const store = createStore();
     store.set(activeProgressionStepIndexAtom, 2);
     expect(store.get(currentProgressionBarAtom)).toBe(3); // bars 1, 2 elapsed
-  });
-
-  it("currentProgressionPresetIdAtom matches the I-V-vi-IV default", () => {
-    const store = createStore();
-    expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
-  });
-
-  it("currentProgressionPresetIdAtom ignores presets unavailable for the active scale", () => {
-    const store = createStore();
-    store.set(scaleNameAtom, "minor blues");
-    expect(store.get(currentProgressionPresetIdAtom)).toBe("custom");
   });
 
   it("currentProgressionPresetIdAtom returns 'custom' after any edit", () => {
@@ -597,22 +591,46 @@ describe("displayedProgressionStepIndexAtom", () => {
   });
 });
 
-describe("currentProgressionPresetIdAtom — suggestion matching", () => {
-  it("returns a suggestion id when its steps are loaded", () => {
+describe("progression loading — scale coupling", () => {
+  it("loading a minor preset sets minor scale, keeps root, resolves minor chords", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "major");
-    const suggestion = generateCommonProgressions("major", "C")[0];
-    store.set(loadProgressionStepsAtom, suggestion.steps);
-    expect(store.get(currentProgressionPresetIdAtom)).toBe(suggestion.id);
+    store.set(loadProgressionPresetAtom, "minor-i-iv-v");
+    expect(store.get(scaleNameAtom)).toBe("minor");
+    expect(store.get(rootNoteAtom)).toBe("C");
+    const resolved = store.get(resolvedProgressionStepsAtom);
+    expect(resolved.map((s) => s.degree)).toEqual(["i", "iv", "v"]);
+    expect(resolved.every((s) => !s.unavailable)).toBe(true);
+    expect(store.get(loadedPresetIdAtom)).toBe("minor-i-iv-v");
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("minor-i-iv-v");
   });
 
-  it("falls back to custom for an unmatched progression", () => {
+  it("loading a Dorian preset switches scale to dorian and reflects the id", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "major");
-    store.set(loadProgressionStepsAtom, [
-      { degree: "I", duration: { value: 3, unit: "bar" }, qualityOverride: "7", manualRoot: null },
+    store.set(loadProgressionPresetAtom, "dorian-i-iv");
+    expect(store.get(scaleNameAtom)).toBe("dorian");
+    expect(store.get(currentProgressionPresetIdAtom)).toBe("dorian-i-iv");
+  });
+
+  it("loading the major I-IV vamp shows the vamp id, not a colliding preset", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    const vamp = generateCommonProgressions("major", "C").find((s) => s.feel === "vamp")!;
+    store.set(loadProgressionSuggestionAtom, vamp);
+    expect(store.get(scaleNameAtom)).toBe("major");
+    expect(store.get(currentProgressionPresetIdAtom)).toBe(vamp.id);
+  });
+
+  it("is custom with no loaded id", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
     ]);
     expect(store.get(currentProgressionPresetIdAtom)).toBe(CUSTOM_PRESET_ID);
   });

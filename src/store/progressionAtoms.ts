@@ -9,11 +9,8 @@ import {
   PROGRESSION_PRESETS,
   clampProgressionIndex,
   createProgressionStep,
-  createStepsFromPreset,
   findFirstResolvableStepIndex,
   findNextResolvableStepIndex,
-  getAvailableProgressionPresets,
-  getProgressionPresetStepsForScale,
   getProgressionDurationMs,
   isBeatsPerBar,
   isProgressionDuration,
@@ -33,7 +30,6 @@ import {
   scaleNameAtom,
   preferFlatsAtom,
 } from "./scaleAtoms";
-import { generateCommonProgressions } from "../progressions/progressionGeneration";
 import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
 import {
@@ -358,39 +354,22 @@ export const currentProgressionBarAtom = atom((get) => {
   return elapsedBars + 1;
 });
 
-function stepsMatchPreset(
-  steps: readonly ProgressionStep[],
-  presetSteps: readonly Omit<ProgressionStep, "id">[],
-): boolean {
-  if (steps.length !== presetSteps.length) return false;
-  return steps.every((step, i) => {
-    const p = presetSteps[i];
-    return step.degree === p.degree
-      && step.duration.value === p.duration.value
-      && step.duration.unit === p.duration.unit
-      && step.qualityOverride === p.qualityOverride;
-  });
-}
-
 export const CUSTOM_PRESET_ID = "custom" as const;
 
-export const currentProgressionPresetIdAtom = atom<string>((get) => {
-  const steps = get(progressionStepsAtom);
-  const scaleName = get(scaleNameAtom);
-  const rootNote = get(rootNoteAtom);
+/**
+ * The id of the preset / suggestion most recently loaded. Loading establishes
+ * the "current selection" the picker reflects; any subsequent step edit clears
+ * it (see step-mutation atoms), falling the picker back to "custom". Persisted
+ * so a returning user sees the same selection they left with.
+ */
+export const loadedPresetIdAtom = atomWithStorage<string | null>(
+  k("loadedPresetId"),
+  null,
+);
 
-  const presetMatch = getAvailableProgressionPresets(scaleName).find((preset) =>
-    stepsMatchPreset(steps, getProgressionPresetStepsForScale(preset, scaleName)),
-  );
-  if (presetMatch) return presetMatch.id;
-
-  const suggestionMatch = generateCommonProgressions(scaleName, rootNote).find(
-    (suggestion) => stepsMatchPreset(steps, suggestion.steps),
-  );
-  if (suggestionMatch) return suggestionMatch.id;
-
-  return CUSTOM_PRESET_ID;
-});
+export const currentProgressionPresetIdAtom = atom<string>(
+  (get) => get(loadedPresetIdAtom) ?? CUSTOM_PRESET_ID,
+);
 
 export const activeProgressionStepAtom = atom((get) => {
   const steps = get(progressionStepsAtom);
@@ -462,16 +441,33 @@ const PRESET_CATEGORY_GENRE: Record<ProgressionPresetCategory, string> = {
   minor: "ballad",
 };
 
-export const loadProgressionPresetAtom = atom(null, (get, set, presetId: string) => {
+export const loadProgressionPresetAtom = atom(null, (_get, set, presetId: string) => {
   const preset = PROGRESSION_PRESETS.find((entry) => entry.id === presetId);
   if (!preset) return;
-  set(progressionStepsAtom, createStepsFromPreset(preset, get(scaleNameAtom)));
+  // Loading establishes harmonic context: set the home scale (base write — no
+  // remap) and load degrees verbatim so qualities follow the scale.
+  set(scaleNameAtom, preset.scale);
+  set(progressionStepsAtom, preset.steps.map((step) => createProgressionStep({ ...step })));
   set(activeProgressionStepIndexAtom, 0);
   set(progressionPlayingStateAtom, false);
   set(progressionStepDeadlineAtom, null);
+  set(loadedPresetIdAtom, preset.id);
   const genreId = PRESET_CATEGORY_GENRE[preset.category];
   if (genreId) set(applyGenreStyleAtom, genreId);
 });
+
+export const loadProgressionSuggestionAtom = atom(
+  null,
+  (_get, set, suggestion: { id: string; steps: ReadonlyArray<Omit<ProgressionStep, "id">> }) => {
+    if (suggestion.steps.length === 0) return;
+    // Suggestions are generated in the current scale, so no scale switch.
+    set(progressionStepsAtom, suggestion.steps.map((step) => createProgressionStep({ ...step })));
+    set(activeProgressionStepIndexAtom, 0);
+    set(progressionPlayingStateAtom, false);
+    set(progressionStepDeadlineAtom, null);
+    set(loadedPresetIdAtom, suggestion.id);
+  },
+);
 
 export const loadProgressionStepsAtom = atom(
   null,
