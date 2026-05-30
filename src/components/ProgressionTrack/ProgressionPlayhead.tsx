@@ -15,21 +15,18 @@ interface ProgressionPlayheadProps {
 }
 
 /**
- * Renders the playhead and drives its horizontal motion by sampling the
- * shared audio-clock `timeline` at roughly 60 Hz via its own lightweight
- * requestAnimationFrame loop. Reads `AudioContext.currentTime` indirectly
- * through `getTimelinePosition()`, so the visual position is locked to
- * whatever the user is hearing.
+ * Renders the playhead and drives its horizontal motion using the Web
+ * Animations API (WAAPI). It subscribes to the audio clock via
+ * subscribeVisualClock to ensure synchronization with playback.
  *
  * Style writes happen directly on the DOM ref to avoid React reconciliation
  * cost on every animation frame; the component renders only when its props
  * change.
  *
- * The fretboard SVG has its own lightweight rAF loop in
- * useFretboardPlaybackSnapshot that polls getTimelinePosition() and writes
- * to progressionVisualFrameAtom. This playhead loop reads the timeline
- * directly — no dependency on the atom — and therefore always updates the
- * playhead position before the browser paints.
+ * The fretboard SVG is driven by progressionVisualFrameAtom (via
+ * useFretboardPlaybackSnapshot) to update chord highlighting. This playhead
+ * is driven by WAAPI for perfectly smooth visual updates on the compositor
+ * thread, while staying loosely coupled to the visual clock to correct drift.
  */
 export function ProgressionPlayhead({
   playing,
@@ -60,16 +57,32 @@ export function ProgressionPlayhead({
     const parent = el?.parentElement;
     if (!el || !parent) return;
 
+    const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
     let parentWidth = parent.clientWidth;
+    let anim: Animation | null = null;
+
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         parentWidth = entry.contentRect.width;
+        if (anim) {
+          const capturedTime = anim.currentTime;
+          const duration = anim.effect?.getTiming()?.duration || 0;
+          anim.cancel();
+          const endPct = totalDurationBars / safeDisplayTotal;
+          anim = el.animate([
+            { transform: 'translateX(0px)' },
+            { transform: `translateX(${endPct * parentWidth}px)` }
+          ], {
+            duration: duration as number,
+            fill: 'forwards'
+          });
+          if (capturedTime !== null) {
+            anim.currentTime = capturedTime;
+          }
+        }
       }
     });
     observer.observe(parent);
-
-    const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
-    let anim: Animation | null = null;
 
     const unsubscribe = subscribeVisualClock((tl) => {
       if (tl.paused) return;

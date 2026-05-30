@@ -30,7 +30,7 @@ describe("useTimelineViewModel", () => {
     vi.mocked(builderModule.buildTimelineViewModel).mockClear();
   });
 
-  it("keeps blockLayouts reference stable and calls buildTimelineViewModel only once when displayedStepIndexPrimitiveAtom changes", async () => {
+  it("keeps blockLayouts reference stable and calls buildTimelineViewModel only once when fastDisplayedStepIndexPrimitiveAtom changes", async () => {
     const store = createStore();
     store.set(progressionStepsAtom, twoSteps as never);
     store.set(beatsPerBarAtom, 4);

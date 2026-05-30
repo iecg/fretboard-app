@@ -376,9 +376,9 @@ export function useProgressionAudioPlayback() {
       const chordOnsetPart = eng.createProgressionPart<ChordOnsetEvent>({
         events: built.chordOnsets, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, event) => {
+          eng.setActiveStep(event.stepIndex, audioTime, event.durationSec, event.cumulativeStartSec, totalDurationSec);
           eng.getDraw().schedule(() => {
             if (!hasFiredOnce) { hasFiredOnce = true; setLoading(false); }
-            eng.setActiveStep(event.stepIndex, audioTime, event.durationSec, event.cumulativeStartSec, totalDurationSec);
             if (event.isFirstBar) {
               setActiveStepIndex(event.stepIndex);
             }

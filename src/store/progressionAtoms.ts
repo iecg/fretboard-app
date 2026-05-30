@@ -289,9 +289,9 @@ export const activeProgressionStepIndexAtom = atom(0);
 
 /**
  * Primitive RAF-written mirror of the active step index. Written by
- * `useFretboardPlaybackSnapshot`'s rAF loop during playback whenever the
- * audio clock crosses into a new step. Stays whatever value it last held
- * when playback stops — consumers should read
+ * the visualClock frame loop in the visualClock module during playback 
+ * whenever the audio clock crosses into a new step (and reset to 0 on stop).
+ * Stays whatever value it last held when playback pauses — consumers should read
  * `displayedProgressionStepIndexAtom` instead, which routes to the logical
  * atom when paused/stopped.
  *

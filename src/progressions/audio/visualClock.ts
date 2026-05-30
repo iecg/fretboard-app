@@ -20,6 +20,7 @@ export function subscribeVisualClock(cb: FrameCallback): () => void {
 }
 
 function frame(): void {
+  rafId = window.requestAnimationFrame(frame);
   const store = storeRef;
   if (!store) return;
   const tl = getTimelinePosition();
@@ -33,7 +34,13 @@ function frame(): void {
         store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
       });
     }
-    callbacks.forEach(cb => cb(tl));
+    callbacks.forEach(cb => {
+      try {
+        cb(tl);
+      } catch (err) {
+        console.error("Error in visualClock subscriber:", err);
+      }
+    });
   } else {
     store.set(progressionVisualFrameAtom, null);
     if (lastWritten !== -1) {
@@ -44,7 +51,6 @@ function frame(): void {
       });
     }
   }
-  rafId = window.requestAnimationFrame(frame);
 }
 
 export function startVisualClock(store: Store): void {

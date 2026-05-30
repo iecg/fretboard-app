@@ -206,7 +206,7 @@ describe("ProgressionTrack", () => {
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
   });
 
-  it("active block follows displayedProgressionStepIndexAtom during playback", async () => {
+  it("active block follows fastDisplayedStepIndexPrimitiveAtom during playback", async () => {
     const store = createStore();
     store.set(progressionStepsAtom, [
       { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
