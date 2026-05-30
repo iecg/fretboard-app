@@ -39,4 +39,8 @@ describe("genre styles", () => {
     expect(getGenreStyle("blues")?.label).toBe("Blues");
     expect(getGenreStyle("nonexistent")).toBeUndefined();
   });
+
+  it("wires the rock genre to the driving pedal bass", () => {
+    expect(getGenreStyle("rock")!.bassPattern).toBe("pedal");
+  });
 });

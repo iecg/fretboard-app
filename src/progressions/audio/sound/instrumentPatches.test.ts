@@ -37,4 +37,9 @@ describe("instrument patches", () => {
       expect(Object.keys(k.voices).length).toBeGreaterThan(0);
     }
   });
+
+  it("gives the jazz brush kit a hi-hat voice for the foot chick", () => {
+    const kit = getDrumKitPatch("kit-jazz-brush")!;
+    expect(kit.voices.hihat).toBeDefined();
+  });
 });

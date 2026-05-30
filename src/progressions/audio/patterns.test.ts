@@ -144,3 +144,104 @@ describe("pattern catalog", () => {
     expect(getDrumPattern("rock")).toBeDefined();
   });
 });
+
+describe("funk-syncopated bass pattern", () => {
+  const funk = getBassPattern("funk-syncopated")!;
+
+  it("anchors a strong staccato root on the one", () => {
+    const one = funk.hits[0];
+    expect(one).toMatchObject({ beat: 0, note: "root", velocity: 1, articulation: "staccato" });
+  });
+
+  it("uses ghost notes, an octave pop, the fifth, and a b7 color note", () => {
+    expect(funk.hits.map((h) => h.beat)).toEqual([0, 0.75, 1.5, 2, 2.75, 3.5]);
+    expect(funk.hits.map((h) => h.note)).toEqual([
+      "root", "root", "octave", "fifth", "flat-seventh", "root",
+    ]);
+  });
+
+  it("plays every hit staccato", () => {
+    expect(funk.hits.every((h) => h.articulation === "staccato")).toBe(true);
+  });
+
+  it("ghost notes are quieter than accents", () => {
+    const byBeat = new Map(funk.hits.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(0.75)!).toBeLessThan(byBeat.get(0)!);
+    expect(byBeat.get(2.75)!).toBeLessThan(byBeat.get(1.5)!);
+  });
+});
+
+describe("pedal bass pattern", () => {
+  const pedal = getBassPattern("pedal")!;
+
+  it("is a staccato eighth-note pulse on the root", () => {
+    expect(pedal.hits.map((h) => h.beat)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]);
+    expect(pedal.hits.every((h) => h.note === "root")).toBe(true);
+    expect(pedal.hits.every((h) => h.articulation === "staccato")).toBe(true);
+  });
+
+  it("accents beat 1 hardest and the and-of-3 push softly", () => {
+    const byBeat = new Map(pedal.hits.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(0)).toBe(1);
+    expect(byBeat.get(2)!).toBeGreaterThan(byBeat.get(2.5)!);
+    expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(0.5)!);
+  });
+});
+
+describe("walking bass pattern", () => {
+  const walking = getBassPattern("walking")!;
+
+  it("keeps its root→third→fifth→approach note selection", () => {
+    expect(walking.hits.map((h) => h.note)).toEqual([
+      "root", "third", "fifth", "chromatic-approach",
+    ]);
+  });
+
+  it("plays every note legato so the line connects", () => {
+    expect(walking.hits.every((h) => h.articulation === "legato")).toBe(true);
+  });
+});
+
+describe("jazz-ride drum pattern", () => {
+  const jazz = getDrumPattern("jazz-ride")!;
+  const vAt = (hits: readonly { beat: number; velocity: number }[], beat: number) =>
+    hits.find((h) => h.beat === beat)?.velocity;
+
+  it("keeps the spang-a-lang ride rhythm", () => {
+    expect(jazz.ride!.map((h) => h.beat)).toEqual([0, 1, 1.5, 2, 3, 3.5]);
+  });
+
+  it("accents the ride on musical beats 2 and 4, skip-notes softest", () => {
+    expect(vAt(jazz.ride!, 1)!).toBeGreaterThan(vAt(jazz.ride!, 0)!);
+    expect(vAt(jazz.ride!, 3)!).toBeGreaterThan(vAt(jazz.ride!, 2)!);
+    expect(vAt(jazz.ride!, 1.5)!).toBeLessThan(vAt(jazz.ride!, 1)!);
+    expect(vAt(jazz.ride!, 3.5)!).toBeLessThan(vAt(jazz.ride!, 3)!);
+  });
+
+  it("feathers a soft four-on-the-floor kick", () => {
+    expect(jazz.kicks.map((h) => h.beat)).toEqual([0, 1, 2, 3]);
+    expect(jazz.kicks.every((h) => h.velocity <= 0.18)).toBe(true);
+  });
+
+  it("plays foot-chick hats on 2 and 4 and a single soft ghost snare", () => {
+    expect(jazz.hats.map((h) => h.beat)).toEqual([1, 3]);
+    expect(jazz.snares).toEqual([{ beat: 2.5, velocity: 0.2 }]);
+  });
+});
+
+describe("jazz-comp chord pattern", () => {
+  const jazz = getChordPattern("jazz-comp")!;
+
+  it("is a sparse Charleston-plus-anticipation figure", () => {
+    expect(jazz.hits.map((h) => h.beat)).toEqual([0, 1.5, 3.5]);
+  });
+
+  it("plays every hit as a staccato stab", () => {
+    expect(jazz.hits.every((h) => h.style === "staccato")).toBe(true);
+  });
+
+  it("accents the downbeat stab over the inner comp", () => {
+    const byBeat = new Map(jazz.hits.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(1.5)!);
+  });
+});

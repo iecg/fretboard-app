@@ -18,7 +18,15 @@ export interface DrumHit {
   velocity: number;
 }
 
-export type BassNoteRole = "root" | "third" | "fifth" | "octave" | "chromatic-approach";
+export type BassNoteRole =
+  | "root"
+  | "third"
+  | "fifth"
+  | "octave"
+  | "chromatic-approach"
+  | "flat-seventh";
+
+export type BassArticulation = "staccato" | "legato" | "normal";
 
 interface ChordHit {
   beat: number;
@@ -38,6 +46,8 @@ interface CatalogBassHit {
   beat: number;
   velocity: number;
   note: BassNoteRole;
+  /** Note length hint. Omitted === "normal" === patch-default ring. */
+  articulation?: BassArticulation;
 }
 
 export interface CatalogBassPattern {
@@ -114,9 +124,9 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "jazz-comp",
     label: "Jazz Comping",
     hits: [
-      { beat: 0, velocity: 0.85 },
-      { beat: 1.5, velocity: 0.6 },
-      { beat: 3, velocity: 0.7 },
+      { beat: 0, velocity: 0.75, style: "staccato" },
+      { beat: 1.5, velocity: 0.6, style: "staccato" },
+      { beat: 3.5, velocity: 0.7, style: "staccato" },
     ],
   },
   {
@@ -154,10 +164,10 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     id: "walking",
     label: "Walking Bass",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 1, velocity: 0.8, note: "third" },
-      { beat: 2, velocity: 0.85, note: "fifth" },
-      { beat: 3, velocity: 0.75, note: "chromatic-approach" },
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 1, velocity: 0.8, note: "third", articulation: "legato" },
+      { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
+      { beat: 3, velocity: 0.75, note: "chromatic-approach", articulation: "legato" },
     ],
   },
   {
@@ -183,25 +193,26 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     id: "pedal",
     label: "Pedal Tone",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 0.5, velocity: 0.6, note: "root" },
-      { beat: 1, velocity: 0.8, note: "root" },
-      { beat: 1.5, velocity: 0.6, note: "root" },
-      { beat: 2, velocity: 0.8, note: "root" },
-      { beat: 2.5, velocity: 0.6, note: "root" },
-      { beat: 3, velocity: 0.8, note: "root" },
-      { beat: 3.5, velocity: 0.6, note: "root" },
+      { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
+      { beat: 0.5, velocity: 0.55, note: "root", articulation: "staccato" },
+      { beat: 1, velocity: 0.75, note: "root", articulation: "staccato" },
+      { beat: 1.5, velocity: 0.55, note: "root", articulation: "staccato" },
+      { beat: 2, velocity: 0.85, note: "root", articulation: "staccato" },
+      { beat: 2.5, velocity: 0.55, note: "root", articulation: "staccato" },
+      { beat: 3, velocity: 0.75, note: "root", articulation: "staccato" },
+      { beat: 3.5, velocity: 0.6, note: "root", articulation: "staccato" },
     ],
   },
   {
     id: "funk-syncopated",
     label: "Funk Syncopated",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 0.5, velocity: 0.5, note: "octave" },
-      { beat: 1.5, velocity: 0.7, note: "fifth" },
-      { beat: 2.5, velocity: 0.6, note: "root" },
-      { beat: 3, velocity: 0.8, note: "fifth" },
+      { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
+      { beat: 0.75, velocity: 0.45, note: "root", articulation: "staccato" },
+      { beat: 1.5, velocity: 0.8, note: "octave", articulation: "staccato" },
+      { beat: 2, velocity: 0.6, note: "fifth", articulation: "staccato" },
+      { beat: 2.75, velocity: 0.5, note: "flat-seventh", articulation: "staccato" },
+      { beat: 3.5, velocity: 0.75, note: "root", articulation: "staccato" },
     ],
   },
 ];
@@ -253,21 +264,23 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
     id: "jazz-ride",
     label: "Jazz Ride",
     kicks: [
-      { beat: 0.5, velocity: 0.5 },
-      { beat: 2.5, velocity: 0.5 },
+      { beat: 0, velocity: 0.18 },
+      { beat: 1, velocity: 0.15 },
+      { beat: 2, velocity: 0.18 },
+      { beat: 3, velocity: 0.15 },
     ],
-    snares: [{ beat: 3, velocity: 0.4 }],
+    snares: [{ beat: 2.5, velocity: 0.2 }],
     hats: [
-      { beat: 1, velocity: 0.6 },
-      { beat: 3, velocity: 0.6 },
+      { beat: 1, velocity: 0.5 },
+      { beat: 3, velocity: 0.5 },
     ],
     ride: [
-      { beat: 0, velocity: 0.6 },
-      { beat: 1, velocity: 0.5 },
-      { beat: 1.5, velocity: 0.45 },
+      { beat: 0, velocity: 0.55 },
+      { beat: 1, velocity: 0.7 },
+      { beat: 1.5, velocity: 0.4 },
       { beat: 2, velocity: 0.55 },
-      { beat: 3, velocity: 0.5 },
-      { beat: 3.5, velocity: 0.45 },
+      { beat: 3, velocity: 0.7 },
+      { beat: 3.5, velocity: 0.4 },
     ],
   },
   {

@@ -12,6 +12,7 @@ import {
   repeatPatternToBeats,
   type CatalogDrumPattern,
   type DrumHit,
+  type BassArticulation,
 } from "./patterns";
 import { applyJitter } from "./humanize";
 
@@ -38,6 +39,7 @@ export interface ChordStrumEvent {
 export interface BassEvent {
   note: string;
   velocity: number;
+  durationSec?: number;
 }
 
 export interface DrumEvent {
@@ -78,6 +80,24 @@ function swingBeat(beat: number, swing: number): number {
   if (swing <= 0) return beat;
   const isOff = Math.abs((beat % 1) - 0.5) < OFF_BEAT_TOLERANCE;
   return isOff ? beat + swing * (1 / 3) : beat;
+}
+
+/**
+ * Translate a bass hit's articulation into a concrete note length in seconds.
+ * `undefined` means "use the patch's natural decay+release" (unchanged today).
+ */
+export function articulationToDurationSec(
+  articulation: BassArticulation | undefined,
+  secondsPerBeat: number,
+): number | undefined {
+  switch (articulation) {
+    case "staccato":
+      return 0.3 * secondsPerBeat;
+    case "legato":
+      return 0.9 * secondsPerBeat;
+    default:
+      return undefined;
+  }
 }
 
 interface VoicedDrumHit extends DrumHit {
@@ -221,7 +241,11 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           });
           bass.push({
             time: hitTime,
-            value: { note, velocity },
+            value: {
+              note,
+              velocity,
+              durationSec: articulationToDurationSec(hit.articulation, secondsPerBeat),
+            },
           });
         }
       }

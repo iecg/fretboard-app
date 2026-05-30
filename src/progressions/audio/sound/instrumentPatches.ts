@@ -131,6 +131,7 @@ export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [
     voices: {
       kick: { pitchDecay: 0.05, octaves: 5, envelope: { decay: 0.3 } },
       snare: { noiseType: "pink", envelope: { attack: 0.004, decay: 0.16 } },
+      hihat: { decay: 0.05, resonance: 3000 },
       ride: { decay: 1.2, harmonicity: 3.1, resonance: 2400 },
     },
   },

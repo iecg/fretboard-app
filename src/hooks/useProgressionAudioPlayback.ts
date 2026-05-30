@@ -403,7 +403,7 @@ export function useProgressionAudioPlayback() {
         onEvent: (audioTime, value) => {
           const freq = getNoteFrequency(value.note);
           if (!Number.isFinite(freq) || freq <= 0) return;
-          eng.scheduleBassNote(audio.layers.bass, freq, audioTime, { velocity: value.velocity, patch: bassPatch });
+          eng.scheduleBassNote(audio.layers.bass, freq, audioTime, { velocity: value.velocity, durationSec: value.durationSec, patch: bassPatch });
         },
       });
       bassPart.start(partStart, 0);

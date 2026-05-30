@@ -60,9 +60,9 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     genre: "jazz",
     patches: { bass: "bass-upright", chord: "chord-epiano", drumKit: "kit-jazz-brush" },
     perInstrument: {
-      chord: { volumeDb: -3, pan: -0.16, reverbSend: 0.22 },
+      chord: { volumeDb: -2, pan: -0.16, reverbSend: 0.22 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.06 },
-      drums: { volumeDb: -3, pan: 0.1, reverbSend: 0.18 },
+      drums: { volumeDb: -5, pan: 0.1, reverbSend: 0.18 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
     master: { compressor: { threshold: -20, ratio: 2.5, attack: 0.015, release: 0.22 }, reverb: { decay: 1.8, wet: 0.22 }, limiterThreshold: -1.2 },
@@ -82,7 +82,7 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     genre: "funk",
     patches: { bass: "bass-finger", chord: "chord-steel-strum", drumKit: "kit-funk" },
     perInstrument: {
-      chord: { volumeDb: -3, pan: -0.2, reverbSend: 0.06 },
+      chord: { volumeDb: -4, pan: -0.2, reverbSend: 0.06 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.0 },
       drums: { volumeDb: 0, pan: 0.05, reverbSend: 0.05 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
