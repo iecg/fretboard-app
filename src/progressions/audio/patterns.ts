@@ -164,10 +164,10 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     id: "walking",
     label: "Walking Bass",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 1, velocity: 0.8, note: "third" },
-      { beat: 2, velocity: 0.85, note: "fifth" },
-      { beat: 3, velocity: 0.75, note: "chromatic-approach" },
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 1, velocity: 0.8, note: "third", articulation: "legato" },
+      { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
+      { beat: 3, velocity: 0.75, note: "chromatic-approach", articulation: "legato" },
     ],
   },
   {

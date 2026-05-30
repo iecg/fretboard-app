@@ -187,3 +187,17 @@ describe("pedal bass pattern", () => {
     expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(0.5)!);
   });
 });
+
+describe("walking bass pattern", () => {
+  const walking = getBassPattern("walking")!;
+
+  it("keeps its root→third→fifth→approach note selection", () => {
+    expect(walking.hits.map((h) => h.note)).toEqual([
+      "root", "third", "fifth", "chromatic-approach",
+    ]);
+  });
+
+  it("plays every note legato so the line connects", () => {
+    expect(walking.hits.every((h) => h.articulation === "legato")).toBe(true);
+  });
+});
