@@ -124,9 +124,9 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "jazz-comp",
     label: "Jazz Comping",
     hits: [
-      { beat: 0, velocity: 0.85 },
-      { beat: 1.5, velocity: 0.6 },
-      { beat: 3, velocity: 0.7 },
+      { beat: 0, velocity: 0.75, style: "staccato" },
+      { beat: 1.5, velocity: 0.6, style: "staccato" },
+      { beat: 3.5, velocity: 0.7, style: "staccato" },
     ],
   },
   {

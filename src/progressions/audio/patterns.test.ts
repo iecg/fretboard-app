@@ -228,3 +228,20 @@ describe("jazz-ride drum pattern", () => {
     expect(jazz.snares).toEqual([{ beat: 2.5, velocity: 0.2 }]);
   });
 });
+
+describe("jazz-comp chord pattern", () => {
+  const jazz = getChordPattern("jazz-comp")!;
+
+  it("is a sparse Charleston-plus-anticipation figure", () => {
+    expect(jazz.hits.map((h) => h.beat)).toEqual([0, 1.5, 3.5]);
+  });
+
+  it("plays every hit as a staccato stab", () => {
+    expect(jazz.hits.every((h) => h.style === "staccato")).toBe(true);
+  });
+
+  it("accents the downbeat stab over the inner comp", () => {
+    const byBeat = new Map(jazz.hits.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(1.5)!);
+  });
+});
