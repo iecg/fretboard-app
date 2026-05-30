@@ -143,7 +143,7 @@ describe("ProgressionTrack", () => {
 
     const { container } = renderWithStore(<ProgressionTrack />, store);
 
-    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.transform).toBe("translateX(125px)");
+    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.transform).toBe("");
   });
 
   it("positions chord blocks by exact cumulative bar percentages", () => {

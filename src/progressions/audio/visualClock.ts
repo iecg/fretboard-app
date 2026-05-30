@@ -1,3 +1,4 @@
+import { startTransition } from "react";
 import type { Store } from "../../store/storeTypes";
 import { displayedStepIndexPrimitiveAtom } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
@@ -27,13 +28,19 @@ function frame(): void {
     store.set(progressionVisualFrameAtom, tl);
     if (!tl.paused && tl.stepIndex !== lastWritten) {
       lastWritten = tl.stepIndex;
-      setTimeout(() => {
+      startTransition(() => {
         store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
-      }, 0);
+      });
     }
     callbacks.forEach(cb => cb(tl));
   } else {
     store.set(progressionVisualFrameAtom, null);
+    if (lastWritten !== -1) {
+      lastWritten = -1;
+      startTransition(() => {
+        store.set(displayedStepIndexPrimitiveAtom, 0);
+      });
+    }
   }
   rafId = window.requestAnimationFrame(frame);
 }
