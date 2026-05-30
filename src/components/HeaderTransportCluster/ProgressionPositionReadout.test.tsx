@@ -245,7 +245,7 @@ describe("ProgressionPositionReadout", () => {
       stepIndex: 1,
       globalFraction: 0.5,
       localFraction: 0.9999,
-      paused: false,
+      paused: false, totalDurationSec: 16,
     });
 
     render(
