@@ -112,6 +112,13 @@ export function resolveBassNoteForRole(
       targetNoteName = toNoteName(rootAbsolute);
       isOctaveAbove = true;
       break;
+    case "flat-seventh": {
+      // Prefer the chord's own 7th member (e.g. maj7 → +11); otherwise a
+      // dominant b7 = root + 10 semitones (the funk default).
+      const seventh = definition?.members.find((m) => m.name === "b7" || m.name === "7");
+      targetNoteName = toNoteName(rootAbsolute + (seventh ? seventh.semitone : 10));
+      break;
+    }
     case "chromatic-approach": {
       if (nextChordRoot) {
         const nextIndex = NOTES.indexOf(nextChordRoot);

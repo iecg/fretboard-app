@@ -18,7 +18,13 @@ export interface DrumHit {
   velocity: number;
 }
 
-export type BassNoteRole = "root" | "third" | "fifth" | "octave" | "chromatic-approach";
+export type BassNoteRole =
+  | "root"
+  | "third"
+  | "fifth"
+  | "octave"
+  | "chromatic-approach"
+  | "flat-seventh";
 
 interface ChordHit {
   beat: number;

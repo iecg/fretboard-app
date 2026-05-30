@@ -83,4 +83,14 @@ describe("resolveBassNoteForRole", () => {
   it("falls back to root when third/fifth unavailable", () => {
     expect(resolveBassNoteForRole("C", "5", "third")).toBe("C2");
   });
+  it("resolves a flat-seventh on a major triad via the root+10 fallback", () => {
+    // C major has no 7th chord member, so b7 = root + 10 semitones = A# (Bb).
+    const note = resolveBassNoteForRole("C", "M", "flat-seventh");
+    expect(note.replace(/[0-9]/g, "")).toBe("A#");
+  });
+  it("prefers the chord's own 7th member when present", () => {
+    // Cmaj7's "7" member is +11 semitones = B (distinct from the +10 fallback).
+    const note = resolveBassNoteForRole("C", "maj7", "flat-seventh");
+    expect(note.replace(/[0-9]/g, "")).toBe("B");
+  });
 });
