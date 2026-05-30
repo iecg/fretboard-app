@@ -146,6 +146,20 @@ describe("buildAllLayers", () => {
     }
   });
 
+  it("staccato bass pattern produces a defined durationSec on every event", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      bassPatternId: "pedal",
+      steps: [step({ id: "a", root: "C", quality: "M" })],
+    });
+    expect(out.bass.length).toBeGreaterThan(0);
+    for (const ev of out.bass) {
+      expect(typeof ev.value.durationSec).toBe("number");
+      expect(Number.isFinite(ev.value.durationSec)).toBe(true);
+      expect(ev.value.durationSec).toBeGreaterThan(0);
+    }
+  });
+
   it("passes nextChordRoot for chromatic-approach bass only on the LAST bar of a step", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,

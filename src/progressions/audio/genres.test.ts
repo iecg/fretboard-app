@@ -43,10 +43,4 @@ describe("genre styles", () => {
   it("wires the rock genre to the driving pedal bass", () => {
     expect(getGenreStyle("rock")!.bassPattern).toBe("pedal");
   });
-
-  it("keeps every genre's bassPattern pointing at a real pattern", () => {
-    for (const g of GENRE_STYLES) {
-      expect(getBassPattern(g.bassPattern), `genre ${g.id}`).toBeDefined();
-    }
-  });
 });

@@ -93,4 +93,9 @@ describe("resolveBassNoteForRole", () => {
     const note = resolveBassNoteForRole("C", "maj7", "flat-seventh");
     expect(note.replace(/[0-9]/g, "")).toBe("B");
   });
+  it("resolves a flat-seventh on a dominant 7 chord from its b7 member", () => {
+    // C7's "b7" member is +10 semitones = A#.
+    const note = resolveBassNoteForRole("C", "7", "flat-seventh");
+    expect(note.replace(/[0-9]/g, "")).toBe("A#");
+  });
 });
