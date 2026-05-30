@@ -1,38 +1,62 @@
+import { startTransition } from "react";
 import type { Store } from "../../store/storeTypes";
-import { displayedStepIndexPrimitiveAtom } from "../../store/progressionAtoms";
+import { displayedStepIndexPrimitiveAtom, fastDisplayedStepIndexPrimitiveAtom } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 import { getTimelinePosition } from "./timeline";
+
+type TimelinePosition = NonNullable<ReturnType<typeof getTimelinePosition>>;
+export type FrameCallback = (tl: TimelinePosition) => void;
 
 let rafId: number | null = null;
 let storeRef: Store | null = null;
 let lastWritten = Number.NaN;
+const callbacks = new Set<FrameCallback>();
+
+export function subscribeVisualClock(cb: FrameCallback): () => void {
+  callbacks.add(cb);
+  return () => {
+    callbacks.delete(cb);
+  };
+}
 
 function frame(): void {
+  rafId = window.requestAnimationFrame(frame);
   const store = storeRef;
   if (!store) return;
   const tl = getTimelinePosition();
-  // Write the frame atom synchronously. This is a per-frame external (rAF)
-  // source, so wrapping it in React's startTransition just tags every
-  // subscriber's rerender to the transition and trips React's
-  // ">10 fibers updated inside startTransition" subscription warning. Deferral
-  // of the expensive playhead render is instead handled at the consumer via
-  // useDeferredValue (see useFretboardPlaybackSnapshot).
+  
   if (tl) {
     store.set(progressionVisualFrameAtom, tl);
     if (!tl.paused && tl.stepIndex !== lastWritten) {
       lastWritten = tl.stepIndex;
-      store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
+      store.set(fastDisplayedStepIndexPrimitiveAtom, tl.stepIndex);
+      startTransition(() => {
+        store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
+      });
     }
+    callbacks.forEach(cb => {
+      try {
+        cb(tl);
+      } catch (err) {
+        console.error("Error in visualClock subscriber:", err);
+      }
+    });
   } else {
     store.set(progressionVisualFrameAtom, null);
+    if (lastWritten !== -1) {
+      lastWritten = -1;
+      store.set(fastDisplayedStepIndexPrimitiveAtom, 0);
+      startTransition(() => {
+        store.set(displayedStepIndexPrimitiveAtom, 0);
+      });
+    }
   }
-  rafId = window.requestAnimationFrame(frame);
 }
 
 export function startVisualClock(store: Store): void {
   storeRef = store;
-  if (rafId !== null) return;          // idempotent
-  lastWritten = Number.NaN;            // force first write to land
+  if (rafId !== null) return;
+  lastWritten = Number.NaN;
   rafId = window.requestAnimationFrame(frame);
 }
 

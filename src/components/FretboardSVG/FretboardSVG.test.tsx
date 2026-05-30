@@ -8,8 +8,7 @@ import type { CagedShape, ShapePolygon } from "@fretflow/core";
 import type { NoteSemantics } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
-import * as buildTopologyModule from "./hooks/buildStaticFretboardTopology";
-import * as useChordConnectorHooks from "./hooks/useChordConnectorPolylines";
+
 import { renderWithStore } from "../../test-utils/renderWithAtoms";
 import { createStore } from "jotai";
 import {
@@ -24,13 +23,7 @@ vi.mock("./motionPolicy", async (importOriginal) => {
   return { ...actual, resolveFretboardMotionPolicy: vi.fn().mockImplementation(actual.resolveFretboardMotionPolicy) };
 });
 
-vi.mock("./hooks/useChordConnectorPolylines", async () => {
-  const actual = await vi.importActual<typeof useChordConnectorHooks>("./hooks/useChordConnectorPolylines");
-  return {
-    ...actual,
-    useChordConnectorPolylines: vi.fn(actual.useChordConnectorPolylines),
-  };
-});
+
 
 const STANDARD_TUNING = ["E4", "B3", "G3", "D3", "A2", "E2"];
 
@@ -677,10 +670,6 @@ describe("FretboardSVG/FretboardSVG", () => {
     const MINIMAL_POLYGON = polyRect("E" as CagedShape, 0, 4, 1);
     const PLAYBACK_SNAPSHOT = {
       playing: true,
-      activeStepIndex: 0,
-      globalFraction: 0.125,
-      localFraction: 0.25,
-      stepDurationBeats: 4,
     };
 
     it("uses group-mode wrappers when policy returns group modes", () => {
@@ -758,123 +747,5 @@ describe("FretboardSVG/FretboardSVG", () => {
       fireEvent.keyDown(note, { key: "Tab" });
       expect(onNoteClick).not.toHaveBeenCalled();
     });
-  });
-
-  it("does not rebuild static fretboard topology when only the playback snapshot changes", () => {
-    const topologySpy = vi.spyOn(buildTopologyModule, "buildStaticFretboardTopology");
-    const firstSnapshot = {
-      playing: true,
-      activeStepIndex: 0,
-      globalFraction: 0.125,
-      localFraction: 0.25,
-      stepDurationBeats: 4,
-    };
-
-    const { rerender } = renderCMajor({ playbackSnapshot: firstSnapshot });
-    const countAfterInitialRender = topologySpy.mock.calls.length;
-    expect(countAfterInitialRender).toBeGreaterThan(0);
-
-    rerender(
-      <FretboardSVG
-        {...BASE_PROPS}
-        {...C_MAJOR}
-
-        playbackSnapshot={{
-          ...firstSnapshot,
-          globalFraction: 0.25,
-          localFraction: 0.75,
-        }}
-      />,
-    );
-
-    expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
-    topologySpy.mockRestore();
-  });
-
-  it("does not rebuild static fretboard topology when only the playback snapshot changes and no chord overlay is active", () => {
-    const topologySpy = vi.spyOn(buildTopologyModule, "buildStaticFretboardTopology");
-    const firstSnapshot = {
-      playing: true,
-      activeStepIndex: 0,
-      globalFraction: 0.0,
-      localFraction: 0.0,
-      stepDurationBeats: 4,
-    };
-
-    // Render without chordTones — default path (DEFAULT_CHORD_TONES stable reference)
-    const { rerender } = render(
-      <FretboardSVG {...BASE_PROPS}  playbackSnapshot={firstSnapshot} />,
-    );
-    const countAfterInitialRender = topologySpy.mock.calls.length;
-    expect(countAfterInitialRender).toBeGreaterThan(0);
-
-    rerender(
-      <FretboardSVG
-        {...BASE_PROPS}
-
-        playbackSnapshot={{
-          ...firstSnapshot,
-          globalFraction: 0.5,
-          localFraction: 0.5,
-        }}
-      />,
-    );
-
-    expect(topologySpy).toHaveBeenCalledTimes(countAfterInitialRender);
-    topologySpy.mockRestore();
-  });
-});
-
-describe("FretboardSVG Connector Decoupling", () => {
-  it("does not re-evaluate useChordConnectorPolylines when animation data changes", () => {
-    const spy = vi.spyOn(useChordConnectorHooks, "useChordConnectorPolylines");
-    const mockTuning = ["E4", "B3", "G3", "D3", "A2", "E2"];
-    const mockLayout = getFretboardNotes(mockTuning, 12);
-
-    const { rerender } = render(
-      <FretboardSVG
-        effectiveZoom={100}
-        neckWidthPx={1000}
-        startFret={0}
-        endFret={12}
-        fretboardLayout={mockLayout}
-        tuning={mockTuning}
-        highlightNotes={["E", "G"]}
-        rootNote="E"
-        playbackSnapshot={{
-          playing: true,
-          activeStepIndex: 0,
-          globalFraction: 0,
-          localFraction: 0,
-          stepDurationBeats: 4,
-        }}
-      />
-    );
-
-    const initialCallCount = spy.mock.calls.length;
-    expect(initialCallCount).toBeGreaterThan(0);
-
-    // Rerender with a different playbackSnapshot position (simulating animation frames)
-    rerender(
-      <FretboardSVG
-        effectiveZoom={100}
-        neckWidthPx={1000}
-        startFret={0}
-        endFret={12}
-        fretboardLayout={mockLayout}
-        tuning={mockTuning}
-        highlightNotes={["E", "G"]}
-        rootNote="E"
-        playbackSnapshot={{
-          playing: true,
-          activeStepIndex: 0,
-          globalFraction: 0.1,
-          localFraction: 0.1, // Only local fraction changes
-          stepDurationBeats: 4,
-        }}
-      />
-    );
-
-    expect(spy.mock.calls.length).toBe(initialCallCount);
   });
 });

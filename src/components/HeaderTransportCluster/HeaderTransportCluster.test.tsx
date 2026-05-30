@@ -121,6 +121,7 @@ describe("HeaderTransportCluster", () => {
       globalFraction: 0.5,
       localFraction: 0.9999,
       paused: false,
+      totalDurationSec: 16,
     });
 
     const store = makeAtomStore([

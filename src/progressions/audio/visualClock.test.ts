@@ -4,13 +4,14 @@ import {
   displayedStepIndexPrimitiveAtom,
 } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
-import { startVisualClock, stopVisualClock } from "./visualClock";
+import { startVisualClock, stopVisualClock, subscribeVisualClock } from "./visualClock";
 import * as timeline from "./timeline";
 
 describe("visualClock", () => {
   let rafCb: FrameRequestCallback | null = null;
   let rafId = 0;
   beforeEach(() => {
+    vi.useFakeTimers();
     rafId = 0;
     rafCb = null;
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
@@ -30,14 +31,15 @@ describe("visualClock", () => {
     const cb = rafCb;
     rafCb = null;
     cb?.(performance.now());
+    vi.advanceTimersByTime(0);
   }
 
   it("writes stepIndex to the primitive atom every frame stepIndex changes", () => {
     const store = createStore();
     const positions = [
-      { stepIndex: 0, globalFraction: 0, localFraction: 0, paused: false },
-      { stepIndex: 0, globalFraction: 0.5, localFraction: 0.5, paused: false },
-      { stepIndex: 1, globalFraction: 0.6, localFraction: 0, paused: false },
+      { stepIndex: 0, globalFraction: 0, localFraction: 0, paused: false, totalDurationSec: 16 },
+      { stepIndex: 0, globalFraction: 0.5, localFraction: 0.5, paused: false, totalDurationSec: 16 },
+      { stepIndex: 1, globalFraction: 0.6, localFraction: 0, paused: false, totalDurationSec: 16 },
     ];
     let i = 0;
     vi.spyOn(timeline, "getTimelinePosition").mockImplementation(
@@ -57,7 +59,7 @@ describe("visualClock", () => {
   it("is idempotent on start", () => {
     const store = createStore();
     vi.spyOn(timeline, "getTimelinePosition").mockReturnValue({
-      stepIndex: 2, globalFraction: 0, localFraction: 0, paused: false,
+      stepIndex: 2, globalFraction: 0, localFraction: 0, paused: false, totalDurationSec: 16,
     });
     startVisualClock(store);
     startVisualClock(store); // second call must not double-schedule
@@ -68,7 +70,7 @@ describe("visualClock", () => {
   it("stops scheduling after stop()", () => {
     const store = createStore();
     vi.spyOn(timeline, "getTimelinePosition").mockReturnValue({
-      stepIndex: 3, globalFraction: 0, localFraction: 0, paused: false,
+      stepIndex: 3, globalFraction: 0, localFraction: 0, paused: false, totalDurationSec: 16,
     });
     startVisualClock(store);
     tick();
@@ -79,9 +81,9 @@ describe("visualClock", () => {
   it("publishes the full timeline frame on each RAF tick", () => {
     const store = createStore();
     const frames = [
-      { stepIndex: 0, globalFraction: 0.1, localFraction: 0.2, paused: false },
-      { stepIndex: 1, globalFraction: 0.5, localFraction: 0.3, paused: false },
-      { stepIndex: 1, globalFraction: 0.8, localFraction: 0.6, paused: true },
+      { stepIndex: 0, globalFraction: 0.1, localFraction: 0.2, paused: false, totalDurationSec: 16 },
+      { stepIndex: 1, globalFraction: 0.5, localFraction: 0.3, paused: false, totalDurationSec: 16 },
+      { stepIndex: 1, globalFraction: 0.8, localFraction: 0.6, paused: true, totalDurationSec: 16 },
     ];
     const mock = vi.spyOn(timeline, "getTimelinePosition");
     frames.forEach((f) => mock.mockReturnValueOnce(f));
@@ -104,7 +106,7 @@ describe("visualClock", () => {
       stepIndex: 1,
       globalFraction: 0.25,
       localFraction: 0.25,
-      paused: false,
+      paused: false, totalDurationSec: 16,
     });
 
     startVisualClock(store);
@@ -121,7 +123,7 @@ describe("visualClock", () => {
       stepIndex: 0,
       globalFraction: 0.1,
       localFraction: 0.1,
-      paused: false,
+      paused: false, totalDurationSec: 16,
     });
     mock.mockReturnValueOnce(null);
 
@@ -132,5 +134,24 @@ describe("visualClock", () => {
 
     tick();
     expect(store.get(progressionVisualFrameAtom)).toBeNull();
+  });
+
+  it("notifies subscribers every frame with the timeline position", () => {
+    const store = createStore();
+    const mockPos = { stepIndex: 0, globalFraction: 0.1, localFraction: 0.1, paused: false, totalDurationSec: 16 };
+    vi.spyOn(timeline, "getTimelinePosition").mockReturnValue(mockPos);
+
+    const cb = vi.fn();
+    const unsubscribe = subscribeVisualClock(cb);
+    
+    startVisualClock(store);
+    tick();
+    
+    expect(cb).toHaveBeenCalledWith(mockPos);
+    
+    unsubscribe();
+    tick();
+    
+    expect(cb).toHaveBeenCalledTimes(1); // Should not have been called a second time
   });
 });

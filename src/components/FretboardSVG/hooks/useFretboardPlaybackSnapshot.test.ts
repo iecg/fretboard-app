@@ -2,31 +2,8 @@ import React from "react";
 import { describe, expect, it } from "vitest";
 import { Provider, createStore } from "jotai";
 import { renderHook } from "@testing-library/react";
-import {
-  setProgressionPlayingAtom,
-  progressionStepsAtom,
-  beatsPerBarAtom,
-} from "../../../store/progressionAtoms";
-import { progressionVisualFrameAtom } from "../../../store/progressionVisualAtoms";
+import { setProgressionPlayingAtom } from "../../../store/progressionAtoms";
 import { useFretboardPlaybackSnapshot } from "./useFretboardPlaybackSnapshot";
-
-/** Builds a store pre-seeded with a two-step I→V progression at bar 1 beat 4. */
-function makePlayingStore() {
-  const store = createStore();
-  store.set(progressionStepsAtom, [
-    { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
-    { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
-  ]);
-  store.set(beatsPerBarAtom, 4);
-  store.set(setProgressionPlayingAtom, true);
-  store.set(progressionVisualFrameAtom, {
-    stepIndex: 0,
-    globalFraction: 0.125,
-    localFraction: 0.75,
-    paused: false,
-  });
-  return store;
-}
 
 function makeWrapper(store: ReturnType<typeof createStore>) {
   return ({ children }: { children: React.ReactNode }) =>
@@ -34,57 +11,31 @@ function makeWrapper(store: ReturnType<typeof createStore>) {
 }
 
 describe("useFretboardPlaybackSnapshot", () => {
-  it("derives playback frame state from the mirrored playback frame", () => {
-    const store = makePlayingStore();
+  it("returns { playing: true } when playback is active", () => {
+    const store = createStore();
+    store.set(setProgressionPlayingAtom, true);
+    
     const { result } = renderHook(() => useFretboardPlaybackSnapshot(true), {
       wrapper: makeWrapper(store),
     });
 
-    expect(result.current).toMatchObject({
-      playing: true,
-      activeStepIndex: 0,
-      globalFraction: 0.125,
-      localFraction: 0.75,
-      stepDurationBeats: 4,
-    });
+    expect(result.current).toEqual({ playing: true });
   });
 
   it("returns null when enabled=false", () => {
-    const store = makePlayingStore();
+    const store = createStore();
+    store.set(setProgressionPlayingAtom, true);
+    
     const { result } = renderHook(() => useFretboardPlaybackSnapshot(false), {
       wrapper: makeWrapper(store),
     });
+
     expect(result.current).toBeNull();
   });
 
   it("returns null when not playing", () => {
     const store = createStore();
-    store.set(progressionStepsAtom, [
-      { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
-    ]);
-    // progressionPlayingAtom defaults to false — no setProgressionPlayingAtom call
-    store.set(progressionVisualFrameAtom, {
-      stepIndex: 0,
-      globalFraction: 0.0,
-      localFraction: 0.0,
-      paused: false,
-    });
-
-    const { result } = renderHook(() => useFretboardPlaybackSnapshot(true), {
-      wrapper: makeWrapper(store),
-    });
-
-    expect(result.current).toBeNull();
-  });
-
-  it("returns null when frame is missing", () => {
-    const store = createStore();
-    store.set(progressionStepsAtom, [
-      { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
-    ]);
-    store.set(setProgressionPlayingAtom, true);
-    // progressionVisualFrameAtom remains null (default)
-
+    // Default is false
     const { result } = renderHook(() => useFretboardPlaybackSnapshot(true), {
       wrapper: makeWrapper(store),
     });

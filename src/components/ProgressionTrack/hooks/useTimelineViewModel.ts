@@ -4,7 +4,7 @@ import {
   activeProgressionStepIndexAtom,
   beatsPerBarAtom,
   currentProgressionBarAtom,
-  displayedProgressionStepIndexAtom,
+  fastDisplayedStepIndexPrimitiveAtom,
   progressionPlaybackBlockedReasonAtom,
   progressionPlayingAtom,
   progressionStepsAtom,
@@ -17,7 +17,7 @@ export function useTimelineViewModel() {
   const stepAtoms = useAtomValue(progressionStepAtomsAtom);
   const beatsPerBar = useAtomValue(beatsPerBarAtom);
   const activeStepIndex = useAtomValue(activeProgressionStepIndexAtom);
-  const displayedStepIndex = useAtomValue(displayedProgressionStepIndexAtom);
+  const displayedStepIndex = useAtomValue(fastDisplayedStepIndexPrimitiveAtom);
   const currentProgressionBar = useAtomValue(currentProgressionBarAtom);
   const playbackBlockedReason = useAtomValue(progressionPlaybackBlockedReasonAtom);
   const playing = useAtomValue(progressionPlayingAtom);

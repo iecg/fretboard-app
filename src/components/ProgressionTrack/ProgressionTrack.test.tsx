@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, displayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, fastDisplayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [
@@ -26,6 +26,45 @@ const twoBarLeadingProgression = [
 ] as const;
 
 describe("ProgressionTrack", () => {
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 1000 });
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+      value: function(keyframes: any[], options: any) {
+        const el = this;
+        let _currentTime = 0;
+        let _playState = 'running';
+        let _duration = options.duration;
+        const startX = parseFloat(keyframes[0].transform.match(/translateX\((.+)px\)/)?.[1] || "0");
+        const endX = parseFloat(keyframes[1].transform.match(/translateX\((.+)px\)/)?.[1] || "0");
+        const anim = {
+          get currentTime() { return _currentTime; },
+          set currentTime(v) { 
+            _currentTime = v; 
+            const pct = _currentTime / _duration;
+            el.style.transform = `translateX(${startX + (endX - startX) * pct}px)`;
+          },
+          get playState() { return _playState; },
+          play() { _playState = 'running'; },
+          pause() { _playState = 'paused'; },
+          cancel() { _playState = 'idle'; },
+          effect: {
+            getTiming() { return { duration: _duration }; },
+            updateTiming(timing: any) { _duration = timing.duration; }
+          }
+        };
+        return anim;
+      }
+      /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+    });
+  });
+
   it("renders the timeline group, ruler, and chord blocks", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
       [progressionStepsAtom, fourStepProgression],
@@ -104,7 +143,7 @@ describe("ProgressionTrack", () => {
 
     const { container } = renderWithStore(<ProgressionTrack />, store);
 
-    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.left).toBe("12.5%");
+    expect(container.querySelector<HTMLElement>("[data-testid='progression-playhead']")?.style.transform).toBe("");
   });
 
   it("positions chord blocks by exact cumulative bar percentages", () => {
@@ -167,7 +206,7 @@ describe("ProgressionTrack", () => {
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
   });
 
-  it("active block follows displayedProgressionStepIndexAtom during playback", async () => {
+  it("active block follows fastDisplayedStepIndexPrimitiveAtom during playback", async () => {
     const store = createStore();
     store.set(progressionStepsAtom, [
       { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -185,8 +224,8 @@ describe("ProgressionTrack", () => {
     // Initial: primitive defaults to 0
     expect(screen.getAllByRole("button")[0]).toHaveAttribute("data-active", "true");
 
-    await act(async () => {
-      store.set(displayedStepIndexPrimitiveAtom, 1);
+    await act(() => {
+      store.set(fastDisplayedStepIndexPrimitiveAtom, 1);
     });
 
     expect(screen.getAllByRole("button")[1]).toHaveAttribute("data-active", "true");
@@ -213,11 +252,11 @@ describe("ProgressionTrack", () => {
     renderWithStore(<ProgressionTrack />, store);
 
     const playhead = document.querySelector<HTMLElement>("[data-testid='progression-playhead']");
-    expect(playhead?.style.left).toBe("0%");
+    expect(playhead?.style.transform).toBe("translateX(0px)");
 
     fireEvent.click(screen.getByRole("button", { name: /Step 3, vi, A minor, 1 bar/i }));
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
-    expect(playhead?.style.left).toBe("0%");
+    expect(playhead?.style.transform).toBe("translateX(0px)");
   });
 });

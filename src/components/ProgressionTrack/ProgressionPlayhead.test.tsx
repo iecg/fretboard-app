@@ -4,12 +4,56 @@ import { render, act } from "@testing-library/react";
 import { ProgressionPlayhead } from "./ProgressionPlayhead";
 import { setActiveStep, _resetTimelineForTests } from "../../progressions/audio/timeline";
 import { _resetProgressionAudioForTests, ensureProgressionAudio } from "../../progressions/audio/bus";
+import { createStore } from "jotai";
+import { startVisualClock, stopVisualClock } from "../../progressions/audio/visualClock";
 
 describe("ProgressionPlayhead", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     _resetTimelineForTests();
     _resetProgressionAudioForTests();
+
+    vi.stubGlobal('ResizeObserver', class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    });
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 1000 });
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+      value: function(keyframes: any[], options: any) {
+        const el = this;
+        let _currentTime = 0;
+        let _playState = 'running';
+        let _duration = options.duration;
+        const startXMatch = keyframes[0].transform.match(/translateX\((.+)px\)/);
+        const endXMatch = keyframes[1].transform.match(/translateX\((.+)px\)/);
+        const startX = parseFloat(startXMatch?.[1] || "0");
+        const endX = parseFloat(endXMatch?.[1] || "0");
+        const anim = {
+          get currentTime() { return _currentTime; },
+          set currentTime(v) { 
+            _currentTime = v; 
+            const pct = _currentTime / _duration;
+            el.style.transform = `translateX(${startX + (endX - startX) * pct}px)`;
+          },
+          get playState() { return _playState; },
+          play() { _playState = 'running'; },
+          pause() { _playState = 'paused'; },
+          cancel() { _playState = 'idle'; },
+          effect: {
+            getTiming() { return { duration: _duration }; },
+            updateTiming(timing: any) { _duration = timing.duration; }
+          }
+        };
+        return anim;
+      }
+      /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+    });
+
+    const store = createStore();
+    startVisualClock(store);
 
     const audioContext = {
       get currentTime() {
@@ -34,6 +78,7 @@ describe("ProgressionPlayhead", () => {
   });
 
   afterEach(() => {
+    stopVisualClock();
     vi.useRealTimers();
   });
 
@@ -49,7 +94,7 @@ describe("ProgressionPlayhead", () => {
 
     const playhead = container.querySelector("[data-testid='progression-playhead']") as HTMLElement;
     // (3-1)/4 = 50%
-    expect(playhead.style.left).toBe("50%");
+    expect(playhead.style.transform).toBe("translateX(500px)");
   });
 
   it("animates linearly across total duration using globalFraction", () => {
@@ -90,20 +135,18 @@ describe("ProgressionPlayhead", () => {
     );
 
     const playhead = container.querySelector("[data-testid='progression-playhead']") as HTMLElement;
-    
-    // t=0.5 -> globalFraction = 0.5/4 = 0.125. 12.5%
+
+    // t=0.5 -> globalFraction = 0.5/4 = 0.125. 12.5% of 1000 = 125
     act(() => {
       mockTime = 0.5;
-      // Trigger rAF. In jsdom with fake timers, we might need to manually trigger or advance timers.
-      // Vitest's fake timers handle rAF via advanceTimersByTime.
       vi.advanceTimersByTime(16);
     });
-    expect(playhead.style.left).toBe("12.5%");
+    expect(playhead.style.transform).toBe("translateX(125px)");
 
     // Transition to Step 1 (at bar 2)
     // Even if React rerenders, the playhead should use the latest tl.globalFraction.
     setActiveStep(1, 1.0, 1.0, 1.0, 4.0);
-    
+
     rerender(
       <ProgressionPlayhead
         playing={true}
@@ -113,12 +156,12 @@ describe("ProgressionPlayhead", () => {
       />
     );
 
-    // t=1.5 -> globalFraction = (1.0 + 0.5)/4 = 0.375. 37.5%
+    // t=1.5 -> globalFraction = (1.0 + 0.5)/4 = 0.375. 37.5% of 1000 = 375
     act(() => {
       mockTime = 1.5;
       vi.advanceTimersByTime(16);
     });
-    expect(playhead.style.left).toBe("37.5%");
+    expect(playhead.style.transform).toBe("translateX(375px)");
   });
 
   it("starts moving when playback begins before the audio timeline is armed", () => {
@@ -156,7 +199,7 @@ describe("ProgressionPlayhead", () => {
     );
 
     const playhead = container.querySelector("[data-testid='progression-playhead']") as HTMLElement;
-    expect(playhead.style.left).toBe("0%");
+    expect(playhead.style.transform).toBe("");
 
     setActiveStep(0, 0, 1.0, 0, 4.0);
 
@@ -165,6 +208,6 @@ describe("ProgressionPlayhead", () => {
       vi.advanceTimersByTime(16);
     });
 
-    expect(playhead.style.left).toBe("12.5%");
+    expect(playhead.style.transform).toBe("translateX(125px)");
   });
 });

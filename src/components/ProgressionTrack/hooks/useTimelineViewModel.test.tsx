@@ -7,7 +7,7 @@ import * as builderModule from "./buildTimelineViewModel";
 import { useTimelineViewModel } from "./useTimelineViewModel";
 import {
   beatsPerBarAtom,
-  displayedStepIndexPrimitiveAtom,
+  fastDisplayedStepIndexPrimitiveAtom,
   progressionStepsAtom,
   setProgressionPlayingAtom,
 } from "../../../store/progressionAtoms";
@@ -30,7 +30,7 @@ describe("useTimelineViewModel", () => {
     vi.mocked(builderModule.buildTimelineViewModel).mockClear();
   });
 
-  it("keeps blockLayouts reference stable and calls buildTimelineViewModel only once when displayedStepIndexPrimitiveAtom changes", async () => {
+  it("keeps blockLayouts reference stable and calls buildTimelineViewModel only once when fastDisplayedStepIndexPrimitiveAtom changes", async () => {
     const store = createStore();
     store.set(progressionStepsAtom, twoSteps as never);
     store.set(beatsPerBarAtom, 4);
@@ -48,7 +48,7 @@ describe("useTimelineViewModel", () => {
     const callCountAfterMount = spy.mock.calls.length;
 
     await act(async () => {
-      store.set(displayedStepIndexPrimitiveAtom, 1);
+      store.set(fastDisplayedStepIndexPrimitiveAtom, 1);
     });
 
     expect(result.current.blockLayouts).toBe(initialBlockLayouts);

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
-import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 import { getNoteFrequency } from "@fretflow/core";
 import { audioQualityAtom, isMutedAtom } from "../store/audioAtoms";
 import {
@@ -35,6 +34,7 @@ import type {
   ProgressionPartHandle,
 } from "../progressions/audio/progressionAudioEngine";
 import type { BuiltLayers } from "../progressions/audio/buildAllLayers";
+import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
@@ -376,11 +376,13 @@ export function useProgressionAudioPlayback() {
       const chordOnsetPart = eng.createProgressionPart<ChordOnsetEvent>({
         events: built.chordOnsets, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, event) => {
-          if (!hasFiredOnce) { hasFiredOnce = true; setLoading(false); }
           eng.setActiveStep(event.stepIndex, audioTime, event.durationSec, event.cumulativeStartSec, totalDurationSec);
-          if (event.isFirstBar) {
-            eng.getDraw().schedule(() => setActiveStepIndex(event.stepIndex), audioTime);
-          }
+          eng.getDraw().schedule(() => {
+            if (!hasFiredOnce) { hasFiredOnce = true; setLoading(false); }
+            if (event.isFirstBar) {
+              setActiveStepIndex(event.stepIndex);
+            }
+          }, audioTime);
         },
       });
       chordOnsetPart.start(partStart, 0);

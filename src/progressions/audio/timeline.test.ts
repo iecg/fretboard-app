@@ -57,6 +57,7 @@ describe("timeline", () => {
       globalFraction: 0.5,
       localFraction: 0,
       paused: false,
+      totalDurationSec: 16,
     });
   });
 
@@ -102,6 +103,7 @@ describe("timeline", () => {
       globalFraction: 0,
       localFraction: 0,
       paused: true,
+      totalDurationSec: 16,
     });
     expect(isCurrentStepFinished()).toBe(false);
   });
@@ -115,6 +117,7 @@ describe("timeline", () => {
       globalFraction: 0.25, // 4 / 16
       localFraction: 0,
       paused: true,
+      totalDurationSec: 16,
     });
   });
 

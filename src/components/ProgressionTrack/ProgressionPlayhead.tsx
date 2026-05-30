@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { getTimelinePosition } from "../../progressions/audio/timeline";
+import { subscribeVisualClock } from "../../progressions/audio/visualClock";
 import styles from "./ProgressionTrack.module.css";
 
 interface ProgressionPlayheadProps {
@@ -14,17 +14,19 @@ interface ProgressionPlayheadProps {
   totalBarsForDisplay: number;
 }
 
-
 /**
- * Renders the playhead and drives its horizontal motion by sampling the
- * shared audio-clock `timeline` at roughly 60 Hz. Reads
- * `AudioContext.currentTime` indirectly via `getTimelinePosition()`, so the
- * visual position is locked to whatever the user is hearing — the metronome's
- * audible click and the arrow's pixel position cannot drift.
+ * Renders the playhead and drives its horizontal motion using the Web
+ * Animations API (WAAPI). It subscribes to the audio clock via
+ * subscribeVisualClock to ensure synchronization with playback.
  *
  * Style writes happen directly on the DOM ref to avoid React reconciliation
  * cost on every animation frame; the component renders only when its props
- * change (e.g. a new step boundary or total duration).
+ * change.
+ *
+ * The fretboard SVG is driven by progressionVisualFrameAtom (via
+ * useFretboardPlaybackSnapshot) to update chord highlighting. This playhead
+ * is driven by WAAPI for perfectly smooth visual updates on the compositor
+ * thread, while staying loosely coupled to the visual clock to correct drift.
  */
 export function ProgressionPlayhead({
   playing,
@@ -34,53 +36,97 @@ export function ProgressionPlayhead({
 }: ProgressionPlayheadProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
 
-  // Store chord-boundary props in refs so the animation loop can access
-  // the latest values without needing to be cleared and restarted
-  // at every transition.
-  const propsRef = useRef({ stepStartBar, totalDurationBars, totalBarsForDisplay });
+  // 1. Fallback positioning when not playing
   useEffect(() => {
-    propsRef.current = { stepStartBar, totalDurationBars, totalBarsForDisplay };
-  }, [stepStartBar, totalDurationBars, totalBarsForDisplay]);
-
-  useEffect(() => {
+    if (playing) return;
+    
     const el = ref.current;
-    if (!el) return;
-    el.style.transition = "none";
+    if (!el || !el.parentElement) return;
+    
+    const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
+    const parentWidth = el.parentElement.clientWidth;
+    const pct = (stepStartBar - 1) / safeDisplayTotal;
+    el.style.transform = `translateX(${pct * parentWidth}px)`;
+  }, [playing, stepStartBar, totalBarsForDisplay]);
 
-    const write = () => {
-      const tl = getTimelinePosition();
-      const {
-        stepStartBar: currentStepStartBar,
-        totalDurationBars: currentTotalDurationBars,
-        totalBarsForDisplay: currentTotalBarsForDisplay,
-      } = propsRef.current;
+  // 2. WAAPI loop when playing
+  useEffect(() => {
+    if (!playing || totalDurationBars <= 0) return;
 
-      const safeDisplayTotal = Math.max(1, currentTotalBarsForDisplay);
+    const el = ref.current;
+    const parent = el?.parentElement;
+    if (!el || !parent) return;
 
-      if (playing && tl && !tl.paused) {
-        // Linear motion across the whole track, scaled to display bars.
-        // Uses globalFraction which is perfectly continuous across audio steps.
-        const pct = (tl.globalFraction * currentTotalDurationBars / safeDisplayTotal) * 100;
-        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
-      } else {
-        // Paused or stopped: snap to current chord's start bar.
-        const bar = currentStepStartBar;
-        const pct = ((bar - 1) / safeDisplayTotal) * 100;
-        el.style.left = `${Math.max(0, Math.min(100, pct))}%`;
+    const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
+    let parentWidth = parent.clientWidth;
+    let anim: Animation | null = null;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        parentWidth = entry.contentRect.width;
+        if (anim) {
+          const capturedTime = anim.currentTime;
+          const duration = anim.effect?.getTiming()?.duration || 0;
+          anim.cancel();
+          const endPct = totalDurationBars / safeDisplayTotal;
+          anim = el.animate([
+            { transform: 'translateX(0px)' },
+            { transform: `translateX(${endPct * parentWidth}px)` }
+          ], {
+            duration: duration as number,
+            fill: 'forwards'
+          });
+          if (capturedTime !== null) {
+            anim.currentTime = capturedTime;
+          }
+        }
+      }
+    });
+    observer.observe(parent);
+
+    const unsubscribe = subscribeVisualClock((tl) => {
+      if (tl.paused) return;
+
+      const totalDurationMs = tl.totalDurationSec * 1000;
+      const expectedTimeMs = tl.globalFraction * totalDurationMs;
+      const endPct = totalDurationBars / safeDisplayTotal;
+
+      if (!anim) {
+        anim = el.animate([
+          { transform: 'translateX(0px)' },
+          { transform: `translateX(${endPct * parentWidth}px)` }
+        ], {
+          duration: totalDurationMs,
+          fill: 'forwards'
+        });
+      }
+
+      const timing = anim.effect?.getTiming();
+      if (timing && timing.duration !== totalDurationMs) {
+        anim.effect?.updateTiming({ duration: totalDurationMs });
+      }
+
+      if (anim.playState !== 'running') {
+        anim.play();
+      }
+
+      if (anim.currentTime !== null) {
+        const current = anim.currentTime as number;
+        const drift = Math.abs(current - expectedTimeMs);
+        if (drift > 150) {
+          anim.currentTime = expectedTimeMs;
+        }
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+      unsubscribe();
+      if (anim) {
+        anim.cancel();
       }
     };
-
-    write();
-
-    if (!playing) return;
-    let frameId: number;
-    const loop = () => {
-      write();
-      frameId = window.requestAnimationFrame(loop);
-    };
-    frameId = window.requestAnimationFrame(loop);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [playing, stepStartBar, totalDurationBars, totalBarsForDisplay]);
+  }, [playing, totalBarsForDisplay, totalDurationBars]);
 
   return (
     <span
@@ -89,6 +135,10 @@ export function ProgressionPlayhead({
       data-testid="progression-playhead"
       data-animated={playing ? "true" : undefined}
       aria-hidden="true"
+      style={{
+        left: 0,
+        willChange: "transform"
+      }}
     >
       <span className={styles.playheadArrow} aria-hidden="true" />
       <span className={styles.playheadLine} aria-hidden="true" />
