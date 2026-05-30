@@ -320,9 +320,12 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
       { beat: 2.5, velocity: 0.8 },
     ],
     snares: [
+      { beat: 0.75, velocity: 0.15 },
       { beat: 1, velocity: 1 },
       { beat: 1.5, velocity: 0.3 },
+      { beat: 2.25, velocity: 0.18 },
       { beat: 3, velocity: 1 },
+      { beat: 3.5, velocity: 0.15 },
     ],
     hats: [
       { beat: 0, velocity: 0.5 },

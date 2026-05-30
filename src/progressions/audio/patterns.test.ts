@@ -257,3 +257,22 @@ describe("bass articulation polish", () => {
     expect(shuffle.hits.every((h) => h.articulation === "staccato")).toBe(true);
   });
 });
+
+describe("funk drum ghost snares", () => {
+  const funk = getDrumPattern("funk")!;
+
+  it("preserves the backbeat at full velocity", () => {
+    const byBeat = new Map(funk.snares.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(1)).toBe(1);
+    expect(byBeat.get(3)).toBe(1);
+  });
+
+  it("adds at least three low-velocity (<=0.2) ghost snares", () => {
+    const ghosts = funk.snares.filter((h) => h.velocity <= 0.2);
+    expect(ghosts.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("places snares on the expected 16th-subdivision grid", () => {
+    expect(funk.snares.map((h) => h.beat)).toEqual([0.75, 1, 1.5, 2.25, 3, 3.5]);
+  });
+});
