@@ -1,0 +1,60 @@
+/* Columnar chord-root option: degree · note · quality · move all line up across
+   rows via fixed-width grid tracks (proportional numerals like "ii°"/"vii°" no
+   longer push the notes and qualities out of alignment). */
+.row {
+  display: grid;
+  grid-template-columns: 2.5rem 2.75rem 2.5rem auto;
+  align-items: baseline;
+  gap: 0 0.6rem;
+  width: 100%;
+}
+
+.degree {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--dc-fg-muted);
+  white-space: nowrap;
+}
+
+.note {
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.quality {
+  color: var(--dc-fg-muted);
+  white-space: nowrap;
+}
+
+.move {
+  font-size: 0.82em;
+  font-style: italic;
+  color: var(--dc-fg-muted);
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Compact trigger value: note + accent degree (e.g. "A  i") as one select value.
+   The note keeps full text strength; the degree numeral carries the accent. */
+.triggerRow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.triggerNote {
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.triggerDegree {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--faceplate-accent);
+  white-space: nowrap;
+}

@@ -1,25 +1,11 @@
 .shell {
+  composes: surface--control from "../shared/shared.module.css";
   min-width: 0;
   min-height: var(--control-height);
   display: flex;
   align-items: stretch;
   gap: 0.22rem;
   padding: 2px;
-  border: 1px solid var(--dc-border);
-  border-radius: var(--dc-radius);
-  background-color: var(--dc-bg);
-  transition: var(--dc-transition);
-}
-
-.shell:hover {
-  background-color: var(--dc-bg-hover);
-  border-color: var(--dc-border-hover);
-}
-
-.shell:focus-within {
-  border-color: var(--dc-border-active);
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
 }
 
 .button {

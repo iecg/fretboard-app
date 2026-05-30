@@ -84,4 +84,10 @@ describe("HelpModal/HelpModal", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(document.activeElement).toBe(screen.getByLabelText("Close help"));
   });
+
+  it("renders the close button at the sm icon-button size", () => {
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    const close = screen.getByLabelText("Close help");
+    expect(close.className).toMatch(/icon-button--sm/);
+  });
 });

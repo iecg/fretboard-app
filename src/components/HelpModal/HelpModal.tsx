@@ -55,7 +55,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                   <Dialog.Close asChild>
                     <button
                       type="button"
-                      className={clsx(sharedStyles["icon-button"], styles["help-modal-close"])}
+                      className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"], styles["help-modal-close"])}
                       aria-label="Close help"
                     >
                       <X className="icon" />

@@ -3,6 +3,8 @@ import {
   CHORD_TYPE_DISPLAY_ORDER,
   CHORD_TYPE_SHORT_LABELS,
 } from "../ChordOverlayControls/chordTypeOptions";
+import { getScaleRoots } from "@fretflow/core";
+import { guessQualityForBorrowedRoot } from "../../progressions/progressionDomain";
 
 export interface QualityGroupLabels {
   triads: string;
@@ -45,6 +47,63 @@ function toOptions(keys: readonly string[]) {
       value: k,
       label: CHORD_TYPE_SHORT_LABELS[k] ?? k,
     }));
+}
+
+const SEVENTH_FOR_TRIAD: Record<string, string> = {
+  M: "maj7",
+  m: "m7",
+  dim: "m7b5", // diatonic 7th of a dim triad is half-diminished (m7♭5), not dim7
+  aug: "maj7", // unreachable for standard scales (aug degrees collapse to "M"); placeholder
+};
+
+export interface QualityGroupLabelsWithDiatonic extends QualityGroupLabels {
+  diatonic: string;
+}
+
+/** Builds the quality groups with a leading "Diatonic" group reflecting the
+ *  triad + seventh for the active root in the active scale. For out-of-scale
+ *  roots it falls back to guessQualityForBorrowedRoot. Omits the Diatonic group
+ *  when no quality can be derived. */
+export function buildQualityGroupsWithDiatonic(
+  scaleName: string,
+  tonicNote: string,
+  rootNote: string,
+  labels: QualityGroupLabelsWithDiatonic,
+): LabeledSelectGroup[] {
+  const base = buildQualitySelectGroups(labels);
+
+  const roots = getScaleRoots(scaleName, tonicNote);
+  const match = roots.find((r) => r.note === rootNote);
+
+  let triadQuality: string | null = null;
+  if (match?.rootClass === "diatonic" && match.defaultQuality) {
+    triadQuality = match.defaultQuality;
+  } else {
+    const guessed = guessQualityForBorrowedRoot(rootNote, scaleName, tonicNote);
+    triadQuality = guessed || null;
+  }
+  if (!triadQuality) return base;
+
+  const diatonicOptions = [
+    { value: triadQuality, label: CHORD_TYPE_SHORT_LABELS[triadQuality] ?? triadQuality },
+  ];
+  const seventh = SEVENTH_FOR_TRIAD[triadQuality];
+  if (seventh && seventh !== triadQuality) {
+    diatonicOptions.push({ value: seventh, label: CHORD_TYPE_SHORT_LABELS[seventh] ?? seventh });
+  }
+
+  // Radix Select requires unique item values. The diatonic chord is shown in
+  // the Diatonic group; remove those values from the categorical base groups so
+  // each value appears exactly once.
+  const diatonicValues = new Set(diatonicOptions.map((o) => o.value));
+  const dedupedBase = base
+    .map((group) => ({
+      ...group,
+      options: group.options.filter((o) => !diatonicValues.has(o.value)),
+    }))
+    .filter((group) => group.options.length > 0);
+
+  return [{ groupLabel: labels.diatonic, options: diatonicOptions }, ...dedupedBase];
 }
 
 export function buildQualitySelectGroups(

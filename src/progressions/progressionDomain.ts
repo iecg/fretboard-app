@@ -4,7 +4,9 @@ import {
   getChordDisplayLabel,
   getDegreeSequence,
   getDiatonicChord,
+  getHarmonyParentScale,
   getNoteDisplay,
+  getScaleRoots,
   getScaleNotes,
   transposeNoteToSharps,
   type DegreeId,
@@ -282,15 +284,8 @@ const ROMAN_ORDINALS: Record<string, number> = {
   VII: 6,
 };
 
-const PROGRESSION_HARMONY_SCALE: Record<string, string> = {
-  "major pentatonic": "major",
-  "major blues": "major",
-  "minor pentatonic": "minor",
-  "minor blues": "minor",
-};
-
 function getProgressionHarmonyScaleName(scaleName: string): string {
-  return PROGRESSION_HARMONY_SCALE[scaleName] ?? scaleName;
+  return getHarmonyParentScale(scaleName);
 }
 
 let fallbackId = 0;
@@ -437,37 +432,24 @@ export function totalProgressionBars(
 }
 
 /**
- * When a borrowed (out-of-scale) root is picked without a quality override,
- * fall back to "M" (major triad) as the safest audible default.
+ * Default quality for an out-of-scale root picked without an explicit override.
  *
- * TODO(plan-g11a): refine with a real parallel-scale lookup if/when one
- * exists in @fretflow/core (e.g. getDiatonicChordForNote(root, scale, tonic)).
+ * Borrowed roots resolve to the quality of the matching parallel-key triad
+ * (e.g. iv in major borrows the minor subdominant), so the created chord
+ * matches the quality shown in the editor. Chromatic roots (no parallel-key
+ * context) and unresolvable lookups fall back to "M" (major) as the safest
+ * audible default.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function guessQualityForBorrowedRoot(_root?: string, _scaleName?: string, _tonicNote?: string): string {
-  return "M";
-}
-
-/** Compact display string for a chord quality, suitable for inline tags
- * (e.g. the borrowed-cell quality strip in DegreeGrid). Returns "" if the
- * quality is unrecognized — callers may choose to suppress in that case. */
-export function qualityShortForm(quality: string): string {
-  switch (quality) {
-    case "M": return "M";
-    case "m": return "m";
-    case "dim": return "°";
-    case "aug": return "+";
-    case "5": return "5";
-    case "6": return "6";
-    case "m6": return "m6";
-    case "7": return "7";
-    case "maj7": return "M7";
-    case "m7": return "m7";
-    case "mMaj7": return "mM7";
-    case "m7b5": return "ø7";
-    case "dim7": return "°7";
-    default: return "";
+export function guessQualityForBorrowedRoot(
+  root?: string,
+  scaleName?: string,
+  tonicNote?: string,
+): string {
+  if (root && scaleName && tonicNote) {
+    const match = getScaleRoots(scaleName, tonicNote).find((r) => r.note === root);
+    if (match?.defaultQuality) return match.defaultQuality;
   }
+  return "M";
 }
 
 export function resolveProgressionStep(

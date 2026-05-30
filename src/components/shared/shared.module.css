@@ -161,6 +161,63 @@
   color: var(--text-muted);
 }
 
+/* ===== Composable control surfaces =====
+   Single source of truth for control chrome. Components compose one of these
+   via `composes:` rather than re-implementing the token chain.
+   `.surface--control` = inline form controls (steppers, selects, toggle bars).
+   `.surface--chrome`   = standalone chrome icon buttons (header, modal close). */
+.surface--control {
+  background-color: var(--dc-bg);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius);
+  transition: var(--dc-transition);
+}
+/* Guard the hover lift against disabled consumers (`:disabled` for native
+   buttons, `[data-disabled]` for Radix triggers) so this stays the single
+   source of truth — no per-consumer reset needed. */
+.surface--control:hover:not(:disabled):not([data-disabled]) {
+  background-color: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
+}
+.surface--control:focus-within {
+  border-color: var(--dc-border-active);
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.surface--chrome {
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
+  border: 1px solid var(--surface-control-border);
+  box-shadow: var(--elevation-card);
+  color: var(--surface-control-fg-muted);
+  transition: var(--transition-surface), transform var(--transition-fast);
+}
+.surface--chrome:hover {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
+  transform: translateY(-1px);
+}
+
+/* Tone modifiers — layer on top of either surface to recolor without
+   redefining the whole chrome. */
+.tone--destructive {
+  background: var(--destructive-control-bg);
+  border-color: var(--destructive-control-border);
+  color: var(--destructive-control-fg);
+}
+.tone--destructive:hover {
+  background: var(--destructive-control-hover-bg);
+  border-color: var(--destructive-control-border);
+}
+
+/* Base toggle group: intentionally supplies the resting surface chrome
+   (dc-* bg/border/radius) for the `default` variant, so `.toggle-group--default`
+   need not separately compose `.surface--control`. The other variants override
+   this: `chip` clears it (transparent bg, no border) and routes chrome onto each
+   button, `pip` resets it to a bare flex row, and `tabs` uses its own surface. */
 .toggle-group {
   display: flex;
   align-items: stretch;
@@ -191,9 +248,23 @@
 }
 
 .toggle-btn--chip {
-  background: var(--dc-bg);
-  border: 1px solid var(--dc-border);
   border-radius: calc(var(--dc-radius) - 1px);
+}
+
+/* Chip buttons own their resting border + fill because the group chrome is
+   stripped (`.toggle-group--chip`). The base `.toggle-btn` sets a transparent
+   border for the group-chrome variants and appears LATER in this file, so a
+   plain `.toggle-btn--chip` (or a composed surface) loses on source order.
+   The compound `.toggle-btn.toggle-btn--chip` selector raises specificity so
+   the chip's border wins regardless of source/bundle order. */
+.toggle-btn.toggle-btn--chip:not(.active) {
+  background-color: var(--dc-bg);
+  border-color: var(--dc-border);
+}
+
+.toggle-btn.toggle-btn--chip:not(.active):hover {
+  background-color: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
 }
 
 /* Chip-variant active state. The default .toggle-btn.active glow extends
@@ -450,6 +521,7 @@
 
 /* Icon Button - shared circular button chrome for header, modal close, etc. */
 .icon-button {
+  composes: surface--chrome;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -457,22 +529,8 @@
   height: 2.75rem;
   padding: 0;
   border-radius: 999px;
-  background-color: var(--surface-control);
-  background-image: var(--surface-control-bg-image);
-  border: 1px solid var(--surface-control-border);
-  box-shadow: var(--elevation-card);
-  color: var(--surface-control-fg-muted);
   cursor: pointer;
-  transition: var(--transition-surface), transform var(--transition-fast);
   flex-shrink: 0;
-}
-
-.icon-button:hover {
-  background-color: var(--surface-control-hover-bg);
-  background-image: var(--surface-control-hover-bg-image);
-  color: var(--surface-control-hover-fg);
-  border-color: var(--surface-control-hover-border);
-  transform: translateY(-1px);
 }
 
 .icon-button:active {
@@ -504,35 +562,12 @@
   color: var(--surface-control-fg);
 }
 
-/* Large variant: header action buttons */
-.icon-button--lg {
-  width: 2.95rem;
-  height: 2.95rem;
-}
+/* Size variants: sm / md (default) */
+.icon-button--sm { width: 2rem;    height: 2rem;    }
+.icon-button--md { width: 2.75rem; height: 2.75rem; }
 
-.icon-button--lg :global(.icon) {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1079px) {
-  .icon-button--lg {
-    width: 2.7rem;
-    height: 2.7rem;
-  }
-
-  .icon-button--lg :global(.icon) {
-    width: 1.18rem;
-    height: 1.18rem;
-  }
-}
+.icon-button--sm :global(.icon) { width: 1rem;    height: 1rem;    }
 /* stylelint-enable selector-pseudo-class-no-unknown */
-
-:global(.app-container[data-layout-tier="mobile"]) .icon-button--lg {
-  width: 2.7rem;
-  height: 2.7rem;
-}
 
 .sr-only {
   position: absolute;

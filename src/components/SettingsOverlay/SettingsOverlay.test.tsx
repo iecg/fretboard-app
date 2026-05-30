@@ -198,6 +198,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const { store } = renderOpenOverlay();
     const closeBtn = screen.getByLabelText("Close settings");
     expect(closeBtn).toHaveClass(styles["settings-overlay-close"]);
+    expect(closeBtn.className).toMatch(/icon-button--sm/);
     fireEvent.click(closeBtn);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });

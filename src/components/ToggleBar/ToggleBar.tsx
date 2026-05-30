@@ -5,11 +5,14 @@ import { ANIMATION_DURATION_FAST } from "@fretflow/core";
 import styles from "./ToggleBar.module.css";
 import shared from "../shared/shared.module.css";
 
-const toggleBarVariants = cva(shared["toggle-group"], {
+// Each variant supplies its OWN group class. `default` and `chip` opt into the
+// shared `toggle-group` base chrome; `tabs` is fully self-contained (no group
+// container), so the base is NOT applied globally.
+const toggleBarVariants = cva("", {
   variants: {
     variant: {
-      default: shared["toggle-group--default"],
-      chip: shared["toggle-group--chip"],
+      default: `${shared["toggle-group"]} ${shared["toggle-group--default"]}`,
+      chip: `${shared["toggle-group"]} ${shared["toggle-group--chip"]}`,
       tabs: styles["mobile-tab-bar"],
     },
   },
@@ -51,7 +54,6 @@ interface ToggleBarProps<Value extends string | number> extends VariantProps<
   options: readonly ToggleBarOption<Value>[];
   value: Value | undefined;
   onChange: (value: Value) => void;
-  variant?: "default" | "chip" | "tabs";
   label?: string;
   /** When "scroll" — the toggle group scrolls horizontally instead of shrinking buttons. */
   overflow?: "scroll";
@@ -68,12 +70,12 @@ export function ToggleBar<Value extends string | number>({
   overflow,
   disabled = false,
 }: ToggleBarProps<Value>) {
-  const isTabs = variant === "tabs";
+  const isTablist = variant === "tabs";
   const descPrefix = useId();
   return (
     <div
       className={toggleBarVariants({ variant })}
-      role={isTabs ? "tablist" : "group"}
+      role={isTablist ? "tablist" : "group"}
       aria-label={label}
       data-overflow={overflow ?? undefined}
     >
@@ -84,7 +86,7 @@ export function ToggleBar<Value extends string | number>({
           <motion.button
             key={option.value}
             type="button"
-            {...(isTabs
+            {...(isTablist
               ? { role: "tab", "aria-selected": isActive }
               : { "aria-pressed": isActive })}
             className={toggleButtonVariants({ variant, isActive })}

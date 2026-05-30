@@ -1,0 +1,253 @@
+/* Left pane of the master-detail editor: a caption row + a scrollable "quiet
+   index" of chord rows. Flex item that shares the row when wide, stacks when
+   the inspector is narrow (intrinsic flex-wrap, no media query). */
+.col {
+  --scrollbar-width: 6px;
+  flex: 5 1 13rem;
+  min-width: 12rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Caption: mono "STEPS" title + right-aligned summary meta. */
+.caption {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0 0.25rem 0.55rem;
+}
+
+.captionTitle {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dc-fg-muted);
+}
+
+.captionMeta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.03em;
+  color: var(--dc-fg-muted);
+  opacity: 0.8;
+}
+
+/* Scroll region: a positioned shell holding the edge-fade overlays above the
+   list. The fades are driven entirely by a CSS scroll-driven animation (the
+   list's own `scroll-timeline`) — no JS scroll listener, no React state. They
+   overlay the content (visible on any theme, unlike a background shadow on a
+   near-black faceplate) and only appear when there is overflow in that
+   direction. Browsers without scroll-driven animations fall back to no fade
+   (the `@supports` block below never applies), which degrades gracefully. */
+.scroll {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.scroll::before,
+.scroll::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: var(--scrollbar-width);
+  height: 1.4rem;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+}
+
+.scroll::before {
+  top: 0;
+  background: linear-gradient(180deg, var(--faceplate-bg), transparent);
+}
+
+.scroll::after {
+  bottom: 0;
+  background: linear-gradient(0deg, var(--faceplate-bg), transparent);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  padding: 0 0.35rem 0 0;
+  list-style: none;
+  max-height: 17rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--faceplate-divider) transparent;
+}
+
+.list::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+/* Reveal the top fade once scrolled away from the top, and hide the bottom fade
+   on reaching the end — purely from the scroll position. */
+@supports (animation-timeline: scroll()) {
+  .scroll {
+    timeline-scope: --chord-list-scroll;
+  }
+
+  .list {
+    scroll-timeline: --chord-list-scroll block;
+  }
+
+  .scroll::before {
+    animation: chord-list-fade-in linear both;
+    animation-timeline: --chord-list-scroll;
+    animation-range: 0 1.5rem;
+  }
+
+  .scroll::after {
+    animation: chord-list-fade-out linear both;
+    animation-timeline: --chord-list-scroll;
+    animation-range: calc(100% - 1.5rem) 100%;
+  }
+}
+
+@keyframes chord-list-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chord-list-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: var(--faceplate-divider);
+  border-radius: 999px;
+}
+
+/* Each chord row: index · numeral chip · name (flex) · duration (right).
+   Flat and quiet at rest; the active row gets a cyan left-tick + faint tint. */
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  height: 2.7rem;
+  padding: 0 0.8rem 0 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background-color: transparent;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  transition: var(--dc-transition);
+}
+
+/* Left tick — transparent at rest, cyan when active. */
+.row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  width: 2px;
+  border-radius: 2px;
+  background-color: transparent;
+  transition: background-color 0.12s;
+}
+
+.row:hover:not(.active) {
+  background-color: var(--dc-bg-hover);
+}
+
+.row:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.active {
+  border-color: color-mix(in srgb, var(--faceplate-accent) 40%, var(--faceplate-divider));
+  background-color: color-mix(in srgb, var(--faceplate-accent) 8%, transparent);
+}
+
+.active::before {
+  background-color: var(--faceplate-accent);
+}
+
+.index {
+  flex-shrink: 0;
+  min-width: 0.85rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  color: var(--dc-fg-faint, var(--dc-fg-muted));
+}
+
+.active .index {
+  color: color-mix(in srgb, var(--faceplate-accent) 70%, var(--text-main));
+}
+
+/* Roman-numeral chip — sunken + muted at rest, cyan when the row is active. */
+.chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  height: 1.7rem;
+  padding: 0 0.45rem;
+  border: 1px solid var(--faceplate-divider);
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  color: var(--dc-fg);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.active .chip {
+  border-color: color-mix(in srgb, var(--faceplate-accent) 45%, var(--faceplate-divider));
+  background-color: color-mix(in srgb, var(--faceplate-accent) 14%, transparent);
+  color: var(--faceplate-accent);
+}
+
+.name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.duration {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  color: var(--dc-fg-muted);
+}
+
+.row[data-unavailable] .name {
+  color: var(--dc-fg-muted);
+  font-style: italic;
+}

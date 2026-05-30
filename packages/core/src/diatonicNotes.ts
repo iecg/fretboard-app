@@ -5,8 +5,8 @@ import { getScaleNotes } from "./theory";
  * `tonicNote`. The result is keyed by note name (no octave) and uses the
  * internal sharps-form convention (e.g. "A#" instead of "Bb").
  *
- * Used by the v2.0 DegreeGrid to decide whether a chromatic cell renders
- * as "in-key" (full prominence) or "borrowed" (muted numeral styling).
+ * Used to decide whether a chromatic note is in the active scale
+ * (full prominence) or borrowed (muted numeral styling).
  */
 export function getDiatonicNotes(
   scaleName: string,

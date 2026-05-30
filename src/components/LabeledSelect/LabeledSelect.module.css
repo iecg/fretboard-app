@@ -16,6 +16,7 @@
 
 /* ===== Trigger ===== */
 .labeled-select-trigger {
+  composes: surface--control from "../shared/shared.module.css";
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
@@ -23,16 +24,12 @@
   width: 100%;
   min-height: var(--control-height);
   padding: 0.25rem 0.7rem;
-  background-color: var(--dc-bg);
-  border: 1px solid var(--dc-border);
-  border-radius: var(--dc-radius);
   font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: var(--font-weight-medium);
   color: var(--dc-fg-strong);
   line-height: var(--leading-normal);
   cursor: pointer;
-  transition: var(--dc-transition);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -51,11 +48,6 @@
   align-self: flex-start;
 }
 
-.labeled-select-trigger:hover:not([data-disabled]) {
-  background-color: var(--dc-bg-hover);
-  border-color: var(--dc-border-hover);
-}
-
 .labeled-select-trigger:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
@@ -66,9 +58,18 @@
   border-color: var(--dc-border-active);
 }
 
+/* Accent-colored value (e.g. the chord ROOT) — the chevron keeps its own
+   muted color via its dedicated rule. */
+.labeled-select-trigger--accent-value {
+  color: var(--faceplate-accent);
+}
+
 .labeled-select-trigger[data-disabled] {
   cursor: not-allowed;
 }
+
+/* The composable `.surface--control:hover` is now guarded against
+   `[data-disabled]`, so no per-trigger hover reset is needed here. */
 
 .labeled-select-chevron {
   display: inline-flex;

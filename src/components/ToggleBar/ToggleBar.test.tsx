@@ -235,3 +235,4 @@ describe("ToggleBar/ToggleBar", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+

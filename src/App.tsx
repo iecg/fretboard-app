@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
+import clsx from "clsx";
 import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { Fretboard } from "./components/Fretboard/Fretboard";
@@ -130,7 +131,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={() => setTheme(theme === "modern-dark" ? "light" : "dark")}
-                className={sharedStyles["icon-button"]}
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
                 title={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
                 aria-label={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
               >
@@ -144,7 +145,7 @@ function AppContent() {
                 <button
                   type="button"
                   onClick={() => setSettingsOverlayOpen((v) => !v)}
-                  className={sharedStyles["icon-button"]}
+                  className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
                   title={t("settings.title")}
                   aria-label={t("settings.open")}
                 >
@@ -154,7 +155,7 @@ function AppContent() {
               <button
                 type="button"
                 onClick={toggleMute}
-                className={sharedStyles["icon-button"]}
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
                 title={isMuted ? t("common.unmuteTitle") : t("common.muteTitle")}
                 aria-label={isMuted ? t("common.unmute") : t("common.mute")}
               >
@@ -179,7 +180,7 @@ function AppContent() {
                 ref={helpTriggerRef}
                 type="button"
                 onClick={() => setShowHelp(true)}
-                className={sharedStyles["icon-button"]}
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
                 title={t("common.helpTitle")}
                 aria-label={t("common.help")}
               >

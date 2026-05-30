@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getHarmonyParentScale } from "@fretflow/core";
 import {
   DEFAULT_BEATS_PER_BAR,
   PROGRESSION_PRESETS,
@@ -19,7 +20,6 @@ import {
   resolveProgressionStep,
   totalProgressionBars,
   transposeManualRootForRootChange,
-  qualityShortForm,
   type ProgressionStep,
   type ProgressionStepDuration,
 } from "./progressionDomain";
@@ -555,21 +555,13 @@ describe("resolveProgressionStep + manualRoot (Plan G11a)", () => {
   });
 });
 
-describe("qualityShortForm (Plan H-T9b)", () => {
-  it.each([
-    ["M", "M"],
-    ["m", "m"],
-    ["dim", "°"],
-    ["7", "7"],
-    ["maj7", "M7"],
-    ["m7", "m7"],
-    ["m7b5", "ø7"],
-  ] as const)("maps %s → %s", (input, expected) => {
-    expect(qualityShortForm(input)).toBe(expected);
-  });
-
-  it("returns empty string for unknown qualities", () => {
-    expect(qualityShortForm("UnknownQuality" as never)).toBe("");
+describe("harmony parent-scale source of truth", () => {
+  it("resolveProgressionStep uses the shared core parent map for pentatonic", () => {
+    const step = { id: "x", degree: "I", duration: { value: 1, unit: "bar" as const }, qualityOverride: null, manualRoot: null };
+    const penta = resolveProgressionStep(step, "major pentatonic", "C");
+    const major = resolveProgressionStep(step, "major", "C");
+    expect(penta.root).toBe(major.root);
+    expect(getHarmonyParentScale("major pentatonic")).toBe("major");
   });
 });
 

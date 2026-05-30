@@ -36,3 +36,12 @@ export * from "./shapes";
 export * from "./shapes/practicePatterns";
 export { transposeNoteToSharps, getChordDisplayLabel } from "./lib/tonal";
 export { getDiatonicNotes } from "./diatonicNotes";
+export {
+  getScaleRoots,
+  getHarmonyParentScale,
+  getHarmonicMoveAnnotation,
+  formatChromaticNumeral,
+  HARMONY_PARENT_SCALE,
+  type ScaleRootInfo,
+  type RootClass,
+} from "./keyHarmony";

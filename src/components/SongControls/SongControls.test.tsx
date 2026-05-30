@@ -58,7 +58,8 @@ describe("SongControls", () => {
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sequence" })).toBeInTheDocument();
     // Step list is gone (ProgressionTrack handles navigation); editor pane still present
-    expect(screen.getByRole("group", { name: "Chord root" })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Chord root" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Chord root" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration value" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Duration unit" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Quality" })).toBeInTheDocument();
@@ -88,7 +89,8 @@ describe("SongControls", () => {
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
 
-    await user.click(within(screen.getByRole("group", { name: "Chord root" })).getByRole("button", { name: "A vi" }));
+    await user.click(screen.getByRole("combobox", { name: "Chord root" }));
+    await user.click(screen.getByRole("option", { name: /^vi\b.*\bA\b.*min/ }));
     // Set duration value to 2 via stepper
     fireEvent.click(screen.getByLabelText(/Increase Duration value/i));
     // Set duration unit to Bar
@@ -153,15 +155,26 @@ describe("SongControls", () => {
     expect(screen.queryByRole("switch", { name: "Progression mode" })).not.toBeInTheDocument();
   });
 
+  it("renders the chord root as a grouped dropdown (no DegreeGrid)", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.queryByRole("group", { name: "Chord root" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Chord root" })).toBeInTheDocument();
+  });
+
   it("renders the Preset in its own card before Key, menu out of the Progression header", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     const presetHeading = screen.getByRole("heading", { name: "Preset" });
     const keyHeading = screen.getByRole("heading", { name: "Key" });
     expect(presetHeading).toBeInTheDocument();
-    // Preset heading comes before Key heading in document order.
     expect(presetHeading.compareDocumentPosition(keyHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    // The preset trigger button still exists (now inside the Preset card).
     expect(screen.getByRole("button", { name: "Sequence" })).toBeInTheDocument();
+  });
+
+  it("renders a quality lock toggle button (unpressed by default)", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    const lock = screen.getByRole("button", { name: /lock quality/i });
+    expect(lock).toBeInTheDocument();
+    expect(lock).toHaveAttribute("aria-pressed", "false");
   });
 
   it("has no accessibility violations", async () => {
@@ -188,6 +201,21 @@ describe("SongControls playback lock (R1-T2)", () => {
 
     expect(keyCard.querySelector("[data-locked='true']")).toBeInTheDocument();
     expect(progressionCard.querySelector("[data-locked='true']")).toBeInTheDocument();
+  });
+
+  it("editor eyebrow reads 'Playing' during playback and 'Editing' otherwise", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    const { container } = renderWithStore(
+      <TooltipProvider><SongControls /></TooltipProvider>,
+      store,
+    );
+    const header = () =>
+      container.querySelector('[class*="editor-panel-header"]') as HTMLElement;
+    expect(within(header()).getByText(/^Editing$/i)).toBeInTheDocument();
+
+    act(() => { store.set(setProgressionPlayingAtom, true); });
+    expect(within(header()).getByText(/^Playing$/i)).toBeInTheDocument();
+    expect(within(header()).queryByText(/^Editing$/i)).not.toBeInTheDocument();
   });
 
   it("does NOT lock the TIME or BACKING TRACK cards while playing", () => {
@@ -328,10 +356,12 @@ describe("SongControls CHORDS list", () => {
     localStorage.clear();
   });
 
-  it("uses the section label 'Progression' (not 'Chords' or 'Steps')", () => {
+  it("uses the section card label 'Progression' (not 'Chords')", () => {
     const { getByText, queryByText } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(getByText("Progression")).toBeTruthy();
-    expect(queryByText("Steps")).toBeNull();
+    expect(queryByText("Chords")).toBeNull();
+    // "Steps" is the intentional caption for the chord list (refined design).
+    expect(getByText("Steps")).toBeTruthy();
   });
 
   it("rows do not contain the word 'Step'", () => {
@@ -383,7 +413,7 @@ describe("SongControls QUALITY dropdown", () => {
     expect(store.get(progressionStepsAtom)[0]?.qualityOverride).toBe("maj7");
   });
 
-  it("shows the selected root in the DegreeGrid when a quality override is set", () => {
+  it("shows the selected root in the chord-root dropdown when a quality override is set", () => {
     const store = makeAtomStore([
       ...BASE_SEEDS,
       [progressionStepsAtom, [
@@ -391,21 +421,23 @@ describe("SongControls QUALITY dropdown", () => {
       ]],
     ]);
     renderWithStore(<SongControls />, store);
-    // DegreeGrid shows the resolved root (G for V in C Major) as pressed
-    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
-    expect(within(degreeGroup).getByRole("button", { name: "G V", pressed: true })).toBeInTheDocument();
+    // The chord-root combobox reflects the resolved root (G for V in C Major).
+    const rootCombo = screen.getByRole("combobox", { name: "Chord root" });
+    expect(rootCombo).toHaveTextContent(/G/);
   });
 });
 
 describe("SongControls DEGREE", () => {
-  it("renders the DegreeGrid with all 12 chromatic root cells", () => {
+  it("renders the chord-root dropdown with all 12 chromatic roots", async () => {
     const { getByRole } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const group = getByRole("group", { name: "Chord root" });
-    expect(group).toBeTruthy();
-    // DegreeGrid always renders all 12 notes; no Off sentinel
-    const cells = within(group).getAllByRole("button");
-    expect(cells.length).toBe(12);
-    expect(within(group).queryByRole("button", { name: "Off" })).toBeNull();
+    const user = userEvent.setup();
+    const combo = getByRole("combobox", { name: "Chord root" });
+    expect(combo).toBeTruthy();
+    await user.click(combo);
+    // The grouped dropdown lists all 12 chromatic roots; no Off sentinel.
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBe(12);
+    expect(screen.queryByRole("option", { name: "Off" })).toBeNull();
   });
 });
 
@@ -509,11 +541,12 @@ describe("SongControls v2.0", () => {
 });
 
 describe("SongControls v2.0 chord-edit pane", () => {
-  it("renders a 12-cell DegreeGrid (no separate Degree ToggleBar in the edit pane)", () => {
+  it("renders a 12-root chord-root dropdown (no separate Degree ToggleBar in the edit pane)", async () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const degreeGrid = screen.getByRole("group", { name: "Chord root" });
-    const cells = within(degreeGrid).getAllByRole("button");
-    expect(cells.length).toBeGreaterThanOrEqual(12);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("combobox", { name: "Chord root" }));
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBeGreaterThanOrEqual(12);
   });
 
   it("does not render a Roman-numeral-only Degree ToggleBar in the edit pane", () => {
@@ -531,22 +564,23 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
 
   it("editor pane spans the full Inspector row (span=6)", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    // The editor-cell wrapper sits inside a .prop with data-span="6"
-    const editorCell = container.querySelector("[class*='editor-cell']");
-    expect(editorCell).toBeTruthy();
-    const propWrapper = editorCell?.closest("[data-span]");
+    // The master-detail wrapper sits inside a .prop with data-span="6"
+    const masterDetail = container.querySelector("[class*='progression-master-detail']");
+    expect(masterDetail).toBeTruthy();
+    const propWrapper = masterDetail?.closest("[data-span]");
     expect(propWrapper?.getAttribute("data-span")).toBe("6");
   });
 
-  it("renders Duration and Quality in a 2-column editor-grid", () => {
+  it("renders the chord list and the editor grid in the master-detail pane", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const editorCell = container.querySelector("[class*='editor-cell']");
-    expect(editorCell).toBeTruthy();
-    const editorGrid = editorCell?.querySelector("[class*='editor-grid']");
-    expect(editorGrid).toBeTruthy();
+    const masterDetail = container.querySelector("[class*='progression-master-detail']");
+    expect(masterDetail).toBeTruthy();
+    // Left pane: the chord list (one row per step). Right pane: the editor grid.
+    expect(masterDetail?.querySelector("ul")).toBeTruthy();
+    expect(masterDetail?.querySelector("[class*='editor-grid']")).toBeTruthy();
   });
 
-  it("selecting a borrowed degree cell clears any existing quality override", () => {
+  it("selecting a borrowed/chromatic root clears any existing quality override", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -556,19 +590,15 @@ describe("SongControls G11c: editor pane full-width + 2-col grid + borrowed qual
       [activeProgressionStepIndexAtom, 0],
     ]);
     renderWithStore(<SongControls />, store);
+    const user = userEvent.setup();
 
-    // In C Major, D# / Eb is a borrowed (chromatic) cell — not in key
-    const degreeGroup = screen.getByRole("group", { name: "Chord root" });
-    // Borrowed cells have aria-label pattern: "numeral note" (e.g. "♯ii D#" or "♭iii Eb")
-    const borrowedCells = within(degreeGroup)
-      .getAllByRole("button")
-      .filter((btn) => btn.getAttribute("data-in-key") === "false");
-    // Click the first borrowed cell (D#/Eb, offset 3 from C)
-    const ebCell = borrowedCells.find((btn) =>
-      /d#|eb|d♯|e♭/i.test(btn.getAttribute("aria-label") ?? ""),
-    );
-    expect(ebCell).toBeTruthy();
-    fireEvent.click(ebCell!);
+    // In C Major, D# / Eb is a borrowed/chromatic (out-of-scale) root.
+    await user.click(screen.getByRole("combobox", { name: "Chord root" }));
+    const ebOption = screen
+      .getAllByRole("option")
+      .find((opt) => /d#|eb|d♯|e♭/i.test(opt.textContent ?? ""));
+    expect(ebOption).toBeTruthy();
+    await user.click(ebOption!);
 
     const step = store.get(progressionStepsAtom)[0];
     expect(step.qualityOverride).toBeNull();
@@ -604,7 +634,7 @@ describe("SongControls width sweep (Plan H-T3)", () => {
     expect(rootCombo?.closest("[data-width='fixed']")).toBeNull();
   });
 
-  it("Quality select uses fixed width 9rem", () => {
+  it("Quality select uses fixed width 7rem", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     // Quality combobox is aria-labelledby a label with text "Quality"
     const allCombos = container.querySelectorAll("[role='combobox']");
@@ -617,7 +647,7 @@ describe("SongControls width sweep (Plan H-T3)", () => {
     expect(qualityCombo).toBeTruthy();
     const wrapper = qualityCombo?.closest("[data-width='fixed']");
     expect(wrapper).toBeTruthy();
-    expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("9rem");
+    expect((wrapper as HTMLElement).style.getPropertyValue("--labeled-select-width")).toBe("7rem");
   });
 
   it("Scale select uses fill width (no data-width='fixed')", () => {
@@ -702,22 +732,34 @@ describe("SongControls grid layout", () => {
     expect(screen.queryByRole("switch", { name: "Loop" })).not.toBeInTheDocument();
   });
 
-  it("shows pill + chord-label + counter header for the active chord", () => {
+  it("shows the editor header: degree badge + chord identity + pager", () => {
     const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    // The pill class uses CSS Modules so query by role within the header element.
-    // SongControls now nests sections inside InspectorCard <header>s, so target
-    // the editor's header specifically by locating the chord label first.
     const editorHeader = container
-      .querySelector('[class*="editor-header"]') as HTMLElement | null;
+      .querySelector('[class*="editor-panel-header"]') as HTMLElement | null;
     expect(editorHeader).toBeInTheDocument();
-    // Chord label shows the resolved chord name
-    expect(within(editorHeader!).getByText("C major")).toBeInTheDocument();
-    // Counter shows "Chord 1 / 2" (BASE_SEEDS has 2 steps, index 0 active)
-    expect(within(editorHeader!).getByText(/Chord 1 \/ 2/i)).toBeInTheDocument();
-    // Pill is present (aria-hidden, so not queryable by accessible name)
-    const pillEl = editorHeader!.querySelector("[aria-hidden='true']");
-    expect(pillEl).toBeInTheDocument();
-    expect(pillEl?.textContent?.trim()).toBe("I");
+    // "Editing" eyebrow
+    expect(within(editorHeader!).getByText(/^Editing$/i)).toBeInTheDocument();
+    // Chord identity: note + quality word, stated once (split across spans)
+    const name = editorHeader!.querySelector("[class*='editor-chord-name']");
+    expect(name?.textContent?.replace(/\s+/g, " ").trim()).toBe("C major");
+    // Pager counter "1 / 2" (BASE_SEEDS has 2 steps, index 0 active)
+    const position = editorHeader!.querySelector("[class*='editor-position']");
+    expect(position?.textContent?.replace(/\s+/g, " ").trim()).toBe("1 / 2");
+    // Pager step-through buttons
+    expect(within(editorHeader!).getByRole("button", { name: /previous chord/i })).toBeInTheDocument();
+    expect(within(editorHeader!).getByRole("button", { name: /next chord/i })).toBeInTheDocument();
+    // Degree badge present (aria-hidden)
+    const badge = editorHeader!.querySelector("[class*='editor-degree-badge']");
+    expect(badge?.textContent?.trim()).toBe("I");
+  });
+
+  it("shows the chord-tones readout for the active chord", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    // BASE_SEEDS step 0 = I = C major → tones C / E / G with degrees R / 3 / 5.
+    const readout = screen.getByRole("group", { name: "Notes" });
+    expect(within(readout).getByText("R")).toBeInTheDocument();
+    expect(within(readout).getByText("3")).toBeInTheDocument();
+    expect(within(readout).getByText("5")).toBeInTheDocument();
   });
 
   it("renders the rehosted backing-track controls", () => {
@@ -725,16 +767,6 @@ describe("SongControls grid layout", () => {
     expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
     expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
-  });
-
-  it("renders the static progression hint with highlighted Voicing and lens terms", () => {
-    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
-    const hint = screen.getByTestId("progression-help-text");
-    expect(hint).toHaveTextContent(
-      "Voicing & lens for this chord live on the Overlay tab.",
-    );
-    expect(within(hint).getByText("Voicing")).toHaveClass("progressionHelpStrong");
-    expect(within(hint).getByText("lens")).toHaveClass("progressionHelpStrong");
   });
 
   it("asks the user to add a chord when the progression is empty", () => {
