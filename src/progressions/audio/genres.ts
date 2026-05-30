@@ -17,13 +17,13 @@ export const GENRE_STYLES: readonly GenreStyle[] = [
   {
     id: "pop", label: "Pop", chordInstrument: "piano",
     chordPattern: "straight-quarters", bassPattern: "root-fifth",
-    drumPattern: "pop", drumVariations: [],
+    drumPattern: "pop", drumVariations: ["open-hat-and-of-4"],
     tempoRange: [100, 130], suggestedTempo: 115, swing: 0,
   },
   {
     id: "rock", label: "Rock", chordInstrument: "strum",
     chordPattern: "pop-8ths", bassPattern: "pedal",
-    drumPattern: "rock", drumVariations: [],
+    drumPattern: "rock", drumVariations: ["crash-bar-1"],
     tempoRange: [110, 140], suggestedTempo: 120, swing: 0,
   },
   {
@@ -47,7 +47,7 @@ export const GENRE_STYLES: readonly GenreStyle[] = [
   {
     id: "funk", label: "Funk", chordInstrument: "strum",
     chordPattern: "offbeat-skank", bassPattern: "funk-syncopated",
-    drumPattern: "funk", drumVariations: [],
+    drumPattern: "funk", drumVariations: ["open-hat-and-of-4"],
     tempoRange: [90, 120], suggestedTempo: 100, swing: 0,
   },
   {
