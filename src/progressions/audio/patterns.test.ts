@@ -170,3 +170,20 @@ describe("funk-syncopated bass pattern", () => {
     expect(byBeat.get(2.75)!).toBeLessThan(byBeat.get(1.5)!);
   });
 });
+
+describe("pedal bass pattern", () => {
+  const pedal = getBassPattern("pedal")!;
+
+  it("is a staccato eighth-note pulse on the root", () => {
+    expect(pedal.hits.map((h) => h.beat)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]);
+    expect(pedal.hits.every((h) => h.note === "root")).toBe(true);
+    expect(pedal.hits.every((h) => h.articulation === "staccato")).toBe(true);
+  });
+
+  it("accents beat 1 hardest and the and-of-3 push softly", () => {
+    const byBeat = new Map(pedal.hits.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(0)).toBe(1);
+    expect(byBeat.get(2)!).toBeGreaterThan(byBeat.get(2.5)!);
+    expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(0.5)!);
+  });
+});
