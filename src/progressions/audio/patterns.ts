@@ -174,19 +174,19 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     id: "arpeggiated",
     label: "Arpeggiated",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 1, velocity: 0.8, note: "third" },
-      { beat: 2, velocity: 0.85, note: "fifth" },
-      { beat: 3, velocity: 0.7, note: "octave" },
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 1, velocity: 0.8, note: "third", articulation: "legato" },
+      { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
+      { beat: 3, velocity: 0.7, note: "octave", articulation: "legato" },
     ],
   },
   {
     id: "shuffle",
     label: "Shuffle Bass",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 2, velocity: 0.85, note: "fifth" },
-      { beat: 3.5, velocity: 0.6, note: "root" },
+      { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
+      { beat: 2, velocity: 0.85, note: "fifth", articulation: "staccato" },
+      { beat: 3.5, velocity: 0.6, note: "root", articulation: "staccato" },
     ],
   },
   {

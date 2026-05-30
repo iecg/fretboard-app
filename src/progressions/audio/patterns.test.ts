@@ -245,3 +245,15 @@ describe("jazz-comp chord pattern", () => {
     expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(1.5)!);
   });
 });
+
+describe("bass articulation polish", () => {
+  it("plays the arpeggiated (ballad) bass legato so notes connect", () => {
+    const arp = getBassPattern("arpeggiated")!;
+    expect(arp.hits.every((h) => h.articulation === "legato")).toBe(true);
+  });
+
+  it("gives the shuffle (blues) bass a staccato bounce", () => {
+    const shuffle = getBassPattern("shuffle")!;
+    expect(shuffle.hits.every((h) => h.articulation === "staccato")).toBe(true);
+  });
+});
