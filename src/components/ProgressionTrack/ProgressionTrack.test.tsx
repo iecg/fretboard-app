@@ -33,6 +33,36 @@ describe("ProgressionTrack", () => {
       disconnect() {}
     });
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 1000 });
+    Object.defineProperty(HTMLElement.prototype, 'animate', {
+      configurable: true,
+      /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+      value: function(keyframes: any[], options: any) {
+        const el = this;
+        let _currentTime = 0;
+        let _playState = 'running';
+        let _duration = options.duration;
+        const startX = parseFloat(keyframes[0].transform.match(/translateX\((.+)px\)/)?.[1] || "0");
+        const endX = parseFloat(keyframes[1].transform.match(/translateX\((.+)px\)/)?.[1] || "0");
+        const anim = {
+          get currentTime() { return _currentTime; },
+          set currentTime(v) { 
+            _currentTime = v; 
+            const pct = _currentTime / _duration;
+            el.style.transform = `translateX(${startX + (endX - startX) * pct}px)`;
+          },
+          get playState() { return _playState; },
+          play() { _playState = 'running'; },
+          pause() { _playState = 'paused'; },
+          cancel() { _playState = 'idle'; },
+          effect: {
+            getTiming() { return { duration: _duration }; },
+            updateTiming(timing: any) { _duration = timing.duration; }
+          }
+        };
+        return anim;
+      }
+      /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+    });
   });
 
   it("renders the timeline group, ruler, and chord blocks", () => {

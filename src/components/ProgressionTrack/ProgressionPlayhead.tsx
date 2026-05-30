@@ -54,7 +54,13 @@ export function ProgressionPlayhead({
 
     const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
 
+    let anim: Animation | null = null;
+
     const setFallbackPosition = () => {
+      if (anim) {
+        anim.cancel();
+        anim = null;
+      }
       const pct = (stepStartBar - 1) / safeDisplayTotal;
       el.style.transform = `translateX(${pct * parentWidth}px)`;
     };
@@ -67,18 +73,48 @@ export function ProgressionPlayhead({
     setFallbackPosition();
 
     const unsubscribe = subscribeVisualClock((tl) => {
-      if (!tl.paused) {
-        const pct = (tl.globalFraction * totalDurationBars / safeDisplayTotal);
-        const clampedPct = Math.max(0, Math.min(1, pct));
-        el.style.transform = `translateX(${clampedPct * parentWidth}px)`;
-      } else {
+      if (tl.paused) {
         setFallbackPosition();
+        return;
+      }
+
+      const totalDurationMs = tl.totalDurationSec * 1000;
+      const expectedTimeMs = tl.globalFraction * totalDurationMs;
+      const endPct = totalDurationBars / safeDisplayTotal;
+
+      if (!anim) {
+        anim = el.animate([
+          { transform: 'translateX(0px)' },
+          { transform: `translateX(${endPct * parentWidth}px)` }
+        ], {
+          duration: totalDurationMs,
+          fill: 'forwards'
+        });
+      }
+
+      const timing = anim.effect?.getTiming();
+      if (timing && timing.duration !== totalDurationMs) {
+        anim.effect?.updateTiming({ duration: totalDurationMs });
+      }
+
+      if (anim.playState !== 'running') {
+        anim.play();
+      }
+
+      if (anim.currentTime !== null) {
+        const drift = Math.abs((anim.currentTime as number) - expectedTimeMs);
+        if (drift > 32) {
+          anim.currentTime = expectedTimeMs;
+        }
       }
     });
 
     return () => {
       observer.disconnect();
       unsubscribe();
+      if (anim) {
+        anim.cancel();
+      }
     };
   }, [playing, stepStartBar, totalBarsForDisplay, totalDurationBars]);
 

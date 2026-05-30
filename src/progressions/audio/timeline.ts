@@ -52,6 +52,7 @@ export interface TimelinePosition {
   /** Position within current step, 0..1. */
   localFraction: number;  // 0..1 within current step
   paused: boolean;
+  totalDurationSec: number;
 }
 
 /**
@@ -119,19 +120,19 @@ export function getTimelinePosition(): TimelinePosition | null {
   if (state.paused) {
     const localFraction = 0;
     const globalFraction = state.active.cumulativeStartSec / Math.max(0.001, state.active.totalDurationSec);
-    return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: true };
+    return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: true, totalDurationSec: state.active.totalDurationSec };
   }
   const audio = ensureProgressionAudio();
   if (!audio) {
     const globalFraction = state.active.cumulativeStartSec / Math.max(0.001, state.active.totalDurationSec);
-    return { stepIndex: state.active.stepIndex, globalFraction, localFraction: 0, paused: false };
+    return { stepIndex: state.active.stepIndex, globalFraction, localFraction: 0, paused: false, totalDurationSec: state.active.totalDurationSec };
   }
   const elapsed = audio.ctx.currentTime - state.active.audioStartTime;
   const localFraction = elapsed / Math.max(0.001, state.active.durationSec);
   const cumulativeElapsed = state.active.cumulativeStartSec + elapsed;
   const globalFraction = cumulativeElapsed / Math.max(0.001, state.active.totalDurationSec);
   
-  return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: false };
+  return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: false, totalDurationSec: state.active.totalDurationSec };
 }
 
 /**
