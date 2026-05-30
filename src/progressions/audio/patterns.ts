@@ -26,6 +26,8 @@ export type BassNoteRole =
   | "chromatic-approach"
   | "flat-seventh";
 
+export type BassArticulation = "staccato" | "legato" | "normal";
+
 interface ChordHit {
   beat: number;
   velocity: number;
@@ -44,6 +46,8 @@ interface CatalogBassHit {
   beat: number;
   velocity: number;
   note: BassNoteRole;
+  /** Note length hint. Omitted === "normal" === patch-default ring. */
+  articulation?: BassArticulation;
 }
 
 export interface CatalogBassPattern {

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildAllLayersAsync } from "./buildAllLayers";
+import { buildAllLayersAsync, articulationToDurationSec } from "./buildAllLayers";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
@@ -135,6 +135,17 @@ describe("buildAllLayers", () => {
     expect(out.metronome.map((e) => e.value.beatInBar)).toEqual([1, 2, 3, 1, 2, 3]);
   });
 
+  it("bass events with no articulation have undefined durationSec", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      steps: [step({ id: "a", root: "C", quality: "M" })],
+    });
+    expect(out.bass.length).toBeGreaterThan(0);
+    for (const ev of out.bass) {
+      expect(ev.value.durationSec).toBeUndefined();
+    }
+  });
+
   it("passes nextChordRoot for chromatic-approach bass only on the LAST bar of a step", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
@@ -151,5 +162,22 @@ describe("buildAllLayers", () => {
     expect(approachBar1).toBeDefined();
     expect(approachBar2).toBeDefined();
     expect(approachBar2?.value.note).not.toBe(approachBar1?.value.note);
+  });
+});
+
+describe("articulationToDurationSec", () => {
+  const spb = 0.5; // 120 bpm → 0.5 s/beat
+
+  it("maps staccato to a short fraction of the beat", () => {
+    expect(articulationToDurationSec("staccato", spb)).toBeCloseTo(0.15, 5); // 0.3 * 0.5
+  });
+
+  it("maps legato to a near-full beat", () => {
+    expect(articulationToDurationSec("legato", spb)).toBeCloseTo(0.45, 5); // 0.9 * 0.5
+  });
+
+  it("returns undefined for normal/omitted articulation (patch default)", () => {
+    expect(articulationToDurationSec("normal", spb)).toBeUndefined();
+    expect(articulationToDurationSec(undefined, spb)).toBeUndefined();
   });
 });
