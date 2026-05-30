@@ -39,7 +39,23 @@ export function ProgressionPlayhead({
 }: ProgressionPlayheadProps) {
   const ref = useRef<HTMLSpanElement | null>(null);
 
+  // 1. Fallback positioning when not playing
   useEffect(() => {
+    if (playing) return;
+    
+    const el = ref.current;
+    if (!el || !el.parentElement) return;
+    
+    const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
+    const parentWidth = el.parentElement.clientWidth;
+    const pct = (stepStartBar - 1) / safeDisplayTotal;
+    el.style.transform = `translateX(${pct * parentWidth}px)`;
+  }, [playing, stepStartBar, totalBarsForDisplay]);
+
+  // 2. WAAPI loop when playing
+  useEffect(() => {
+    if (!playing || totalDurationBars <= 0) return;
+
     const el = ref.current;
     const parent = el?.parentElement;
     if (!el || !parent) return;
@@ -53,30 +69,10 @@ export function ProgressionPlayhead({
     observer.observe(parent);
 
     const safeDisplayTotal = Math.max(1, totalBarsForDisplay);
-
     let anim: Animation | null = null;
 
-    const setFallbackPosition = () => {
-      if (anim) {
-        anim.cancel();
-        anim = null;
-      }
-      const pct = (stepStartBar - 1) / safeDisplayTotal;
-      el.style.transform = `translateX(${pct * parentWidth}px)`;
-    };
-
-    if (!playing) {
-      setFallbackPosition();
-      return () => observer.disconnect();
-    }
-
-    setFallbackPosition();
-
     const unsubscribe = subscribeVisualClock((tl) => {
-      if (tl.paused) {
-        setFallbackPosition();
-        return;
-      }
+      if (tl.paused) return;
 
       const totalDurationMs = tl.totalDurationSec * 1000;
       const expectedTimeMs = tl.globalFraction * totalDurationMs;
@@ -116,7 +112,7 @@ export function ProgressionPlayhead({
         anim.cancel();
       }
     };
-  }, [playing, stepStartBar, totalBarsForDisplay, totalDurationBars]);
+  }, [playing, totalBarsForDisplay, totalDurationBars]);
 
   return (
     <span

@@ -199,7 +199,7 @@ describe("ProgressionPlayhead", () => {
     );
 
     const playhead = container.querySelector("[data-testid='progression-playhead']") as HTMLElement;
-    expect(playhead.style.transform).toBe("translateX(0px)");
+    expect(playhead.style.transform).toBe("");
 
     setActiveStep(0, 0, 1.0, 0, 4.0);
 
