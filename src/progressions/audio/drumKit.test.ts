@@ -390,5 +390,19 @@ describe("drumKit — Tone backend", () => {
       expect(opts.octaves).toBe(kit.voices.kick!.octaves);
       expect(opts.envelope.decay).toBeCloseTo(kit.voices.kick!.envelope!.decay!, 4);
     });
+
+    it("applies the kit ride volume override so the ride can be tamed below 0dB", () => {
+      const kit = getDrumKitPatch("kit-jazz-brush")!;
+      expect(kit.voices.ride!.volume).toBe(-10); // tamed jazz ride
+      scheduleRide({} as AudioNode, 0, { velocity: 1, kit });
+      const [opts] = metalSpies.ctorSpy.mock.calls[0]!;
+      expect(opts.volume).toBe(kit.voices.ride!.volume);
+    });
+
+    it("defaults the ride volume to 0dB when the kit omits it", () => {
+      scheduleRide({} as AudioNode, 0, { velocity: 1 });
+      const [opts] = metalSpies.ctorSpy.mock.calls[0]!;
+      expect(opts.volume).toBe(0);
+    });
   });
 });

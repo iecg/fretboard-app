@@ -76,7 +76,7 @@ export interface DrumVoiceParams {
   snare?: { noiseType?: "white" | "pink"; envelope?: Partial<EnvelopeSpec> };
   hihat?: { decay?: number; resonance?: number; octaves?: number };
   openHat?: { decay?: number };
-  ride?: { decay?: number; harmonicity?: number; resonance?: number };
+  ride?: { decay?: number; harmonicity?: number; resonance?: number; volume?: number };
 }
 
 export interface DrumKitPatch {

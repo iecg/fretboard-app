@@ -223,9 +223,13 @@ describe("jazz-ride drum pattern", () => {
     expect(jazz.kicks.every((h) => h.velocity <= 0.18)).toBe(true);
   });
 
-  it("plays foot-chick hats on 2 and 4 and a single soft ghost snare", () => {
+  it("plays foot-chick hats on 2 and 4 and audible soft brush taps", () => {
     expect(jazz.hats.map((h) => h.beat)).toEqual([1, 3]);
-    expect(jazz.snares).toEqual([{ beat: 2.5, velocity: 0.2 }]);
+    // Brush taps on the backbeat (musical 2 & 4) plus the ghost — present
+    // enough to read under the ride, still soft (all <= 0.3).
+    expect(jazz.snares.map((h) => h.beat)).toEqual([1, 2.5, 3]);
+    expect(jazz.snares.every((h) => h.velocity <= 0.3)).toBe(true);
+    expect(jazz.snares.length).toBeGreaterThanOrEqual(3);
   });
 });
 
@@ -252,9 +256,12 @@ describe("bass articulation polish", () => {
     expect(arp.hits.every((h) => h.articulation === "legato")).toBe(true);
   });
 
-  it("gives the shuffle (blues) bass a staccato bounce", () => {
+  it("keeps the shuffle (blues) bass legato so the upright stays audible", () => {
+    // Regression guard: the shuffle runs on the sustain:0 bass-upright patch.
+    // Staccato clips the note so short it is effectively silent. It must stay
+    // non-staccato (legato) — swing provides the bounce.
     const shuffle = getBassPattern("shuffle")!;
-    expect(shuffle.hits.every((h) => h.articulation === "staccato")).toBe(true);
+    expect(shuffle.hits.every((h) => h.articulation === "legato")).toBe(true);
   });
 });
 

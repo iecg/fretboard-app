@@ -23,7 +23,7 @@ export const GENRE_STYLES: readonly GenreStyle[] = [
   {
     id: "rock", label: "Rock", chordInstrument: "strum",
     chordPattern: "pop-8ths", bassPattern: "pedal",
-    drumPattern: "rock", drumVariations: ["crash-bar-1"],
+    drumPattern: "rock", drumVariations: ["open-hat-and-of-4"],
     tempoRange: [110, 140], suggestedTempo: 120, swing: 0,
   },
   {

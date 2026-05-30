@@ -184,9 +184,13 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     id: "shuffle",
     label: "Shuffle Bass",
     hits: [
-      { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
-      { beat: 2, velocity: 0.85, note: "fifth", articulation: "staccato" },
-      { beat: 3.5, velocity: 0.6, note: "root", articulation: "staccato" },
+      // Legato, not staccato: shuffle runs on the sustain:0 `bass-upright`
+      // patch whose filter envelope closes to a 150Hz cutoff. Clipping the
+      // note to staccato (~0.3·beat) leaves only a dull, near-inaudible stub.
+      // Swing supplies the bounce; the upright stays connected.
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
+      { beat: 3.5, velocity: 0.6, note: "root", articulation: "legato" },
     ],
   },
   {
@@ -269,7 +273,13 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
       { beat: 2, velocity: 0.18 },
       { beat: 3, velocity: 0.15 },
     ],
-    snares: [{ beat: 2.5, velocity: 0.2 }],
+    snares: [
+      // Brush taps on the backbeat (musical 2 & 4) plus the original soft
+      // ghost — gives the brushes audible presence under the ride.
+      { beat: 1, velocity: 0.3 },
+      { beat: 2.5, velocity: 0.22 },
+      { beat: 3, velocity: 0.3 },
+    ],
     hats: [
       { beat: 1, velocity: 0.5 },
       { beat: 3, velocity: 0.5 },

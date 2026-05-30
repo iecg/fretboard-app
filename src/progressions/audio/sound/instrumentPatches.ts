@@ -132,7 +132,10 @@ export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [
       kick: { pitchDecay: 0.05, octaves: 5, envelope: { decay: 0.3 } },
       snare: { noiseType: "pink", envelope: { attack: 0.004, decay: 0.16 } },
       hihat: { decay: 0.05, resonance: 3000 },
-      ride: { decay: 1.2, harmonicity: 3.1, resonance: 2400 },
+      // Tamed ride: −10dB output so it sits under the brushes (it was
+      // dominating), shorter decay + lower resonance so it reads as a soft
+      // jazz ride rather than a piercing metallic wash.
+      ride: { decay: 1.0, harmonicity: 2.8, resonance: 1800, volume: -10 },
     },
   },
   {

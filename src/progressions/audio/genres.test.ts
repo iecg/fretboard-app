@@ -49,7 +49,7 @@ describe("genre drum variations", () => {
   it("wires per-bar-safe variations to funk, pop, and rock", () => {
     expect(getGenreStyle("funk")!.drumVariations).toContain("open-hat-and-of-4");
     expect(getGenreStyle("pop")!.drumVariations).toContain("open-hat-and-of-4");
-    expect(getGenreStyle("rock")!.drumVariations).toContain("crash-bar-1");
+    expect(getGenreStyle("rock")!.drumVariations).toContain("open-hat-and-of-4");
   });
 
   it("does NOT assign fill-every-4 to any genre (barInterval not yet honored)", () => {
