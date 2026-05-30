@@ -298,6 +298,7 @@ export const activeProgressionStepIndexAtom = atom(0);
  * Exported for tests and for the snapshot hook; UI code should NOT read this
  * directly.
  */
+export const fastDisplayedStepIndexPrimitiveAtom = atom(0);
 export const displayedStepIndexPrimitiveAtom = atom(0);
 
 /**

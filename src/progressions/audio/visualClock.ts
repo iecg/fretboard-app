@@ -1,6 +1,6 @@
 import { startTransition } from "react";
 import type { Store } from "../../store/storeTypes";
-import { displayedStepIndexPrimitiveAtom } from "../../store/progressionAtoms";
+import { displayedStepIndexPrimitiveAtom, fastDisplayedStepIndexPrimitiveAtom } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 import { getTimelinePosition } from "./timeline";
 
@@ -28,6 +28,7 @@ function frame(): void {
     store.set(progressionVisualFrameAtom, tl);
     if (!tl.paused && tl.stepIndex !== lastWritten) {
       lastWritten = tl.stepIndex;
+      store.set(fastDisplayedStepIndexPrimitiveAtom, tl.stepIndex);
       startTransition(() => {
         store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
       });
@@ -37,6 +38,7 @@ function frame(): void {
     store.set(progressionVisualFrameAtom, null);
     if (lastWritten !== -1) {
       lastWritten = -1;
+      store.set(fastDisplayedStepIndexPrimitiveAtom, 0);
       startTransition(() => {
         store.set(displayedStepIndexPrimitiveAtom, 0);
       });

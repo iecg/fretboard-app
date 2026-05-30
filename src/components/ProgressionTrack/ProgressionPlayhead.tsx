@@ -98,7 +98,11 @@ export function ProgressionPlayhead({
       }
 
       if (anim.currentTime !== null) {
-        const drift = Math.abs((anim.currentTime as number) - expectedTimeMs);
+        const current = anim.currentTime as number;
+        const drift = Math.abs(current - expectedTimeMs);
+        if (drift > 20) {
+          console.log(`[Playhead Drift] stepIndex=${tl.stepIndex} expected=${expectedTimeMs.toFixed(1)} actual=${current.toFixed(1)} drift=${drift.toFixed(1)}`);
+        }
         if (drift > 150) {
           anim.currentTime = expectedTimeMs;
         }

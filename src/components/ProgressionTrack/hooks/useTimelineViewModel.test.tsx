@@ -7,7 +7,7 @@ import * as builderModule from "./buildTimelineViewModel";
 import { useTimelineViewModel } from "./useTimelineViewModel";
 import {
   beatsPerBarAtom,
-  displayedStepIndexPrimitiveAtom,
+  fastDisplayedStepIndexPrimitiveAtom,
   progressionStepsAtom,
   setProgressionPlayingAtom,
 } from "../../../store/progressionAtoms";
@@ -48,7 +48,7 @@ describe("useTimelineViewModel", () => {
     const callCountAfterMount = spy.mock.calls.length;
 
     await act(async () => {
-      store.set(displayedStepIndexPrimitiveAtom, 1);
+      store.set(fastDisplayedStepIndexPrimitiveAtom, 1);
     });
 
     expect(result.current.blockLayouts).toBe(initialBlockLayouts);

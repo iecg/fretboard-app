@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, displayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, fastDisplayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [
@@ -224,8 +224,8 @@ describe("ProgressionTrack", () => {
     // Initial: primitive defaults to 0
     expect(screen.getAllByRole("button")[0]).toHaveAttribute("data-active", "true");
 
-    await act(async () => {
-      store.set(displayedStepIndexPrimitiveAtom, 1);
+    await act(() => {
+      store.set(fastDisplayedStepIndexPrimitiveAtom, 1);
     });
 
     expect(screen.getAllByRole("button")[1]).toHaveAttribute("data-active", "true");
