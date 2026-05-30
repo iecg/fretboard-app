@@ -27,9 +27,7 @@ function frame(): void {
     store.set(progressionVisualFrameAtom, tl);
     if (!tl.paused && tl.stepIndex !== lastWritten) {
       lastWritten = tl.stepIndex;
-      setTimeout(() => {
-        store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
-      }, 0);
+      store.set(displayedStepIndexPrimitiveAtom, tl.stepIndex);
     }
     callbacks.forEach(cb => cb(tl));
   } else {

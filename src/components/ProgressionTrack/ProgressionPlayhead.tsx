@@ -103,7 +103,7 @@ export function ProgressionPlayhead({
 
       if (anim.currentTime !== null) {
         const drift = Math.abs((anim.currentTime as number) - expectedTimeMs);
-        if (drift > 32) {
+        if (drift > 150) {
           anim.currentTime = expectedTimeMs;
         }
       }
