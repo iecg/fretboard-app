@@ -207,11 +207,12 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     id: "funk-syncopated",
     label: "Funk Syncopated",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 0.5, velocity: 0.5, note: "octave" },
-      { beat: 1.5, velocity: 0.7, note: "fifth" },
-      { beat: 2.5, velocity: 0.6, note: "root" },
-      { beat: 3, velocity: 0.8, note: "fifth" },
+      { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
+      { beat: 0.75, velocity: 0.45, note: "root", articulation: "staccato" },
+      { beat: 1.5, velocity: 0.8, note: "octave", articulation: "staccato" },
+      { beat: 2, velocity: 0.6, note: "fifth", articulation: "staccato" },
+      { beat: 2.75, velocity: 0.5, note: "flat-seventh", articulation: "staccato" },
+      { beat: 3.5, velocity: 0.75, note: "root", articulation: "staccato" },
     ],
   },
 ];
