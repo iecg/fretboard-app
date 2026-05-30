@@ -201,3 +201,30 @@ describe("walking bass pattern", () => {
     expect(walking.hits.every((h) => h.articulation === "legato")).toBe(true);
   });
 });
+
+describe("jazz-ride drum pattern", () => {
+  const jazz = getDrumPattern("jazz-ride")!;
+  const vAt = (hits: readonly { beat: number; velocity: number }[], beat: number) =>
+    hits.find((h) => h.beat === beat)?.velocity;
+
+  it("keeps the spang-a-lang ride rhythm", () => {
+    expect(jazz.ride!.map((h) => h.beat)).toEqual([0, 1, 1.5, 2, 3, 3.5]);
+  });
+
+  it("accents the ride on musical beats 2 and 4, skip-notes softest", () => {
+    expect(vAt(jazz.ride!, 1)!).toBeGreaterThan(vAt(jazz.ride!, 0)!);
+    expect(vAt(jazz.ride!, 3)!).toBeGreaterThan(vAt(jazz.ride!, 2)!);
+    expect(vAt(jazz.ride!, 1.5)!).toBeLessThan(vAt(jazz.ride!, 1)!);
+    expect(vAt(jazz.ride!, 3.5)!).toBeLessThan(vAt(jazz.ride!, 3)!);
+  });
+
+  it("feathers a soft four-on-the-floor kick", () => {
+    expect(jazz.kicks.map((h) => h.beat)).toEqual([0, 1, 2, 3]);
+    expect(jazz.kicks.every((h) => h.velocity <= 0.18)).toBe(true);
+  });
+
+  it("plays foot-chick hats on 2 and 4 and a single soft ghost snare", () => {
+    expect(jazz.hats.map((h) => h.beat)).toEqual([1, 3]);
+    expect(jazz.snares).toEqual([{ beat: 2.5, velocity: 0.2 }]);
+  });
+});
