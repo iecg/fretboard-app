@@ -38,4 +38,14 @@ describe("genre mix presets", () => {
       }
     }
   });
+
+  it("seats the jazz ride behind the front line (drums quieter than chord)", () => {
+    const jazz = getGenreMix("jazz")!;
+    expect(jazz.perInstrument.drums.volumeDb).toBeLessThan(jazz.perInstrument.chord.volumeDb);
+  });
+
+  it("pushes funk bass to at least match its chord level", () => {
+    const funk = getGenreMix("funk")!;
+    expect(funk.perInstrument.bass.volumeDb).toBeGreaterThanOrEqual(funk.perInstrument.chord.volumeDb);
+  });
 });
