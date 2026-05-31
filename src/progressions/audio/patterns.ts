@@ -252,6 +252,10 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
   {
     id: "funk-syncopated",
     label: "Funk Syncopated",
+    // JB funk, locked to the one: root anchor on beat 1, a soft root ghost on
+    // the "a" of 1, an octave pop mid-bar, the fifth for color, and a b7 that
+    // leads back to the root. Sparse and staccato so it interlocks with the
+    // chicken-scratch guitar rather than crowding it.
     hits: [
       { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
       { beat: 0.75, velocity: 0.4, note: "root", articulation: "staccato" },
@@ -365,6 +369,9 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
   {
     id: "funk",
     label: "Funk",
+    // Locked on the one: hardest kick on beat 1, a syncopated push on the "a"
+    // of 1, and the "and of 3" anchor — three kicks that lock with the bass
+    // and leave space, rather than a four-on-the-floor thump.
     kicks: [
       { beat: 0, velocity: 1 },
       { beat: 0.75, velocity: 0.55 },
