@@ -156,6 +156,22 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     ],
   },
   {
+    id: "funk-scratch",
+    label: "Funk Scratch",
+    // James Brown chicken-scratch: a hard accented chord stab on the one, then
+    // muted scratch ghosts with deliberate space. The "muted" hits choke short
+    // via the strum voice; the accent rings the patch's (already short) length.
+    hits: [
+      { beat: 0, velocity: 0.95, direction: "down", articulation: "accent" },
+      { beat: 0.5, velocity: 0.28, direction: "up", articulation: "muted" },
+      { beat: 0.75, velocity: 0.3, direction: "up", articulation: "muted" },
+      { beat: 1.5, velocity: 0.4, direction: "up", articulation: "muted" },
+      { beat: 2.5, velocity: 0.28, direction: "up", articulation: "muted" },
+      { beat: 2.75, velocity: 0.3, direction: "up", articulation: "muted" },
+      { beat: 3.5, velocity: 0.35, direction: "up", articulation: "muted" },
+    ],
+  },
+  {
     id: "pop-syncopated-push",
     label: "Pop Syncopated Push",
     hits: [
