@@ -24,6 +24,8 @@ export function useMediaSession() {
       ["play", () => store.set(setProgressionPlayingAtom, true)],
       ["pause", () => store.set(setProgressionPlayingAtom, false)],
       ["stop", () => store.set(stopProgressionPlaybackAtom)],
+      // Disabled during playback — the step index advances automatically
+      // and manual nudging would conflict with the audio timeline.
       [
         "previoustrack",
         () => {
@@ -43,19 +45,28 @@ export function useMediaSession() {
     ];
 
     for (const [action, handler] of handlers) {
-      navigator.mediaSession.setActionHandler(
-        action as MediaSessionAction,
-        handler,
-      );
+      try {
+        navigator.mediaSession.setActionHandler(
+          action as MediaSessionAction,
+          handler,
+        );
+      } catch {
+        // Some browsers throw for unsupported-but-valid action types;
+        // swallow so remaining handlers still register.
+      }
     }
 
     return () => {
       if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
       for (const [action] of handlers) {
-        navigator.mediaSession.setActionHandler(
-          action as MediaSessionAction,
-          null,
-        );
+        try {
+          navigator.mediaSession.setActionHandler(
+            action as MediaSessionAction,
+            null,
+          );
+        } catch {
+          // Same guard as above — non-fatal if an action is unknown.
+        }
       }
     };
   }, [store]);
