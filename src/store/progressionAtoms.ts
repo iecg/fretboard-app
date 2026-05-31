@@ -283,6 +283,7 @@ export const applyGenreStyleAtom = atom(null, (_get, set, genreId: string) => {
   set(progressionDrumPatternAtom, genre.drumPattern);
   set(progressionDrumVariationsAtom, genre.drumVariations);
   set(progressionSwingAtom, genre.swing);
+  set(progressionTempoBpmAtom, genre.suggestedTempo);
 });
 
 export const activeProgressionStepIndexAtom = atom(0);
