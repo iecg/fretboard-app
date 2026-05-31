@@ -94,11 +94,11 @@ describe("instrument patches", () => {
     expect(patch.family).toBe("strum");
     // Root-cause guard: sustain MUST be > 0 so a held stab rings as a strummed
     // chord (sustain:0 made every note die in ~0.18s, the prior bug)...
-    expect(patch.strum!.envelope.sustain).toBeGreaterThan(0);
+    expect(patch.strum!.envelope!.sustain).toBeGreaterThan(0);
     // ...but the default stroke stays short so muted ghosts still scratch and
     // don't bloom like the 1.8s acoustic steel strum.
     expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
     // A short release keeps the choked ghost tight despite the sustain.
-    expect(patch.strum!.envelope.release).toBeLessThanOrEqual(0.15);
+    expect(patch.strum!.envelope!.release).toBeLessThanOrEqual(0.15);
   });
 });

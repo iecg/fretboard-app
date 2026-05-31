@@ -53,12 +53,25 @@ export interface PolyChordSpec {
   shortDurationSec: number;
 }
 
-/** Params for the Karplus-Strong strum/pluck voice. */
+/** Karplus-Strong pluck params (Tone.PluckSynth). Present instead of
+ *  oscillator/envelope for genuinely plucked-string (guitar) strum patches. */
+export interface PluckSpec {
+  attackNoise: number; // pick noise at attack (~0.1..20)
+  dampening: number;   // comb lowpass cutoff (Hz) — brightness
+  resonance: number;   // 0..1 ring/sustain
+  release: number;     // resonance ramp-down on note-off (s)
+}
+
+/** Params for the strum/pluck voice. A patch is either subtractive
+ *  (oscillator + envelope) or plucked (pluck); `strumLagSec` overrides the
+ *  per-note strum stagger. */
 export interface StrumSpec {
-  oscillator: { type: "custom"; partials: number[] };
-  envelope: EnvelopeSpec;
+  oscillator?: { type: "custom"; partials: number[] };
+  envelope?: EnvelopeSpec;
+  pluck?: PluckSpec;
   noteDurationSec: number;
   releaseTailSec: number;
+  strumLagSec?: number;
 }
 
 export interface ChordPatch {
