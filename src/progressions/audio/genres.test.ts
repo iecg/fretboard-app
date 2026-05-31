@@ -51,6 +51,14 @@ describe("genre styles", () => {
   it("wires the funk genre to the chicken-scratch comp", () => {
     expect(getGenreStyle("funk")!.chordPattern).toBe("funk-scratch");
   });
+
+  it("gives funk a James Brown pocket tempo", () => {
+    const funk = getGenreStyle("funk")!;
+    expect(funk.suggestedTempo).toBeGreaterThanOrEqual(104);
+    expect(funk.suggestedTempo).toBeLessThanOrEqual(116);
+    expect(funk.tempoRange[0]).toBeLessThanOrEqual(funk.suggestedTempo);
+    expect(funk.tempoRange[1]).toBeGreaterThanOrEqual(funk.suggestedTempo);
+  });
 });
 
 describe("genre drum variations", () => {
