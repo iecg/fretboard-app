@@ -154,9 +154,9 @@ describe("funk-syncopated bass pattern", () => {
   });
 
   it("uses ghost notes, an octave pop, the fifth, and a b7 color note", () => {
-    expect(funk.hits.map((h) => h.beat)).toEqual([0, 0.75, 1.5, 2, 2.75, 3.5]);
+    expect(funk.hits.map((h) => h.beat)).toEqual([0, 0.75, 1.5, 2.5, 3.5]);
     expect(funk.hits.map((h) => h.note)).toEqual([
-      "root", "root", "octave", "fifth", "flat-seventh", "root",
+      "root", "root", "octave", "fifth", "flat-seventh",
     ]);
   });
 
@@ -167,7 +167,7 @@ describe("funk-syncopated bass pattern", () => {
   it("ghost notes are quieter than accents", () => {
     const byBeat = new Map(funk.hits.map((h) => [h.beat, h.velocity]));
     expect(byBeat.get(0.75)!).toBeLessThan(byBeat.get(0)!);
-    expect(byBeat.get(2.75)!).toBeLessThan(byBeat.get(1.5)!);
+    expect(byBeat.get(2.5)!).toBeLessThan(byBeat.get(1.5)!);
   });
 });
 
@@ -280,14 +280,14 @@ describe("funk drum ghost snares", () => {
   });
 
   it("places snares on the expected 16th-subdivision grid", () => {
-    expect(funk.snares.map((h) => h.beat)).toEqual([0.75, 1, 1.5, 2.25, 3, 3.5]);
+    expect(funk.snares.map((h) => h.beat)).toEqual([1, 1.5, 2.25, 3, 3.5]);
   });
 
   it("locks the kick to a syncopated in-the-pocket funk groove", () => {
     // The funk kick should anchor the one hardest and add a syncopated push
     // (the 'and' of beats) rather than a plain 4-on-the-floor feel.
     const byBeat = new Map(funk.kicks.map((h) => [h.beat, h.velocity]));
-    expect(funk.kicks.map((h) => h.beat)).toEqual([0, 0.75, 2.5, 3.5]);
+    expect(funk.kicks.map((h) => h.beat)).toEqual([0, 0.75, 2.5]);
     expect(byBeat.get(0)).toBe(1); // the one is the hardest
     expect(byBeat.get(0.75)!).toBeLessThan(byBeat.get(0)!); // syncopated push is softer
   });
@@ -333,5 +333,23 @@ describe("funk-scratch chord comp", () => {
     expect(byBeat.get(0)!.articulation).toBe("accent");
     const muted = funk.hits.filter((h) => h.articulation === "muted");
     expect(muted.length).toBeGreaterThanOrEqual(funk.hits.length - 1);
+  });
+});
+
+describe("funk groove locks on the one", () => {
+  it("funk-syncopated bass anchors beat 1 as the velocity-1 root", () => {
+    const bass = getBassPattern("funk-syncopated")!;
+    const one = bass.hits.find((h) => h.beat === 0)!;
+    expect(one.velocity).toBe(1);
+    expect(one.note).toBe("root");
+  });
+
+  it("funk drums put the hardest kick on the one", () => {
+    const funk = getDrumPattern("funk")!;
+    const kickOne = funk.kicks.find((h) => h.beat === 0)!;
+    expect(kickOne.velocity).toBe(1);
+    for (const k of funk.kicks) {
+      if (k.beat !== 0) expect(k.velocity).toBeLessThanOrEqual(kickOne.velocity);
+    }
   });
 });

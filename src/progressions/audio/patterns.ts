@@ -254,11 +254,10 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     label: "Funk Syncopated",
     hits: [
       { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
-      { beat: 0.75, velocity: 0.45, note: "root", articulation: "staccato" },
+      { beat: 0.75, velocity: 0.4, note: "root", articulation: "staccato" },
       { beat: 1.5, velocity: 0.8, note: "octave", articulation: "staccato" },
-      { beat: 2, velocity: 0.6, note: "fifth", articulation: "staccato" },
-      { beat: 2.75, velocity: 0.5, note: "flat-seventh", articulation: "staccato" },
-      { beat: 3.5, velocity: 0.75, note: "root", articulation: "staccato" },
+      { beat: 2.5, velocity: 0.55, note: "fifth", articulation: "staccato" },
+      { beat: 3.5, velocity: 0.7, note: "flat-seventh", articulation: "staccato" },
     ],
   },
 ];
@@ -367,19 +366,13 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
     id: "funk",
     label: "Funk",
     kicks: [
-      // In-the-pocket funk: the one hardest, a syncopated push on the "a" of 1,
-      // the classic "and of 3" anchor, and a pickup pushing back to the one —
-      // this interlocks with the funk-syncopated bass rather than thumping
-      // four-on-the-floor.
       { beat: 0, velocity: 1 },
-      { beat: 0.75, velocity: 0.6 },
-      { beat: 2.5, velocity: 0.85 },
-      { beat: 3.5, velocity: 0.5 },
+      { beat: 0.75, velocity: 0.55 },
+      { beat: 2.5, velocity: 0.8 },
     ],
     snares: [
-      { beat: 0.75, velocity: 0.15 },
       { beat: 1, velocity: 1 },
-      { beat: 1.5, velocity: 0.3 },
+      { beat: 1.5, velocity: 0.2 },
       { beat: 2.25, velocity: 0.18 },
       { beat: 3, velocity: 1 },
       { beat: 3.5, velocity: 0.15 },
