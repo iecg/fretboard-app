@@ -52,6 +52,51 @@ export function resolveChordVoicing(
   });
 }
 
+/**
+ * Funk color tones to layer on top of a resolved voicing, as semitone offsets
+ * above the chord root (computed at the chord's root octave, so +10/+14/+21
+ * naturally land at/above the triad). Qualities not listed get no extensions
+ * (dim/aug/sus/6 would clash). Used only on "stab" hits — see buildAllLayers.
+ *   +10 = b7,  +14 = 9,  +21 = 13
+ */
+const FUNK_EXTENSION_SEMITONES: Record<string, readonly number[]> = {
+  M: [10, 14], // -> dominant 9 (the James Brown "E9" sound)
+  m: [10, 14], // -> m9
+  m7: [14], // already has b7 -> m9
+  "7": [14, 21], // -> 9 / 13
+  maj7: [14], // -> maj9 (no b7; stays major)
+};
+
+/**
+ * Layer idiomatic funk extensions onto a resolved chord voicing. Pure: returns
+ * a new array, never mutates the input. Returns the input unchanged when the
+ * quality has no funk extension, the root is unknown, or the voicing is empty.
+ */
+export function extendFunkVoicing(
+  voicing: string[],
+  root: string,
+  quality: string,
+): string[] {
+  const offsets = FUNK_EXTENSION_SEMITONES[quality];
+  if (!offsets || voicing.length === 0) return voicing;
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex < 0) return voicing;
+
+  const base = PROGRESSION_CHORD_ROOT_OCTAVE * 12 + rootIndex;
+  const existing = new Set(voicing);
+  const added: string[] = [];
+  for (const semitone of offsets) {
+    const absolute = base + semitone;
+    const note = NOTES[((absolute % 12) + 12) % 12];
+    const pitch = `${note}${Math.floor(absolute / 12)}`;
+    if (!existing.has(pitch)) {
+      existing.add(pitch);
+      added.push(pitch);
+    }
+  }
+  return [...voicing, ...added];
+}
+
 export function resolveBassLineNotes(
   root: string,
   quality: string,
