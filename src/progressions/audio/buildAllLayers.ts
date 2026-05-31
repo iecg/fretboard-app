@@ -78,7 +78,10 @@ export interface BuiltLayers {
 const OFF_BEAT_TOLERANCE = 0.01;
 /** Note length (seconds) for a muted chicken-scratch strum stroke — choked
  *  short so it reads as percussion, not a ringing chord. */
-const MUTED_STRUM_DURATION_SEC = 0.06;
+export const MUTED_STRUM_DURATION_SEC = 0.06;
+/** Note length (seconds) for an accented funk "stab" — long enough to read as a
+ *  ringing strummed chord (the patch sustain lets it ring), unlike the choke. */
+export const STAB_STRUM_DURATION_SEC = 0.4;
 
 function swingBeat(beat: number, swing: number): number {
   if (swing <= 0) return beat;
@@ -221,7 +224,12 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
               velocity,
               style: hit.style,
               direction: hit.direction,
-              durationSec: hit.articulation === "muted" ? MUTED_STRUM_DURATION_SEC : undefined,
+              durationSec:
+                hit.articulation === "muted"
+                  ? MUTED_STRUM_DURATION_SEC
+                  : hit.articulation === "stab"
+                    ? STAB_STRUM_DURATION_SEC
+                    : undefined,
             },
           });
         }

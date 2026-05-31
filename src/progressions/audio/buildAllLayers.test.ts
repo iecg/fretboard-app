@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildAllLayersAsync, articulationToDurationSec } from "./buildAllLayers";
+import {
+  buildAllLayersAsync,
+  articulationToDurationSec,
+  MUTED_STRUM_DURATION_SEC,
+  STAB_STRUM_DURATION_SEC,
+} from "./buildAllLayers";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
@@ -190,6 +195,27 @@ describe("buildAllLayers", () => {
       for (const s of layers.chordStrums) {
         expect(s.value.durationSec).toBeUndefined();
       }
+    });
+
+    it("emits stab strums that ring, and ghost strums that choke (funk-scratch)", async () => {
+      const layers = await buildAllLayersAsync({
+        ...baseInput,
+        chordPatternId: "funk-scratch",
+        steps: [step({ duration: { value: 1, unit: "bar" } })],
+      });
+      const durs = layers.chordStrums.map((s) => s.value.durationSec);
+      expect(durs.length).toBeGreaterThan(0);
+      expect(durs.every((d) => typeof d === "number")).toBe(true);
+      const min = Math.min(...(durs as number[]));
+      const max = Math.max(...(durs as number[]));
+      expect(min).toBeCloseTo(MUTED_STRUM_DURATION_SEC);
+      expect(max).toBe(STAB_STRUM_DURATION_SEC);
+    });
+
+    it("rings the stab well above the muted choke (recurrence guard)", () => {
+      // Root-cause guard: the prior pass had no ring/choke separation, so the
+      // accent never read as a strummed chord. Keep a real margin.
+      expect(STAB_STRUM_DURATION_SEC).toBeGreaterThan(MUTED_STRUM_DURATION_SEC * 4);
     });
   });
 });
