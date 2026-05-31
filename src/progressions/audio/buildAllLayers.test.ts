@@ -196,6 +196,9 @@ describe("buildAllLayers", () => {
     // The one (beat 0, time 0) is a stab -> spicy.
     const one = out.chordStrums.find((s) => s.time === 0)!;
     expect(one.value.voicing).toEqual(["C3", "E3", "G3", "A#3", "D4"]);
+    // Same hit must also get the long ring — ties spice + duration together so a
+    // future refactor can't decouple the stab's voicing from its ring length.
+    expect(one.value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
   });
 
   it("keeps funk stab spice in the root-octave register regardless of the previous chord", async () => {
