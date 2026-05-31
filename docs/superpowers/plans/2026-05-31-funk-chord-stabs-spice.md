@@ -393,11 +393,13 @@ never mutates input."
 - Modify: `src/progressions/audio/buildAllLayers.ts` (import `extendFunkVoicing`; compute spicy voicing per step ~178; select per hit ~220)
 - Test: `src/progressions/audio/buildAllLayers.test.ts` (new case in `describe("buildAllLayers")`)
 
-**Context:** "Not on every beat" — stab hits get the extended voicing, muted/plain hits keep `resolveChordVoicing`. Compute the spicy voicing once per chord step.
+**Context:** "Not on every beat" — stab hits get the extended voicing, muted/plain hits keep the voice-led `voicing`. Compute the spicy voicing once per chord step.
 
-- [ ] **Step 1: Write the failing test**
+**Register-safety note (from Task 3 code review):** `extendFunkVoicing` computes color tones at the fixed `PROGRESSION_CHORD_ROOT_OCTAVE` (3). The existing `voicing` in `buildAllLayers` is **voice-led** (`resolveChordVoicing(root, quality, undefined, lastVoicing)`), so on later bars `getNearestInversion` can drift it to octave 2/4/5 — feeding that as the extension base would place b7/9/13 below the chord on those bars. So the spicy voicing is built from the **non-voice-led plain** `resolveChordVoicing(root, quality)` (the same octave-3 register the extensions assume). Funk stabs at a consistent root-position register are idiomatic anyway (percussive, punchy); the muted ghosts keep the voice-led `voicing`, and their register is inaudible since they're choked.
 
-In `src/progressions/audio/buildAllLayers.test.ts`, add this case inside `describe("buildAllLayers", ...)` (e.g. after the strum-emission test at ~line 87):
+- [ ] **Step 1: Write the failing tests**
+
+In `src/progressions/audio/buildAllLayers.test.ts`, add these cases inside `describe("buildAllLayers", ...)` (e.g. after the strum-emission test at ~line 87):
 
 ```ts
   it("gives funk stab hits the spicy (extended) voicing while ghosts stay plain", async () => {
@@ -413,6 +415,24 @@ In `src/progressions/audio/buildAllLayers.test.ts`, add this case inside `descri
     // The one (beat 0, time 0) is a stab -> spicy.
     const one = out.chordStrums.find((s) => s.time === 0)!;
     expect(one.value.voicing).toEqual(["C3", "E3", "G3", "A#3", "D4"]);
+  });
+
+  it("keeps funk stab spice in the root-octave register regardless of the previous chord", async () => {
+    // Regression guard (Task 3 review): the spicy voicing must be built from the
+    // NON-voice-led plain voicing so extensions never drift below the chord on
+    // later bars. baseInput tempo 60 => 1 beat = 1s, bar 2 starts at time 4.
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "funk-scratch",
+      steps: [
+        step({ root: "C", quality: "M", duration: { value: 1, unit: "bar" } }),
+        step({ id: "b", index: 1, root: "F", quality: "M", duration: { value: 1, unit: "bar" } }),
+      ],
+    });
+    // The stab on the one of bar 2 must be plain F dominant-9 at octave 3,
+    // not a voice-led register shifted by the preceding C chord.
+    const bar2Stab = out.chordStrums.find((s) => s.time === 4)!;
+    expect(bar2Stab.value.voicing).toEqual(["F3", "A3", "C4", "D#4", "G4"]);
   });
 ```
 
@@ -436,10 +456,17 @@ import {
 
 - [ ] **Step 4: Compute the spicy voicing per step**
 
-Just after the `const voicing = resolveChordVoicing(...)` block (~line 178-181), add:
+Just after the `const voicing = resolveChordVoicing(...)` block (~line 178-181), add (note: the base is the **non-voice-led** plain voicing, for register safety — see the Context note above):
 
 ```ts
-    const spicyVoicing = extendFunkVoicing(voicing, root, quality);
+    // Spicy stab voicing is built from the plain (non-voice-led) voicing so the
+    // octave-3 funk extensions always sit above the chord, not below a drifted
+    // voice-led inversion. Stabs use this; ghosts keep the voice-led `voicing`.
+    const spicyVoicing = extendFunkVoicing(
+      resolveChordVoicing(root, quality),
+      root,
+      quality,
+    );
 ```
 
 - [ ] **Step 5: Select voicing per hit in the chord-strum emission**
