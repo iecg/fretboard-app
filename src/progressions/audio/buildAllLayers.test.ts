@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildAllLayersAsync, articulationToDurationSec, articulationToStrumDurationSec } from "./buildAllLayers";
+import { buildAllLayersAsync, articulationToDurationSec } from "./buildAllLayers";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
@@ -211,16 +211,3 @@ describe("articulationToDurationSec", () => {
   });
 });
 
-describe("articulationToStrumDurationSec", () => {
-  it("chokes a muted scratch stroke to a short fixed length", () => {
-    expect(articulationToStrumDurationSec("muted", 1.8)).toBeCloseTo(0.06, 5);
-  });
-
-  it("lets an accent ring for the full patch note duration", () => {
-    expect(articulationToStrumDurationSec("accent", 1.8)).toBeCloseTo(1.8, 5);
-  });
-
-  it("defaults (undefined) to the patch note duration — no behavior change", () => {
-    expect(articulationToStrumDurationSec(undefined, 0.42)).toBeCloseTo(0.42, 5);
-  });
-});

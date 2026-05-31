@@ -13,7 +13,6 @@ import {
   type CatalogDrumPattern,
   type DrumHit,
   type BassArticulation,
-  type ChordArticulation,
 } from "./patterns";
 import { applyJitter } from "./humanize";
 
@@ -105,17 +104,6 @@ export function articulationToDurationSec(
   }
 }
 
-/**
- * Translate a chord hit's articulation into a strum note length in seconds.
- * "muted" chokes the stroke to a short fixed length (the chicken-scratch);
- * "accent" or omitted rings for the patch's natural note duration.
- */
-export function articulationToStrumDurationSec(
-  articulation: ChordArticulation | undefined,
-  patchNoteDurationSec: number,
-): number {
-  return articulation === "muted" ? MUTED_STRUM_DURATION_SEC : patchNoteDurationSec;
-}
 
 interface VoicedDrumHit extends DrumHit {
   type: DrumVoice;
