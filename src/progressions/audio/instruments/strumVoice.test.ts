@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getNoteFrequency } from "@fretflow/core";
+import type { StrumSpec } from "../sound/patchTypes";
 
 // After the Tone.PluckSynth migration, `pluckString` no longer creates raw
 // oscillators we can count. Mock it with a spy so we can assert on the
@@ -86,5 +87,14 @@ describe("strumVoice", () => {
   it("omits durationSec when not provided (defaults preserved)", () => {
     strumVoice.scheduleChord({} as AudioNode, ["C3"], 0, { velocity: 0.8 });
     expect((pluckStringSpy.mock.calls[0]![3] as { durationSec?: number }).durationSec).toBeUndefined();
+  });
+
+  it("uses the spec's strumLagSec override for the per-note stagger", () => {
+    const spec: StrumSpec = { strumLagSec: 0.005, noteDurationSec: 0.18, releaseTailSec: 0.4 };
+    const tight = createStrumVoice(spec);
+    tight.scheduleChord({} as AudioNode, ["C3", "E3", "G3"], 0, { velocity: 0.8 });
+    // pluckString(dest, freq, time, options) — time is arg[2].
+    const times = pluckStringSpy.mock.calls.map((c) => c[2]);
+    expect(times).toEqual([0, 0.005, 0.01]);
   });
 });
