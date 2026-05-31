@@ -1,15 +1,26 @@
 import { useEffect } from "react";
-import { useSetAtom } from "jotai";
+import { useStore } from "jotai";
 import { scaleVisibleAtom } from "../store/scaleAtoms";
 import { chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+import {
+  progressionPlayingAtom,
+  setProgressionPlayingAtom,
+  stopProgressionPlaybackAtom,
+  progressionLoopEnabledAtom,
+  progressionChordEnabledAtom,
+  progressionBassEnabledAtom,
+  progressionDrumsEnabledAtom,
+  progressionMetronomeEnabledAtom,
+  previousProgressionStepAtom,
+  advanceProgressionPlaybackAtom,
+} from "../store/progressionAtoms";
+import { toggleMuteAtom } from "../store/audioAtoms";
 
 export function useKeyboardShortcuts() {
-  const setScaleVisible = useSetAtom(scaleVisibleAtom);
-  const setChordHidden = useSetAtom(chordOverlayHiddenAtom);
+  const store = useStore();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // Ignore when typing into form fields or selects.
       const target = e.target as HTMLElement | null;
       if (
         target?.tagName === "INPUT" ||
@@ -18,17 +29,78 @@ export function useKeyboardShortcuts() {
         target?.isContentEditable
       )
         return;
-      // Don't hijack browser shortcuts (Cmd+S, Ctrl+S, Alt+S, etc.).
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "s" || e.key === "S") {
-        e.preventDefault();
-        setScaleVisible((v) => !v);
-      } else if (e.key === "c" || e.key === "C") {
-        e.preventDefault();
-        setChordHidden((v) => !v);
+
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          store.set(
+            setProgressionPlayingAtom,
+            !store.get(progressionPlayingAtom),
+          );
+          break;
+        case ".":
+          e.preventDefault();
+          store.set(stopProgressionPlaybackAtom);
+          break;
+        case "r":
+        case "R":
+          store.set(
+            progressionLoopEnabledAtom,
+            !store.get(progressionLoopEnabledAtom),
+          );
+          break;
+        case "m":
+        case "M":
+          store.set(toggleMuteAtom);
+          break;
+        case "1":
+          store.set(
+            progressionChordEnabledAtom,
+            !store.get(progressionChordEnabledAtom),
+          );
+          break;
+        case "2":
+          store.set(
+            progressionBassEnabledAtom,
+            !store.get(progressionBassEnabledAtom),
+          );
+          break;
+        case "3":
+          store.set(
+            progressionDrumsEnabledAtom,
+            !store.get(progressionDrumsEnabledAtom),
+          );
+          break;
+        case "4":
+          store.set(
+            progressionMetronomeEnabledAtom,
+            !store.get(progressionMetronomeEnabledAtom),
+          );
+          break;
+        case "ArrowLeft":
+          if (store.get(progressionPlayingAtom)) return;
+          e.preventDefault();
+          store.set(previousProgressionStepAtom);
+          break;
+        case "ArrowRight":
+          if (store.get(progressionPlayingAtom)) return;
+          e.preventDefault();
+          store.set(advanceProgressionPlaybackAtom);
+          break;
+        case "s":
+        case "S":
+          e.preventDefault();
+          store.set(scaleVisibleAtom, !store.get(scaleVisibleAtom));
+          break;
+        case "c":
+        case "C":
+          e.preventDefault();
+          store.set(chordOverlayHiddenAtom, !store.get(chordOverlayHiddenAtom));
+          break;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setScaleVisible, setChordHidden]);
+  }, [store]);
 }

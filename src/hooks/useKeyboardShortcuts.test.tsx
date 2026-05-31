@@ -7,6 +7,17 @@ import { createStore, Provider } from "jotai";
 import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
 import { scaleVisibleAtom } from "../store/scaleAtoms";
 import { chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+import {
+  progressionPlayingAtom,
+  activeProgressionStepIndexAtom,
+  setProgressionPlayingAtom,
+  progressionLoopEnabledAtom,
+  progressionChordEnabledAtom,
+  progressionBassEnabledAtom,
+  progressionDrumsEnabledAtom,
+  progressionMetronomeEnabledAtom,
+} from "../store/progressionAtoms";
+import { isMutedAtom } from "../store/audioAtoms";
 
 function makeWrapper(store: ReturnType<typeof createStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -22,6 +33,12 @@ describe("useKeyboardShortcuts", () => {
     // Seed known defaults
     store.set(scaleVisibleAtom, true);
     store.set(chordOverlayHiddenAtom, false);
+    store.set(progressionLoopEnabledAtom, false);
+    store.set(progressionChordEnabledAtom, true);
+    store.set(progressionBassEnabledAtom, true);
+    store.set(progressionDrumsEnabledAtom, true);
+    store.set(progressionMetronomeEnabledAtom, true);
+    store.set(isMutedAtom, false);
   });
 
   it("S toggles scaleVisibleAtom from true to false", () => {
@@ -147,5 +164,138 @@ describe("useKeyboardShortcuts", () => {
 
     // Scale should remain unchanged after unmount
     expect(store.get(scaleVisibleAtom)).toBe(true);
+  });
+
+  it("Space toggles progression playing when not blocked", () => {
+    store.set(setProgressionPlayingAtom, false);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => {
+      fireEvent.keyDown(document, { key: " " });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(true);
+
+    act(() => {
+      fireEvent.keyDown(document, { key: " " });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+  });
+
+  it("Space does nothing when focus is in INPUT", () => {
+    store.set(setProgressionPlayingAtom, false);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+
+    act(() => {
+      fireEvent.keyDown(input, { key: " " });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+    document.body.removeChild(input);
+  });
+
+  it("period stops playback and rewinds step index", () => {
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 2);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => {
+      fireEvent.keyDown(document, { key: "." });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+
+  it("R toggles loop enabled", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "r" }); });
+    expect(store.get(progressionLoopEnabledAtom)).toBe(true);
+
+    act(() => { fireEvent.keyDown(document, { key: "R" }); });
+    expect(store.get(progressionLoopEnabledAtom)).toBe(false);
+  });
+
+  it("M toggles mute", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "m" }); });
+    expect(store.get(isMutedAtom)).toBe(true);
+
+    act(() => { fireEvent.keyDown(document, { key: "M" }); });
+    expect(store.get(isMutedAtom)).toBe(false);
+  });
+
+  it("1 toggles chord layer", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "1" }); });
+    expect(store.get(progressionChordEnabledAtom)).toBe(false);
+
+    act(() => { fireEvent.keyDown(document, { key: "1" }); });
+    expect(store.get(progressionChordEnabledAtom)).toBe(true);
+  });
+
+  it("2 toggles bass layer", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+    act(() => { fireEvent.keyDown(document, { key: "2" }); });
+    expect(store.get(progressionBassEnabledAtom)).toBe(false);
+  });
+
+  it("3 toggles drums layer", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+    act(() => { fireEvent.keyDown(document, { key: "3" }); });
+    expect(store.get(progressionDrumsEnabledAtom)).toBe(false);
+  });
+
+  it("4 toggles metronome layer", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+    act(() => { fireEvent.keyDown(document, { key: "4" }); });
+    expect(store.get(progressionMetronomeEnabledAtom)).toBe(false);
+  });
+
+  it("ArrowRight advances step when not playing", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 0);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowRight" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+  });
+
+  it("ArrowRight does nothing when playing", () => {
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 0);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowRight" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+
+  it("ArrowLeft goes to previous step when not playing", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 2);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+  });
+
+  it("ArrowLeft does nothing when playing", () => {
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 2);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
   });
 });
