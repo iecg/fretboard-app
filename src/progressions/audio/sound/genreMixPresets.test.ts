@@ -80,4 +80,16 @@ describe("genre mix presets", () => {
     const rock = getGenreMix("rock")!;
     expect(rock.perInstrument.bass.volumeDb).toBeLessThanOrEqual(-1);
   });
+
+  it("uses the short funk-scratch guitar patch for funk", () => {
+    expect(getGenreMix("funk")!.patches.chord).toBe("chord-funk-scratch");
+  });
+
+  it("funk's chord patch is short-decay so the guitar can actually scratch", () => {
+    // Recurrence guard: two prior funk passes failed because the guitar was a
+    // long-ringing acoustic strum. The funk chord patch must stay short.
+    const patchId = getGenreMix("funk")!.patches.chord;
+    const patch = getChordPatch(patchId)!;
+    expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
+  });
 });
