@@ -328,11 +328,19 @@ describe("funk-scratch chord comp", () => {
     }
   });
 
-  it("marks the one as an accent and the rest as muted scratches", () => {
+  it("marks the one as a ringing down-stab and includes muted ghost scratches", () => {
     const byBeat = new Map(funk.hits.map((h) => [h.beat, h]));
-    expect(byBeat.get(0)!.articulation).toBe("accent");
-    const muted = funk.hits.filter((h) => h.articulation === "muted");
-    expect(muted.length).toBeGreaterThanOrEqual(funk.hits.length - 1);
+    const one = byBeat.get(0)!;
+    expect(one.articulation).toBe("stab");
+    expect(one.direction).toBe("down");
+    expect(funk.hits.some((h) => h.articulation === "muted")).toBe(true);
+  });
+
+  it("adds two syncopated ring-stabs on the and-of-2 and and-of-3", () => {
+    const byBeat = new Map(funk.hits.map((h) => [h.beat, h]));
+    expect(byBeat.get(1.5)!.articulation).toBe("stab");
+    expect(byBeat.get(2.75)!.articulation).toBe("stab");
+    expect(funk.hits.filter((h) => h.articulation === "stab")).toHaveLength(3);
   });
 });
 

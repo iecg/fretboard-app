@@ -13,7 +13,7 @@
 
 type StrumDirection = "down" | "up";
 
-export type ChordArticulation = "muted" | "accent";
+export type ChordArticulation = "muted" | "stab";
 
 export interface DrumHit {
   beat: number;
@@ -37,7 +37,9 @@ interface ChordHit {
   /** Strum direction; up-strokes reverse the voicing order. Defaults to down. */
   direction?: StrumDirection;
   /** Note-length intent for the strum voice. "muted" chokes the stroke short
-   *  (chicken-scratch), "accent"/omitted rings for the patch's note duration. */
+   *  (chicken-scratch ghost); "stab" rings clearly and is the hit that receives
+   *  funk extensions when its voicing is built; omitted rings for the patch's
+   *  default note duration. */
   articulation?: ChordArticulation;
 }
 
@@ -158,17 +160,22 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
   {
     id: "funk-scratch",
     label: "Funk Scratch",
-    // James Brown chicken-scratch: a hard accented chord stab on the one, then
-    // muted scratch ghosts with deliberate space. The "muted" hits choke short
-    // via the strum voice; the accent rings the patch's (already short) length.
+    // James Brown "one + syncopated stabs": a hard ringing chord stab on the
+    // one, plus two syncopated ring-stabs (the "and of 2" and "and of 3"), with
+    // muted ghost scratches weaving between. "stab" hits ring (and carry spicy
+    // extensions, added in buildAllLayers); "muted" hits choke short via the
+    // strum voice. Alternating down/up strokes emulate the funk wrist motion.
     hits: [
-      { beat: 0, velocity: 0.95, direction: "down", articulation: "accent" },
-      { beat: 0.5, velocity: 0.28, direction: "up", articulation: "muted" },
+      { beat: 0, velocity: 0.98, direction: "down", articulation: "stab" },
+      { beat: 0.5, velocity: 0.25, direction: "up", articulation: "muted" },
       { beat: 0.75, velocity: 0.3, direction: "up", articulation: "muted" },
-      { beat: 1.5, velocity: 0.4, direction: "up", articulation: "muted" },
+      { beat: 1.25, velocity: 0.22, direction: "down", articulation: "muted" },
+      { beat: 1.5, velocity: 0.8, direction: "up", articulation: "stab" },
+      { beat: 1.75, velocity: 0.25, direction: "up", articulation: "muted" },
       { beat: 2.5, velocity: 0.28, direction: "up", articulation: "muted" },
-      { beat: 2.75, velocity: 0.3, direction: "up", articulation: "muted" },
-      { beat: 3.5, velocity: 0.35, direction: "up", articulation: "muted" },
+      { beat: 2.75, velocity: 0.82, direction: "up", articulation: "stab" },
+      { beat: 3.5, velocity: 0.3, direction: "up", articulation: "muted" },
+      { beat: 3.75, velocity: 0.26, direction: "up", articulation: "muted" },
     ],
   },
   {
