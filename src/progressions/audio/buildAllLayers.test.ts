@@ -4,6 +4,7 @@ import {
   articulationToDurationSec,
   MUTED_STRUM_DURATION_SEC,
   STAB_STRUM_DURATION_SEC,
+  ROOT_STRUM_DURATION_SEC,
 } from "./buildAllLayers";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
@@ -183,28 +184,37 @@ describe("buildAllLayers", () => {
     expect(approachBar2?.value.note).not.toBe(approachBar1?.value.note);
   });
 
-  it("gives funk stab hits the spicy (extended) voicing while ghosts stay plain", async () => {
+  it("voices funk hits by articulation: root=1 note, stab=plain, color-stab=spicy", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "funk-scratch",
       steps: [step({ root: "C", quality: "M", duration: { value: 1, unit: "bar" } })],
     });
-    const sizes = out.chordStrums.map((s) => s.value.voicing.length);
-    // C major plain = 3 notes; stab (dominant-9) = 5 notes.
-    expect(Math.min(...sizes)).toBe(3);
-    expect(Math.max(...sizes)).toBe(5);
-    // The one (beat 0, time 0) is a stab -> spicy.
-    const one = out.chordStrums.find((s) => s.time === 0)!;
-    expect(one.value.voicing).toEqual(["C3", "E3", "G3", "A#3", "D4"]);
-    // Same hit must also get the long ring — ties spice + duration together so a
-    // future refactor can't decouple the stab's voicing from its ring length.
-    expect(one.value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
+    // tempo 60 => 1 beat = 1s, so hit time === beat.
+    const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
+    expect(at(0).value.voicing).toEqual(["C3"]); // root anchor on the one
+    expect(at(1).value.voicing).toEqual(["C3", "E3", "G3"]); // plain stab on 2
+    expect(at(2.5).value.voicing).toEqual(["C3", "E3", "G3", "A#3", "D4"]); // color-stab (dom9)
   });
 
-  it("keeps funk stab spice in the root-octave register regardless of the previous chord", async () => {
-    // Regression guard (Task 3 review): the spicy voicing must be built from the
-    // NON-voice-led plain voicing so extensions never drift below the chord on
-    // later bars. baseInput tempo 60 => 1 beat = 1s, bar 2 starts at time 4.
+  it("maps funk durations: root short, stab/color ring, ghost chokes", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "funk-scratch",
+      steps: [step({ duration: { value: 1, unit: "bar" } })],
+    });
+    const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
+    expect(at(0).value.durationSec).toBe(ROOT_STRUM_DURATION_SEC);
+    expect(at(1).value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
+    expect(at(2.5).value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
+    expect(
+      out.chordStrums.some((s) => s.value.durationSec === MUTED_STRUM_DURATION_SEC),
+    ).toBe(true);
+  });
+
+  it("keeps funk color-stab spice in the root-octave register regardless of the previous chord", async () => {
+    // Regression guard: color-stab spice is built from the NON-voice-led plain
+    // voicing, so extensions never drift below the chord on later bars.
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "funk-scratch",
@@ -213,10 +223,9 @@ describe("buildAllLayers", () => {
         step({ id: "b", index: 1, root: "F", quality: "M", duration: { value: 1, unit: "bar" } }),
       ],
     });
-    // The stab on the one of bar 2 must be plain F dominant-9 at octave 3,
-    // not a voice-led register shifted by the preceding C chord.
-    const bar2Stab = out.chordStrums.find((s) => s.time === 4)!;
-    expect(bar2Stab.value.voicing).toEqual(["F3", "A3", "C4", "D#4", "G4"]);
+    // Bar 2 starts at time 4; its color-stab on the "&" of 3 is at time 6.5.
+    const bar2Color = out.chordStrums.find((s) => s.time === 6.5)!;
+    expect(bar2Color.value.voicing).toEqual(["F3", "A3", "C4", "D#4", "G4"]);
   });
 
   describe("chord strum durationSec emission", () => {

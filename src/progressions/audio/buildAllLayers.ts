@@ -83,6 +83,9 @@ export const MUTED_STRUM_DURATION_SEC = 0.06;
 /** Note length (seconds) for an accented funk "stab" — long enough to read as a
  *  ringing strummed chord (the patch sustain lets it ring), unlike the choke. */
 export const STAB_STRUM_DURATION_SEC = 0.4;
+/** Note length (seconds) for the single root-note anchor on the one — a short,
+ *  tight pluck, longer than a muted ghost but well short of a ringing stab. */
+export const ROOT_STRUM_DURATION_SEC = 0.12;
 
 function swingBeat(beat: number, swing: number): number {
   if (swing <= 0) return beat;
@@ -183,15 +186,21 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     if (voicing.length > 0) {
       lastVoicing = voicing;
     }
-    // Spicy stab voicing is built from the plain (non-voice-led) voicing so the
-    // octave-3 funk extensions always sit above the chord, not below a drifted
-    // voice-led inversion. Stabs use this; ghosts keep the voice-led `voicing`.
-    // Only computed when the pattern actually has a stab hit (avoids a second
-    // resolveChordVoicing call on every non-funk pattern).
-    const hasStabHit = !!chordPattern?.hits.some((h) => h.articulation === "stab");
-    const spicyVoicing = hasStabHit
-      ? extendFunkVoicing(resolveChordVoicing(root, quality), root, quality)
+    // The plain (non-voice-led) voicing is the register-safe base for funk
+    // extensions AND the source of the single-note root anchor. Computed only
+    // when the pattern needs it (a color-stab or root hit), to avoid a second
+    // resolveChordVoicing call on non-funk patterns.
+    const needsPlainVoicing = !!chordPattern?.hits.some(
+      (h) => h.articulation === "color-stab" || h.articulation === "root",
+    );
+    const plainVoicing = needsPlainVoicing
+      ? resolveChordVoicing(root, quality)
       : voicing;
+    const spicyVoicing = needsPlainVoicing
+      ? extendFunkVoicing(plainVoicing, root, quality)
+      : voicing;
+    const rootNoteVoicing =
+      needsPlainVoicing && plainVoicing.length > 0 ? [plainVoicing[0]] : voicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
     const isBarUnit = step.duration.unit === "bar";
@@ -230,16 +239,23 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           chordStrums.push({
             time: hitTime,
             value: {
-              voicing: hit.articulation === "stab" ? spicyVoicing : voicing,
+              voicing:
+                hit.articulation === "color-stab"
+                  ? spicyVoicing
+                  : hit.articulation === "root"
+                    ? rootNoteVoicing
+                    : voicing,
               velocity,
               style: hit.style,
               direction: hit.direction,
               durationSec:
                 hit.articulation === "muted"
                   ? MUTED_STRUM_DURATION_SEC
-                  : hit.articulation === "stab"
-                    ? STAB_STRUM_DURATION_SEC
-                    : undefined,
+                  : hit.articulation === "root"
+                    ? ROOT_STRUM_DURATION_SEC
+                    : hit.articulation === "stab" || hit.articulation === "color-stab"
+                      ? STAB_STRUM_DURATION_SEC
+                      : undefined,
             },
           });
         }

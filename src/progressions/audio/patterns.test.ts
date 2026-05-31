@@ -319,8 +319,7 @@ describe("funk-16th chord comp pattern", () => {
 describe("funk-scratch chord comp", () => {
   const funk = getChordPattern("funk-scratch")!;
 
-  it("exists and accents the one hardest", () => {
-    expect(funk).toBeDefined();
+  it("accents the one hardest", () => {
     const byBeat = new Map(funk.hits.map((h) => [h.beat, h.velocity]));
     const one = byBeat.get(0)!;
     for (const h of funk.hits) {
@@ -328,19 +327,26 @@ describe("funk-scratch chord comp", () => {
     }
   });
 
-  it("marks the one as a ringing down-stab and includes muted ghost scratches", () => {
+  it("anchors the one with a single root note (not a strummed chord)", () => {
     const byBeat = new Map(funk.hits.map((h) => [h.beat, h]));
-    const one = byBeat.get(0)!;
-    expect(one.articulation).toBe("stab");
-    expect(one.direction).toBe("down");
-    expect(funk.hits.some((h) => h.articulation === "muted")).toBe(true);
+    expect(byBeat.get(0)!.articulation).toBe("root");
+    expect(byBeat.get(0)!.direction).toBe("down");
   });
 
-  it("adds two syncopated ring-stabs on the and-of-2 and and-of-3", () => {
-    const byBeat = new Map(funk.hits.map((h) => [h.beat, h]));
-    expect(byBeat.get(1.5)!.articulation).toBe("stab");
-    expect(byBeat.get(2.75)!.articulation).toBe("stab");
-    expect(funk.hits.filter((h) => h.articulation === "stab")).toHaveLength(3);
+  it("has exactly one plain stab and two color-stabs on offbeat upstrokes", () => {
+    const stabs = funk.hits.filter((h) => h.articulation === "stab");
+    const colors = funk.hits.filter((h) => h.articulation === "color-stab");
+    expect(stabs).toHaveLength(1);
+    expect(colors).toHaveLength(2);
+    expect(colors.map((c) => c.beat).sort((a, b) => a - b)).toEqual([2.5, 3.5]);
+    for (const c of colors) {
+      expect(c.beat % 1).toBeCloseTo(0.5); // syncopated upbeats (the "&")
+      expect(c.direction).toBe("up");
+    }
+  });
+
+  it("fills the rest with muted ghost scratches", () => {
+    expect(funk.hits.some((h) => h.articulation === "muted")).toBe(true);
   });
 });
 
