@@ -46,7 +46,7 @@ export const GENRE_STYLES: readonly GenreStyle[] = [
   },
   {
     id: "funk", label: "Funk", chordInstrument: "strum",
-    chordPattern: "funk-16th", bassPattern: "funk-syncopated",
+    chordPattern: "funk-scratch", bassPattern: "funk-syncopated",
     drumPattern: "funk", drumVariations: ["open-hat-and-of-4"],
     tempoRange: [90, 120], suggestedTempo: 100, swing: 0,
   },

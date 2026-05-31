@@ -44,8 +44,12 @@ describe("genre styles", () => {
     expect(getGenreStyle("rock")!.bassPattern).toBe("pedal");
   });
 
-  it("wires the funk genre to the 16th-note funk comp, not the reggae skank", () => {
-    expect(getGenreStyle("funk")!.chordPattern).toBe("funk-16th");
+  it("wires the funk genre to the chicken-scratch comp (not the 16th-note funk comp)", () => {
+    expect(getGenreStyle("funk")!.chordPattern).not.toBe("funk-16th");
+  });
+
+  it("wires the funk genre to the chicken-scratch comp", () => {
+    expect(getGenreStyle("funk")!.chordPattern).toBe("funk-scratch");
   });
 });
 

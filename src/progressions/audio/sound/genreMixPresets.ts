@@ -99,7 +99,7 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "funk",
-    patches: { bass: "bass-finger", chord: "chord-steel-strum", drumKit: "kit-funk" },
+    patches: { bass: "bass-finger", chord: "chord-funk-scratch", drumKit: "kit-funk" },
     perInstrument: {
       chord: { volumeDb: -4, pan: -0.2, reverbSend: 0.06 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.0 },
