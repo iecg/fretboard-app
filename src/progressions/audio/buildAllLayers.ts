@@ -2,6 +2,7 @@ import {
   resolveBassNoteForRole,
   resolveChordVoicing,
   resolveBassLineNotes,
+  extendFunkVoicing,
 } from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 import {
@@ -182,6 +183,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     if (voicing.length > 0) {
       lastVoicing = voicing;
     }
+    // Spicy stab voicing is built from the plain (non-voice-led) voicing so the
+    // octave-3 funk extensions always sit above the chord, not below a drifted
+    // voice-led inversion. Stabs use this; ghosts keep the voice-led `voicing`.
+    // Only computed when the pattern actually has a stab hit (avoids a second
+    // resolveChordVoicing call on every non-funk pattern).
+    const hasStabHit = !!chordPattern?.hits.some((h) => h.articulation === "stab");
+    const spicyVoicing = hasStabHit
+      ? extendFunkVoicing(resolveChordVoicing(root, quality), root, quality)
+      : voicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
     const isBarUnit = step.duration.unit === "bar";
@@ -220,7 +230,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           chordStrums.push({
             time: hitTime,
             value: {
-              voicing,
+              voicing: hit.articulation === "stab" ? spicyVoicing : voicing,
               velocity,
               style: hit.style,
               direction: hit.direction,
