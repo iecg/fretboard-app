@@ -107,6 +107,18 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
     },
     insert: { eq3: { low: 0, mid: 0, high: 2 } },
   },
+  {
+    id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
+    strum: {
+      // Bright single-coil chicken-scratch: upper-harmonic-weighted partials so
+      // muted scratches cut on small speakers, and a short note/release so even
+      // voiced stabs stay tight instead of ringing like the acoustic strum.
+      oscillator: { type: "custom", partials: [1, 0.9, 0.7, 0.5, 0.35, 0.25, 0.15] },
+      envelope: { attack: 0.004, decay: 0.18, sustain: 0.0, release: 0.08 },
+      noteDurationSec: 0.18, releaseTailSec: 0.4,
+    },
+    insert: { eq3: { low: -2, mid: 1, high: 3 } },
+  },
 ];
 
 export const DEFAULT_CHORD_PATCH_BY_FAMILY: Record<ChordFamily, string> = {

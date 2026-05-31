@@ -76,4 +76,11 @@ describe("pluckString — Tone.Synth backend", () => {
     expect(() => h.cancel()).not.toThrow();
     expect(t.spies.dispose).not.toHaveBeenCalled();
   });
+
+  it("overrides the patch note duration with durationSec when provided", async () => {
+    const t = await tone;
+    pluckString({} as AudioNode, 220, 0, { velocity: 0.8, durationSec: 0.06 });
+    const [, duration] = t.spies.triggerAttackRelease.mock.calls[0]!;
+    expect(duration).toBeCloseTo(0.06, 3);
+  });
 });

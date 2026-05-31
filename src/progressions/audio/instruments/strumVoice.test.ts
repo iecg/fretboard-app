@@ -70,4 +70,21 @@ describe("strumVoice", () => {
     expect(times[1]).toBeCloseTo(1.0 + STRUM_LAG_SECONDS, 4);
     expect(times[2]).toBeCloseTo(1.0 + 2 * STRUM_LAG_SECONDS, 4);
   });
+
+  it("forwards durationSec to pluckString when provided", () => {
+    strumVoice.scheduleChord(
+      {} as AudioNode,
+      ["C3", "E3", "G3"],
+      0,
+      { velocity: 0.8, durationSec: 0.06 },
+    );
+    for (const call of pluckStringSpy.mock.calls) {
+      expect((call[3] as { durationSec?: number }).durationSec).toBe(0.06);
+    }
+  });
+
+  it("omits durationSec when not provided (defaults preserved)", () => {
+    strumVoice.scheduleChord({} as AudioNode, ["C3"], 0, { velocity: 0.8 });
+    expect((pluckStringSpy.mock.calls[0]![3] as { durationSec?: number }).durationSec).toBeUndefined();
+  });
 });

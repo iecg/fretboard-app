@@ -393,7 +393,7 @@ export function useProgressionAudioPlayback() {
         onEvent: (audioTime, value) => {
           const voice = eng.getChordVoiceForInstrument(instrumentRef.current, chordPatchId);
           voice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
-            velocity: value.velocity, style: value.style, direction: value.direction,
+            velocity: value.velocity, style: value.style, direction: value.direction, durationSec: value.durationSec,
           });
         },
       });

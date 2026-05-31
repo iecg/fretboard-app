@@ -13,6 +13,8 @@
 
 type StrumDirection = "down" | "up";
 
+export type ChordArticulation = "muted" | "accent";
+
 export interface DrumHit {
   beat: number;
   velocity: number;
@@ -34,6 +36,9 @@ interface ChordHit {
   style?: "staccato" | "sustained";
   /** Strum direction; up-strokes reverse the voicing order. Defaults to down. */
   direction?: StrumDirection;
+  /** Note-length intent for the strum voice. "muted" chokes the stroke short
+   *  (chicken-scratch), "accent"/omitted rings for the patch's note duration. */
+  articulation?: ChordArticulation;
 }
 
 export interface ChordPattern {
@@ -151,6 +156,22 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     ],
   },
   {
+    id: "funk-scratch",
+    label: "Funk Scratch",
+    // James Brown chicken-scratch: a hard accented chord stab on the one, then
+    // muted scratch ghosts with deliberate space. The "muted" hits choke short
+    // via the strum voice; the accent rings the patch's (already short) length.
+    hits: [
+      { beat: 0, velocity: 0.95, direction: "down", articulation: "accent" },
+      { beat: 0.5, velocity: 0.28, direction: "up", articulation: "muted" },
+      { beat: 0.75, velocity: 0.3, direction: "up", articulation: "muted" },
+      { beat: 1.5, velocity: 0.4, direction: "up", articulation: "muted" },
+      { beat: 2.5, velocity: 0.28, direction: "up", articulation: "muted" },
+      { beat: 2.75, velocity: 0.3, direction: "up", articulation: "muted" },
+      { beat: 3.5, velocity: 0.35, direction: "up", articulation: "muted" },
+    ],
+  },
+  {
     id: "pop-syncopated-push",
     label: "Pop Syncopated Push",
     hits: [
@@ -231,13 +252,16 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
   {
     id: "funk-syncopated",
     label: "Funk Syncopated",
+    // JB funk, locked to the one: root anchor on beat 1, a soft root ghost on
+    // the "a" of 1, an octave pop mid-bar, the fifth for color, and a b7 that
+    // leads back to the root. Sparse and staccato so it interlocks with the
+    // chicken-scratch guitar rather than crowding it.
     hits: [
       { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
-      { beat: 0.75, velocity: 0.45, note: "root", articulation: "staccato" },
+      { beat: 0.75, velocity: 0.4, note: "root", articulation: "staccato" },
       { beat: 1.5, velocity: 0.8, note: "octave", articulation: "staccato" },
-      { beat: 2, velocity: 0.6, note: "fifth", articulation: "staccato" },
-      { beat: 2.75, velocity: 0.5, note: "flat-seventh", articulation: "staccato" },
-      { beat: 3.5, velocity: 0.75, note: "root", articulation: "staccato" },
+      { beat: 2.5, velocity: 0.55, note: "fifth", articulation: "staccato" },
+      { beat: 3.5, velocity: 0.7, note: "flat-seventh", articulation: "staccato" },
     ],
   },
 ];
@@ -345,20 +369,17 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
   {
     id: "funk",
     label: "Funk",
+    // Locked on the one: hardest kick on beat 1, a syncopated push on the "a"
+    // of 1, and the "and of 3" anchor — three kicks that lock with the bass
+    // and leave space, rather than a four-on-the-floor thump.
     kicks: [
-      // In-the-pocket funk: the one hardest, a syncopated push on the "a" of 1,
-      // the classic "and of 3" anchor, and a pickup pushing back to the one —
-      // this interlocks with the funk-syncopated bass rather than thumping
-      // four-on-the-floor.
       { beat: 0, velocity: 1 },
-      { beat: 0.75, velocity: 0.6 },
-      { beat: 2.5, velocity: 0.85 },
-      { beat: 3.5, velocity: 0.5 },
+      { beat: 0.75, velocity: 0.55 },
+      { beat: 2.5, velocity: 0.8 },
     ],
     snares: [
-      { beat: 0.75, velocity: 0.15 },
       { beat: 1, velocity: 1 },
-      { beat: 1.5, velocity: 0.3 },
+      { beat: 1.5, velocity: 0.2 },
       { beat: 2.25, velocity: 0.18 },
       { beat: 3, velocity: 1 },
       { beat: 3.5, velocity: 0.15 },
