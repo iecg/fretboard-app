@@ -11,6 +11,8 @@ import {
   progressionBassEnabledAtom,
   progressionDrumsEnabledAtom,
   progressionMetronomeEnabledAtom,
+  previousProgressionStepAtom,
+  advanceProgressionPlaybackAtom,
 } from "../store/progressionAtoms";
 import { toggleMuteAtom } from "../store/audioAtoms";
 
@@ -75,6 +77,16 @@ export function useKeyboardShortcuts() {
             progressionMetronomeEnabledAtom,
             !store.get(progressionMetronomeEnabledAtom),
           );
+          break;
+        case "ArrowLeft":
+          if (store.get(progressionPlayingAtom)) return;
+          e.preventDefault();
+          store.set(previousProgressionStepAtom);
+          break;
+        case "ArrowRight":
+          if (store.get(progressionPlayingAtom)) return;
+          e.preventDefault();
+          store.set(advanceProgressionPlaybackAtom);
           break;
         case "s":
         case "S":

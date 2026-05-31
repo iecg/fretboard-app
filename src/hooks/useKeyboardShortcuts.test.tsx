@@ -258,4 +258,44 @@ describe("useKeyboardShortcuts", () => {
     act(() => { fireEvent.keyDown(document, { key: "4" }); });
     expect(store.get(progressionMetronomeEnabledAtom)).toBe(false);
   });
+
+  it("ArrowRight advances step when not playing", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 0);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowRight" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+  });
+
+  it("ArrowRight does nothing when playing", () => {
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 0);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowRight" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+  });
+
+  it("ArrowLeft goes to previous step when not playing", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 2);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+  });
+
+  it("ArrowLeft does nothing when playing", () => {
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 2);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+  });
 });
