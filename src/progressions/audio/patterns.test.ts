@@ -86,8 +86,8 @@ describe("buildMetronomePattern", () => {
 });
 
 describe("pattern catalog", () => {
-  it("has 8 chord patterns with unique IDs", () => {
-    expect(CHORD_PATTERNS).toHaveLength(8);
+  it("has 9 chord patterns with unique IDs", () => {
+    expect(CHORD_PATTERNS).toHaveLength(9);
     const ids = CHORD_PATTERNS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -313,5 +313,25 @@ describe("funk-16th chord comp pattern", () => {
   it("alternates strum direction for the 16th scratch feel", () => {
     expect(funk.hits.some((h) => h.direction === "up")).toBe(true);
     expect(funk.hits.some((h) => h.direction === "down")).toBe(true);
+  });
+});
+
+describe("funk-scratch chord comp", () => {
+  const funk = getChordPattern("funk-scratch")!;
+
+  it("exists and accents the one hardest", () => {
+    expect(funk).toBeDefined();
+    const byBeat = new Map(funk.hits.map((h) => [h.beat, h.velocity]));
+    const one = byBeat.get(0)!;
+    for (const h of funk.hits) {
+      if (h.beat !== 0) expect(h.velocity).toBeLessThan(one);
+    }
+  });
+
+  it("marks the one as an accent and the rest as muted scratches", () => {
+    const byBeat = new Map(funk.hits.map((h) => [h.beat, h]));
+    expect(byBeat.get(0)!.articulation).toBe("accent");
+    const muted = funk.hits.filter((h) => h.articulation === "muted");
+    expect(muted.length).toBeGreaterThanOrEqual(funk.hits.length - 1);
   });
 });
