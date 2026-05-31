@@ -110,30 +110,34 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
     id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
     strum: {
-      // Karplus-Strong single-coil funk guitar: a real plucked string with a
-      // bright pick attack. The synth is a noise burst recirculating through a
-      // damped comb filter, so three params must balance:
-      //  - resonance HIGH (~0.9): a pluck's decay is the comb feedback, NOT the
-      //    note-hold duration. At low resonance every note decays in ~70ms and
-      //    nothing rings (stabs/root collapse into uniform ghost clicks). At ~0.9
-      //    the ring outlasts the choke window, so durationSec (via the release
-      //    ramp) governs choke-vs-ring: ghosts (0.06s) choke, stabs/color (0.4s)
-      //    ring, root (0.12s) sustains briefly.
-      //  - dampening MODERATE (~2800): the comb's lowpass. High feedback rings
-      //    whatever is in the string, so a bright dampening keeps the NOISE
-      //    ringing and the string sounds buzzy/rattly ("loose"). A lower
-      //    dampening sheds highs faster each pass, settling the rattle into a
-      //    warm pitched tone within a few cycles while the fundamental still rings.
-      //  - attackNoise MODEST (~0.9): less grit in the excitation at the source.
-      // eq3 high is a gentle +1 (not +3) so it doesn't re-amplify residual buzz.
-      // Tight strumLagSec so the chord lands as a single stab. Velocity is scaled
-      // by string.ts's gain stage (PluckSynth itself ignores velocity).
-      pluck: { attackNoise: 0.9, dampening: 2800, resonance: 0.9, release: 0.12 },
+      // Clean single-coil funk guitar (Nile Rodgers chicken scratch), built as a
+      // MonoSynth "channel strip" rather than a bare plucked string (which never
+      // read as a guitar):
+      //  - sawtooth oscillator: the harmonically dense raw material a bright
+      //    single-coil needs.
+      //  - lowpass + snappy filter envelope: the filter sweeps open on attack
+      //    (~800Hz -> ~5-6kHz) then settles, which IS the pick "spank" of a
+      //    plucked string; the lowpass also doubles as the cab/tone rolloff that
+      //    caps synthetic fizz per-voice.
+      //  - percussive amp envelope: low sustain + short decay so the note is tight.
+      //    durationSec (per articulation hit) governs choke-vs-ring NATIVELY here
+      //    — a 0.06s ghost chokes, a 0.4s stab rings — unlike the old PluckSynth
+      //    where decay was set by comb resonance.
+      // The amp/pickup voicing (cut lows for tightness, mid presence for the
+      // single-coil honk, keep highs for sparkle) lives in the eq3 insert below.
+      // Tight strumLagSec so the chord lands as a single stab. Velocity is honored
+      // natively by MonoSynth (no gain stage needed).
+      mono: {
+        oscillator: { type: "sawtooth" },
+        filter: { type: "lowpass", Q: 1 },
+        filterEnvelope: { attack: 0.005, decay: 0.08, sustain: 0.2, release: 0.1, baseFrequency: 800, octaves: 2.8 },
+        envelope: { attack: 0.004, decay: 0.2, sustain: 0.15, release: 0.1 },
+      },
       noteDurationSec: 0.18,
       releaseTailSec: 0.4,
       strumLagSec: 0.007,
     },
-    insert: { eq3: { low: -2, mid: 1, high: 1 } },
+    insert: { eq3: { low: -6, mid: 2, high: 2 } },
   },
 ];
 
