@@ -11,7 +11,7 @@ const DEFAULT_NOTE_DURATION = 1.8;
 const DEFAULT_RELEASE_TAIL_SEC = DEFAULT_NOTE_DURATION + DEFAULT_RELEASE + 0.15;
 
 export interface PluckedVoiceHandle { cancel: () => void; }
-export interface PluckStringOptions { velocity?: number; spec?: StrumSpec; }
+export interface PluckStringOptions { velocity?: number; spec?: StrumSpec; durationSec?: number; }
 
 type PluckPool = ReturnType<typeof createReusableVoicePool<Tone.Synth>>;
 
@@ -47,7 +47,7 @@ export function pluckString(
   if (velocity <= 0) return { cancel: () => {} };
 
   const spec = options.spec;
-  const noteDuration = spec?.noteDurationSec ?? DEFAULT_NOTE_DURATION;
+  const noteDuration = options.durationSec ?? spec?.noteDurationSec ?? DEFAULT_NOTE_DURATION;
   const releaseTail = spec?.releaseTailSec ?? DEFAULT_RELEASE_TAIL_SEC;
   const now = Tone.now();
   const playbackStartTime = Math.max(now, startTime);
