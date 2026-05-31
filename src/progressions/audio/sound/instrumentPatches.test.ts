@@ -87,4 +87,12 @@ describe("instrument patches", () => {
     expect(snare.noiseType).not.toBe("pink"); // brighter than dark pink
     expect(snare.volume ?? 0).toBeGreaterThan(0); // lifted via the new lever
   });
+
+  it("provides a short-decay funk scratch guitar patch", () => {
+    const patch = getChordPatch("chord-funk-scratch")!;
+    expect(patch).toBeDefined();
+    expect(patch.family).toBe("strum");
+    // Must be short so it can scratch, not bloom like the acoustic steel strum (1.8s).
+    expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
+  });
 });
