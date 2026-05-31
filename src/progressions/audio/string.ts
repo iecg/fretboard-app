@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 import { createReusableVoicePool } from "./createReusableVoicePool";
-import type { StrumSpec, PluckSpec } from "./sound/patchTypes";
+import type { StrumSpec, PluckSpec, MonoSynthVoiceSpec } from "./sound/patchTypes";
 
 const DEFAULT_PARTIALS = [1, 0.8, 0.45, 0.22, 0.12, 0.05];
 const DEFAULT_ATTACK = 0.01;
@@ -50,6 +50,17 @@ function createPluckVoice(pluck: PluckSpec): StrumPlayableVoice {
   };
 }
 
+/** Subtractive single-coil guitar voice (Tone.MonoSynth). Velocity is honored
+ *  natively by triggerAttackRelease, so no gain stage is needed. */
+function createMonoSynthVoice(mono: MonoSynthVoiceSpec): StrumPlayableVoice {
+  return new Tone.MonoSynth({
+    oscillator: { type: mono.oscillator.type },
+    filter: { type: mono.filter.type, Q: mono.filter.Q },
+    filterEnvelope: mono.filterEnvelope,
+    envelope: mono.envelope,
+  });
+}
+
 function createSynthVoice(spec?: StrumSpec): StrumPlayableVoice {
   const oscillator = {
     type: "custom" as const,
@@ -65,7 +76,12 @@ type PluckPool = ReturnType<typeof createReusableVoicePool<StrumPlayableVoice>>;
 
 function makePool(spec?: StrumSpec): PluckPool {
   return createReusableVoicePool<StrumPlayableVoice>({
-    createVoice: () => (spec?.pluck ? createPluckVoice(spec.pluck) : createSynthVoice(spec)),
+    createVoice: () =>
+      spec?.mono
+        ? createMonoSynthVoice(spec.mono)
+        : spec?.pluck
+          ? createPluckVoice(spec.pluck)
+          : createSynthVoice(spec),
   });
 }
 

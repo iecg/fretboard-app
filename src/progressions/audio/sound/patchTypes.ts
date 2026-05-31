@@ -62,13 +62,24 @@ export interface PluckSpec {
   release: number;     // resonance ramp-down on note-off (s)
 }
 
-/** Params for the strum/pluck voice. A patch is either subtractive
- *  (oscillator + envelope) or plucked (pluck); `strumLagSec` overrides the
- *  per-note strum stagger. */
+/** Subtractive single-coil-guitar params (Tone.MonoSynth): an oscillator through
+ *  a lowpass with a snappy filter envelope (the pick "spank") + an amp envelope.
+ *  Present instead of `pluck`/`oscillator` for the funk guitar strum patch. */
+export interface MonoSynthVoiceSpec {
+  oscillator: { type: OscillatorType };
+  filter: { type: "lowpass"; Q: number };
+  filterEnvelope: FilterEnvelopeSpec;
+  envelope: EnvelopeSpec;
+}
+
+/** Params for the strum voice. The source is subtractive (`oscillator` +
+ *  `envelope`), plucked (`pluck`), or a mono-synth single-coil (`mono`);
+ *  `strumLagSec` overrides the per-note strum stagger. */
 export interface StrumSpec {
   oscillator?: { type: "custom"; partials: number[] };
   envelope?: EnvelopeSpec;
   pluck?: PluckSpec;
+  mono?: MonoSynthVoiceSpec;
   noteDurationSec: number;
   releaseTailSec: number;
   strumLagSec?: number;
