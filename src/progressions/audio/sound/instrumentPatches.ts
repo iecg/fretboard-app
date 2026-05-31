@@ -110,13 +110,17 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
     id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
     strum: {
-      // Karplus-Strong single-coil funk guitar: a real plucked string (bright
-      // pick attack via attackNoise, moderate resonance so stabs ring but don't
-      // bloom) rather than a sustained subtractive synth. Hold duration
-      // (durationSec) chokes ghosts vs. rings stabs. Tight strumLagSec so the
-      // chord lands as a single stab. Velocity is scaled by string.ts's gain
-      // stage (PluckSynth itself ignores velocity).
-      pluck: { attackNoise: 1.2, dampening: 4500, resonance: 0.55, release: 0.12 },
+      // Karplus-Strong single-coil funk guitar: a real plucked string with a
+      // bright pick attack (attackNoise). resonance must be HIGH (~0.9): a
+      // pluck's decay is set by the comb feedback, NOT by note-hold duration,
+      // so at low resonance every note decays in ~70ms and nothing rings — the
+      // stabs/root collapse into uniform "ghost" clicks. With resonance ~0.9 the
+      // ring outlasts the choke window, so durationSec (via PluckSynth's release
+      // ramp) governs choke-vs-ring: ghosts (0.06s) choke tight, stabs and color
+      // (0.4s) ring as chords, the root (0.12s) sustains briefly. Tight
+      // strumLagSec so the chord lands as a single stab. Velocity is scaled by
+      // string.ts's gain stage (PluckSynth itself ignores velocity).
+      pluck: { attackNoise: 1.2, dampening: 4500, resonance: 0.9, release: 0.12 },
       noteDurationSec: 0.18,
       releaseTailSec: 0.4,
       strumLagSec: 0.007,

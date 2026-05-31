@@ -95,7 +95,13 @@ describe("instrument patches", () => {
     // Root-cause guard: funk uses a plucked-string synth, not the sustained
     // subtractive synth that read as piano. A pluck spec must be present.
     expect(patch.strum!.pluck).toBeDefined();
-    expect(patch.strum!.pluck!.resonance).toBeGreaterThan(0);
+    // Recurrence guard: a Karplus-Strong pluck's decay is governed by its
+    // resonance (comb feedback), NOT by note-hold duration. At low resonance
+    // every pluck decays in ~70ms, so the funk stabs/root never ring and the
+    // durationSec choke-vs-ring articulation is inert — the comp collapses into
+    // uniform short "ghost" clicks. Resonance must be high enough that the ring
+    // outlasts the choke window so durationSec can actually differentiate.
+    expect(patch.strum!.pluck!.resonance).toBeGreaterThanOrEqual(0.85);
     expect(patch.strum!.pluck!.resonance).toBeLessThan(1);
     // Tight strum so the chord reads as a single stab, not a spread strum.
     expect(patch.strum!.strumLagSec).toBeLessThanOrEqual(0.01);
