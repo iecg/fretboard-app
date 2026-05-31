@@ -16,6 +16,7 @@ import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.mod
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useMediaSession } from "./hooks/useMediaSession";
 import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { HeaderTransportCluster } from "./components/HeaderTransportCluster/HeaderTransportCluster";
@@ -60,6 +61,7 @@ function AppContent() {
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
   useKeyboardShortcuts();
+  useMediaSession();
 
   useLayoutEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
