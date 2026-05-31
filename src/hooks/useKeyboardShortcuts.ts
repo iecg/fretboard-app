@@ -6,7 +6,13 @@ import {
   progressionPlayingAtom,
   setProgressionPlayingAtom,
   stopProgressionPlaybackAtom,
+  progressionLoopEnabledAtom,
+  progressionChordEnabledAtom,
+  progressionBassEnabledAtom,
+  progressionDrumsEnabledAtom,
+  progressionMetronomeEnabledAtom,
 } from "../store/progressionAtoms";
+import { toggleMuteAtom } from "../store/audioAtoms";
 
 export function useKeyboardShortcuts() {
   const store = useStore();
@@ -34,6 +40,41 @@ export function useKeyboardShortcuts() {
         case ".":
           e.preventDefault();
           store.set(stopProgressionPlaybackAtom);
+          break;
+        case "r":
+        case "R":
+          store.set(
+            progressionLoopEnabledAtom,
+            !store.get(progressionLoopEnabledAtom),
+          );
+          break;
+        case "m":
+        case "M":
+          store.set(toggleMuteAtom);
+          break;
+        case "1":
+          store.set(
+            progressionChordEnabledAtom,
+            !store.get(progressionChordEnabledAtom),
+          );
+          break;
+        case "2":
+          store.set(
+            progressionBassEnabledAtom,
+            !store.get(progressionBassEnabledAtom),
+          );
+          break;
+        case "3":
+          store.set(
+            progressionDrumsEnabledAtom,
+            !store.get(progressionDrumsEnabledAtom),
+          );
+          break;
+        case "4":
+          store.set(
+            progressionMetronomeEnabledAtom,
+            !store.get(progressionMetronomeEnabledAtom),
+          );
           break;
         case "s":
         case "S":
