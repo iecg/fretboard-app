@@ -78,4 +78,13 @@ describe("instrument patches", () => {
     const kit = getDrumKitPatch("kit-jazz-brush")!;
     expect(kit.voices.hihat).toBeDefined();
   });
+
+  it("makes the jazz brush snare audible: brighter noise + a lift, not pure dark pink", () => {
+    // Recurrence guard. The brush is played at low velocity (soft), so it can
+    // only read if its spectrum cuts on small speakers AND it has a per-voice
+    // lift. Dark pink noise at low velocity with no lift was inaudible twice.
+    const snare = getDrumKitPatch("kit-jazz-brush")!.voices.snare!;
+    expect(snare.noiseType).not.toBe("pink"); // brighter than dark pink
+    expect(snare.volume ?? 0).toBeGreaterThan(0); // lifted via the new lever
+  });
 });

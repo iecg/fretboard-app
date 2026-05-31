@@ -136,7 +136,11 @@ export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [
     id: "kit-jazz-brush", label: "Jazz Brush",
     voices: {
       kick: { pitchDecay: 0.05, octaves: 5, envelope: { decay: 0.3 } },
-      snare: { noiseType: "pink", envelope: { attack: 0.004, decay: 0.16 } },
+      // Brush: white noise (energy in the highs that survive small speakers —
+      // dark pink at low velocity was inaudible twice), a slightly longer decay
+      // for the brush "swish", and a +4dB lift via the per-voice lever so it
+      // reads as a soft-but-present brush rather than a hard backbeat whack.
+      snare: { noiseType: "white", envelope: { attack: 0.004, decay: 0.22 }, volume: 4 },
       hihat: { decay: 0.05, resonance: 3000 },
       // Tamed ride: −10dB output so it sits under the brushes (it was
       // dominating), shorter decay + lower resonance so it reads as a soft

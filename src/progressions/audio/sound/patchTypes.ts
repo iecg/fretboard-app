@@ -73,7 +73,7 @@ export interface ChordPatch {
 export interface DrumVoiceParams {
   // Partial overrides per drum voice; merged over the engine defaults.
   kick?: { pitchDecay?: number; octaves?: number; envelope?: Partial<EnvelopeSpec> };
-  snare?: { noiseType?: "white" | "pink"; envelope?: Partial<EnvelopeSpec> };
+  snare?: { noiseType?: "white" | "pink"; envelope?: Partial<EnvelopeSpec>; volume?: number };
   hihat?: { decay?: number; resonance?: number; octaves?: number };
   openHat?: { decay?: number };
   ride?: { decay?: number; harmonicity?: number; resonance?: number; volume?: number };

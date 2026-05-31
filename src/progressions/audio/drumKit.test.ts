@@ -183,6 +183,20 @@ describe("drumKit — Tone backend", () => {
       expect(opts.envelope.sustain).toBe(0);
     });
 
+    it("applies the kit snare volume override so a soft brush can still be lifted", () => {
+      const kit = getDrumKitPatch("kit-jazz-brush")!;
+      expect(kit.voices.snare!.volume).toBeGreaterThan(0); // lifted brush
+      scheduleSnare({} as AudioNode, 0, { velocity: 0.3, kit });
+      const [opts] = noiseSpies.ctorSpy.mock.calls[0]!;
+      expect(opts.volume).toBe(kit.voices.snare!.volume);
+    });
+
+    it("defaults the snare volume to 0dB when the kit omits it", () => {
+      scheduleSnare({} as AudioNode, 0, { velocity: 0.8 });
+      const [opts] = noiseSpies.ctorSpy.mock.calls[0]!;
+      expect(opts.volume).toBe(0);
+    });
+
     it("triggers with NO note arg — (duration, time, velocity) signature", () => {
       scheduleSnare(
         {} as AudioNode,

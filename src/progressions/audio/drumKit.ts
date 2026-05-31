@@ -143,6 +143,10 @@ function snarePool(kit?: DrumKitPatch) {
   const pool = createReusableVoicePool<Tone.NoiseSynth>({
     createVoice: () =>
       new Tone.NoiseSynth({
+        // Per-voice output level (dB). Lets a soft brush snare be lifted without
+        // raising its velocity (which would turn it into a hard backbeat hit).
+        // Defaults to 0 (unchanged) for kits that omit it. Mirrors the ride.
+        volume: ov?.volume ?? 0,
         noise: { type: ov?.noiseType ?? "white" },
         envelope: {
           attack: 0.001,
