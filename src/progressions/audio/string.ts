@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 import { createReusableVoicePool } from "./createReusableVoicePool";
-import type { StrumSpec, PluckSpec, MonoSynthVoiceSpec } from "./sound/patchTypes";
+import type { StrumSpec, MonoSynthVoiceSpec } from "./sound/patchTypes";
 
 const DEFAULT_PARTIALS = [1, 0.8, 0.45, 0.22, 0.12, 0.05];
 const DEFAULT_ATTACK = 0.01;
@@ -13,8 +13,8 @@ const DEFAULT_RELEASE_TAIL_SEC = DEFAULT_NOTE_DURATION + DEFAULT_RELEASE + 0.15;
 export interface PluckedVoiceHandle { cancel: () => void; }
 export interface PluckStringOptions { velocity?: number; spec?: StrumSpec; durationSec?: number; }
 
-/** Shared voice shape the pool leases — satisfied by Tone.Synth and the pluck
- *  wrapper alike. string.ts only ever calls these three. */
+/** Shared voice shape the pool leases — satisfied by Tone.Synth and Tone.MonoSynth.
+ *  string.ts only ever calls these three. */
 interface StrumPlayableVoice {
   connect(dest: AudioNode): unknown;
   dispose(): void;
@@ -24,30 +24,6 @@ interface StrumPlayableVoice {
     time: number,
     velocity?: number,
   ): unknown;
-}
-
-/** Karplus-Strong pluck voice. PluckSynth ignores velocity, so a per-voice
- *  Gain stage scales loudness at trigger time. */
-function createPluckVoice(pluck: PluckSpec): StrumPlayableVoice {
-  const synth = new Tone.PluckSynth({
-    attackNoise: pluck.attackNoise,
-    dampening: pluck.dampening,
-    resonance: pluck.resonance,
-    release: pluck.release,
-  });
-  const gain = new Tone.Gain(0);
-  synth.connect(gain);
-  return {
-    connect: (dest: AudioNode) => gain.connect(dest),
-    dispose: () => {
-      synth.dispose();
-      gain.dispose();
-    },
-    triggerAttackRelease: (frequency, duration, time, velocity = 1) => {
-      gain.gain.setValueAtTime(velocity, time);
-      synth.triggerAttackRelease(frequency, duration, time);
-    },
-  };
 }
 
 /** Subtractive single-coil guitar voice (Tone.MonoSynth). Velocity is honored
@@ -72,23 +48,19 @@ function createSynthVoice(spec?: StrumSpec): StrumPlayableVoice {
   return new Tone.Synth({ oscillator, envelope });
 }
 
-type PluckPool = ReturnType<typeof createReusableVoicePool<StrumPlayableVoice>>;
+type StrumPool = ReturnType<typeof createReusableVoicePool<StrumPlayableVoice>>;
 
-function makePool(spec?: StrumSpec): PluckPool {
+function makePool(spec?: StrumSpec): StrumPool {
   return createReusableVoicePool<StrumPlayableVoice>({
     createVoice: () =>
-      spec?.mono
-        ? createMonoSynthVoice(spec.mono)
-        : spec?.pluck
-          ? createPluckVoice(spec.pluck)
-          : createSynthVoice(spec),
+      spec?.mono ? createMonoSynthVoice(spec.mono) : createSynthVoice(spec),
   });
 }
 
 const defaultPool = makePool();
-const poolsBySpec = new WeakMap<StrumSpec, PluckPool>();
+const poolsBySpec = new WeakMap<StrumSpec, StrumPool>();
 
-function poolFor(spec?: StrumSpec): PluckPool {
+function poolFor(spec?: StrumSpec): StrumPool {
   if (!spec) return defaultPool;
   const existing = poolsBySpec.get(spec);
   if (existing) return existing;
