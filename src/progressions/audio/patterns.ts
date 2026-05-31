@@ -13,6 +13,8 @@
 
 type StrumDirection = "down" | "up";
 
+export type ChordArticulation = "muted" | "accent";
+
 export interface DrumHit {
   beat: number;
   velocity: number;
@@ -34,6 +36,9 @@ interface ChordHit {
   style?: "staccato" | "sustained";
   /** Strum direction; up-strokes reverse the voicing order. Defaults to down. */
   direction?: StrumDirection;
+  /** Note-length intent for the strum voice. "muted" chokes the stroke short
+   *  (chicken-scratch), "accent"/omitted rings for the patch's note duration. */
+  articulation?: ChordArticulation;
 }
 
 export interface ChordPattern {
