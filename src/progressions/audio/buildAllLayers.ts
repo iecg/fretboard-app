@@ -35,6 +35,7 @@ export interface ChordStrumEvent {
   velocity: number;
   style?: StrumStyle;
   direction?: StrumDirection;
+  durationSec?: number;
 }
 
 export interface BassEvent {
@@ -229,6 +230,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
               velocity,
               style: hit.style,
               direction: hit.direction,
+              durationSec: hit.articulation === "muted" ? 0.06 : undefined,
             },
           });
         }
