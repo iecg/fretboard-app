@@ -12,7 +12,7 @@ export function createStrumVoice(spec?: StrumSpec): ChordVoice {
       const voices = ordered.map((note, i) => {
         const freq = getNoteFrequency(note);
         if (!Number.isFinite(freq) || freq <= 0) return null;
-        return pluckString(dest, freq, time + i * STRUM_LAG_SECONDS, { velocity: options.velocity, spec });
+        return pluckString(dest, freq, time + i * STRUM_LAG_SECONDS, { velocity: options.velocity, spec, durationSec: options.durationSec });
       }).filter(Boolean) as Array<{ cancel: () => void }>;
       return { cancel: () => { for (const v of voices) v.cancel(); } };
     },
