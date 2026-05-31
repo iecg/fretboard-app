@@ -1,15 +1,18 @@
 import { useEffect } from "react";
-import { useSetAtom } from "jotai";
+import { useStore } from "jotai";
 import { scaleVisibleAtom } from "../store/scaleAtoms";
 import { chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+import {
+  progressionPlayingAtom,
+  setProgressionPlayingAtom,
+  stopProgressionPlaybackAtom,
+} from "../store/progressionAtoms";
 
 export function useKeyboardShortcuts() {
-  const setScaleVisible = useSetAtom(scaleVisibleAtom);
-  const setChordHidden = useSetAtom(chordOverlayHiddenAtom);
+  const store = useStore();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // Ignore when typing into form fields or selects.
       const target = e.target as HTMLElement | null;
       if (
         target?.tagName === "INPUT" ||
@@ -18,17 +21,33 @@ export function useKeyboardShortcuts() {
         target?.isContentEditable
       )
         return;
-      // Don't hijack browser shortcuts (Cmd+S, Ctrl+S, Alt+S, etc.).
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "s" || e.key === "S") {
-        e.preventDefault();
-        setScaleVisible((v) => !v);
-      } else if (e.key === "c" || e.key === "C") {
-        e.preventDefault();
-        setChordHidden((v) => !v);
+
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          store.set(
+            setProgressionPlayingAtom,
+            !store.get(progressionPlayingAtom),
+          );
+          break;
+        case ".":
+          e.preventDefault();
+          store.set(stopProgressionPlaybackAtom);
+          break;
+        case "s":
+        case "S":
+          e.preventDefault();
+          store.set(scaleVisibleAtom, !store.get(scaleVisibleAtom));
+          break;
+        case "c":
+        case "C":
+          e.preventDefault();
+          store.set(chordOverlayHiddenAtom, !store.get(chordOverlayHiddenAtom));
+          break;
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setScaleVisible, setChordHidden]);
+  }, [store]);
 }

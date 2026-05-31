@@ -7,6 +7,11 @@ import { createStore, Provider } from "jotai";
 import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
 import { scaleVisibleAtom } from "../store/scaleAtoms";
 import { chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+import {
+  progressionPlayingAtom,
+  activeProgressionStepIndexAtom,
+  setProgressionPlayingAtom,
+} from "../store/progressionAtoms";
 
 function makeWrapper(store: ReturnType<typeof createStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -147,5 +152,50 @@ describe("useKeyboardShortcuts", () => {
 
     // Scale should remain unchanged after unmount
     expect(store.get(scaleVisibleAtom)).toBe(true);
+  });
+
+  it("Space toggles progression playing when not blocked", () => {
+    store.set(setProgressionPlayingAtom, false);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => {
+      fireEvent.keyDown(document, { key: " " });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(true);
+
+    act(() => {
+      fireEvent.keyDown(document, { key: " " });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+  });
+
+  it("Space does nothing when focus is in INPUT", () => {
+    store.set(setProgressionPlayingAtom, false);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+
+    act(() => {
+      fireEvent.keyDown(input, { key: " " });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+    document.body.removeChild(input);
+  });
+
+  it("period stops playback and rewinds step index", () => {
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 2);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => {
+      fireEvent.keyDown(document, { key: "." });
+    });
+
+    expect(store.get(progressionPlayingAtom)).toBe(false);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
   });
 });
