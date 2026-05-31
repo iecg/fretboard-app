@@ -88,17 +88,18 @@ describe("instrument patches", () => {
     expect(snare.volume ?? 0).toBeGreaterThan(0); // lifted via the new lever
   });
 
-  it("provides a funk scratch guitar patch that can both choke and ring", () => {
+  it("provides a Karplus-Strong funk scratch guitar patch with a tight strum", () => {
     const patch = getChordPatch("chord-funk-scratch")!;
     expect(patch).toBeDefined();
     expect(patch.family).toBe("strum");
-    // Root-cause guard: sustain MUST be > 0 so a held stab rings as a strummed
-    // chord (sustain:0 made every note die in ~0.18s, the prior bug)...
-    expect(patch.strum!.envelope!.sustain).toBeGreaterThan(0);
-    // ...but the default stroke stays short so muted ghosts still scratch and
-    // don't bloom like the 1.8s acoustic steel strum.
+    // Root-cause guard: funk uses a plucked-string synth, not the sustained
+    // subtractive synth that read as piano. A pluck spec must be present.
+    expect(patch.strum!.pluck).toBeDefined();
+    expect(patch.strum!.pluck!.resonance).toBeGreaterThan(0);
+    expect(patch.strum!.pluck!.resonance).toBeLessThan(1);
+    // Tight strum so the chord reads as a single stab, not a spread strum.
+    expect(patch.strum!.strumLagSec).toBeLessThanOrEqual(0.01);
+    // Default note duration stays short (the genre short-decay guard).
     expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
-    // A short release keeps the choked ghost tight despite the sustain.
-    expect(patch.strum!.envelope!.release).toBeLessThanOrEqual(0.15);
   });
 });

@@ -110,14 +110,16 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
     id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
     strum: {
-      // Bright single-coil chicken-scratch: upper-harmonic-weighted partials so
-      // muted scratches cut on small speakers. A small sustain lets a held
-      // "stab" ring as a strummed chord, while the short release keeps the
-      // 0.06s muted ghost choked tight. Hold duration (durationSec) decides
-      // ring vs. choke — exactly like a fretting hand muting vs. sustaining.
-      oscillator: { type: "custom", partials: [1, 0.9, 0.7, 0.5, 0.35, 0.25, 0.15] },
-      envelope: { attack: 0.004, decay: 0.12, sustain: 0.22, release: 0.09 },
-      noteDurationSec: 0.18, releaseTailSec: 0.4,
+      // Karplus-Strong single-coil funk guitar: a real plucked string (bright
+      // pick attack via attackNoise, moderate resonance so stabs ring but don't
+      // bloom) rather than a sustained subtractive synth. Hold duration
+      // (durationSec) chokes ghosts vs. rings stabs. Tight strumLagSec so the
+      // chord lands as a single stab. Velocity is scaled by string.ts's gain
+      // stage (PluckSynth itself ignores velocity).
+      pluck: { attackNoise: 1.2, dampening: 4500, resonance: 0.55, release: 0.12 },
+      noteDurationSec: 0.18,
+      releaseTailSec: 0.4,
+      strumLagSec: 0.007,
     },
     insert: { eq3: { low: -2, mid: 1, high: 3 } },
   },
