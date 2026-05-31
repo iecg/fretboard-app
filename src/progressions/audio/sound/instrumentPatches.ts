@@ -111,21 +111,29 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
     id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
     strum: {
       // Karplus-Strong single-coil funk guitar: a real plucked string with a
-      // bright pick attack (attackNoise). resonance must be HIGH (~0.9): a
-      // pluck's decay is set by the comb feedback, NOT by note-hold duration,
-      // so at low resonance every note decays in ~70ms and nothing rings — the
-      // stabs/root collapse into uniform "ghost" clicks. With resonance ~0.9 the
-      // ring outlasts the choke window, so durationSec (via PluckSynth's release
-      // ramp) governs choke-vs-ring: ghosts (0.06s) choke tight, stabs and color
-      // (0.4s) ring as chords, the root (0.12s) sustains briefly. Tight
-      // strumLagSec so the chord lands as a single stab. Velocity is scaled by
-      // string.ts's gain stage (PluckSynth itself ignores velocity).
-      pluck: { attackNoise: 1.2, dampening: 4500, resonance: 0.9, release: 0.12 },
+      // bright pick attack. The synth is a noise burst recirculating through a
+      // damped comb filter, so three params must balance:
+      //  - resonance HIGH (~0.9): a pluck's decay is the comb feedback, NOT the
+      //    note-hold duration. At low resonance every note decays in ~70ms and
+      //    nothing rings (stabs/root collapse into uniform ghost clicks). At ~0.9
+      //    the ring outlasts the choke window, so durationSec (via the release
+      //    ramp) governs choke-vs-ring: ghosts (0.06s) choke, stabs/color (0.4s)
+      //    ring, root (0.12s) sustains briefly.
+      //  - dampening MODERATE (~2800): the comb's lowpass. High feedback rings
+      //    whatever is in the string, so a bright dampening keeps the NOISE
+      //    ringing and the string sounds buzzy/rattly ("loose"). A lower
+      //    dampening sheds highs faster each pass, settling the rattle into a
+      //    warm pitched tone within a few cycles while the fundamental still rings.
+      //  - attackNoise MODEST (~0.9): less grit in the excitation at the source.
+      // eq3 high is a gentle +1 (not +3) so it doesn't re-amplify residual buzz.
+      // Tight strumLagSec so the chord lands as a single stab. Velocity is scaled
+      // by string.ts's gain stage (PluckSynth itself ignores velocity).
+      pluck: { attackNoise: 0.9, dampening: 2800, resonance: 0.9, release: 0.12 },
       noteDurationSec: 0.18,
       releaseTailSec: 0.4,
       strumLagSec: 0.007,
     },
-    insert: { eq3: { low: -2, mid: 1, high: 3 } },
+    insert: { eq3: { low: -2, mid: 1, high: 1 } },
   },
 ];
 
