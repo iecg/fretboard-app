@@ -178,7 +178,7 @@ export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [
     id: "kit-bossa", label: "Bossa",
     voices: {
       kick: { pitchDecay: 0.05, octaves: 5, envelope: { decay: 0.28 } },
-      snare: { noiseType: "pink", envelope: { decay: 0.12 } },
+      snare: { noiseType: "white", envelope: { decay: 0.12 } },
       hihat: { decay: 0.04 },
     },
   },
