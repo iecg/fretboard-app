@@ -177,6 +177,21 @@ describe("buildAllLayers", () => {
     expect(approachBar2).toBeDefined();
     expect(approachBar2?.value.note).not.toBe(approachBar1?.value.note);
   });
+
+  describe("chord strum durationSec emission", () => {
+    it("leaves durationSec undefined for a pattern with no muted hits", async () => {
+      const layers = await buildAllLayersAsync({
+        steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
+        tempoBpm: 120, beatsPerBar: 4, swing: 0,
+        chordPatternId: "pop-8ths", bassPatternId: "root-fifth",
+        drumPatternId: "pop", drumVariations: [], loop: false,
+      });
+      expect(layers.chordStrums.length).toBeGreaterThan(0);
+      for (const s of layers.chordStrums) {
+        expect(s.value.durationSec).toBeUndefined();
+      }
+    });
+  });
 });
 
 describe("articulationToDurationSec", () => {
