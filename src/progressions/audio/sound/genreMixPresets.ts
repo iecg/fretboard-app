@@ -50,7 +50,9 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     patches: { bass: "bass-pick", chord: "chord-steel-strum", drumKit: "kit-acoustic-rock" },
     perInstrument: {
       chord: { volumeDb: -3, pan: -0.18, reverbSend: 0.12 },
-      bass: { volumeDb: 0, pan: 0, reverbSend: 0.02 },
+      // -2 (was 0): the sawtooth bass-pick is the buzziest/most harmonic-rich
+      // bass patch; at unity it sat too present in the rock mix.
+      bass: { volumeDb: -2, pan: 0, reverbSend: 0.02 },
       // -1 (was 0): rock's long-ringing steel strum + constant staccato pedal
       // bass already give it the highest sustained energy of any genre. Staging
       // the kit at 0 too made rock the loudest overall — pull it to the pop

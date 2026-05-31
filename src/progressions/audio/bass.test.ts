@@ -47,8 +47,9 @@ describe("scheduleBassNote — patch-driven Tone backend", () => {
     const upright = getBassPatch("bass-upright")!;
     scheduleBassNote({} as AudioNode, 110, 0, { velocity: 0.9, patch: upright });
     const [opts] = spies.ctorSpy.mock.calls[0]!;
-    expect(opts.oscillator.type).toBe("fatsine");
-    expect(opts.filterEnvelope.baseFrequency).toBeCloseTo(150, 0);
+    // Harmonic-rich (triangle), not a pure sine — a sine upright was inaudible
+    // on small speakers across blues/jazz/ballad (the genres that share it).
+    expect(opts.oscillator.type).toBe("triangle");
     expect(opts.filterEnvelope.octaves).toBeGreaterThan(0);
   });
 

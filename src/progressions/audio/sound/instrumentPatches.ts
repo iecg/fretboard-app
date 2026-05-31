@@ -6,13 +6,19 @@ import type { BassPatch, ChordPatch, ChordFamily, DrumKitPatch } from "./patchTy
 // filter envelope (octaves > 0). The old voice used octaves: 0 (inert).
 export const BASS_PATCHES: readonly BassPatch[] = [
   {
+    // Shared by blues, jazz, and ballad. Must read on small speakers, so it
+    // CANNOT be a pure sine: bass frequencies (~40-165Hz) are physically weak
+    // on laptop/phone speakers and a sine has no overtones for the ear to
+    // track the pitch. Use a triangle (odd harmonics) + a small sustain so the
+    // body survives a legato note, an open top (no high-cut) to keep those
+    // harmonics, and a gentle chebyshev saturation for extra audible overtones.
     id: "bass-upright", label: "Upright",
-    oscillator: { type: "fatsine" },
-    envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.3 },
+    oscillator: { type: "triangle" },
+    envelope: { attack: 0.01, decay: 0.5, sustain: 0.12, release: 0.3 },
     filter: { type: "lowpass", Q: 1 },
-    filterEnvelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.3, baseFrequency: 150, octaves: 2.5 },
+    filterEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.4, release: 0.3, baseFrequency: 180, octaves: 2.5 },
     volumeDb: -2,
-    insert: { eq3: { low: 2, mid: 0, high: -3 } },
+    insert: { eq3: { low: 2, mid: 1, high: 0 }, saturation: { kind: "chebyshev", amount: 3 } },
   },
   {
     id: "bass-finger", label: "Finger Electric",

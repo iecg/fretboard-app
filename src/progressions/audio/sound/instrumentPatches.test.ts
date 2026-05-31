@@ -14,6 +14,42 @@ describe("instrument patches", () => {
     }
   });
 
+  it("every bass patch produces harmonic content so it reads on small speakers", () => {
+    // Recurrence guard for the repeated "bass is inaudible" bug class. A pure
+    // sine at bass frequencies (~40-165Hz) is physically weak on laptop/phone
+    // speakers and most headphones, and has no overtones for the ear to track
+    // the pitch by. Every bass patch must EITHER use a harmonic-rich oscillator
+    // (not the sine family) OR add a saturation insert that generates
+    // harmonics. This fails the moment a pure-sine bass is reintroduced.
+    const SINE_FAMILY = new Set(["sine", "fatsine", "fmsine"]);
+    for (const p of BASS_PATCHES) {
+      const harmonicOsc = !SINE_FAMILY.has(p.oscillator.type);
+      const hasSaturation = p.insert?.saturation !== undefined;
+      expect(
+        harmonicOsc || hasSaturation,
+        `bass patch "${p.id}" is a pure sine with no saturation — it will be inaudible on small speakers`,
+      ).toBe(true);
+    }
+  });
+
+  it("never combines a high-cut with NO harmonic source (the inaudible combo)", () => {
+    // The fatal combination for small-speaker audibility is a pure sine AND a
+    // high-cut AND no saturation — that's what made the old upright vanish. A
+    // high-cut is fine on its own (e.g. bass-finger cuts highs but its
+    // saturation regenerates overtones), so guard the *combination*, not the
+    // high-cut alone.
+    const SINE_FAMILY = new Set(["sine", "fatsine", "fmsine"]);
+    for (const p of BASS_PATCHES) {
+      const highCut = (p.insert?.eq3?.high ?? 0) < 0;
+      const pureSine = SINE_FAMILY.has(p.oscillator.type);
+      const noSaturation = p.insert?.saturation === undefined;
+      expect(
+        highCut && pureSine && noSaturation,
+        `bass patch "${p.id}" is a high-cut pure sine with no saturation — inaudible on small speakers`,
+      ).toBe(false);
+    }
+  });
+
   it("poly chord patches carry poly spec, strum patches carry strum spec", () => {
     for (const p of CHORD_PATCHES) {
       if (p.family === "poly") { expect(p.poly).toBeDefined(); expect(p.strum).toBeUndefined(); }

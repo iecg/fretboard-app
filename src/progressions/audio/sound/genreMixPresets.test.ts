@@ -73,4 +73,11 @@ describe("genre mix presets", () => {
     const pop = getGenreMix("pop")!;
     expect(rock.perInstrument.drums.volumeDb).toBeLessThanOrEqual(pop.perInstrument.drums.volumeDb);
   });
+
+  it("keeps the rock bass from sitting too present (the buzzy pick patch)", () => {
+    // Rock uses the sawtooth bass-pick — the most harmonic-rich/buzzy patch.
+    // At 0dB it was too present; it must be tucked at least 1dB under unity.
+    const rock = getGenreMix("rock")!;
+    expect(rock.perInstrument.bass.volumeDb).toBeLessThanOrEqual(-1);
+  });
 });
