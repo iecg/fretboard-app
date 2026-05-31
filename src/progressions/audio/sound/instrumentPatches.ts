@@ -111,10 +111,12 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
     id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
     strum: {
       // Bright single-coil chicken-scratch: upper-harmonic-weighted partials so
-      // muted scratches cut on small speakers, and a short note/release so even
-      // voiced stabs stay tight instead of ringing like the acoustic strum.
+      // muted scratches cut on small speakers. A small sustain lets a held
+      // "stab" ring as a strummed chord, while the short release keeps the
+      // 0.06s muted ghost choked tight. Hold duration (durationSec) decides
+      // ring vs. choke — exactly like a fretting hand muting vs. sustaining.
       oscillator: { type: "custom", partials: [1, 0.9, 0.7, 0.5, 0.35, 0.25, 0.15] },
-      envelope: { attack: 0.004, decay: 0.18, sustain: 0.0, release: 0.08 },
+      envelope: { attack: 0.004, decay: 0.12, sustain: 0.22, release: 0.09 },
       noteDurationSec: 0.18, releaseTailSec: 0.4,
     },
     insert: { eq3: { low: -2, mid: 1, high: 3 } },
