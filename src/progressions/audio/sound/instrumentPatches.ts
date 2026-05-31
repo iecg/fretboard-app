@@ -6,13 +6,19 @@ import type { BassPatch, ChordPatch, ChordFamily, DrumKitPatch } from "./patchTy
 // filter envelope (octaves > 0). The old voice used octaves: 0 (inert).
 export const BASS_PATCHES: readonly BassPatch[] = [
   {
+    // Shared by blues, jazz, and ballad. Must read on small speakers, so it
+    // CANNOT be a pure sine: bass frequencies (~40-165Hz) are physically weak
+    // on laptop/phone speakers and a sine has no overtones for the ear to
+    // track the pitch. Use a triangle (odd harmonics) + a small sustain so the
+    // body survives a legato note, an open top (no high-cut) to keep those
+    // harmonics, and a gentle chebyshev saturation for extra audible overtones.
     id: "bass-upright", label: "Upright",
-    oscillator: { type: "fatsine" },
-    envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.3 },
+    oscillator: { type: "triangle" },
+    envelope: { attack: 0.01, decay: 0.5, sustain: 0.12, release: 0.3 },
     filter: { type: "lowpass", Q: 1 },
-    filterEnvelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.3, baseFrequency: 150, octaves: 2.5 },
+    filterEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.4, release: 0.3, baseFrequency: 180, octaves: 2.5 },
     volumeDb: -2,
-    insert: { eq3: { low: 2, mid: 0, high: -3 } },
+    insert: { eq3: { low: 2, mid: 1, high: 0 }, saturation: { kind: "chebyshev", amount: 3 } },
   },
   {
     id: "bass-finger", label: "Finger Electric",
@@ -130,9 +136,16 @@ export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [
     id: "kit-jazz-brush", label: "Jazz Brush",
     voices: {
       kick: { pitchDecay: 0.05, octaves: 5, envelope: { decay: 0.3 } },
-      snare: { noiseType: "pink", envelope: { attack: 0.004, decay: 0.16 } },
+      // Brush: white noise (energy in the highs that survive small speakers —
+      // dark pink at low velocity was inaudible twice), a slightly longer decay
+      // for the brush "swish", and a +4dB lift via the per-voice lever so it
+      // reads as a soft-but-present brush rather than a hard backbeat whack.
+      snare: { noiseType: "white", envelope: { attack: 0.004, decay: 0.22 }, volume: 4 },
       hihat: { decay: 0.05, resonance: 3000 },
-      ride: { decay: 1.2, harmonicity: 3.1, resonance: 2400 },
+      // Tamed ride: −10dB output so it sits under the brushes (it was
+      // dominating), shorter decay + lower resonance so it reads as a soft
+      // jazz ride rather than a piercing metallic wash.
+      ride: { decay: 1.0, harmonicity: 2.8, resonance: 1800, volume: -10 },
     },
   },
   {

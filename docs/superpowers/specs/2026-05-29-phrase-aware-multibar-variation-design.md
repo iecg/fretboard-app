@@ -68,6 +68,21 @@ Requires a **cross-stick / rim voice** in the drum kit (new voice in
 `drumKit.ts` + `instrumentPatches.ts`), since clave is the defining timbre.
 This is inherently a 2-bar pattern, so it depends on §3.1.
 
+**Also overhaul the bossa bass + chord comp (currently generic — flagged by a
+user as "doesn't remind me of bossa", 2026-05-31):**
+- **Bass:** the `bossa-nova` genre currently uses the generic `arpeggiated`
+  bass (a 4-note up-arpeggio). Replace with an authentic bossa bassline — a
+  root–fifth surdo figure on beat 1 and the "and" of 2 (tied to the clave
+  pulse), not an even arpeggio. New `bossa` bass pattern in `BASS_PATTERNS`.
+- **Chord comp:** the genre currently uses `straight-quarters` (four even
+  hits). Replace with a syncopated partido-alto / bossa comp that anticipates
+  the bar and leaves space, phrased against the 2-bar clave.
+- These were deliberately deferred here (rather than done as a 1-bar
+  approximation) because the clave they must lock to is a §3.1 2-bar construct;
+  doing them standalone would just produce another non-clave approximation.
+  Do them in the same slice as the drum clave so bass, comp, and clave are
+  phrased together.
+
 ## 4. Open design questions (resolve in brainstorming)
 
 - **Pattern data model for phrase variants:** inline `phraseVariants` on each

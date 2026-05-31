@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GENRE_STYLES, getGenreStyle } from "./genres";
-import { getChordPattern, getBassPattern, getDrumPattern } from "./patterns";
+import { getChordPattern, getBassPattern, getDrumPattern, getDrumVariation } from "./patterns";
 
 describe("genre styles", () => {
   it("has 7 genre presets", () => {
@@ -42,5 +42,31 @@ describe("genre styles", () => {
 
   it("wires the rock genre to the driving pedal bass", () => {
     expect(getGenreStyle("rock")!.bassPattern).toBe("pedal");
+  });
+
+  it("wires the funk genre to the 16th-note funk comp, not the reggae skank", () => {
+    expect(getGenreStyle("funk")!.chordPattern).toBe("funk-16th");
+  });
+});
+
+describe("genre drum variations", () => {
+  it("wires per-bar-safe variations to funk, pop, and rock", () => {
+    expect(getGenreStyle("funk")!.drumVariations).toContain("open-hat-and-of-4");
+    expect(getGenreStyle("pop")!.drumVariations).toContain("open-hat-and-of-4");
+    expect(getGenreStyle("rock")!.drumVariations).toContain("open-hat-and-of-4");
+  });
+
+  it("does NOT assign fill-every-4 to any genre (barInterval not yet honored)", () => {
+    for (const g of GENRE_STYLES) {
+      expect(g.drumVariations, `genre ${g.id}`).not.toContain("fill-every-4");
+    }
+  });
+
+  it("keeps every referenced variation id resolvable", () => {
+    for (const g of GENRE_STYLES) {
+      for (const id of g.drumVariations) {
+        expect(getDrumVariation(id), `genre ${g.id} variation ${id}`).toBeDefined();
+      }
+    }
   });
 });

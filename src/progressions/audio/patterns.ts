@@ -130,6 +130,27 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     ],
   },
   {
+    id: "funk-16th",
+    label: "Funk 16ths",
+    // Percussive 16th-note scratch comp: a strong downbeat stab, syncopated
+    // accents on the "e/a" subdivisions, and soft muted scratch strokes between
+    // them. Alternating down/up strums emulate the wrist motion of funk
+    // rhythm guitar. (The strum voice ignores `style`, so the percussive feel
+    // comes from rhythm + velocity dynamics + strum direction, not staccato.)
+    hits: [
+      { beat: 0, velocity: 0.95, direction: "down" },
+      { beat: 0.5, velocity: 0.3, direction: "up" },
+      { beat: 0.75, velocity: 0.7, direction: "up" },
+      { beat: 1.25, velocity: 0.35, direction: "down" },
+      { beat: 1.5, velocity: 0.65, direction: "up" },
+      { beat: 2, velocity: 0.8, direction: "down" },
+      { beat: 2.5, velocity: 0.3, direction: "up" },
+      { beat: 2.75, velocity: 0.7, direction: "up" },
+      { beat: 3.25, velocity: 0.35, direction: "down" },
+      { beat: 3.5, velocity: 0.6, direction: "up" },
+    ],
+  },
+  {
     id: "pop-syncopated-push",
     label: "Pop Syncopated Push",
     hits: [
@@ -174,19 +195,23 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
     id: "arpeggiated",
     label: "Arpeggiated",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 1, velocity: 0.8, note: "third" },
-      { beat: 2, velocity: 0.85, note: "fifth" },
-      { beat: 3, velocity: 0.7, note: "octave" },
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 1, velocity: 0.8, note: "third", articulation: "legato" },
+      { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
+      { beat: 3, velocity: 0.7, note: "octave", articulation: "legato" },
     ],
   },
   {
     id: "shuffle",
     label: "Shuffle Bass",
     hits: [
-      { beat: 0, velocity: 1, note: "root" },
-      { beat: 2, velocity: 0.85, note: "fifth" },
-      { beat: 3.5, velocity: 0.6, note: "root" },
+      // Legato, not staccato: shuffle runs on the sustain:0 `bass-upright`
+      // patch whose filter envelope closes to a 150Hz cutoff. Clipping the
+      // note to staccato (~0.3·beat) leaves only a dull, near-inaudible stub.
+      // Swing supplies the bounce; the upright stays connected.
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
+      { beat: 3.5, velocity: 0.6, note: "root", articulation: "legato" },
     ],
   },
   {
@@ -269,7 +294,13 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
       { beat: 2, velocity: 0.18 },
       { beat: 3, velocity: 0.15 },
     ],
-    snares: [{ beat: 2.5, velocity: 0.2 }],
+    snares: [
+      // Brush taps on the backbeat (musical 2 & 4) plus the original soft
+      // ghost — gives the brushes audible presence under the ride.
+      { beat: 1, velocity: 0.3 },
+      { beat: 2.5, velocity: 0.22 },
+      { beat: 3, velocity: 0.3 },
+    ],
     hats: [
       { beat: 1, velocity: 0.5 },
       { beat: 3, velocity: 0.5 },
@@ -315,14 +346,22 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
     id: "funk",
     label: "Funk",
     kicks: [
+      // In-the-pocket funk: the one hardest, a syncopated push on the "a" of 1,
+      // the classic "and of 3" anchor, and a pickup pushing back to the one —
+      // this interlocks with the funk-syncopated bass rather than thumping
+      // four-on-the-floor.
       { beat: 0, velocity: 1 },
-      { beat: 0.5, velocity: 0.7 },
-      { beat: 2.5, velocity: 0.8 },
+      { beat: 0.75, velocity: 0.6 },
+      { beat: 2.5, velocity: 0.85 },
+      { beat: 3.5, velocity: 0.5 },
     ],
     snares: [
+      { beat: 0.75, velocity: 0.15 },
       { beat: 1, velocity: 1 },
       { beat: 1.5, velocity: 0.3 },
+      { beat: 2.25, velocity: 0.18 },
       { beat: 3, velocity: 1 },
+      { beat: 3.5, velocity: 0.15 },
     ],
     hats: [
       { beat: 0, velocity: 0.5 },

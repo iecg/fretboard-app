@@ -143,6 +143,10 @@ function snarePool(kit?: DrumKitPatch) {
   const pool = createReusableVoicePool<Tone.NoiseSynth>({
     createVoice: () =>
       new Tone.NoiseSynth({
+        // Per-voice output level (dB). Lets a soft brush snare be lifted without
+        // raising its velocity (which would turn it into a hard backbeat hit).
+        // Defaults to 0 (unchanged) for kits that omit it. Mirrors the ride.
+        volume: ov?.volume ?? 0,
         noise: { type: ov?.noiseType ?? "white" },
         envelope: {
           attack: 0.001,
@@ -268,6 +272,10 @@ function ridePool(kit?: DrumKitPatch) {
   const pool = createReusableVoicePool<Tone.MetalSynth>({
     createVoice: () =>
       new Tone.MetalSynth({
+        // Per-voice output level (dB). MetalSynth is intrinsically hot; without
+        // this knob the ride could only be balanced via velocity, which warps
+        // the musical dynamics. Defaults to 0 (unchanged) for kits that omit it.
+        volume: ov?.volume ?? 0,
         envelope: { attack: 0.001, decay: ov?.decay ?? 1.0, release: 0.3 },
         harmonicity: ov?.harmonicity ?? 3.1,
         modulationIndex: 22,
