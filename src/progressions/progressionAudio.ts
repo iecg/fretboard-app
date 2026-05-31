@@ -56,7 +56,7 @@ export function resolveChordVoicing(
  * Funk color tones to layer on top of a resolved voicing, as semitone offsets
  * above the chord root (computed at the chord's root octave, so +10/+14/+21
  * naturally land at/above the triad). Qualities not listed get no extensions
- * (dim/aug/sus/6 would clash). Used only on "stab" hits — see buildAllLayers.
+ * (dim/aug/sus/6 would clash). Used only on "color-stab" hits — see buildAllLayers.
  *   +10 = b7,  +14 = 9,  +21 = 13
  */
 const FUNK_EXTENSION_SEMITONES: Record<string, readonly number[]> = {

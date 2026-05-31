@@ -68,6 +68,15 @@ describe("pluckString — Tone.PluckSynth backend", () => {
     expect(time).toBeCloseTo(0, 3);
   });
 
+  it("maps distinct velocities to distinct gains (funk dynamics survive)", () => {
+    // Pool reuses the voice across non-overlapping plucks; each trigger sets the
+    // gain to its own velocity, so a ghost (0.2) and a stab (0.9) differ.
+    pluckString({} as AudioNode, 220, 0, { velocity: 0.2, spec: pluckSpec });
+    pluckString({} as AudioNode, 220, 1, { velocity: 0.9, spec: pluckSpec });
+    const gains = spies.gainSet.mock.calls.map((c) => c[0]);
+    expect(gains).toEqual([0.2, 0.9]);
+  });
+
   it("falls back to a Tone.Synth when the spec has no pluck", () => {
     pluckString({} as AudioNode, 220, 0, {
       velocity: 0.7,
