@@ -43,6 +43,10 @@ describe("genre styles", () => {
   it("wires the rock genre to the driving pedal bass", () => {
     expect(getGenreStyle("rock")!.bassPattern).toBe("pedal");
   });
+
+  it("wires the funk genre to the 16th-note funk comp, not the reggae skank", () => {
+    expect(getGenreStyle("funk")!.chordPattern).toBe("funk-16th");
+  });
 });
 
 describe("genre drum variations", () => {

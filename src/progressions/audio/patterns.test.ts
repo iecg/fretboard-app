@@ -86,8 +86,8 @@ describe("buildMetronomePattern", () => {
 });
 
 describe("pattern catalog", () => {
-  it("has 7 chord patterns with unique IDs", () => {
-    expect(CHORD_PATTERNS).toHaveLength(7);
+  it("has 8 chord patterns with unique IDs", () => {
+    expect(CHORD_PATTERNS).toHaveLength(8);
     const ids = CHORD_PATTERNS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -281,5 +281,37 @@ describe("funk drum ghost snares", () => {
 
   it("places snares on the expected 16th-subdivision grid", () => {
     expect(funk.snares.map((h) => h.beat)).toEqual([0.75, 1, 1.5, 2.25, 3, 3.5]);
+  });
+
+  it("locks the kick to a syncopated in-the-pocket funk groove", () => {
+    // The funk kick should anchor the one hardest and add a syncopated push
+    // (the 'and' of beats) rather than a plain 4-on-the-floor feel.
+    const byBeat = new Map(funk.kicks.map((h) => [h.beat, h.velocity]));
+    expect(funk.kicks.map((h) => h.beat)).toEqual([0, 0.75, 2.5, 3.5]);
+    expect(byBeat.get(0)).toBe(1); // the one is the hardest
+    expect(byBeat.get(0.75)!).toBeLessThan(byBeat.get(0)!); // syncopated push is softer
+  });
+});
+
+describe("funk-16th chord comp pattern", () => {
+  const funk = getChordPattern("funk-16th")!;
+
+  it("exists and is a syncopated 16th-note scratch comp", () => {
+    expect(funk).toBeDefined();
+    // Dense 16th-note grid with the characteristic funk syncopation — far more
+    // hits than the reggae offbeat-skank it replaces (which had 4 upbeats).
+    expect(funk.hits.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("accents the downbeat over the scratchy inner 16ths", () => {
+    const byBeat = new Map(funk.hits.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(0)!).toBeGreaterThan(0.8); // strong downbeat stab
+    const ghosts = funk.hits.filter((h) => h.velocity <= 0.4);
+    expect(ghosts.length).toBeGreaterThanOrEqual(3); // soft scratch strokes
+  });
+
+  it("alternates strum direction for the 16th scratch feel", () => {
+    expect(funk.hits.some((h) => h.direction === "up")).toBe(true);
+    expect(funk.hits.some((h) => h.direction === "down")).toBe(true);
   });
 });

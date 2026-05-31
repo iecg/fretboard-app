@@ -44,6 +44,14 @@ describe("genre mix presets", () => {
     expect(jazz.perInstrument.drums.volumeDb).toBeLessThan(jazz.perInstrument.chord.volumeDb);
   });
 
+  it("keeps the jazz kit audible — not buried far below the front line", () => {
+    // Regression guard: the jazz drums bus was -5dB (quietest of any genre),
+    // and stacking that under the already-soft brush/ride voices made the kit
+    // barely audible. It must stay below the chord but no more than ~2dB under.
+    const jazz = getGenreMix("jazz")!;
+    expect(jazz.perInstrument.drums.volumeDb).toBeGreaterThanOrEqual(-3);
+  });
+
   it("pushes funk bass to at least match its chord level", () => {
     const funk = getGenreMix("funk")!;
     expect(funk.perInstrument.bass.volumeDb).toBeGreaterThanOrEqual(funk.perInstrument.chord.volumeDb);

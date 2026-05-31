@@ -62,7 +62,9 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     perInstrument: {
       chord: { volumeDb: -2, pan: -0.16, reverbSend: 0.22 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.06 },
-      drums: { volumeDb: -5, pan: 0.1, reverbSend: 0.18 },
+      // -3 (was -5): the brush/ride voices are already individually soft, so
+      // the extra bus cut buried the whole kit. Sits just under the front line.
+      drums: { volumeDb: -3, pan: 0.1, reverbSend: 0.18 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
     master: { compressor: { threshold: -20, ratio: 2.5, attack: 0.015, release: 0.22 }, reverb: { decay: 1.8, wet: 0.22 }, limiterThreshold: -1.2 },

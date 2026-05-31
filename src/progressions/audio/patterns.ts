@@ -130,6 +130,27 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     ],
   },
   {
+    id: "funk-16th",
+    label: "Funk 16ths",
+    // Percussive 16th-note scratch comp: a strong downbeat stab, syncopated
+    // accents on the "e/a" subdivisions, and soft muted scratch strokes between
+    // them. Alternating down/up strums emulate the wrist motion of funk
+    // rhythm guitar. (The strum voice ignores `style`, so the percussive feel
+    // comes from rhythm + velocity dynamics + strum direction, not staccato.)
+    hits: [
+      { beat: 0, velocity: 0.95, direction: "down" },
+      { beat: 0.5, velocity: 0.3, direction: "up" },
+      { beat: 0.75, velocity: 0.7, direction: "up" },
+      { beat: 1.25, velocity: 0.35, direction: "down" },
+      { beat: 1.5, velocity: 0.65, direction: "up" },
+      { beat: 2, velocity: 0.8, direction: "down" },
+      { beat: 2.5, velocity: 0.3, direction: "up" },
+      { beat: 2.75, velocity: 0.7, direction: "up" },
+      { beat: 3.25, velocity: 0.35, direction: "down" },
+      { beat: 3.5, velocity: 0.6, direction: "up" },
+    ],
+  },
+  {
     id: "pop-syncopated-push",
     label: "Pop Syncopated Push",
     hits: [
@@ -325,9 +346,14 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
     id: "funk",
     label: "Funk",
     kicks: [
+      // In-the-pocket funk: the one hardest, a syncopated push on the "a" of 1,
+      // the classic "and of 3" anchor, and a pickup pushing back to the one —
+      // this interlocks with the funk-syncopated bass rather than thumping
+      // four-on-the-floor.
       { beat: 0, velocity: 1 },
-      { beat: 0.5, velocity: 0.7 },
-      { beat: 2.5, velocity: 0.8 },
+      { beat: 0.75, velocity: 0.6 },
+      { beat: 2.5, velocity: 0.85 },
+      { beat: 3.5, velocity: 0.5 },
     ],
     snares: [
       { beat: 0.75, velocity: 0.15 },
