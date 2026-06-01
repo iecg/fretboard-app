@@ -367,6 +367,22 @@ describe("buildAllLayers", () => {
       expect(a.drums).toEqual(b.drums);
     });
 
+    it("is deterministic for the bossa 2-bar cell across a 4-bar span (drums, bass, comp)", async () => {
+      const bossaInput = {
+        ...baseInput,
+        steps: fourBarSteps,
+        drumPatternId: "bossa",
+        bassPatternId: "bossa",
+        chordPatternId: "bossa-comp",
+        drumVariations: [] as string[],
+      };
+      const a = await buildAllLayersAsync(bossaInput);
+      const b = await buildAllLayersAsync(bossaInput);
+      expect(a.drums).toEqual(b.drums);
+      expect(a.bass).toEqual(b.bass);
+      expect(a.chordStrums).toEqual(b.chordStrums);
+    });
+
     it("counts an unavailable bar toward the absolute index (turnaround stays aligned)", async () => {
       // [2-bar C][1-bar unavailable][1-bar G] → absolute bars 0,1,(2 rest),3.
       // fill-every-4 (phase 3) must fire on absolute bar 3 = the final G bar (12..16s).
