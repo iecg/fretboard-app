@@ -303,7 +303,36 @@ export function useProgressionAudioPlayback() {
     startVisualClock(store);
 
     const gen = ++genRef.current;
-    
+
+    // Restart-tier reset: whenever this effect re-runs while playing — a
+    // style/genre swap, pattern change, chord edit, or time-signature change
+    // (everything in `buildKey`) — restart playback deterministically from bar 1.
+    // Three things happen synchronously, up front, so every restart is identical:
+    //   1. dispose the old parts (silences the old audio immediately — no
+    //      make-before-break overlap, whose build-completion-timed handoff made
+    //      the restart point float: skipped chords / "started over" / "next bar"),
+    //   2. clearTimeline() (snaps the visual playhead to the top),
+    //   3. stop() the Tone Transport, rewinding its position to 0.
+    //
+    // Step 3 is what makes the restart CONSISTENT. The Transport otherwise
+    // free-runs, so new parts started against it land at an arbitrary loop phase
+    // — sometimes bar 1, sometimes mid-progression, sometimes skipping chords
+    // (the exact inconsistency users reported). Rewinding to 0 means the new
+    // parts always begin at chord 0.
+    //
+    // CRITICAL PAIRING: the partStart computation further below MUST then be
+    // transport-RELATIVE (`SCHEDULE_LEAD_SECONDS`), not `ctx.currentTime + lead`.
+    // ctx.currentTime keeps climbing across the session; scheduling parts at that
+    // absolute value against a transport rewound to 0 would place them ~ctxTime
+    // seconds in the future, so they never sound. The rewind and the relative
+    // partStart are two halves of one fix — never change one without the other.
+    if (engine) {
+      engine.disposeAll(primsRef.current);
+      primsRef.current = null;
+      engine.clearTimeline();
+      engine.getTransport().stop();
+    }
+
     // Defer the loading spinner to prevent rapid UI flashing for fast rebuilds
     // In test mode, we make it synchronous to satisfy strict test assertions.
     let loadingTimer: ReturnType<typeof setTimeout> | undefined;
@@ -338,7 +367,7 @@ export function useProgressionAudioPlayback() {
 
       // Apply tempo/swing/time-signature BEFORE constructing Parts so
       // Tone.Part's seconds→ticks conversion uses the user-selected BPM, not
-      // Tone's default (120 BPM). On first play, Effects 2-4 fire while the
+      // Tone's default (120 BPM). On first play, the live tempo/swing effects fire while the
       // engine is still loading (`if (!engine) return;`), so the Transport
       // sits at its defaults until the user nudges any of these values.
       // Initializing them here closes that gap — all five Parts (chord-onset,
@@ -397,11 +426,11 @@ export function useProgressionAudioPlayback() {
       if (gen !== genRef.current) return;
       if (built.chordOnsets.length === 0) { tearDownAndStop(); return; }
 
-      // Dispose OLD parts right before starting new ones to eliminate lag gap!
-      eng.disposeAll(primsRef.current);
-      eng.clearTimeline();
-
-      const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
+      // The Transport was rewound to 0 up front (see the restart-tier reset at
+      // the top of this effect), so partStart is TRANSPORT-RELATIVE: a small lead
+      // from position 0, NOT ctx.currentTime + lead. Pairing the rewind with a
+      // relative start is what makes every restart begin at chord 0 / bar 1.
+      const partStart = SCHEDULE_LEAD_SECONDS;
       const parts: ProgressionPartHandle[] = [];
       const totalDurationSec = built.totalDurationSec;
 
@@ -504,10 +533,11 @@ export function useProgressionAudioPlayback() {
       // for lint's exhaustive-deps check (which would otherwise warn).
       genRefSnapshot.current++;
       
-      // We DO NOT dispose audio here! 
-      // If `playing` remains true, the old audio continues seamlessly until 
-      // the new parts are ready. If `playing` became false, the next render 
-      // will call `tearDownAndStop()` cleanly.
+      // Audio is NOT disposed here. The next effect run handles teardown: a
+      // restart-tier change disposes + rewinds up front (see the reset block at
+      // the top of this effect), and a stop (`playing` false) hits the
+      // `tearDownAndStop()` early-return branch. Cleanup's only job is bumping
+      // `genRef` to invalidate any in-flight build.
     };
   }, [
     playing,
@@ -529,11 +559,6 @@ export function useProgressionAudioPlayback() {
     if (!engine) return;
     engine.setPlaybackSwing(swing);
   }, [swing]);
-
-  useEffect(() => {
-    if (!engine) return;
-    engine.setPlaybackTimeSignature(beatsPerBar);
-  }, [beatsPerBar]);
 
   useEffect(() => {
     instrumentRef.current = chordInstrument;
