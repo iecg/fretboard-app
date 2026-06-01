@@ -243,7 +243,7 @@
   padding: 0.85rem 1rem;
   border: 1px solid color-mix(in srgb, var(--faceplate-accent) 28%, var(--faceplate-divider));
   border-radius: 12px;
-  background-color: color-mix(in srgb, var(--faceplate-accent) 5%, transparent);
+  background-color: color-mix(in srgb, var(--faceplate-accent) 5%, var(--faceplate-surface));
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
 }
 
@@ -311,7 +311,7 @@
   align-items: center;
   gap: 0.1rem;
   padding: 3px;
-  background-color: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  background-color: var(--faceplate-inset);
   border: 1px solid var(--faceplate-divider);
   border-radius: 8px;
 }
