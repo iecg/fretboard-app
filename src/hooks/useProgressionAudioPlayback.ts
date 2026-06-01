@@ -306,17 +306,25 @@ export function useProgressionAudioPlayback() {
 
     // Restart-tier reset: whenever this effect re-runs while playing — a
     // style/genre swap, pattern change, chord edit, or time-signature change
-    // (everything in `buildKey`) — tear the old audio down *up front* and rewind
-    // the transport to bar 1 BEFORE compiling. `clearTimeline()` snaps the visual
-    // playhead to the top via the visual clock. The debounced spinner below
-    // covers the brief compile gap. This replaces the old make-before-break swap,
-    // whose build-completion-timed handoff made the restart point float
-    // unpredictably (skipped chords / "started over" / "next bar" at random).
+    // (everything in `buildKey`) — tear the old audio down *up front* so the
+    // switch is deterministic. Disposing the old parts here silences the old
+    // audio immediately instead of letting it play through until the async
+    // rebuild lands (the old make-before-break swap, whose build-completion-timed
+    // handoff made the restart point float — skipped chords / "started over" /
+    // "next bar" at random). `clearTimeline()` snaps the visual playhead to the
+    // top; the new parts below start at offset 0, so playback restarts cleanly
+    // from bar 1 once compiled.
+    //
+    // Do NOT stop or rewind the Tone Transport here. Parts are scheduled at an
+    // absolute AudioContext time (`partStart = ctx.currentTime + lead`), and the
+    // Transport runs continuously from first play so its position tracks that
+    // clock. Rewinding the Transport to 0 (via stop) while `partStart` stays at
+    // the (large) current ctx time would schedule the freshly-built parts far in
+    // the future, so they never sound — playback silently dies and never restarts.
     if (engine) {
       engine.disposeAll(primsRef.current);
       primsRef.current = null;
       engine.clearTimeline();
-      engine.getTransport().stop();
     }
 
     // Defer the loading spinner to prevent rapid UI flashing for fast rebuilds
@@ -413,8 +421,8 @@ export function useProgressionAudioPlayback() {
       if (built.chordOnsets.length === 0) { tearDownAndStop(); return; }
 
       // Old parts and timeline were already disposed/cleared up front (see the
-      // restart-tier reset at the top of this effect), so the new Parts below
-      // build against a clean, rewound transport.
+      // restart-tier reset at the top of this effect). The Transport keeps
+      // running; the new Parts below start at offset 0 to restart from bar 1.
       const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
       const parts: ProgressionPartHandle[] = [];
       const totalDurationSec = built.totalDurationSec;

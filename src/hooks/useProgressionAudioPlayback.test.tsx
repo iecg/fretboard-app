@@ -422,7 +422,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(newOnsets?.startedOffset).toBe(0);
   });
 
-  it("rewinds the transport to bar 1 and rebuilds up front on a restart-tier change", async () => {
+  it("restarts from bar 1 (offset 0) up front WITHOUT rewinding the running transport", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -437,8 +437,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     });
     const initialParts = [...toneMocks.parts];
 
-    // The engine is now loaded, so the next restart-tier change must rewind the
-    // transport synchronously. Clear the spy so we measure only that change.
+    // Clear the transport.stop spy so we measure only the upcoming change.
     toneMocks.transport.stop.mockClear();
 
     act(() => {
@@ -448,10 +447,16 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       ]);
     });
 
-    // Old parts are disposed up front (before the async rebuild completes).
+    // Old parts are disposed up front so the old audio is silenced immediately
+    // (deterministic switch — no make-before-break overlap).
     initialParts.forEach((p) => expect(p.disposed).toBe(true));
-    // Transport was rewound to 0 (deterministic restart from bar 1).
-    expect(toneMocks.transport.stop).toHaveBeenCalled();
+    // The transport must NOT be stopped/rewound. Parts are scheduled at an
+    // absolute AudioContext time (partStart = ctx.currentTime + lead) and the
+    // transport runs continuously, so its position tracks that clock. Rewinding
+    // it to 0 leaves the freshly-built parts scheduled far in the future, so
+    // playback goes silent and never restarts (regression guard for the
+    // genre-switch freeze).
+    expect(toneMocks.transport.stop).not.toHaveBeenCalled();
 
     // The async rebuild then constructs a fresh set of Parts starting at offset 0.
     await vi.waitFor(() => {
