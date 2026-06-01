@@ -185,15 +185,15 @@ describe("TransportBar", () => {
     expect(screen.queryByRole("button", { name: /Decrease Tempo/ })).toBeNull();
   });
 
-  it("keeps the play icon visible while progression is loading", () => {
+  it("shows no spinner and disables the play button while loading (stopped)", () => {
     const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
     renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
-    expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
     expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
   });
 
-  it("keeps the stop button enabled while loading if playback already started", () => {
+  it("keeps the stop button enabled and clickable to cancel while loading during playback", () => {
     const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
     renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
@@ -202,7 +202,12 @@ describe("TransportBar", () => {
     });
 
     expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Stop progression" })).toBeEnabled();
+    const button = screen.getByRole("button", { name: "Stop progression" });
+    expect(button).toBeEnabled();
+
+    // Clicking stop while a restart-tier build is loading cancels playback.
+    fireEvent.click(button);
+    expect(store.get(progressionPlayingAtom)).toBe(false);
   });
 
   it("clicking Stop progression sets playing=false and activeIndex=0", () => {
