@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, buildFunkColorVoicing, buildBossaColorVoicing, buildBossaRootedVoicing } from "./progressionAudio";
+import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, buildFunkColorVoicing, buildBossaColorVoicing } from "./progressionAudio";
 
 describe("resolveChordVoicing", () => {
   it("stacks the C Major Triad as C-E-G at octave 3", () => {
@@ -203,35 +203,5 @@ describe("buildBossaColorVoicing", () => {
   it("falls back to the plain voice-led triad for a quality without a grip; [] for unknown root", () => {
     expect(buildBossaColorVoicing("C", "dim")).toEqual(resolveChordVoicing("C", "dim", undefined, undefined));
     expect(buildBossaColorVoicing("H", "maj7")).toEqual([]);
-  });
-});
-
-describe("buildBossaRootedVoicing", () => {
-  const PC: Record<string, number> = { C: 0, "C#": 1, D: 2, "D#": 3, E: 4, F: 5, "F#": 6, G: 7, "G#": 8, A: 9, "A#": 10, B: 11 };
-  const pcSet = (notes: readonly string[]) => new Set(notes.map((n) => n.replace(/-?\d+$/, "")));
-  const abs = (n: string) => { const m = /^([A-G]#?)(-?\d+)$/.exec(n)!; return parseInt(m[2], 10) * 12 + PC[m[1]]; };
-
-  it("adds the chord root below the rootless Type-B grip", () => {
-    // C maj9: rootless grip [B3,D4,E4,G4] + root C3 underneath.
-    expect(buildBossaRootedVoicing("C", "maj7")).toEqual(["C3", "B3", "D4", "E4", "G4"]);
-    // A m9: grip normalizes to [G3,B3,C4,E4]; root A drops to A2 to stay below G3.
-    expect(buildBossaRootedVoicing("A", "m7")).toEqual(["A2", "G3", "B3", "C4", "E4"]);
-  });
-
-  it("puts the root pitch class as the lowest note of the voicing for every root", () => {
-    const ROOTS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    for (const root of ROOTS) {
-      for (const quality of ["maj7", "M", "m7", "m", "7"]) {
-        const v = buildBossaRootedVoicing(root, quality);
-        expect(pcSet(v).has(root), `${root}${quality} has root`).toBe(true);
-        // The added root is strictly the lowest note.
-        expect(v[0].replace(/-?\d+$/, ""), `${root}${quality} root on bottom`).toBe(root);
-        expect(Math.min(...v.map(abs)), `${root}${quality} root lowest`).toBe(abs(v[0]));
-      }
-    }
-  });
-
-  it("returns [] for an unknown root", () => {
-    expect(buildBossaRootedVoicing("H", "maj7")).toEqual([]);
   });
 });

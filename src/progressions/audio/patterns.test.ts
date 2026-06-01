@@ -520,17 +520,20 @@ describe("bossa patterns", () => {
     expect(bass.hits.map((h) => h.note)).toEqual(["root", "fifth"]);
   });
 
-  it("adds a 2-bar bossa comp: off-beat chord stabs that intensify in the second bar", () => {
+  it("adds a 2-bar bossa comp: LH bass + RH chords that intensify in the second bar", () => {
     const comp = getChordPattern("bossa-comp")!;
     expect(comp.bars).toBe(2);
     expect(comp.voicing).toBe("rootless-jazz");
-    // Only off-beat chord stabs (no on-beat bass hits — the upright covers 1 & 3).
-    expect(comp.hits.map((h) => h.beat)).toEqual([1.5, 3.5, 4.5, 5.5, 7.5]);
-    // The chords get busier in the second bar (the authentic 2-bar arc):
-    // bar 1 has 2 stabs, bar 2 has 3 anticipated off-beat stabs.
-    const beats = comp.hits.map((h) => h.beat);
-    expect(beats.filter((b) => b < 4)).toEqual([1.5, 3.5]);
-    expect(beats.filter((b) => b >= 4)).toEqual([4.5, 5.5, 7.5]);
+    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 5.5, 6, 7.5]);
+    expect(comp.hits.map((h) => h.voiceRole)).toEqual([
+      "bass-root", "chord", "bass-fifth", "chord",
+      "bass-root", "chord", "chord", "bass-fifth", "chord",
+    ]);
+    // The RH chords get busier in the second bar (the authentic 2-bar arc):
+    // bar 1 has 2 chord stabs, bar 2 has 3 anticipated off-beat stabs.
+    const chordBeats = comp.hits.filter((h) => h.voiceRole === "chord").map((h) => h.beat);
+    expect(chordBeats.filter((b) => b < 4)).toEqual([1.5, 3.5]);
+    expect(chordBeats.filter((b) => b >= 4)).toEqual([4.5, 5.5, 7.5]);
     // Every hit is short — no sustain anywhere in the comp.
     expect(comp.hits.every((h) => h.style === undefined)).toBe(true);
   });

@@ -151,35 +151,6 @@ export function buildBossaColorVoicing(
   });
 }
 
-/**
- * Build a *rooted* bossa comp voicing: the rootless Type-B grip from
- * `buildBossaColorVoicing` with the chord root added as the lowest note (placed
- * an octave below the grip's bottom tone). Lets the piano carry its own bass
- * note on the off-beat chord stabs — so it no longer doubles the upright
- * bassline on beats 1 and 3. Pure. Returns the plain grip when it is empty or
- * the root is unknown.
- */
-export function buildBossaRootedVoicing(
-  root: string,
-  quality: string,
-  prevVoicing?: string[],
-): string[] {
-  const upper = buildBossaColorVoicing(root, quality, prevVoicing);
-  const rootIndex = NOTES.indexOf(root);
-  if (upper.length === 0 || rootIndex < 0) return upper;
-  const lowestAbsolute = Math.min(
-    ...upper.map((n) => {
-      const m = /^([A-G]#?)(-?\d+)$/.exec(n)!;
-      return parseInt(m[2], 10) * 12 + NOTES.indexOf(m[1]);
-    }),
-  );
-  // Place the root pitch class at the highest octave strictly below the grip.
-  let rootAbsolute = Math.floor(lowestAbsolute / 12) * 12 + rootIndex;
-  if (rootAbsolute >= lowestAbsolute) rootAbsolute -= 12;
-  const rootNote = `${NOTES[((rootAbsolute % 12) + 12) % 12]}${Math.floor(rootAbsolute / 12)}`;
-  return [rootNote, ...upper];
-}
-
 export function resolveBassLineNotes(
   root: string,
   quality: string,
