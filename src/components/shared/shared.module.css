@@ -222,7 +222,7 @@
   display: flex;
   align-items: stretch;
   gap: 0.1rem;
-  height: 32px;
+  height: var(--control-height);
   box-sizing: border-box;
   background-color: var(--dc-bg);
   border: 1px solid var(--dc-border);
