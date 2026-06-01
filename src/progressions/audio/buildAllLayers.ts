@@ -12,6 +12,7 @@ import {
   getDrumVariation,
   variationFiresOnBar,
   repeatPatternToBeats,
+  sliceCellToBar,
   type CatalogDrumPattern,
   type DrumHit,
   type DrumVariation,
@@ -228,7 +229,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       });
 
       if (chordPattern && voicing.length > 0) {
-        const hits = repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
+        const chordCellBars = chordPattern.bars ?? 1;
+        const hits = isBarUnit && chordCellBars > 1
+          ? sliceCellToBar(chordPattern.hits, absoluteBar % chordCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
@@ -262,7 +266,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       }
 
       if (bassPattern && bassLineNotes.length > 0) {
-        const hits = repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
+        const bassCellBars = bassPattern.bars ?? 1;
+        const hits = isBarUnit && bassCellBars > 1
+          ? sliceCellToBar(bassPattern.hits, absoluteBar % bassCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
           const note = resolveBassNoteForRole(
             root,
@@ -290,10 +297,14 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
         }
       }
 
+      const drumCellBars = drumPattern?.bars ?? 1;
+      const baseForBar: VoicedDrumHit[] = isBarUnit && drumCellBars > 1
+        ? sliceCellToBar(baseDrumHits, absoluteBar % drumCellBars, input.beatsPerBar)
+        : baseDrumHits;
       const firingVariationHits: VoicedDrumHit[] = variations
         .filter((v) => variationFiresOnBar(v, absoluteBar))
         .flatMap((v) => collectDrumHits(v.pattern));
-      const drumHitsForBar: VoicedDrumHit[] = [...baseDrumHits, ...firingVariationHits];
+      const drumHitsForBar: VoicedDrumHit[] = [...baseForBar, ...firingVariationHits];
       if (drumHitsForBar.length > 0) {
         const hits = repeatPatternToBeats(drumHitsForBar, eventBeats, input.beatsPerBar);
         for (const hit of hits) {

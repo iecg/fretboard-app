@@ -283,6 +283,47 @@ describe("buildAllLayers", () => {
     expect(crossSticks.map((d) => d.time)).toEqual([0, 1.5, 3]);
   });
 
+  it("plays the bar-2 clave hits on the second bar of a 2-bar cell", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "bossa",
+      chordPatternId: "ballad-whole",
+      // One 2-bar step → absolute bars 0 and 1.
+      steps: [step({ duration: { value: 2, unit: "bar" } })],
+    });
+    const crossSticks = out.drums
+      .filter((d) => d.value.type === "crossStick")
+      .map((d) => d.time);
+    // Bar 1 @ 0,1.5,3 ; bar 2 starts at 4s, clave beats 5,6 → local 1,2 → 5,6.
+    expect(crossSticks).toEqual([0, 1.5, 3, 5, 6]);
+  });
+
+  it("plays the bossa comp's bar-2 syncopations on the second bar", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "bossa",
+      chordPatternId: "bossa-comp",
+      bassPatternId: "bossa",
+      steps: [step({ duration: { value: 2, unit: "bar" } })],
+    });
+    // comp beats 0,1.5,3 (bar1) and 4.5,6,7.5 (bar2) → times identical at 60bpm.
+    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 3, 4.5, 6, 7.5]);
+  });
+
+  it("leaves a 1-bar pattern (rock) emitting identical hits on every bar", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "rock",
+      chordPatternId: "ballad-whole",
+      steps: [step({ duration: { value: 2, unit: "bar" } })],
+    });
+    const kicksBar1 = out.drums.filter((d) => d.value.type === "kick" && d.time < 4).map((d) => d.time);
+    const kicksBar2 = out.drums.filter((d) => d.value.type === "kick" && d.time >= 4).map((d) => d.time - 4);
+    // rock kicks at 0, 1.5, 2 — same in both bars (the bars-default path is untouched).
+    expect(kicksBar1).toEqual([0, 1.5, 2]);
+    expect(kicksBar2).toEqual([0, 1.5, 2]);
+  });
+
   describe("drum variation gating (absolute bar)", () => {
     // Two 2-bar steps = 4 absolute bars (0..3). At 60bpm each bar is 4s.
     const fourBarSteps = [
