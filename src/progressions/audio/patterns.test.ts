@@ -10,6 +10,8 @@ import {
   getChordPattern,
   getBassPattern,
   getDrumPattern,
+  variationFiresOnBar,
+  type DrumVariation,
 } from "./patterns";
 
 // The "pop-8ths" chord pattern is the canonical 4/4 strum fixture used to
@@ -366,5 +368,40 @@ describe("funk groove locks on the one", () => {
     for (const k of funk.kicks) {
       if (k.beat !== 0) expect(k.velocity).toBeLessThanOrEqual(kickOne.velocity);
     }
+  });
+});
+
+describe("variationFiresOnBar", () => {
+  const v = (barInterval: number, barPhase?: number): DrumVariation => ({
+    id: "t",
+    label: "t",
+    barInterval,
+    barPhase,
+    pattern: { id: "p", label: "p", kicks: [], snares: [], hats: [] },
+  });
+
+  it("fires every bar at interval 1, phase 0", () => {
+    for (let b = 0; b < 8; b++) expect(variationFiresOnBar(v(1, 0), b)).toBe(true);
+  });
+
+  it("fires on the turnaround (interval 4, phase 3): bars 3 and 7", () => {
+    expect([0, 1, 2, 3, 4, 5, 6, 7].map((b) => variationFiresOnBar(v(4, 3), b)))
+      .toEqual([false, false, false, true, false, false, false, true]);
+  });
+
+  it("fires on phrase start (interval 4, phase 0): bars 0 and 4", () => {
+    expect([0, 1, 2, 3, 4].map((b) => variationFiresOnBar(v(4, 0), b)))
+      .toEqual([true, false, false, false, true]);
+  });
+
+  it("defaults barPhase to 0 when omitted", () => {
+    expect(variationFiresOnBar(v(2), 0)).toBe(true);
+    expect(variationFiresOnBar(v(2), 1)).toBe(false);
+    expect(variationFiresOnBar(v(2), 2)).toBe(true);
+  });
+
+  it("never fires for a non-positive interval (total/guarded)", () => {
+    expect(variationFiresOnBar(v(0, 0), 0)).toBe(false);
+    expect(variationFiresOnBar(v(-4, 0), 0)).toBe(false);
   });
 });
