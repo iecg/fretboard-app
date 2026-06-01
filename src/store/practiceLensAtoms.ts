@@ -384,26 +384,60 @@ export const nextChordTonesAtom = atom((get): Set<string> => {
 });
 
 /**
+ * Pitch-class set of the active progression chord. Reads the active step via
+ * `activeResolvedProgressionStepAtom` so the index is clamped to the current
+ * progression length. Sharps convention. Empty when unresolvable.
+ */
+export const activeChordTonesAtom = atom((get): Set<string> => {
+  const activeStep = get(activeResolvedProgressionStepAtom);
+  if (
+    !activeStep ||
+    activeStep.unavailable ||
+    activeStep.root === null ||
+    activeStep.quality === null
+  ) {
+    return new Set();
+  }
+  return new Set(getChordNotes(activeStep.root, activeStep.quality));
+});
+
+/**
  * Pitch-class set of notes shared between the active chord and the next chord
  * in the progression (common tones). Useful for the Lead lens to identify
  * pivot/guide notes when navigating between chords.
  *
- * Reads the active step via `activeResolvedProgressionStepAtom` so the index
- * is clamped to the current progression length — protects against transient
- * out-of-range states (e.g. after a step is removed).
+ * Reads the active step via `activeChordTonesAtom` so the index is clamped to
+ * the current progression length — protects against transient out-of-range
+ * states (e.g. after a step is removed).
  *
  * Both sets use the same sharps convention so the intersection is reliable.
  * Returns an empty set when the progression is empty or the active step is
  * unresolvable.
  */
 export const commonTonesWithNextAtom = atom((get): Set<string> => {
-  const activeStep = get(activeResolvedProgressionStepAtom);
-  if (!activeStep || activeStep.unavailable || activeStep.root === null || activeStep.quality === null) {
-    return new Set();
-  }
-  const activeTones = new Set(getChordNotes(activeStep.root, activeStep.quality));
+  const activeTones = get(activeChordTonesAtom);
   const next = get(nextChordTonesAtom);
   return new Set([...activeTones].filter((n) => next.has(n)));
+});
+
+/**
+ * Pitch classes the next chord introduces that the active chord lacks
+ * (`next − current`). These are the positions previewed as incoming ghosts.
+ */
+export const incomingTonesAtom = atom((get): Set<string> => {
+  const current = get(activeChordTonesAtom);
+  const next = get(nextChordTonesAtom);
+  return new Set([...next].filter((n) => !current.has(n)));
+});
+
+/**
+ * Pitch classes the active chord drops on the change (`current − next`).
+ */
+export const departingTonesAtom = atom((get): Set<string> => {
+  const current = get(activeChordTonesAtom);
+  const next = get(nextChordTonesAtom);
+  if (next.size === 0) return new Set();
+  return new Set([...current].filter((n) => !next.has(n)));
 });
 
 /**

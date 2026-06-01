@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow } from "./practiceLensAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -680,5 +680,41 @@ describe("isInLeadInWindow", () => {
   });
   it("is false for a non-positive step", () => {
     expect(isInLeadInWindow(0.9, 0)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// transition delta atoms
+// ---------------------------------------------------------------------------
+
+describe("transition delta atoms", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("activeChordTonesAtom returns the active chord's tones", () => {
+    const store = makeDefaultStore();
+    expect(store.get(activeChordTonesAtom)).toEqual(new Set(["C", "E", "G"]));
+  });
+  it("incomingTonesAtom = next − current", () => {
+    const store = makeDefaultStore();
+    expect(store.get(incomingTonesAtom)).toEqual(new Set(["B", "D"]));
+  });
+  it("departingTonesAtom = current − next", () => {
+    const store = makeDefaultStore();
+    expect(store.get(departingTonesAtom)).toEqual(new Set(["C", "E"]));
+  });
+  it("returns empty deltas when there is no next chord", () => {
+    const store = makeDefaultStore();
+    store.set(progressionStepsAtom, []);
+    expect(store.get(incomingTonesAtom).size).toBe(0);
+    expect(store.get(departingTonesAtom).size).toBe(0);
   });
 });
