@@ -333,7 +333,7 @@ describe("funk-scratch chord comp", () => {
     expect(byBeat.get(0)!.direction).toBe("down");
   });
 
-  it("has exactly one plain stab and two color-stabs on offbeat upstrokes", () => {
+  it("has one plain stab and two color-stabs as down-strummed offbeat accents", () => {
     const stabs = funk.hits.filter((h) => h.articulation === "stab");
     const colors = funk.hits.filter((h) => h.articulation === "color-stab");
     expect(stabs).toHaveLength(1);
@@ -341,7 +341,8 @@ describe("funk-scratch chord comp", () => {
     expect(colors.map((c) => c.beat).sort((a, b) => a - b)).toEqual([2.5, 3.5]);
     for (const c of colors) {
       expect(c.beat % 1).toBeCloseTo(0.5); // syncopated upbeats (the "&")
-      expect(c.direction).toBe("up");
+      expect(c.direction).toBe("down"); // down-strummed, not up
+      expect(c.velocity).toBeLessThan(stabs[0].velocity); // sit under the main stab
     }
   });
 
