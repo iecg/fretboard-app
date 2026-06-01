@@ -203,6 +203,7 @@ export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [
       kick: { pitchDecay: 0.05, octaves: 5, envelope: { decay: 0.28 } },
       snare: { noiseType: "white", envelope: { decay: 0.12 } },
       hihat: { decay: 0.04 },
+      crossStick: { pitchDecay: 0.006, octaves: 2, envelope: { decay: 0.05 } },
     },
   },
 ];
