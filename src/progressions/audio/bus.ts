@@ -142,6 +142,13 @@ export function restoreProgressionBus(): void {
 const GRAPH_LAYERS = ["chord", "bass", "drums", "metronome"] as const;
 
 let currentGraph: MaterializedGraph | null = null;
+// Serialized signature of the plan behind `currentGraph`. When the next call
+// presents a deeply-equal plan we reuse the live graph instead of tearing it
+// down and rebuilding — the rebuild (disconnect → dispose → materialize →
+// rewire) is synchronous and runs in the play-click task. MUST be reset to null
+// anywhere `currentGraph` is disposed/cleared, or a stale plan key could cause a
+// disposed graph to be wrongly reused.
+let lastPlanKey: string | null = null;
 
 /**
  * (Re)build the per-instrument mix graph for the active tier+genre and route
@@ -157,13 +164,39 @@ export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGr
   const audio = ensureProgressionAudio();
   if (!audio) return null;
 
+  // `planSignalGraph` returns a plain, serializable data object (no functions or
+  // Tone nodes), so JSON.stringify is a stable signature. When the plan is
+  // unchanged AND we still hold a live graph, skip the entire teardown/rebuild.
+  const planKey = JSON.stringify(plan);
+  if (planKey === lastPlanKey && currentGraph) return currentGraph;
+
   // Build the new graph FIRST. If materialization throws (Tone node
   // construction can fail on some devices/plans), we must not have already torn
   // down the prior routing — otherwise the four layer buses would be left
   // disconnected from the master bus and the backing track would go permanently
   // silent. Materializing before the swap means a failure propagates with the
   // old graph + layer connections still intact.
-  const graph = materializeSignalGraph(audio.ctx, audio.bus, plan);
+  const rawGraph = materializeSignalGraph(audio.ctx, audio.bus, plan);
+
+  // Wrap dispose so tearing down the returned graph also invalidates the cache.
+  // The cached object exposes dispose() as part of its contract; if a caller
+  // disposed it without going through a rebuild, currentGraph/lastPlanKey would
+  // still point at a dead graph and the next identical plan would reuse it. No
+  // production caller disposes it today (only the rebuild path + test reset do),
+  // so this guards the public dispose() against future misuse. Idempotent.
+  let disposed = false;
+  const graph: MaterializedGraph = {
+    ...rawGraph,
+    dispose: () => {
+      if (disposed) return;
+      disposed = true;
+      rawGraph.dispose();
+      if (currentGraph === graph) {
+        currentGraph = null;
+        lastPlanKey = null;
+      }
+    },
+  };
 
   for (const layer of GRAPH_LAYERS) {
     try { audio.layers[layer].disconnect(); } catch { /* not connected */ }
@@ -173,12 +206,14 @@ export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGr
     audio.layers[layer].connect(graph.inputs[layer] as AudioNode);
   }
   currentGraph = graph;
+  lastPlanKey = planKey;
   return graph;
 }
 
 /** Test-only reset hook so the module behaves predictably across `vitest` runs. */
 export function _resetProgressionAudioForTests(): void {
   if (currentGraph) { try { currentGraph.dispose(); } catch { /* */ } currentGraph = null; }
+  lastPlanKey = null;
   ctx = null;
   bus = null;
   layers = null;
