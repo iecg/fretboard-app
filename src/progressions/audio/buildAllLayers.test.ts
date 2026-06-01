@@ -294,8 +294,8 @@ describe("buildAllLayers", () => {
     const crossSticks = out.drums
       .filter((d) => d.value.type === "crossStick")
       .map((d) => d.time);
-    // Bar 1 @ 0,1.5,3 ; bar 2 starts at 4s, clave beats 5,6 → local 1,2 → 5,6.
-    expect(crossSticks).toEqual([0, 1.5, 3, 5, 6]);
+    // Bar 1 @ 0,1.5,3 ; bar 2 starts at 4s, clave beats 5,6.5 → local 1,2.5 → 5,6.5.
+    expect(crossSticks).toEqual([0, 1.5, 3, 5, 6.5]);
   });
 
   it("plays the bossa comp's bar-2 syncopations on the second bar", async () => {
@@ -306,8 +306,8 @@ describe("buildAllLayers", () => {
       bassPatternId: "bossa",
       steps: [step({ duration: { value: 2, unit: "bar" } })],
     });
-    // comp beats 0,1.5,3 (bar1) and 4.5,6,7.5 (bar2) → times identical at 60bpm.
-    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 3, 4.5, 6, 7.5]);
+    // comp beats 0,1.5,3.5 (bar1) and 4.5,6,7.5 (bar2) → times identical at 60bpm.
+    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 3.5, 4.5, 6, 7.5]);
   });
 
   it("leaves a 1-bar pattern (rock) emitting identical hits on every bar", async () => {

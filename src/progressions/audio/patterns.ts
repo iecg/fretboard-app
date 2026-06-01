@@ -50,6 +50,9 @@ export interface ChordPattern {
   /** Cell length in bars (default 1). When > 1, `hits` span 0..bars*beatsPerBar
    *  and the scheduler selects one bar per `absoluteBar % bars`. */
   bars?: number;
+  /** Voicing strategy for this comp. Omitted = the default chord voicing.
+   *  "rootless-jazz" = buildBossaColorVoicing (rootless 7th/9th, mid register). */
+  voicing?: "rootless-jazz";
 }
 
 interface CatalogBassHit {
@@ -215,16 +218,18 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "bossa-comp",
     label: "Bossa Comp",
     bars: 2,
-    // Syncopated partido-alto: clave-locked anticipations that leave space.
+    voicing: "rootless-jazz",
+    // Highly syncopated 2-bar partido-alto: clave-locked, two cross-barline
+    // anticipations (3.5, 7.5), soft acoustic dynamics, chords ring (sustained).
     hits: [
       // bar 1
-      { beat: 0, velocity: 0.7 },
-      { beat: 1.5, velocity: 0.6 },
-      { beat: 3, velocity: 0.55 },
-      // bar 2: anticipated "& of 1" push, mid-bar, "& of 4" lead into the next phrase
-      { beat: 4.5, velocity: 0.6 },
-      { beat: 6, velocity: 0.6 },
-      { beat: 7.5, velocity: 0.7 },
+      { beat: 0, velocity: 0.6, style: "sustained" }, // downbeat anchor
+      { beat: 1.5, velocity: 0.55, style: "sustained" }, // "& of 2" (clave)
+      { beat: 3.5, velocity: 0.6, style: "sustained" }, // "& of 4" anticipates bar 2
+      // bar 2
+      { beat: 4.5, velocity: 0.55, style: "sustained" }, // "& of 1"
+      { beat: 6, velocity: 0.5, style: "sustained" }, // beat 3 (clave)
+      { beat: 7.5, velocity: 0.65, style: "sustained" }, // "& of 4" anticipates next cycle
     ],
   },
 ];
@@ -408,13 +413,13 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
       { beat: 6, velocity: 0.4 }, { beat: 6.5, velocity: 0.3 },
       { beat: 7, velocity: 0.4 }, { beat: 7.5, velocity: 0.3 },
     ],
-    // 3-2 son clave: bar 1 @ 0, 1.5, 3 · bar 2 @ 5 (bar2 beat 1), 6 (bar2 beat 2).
+    // 3-2 bossa clave: bar 1 @ 0, 1.5, 3 · bar 2 @ 5 (bar2 beat 1), 6.5 (bar2 "3&").
     crossStick: [
       { beat: 0, velocity: 0.8 },
       { beat: 1.5, velocity: 0.7 },
       { beat: 3, velocity: 0.75 },
       { beat: 5, velocity: 0.7 },
-      { beat: 6, velocity: 0.8 },
+      { beat: 6.5, velocity: 0.8 },
     ],
   },
   {

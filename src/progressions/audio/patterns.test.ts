@@ -510,7 +510,8 @@ describe("bossa patterns", () => {
     const bossa = getDrumPattern("bossa")!;
     expect(bossa.bars).toBe(2);
     expect(bossa.snares).toEqual([]); // cross-stick carries the rhythm
-    expect(bossa.crossStick?.map((h) => h.beat)).toEqual([0, 1.5, 3, 5, 6]);
+    // Authentic 3-2 bossa clave: 2-side's last note on "3&" (6.5), not son's "3" (6).
+    expect(bossa.crossStick?.map((h) => h.beat)).toEqual([0, 1.5, 3, 5, 6.5]);
   });
 
   it("adds a 1-bar root-fifth bossa bass pattern", () => {
@@ -519,9 +520,11 @@ describe("bossa patterns", () => {
     expect(bass.hits.map((h) => h.note)).toEqual(["root", "fifth"]);
   });
 
-  it("adds a 2-bar syncopated bossa comp chord pattern", () => {
+  it("adds a 2-bar syncopated bossa comp with rootless-jazz voicing and ringing chords", () => {
     const comp = getChordPattern("bossa-comp")!;
     expect(comp.bars).toBe(2);
-    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 3, 4.5, 6, 7.5]);
+    expect(comp.voicing).toBe("rootless-jazz");
+    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 3.5, 4.5, 6, 7.5]);
+    expect(comp.hits.every((h) => h.style === "sustained")).toBe(true);
   });
 });
