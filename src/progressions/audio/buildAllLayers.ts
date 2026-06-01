@@ -90,6 +90,8 @@ export const STAB_STRUM_DURATION_SEC = 0.4;
 /** Note length (seconds) for the single root-note anchor on the one — a short,
  *  tight pluck, longer than a muted ghost but well short of a ringing stab. */
 export const ROOT_STRUM_DURATION_SEC = 0.12;
+/** Piano LH bass octave for the bossa comp — an octave above the upright bass. */
+const BOSSA_LH_OCTAVE = 3;
 
 function swingBeat(beat: number, swing: number): number {
   if (swing <= 0) return beat;
@@ -213,6 +215,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       chordPattern?.voicing === "rootless-jazz"
         ? buildBossaColorVoicing(root, quality, lastVoicing)
         : voicing;
+    // Bossa LH bass notes (root on beat 1, fifth on beat 3), octave 3 — single
+    // notes played by the piano under the RH rootless chords.
+    const bossaLhNotes =
+      chordPattern?.voicing === "rootless-jazz"
+        ? resolveBassLineNotes(root, quality, BOSSA_LH_OCTAVE)
+        : [];
+    const bassRootVoicing = bossaLhNotes.length > 0 ? [bossaLhNotes[0]] : voicing;
+    const bassFifthVoicing =
+      bossaLhNotes.length > 1 ? [bossaLhNotes[1]] : bassRootVoicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
     const eventBeats = isBarUnit ? input.beatsPerBar : stepBeats;
@@ -251,11 +262,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             time: hitTime,
             value: {
               voicing:
-                hit.articulation === "color-stab"
-                  ? colorVoicing
-                  : hit.articulation === "root"
-                    ? rootNoteVoicing
-                    : compVoicing,
+                hit.voiceRole === "bass-root"
+                  ? bassRootVoicing
+                  : hit.voiceRole === "bass-fifth"
+                    ? bassFifthVoicing
+                    : hit.articulation === "color-stab"
+                      ? colorVoicing
+                      : hit.articulation === "root"
+                        ? rootNoteVoicing
+                        : compVoicing,
               velocity,
               style: hit.style,
               direction: hit.direction,

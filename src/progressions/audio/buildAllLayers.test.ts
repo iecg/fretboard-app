@@ -306,8 +306,7 @@ describe("buildAllLayers", () => {
       bassPatternId: "bossa",
       steps: [step({ duration: { value: 2, unit: "bar" } })],
     });
-    // comp beats 0,1.5,3.5 (bar1) and 4.5,6,7.5 (bar2) → times identical at 60bpm.
-    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 3.5, 4.5, 6, 7.5]);
+    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 6, 7.5]);
   });
 
   it("leaves a 1-bar pattern (rock) emitting identical hits on every bar", async () => {
@@ -367,7 +366,7 @@ describe("buildAllLayers", () => {
       expect(a.drums).toEqual(b.drums);
     });
 
-    it("voices the bossa comp as rootless jazz chords (no root note)", async () => {
+    it("voices the bossa comp as LH bass (single notes) + RH rootless chords", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "bossa-comp",
@@ -375,10 +374,10 @@ describe("buildAllLayers", () => {
       bassPatternId: "bossa",
       steps: [step({ duration: { value: 2, unit: "bar" } })], // C major
     });
-    // C major → rootless Type-B maj9 in the comp register: B3 / D4 / E4 / G4, no C.
-    expect(out.chordStrums[0].value.voicing).toEqual(["B3", "D4", "E4", "G4"]);
-    expect(out.chordStrums.every((s) => !s.value.voicing.some((n) => n.startsWith("C") && !n.startsWith("C#")))).toBe(true);
-    // …and every comp chord rings (sustained), end-to-end through the scheduler.
+    const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
+    expect(at(0).value.voicing).toEqual(["C3"]); // bass-root (LH, octave 3)
+    expect(at(2).value.voicing).toEqual(["G3"]); // bass-fifth (LH, octave 3)
+    expect(at(1.5).value.voicing).toEqual(["B3", "D4", "E4", "G4"]); // RH rootless chord
     expect(out.chordStrums.every((s) => s.value.style === "sustained")).toBe(true);
   });
 

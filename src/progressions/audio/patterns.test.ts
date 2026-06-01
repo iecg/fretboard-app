@@ -520,11 +520,15 @@ describe("bossa patterns", () => {
     expect(bass.hits.map((h) => h.note)).toEqual(["root", "fifth"]);
   });
 
-  it("adds a 2-bar syncopated bossa comp with rootless-jazz voicing and ringing chords", () => {
+  it("adds a 2-bar bossa comp as LH bass + RH rootless chords (all sustained)", () => {
     const comp = getChordPattern("bossa-comp")!;
     expect(comp.bars).toBe(2);
     expect(comp.voicing).toBe("rootless-jazz");
-    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 3.5, 4.5, 6, 7.5]);
+    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 6, 7.5]);
+    expect(comp.hits.map((h) => h.voiceRole)).toEqual([
+      "bass-root", "chord", "bass-fifth", "chord",
+      "bass-root", "chord", "bass-fifth", "chord",
+    ]);
     expect(comp.hits.every((h) => h.style === "sustained")).toBe(true);
   });
 });

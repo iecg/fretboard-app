@@ -41,6 +41,10 @@ interface ChordHit {
    *  "color-stab" rings a chord with funk extensions; "muted" chokes a plain
    *  chord short (chicken-scratch ghost). Omitted rings the patch default. */
   articulation?: ChordArticulation;
+  /** Bossa LH/RH split (used when the pattern's voicing is "rootless-jazz"):
+   *  "bass-root"/"bass-fifth" play a single low note (LH); "chord" plays the
+   *  rootless RH voicing. Omitted behaves as "chord". */
+  voiceRole?: "bass-root" | "bass-fifth" | "chord";
 }
 
 export interface ChordPattern {
@@ -219,17 +223,18 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     label: "Bossa Comp",
     bars: 2,
     voicing: "rootless-jazz",
-    // Highly syncopated 2-bar partido-alto: clave-locked, two cross-barline
-    // anticipations (3.5, 7.5), soft acoustic dynamics, chords ring (sustained).
+    // LH bass (root on beat 1, fifth on beat 3) + RH rootless chords on the
+    // syncopated off-beats, with two cross-barline anticipations (3.5, 7.5).
+    // Soft, ringing (sustained).
     hits: [
-      // bar 1
-      { beat: 0, velocity: 0.6, style: "sustained" }, // downbeat anchor
-      { beat: 1.5, velocity: 0.55, style: "sustained" }, // "& of 2" (clave)
-      { beat: 3.5, velocity: 0.6, style: "sustained" }, // "& of 4" anticipates bar 2
-      // bar 2
-      { beat: 4.5, velocity: 0.55, style: "sustained" }, // "& of 1"
-      { beat: 6, velocity: 0.5, style: "sustained" }, // beat 3 (clave)
-      { beat: 7.5, velocity: 0.65, style: "sustained" }, // "& of 4" anticipates next cycle
+      { beat: 0, velocity: 0.6, voiceRole: "bass-root", style: "sustained" },
+      { beat: 1.5, velocity: 0.5, voiceRole: "chord", style: "sustained" },
+      { beat: 2, velocity: 0.55, voiceRole: "bass-fifth", style: "sustained" },
+      { beat: 3.5, velocity: 0.55, voiceRole: "chord", style: "sustained" },
+      { beat: 4, velocity: 0.6, voiceRole: "bass-root", style: "sustained" },
+      { beat: 4.5, velocity: 0.5, voiceRole: "chord", style: "sustained" },
+      { beat: 6, velocity: 0.55, voiceRole: "bass-fifth", style: "sustained" },
+      { beat: 7.5, velocity: 0.55, voiceRole: "chord", style: "sustained" },
     ],
   },
 ];
