@@ -520,15 +520,20 @@ describe("bossa patterns", () => {
     expect(bass.hits.map((h) => h.note)).toEqual(["root", "fifth"]);
   });
 
-  it("adds a 2-bar bossa comp as LH bass + RH rootless chords (all sustained)", () => {
+  it("adds a 2-bar bossa comp: LH bass + RH chords that intensify in the second bar", () => {
     const comp = getChordPattern("bossa-comp")!;
     expect(comp.bars).toBe(2);
     expect(comp.voicing).toBe("rootless-jazz");
-    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 6, 7.5]);
+    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 5.5, 6, 6.5, 7.5]);
     expect(comp.hits.map((h) => h.voiceRole)).toEqual([
       "bass-root", "chord", "bass-fifth", "chord",
-      "bass-root", "chord", "bass-fifth", "chord",
+      "bass-root", "chord", "chord", "bass-fifth", "chord", "chord",
     ]);
+    // The RH chords get busier in the second bar (the authentic 2-bar arc):
+    // bar 1 has 2 chord stabs, bar 2 has 4 anticipated off-beat stabs.
+    const chordBeats = comp.hits.filter((h) => h.voiceRole === "chord").map((h) => h.beat);
+    expect(chordBeats.filter((b) => b < 4)).toEqual([1.5, 3.5]);
+    expect(chordBeats.filter((b) => b >= 4)).toEqual([4.5, 5.5, 6.5, 7.5]);
     // Every hit is short — no sustain anywhere in the comp.
     expect(comp.hits.every((h) => h.style === undefined)).toBe(true);
   });

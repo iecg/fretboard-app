@@ -306,7 +306,7 @@ describe("buildAllLayers", () => {
       bassPatternId: "bossa",
       steps: [step({ duration: { value: 2, unit: "bar" } })],
     });
-    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 6, 7.5]);
+    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 5.5, 6, 6.5, 7.5]);
   });
 
   it("leaves a 1-bar pattern (rock) emitting identical hits on every bar", async () => {

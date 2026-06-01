@@ -224,16 +224,22 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     bars: 2,
     voicing: "rootless-jazz",
     // LH bass (root on beat 1, fifth on beat 3) + RH rootless chords on the
-    // syncopated off-beats, with two cross-barline anticipations (3.5, 7.5).
+    // off-beats. Authentic 2-bar arc: bar 1 is the basic sparse comp (2 stabs),
+    // bar 2 intensifies into a busier run of anticipated off-beat stabs (4).
     // Every hit is short (no sustain) — a plucky, detached comp.
     hits: [
+      // bar 1 — basic: bass on 1 & 3, chord stabs on the & of 2 and & of 4
       { beat: 0, velocity: 0.6, voiceRole: "bass-root" },
       { beat: 1.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 2, velocity: 0.55, voiceRole: "bass-fifth" },
       { beat: 3.5, velocity: 0.55, voiceRole: "chord" },
+      // bar 2 — busier: chord stabs on every off-beat (& of 1/2/3/4),
+      // anticipating each following beat for forward momentum.
       { beat: 4, velocity: 0.6, voiceRole: "bass-root" },
       { beat: 4.5, velocity: 0.5, voiceRole: "chord" },
+      { beat: 5.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 6, velocity: 0.55, voiceRole: "bass-fifth" },
+      { beat: 6.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 7.5, velocity: 0.55, voiceRole: "chord" },
     ],
   },
