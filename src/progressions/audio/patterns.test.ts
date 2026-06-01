@@ -106,8 +106,8 @@ describe("pattern catalog", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("has 3 drum variations with unique IDs", () => {
-    expect(DRUM_VARIATIONS).toHaveLength(3);
+  it("has 6 drum variations with unique IDs", () => {
+    expect(DRUM_VARIATIONS).toHaveLength(6);
     const ids = DRUM_VARIATIONS.map((v) => v.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -433,5 +433,33 @@ describe("DRUM_VARIATIONS definitions are truthful", () => {
     const oh = byId("open-hat-and-of-4");
     expect(oh.barInterval).toBe(1);
     expect([0, 1, 2, 3].every((b) => variationFiresOnBar(oh, b))).toBe(true);
+  });
+
+  it("funk-fill-4 fires on the turnaround bar with snare buildup hits", () => {
+    const fill = byId("funk-fill-4");
+    expect(fill.barInterval).toBe(4);
+    expect(fill.barPhase).toBe(3);
+    expect(variationFiresOnBar(fill, 3)).toBe(true);
+    expect(variationFiresOnBar(fill, 0)).toBe(false);
+    expect(fill.pattern.snares.length).toBeGreaterThan(0);
+  });
+
+  it("jazz-turnaround-4 fires on the turnaround bar with a ride accent", () => {
+    const turn = byId("jazz-turnaround-4");
+    expect(turn.barInterval).toBe(4);
+    expect(turn.barPhase).toBe(3);
+    expect(variationFiresOnBar(turn, 3)).toBe(true);
+    expect(variationFiresOnBar(turn, 0)).toBe(false);
+    expect(turn.pattern.ride).toBeDefined();
+    expect(turn.pattern.ride!.length).toBeGreaterThan(0);
+  });
+
+  it("blues-fill-4 fires on the turnaround bar with a snare buildup", () => {
+    const fill = byId("blues-fill-4");
+    expect(fill.barInterval).toBe(4);
+    expect(fill.barPhase).toBe(3);
+    expect(variationFiresOnBar(fill, 3)).toBe(true);
+    expect(variationFiresOnBar(fill, 7)).toBe(true);
+    expect(fill.pattern.snares.length).toBeGreaterThan(0);
   });
 });
