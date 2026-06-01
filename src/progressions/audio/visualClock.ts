@@ -19,6 +19,14 @@ export function subscribeVisualClock(cb: FrameCallback): () => void {
   };
 }
 
+// PERF NOTE (2026-06-01): this rAF loop is cheap — profiling measured ~117ms of
+// requestAnimationFrame across a ~24.7s capture (~0.08ms/frame), with no per-frame
+// React subscribers to progressionVisualFrameAtom (only the derived
+// anticipationActiveAtom, which flips at thresholds, and ProgressionPlayhead's
+// compositor-thread WAAPI callback — neither re-renders per frame). The playback
+// jank/violations were the FretboardNoteLayer re-render, not this loop (see
+// docs/superpowers/plans/2026-06-01-playback-render-perf.md). Do not throttle
+// without fresh evidence.
 function frame(): void {
   rafId = window.requestAnimationFrame(frame);
   const store = storeRef;
