@@ -177,39 +177,31 @@ describe("buildBossaColorVoicing", () => {
   const pcSet = (notes: readonly string[]) => new Set(notes.map((n) => n.replace(/-?\d+$/, "")));
   const midi = (n: string) => { const m = n.match(/^([A-G]#?)(-?\d+)$/)!; return PC[m[1]] + (parseInt(m[2], 10) + 1) * 12; };
 
-  it("voices a major chord as a rootless maj9 (3 / 7 / 9) in the middle register", () => {
-    expect(buildBossaColorVoicing("C", "maj7")).toEqual(["E4", "B4", "D5"]);
-    expect(buildBossaColorVoicing("C", "M")).toEqual(["E4", "B4", "D5"]);
+  it("voices a major chord as a 4-note Type-B rootless (7-9-3-5) in octave 3", () => {
+    expect(buildBossaColorVoicing("C", "maj7")).toEqual(["B3", "D4", "E4", "G4"]);
+    expect(buildBossaColorVoicing("C", "M")).toEqual(["B3", "D4", "E4", "G4"]);
   });
 
-  it("voices a minor 7 chord as a rootless m9 (b3 / b7 / 9)", () => {
-    expect(buildBossaColorVoicing("A", "m7")).toEqual(["C5", "G5", "B5"]);
-    expect(pcSet(buildBossaColorVoicing("A", "m7")).has("A")).toBe(false);
+  it("normalizes a high-rooted voicing down an octave so it never floats above C5", () => {
+    expect(buildBossaColorVoicing("A", "m7")).toEqual(["G3", "B3", "C4", "E4"]);
   });
 
-  it("voices a dominant 7 chord as a rootless dom9 (3 / b7 / 9)", () => {
-    const v = buildBossaColorVoicing("G", "7");
-    expect(pcSet(v)).toEqual(new Set(["B", "F", "A"]));
-    expect(pcSet(v).has("G")).toBe(false);
-  });
-
-  it("keeps every defined voicing rootless and in the middle register (C4..C#6)", () => {
-    for (const [root, quality] of [["C", "maj7"], ["D", "M"], ["E", "m7"], ["G", "7"], ["B", "maj7"]] as const) {
-      const v = buildBossaColorVoicing(root, quality);
-      expect(pcSet(v).has(root), `${root}${quality} rootless`).toBe(false);
-      for (const n of v) {
-        const m = midi(n);
-        expect(m, `${root}${quality} ${n} low`).toBeGreaterThanOrEqual(60);
-        expect(m, `${root}${quality} ${n} high`).toBeLessThanOrEqual(86);
+  it("keeps every defined voicing 4-note, rootless, and topped at or below C5 for all roots", () => {
+    const ROOTS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    for (const root of ROOTS) {
+      for (const quality of ["maj7", "M", "m7", "m", "7"]) {
+        const v = buildBossaColorVoicing(root, quality);
+        expect(v, `${root}${quality} length`).toHaveLength(4);
+        expect(pcSet(v).has(root), `${root}${quality} rootless`).toBe(false);
+        const ms = v.map(midi);
+        expect(Math.max(...ms), `${root}${quality} top <= C5`).toBeLessThanOrEqual(72);
+        expect(Math.min(...ms), `${root}${quality} bottom >= C3`).toBeGreaterThanOrEqual(48);
       }
     }
   });
 
-  it("falls back to the plain voice-led triad for a quality without a grip", () => {
+  it("falls back to the plain voice-led triad for a quality without a grip; [] for unknown root", () => {
     expect(buildBossaColorVoicing("C", "dim")).toEqual(resolveChordVoicing("C", "dim", undefined, undefined));
-  });
-
-  it("returns [] for an unknown root", () => {
     expect(buildBossaColorVoicing("H", "maj7")).toEqual([]);
   });
 });

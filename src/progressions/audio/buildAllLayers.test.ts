@@ -375,8 +375,8 @@ describe("buildAllLayers", () => {
       bassPatternId: "bossa",
       steps: [step({ duration: { value: 2, unit: "bar" } })], // C major
     });
-    // C major → rootless maj9 in the middle register: E4 / B4 / D5, no C.
-    expect(out.chordStrums[0].value.voicing).toEqual(["E4", "B4", "D5"]);
+    // C major → rootless Type-B maj9 in the comp register: B3 / D4 / E4 / G4, no C.
+    expect(out.chordStrums[0].value.voicing).toEqual(["B3", "D4", "E4", "G4"]);
     expect(out.chordStrums.every((s) => !s.value.voicing.some((n) => n.startsWith("C") && !n.startsWith("C#")))).toBe(true);
     // …and every comp chord rings (sustained), end-to-end through the scheduler.
     expect(out.chordStrums.every((s) => s.value.style === "sustained")).toBe(true);
