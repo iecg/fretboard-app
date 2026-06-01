@@ -234,13 +234,3 @@
   background: linear-gradient(to bottom, transparent, rgb(133 124 108 / 0.25), transparent);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
-
-.playSpinner {
-  animation: transport-play-spin 0.8s linear infinite;
-}
-
-@keyframes transport-play-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}

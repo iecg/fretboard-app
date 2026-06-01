@@ -185,21 +185,15 @@ describe("TransportBar", () => {
     expect(screen.queryByRole("button", { name: /Decrease Tempo/ })).toBeNull();
   });
 
-  it("shows a spinner on the play button while loading during playback", () => {
+  it("shows no spinner and disables the play button while loading (stopped)", () => {
     const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
     renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
-    act(() => {
-      store.set(setProgressionPlayingAtom, true);
-    });
-
-    // The spinner replaces the play/stop glyph while a restart-tier build runs.
-    expect(screen.getByTestId("transport-play-spinner")).toBeInTheDocument();
-    // The button stays enabled so the user can cancel a slow load.
-    expect(screen.getByRole("button", { name: "Stop progression" })).toBeEnabled();
+    expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
   });
 
-  it("lets the user cancel a slow load by clicking the spinner", () => {
+  it("keeps the stop button enabled and clickable to cancel while loading during playback", () => {
     const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
     renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
@@ -207,13 +201,12 @@ describe("TransportBar", () => {
       store.set(setProgressionPlayingAtom, true);
     });
 
+    expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
     const button = screen.getByRole("button", { name: "Stop progression" });
-    expect(screen.getByTestId("transport-play-spinner")).toBeInTheDocument();
     expect(button).toBeEnabled();
 
+    // Clicking stop while a restart-tier build is loading cancels playback.
     fireEvent.click(button);
-
-    // Cancelling stops playback (returns to bar 1, stopped).
     expect(store.get(progressionPlayingAtom)).toBe(false);
   });
 
