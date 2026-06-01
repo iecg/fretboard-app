@@ -40,6 +40,11 @@ export function useFretboardTopologyModel() {
   const showChordConnectors = useAtomValue(voicingAtom) !== "off";
   const activePosition = useAtomValue(activePositionAtom);
 
+  // Stable key for cagedShapes to avoid useMemo recomputation on every render
+  const cagedShapesKey = cagedShapes.size > 0
+    ? Array.from(cagedShapes).sort().join(',')
+    : '';
+
   let activePattern: ActivePatternType | undefined;
   let activeShape: ActiveShapeType;
   let shapeScope: ShapeScope = "global";
@@ -97,7 +102,7 @@ export function useFretboardTopologyModel() {
     rootNote, scaleName, displayFormat, preferFlats, noteSemanticMap,
     highlightNotes, boxBounds, shapePolygons, wrappedNotes,
     chordTones, chordRoot, colorNotes, hiddenNotes,
-    activePattern, activeShape, shapeScope, visibleFullChordMatches,
+    activePattern, cagedShapesKey, npsPosition, fingeringPattern, shapeScope, visibleFullChordMatches,
     chordHighlightPositions, showChordConnectors, chordBoxBounds
   ]);
 }
