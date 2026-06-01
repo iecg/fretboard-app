@@ -215,6 +215,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     toneMocks.drawCancel.mockClear();
     toneMocks.transport.scheduleOnce.mockReset();
     toneMocks.transport.clear.mockReset();
+    toneMocks.transport.stop.mockClear();
     toneMocks.transport.seconds = 0;
     _resetTimelineForTests();
     _resetProgressionAudioForTests();
