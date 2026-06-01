@@ -110,14 +110,37 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
     id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
     strum: {
-      // Bright single-coil chicken-scratch: upper-harmonic-weighted partials so
-      // muted scratches cut on small speakers, and a short note/release so even
-      // voiced stabs stay tight instead of ringing like the acoustic strum.
-      oscillator: { type: "custom", partials: [1, 0.9, 0.7, 0.5, 0.35, 0.25, 0.15] },
-      envelope: { attack: 0.004, decay: 0.18, sustain: 0.0, release: 0.08 },
-      noteDurationSec: 0.18, releaseTailSec: 0.4,
+      // Clean single-coil funk guitar (Nile Rodgers chicken scratch), built as a
+      // MonoSynth "channel strip" rather than a bare plucked string (which never
+      // read as a guitar):
+      //  - sawtooth oscillator: the harmonically dense raw material a bright
+      //    single-coil needs.
+      //  - lowpass + snappy filter envelope: the filter sweeps open on attack
+      //    (~800Hz -> ~5-6kHz) then settles, which IS the pick "spank" of a
+      //    plucked string; the lowpass also doubles as the cab/tone rolloff that
+      //    caps synthetic fizz per-voice.
+      //  - percussive amp envelope: low sustain + short decay so the note is tight.
+      //    durationSec (per articulation hit) governs choke-vs-ring NATIVELY here
+      //    — a 0.06s ghost chokes, a 0.4s stab rings — unlike the old PluckSynth
+      //    where decay was set by comb resonance.
+      // The amp/pickup voicing (cut lows for tightness, mid presence for the
+      // single-coil honk, keep highs for sparkle) lives in the eq3 insert below.
+      // Tight strumLagSec so the chord lands as a single stab. Velocity is honored
+      // natively by MonoSynth (no gain stage needed).
+      mono: {
+        oscillator: { type: "sawtooth" },
+        filter: { type: "lowpass", Q: 1 },
+        filterEnvelope: { attack: 0.005, decay: 0.08, sustain: 0.2, release: 0.1, baseFrequency: 800, octaves: 2.8 },
+        envelope: { attack: 0.004, decay: 0.2, sustain: 0.15, release: 0.1 },
+      },
+      noteDurationSec: 0.18,
+      // Hold the pooled voice for the full stab tail before it can be re-leased:
+      // STAB_STRUM_DURATION_SEC (0.4) + the amp envelope release (0.1) = 0.5s.
+      // A shorter tail let a reused voice clip the last ~0.1s of a ringing stab.
+      releaseTailSec: 0.5,
+      strumLagSec: 0.007,
     },
-    insert: { eq3: { low: -2, mid: 1, high: 3 } },
+    insert: { eq3: { low: -6, mid: 2, high: 2 } },
   },
 ];
 

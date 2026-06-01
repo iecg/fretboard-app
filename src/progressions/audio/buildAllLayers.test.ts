@@ -1,5 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildAllLayersAsync, articulationToDurationSec } from "./buildAllLayers";
+import {
+  buildAllLayersAsync,
+  articulationToDurationSec,
+  MUTED_STRUM_DURATION_SEC,
+  STAB_STRUM_DURATION_SEC,
+  ROOT_STRUM_DURATION_SEC,
+} from "./buildAllLayers";
+import { buildFunkColorVoicing, resolveChordVoicing } from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
@@ -178,6 +185,56 @@ describe("buildAllLayers", () => {
     expect(approachBar2?.value.note).not.toBe(approachBar1?.value.note);
   });
 
+  it("voices funk hits by articulation: root=1 note, stab=plain, color-stab=funk grip", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "funk-scratch",
+      steps: [step({ root: "C", quality: "M", duration: { value: 1, unit: "bar" } })],
+    });
+    // tempo 60 => 1 beat = 1s, so hit time === beat.
+    const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
+    expect(at(0).value.voicing).toEqual(["C3"]); // root anchor on the one
+    expect(at(1).value.voicing).toEqual(["C3", "E3", "G3"]); // plain stab on 2
+    // color-stab uses the voice-led rootless funk grip, voice-led to the bar's triad.
+    expect(at(2.5).value.voicing).toEqual(buildFunkColorVoicing("C", "M", ["C3", "E3", "G3"]));
+  });
+
+  it("maps funk durations: root short, stab/color ring, ghost chokes", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "funk-scratch",
+      steps: [step({ duration: { value: 1, unit: "bar" } })],
+    });
+    const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
+    expect(at(0).value.durationSec).toBe(ROOT_STRUM_DURATION_SEC);
+    expect(at(1).value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
+    expect(at(2.5).value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
+    expect(
+      out.chordStrums.some((s) => s.value.durationSec === MUTED_STRUM_DURATION_SEC),
+    ).toBe(true);
+  });
+
+  it("voice-leads funk color-stabs into the current chord's register (rootless grip)", async () => {
+    // The colour grip is voice-led to the CURRENT bar's triad, so it sits with the
+    // comp instead of jumping to a fixed root-position extension stack.
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "funk-scratch",
+      steps: [
+        step({ root: "C", quality: "M", duration: { value: 1, unit: "bar" } }),
+        step({ id: "b", index: 1, root: "F", quality: "M", duration: { value: 1, unit: "bar" } }),
+      ],
+    });
+    // Bar 2 starts at time 4; its color-stab on the "&" of 3 is at time 6.5.
+    const bar2Color = out.chordStrums.find((s) => s.time === 6.5)!;
+    // Bar 2's lastVoicing = F major voice-led to the C triad; the grip voice-leads to that.
+    const fVoicing = resolveChordVoicing("F", "M", undefined, ["C3", "E3", "G3"]);
+    expect(bar2Color.value.voicing).toEqual(buildFunkColorVoicing("F", "M", fVoicing));
+    // Rootless: the grip never contains the chord root pitch class.
+    const pcs = new Set(bar2Color.value.voicing.map((n) => n.replace(/-?\d+$/, "")));
+    expect(pcs.has("F")).toBe(false);
+  });
+
   describe("chord strum durationSec emission", () => {
     it("leaves durationSec undefined for a pattern with no muted hits", async () => {
       const layers = await buildAllLayersAsync({
@@ -190,6 +247,27 @@ describe("buildAllLayers", () => {
       for (const s of layers.chordStrums) {
         expect(s.value.durationSec).toBeUndefined();
       }
+    });
+
+    it("emits stab strums that ring, and ghost strums that choke (funk-scratch)", async () => {
+      const layers = await buildAllLayersAsync({
+        ...baseInput,
+        chordPatternId: "funk-scratch",
+        steps: [step({ duration: { value: 1, unit: "bar" } })],
+      });
+      const durs = layers.chordStrums.map((s) => s.value.durationSec);
+      expect(durs.length).toBeGreaterThan(0);
+      expect(durs.every((d) => typeof d === "number")).toBe(true);
+      const min = Math.min(...(durs as number[]));
+      const max = Math.max(...(durs as number[]));
+      expect(min).toBeCloseTo(MUTED_STRUM_DURATION_SEC);
+      expect(max).toBe(STAB_STRUM_DURATION_SEC);
+    });
+
+    it("rings the stab well above the muted choke (recurrence guard)", () => {
+      // Root-cause guard: the prior pass had no ring/choke separation, so the
+      // accent never read as a strummed chord. Keep a real margin.
+      expect(STAB_STRUM_DURATION_SEC).toBeGreaterThan(MUTED_STRUM_DURATION_SEC * 4);
     });
   });
 });

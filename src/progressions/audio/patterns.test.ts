@@ -319,8 +319,7 @@ describe("funk-16th chord comp pattern", () => {
 describe("funk-scratch chord comp", () => {
   const funk = getChordPattern("funk-scratch")!;
 
-  it("exists and accents the one hardest", () => {
-    expect(funk).toBeDefined();
+  it("accents the one hardest", () => {
     const byBeat = new Map(funk.hits.map((h) => [h.beat, h.velocity]));
     const one = byBeat.get(0)!;
     for (const h of funk.hits) {
@@ -328,11 +327,27 @@ describe("funk-scratch chord comp", () => {
     }
   });
 
-  it("marks the one as an accent and the rest as muted scratches", () => {
+  it("anchors the one with a single root note (not a strummed chord)", () => {
     const byBeat = new Map(funk.hits.map((h) => [h.beat, h]));
-    expect(byBeat.get(0)!.articulation).toBe("accent");
-    const muted = funk.hits.filter((h) => h.articulation === "muted");
-    expect(muted.length).toBeGreaterThanOrEqual(funk.hits.length - 1);
+    expect(byBeat.get(0)!.articulation).toBe("root");
+    expect(byBeat.get(0)!.direction).toBe("down");
+  });
+
+  it("has one plain stab and two color-stabs as down-strummed offbeat accents", () => {
+    const stabs = funk.hits.filter((h) => h.articulation === "stab");
+    const colors = funk.hits.filter((h) => h.articulation === "color-stab");
+    expect(stabs).toHaveLength(1);
+    expect(colors).toHaveLength(2);
+    expect(colors.map((c) => c.beat).sort((a, b) => a - b)).toEqual([2.5, 3.5]);
+    for (const c of colors) {
+      expect(c.beat % 1).toBeCloseTo(0.5); // syncopated upbeats (the "&")
+      expect(c.direction).toBe("down"); // down-strummed, not up
+      expect(c.velocity).toBeLessThan(stabs[0].velocity); // sit under the main stab
+    }
+  });
+
+  it("fills the rest with muted ghost scratches", () => {
+    expect(funk.hits.some((h) => h.articulation === "muted")).toBe(true);
   });
 });
 

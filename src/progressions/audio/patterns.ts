@@ -13,7 +13,7 @@
 
 type StrumDirection = "down" | "up";
 
-export type ChordArticulation = "muted" | "accent";
+export type ChordArticulation = "muted" | "root" | "stab" | "color-stab";
 
 export interface DrumHit {
   beat: number;
@@ -36,8 +36,10 @@ interface ChordHit {
   style?: "staccato" | "sustained";
   /** Strum direction; up-strokes reverse the voicing order. Defaults to down. */
   direction?: StrumDirection;
-  /** Note-length intent for the strum voice. "muted" chokes the stroke short
-   *  (chicken-scratch), "accent"/omitted rings for the patch's note duration. */
+  /** Note-length + voicing intent for the strum voice.
+   *  "root" plays a single root note (anchor); "stab" rings a plain chord;
+   *  "color-stab" rings a chord with funk extensions; "muted" chokes a plain
+   *  chord short (chicken-scratch ghost). Omitted rings the patch default. */
   articulation?: ChordArticulation;
 }
 
@@ -158,17 +160,23 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
   {
     id: "funk-scratch",
     label: "Funk Scratch",
-    // James Brown chicken-scratch: a hard accented chord stab on the one, then
-    // muted scratch ghosts with deliberate space. The "muted" hits choke short
-    // via the strum voice; the accent rings the patch's (already short) length.
+    // Researched chicken-scratch (Jimmy Nolen / James Brown): a single root-note
+    // anchor on the one, one plain chord stab on the 2, then two syncopated
+    // color (rootless funk grip) downstroke stabs on the "&" of 3 and "&" of 4,
+    // with muted ghost 16ths weaving between. Down on numbers/"&", up on "e"/"a".
     hits: [
-      { beat: 0, velocity: 0.95, direction: "down", articulation: "accent" },
-      { beat: 0.5, velocity: 0.28, direction: "up", articulation: "muted" },
-      { beat: 0.75, velocity: 0.3, direction: "up", articulation: "muted" },
-      { beat: 1.5, velocity: 0.4, direction: "up", articulation: "muted" },
-      { beat: 2.5, velocity: 0.28, direction: "up", articulation: "muted" },
-      { beat: 2.75, velocity: 0.3, direction: "up", articulation: "muted" },
-      { beat: 3.5, velocity: 0.35, direction: "up", articulation: "muted" },
+      { beat: 0, velocity: 0.9, direction: "down", articulation: "root" },
+      { beat: 0.5, velocity: 0.24, direction: "down", articulation: "muted" },
+      { beat: 0.75, velocity: 0.22, direction: "up", articulation: "muted" },
+      { beat: 1.0, velocity: 0.85, direction: "down", articulation: "stab" },
+      { beat: 1.5, velocity: 0.24, direction: "down", articulation: "muted" },
+      { beat: 1.75, velocity: 0.22, direction: "up", articulation: "muted" },
+      { beat: 2.25, velocity: 0.2, direction: "up", articulation: "muted" },
+      { beat: 2.5, velocity: 0.6, direction: "down", articulation: "color-stab" },
+      { beat: 2.75, velocity: 0.22, direction: "up", articulation: "muted" },
+      { beat: 3.25, velocity: 0.2, direction: "up", articulation: "muted" },
+      { beat: 3.5, velocity: 0.62, direction: "down", articulation: "color-stab" },
+      { beat: 3.75, velocity: 0.2, direction: "up", articulation: "muted" },
     ],
   },
   {

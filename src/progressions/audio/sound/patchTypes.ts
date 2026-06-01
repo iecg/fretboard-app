@@ -53,12 +53,26 @@ export interface PolyChordSpec {
   shortDurationSec: number;
 }
 
-/** Params for the Karplus-Strong strum/pluck voice. */
-export interface StrumSpec {
-  oscillator: { type: "custom"; partials: number[] };
+/** Subtractive single-coil-guitar params (Tone.MonoSynth): an oscillator through
+ *  a lowpass with a snappy filter envelope (the pick "spank") + an amp envelope.
+ *  Present instead of `pluck`/`oscillator` for the funk guitar strum patch. */
+export interface MonoSynthVoiceSpec {
+  oscillator: { type: OscillatorType };
+  filter: { type: "lowpass"; Q: number };
+  filterEnvelope: FilterEnvelopeSpec;
   envelope: EnvelopeSpec;
+}
+
+/** Params for the strum voice. The source is subtractive (`oscillator` +
+ *  `envelope`) or a mono-synth single-coil (`mono`);
+ *  `strumLagSec` overrides the per-note strum stagger. */
+export interface StrumSpec {
+  oscillator?: { type: "custom"; partials: number[] };
+  envelope?: EnvelopeSpec;
+  mono?: MonoSynthVoiceSpec;
   noteDurationSec: number;
   releaseTailSec: number;
+  strumLagSec?: number;
 }
 
 export interface ChordPatch {

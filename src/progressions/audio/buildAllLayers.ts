@@ -2,6 +2,7 @@ import {
   resolveBassNoteForRole,
   resolveChordVoicing,
   resolveBassLineNotes,
+  buildFunkColorVoicing,
 } from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 import {
@@ -78,7 +79,13 @@ export interface BuiltLayers {
 const OFF_BEAT_TOLERANCE = 0.01;
 /** Note length (seconds) for a muted chicken-scratch strum stroke — choked
  *  short so it reads as percussion, not a ringing chord. */
-const MUTED_STRUM_DURATION_SEC = 0.06;
+export const MUTED_STRUM_DURATION_SEC = 0.06;
+/** Note length (seconds) for an accented funk "stab" — long enough to read as a
+ *  ringing strummed chord (the patch sustain lets it ring), unlike the choke. */
+export const STAB_STRUM_DURATION_SEC = 0.4;
+/** Note length (seconds) for the single root-note anchor on the one — a short,
+ *  tight pluck, longer than a muted ghost but well short of a ringing stab. */
+export const ROOT_STRUM_DURATION_SEC = 0.12;
 
 function swingBeat(beat: number, swing: number): number {
   if (swing <= 0) return beat;
@@ -179,6 +186,17 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     if (voicing.length > 0) {
       lastVoicing = voicing;
     }
+    // Split the funk voicing intents: the "root" anchor needs the plain triad's
+    // root note; the "color-stab" needs a voice-led rootless funk grip in the
+    // current chord's register. Computed only when the pattern uses each hit.
+    const needsRootAnchor = !!chordPattern?.hits.some((h) => h.articulation === "root");
+    const needsColor = !!chordPattern?.hits.some((h) => h.articulation === "color-stab");
+    const plainVoicing = needsRootAnchor ? resolveChordVoicing(root, quality) : voicing;
+    const colorVoicing = needsColor
+      ? buildFunkColorVoicing(root, quality, lastVoicing)
+      : voicing;
+    const rootNoteVoicing =
+      needsRootAnchor && plainVoicing.length > 0 ? [plainVoicing[0]] : voicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
     const isBarUnit = step.duration.unit === "bar";
@@ -217,11 +235,23 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           chordStrums.push({
             time: hitTime,
             value: {
-              voicing,
+              voicing:
+                hit.articulation === "color-stab"
+                  ? colorVoicing
+                  : hit.articulation === "root"
+                    ? rootNoteVoicing
+                    : voicing,
               velocity,
               style: hit.style,
               direction: hit.direction,
-              durationSec: hit.articulation === "muted" ? MUTED_STRUM_DURATION_SEC : undefined,
+              durationSec:
+                hit.articulation === "muted"
+                  ? MUTED_STRUM_DURATION_SEC
+                  : hit.articulation === "root"
+                    ? ROOT_STRUM_DURATION_SEC
+                    : hit.articulation === "stab" || hit.articulation === "color-stab"
+                      ? STAB_STRUM_DURATION_SEC
+                      : undefined,
             },
           });
         }

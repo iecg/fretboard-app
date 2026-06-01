@@ -52,6 +52,54 @@ export function resolveChordVoicing(
   });
 }
 
+/**
+ * Rootless funk "color grip" tones per chord quality, as semitone offsets above
+ * the chord root. Compact guide-tone + color shapes — the root (offset 0) is
+ * intentionally omitted because the funk bass covers it (no low-register mud).
+ * Major deliberately uses 6/9 (no b7) so a tonic chord is coloured without being
+ * turned into a clashing dominant. Qualities not listed get the plain triad.
+ *   +3 = b3,  +4 = 3,  +9 = 6,  +10 = b7,  +11 = maj7,  +14 = 9
+ */
+const FUNK_COLOR_TONES: Record<string, readonly number[]> = {
+  "7": [4, 10, 14], // dominant: 3 / b7 / 9 — the classic "E9" grip
+  M: [4, 9, 14], // major: 3 / 6 / 9 — 6-9 colour, NO b7 (would clash on a tonic)
+  m: [3, 10, 14], // minor: b3 / b7 / 9 — m9
+  m7: [3, 10, 14], // m7: b3 / b7 / 9 — m9
+  maj7: [4, 11, 14], // maj7: 3 / 7 / 9 — maj9
+};
+
+/**
+ * Build a compact, rootless funk colour voicing for a chord. Pure.
+ *
+ * The grip is realised as an OPEN, ascending voicing: each colour tone is an
+ * absolute pitch (root octave + offset), so the 9th (+14) genuinely rings an
+ * octave ABOVE the 3rd rather than crunched next to it. This is deliberate — a
+ * close-packing voice-lead (getNearestInversion) wrapped the 9th down into a
+ * low major-2nd/semitone cluster against the 3rd (~150-195Hz), which is what
+ * made the colour stabs sound muddy. Open spacing keeps every adjacent interval
+ * >= a minor third while staying in the comp's octave-3/4 register, so it reads
+ * clean without a register jump. Falls back to the plain voice-led triad when the
+ * quality has no defined grip (dim/aug/sus/6). Returns [] for an unknown root.
+ */
+export function buildFunkColorVoicing(
+  root: string,
+  quality: string,
+  prevVoicing?: string[],
+): string[] {
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex < 0) return [];
+  const offsets = FUNK_COLOR_TONES[quality];
+  if (!offsets) {
+    return resolveChordVoicing(root, quality, undefined, prevVoicing);
+  }
+  const base = PROGRESSION_CHORD_ROOT_OCTAVE * 12 + rootIndex;
+  return offsets.map((o) => {
+    const absolute = base + o;
+    const note = NOTES[((absolute % 12) + 12) % 12];
+    return `${note}${Math.floor(absolute / 12)}`;
+  });
+}
+
 export function resolveBassLineNotes(
   root: string,
   quality: string,
