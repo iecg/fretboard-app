@@ -353,7 +353,7 @@ export function useProgressionAudioPlayback() {
 
       // Apply tempo/swing/time-signature BEFORE constructing Parts so
       // Tone.Part's seconds→ticks conversion uses the user-selected BPM, not
-      // Tone's default (120 BPM). On first play, Effects 2-4 fire while the
+      // Tone's default (120 BPM). On first play, the live tempo/swing effects fire while the
       // engine is still loading (`if (!engine) return;`), so the Transport
       // sits at its defaults until the user nudges any of these values.
       // Initializing them here closes that gap — all five Parts (chord-onset,
@@ -518,10 +518,11 @@ export function useProgressionAudioPlayback() {
       // for lint's exhaustive-deps check (which would otherwise warn).
       genRefSnapshot.current++;
       
-      // We DO NOT dispose audio here! 
-      // If `playing` remains true, the old audio continues seamlessly until 
-      // the new parts are ready. If `playing` became false, the next render 
-      // will call `tearDownAndStop()` cleanly.
+      // Audio is NOT disposed here. The next effect run handles teardown: a
+      // restart-tier change disposes + rewinds up front (see the reset block at
+      // the top of this effect), and a stop (`playing` false) hits the
+      // `tearDownAndStop()` early-return branch. Cleanup's only job is bumping
+      // `genRef` to invalidate any in-flight build.
     };
   }, [
     playing,
