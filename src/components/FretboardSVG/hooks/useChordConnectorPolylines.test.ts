@@ -45,6 +45,7 @@ function makeNote(
     noteName,
     octave: 4,
     noteClass,
+    displayName: noteName,
     displayValue: noteName,
     applyDimOpacity: false,
     applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },

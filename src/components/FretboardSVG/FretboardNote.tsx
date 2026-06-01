@@ -64,6 +64,7 @@ export const FretboardNote = memo(function FretboardNote({
     cy,
     octave,
     noteClass,
+    displayName,
     displayValue,
     applyDimOpacity,
     applyLensEmphasis,
@@ -145,7 +146,9 @@ export const FretboardNote = memo(function FretboardNote({
   const baseOpacity = applyDimOpacity ? 0.8 : 1;
   const finalOpacity = baseOpacity * applyLensEmphasis.opacityBoost;
   const roleLabel = formatRole(noteClass);
-  const ariaLabel = `${noteName}${octave} — ${roleLabel}`;
+  // Announce the same flat/sharp spelling sighted users see (e.g. "B♭", not the
+  // internal sharp "A#"). displayName carries the scale-aware spelling. #493
+  const ariaLabel = `${formatAccidental(displayName)}${octave} — ${roleLabel}`;
   const interactive = !!onNoteClick && !isHidden;
   return (
     <g
@@ -154,10 +157,10 @@ export const FretboardNote = memo(function FretboardNote({
         styles[noteClass],
         isHidden && "hidden",
       )}
-      role="button"
+      role={interactive ? "button" : undefined}
       aria-label={ariaLabel}
       aria-hidden={isHidden || undefined}
-      tabIndex={interactive ? 0 : -1}
+      tabIndex={interactive ? 0 : undefined}
       onClick={
         interactive
           ? () => onNoteClick!(stringIndex, fretIndex, noteName)

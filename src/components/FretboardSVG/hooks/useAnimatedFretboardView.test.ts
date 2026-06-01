@@ -166,6 +166,7 @@ describe("buildRenderedFretboardNotes (object identity)", () => {
       noteName: "C",
       octave: 4,
       noteClass: "note-active",
+      displayName: "C",
       displayValue: "C",
       applyDimOpacity: false,
       applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },

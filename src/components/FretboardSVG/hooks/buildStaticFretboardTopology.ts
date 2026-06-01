@@ -250,12 +250,16 @@ export function buildStaticFretboardTopology({
 
       if (isNoteHidden) continue;
 
-      let displayValue = getNoteDisplayInScale(
+      // Scale-aware spelled pitch (e.g. "A#" → "Bb" in F major). This is the
+      // pitch the visible "notes"-mode label shows; the a11y aria-label reuses
+      // it so screen readers announce the same spelling. See issue #493.
+      const displayName = getNoteDisplayInScale(
         noteName,
         rootNote,
         scale,
         preferFlats,
       );
+      let displayValue = displayName;
       if (displayFormat === "degrees" && rootNote) {
         const noteIdx = NOTES.indexOf(noteName);
         if (rootIdx !== -1 && noteIdx !== -1) {
@@ -307,6 +311,7 @@ export function buildStaticFretboardTopology({
         noteName,
         octave,
         noteClass: finalNoteClass,
+        displayName,
         displayValue,
         applyDimOpacity,
         applyLensEmphasis: DEFAULT_LENS_EMPHASIS,

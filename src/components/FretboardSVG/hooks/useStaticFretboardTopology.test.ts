@@ -130,4 +130,39 @@ describe("useStaticFretboardTopology", () => {
     expect(result.current.find((note) => note.positionKey === "0-2")?.noteClass).toBe("note-active");
     expect(result.current.find((note) => note.positionKey === "0-2")?.applyDimOpacity).toBe(true);
   });
+
+  describe("displayName (issue #493 a11y spelling)", () => {
+    // In F major the chromatic "A#" is spelled "Bb". displayName must carry the
+    // scale-aware spelling so screen-reader labels match the visible note text.
+    const F_MAJOR_PROPS = {
+      ...TOPOLOGY_PROPS,
+      fretboardLayout: [["F", "F#", "G", "G#", "A", "A#"]],
+      totalColumns: 5,
+      maxFret: 6,
+      highlightNotes: ["F", "G", "A", "A#"],
+      chordTones: ["F", "A", "C"],
+      rootNote: "F",
+      chordRoot: "F",
+      tuning: ["F3"],
+    };
+
+    it("spells displayName scale-aware, matching displayValue in notes mode", () => {
+      const { result } = renderHook(() => useStaticFretboardTopology(F_MAJOR_PROPS));
+      const aSharp = result.current.find((note) => note.positionKey === "0-5");
+      expect(aSharp?.noteName).toBe("A#");
+      expect(aSharp?.displayName).toBe("Bb");
+      // In notes mode the visible label IS displayValue, so they must agree.
+      expect(aSharp?.displayValue).toBe("Bb");
+    });
+
+    it("keeps displayName as the pitch while displayValue becomes a degree", () => {
+      const { result } = renderHook(() => useStaticFretboardTopology({
+        ...F_MAJOR_PROPS,
+        displayFormat: "degrees" as const,
+      }));
+      const aSharp = result.current.find((note) => note.positionKey === "0-5");
+      expect(aSharp?.displayName).toBe("Bb");
+      expect(aSharp?.displayValue).not.toBe("Bb");
+    });
+  });
 });

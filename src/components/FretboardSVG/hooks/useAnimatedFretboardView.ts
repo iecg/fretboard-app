@@ -104,6 +104,7 @@ function renderedNoteSignature(
     note.noteName,
     note.octave,
     note.noteClass,
+    note.displayName,
     note.displayValue,
     note.cx,
     note.cy,

@@ -27,6 +27,7 @@ import {
   squirclePath,
 } from "./utils/noteSizing";
 import {
+  formatAccidental,
   RADIUS_SCALE_CHORD_ROOT,
   RADIUS_SCALE_CHORD_TONE,
   RADIUS_SCALE_NOTE_ACTIVE,
@@ -53,6 +54,7 @@ function makeNote(noteClass: NoteClass, overrides: Partial<RenderedFretboardNote
     noteName: "C",
     octave: 4,
     noteClass,
+    displayName: "C",
     displayValue: "C",
     applyDimOpacity: false,
     applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
@@ -343,5 +345,87 @@ describe("FretboardNoteLayer", () => {
       </svg>,
     );
     expect(container.querySelector('[data-motion="css"]')).toBeTruthy();
+  });
+});
+
+describe("FretboardNote a11y contract (issue #493)", () => {
+  const renderNote = (
+    note: RenderedFretboardNote,
+    opts: {
+      onNoteClick?: (s: number, f: number, n: string) => void;
+      displayFormat?: "notes" | "degrees" | "none";
+    } = {},
+  ) =>
+    render(
+      <svg>
+        <FretboardNoteLayer
+          notes={[note]}
+          noteBubblePx={40}
+          displayFormat={opts.displayFormat ?? "notes"}
+          onNoteClick={opts.onNoteClick}
+        />
+      </svg>,
+    );
+
+  const noteGroup = (container: HTMLElement) =>
+    container.querySelector<SVGGElement>('g[class*="fretboard-note"]')!;
+
+  describe("aria-label uses the visible display spelling, not internal sharps", () => {
+    it("announces the flat spelling when the visible label is a flat", () => {
+      // Internal storage is sharps ("A#"); the visible label resolves to the
+      // scale-aware flat ("Bb"). The screen-reader label must match what is seen.
+      const { container } = renderNote(
+        makeNote("note-active", { noteName: "A#", displayName: "Bb", octave: 4 }),
+      );
+      const label = noteGroup(container).getAttribute("aria-label") ?? "";
+      expect(label).toContain(formatAccidental("Bb")); // "B♭"
+      expect(label).not.toContain("A#");
+      expect(label).not.toContain("A♯");
+    });
+
+    it("uses displayName for the pitch even in degrees display mode", () => {
+      // displayValue (visible text) is a degree in degrees mode, but the spoken
+      // label must still announce the pitch — sourced from displayName.
+      const { container } = renderNote(
+        makeNote("note-active", {
+          noteName: "C#",
+          displayName: "Db",
+          displayValue: "2",
+          octave: 5,
+        }),
+        { displayFormat: "degrees" },
+      );
+      const label = noteGroup(container).getAttribute("aria-label") ?? "";
+      expect(label).toContain(`${formatAccidental("Db")}5`); // "D♭5"
+    });
+  });
+
+  describe("role and tabIndex are conditional on interactivity", () => {
+    it("non-interactive notes (no onNoteClick) have no button role and no tabIndex", () => {
+      const { container } = renderNote(makeNote("note-active"));
+      const g = noteGroup(container);
+      expect(g.getAttribute("role")).toBeNull();
+      expect(g.getAttribute("tabindex")).toBeNull();
+    });
+
+    it("interactive notes expose button role and tabIndex=0", () => {
+      const { container } = renderNote(makeNote("note-active"), {
+        onNoteClick: () => {},
+      });
+      const g = noteGroup(container);
+      expect(g.getAttribute("role")).toBe("button");
+      expect(g.getAttribute("tabindex")).toBe("0");
+    });
+
+    it("hidden notes stay aria-hidden with no button role even when onNoteClick is provided", () => {
+      const { container } = renderNote(
+        makeNote("note-inactive", { isHidden: true }),
+        { onNoteClick: () => {} },
+      );
+      const g = noteGroup(container);
+      expect(g.getAttribute("aria-hidden")).toBe("true");
+      expect(g.getAttribute("role")).toBeNull();
+      expect(g.getAttribute("tabindex")).toBeNull();
+    });
   });
 });

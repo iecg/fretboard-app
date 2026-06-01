@@ -24,6 +24,10 @@ export interface NoteData {
   noteName: string;
   octave: number;
   noteClass: string;
+  /** Scale-aware spelled pitch (e.g. "Bb"), independent of displayFormat. The
+   * visible note label in "notes" mode and the a11y aria-label both source from
+   * this so screen-reader output matches what is shown. See issue #493. */
+  displayName: string;
   displayValue: string;
   applyDimOpacity: boolean;
   applyLensEmphasis: LensEmphasis;
