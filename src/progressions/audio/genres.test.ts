@@ -68,10 +68,21 @@ describe("genre drum variations", () => {
     expect(getGenreStyle("rock")!.drumVariations).toContain("open-hat-and-of-4");
   });
 
-  it("does NOT assign fill-every-4 to any genre (genre default sets deferred)", () => {
-    for (const g of GENRE_STYLES) {
-      expect(g.drumVariations, `genre ${g.id}`).not.toContain("fill-every-4");
-    }
+  it("gives pop and rock a turnaround fill, and rock a phrase-start crash", () => {
+    expect(getGenreStyle("pop")!.drumVariations).toContain("fill-every-4");
+    expect(getGenreStyle("rock")!.drumVariations).toContain("fill-every-4");
+    expect(getGenreStyle("rock")!.drumVariations).toContain("crash-bar-1");
+  });
+
+  it("gives funk, jazz, and blues their genre-tailored turnaround", () => {
+    expect(getGenreStyle("funk")!.drumVariations).toContain("funk-fill-4");
+    expect(getGenreStyle("jazz")!.drumVariations).toContain("jazz-turnaround-4");
+    expect(getGenreStyle("blues")!.drumVariations).toContain("blues-fill-4");
+  });
+
+  it("leaves ballad and bossa-nova without drum variations", () => {
+    expect(getGenreStyle("ballad")!.drumVariations).toEqual([]);
+    expect(getGenreStyle("bossa-nova")!.drumVariations).toEqual([]);
   });
 
   it("keeps every referenced variation id resolvable", () => {

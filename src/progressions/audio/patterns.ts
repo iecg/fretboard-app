@@ -462,6 +462,64 @@ export const DRUM_VARIATIONS: readonly DrumVariation[] = [
       ride: [{ beat: 0, velocity: 0.9 }],
     },
   },
+  {
+    id: "funk-fill-4",
+    label: "Funk Turnaround Fill",
+    barInterval: 4,
+    barPhase: 3,
+    pattern: {
+      id: "funk-fill-4-pattern",
+      label: "Funk Fill",
+      kicks: [{ beat: 0, velocity: 0.9 }],
+      snares: [
+        { beat: 2, velocity: 0.4 },
+        { beat: 2.5, velocity: 0.5 },
+        { beat: 2.75, velocity: 0.4 },
+        { beat: 3, velocity: 0.6 },
+        { beat: 3.25, velocity: 0.6 },
+        { beat: 3.5, velocity: 0.8 },
+        { beat: 3.75, velocity: 0.9 },
+      ],
+      hats: [],
+    },
+  },
+  {
+    id: "jazz-turnaround-4",
+    label: "Jazz Turnaround",
+    barInterval: 4,
+    barPhase: 3,
+    pattern: {
+      id: "jazz-turnaround-4-pattern",
+      label: "Jazz Turnaround",
+      kicks: [],
+      snares: [
+        { beat: 2, velocity: 0.35 },
+        { beat: 2.5, velocity: 0.4 },
+        { beat: 3, velocity: 0.45 },
+        { beat: 3.5, velocity: 0.55 },
+      ],
+      hats: [],
+      ride: [{ beat: 3, velocity: 0.6 }],
+    },
+  },
+  {
+    id: "blues-fill-4",
+    label: "Blues Shuffle Fill",
+    barInterval: 4,
+    barPhase: 3,
+    pattern: {
+      id: "blues-fill-4-pattern",
+      label: "Blues Fill",
+      kicks: [{ beat: 0, velocity: 0.9 }],
+      snares: [
+        { beat: 2, velocity: 0.5 },
+        { beat: 2.5, velocity: 0.6 },
+        { beat: 3, velocity: 0.7 },
+        { beat: 3.5, velocity: 0.9 },
+      ],
+      hats: [],
+    },
+  },
 ];
 
 export function getChordPattern(id: string): ChordPattern | undefined {
