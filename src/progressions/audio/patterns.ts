@@ -41,12 +41,22 @@ interface ChordHit {
    *  "color-stab" rings a chord with funk extensions; "muted" chokes a plain
    *  chord short (chicken-scratch ghost). Omitted rings the patch default. */
   articulation?: ChordArticulation;
+  /** Bossa LH/RH split (used when the pattern's voicing is "rootless-jazz"):
+   *  "bass-root"/"bass-fifth" play a single low note (LH); "chord" plays the
+   *  rootless RH voicing. Omitted behaves as "chord". */
+  voiceRole?: "bass-root" | "bass-fifth" | "chord";
 }
 
 export interface ChordPattern {
   id: string;
   label: string;
   hits: readonly ChordHit[];
+  /** Cell length in bars (default 1). When > 1, `hits` span 0..bars*beatsPerBar
+   *  and the scheduler selects one bar per `absoluteBar % bars`. */
+  bars?: number;
+  /** Voicing strategy for this comp. Omitted = the default chord voicing.
+   *  "rootless-jazz" = buildBossaColorVoicing (rootless 7th/9th, mid register). */
+  voicing?: "rootless-jazz";
 }
 
 interface CatalogBassHit {
@@ -61,6 +71,8 @@ export interface CatalogBassPattern {
   id: string;
   label: string;
   hits: readonly CatalogBassHit[];
+  /** Cell length in bars (default 1). See ChordPattern.bars. */
+  bars?: number;
 }
 
 export interface CatalogDrumPattern {
@@ -71,6 +83,10 @@ export interface CatalogDrumPattern {
   hats: readonly DrumHit[];
   openHats?: readonly DrumHit[];
   ride?: readonly DrumHit[];
+  /** Cross-stick / rim-click voice (bossa clave). */
+  crossStick?: readonly DrumHit[];
+  /** Cell length in bars (default 1). See ChordPattern.bars. */
+  bars?: number;
 }
 
 export interface DrumVariation {
@@ -202,6 +218,30 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
       { beat: 3, velocity: 0.6 },
     ],
   },
+  {
+    id: "bossa-comp",
+    label: "Bossa Comp",
+    bars: 2,
+    voicing: "rootless-jazz",
+    // LH bass (root on beat 1, fifth on beat 3) + RH rootless chords on the
+    // off-beats. Authentic 2-bar arc: bar 1 is the basic sparse comp (2 stabs),
+    // bar 2 intensifies into a busier run of anticipated off-beat stabs (4).
+    // Every hit is short (no sustain) — a plucky, detached comp.
+    hits: [
+      // bar 1 — basic: bass on 1 & 3, chord stabs on the & of 2 and & of 4
+      { beat: 0, velocity: 0.6, voiceRole: "bass-root" },
+      { beat: 1.5, velocity: 0.5, voiceRole: "chord" },
+      { beat: 2, velocity: 0.55, voiceRole: "bass-fifth" },
+      { beat: 3.5, velocity: 0.55, voiceRole: "chord" },
+      // bar 2 — busier: chord stabs on the & of 1, 2 and 4, anticipating the
+      // following beats for forward momentum.
+      { beat: 4, velocity: 0.6, voiceRole: "bass-root" },
+      { beat: 4.5, velocity: 0.5, voiceRole: "chord" },
+      { beat: 5.5, velocity: 0.5, voiceRole: "chord" },
+      { beat: 6, velocity: 0.55, voiceRole: "bass-fifth" },
+      { beat: 7.5, velocity: 0.55, voiceRole: "chord" },
+    ],
+  },
 ];
 
 export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
@@ -273,6 +313,16 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
       { beat: 1.5, velocity: 0.8, note: "octave", articulation: "staccato" },
       { beat: 2.5, velocity: 0.55, note: "fifth", articulation: "staccato" },
       { beat: 3.5, velocity: 0.7, note: "flat-seventh", articulation: "staccato" },
+    ],
+  },
+  {
+    id: "bossa",
+    label: "Bossa Nova",
+    // Root–fifth surdo (tonic–dominant alternation) — the recognizable bossa
+    // pulse. The clave lock comes from the drums + comp; this stays 1-bar.
+    hits: [
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 2, velocity: 0.8, note: "fifth", articulation: "legato" },
     ],
   },
 ];
@@ -352,18 +402,35 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
   {
     id: "bossa",
     label: "Bossa Nova",
+    bars: 2,
+    // Soft surdo heartbeat: beats 1 & 3 of each bar.
     kicks: [
+      { beat: 0, velocity: 0.5 },
+      { beat: 2, velocity: 0.6 },
+      { beat: 4, velocity: 0.5 },
+      { beat: 6, velocity: 0.6 },
+    ],
+    // No backbeat snare — the cross-stick clave carries the rhythm.
+    snares: [],
+    // Straight 8th hats across both bars (beats 0..7.5).
+    hats: [
+      { beat: 0, velocity: 0.4 }, { beat: 0.5, velocity: 0.3 },
+      { beat: 1, velocity: 0.4 }, { beat: 1.5, velocity: 0.3 },
+      { beat: 2, velocity: 0.4 }, { beat: 2.5, velocity: 0.3 },
+      { beat: 3, velocity: 0.4 }, { beat: 3.5, velocity: 0.3 },
+      { beat: 4, velocity: 0.4 }, { beat: 4.5, velocity: 0.3 },
+      { beat: 5, velocity: 0.4 }, { beat: 5.5, velocity: 0.3 },
+      { beat: 6, velocity: 0.4 }, { beat: 6.5, velocity: 0.3 },
+      { beat: 7, velocity: 0.4 }, { beat: 7.5, velocity: 0.3 },
+    ],
+    // 3-2 bossa clave: bar 1 @ 0, 1.5, 3 · bar 2 @ 5 (bar2 beat 1), 6.5 (bar2 "3&").
+    crossStick: [
       { beat: 0, velocity: 0.8 },
       { beat: 1.5, velocity: 0.7 },
-      { beat: 2, velocity: 0.8 },
-      { beat: 3.5, velocity: 0.7 },
+      { beat: 3, velocity: 0.75 },
+      { beat: 5, velocity: 0.7 },
+      { beat: 6.5, velocity: 0.8 },
     ],
-    snares: [
-      { beat: 0, velocity: 0.7 },
-      { beat: 1.5, velocity: 0.6 },
-      { beat: 3, velocity: 0.7 },
-    ],
-    hats: EIGHTH_HATS,
   },
   {
     id: "ballad",
@@ -576,6 +643,23 @@ export function clipPatternToBeats<T extends { beat: number }>(
 ): T[] {
   if (beatsAvailable <= 0) return [];
   return pattern.filter((hit) => hit.beat < beatsAvailable);
+}
+
+/**
+ * Select the hits belonging to a single bar of a multi-bar pattern cell and
+ * shift them back to bar-local beats (0..beatsPerBar). `cellBarIndex` is
+ * `absoluteBar % bars`. Pure — used for 2-bar patterns (e.g. the bossa clave);
+ * 1-bar patterns never call this (they keep the `repeatPatternToBeats` path).
+ */
+export function sliceCellToBar<T extends { beat: number }>(
+  hits: readonly T[],
+  cellBarIndex: number,
+  beatsPerBar: number,
+): T[] {
+  const offset = cellBarIndex * beatsPerBar;
+  return hits
+    .filter((h) => h.beat >= offset && h.beat < offset + beatsPerBar)
+    .map((h) => ({ ...h, beat: h.beat - offset }));
 }
 
 /**

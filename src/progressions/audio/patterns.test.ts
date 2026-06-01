@@ -3,6 +3,7 @@ import {
   buildMetronomePattern,
   clipPatternToBeats,
   repeatPatternToBeats,
+  sliceCellToBar,
   CHORD_PATTERNS,
   BASS_PATTERNS,
   DRUM_PATTERNS,
@@ -88,14 +89,14 @@ describe("buildMetronomePattern", () => {
 });
 
 describe("pattern catalog", () => {
-  it("has 9 chord patterns with unique IDs", () => {
-    expect(CHORD_PATTERNS).toHaveLength(9);
+  it("has 10 chord patterns with unique IDs", () => {
+    expect(CHORD_PATTERNS).toHaveLength(10);
     const ids = CHORD_PATTERNS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("has 6 bass patterns with unique IDs", () => {
-    expect(BASS_PATTERNS).toHaveLength(6);
+  it("has 7 bass patterns with unique IDs", () => {
+    expect(BASS_PATTERNS).toHaveLength(7);
     const ids = BASS_PATTERNS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
@@ -112,17 +113,19 @@ describe("pattern catalog", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("all pattern beats are in range [0, 4)", () => {
+  it("all pattern beats are in range [0, bars * 4)", () => {
     for (const p of CHORD_PATTERNS) {
+      const maxBeat = (p.bars ?? 1) * 4;
       for (const h of p.hits) {
         expect(h.beat).toBeGreaterThanOrEqual(0);
-        expect(h.beat).toBeLessThan(4);
+        expect(h.beat).toBeLessThan(maxBeat);
       }
     }
     for (const p of BASS_PATTERNS) {
+      const maxBeat = (p.bars ?? 1) * 4;
       for (const h of p.hits) {
         expect(h.beat).toBeGreaterThanOrEqual(0);
-        expect(h.beat).toBeLessThan(4);
+        expect(h.beat).toBeLessThan(maxBeat);
       }
     }
     const drumPatterns = [
@@ -130,11 +133,12 @@ describe("pattern catalog", () => {
       ...DRUM_VARIATIONS.map((v) => v.pattern),
     ];
     for (const p of drumPatterns) {
-      const lanes = [p.kicks, p.snares, p.hats, p.openHats, p.ride];
+      const maxBeat = (p.bars ?? 1) * 4;
+      const lanes = [p.kicks, p.snares, p.hats, p.openHats, p.ride, p.crossStick];
       for (const lane of lanes) {
         for (const h of lane ?? []) {
           expect(h.beat).toBeGreaterThanOrEqual(0);
-          expect(h.beat).toBeLessThan(4);
+          expect(h.beat).toBeLessThan(maxBeat);
         }
       }
     }
@@ -461,5 +465,76 @@ describe("DRUM_VARIATIONS definitions are truthful", () => {
     expect(variationFiresOnBar(fill, 3)).toBe(true);
     expect(variationFiresOnBar(fill, 7)).toBe(true);
     expect(fill.pattern.snares.length).toBeGreaterThan(0);
+  });
+});
+
+describe("sliceCellToBar", () => {
+  // A 2-bar cell in 4/4: beats 0..7.99. Bar 1 = [0,4), bar 2 = [4,8).
+  const CELL = [
+    { beat: 0, velocity: 0.8 },
+    { beat: 1.5, velocity: 0.7 },
+    { beat: 3, velocity: 0.75 },
+    { beat: 5, velocity: 0.7 },
+    { beat: 6, velocity: 0.8 },
+  ];
+
+  it("returns bar 1 hits with original beats for cellBarIndex 0", () => {
+    expect(sliceCellToBar(CELL, 0, 4)).toEqual([
+      { beat: 0, velocity: 0.8 },
+      { beat: 1.5, velocity: 0.7 },
+      { beat: 3, velocity: 0.75 },
+    ]);
+  });
+
+  it("returns bar 2 hits shifted back by beatsPerBar for cellBarIndex 1", () => {
+    expect(sliceCellToBar(CELL, 1, 4)).toEqual([
+      { beat: 1, velocity: 0.7 },
+      { beat: 2, velocity: 0.8 },
+    ]);
+  });
+
+  it("returns an empty array for an out-of-range cellBarIndex", () => {
+    expect(sliceCellToBar(CELL, 2, 4)).toEqual([]);
+  });
+
+  it("preserves extra hit fields (only the beat is shifted)", () => {
+    const typed = [{ beat: 5, velocity: 0.5, type: "crossStick" as const }];
+    expect(sliceCellToBar(typed, 1, 4)).toEqual([
+      { beat: 1, velocity: 0.5, type: "crossStick" },
+    ]);
+  });
+});
+
+describe("bossa patterns", () => {
+  it("rewrites the bossa drum pattern as a 2-bar cell with a bossa-clave cross-stick", () => {
+    const bossa = getDrumPattern("bossa")!;
+    expect(bossa.bars).toBe(2);
+    expect(bossa.snares).toEqual([]); // cross-stick carries the rhythm
+    // Authentic 3-2 bossa clave: 2-side's last note on "3&" (6.5), not son's "3" (6).
+    expect(bossa.crossStick?.map((h) => h.beat)).toEqual([0, 1.5, 3, 5, 6.5]);
+  });
+
+  it("adds a 1-bar root-fifth bossa bass pattern", () => {
+    const bass = getBassPattern("bossa")!;
+    expect(bass.bars ?? 1).toBe(1);
+    expect(bass.hits.map((h) => h.note)).toEqual(["root", "fifth"]);
+  });
+
+  it("adds a 2-bar bossa comp: LH bass + RH chords that intensify in the second bar", () => {
+    const comp = getChordPattern("bossa-comp")!;
+    expect(comp.bars).toBe(2);
+    expect(comp.voicing).toBe("rootless-jazz");
+    expect(comp.hits.map((h) => h.beat)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 5.5, 6, 7.5]);
+    expect(comp.hits.map((h) => h.voiceRole)).toEqual([
+      "bass-root", "chord", "bass-fifth", "chord",
+      "bass-root", "chord", "chord", "bass-fifth", "chord",
+    ]);
+    // The RH chords get busier in the second bar (the authentic 2-bar arc):
+    // bar 1 has 2 chord stabs, bar 2 has 3 anticipated off-beat stabs.
+    const chordBeats = comp.hits.filter((h) => h.voiceRole === "chord").map((h) => h.beat);
+    expect(chordBeats.filter((b) => b < 4)).toEqual([1.5, 3.5]);
+    expect(chordBeats.filter((b) => b >= 4)).toEqual([4.5, 5.5, 7.5]);
+    // Every hit is short — no sustain anywhere in the comp.
+    expect(comp.hits.every((h) => h.style === undefined)).toBe(true);
   });
 });

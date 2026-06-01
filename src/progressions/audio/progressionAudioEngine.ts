@@ -14,7 +14,7 @@ export type { BassEvent, ChordOnsetEvent, ChordStrumEvent, DrumEvent, MetronomeE
 export { createProgressionPart } from "./progressionPart";
 export { setLayerGain } from "./layerBuses";
 export { scheduleBassNote } from "./bass";
-export { scheduleHiHat, scheduleKick, scheduleRide, scheduleSnare } from "./drumKit";
+export { scheduleCrossStick, scheduleHiHat, scheduleKick, scheduleRide, scheduleSnare } from "./drumKit";
 export { scheduleClick } from "./metronome";
 export { clearTimeline, pauseTimeline, setActiveStep } from "./timeline";
 export { getDraw, getTransport };

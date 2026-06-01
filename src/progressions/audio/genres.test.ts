@@ -59,6 +59,13 @@ describe("genre styles", () => {
     expect(funk.tempoRange[0]).toBeLessThanOrEqual(funk.suggestedTempo);
     expect(funk.tempoRange[1]).toBeGreaterThanOrEqual(funk.suggestedTempo);
   });
+
+  it("wires bossa-nova to the clave drum, surdo bass, and partido-alto comp", () => {
+    const bossa = getGenreStyle("bossa-nova")!;
+    expect(bossa.chordPattern).toBe("bossa-comp");
+    expect(bossa.bassPattern).toBe("bossa");
+    expect(bossa.drumPattern).toBe("bossa");
+  });
 });
 
 describe("genre drum variations", () => {

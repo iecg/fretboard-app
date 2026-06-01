@@ -100,6 +100,57 @@ export function buildFunkColorVoicing(
   });
 }
 
+/**
+ * Rootless Type-B (7-9-3-5) jazz comp tones per chord quality, as semitone
+ * offsets above the chord root. The root is omitted — the piano LH and upright
+ * bass cover it. 7th is the lowest tone, so the shape sits low for its register.
+ *   +3 = b3, +4 = 3, +10 = b7, +11 = maj7, +14 = 9, +15 = b3+8ve, +16 = 3+8ve, +19 = 5+8ve
+ */
+const BOSSA_COLOR_TONES: Record<string, readonly number[]> = {
+  maj7: [11, 14, 16, 19], // 7 / 9 / 3 / 5 — maj9
+  M: [11, 14, 16, 19], // plain major voiced as maj9
+  m7: [10, 14, 15, 19], // b7 / 9 / b3 / 5 — m9
+  m: [10, 14, 15, 19], // m9
+  "7": [10, 14, 16, 19], // b7 / 9 / 3 / 5 — dom9
+};
+
+/** Comp voicing base octave (the 7th, the lowest tone, starts here). */
+const BOSSA_COMP_ROOT_OCTAVE = 3;
+/** Register ceiling — the voicing's top note must not exceed C5 (absolute 60,
+ *  i.e. octave*12 + pitchIndex). Higher-rooted voicings are dropped an octave
+ *  at a time until they fit, keeping the comp in the C3–C5 register. */
+const BOSSA_COMP_TOP_CEILING = 60;
+
+/**
+ * Build a rootless Type-B (7-9-3-5) jazz comp voicing for a chord, normalized
+ * into the C3–C5 register. Pure. Builds the four colour tones at octave 3, then
+ * transposes the whole voicing down by octaves until its top note is ≤ C5 —
+ * so even high-rooted chords (A/B) stay in the comp register rather than
+ * floating into octave 5. Falls back to the plain voice-led triad when the
+ * quality has no defined grip (dim/aug/sus/6). Returns [] for an unknown root.
+ */
+export function buildBossaColorVoicing(
+  root: string,
+  quality: string,
+  prevVoicing?: string[],
+): string[] {
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex < 0) return [];
+  const offsets = BOSSA_COLOR_TONES[quality];
+  if (!offsets) {
+    return resolveChordVoicing(root, quality, undefined, prevVoicing);
+  }
+  const base = BOSSA_COMP_ROOT_OCTAVE * 12 + rootIndex;
+  let absolutes = offsets.map((o) => base + o);
+  while (Math.max(...absolutes) > BOSSA_COMP_TOP_CEILING) {
+    absolutes = absolutes.map((a) => a - 12);
+  }
+  return absolutes.map((a) => {
+    const note = NOTES[((a % 12) + 12) % 12];
+    return `${note}${Math.floor(a / 12)}`;
+  });
+}
+
 export function resolveBassLineNotes(
   root: string,
   quality: string,

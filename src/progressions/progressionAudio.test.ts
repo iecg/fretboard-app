@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, buildFunkColorVoicing } from "./progressionAudio";
+import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, buildFunkColorVoicing, buildBossaColorVoicing } from "./progressionAudio";
 
 describe("resolveChordVoicing", () => {
   it("stacks the C Major Triad as C-E-G at octave 3", () => {
@@ -169,5 +169,39 @@ describe("buildFunkColorVoicing", () => {
 
   it("returns [] for an unknown root", () => {
     expect(buildFunkColorVoicing("H", "7")).toEqual([]);
+  });
+});
+
+describe("buildBossaColorVoicing", () => {
+  const PC: Record<string, number> = { C: 0, "C#": 1, D: 2, "D#": 3, E: 4, F: 5, "F#": 6, G: 7, "G#": 8, A: 9, "A#": 10, B: 11 };
+  const pcSet = (notes: readonly string[]) => new Set(notes.map((n) => n.replace(/-?\d+$/, "")));
+  const midi = (n: string) => { const m = n.match(/^([A-G]#?)(-?\d+)$/)!; return PC[m[1]] + (parseInt(m[2], 10) + 1) * 12; };
+
+  it("voices a major chord as a 4-note Type-B rootless (7-9-3-5) in octave 3", () => {
+    expect(buildBossaColorVoicing("C", "maj7")).toEqual(["B3", "D4", "E4", "G4"]);
+    expect(buildBossaColorVoicing("C", "M")).toEqual(["B3", "D4", "E4", "G4"]);
+  });
+
+  it("normalizes a high-rooted voicing down an octave so it never floats above C5", () => {
+    expect(buildBossaColorVoicing("A", "m7")).toEqual(["G3", "B3", "C4", "E4"]);
+  });
+
+  it("keeps every defined voicing 4-note, rootless, and topped at or below C5 for all roots", () => {
+    const ROOTS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    for (const root of ROOTS) {
+      for (const quality of ["maj7", "M", "m7", "m", "7"]) {
+        const v = buildBossaColorVoicing(root, quality);
+        expect(v, `${root}${quality} length`).toHaveLength(4);
+        expect(pcSet(v).has(root), `${root}${quality} rootless`).toBe(false);
+        const ms = v.map(midi);
+        expect(Math.max(...ms), `${root}${quality} top <= C5`).toBeLessThanOrEqual(72);
+        expect(Math.min(...ms), `${root}${quality} bottom >= C3`).toBeGreaterThanOrEqual(48);
+      }
+    }
+  });
+
+  it("falls back to the plain voice-led triad for a quality without a grip; [] for unknown root", () => {
+    expect(buildBossaColorVoicing("C", "dim")).toEqual(resolveChordVoicing("C", "dim", undefined, undefined));
+    expect(buildBossaColorVoicing("H", "maj7")).toEqual([]);
   });
 });

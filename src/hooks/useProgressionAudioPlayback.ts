@@ -518,6 +518,7 @@ export function useProgressionAudioPlayback() {
             case "hihat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
             case "openHat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, open: true, kit: drumKit }); break;
             case "ride": eng.scheduleRide(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
+            case "crossStick": eng.scheduleCrossStick(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
           }
         },
       });

@@ -52,7 +52,7 @@ export const GENRE_STYLES: readonly GenreStyle[] = [
   },
   {
     id: "bossa-nova", label: "Bossa Nova", chordInstrument: "piano",
-    chordPattern: "straight-quarters", bassPattern: "arpeggiated",
+    chordPattern: "bossa-comp", bassPattern: "bossa",
     drumPattern: "bossa", drumVariations: [],
     tempoRange: [120, 140], suggestedTempo: 130, swing: 0,
   },

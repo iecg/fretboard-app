@@ -3,6 +3,7 @@ import {
   resolveChordVoicing,
   resolveBassLineNotes,
   buildFunkColorVoicing,
+  buildBossaColorVoicing,
 } from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 import {
@@ -12,6 +13,7 @@ import {
   getDrumVariation,
   variationFiresOnBar,
   repeatPatternToBeats,
+  sliceCellToBar,
   type CatalogDrumPattern,
   type DrumHit,
   type DrumVariation,
@@ -19,7 +21,7 @@ import {
 } from "./patterns";
 import { applyJitter } from "./humanize";
 
-type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride";
+type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride" | "crossStick";
 type StrumStyle = "staccato" | "sustained";
 type StrumDirection = "down" | "up";
 
@@ -88,6 +90,8 @@ export const STAB_STRUM_DURATION_SEC = 0.4;
 /** Note length (seconds) for the single root-note anchor on the one — a short,
  *  tight pluck, longer than a muted ghost but well short of a ringing stab. */
 export const ROOT_STRUM_DURATION_SEC = 0.12;
+/** Piano LH bass octave for the bossa comp — an octave above the upright bass. */
+const BOSSA_LH_OCTAVE = 3;
 
 function swingBeat(beat: number, swing: number): number {
   if (swing <= 0) return beat;
@@ -125,6 +129,7 @@ function collectDrumHits(pattern: CatalogDrumPattern): VoicedDrumHit[] {
   for (const h of pattern.hats) out.push({ ...h, type: "hihat" });
   for (const h of pattern.openHats ?? []) out.push({ ...h, type: "openHat" });
   for (const h of pattern.ride ?? []) out.push({ ...h, type: "ride" });
+  for (const h of pattern.crossStick ?? []) out.push({ ...h, type: "crossStick" });
   return out;
 }
 
@@ -204,7 +209,28 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       : voicing;
     const rootNoteVoicing =
       needsRootAnchor && plainVoicing.length > 0 ? [plainVoicing[0]] : voicing;
+    // Rootless jazz comp voicing (bossa) — opt-in per pattern. Falls back to the
+    // default voicing for every other comp.
+    const compVoicing =
+      chordPattern?.voicing === "rootless-jazz"
+        ? buildBossaColorVoicing(root, quality, lastVoicing)
+        : voicing;
+    // Bossa LH bass notes (root on beat 1, fifth on beat 3), octave 3 — single
+    // notes played by the piano under the RH rootless chords.
+    const bossaLhNotes =
+      chordPattern?.voicing === "rootless-jazz"
+        ? resolveBassLineNotes(root, quality, BOSSA_LH_OCTAVE)
+        : [];
+    const bassRootVoicing = bossaLhNotes.length > 0 ? [bossaLhNotes[0]] : voicing;
+    const bassFifthVoicing =
+      bossaLhNotes.length > 1 ? [bossaLhNotes[1]] : bassRootVoicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
+    // When the comp supplies its own LH bass (rootless-jazz), it doubles the
+    // upright bassline an octave up on beats 1 & 3. Grid-lock both voices'
+    // attacks (zero time jitter) so they sound in perfect unison — independent
+    // timing humanization flams two notes an octave apart. Velocity jitter still
+    // applies, and other comps keep their natural timing humanization.
+    const lockBassToGrid = chordPattern?.voicing === "rootless-jazz";
 
     const eventBeats = isBarUnit ? input.beatsPerBar : stepBeats;
     const eventSec = eventBeats * secondsPerBeat;
@@ -227,23 +253,34 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       });
 
       if (chordPattern && voicing.length > 0) {
-        const hits = repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
+        const chordCellBars = chordPattern.bars ?? 1;
+        const hits = isBarUnit && chordCellBars > 1
+          ? sliceCellToBar(chordPattern.hits, absoluteBar % chordCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
+          const isLhBass =
+            hit.voiceRole === "bass-root" || hit.voiceRole === "bass-fifth";
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
             seed: stepIndex * 10000 + bar * 100 + hit.beat,
+            // LH bass doubles the upright an octave up — lock it to the grid.
+            ...(isLhBass ? { timeAmountSec: 0 } : {}),
           });
           chordStrums.push({
             time: hitTime,
             value: {
               voicing:
-                hit.articulation === "color-stab"
-                  ? colorVoicing
-                  : hit.articulation === "root"
-                    ? rootNoteVoicing
-                    : voicing,
+                hit.voiceRole === "bass-root"
+                  ? bassRootVoicing
+                  : hit.voiceRole === "bass-fifth"
+                    ? bassFifthVoicing
+                    : hit.articulation === "color-stab"
+                      ? colorVoicing
+                      : hit.articulation === "root"
+                        ? rootNoteVoicing
+                        : compVoicing,
               velocity,
               style: hit.style,
               direction: hit.direction,
@@ -261,7 +298,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       }
 
       if (bassPattern && bassLineNotes.length > 0) {
-        const hits = repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
+        const bassCellBars = bassPattern.bars ?? 1;
+        const hits = isBarUnit && bassCellBars > 1
+          ? sliceCellToBar(bassPattern.hits, absoluteBar % bassCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
           const note = resolveBassNoteForRole(
             root,
@@ -277,6 +317,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             time: baseTime,
             velocity: hit.velocity,
             seed: stepIndex * 10000 + bar * 100 + hit.beat + 1, // slight offset for bass
+            // Lock to the grid when the comp doubles this line (bossa LH), so
+            // the two voices attack in perfect unison instead of flamming.
+            ...(lockBassToGrid ? { timeAmountSec: 0 } : {}),
           });
           bass.push({
             time: hitTime,
@@ -289,10 +332,14 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
         }
       }
 
+      const drumCellBars = drumPattern?.bars ?? 1;
+      const baseForBar: VoicedDrumHit[] = isBarUnit && drumCellBars > 1
+        ? sliceCellToBar(baseDrumHits, absoluteBar % drumCellBars, input.beatsPerBar)
+        : baseDrumHits;
       const firingVariationHits: VoicedDrumHit[] = variations
         .filter((v) => variationFiresOnBar(v, absoluteBar))
         .flatMap((v) => collectDrumHits(v.pattern));
-      const drumHitsForBar: VoicedDrumHit[] = [...baseDrumHits, ...firingVariationHits];
+      const drumHitsForBar: VoicedDrumHit[] = [...baseForBar, ...firingVariationHits];
       if (drumHitsForBar.length > 0) {
         const hits = repeatPatternToBeats(drumHitsForBar, eventBeats, input.beatsPerBar);
         for (const hit of hits) {

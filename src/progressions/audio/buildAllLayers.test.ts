@@ -271,6 +271,58 @@ describe("buildAllLayers", () => {
     });
   });
 
+  it("emits cross-stick drum events for the bossa clave pattern", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "bossa",
+      chordPatternId: "ballad-whole",
+      steps: [step({ duration: { value: 1, unit: "bar" } })],
+    });
+    const crossSticks = out.drums.filter((d) => d.value.type === "crossStick");
+    // Bar 1 (3-side) of the son clave: beats 0, 1.5, 3 → times 0, 1.5, 3 at 60bpm.
+    expect(crossSticks.map((d) => d.time)).toEqual([0, 1.5, 3]);
+  });
+
+  it("plays the bar-2 clave hits on the second bar of a 2-bar cell", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "bossa",
+      chordPatternId: "ballad-whole",
+      // One 2-bar step → absolute bars 0 and 1.
+      steps: [step({ duration: { value: 2, unit: "bar" } })],
+    });
+    const crossSticks = out.drums
+      .filter((d) => d.value.type === "crossStick")
+      .map((d) => d.time);
+    // Bar 1 @ 0,1.5,3 ; bar 2 starts at 4s, clave beats 5,6.5 → local 1,2.5 → 5,6.5.
+    expect(crossSticks).toEqual([0, 1.5, 3, 5, 6.5]);
+  });
+
+  it("plays the bossa comp's bar-2 syncopations on the second bar", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "bossa",
+      chordPatternId: "bossa-comp",
+      bassPatternId: "bossa",
+      steps: [step({ duration: { value: 2, unit: "bar" } })],
+    });
+    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 5.5, 6, 7.5]);
+  });
+
+  it("leaves a 1-bar pattern (rock) emitting identical hits on every bar", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "rock",
+      chordPatternId: "ballad-whole",
+      steps: [step({ duration: { value: 2, unit: "bar" } })],
+    });
+    const kicksBar1 = out.drums.filter((d) => d.value.type === "kick" && d.time < 4).map((d) => d.time);
+    const kicksBar2 = out.drums.filter((d) => d.value.type === "kick" && d.time >= 4).map((d) => d.time - 4);
+    // rock kicks at 0, 1.5, 2 — same in both bars (the bars-default path is untouched).
+    expect(kicksBar1).toEqual([0, 1.5, 2]);
+    expect(kicksBar2).toEqual([0, 1.5, 2]);
+  });
+
   describe("drum variation gating (absolute bar)", () => {
     // Two 2-bar steps = 4 absolute bars (0..3). At 60bpm each bar is 4s.
     const fourBarSteps = [
@@ -312,6 +364,66 @@ describe("buildAllLayers", () => {
       const a = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: ["fill-every-4"] });
       const b = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: ["fill-every-4"] });
       expect(a.drums).toEqual(b.drums);
+    });
+
+  it("voices the bossa comp as LH bass (single notes) + RH rootless chords", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "bossa-comp",
+      drumPatternId: "bossa",
+      bassPatternId: "bossa",
+      steps: [step({ duration: { value: 2, unit: "bar" } })], // C major
+    });
+    const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
+    expect(at(0).value.voicing).toEqual(["C3"]); // bass-root (LH, octave 3)
+    expect(at(2).value.voicing).toEqual(["G3"]); // bass-fifth (LH, octave 3)
+    expect(at(1.5).value.voicing).toEqual(["B3", "D4", "E4", "G4"]); // RH rootless chord
+    expect(out.chordStrums.every((s) => s.value.style === undefined)).toBe(true); // all short, no sustain
+  });
+
+  it("locks the bossa LH bass and upright bass to the same attack time (perfect unison)", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "bossa-comp",
+      drumPatternId: "bossa",
+      bassPatternId: "bossa",
+      steps: [step({ duration: { value: 2, unit: "bar" } })], // 2-bar C major cell
+    });
+    // LH bass strums are single notes on beats 0, 2, 4, 6 (octave 3).
+    const lhBass = out.chordStrums.filter((s) => s.value.voicing.length === 1);
+    expect(lhBass.map((s) => s.time).sort((a, b) => a - b)).toEqual([0, 2, 4, 6]);
+    // The upright bass plays the same beats one octave lower (octave 2).
+    expect(out.bass.map((b) => b.time).sort((a, b) => a - b)).toEqual([0, 2, 4, 6]);
+    // Both voices attack at the exact same time — grid-locked, no flam.
+    for (const lh of lhBass) {
+      expect(out.bass.some((b) => b.time === lh.time)).toBe(true);
+    }
+  });
+
+  it("leaves a default-voicing comp (jazz) using the standard rooted voicing", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "jazz-comp",
+      steps: [step({ duration: { value: 1, unit: "bar" } })], // C major
+    });
+    // Default path: resolveChordVoicing keeps the root present (C3/E3/G3).
+    expect(out.chordStrums[0].value.voicing.some((n) => n === "C3")).toBe(true);
+  });
+
+  it("is deterministic for the bossa 2-bar cell across a 4-bar span (drums, bass, comp)", async () => {
+      const bossaInput = {
+        ...baseInput,
+        steps: fourBarSteps,
+        drumPatternId: "bossa",
+        bassPatternId: "bossa",
+        chordPatternId: "bossa-comp",
+        drumVariations: [] as string[],
+      };
+      const a = await buildAllLayersAsync(bossaInput);
+      const b = await buildAllLayersAsync(bossaInput);
+      expect(a.drums).toEqual(b.drums);
+      expect(a.bass).toEqual(b.bass);
+      expect(a.chordStrums).toEqual(b.chordStrums);
     });
 
     it("counts an unavailable bar toward the absolute index (turnaround stays aligned)", async () => {
