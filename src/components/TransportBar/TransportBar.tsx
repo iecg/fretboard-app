@@ -3,6 +3,7 @@ import {
   AudioWaveform,
   Drum,
   Guitar,
+  LoaderCircle,
   Play,
   Repeat,
   Square,
@@ -85,7 +86,15 @@ export function TransportBar() {
           aria-label={playStopLabel}
           aria-busy={progressionPlaybackLoading || undefined}
         >
-          {playStopIsPlaying ? (
+          {progressionPlaybackLoading ? (
+            <LoaderCircle
+              size={14}
+              strokeWidth={2.4}
+              aria-hidden="true"
+              className={styles.playSpinner}
+              data-testid="transport-play-spinner"
+            />
+          ) : playStopIsPlaying ? (
             <Square size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
           ) : (
             <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />

@@ -185,15 +185,7 @@ describe("TransportBar", () => {
     expect(screen.queryByRole("button", { name: /Decrease Tempo/ })).toBeNull();
   });
 
-  it("keeps the play icon visible while progression is loading", () => {
-    const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
-    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
-
-    expect(screen.getByRole("button", { name: "Play progression" })).toBeDisabled();
-    expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
-  });
-
-  it("keeps the stop button enabled while loading if playback already started", () => {
+  it("shows a spinner on the play button while loading during playback", () => {
     const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
     renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
 
@@ -201,8 +193,28 @@ describe("TransportBar", () => {
       store.set(setProgressionPlayingAtom, true);
     });
 
-    expect(screen.queryByTestId("transport-play-spinner")).not.toBeInTheDocument();
+    // The spinner replaces the play/stop glyph while a restart-tier build runs.
+    expect(screen.getByTestId("transport-play-spinner")).toBeInTheDocument();
+    // The button stays enabled so the user can cancel a slow load.
     expect(screen.getByRole("button", { name: "Stop progression" })).toBeEnabled();
+  });
+
+  it("lets the user cancel a slow load by clicking the spinner", () => {
+    const store = makeAtomStore([...playableAtoms, [progressionPlaybackLoadingAtom, true]]);
+    renderWithStore(<TooltipProvider delayDuration={0}><TransportBar /></TooltipProvider>, store);
+
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+
+    const button = screen.getByRole("button", { name: "Stop progression" });
+    expect(screen.getByTestId("transport-play-spinner")).toBeInTheDocument();
+    expect(button).toBeEnabled();
+
+    fireEvent.click(button);
+
+    // Cancelling stops playback (returns to bar 1, stopped).
+    expect(store.get(progressionPlayingAtom)).toBe(false);
   });
 
   it("clicking Stop progression sets playing=false and activeIndex=0", () => {
