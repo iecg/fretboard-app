@@ -90,5 +90,8 @@ describe("configureProgressionGraph", () => {
     const g2 = configureProgressionGraph(planSignalGraph(TIER_PROFILES.standard, MIX_B));
     expect(g1).not.toBeNull();
     expect(g2).not.toBe(g1);
+    // A same-tier, mix-only plan change still rebuilds → the prior graph is disposed.
+    expect(disposeSpies[0]).toHaveBeenCalledTimes(1);
+    expect(disposeSpies[1]).not.toHaveBeenCalled();
   });
 });
