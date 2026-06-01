@@ -518,7 +518,7 @@
 
 /* Icon Button - shared circular button chrome for header, modal close, etc. */
 .icon-button {
-  composes: surface--chrome;
+  composes: surface--control;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -528,10 +528,15 @@
   border-radius: 999px;
   cursor: pointer;
   flex-shrink: 0;
+  color: var(--dc-fg);
+}
+
+.icon-button:hover {
+  color: var(--dc-fg-strong);
 }
 
 .icon-button:active {
-  transform: translateY(0);
+  transform: scale(0.96);
 }
 
 .icon-button:focus-visible {
@@ -552,11 +557,11 @@
 }
 
 .icon-button :global(.icon-muted) {
-  color: var(--text-muted);
+  color: var(--dc-fg-muted);
 }
 
 .icon-button :global(.icon-active) {
-  color: var(--surface-control-fg);
+  color: var(--dc-fg-strong);
 }
 
 /* Size variants: sm / md (default) */
