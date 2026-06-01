@@ -703,14 +703,22 @@ describe("FretboardSVG/FretboardSVG", () => {
         document.querySelectorAll<SVGGElement>('g[class*="fretboard-note"]'),
       );
 
-    it("exposes each note as a button with a labelled role and aria-label", () => {
+    it("exposes interactive notes as labelled buttons and gives non-interactive notes no role", () => {
       render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
       const notes = getSvgNotes();
       expect(notes.length).toBeGreaterThan(0);
-      notes.forEach((g) => {
+      const interactive = notes.filter((g) => g.getAttribute("aria-hidden") !== "true");
+      const hidden = notes.filter((g) => g.getAttribute("aria-hidden") === "true");
+      expect(interactive.length).toBeGreaterThan(0);
+      interactive.forEach((g) => {
         expect(g.getAttribute("role")).toBe("button");
         const label = g.getAttribute("aria-label") || "";
         expect(label).toMatch(/^[A-G][#♯♭b]?\d\s—\s.+$/);
+      });
+      // aria-hidden (non-interactive) notes must not advertise a button role.
+      hidden.forEach((g) => {
+        expect(g.getAttribute("role")).toBeNull();
+        expect(g.getAttribute("tabindex")).toBeNull();
       });
     });
 
@@ -726,9 +734,11 @@ describe("FretboardSVG/FretboardSVG", () => {
     it("toggles tabIndex based on onNoteClick presence", () => {
       const { rerender } = render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
       expect(getSvgNotes().some((g) => g.getAttribute("tabindex") === "0")).toBe(true);
+      // Without onNoteClick no note is interactive, so none is focusable.
       rerender(<FretboardSVG {...BASE_PROPS} />);
       getSvgNotes().forEach((g) => {
-        expect(g.getAttribute("tabindex")).toBe("-1");
+        expect(g.getAttribute("tabindex")).toBeNull();
+        expect(g.getAttribute("role")).toBeNull();
       });
     });
 

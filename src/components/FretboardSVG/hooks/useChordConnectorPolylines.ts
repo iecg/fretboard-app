@@ -460,6 +460,7 @@ function createExplicitSourceCombo(
     noteName,
     octave: 4,
     noteClass: "chord-tone-in-scale",
+    displayName: noteName,
     displayValue: noteName,
     applyDimOpacity: false,
     applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
