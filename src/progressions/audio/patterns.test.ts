@@ -506,7 +506,7 @@ describe("sliceCellToBar", () => {
 });
 
 describe("bossa patterns", () => {
-  it("rewrites the bossa drum pattern as a 2-bar cell with a son-clave cross-stick", () => {
+  it("rewrites the bossa drum pattern as a 2-bar cell with a bossa-clave cross-stick", () => {
     const bossa = getDrumPattern("bossa")!;
     expect(bossa.bars).toBe(2);
     expect(bossa.snares).toEqual([]); // cross-stick carries the rhythm
