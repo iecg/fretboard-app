@@ -306,25 +306,31 @@ export function useProgressionAudioPlayback() {
 
     // Restart-tier reset: whenever this effect re-runs while playing — a
     // style/genre swap, pattern change, chord edit, or time-signature change
-    // (everything in `buildKey`) — tear the old audio down *up front* so the
-    // switch is deterministic. Disposing the old parts here silences the old
-    // audio immediately instead of letting it play through until the async
-    // rebuild lands (the old make-before-break swap, whose build-completion-timed
-    // handoff made the restart point float — skipped chords / "started over" /
-    // "next bar" at random). `clearTimeline()` snaps the visual playhead to the
-    // top; the new parts below start at offset 0, so playback restarts cleanly
-    // from bar 1 once compiled.
+    // (everything in `buildKey`) — restart playback deterministically from bar 1.
+    // Three things happen synchronously, up front, so every restart is identical:
+    //   1. dispose the old parts (silences the old audio immediately — no
+    //      make-before-break overlap, whose build-completion-timed handoff made
+    //      the restart point float: skipped chords / "started over" / "next bar"),
+    //   2. clearTimeline() (snaps the visual playhead to the top),
+    //   3. stop() the Tone Transport, rewinding its position to 0.
     //
-    // Do NOT stop or rewind the Tone Transport here. Parts are scheduled at an
-    // absolute AudioContext time (`partStart = ctx.currentTime + lead`), and the
-    // Transport runs continuously from first play so its position tracks that
-    // clock. Rewinding the Transport to 0 (via stop) while `partStart` stays at
-    // the (large) current ctx time would schedule the freshly-built parts far in
-    // the future, so they never sound — playback silently dies and never restarts.
+    // Step 3 is what makes the restart CONSISTENT. The Transport otherwise
+    // free-runs, so new parts started against it land at an arbitrary loop phase
+    // — sometimes bar 1, sometimes mid-progression, sometimes skipping chords
+    // (the exact inconsistency users reported). Rewinding to 0 means the new
+    // parts always begin at chord 0.
+    //
+    // CRITICAL PAIRING: the partStart computation further below MUST then be
+    // transport-RELATIVE (`SCHEDULE_LEAD_SECONDS`), not `ctx.currentTime + lead`.
+    // ctx.currentTime keeps climbing across the session; scheduling parts at that
+    // absolute value against a transport rewound to 0 would place them ~ctxTime
+    // seconds in the future, so they never sound. The rewind and the relative
+    // partStart are two halves of one fix — never change one without the other.
     if (engine) {
       engine.disposeAll(primsRef.current);
       primsRef.current = null;
       engine.clearTimeline();
+      engine.getTransport().stop();
     }
 
     // Defer the loading spinner to prevent rapid UI flashing for fast rebuilds
@@ -420,10 +426,11 @@ export function useProgressionAudioPlayback() {
       if (gen !== genRef.current) return;
       if (built.chordOnsets.length === 0) { tearDownAndStop(); return; }
 
-      // Old parts and timeline were already disposed/cleared up front (see the
-      // restart-tier reset at the top of this effect). The Transport keeps
-      // running; the new Parts below start at offset 0 to restart from bar 1.
-      const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
+      // The Transport was rewound to 0 up front (see the restart-tier reset at
+      // the top of this effect), so partStart is TRANSPORT-RELATIVE: a small lead
+      // from position 0, NOT ctx.currentTime + lead. Pairing the rewind with a
+      // relative start is what makes every restart begin at chord 0 / bar 1.
+      const partStart = SCHEDULE_LEAD_SECONDS;
       const parts: ProgressionPartHandle[] = [];
       const totalDurationSec = built.totalDurationSec;
 

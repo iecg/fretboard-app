@@ -422,7 +422,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(newOnsets?.startedOffset).toBe(0);
   });
 
-  it("restarts from bar 1 (offset 0) up front WITHOUT rewinding the running transport", async () => {
+  it("rewinds the transport to 0 and restarts parts at a transport-relative offset (bar 1)", async () => {
     const store = makeAtomStore([
       [rootNoteAtom, "C"],
       [scaleNameAtom, "major"],
@@ -437,7 +437,15 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     });
     const initialParts = [...toneMocks.parts];
 
-    // Clear the transport.stop spy so we measure only the upcoming change.
+    // Simulate a mid-session switch: the AudioContext clock has advanced far from
+    // 0. This is the condition that exposed the original bug — scheduling parts at
+    // `ctx.currentTime + lead` against a transport rewound to 0 places them ~30s
+    // in the future, so they never sound. With ctx.currentTime left at 0 (the mock
+    // default) the absolute and relative computations coincide and the bug hides.
+    const audio = ensureProgressionAudio();
+    expect(audio).not.toBeNull();
+    (audio!.ctx as unknown as { currentTime: number }).currentTime = 30;
+
     toneMocks.transport.stop.mockClear();
 
     act(() => {
@@ -447,25 +455,23 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       ]);
     });
 
-    // Old parts are disposed up front so the old audio is silenced immediately
-    // (deterministic switch — no make-before-break overlap).
+    // Up front: old parts disposed (immediate silence) AND the transport rewound
+    // to 0 — the two halves of a deterministic restart from bar 1.
     initialParts.forEach((p) => expect(p.disposed).toBe(true));
-    // The transport must NOT be stopped/rewound. Parts are scheduled at an
-    // absolute AudioContext time (partStart = ctx.currentTime + lead) and the
-    // transport runs continuously, so its position tracks that clock. Rewinding
-    // it to 0 leaves the freshly-built parts scheduled far in the future, so
-    // playback goes silent and never restarts (regression guard for the
-    // genre-switch freeze).
-    expect(toneMocks.transport.stop).not.toHaveBeenCalled();
+    expect(toneMocks.transport.stop).toHaveBeenCalled();
 
-    // The async rebuild then constructs a fresh set of Parts starting at offset 0.
     await vi.waitFor(() => {
       expect(toneMocks.parts.length).toBeGreaterThan(initialParts.length);
     });
     const newOnsets = toneMocks.parts
       .slice(initialParts.length)
       .find((p) => p.events.length === 4);
+    // New parts restart from chord 0 …
     expect(newOnsets?.startedOffset).toBe(0);
+    // … and start at a small TRANSPORT-RELATIVE lead, NOT the large absolute ctx
+    // time (30 + lead). This is the half of the fix that makes the rewind actually
+    // sound; without it the parts land ~30s in the future and play nothing.
+    expect(newOnsets?.startedTime).toBeLessThan(1);
   });
 
   it("tempo change is a LIVE update (Transport.bpm.value); no new Parts constructed", async () => {
