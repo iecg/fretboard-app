@@ -20,7 +20,7 @@
   /* Canonical height for every single-line control container — steppers,
      toggle bars, selects, sliders, list rows, and icon/text buttons all sit
      at this height so the UI reads as one consistent system. */
-  --control-height: 30px;
+  --control-height: 32px;
 
   --text-xxs: 0.65rem;
   --text-2xs: 0.72rem;
@@ -197,7 +197,7 @@
 @media (max-width: 767px) {
   :root {
     --size-touch-target: 2.75rem; /* 44px */
-    --control-height: 40px;
+    --control-height: 44px;
   }
 }
 
