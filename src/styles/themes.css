@@ -40,6 +40,8 @@
   --surface-card-top:    #f6f2e9; /* PANEL — cream card surface (reference palette) */
   --surface-card-nested: #f1ede3; /* inset card: visibly recessed from card-top (reference palette) */
   --surface-card-soft:   #e3ddd0; /* PANEL-SOFT — recessed surface for tab cards / status bar (reference palette) */
+  --surface-card-inset:  #e8e1d2; /* card-in-card: nested focal panel (chord editor) — warm tan lifted just above card-soft, far below PANEL white */
+  --surface-card-key:    #ece6d8; /* note-key chip inside the editor's sunken notes well — warm tan, never near-white */
   --surface-well:        #ddd8cf; /* control well: distinctly sunken below PANEL-SOFT (reference palette) */
   --surface-strip:       var(--surface-card-top); /* practice/chord strip: card-aligned */
   --surface-float:       #f6f2e9; /* floating overlay (dropdown, modal): PANEL elevation */

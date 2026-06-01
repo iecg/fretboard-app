@@ -8,7 +8,7 @@
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--faceplate-divider);
   border-radius: 8px;
-  background-color: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  background-color: var(--faceplate-inset);
 }
 
 .caption {
@@ -44,7 +44,7 @@
   padding: 0.3rem 0.7rem;
   border: 1px solid var(--faceplate-divider);
   border-radius: 7px;
-  background-color: color-mix(in srgb, var(--text-main) 3%, transparent);
+  background-color: var(--faceplate-key);
 }
 
 .tone.root {
