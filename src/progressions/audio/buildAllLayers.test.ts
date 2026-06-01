@@ -366,7 +366,7 @@ describe("buildAllLayers", () => {
       expect(a.drums).toEqual(b.drums);
     });
 
-    it("voices the bossa comp as LH bass (single notes) + RH rootless chords", async () => {
+  it("voices the bossa comp as LH bass (single notes) + RH rootless chords", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "bossa-comp",
