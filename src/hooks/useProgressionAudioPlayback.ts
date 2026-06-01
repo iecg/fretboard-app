@@ -38,6 +38,27 @@ import { startVisualClock, stopVisualClock } from "../progressions/audio/visualC
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
+/**
+ * A real MACROTASK yield (not a microtask). `getEngine()` resolves as a
+ * microtask once the engine module is cached, and microtasks drain inside the
+ * task that scheduled them — so the entire play-start continuation
+ * (AudioContext creation → signal-graph materialization → five Tone.Part
+ * constructions → transport start) chains into a SINGLE long task whenever the
+ * built-layers cache is warm (e.g. the idle background build already ran, so
+ * there is no `buildAllLayersAsync` await to break the chain). That single task
+ * measured ~110-260ms and surfaced as `[Violation] 'click'/'pointerup' handler
+ * took …ms` input-latency warnings.
+ *
+ * Awaiting this between the heavy phases forces each onto its own macrotask, so
+ * no single task exceeds the ~50ms responsiveness budget. Timing is unaffected:
+ * the Transport is held stopped (rewound to 0) across the whole continuation and
+ * only `.start()`ed at the very end, so the only observable effect is that audio
+ * onset is deferred by a few imperceptible milliseconds — already masked by the
+ * 150ms loading-spinner deferral.
+ */
+const yieldToMacrotask = (): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, 0));
+
 function readLayoutTier(): "mobile" | "tablet" | "desktop" {
   if (typeof document === "undefined") return "desktop";
   const t = document
@@ -356,6 +377,12 @@ export function useProgressionAudioPlayback() {
       eng.setLayerGain(audio.layers, "drums", store.get(progressionDrumsEnabledAtom));
       eng.setLayerGain(audio.layers, "metronome", store.get(progressionMetronomeEnabledAtom));
 
+      // Yield before the signal-graph materialization so the (one-time, ~40ms)
+      // AudioContext + layer-bus construction above doesn't share a task with
+      // the graph build below. See `yieldToMacrotask`.
+      await yieldToMacrotask();
+      if (gen !== genRef.current) return;
+
       const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
       const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
       eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
@@ -425,6 +452,15 @@ export function useProgressionAudioPlayback() {
       clearTimeout(loadingTimer);
       if (gen !== genRef.current) return;
       if (built.chordOnsets.length === 0) { tearDownAndStop(); return; }
+
+      // Yield before constructing the five Tone.Parts. On a warm build cache the
+      // `buildAllLayersAsync` await above is skipped, so without this break the
+      // graph materialization and the ~35ms Part construction run in one task.
+      // The Parts are built atomically (no yields between them) so the
+      // generation check below is the only point a stale run can bail — there is
+      // never a half-built Part set. See `yieldToMacrotask`.
+      await yieldToMacrotask();
+      if (gen !== genRef.current) return;
 
       // The Transport was rewound to 0 up front (see the restart-tier reset at
       // the top of this effect), so partStart is TRANSPORT-RELATIVE: a small lead
@@ -599,11 +635,21 @@ export function useProgressionAudioPlayback() {
   }, [loopEnabled, setPlaying]);
 
   // Quality/genre change → rebuild the mix graph in place (no Part rebuild).
+  // Deferred to a macrotask so the ~30ms graph materialization never shares a
+  // task with the React commit that triggered it: a genre switch re-renders the
+  // backing-track controls, and running the rebuild in that same commit task
+  // pushed the click/pointerup handlers past Chrome's input-latency budget.
+  // Audio keeps playing through the previous graph for the few milliseconds
+  // until the reconfigure lands; the cleanup cancels a still-pending rebuild
+  // when the genre/quality changes again before it runs.
   useEffect(() => {
     if (!engine || !playing) return;
     const eng = engine;
-    const mix = eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX;
-    const tier = resolveActiveTier(eng, quality);
-    eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
+    const timer = setTimeout(() => {
+      const mix = eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX;
+      const tier = resolveActiveTier(eng, quality);
+      eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
+    }, 0);
+    return () => clearTimeout(timer);
   }, [genreId, quality, playing]);
 }
