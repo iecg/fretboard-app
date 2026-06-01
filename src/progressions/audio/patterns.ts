@@ -233,13 +233,12 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
       { beat: 1.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 2, velocity: 0.55, voiceRole: "bass-fifth" },
       { beat: 3.5, velocity: 0.55, voiceRole: "chord" },
-      // bar 2 — busier: chord stabs on every off-beat (& of 1/2/3/4),
-      // anticipating each following beat for forward momentum.
+      // bar 2 — busier: chord stabs on the & of 1, 2 and 4, anticipating the
+      // following beats for forward momentum.
       { beat: 4, velocity: 0.6, voiceRole: "bass-root" },
       { beat: 4.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 5.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 6, velocity: 0.55, voiceRole: "bass-fifth" },
-      { beat: 6.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 7.5, velocity: 0.55, voiceRole: "chord" },
     ],
   },
