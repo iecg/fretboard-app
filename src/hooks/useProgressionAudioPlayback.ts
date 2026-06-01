@@ -545,11 +545,6 @@ export function useProgressionAudioPlayback() {
   }, [swing]);
 
   useEffect(() => {
-    if (!engine) return;
-    engine.setPlaybackTimeSignature(beatsPerBar);
-  }, [beatsPerBar]);
-
-  useEffect(() => {
     instrumentRef.current = chordInstrument;
   }, [chordInstrument]);
 
