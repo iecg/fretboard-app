@@ -134,7 +134,10 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
         envelope: { attack: 0.004, decay: 0.2, sustain: 0.15, release: 0.1 },
       },
       noteDurationSec: 0.18,
-      releaseTailSec: 0.4,
+      // Hold the pooled voice for the full stab tail before it can be re-leased:
+      // STAB_STRUM_DURATION_SEC (0.4) + the amp envelope release (0.1) = 0.5s.
+      // A shorter tail let a reused voice clip the last ~0.1s of a ringing stab.
+      releaseTailSec: 0.5,
       strumLagSec: 0.007,
     },
     insert: { eq3: { low: -6, mid: 2, high: 2 } },
