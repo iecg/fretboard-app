@@ -136,13 +136,30 @@ describe("buildFunkColorVoicing", () => {
     }
   });
 
-  it("voice-leads the grip near the previous voicing (no register jump)", () => {
-    const prev = ["G3", "B3", "D4"];
-    const v = buildFunkColorVoicing("C", "7", prev);
-    const lo = Math.min(...v.map(midi)), hi = Math.max(...v.map(midi));
-    const prevLo = Math.min(...prev.map(midi)), prevHi = Math.max(...prev.map(midi));
-    expect(lo).toBeGreaterThanOrEqual(prevLo - 12);
-    expect(hi).toBeLessThanOrEqual(prevHi + 12);
+  it("spaces the grip open — no muddy low cluster (every adjacent interval >= a minor third)", () => {
+    // Mud guard: close-packing (getNearestInversion) used to crunch the 9th next
+    // to the 3rd/b3 as a low major-2nd/semitone (~150-195Hz) — the source of the
+    // "muddy" color stabs. The open voicing keeps the 9th an octave above the 3rd,
+    // so every adjacent interval stays >= 3 semitones, for ALL grips and roots.
+    const ROOTS = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    for (const root of ROOTS) {
+      for (const quality of ["7", "M", "m", "m7", "maj7"]) {
+        const ms = buildFunkColorVoicing(root, quality).map(midi);
+        for (let i = 1; i < ms.length; i++) {
+          expect(ms[i] - ms[i - 1], `${root}${quality}`).toBeGreaterThanOrEqual(3);
+        }
+      }
+    }
+  });
+
+  it("keeps the grip in a bright but bounded register (no sub-bass, no shrill)", () => {
+    for (const root of ["C", "E", "G", "A", "B"]) {
+      for (const n of buildFunkColorVoicing(root, "7")) {
+        const m = midi(n);
+        expect(m, `${root}7 ${n}`).toBeGreaterThanOrEqual(48); // >= C3
+        expect(m).toBeLessThanOrEqual(84); // <= C6
+      }
+    }
   });
 
   it("falls back to the plain voice-led triad for a quality without a grip", () => {

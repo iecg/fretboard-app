@@ -69,12 +69,17 @@ const FUNK_COLOR_TONES: Record<string, readonly number[]> = {
 };
 
 /**
- * Build a compact, rootless, voice-led funk colour voicing for a chord. Pure.
- * Maps the quality's colour tones to note names and realises them voice-led near
- * `prevVoicing` (via getNearestInversion) so the grip lands in the same register
- * as the surrounding comp — no register jump. Falls back to the plain voice-led
- * triad when the quality has no defined grip (dim/aug/sus/6). Returns [] for an
- * unknown root.
+ * Build a compact, rootless funk colour voicing for a chord. Pure.
+ *
+ * The grip is realised as an OPEN, ascending voicing: each colour tone is an
+ * absolute pitch (root octave + offset), so the 9th (+14) genuinely rings an
+ * octave ABOVE the 3rd rather than crunched next to it. This is deliberate — a
+ * close-packing voice-lead (getNearestInversion) wrapped the 9th down into a
+ * low major-2nd/semitone cluster against the 3rd (~150-195Hz), which is what
+ * made the colour stabs sound muddy. Open spacing keeps every adjacent interval
+ * >= a minor third while staying in the comp's octave-3/4 register, so it reads
+ * clean without a register jump. Falls back to the plain voice-led triad when the
+ * quality has no defined grip (dim/aug/sus/6). Returns [] for an unknown root.
  */
 export function buildFunkColorVoicing(
   root: string,
@@ -87,8 +92,12 @@ export function buildFunkColorVoicing(
   if (!offsets) {
     return resolveChordVoicing(root, quality, undefined, prevVoicing);
   }
-  const noteNames = offsets.map((o) => NOTES[(((rootIndex + o) % 12) + 12) % 12]);
-  return getNearestInversion(prevVoicing ?? [], noteNames, PROGRESSION_CHORD_ROOT_OCTAVE);
+  const base = PROGRESSION_CHORD_ROOT_OCTAVE * 12 + rootIndex;
+  return offsets.map((o) => {
+    const absolute = base + o;
+    const note = NOTES[((absolute % 12) + 12) % 12];
+    return `${note}${Math.floor(absolute / 12)}`;
+  });
 }
 
 export function resolveBassLineNotes(
