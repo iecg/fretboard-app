@@ -211,6 +211,22 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
       { beat: 3, velocity: 0.6 },
     ],
   },
+  {
+    id: "bossa-comp",
+    label: "Bossa Comp",
+    bars: 2,
+    // Syncopated partido-alto: clave-locked anticipations that leave space.
+    hits: [
+      // bar 1
+      { beat: 0, velocity: 0.7 },
+      { beat: 1.5, velocity: 0.6 },
+      { beat: 3, velocity: 0.55 },
+      // bar 2: anticipated "& of 1" push, mid-bar, "& of 4" lead into the next phrase
+      { beat: 4.5, velocity: 0.6 },
+      { beat: 6, velocity: 0.6 },
+      { beat: 7.5, velocity: 0.7 },
+    ],
+  },
 ];
 
 export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
@@ -282,6 +298,16 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
       { beat: 1.5, velocity: 0.8, note: "octave", articulation: "staccato" },
       { beat: 2.5, velocity: 0.55, note: "fifth", articulation: "staccato" },
       { beat: 3.5, velocity: 0.7, note: "flat-seventh", articulation: "staccato" },
+    ],
+  },
+  {
+    id: "bossa",
+    label: "Bossa Nova",
+    // Root–fifth surdo (tonic–dominant alternation) — the recognizable bossa
+    // pulse. The clave lock comes from the drums + comp; this stays 1-bar.
+    hits: [
+      { beat: 0, velocity: 1, note: "root", articulation: "legato" },
+      { beat: 2, velocity: 0.8, note: "fifth", articulation: "legato" },
     ],
   },
 ];
@@ -361,18 +387,35 @@ export const DRUM_PATTERNS: readonly CatalogDrumPattern[] = [
   {
     id: "bossa",
     label: "Bossa Nova",
+    bars: 2,
+    // Soft surdo heartbeat: beats 1 & 3 of each bar.
     kicks: [
+      { beat: 0, velocity: 0.5 },
+      { beat: 2, velocity: 0.6 },
+      { beat: 4, velocity: 0.5 },
+      { beat: 6, velocity: 0.6 },
+    ],
+    // No backbeat snare — the cross-stick clave carries the rhythm.
+    snares: [],
+    // Straight 8th hats across both bars (beats 0..7.5).
+    hats: [
+      { beat: 0, velocity: 0.4 }, { beat: 0.5, velocity: 0.3 },
+      { beat: 1, velocity: 0.4 }, { beat: 1.5, velocity: 0.3 },
+      { beat: 2, velocity: 0.4 }, { beat: 2.5, velocity: 0.3 },
+      { beat: 3, velocity: 0.4 }, { beat: 3.5, velocity: 0.3 },
+      { beat: 4, velocity: 0.4 }, { beat: 4.5, velocity: 0.3 },
+      { beat: 5, velocity: 0.4 }, { beat: 5.5, velocity: 0.3 },
+      { beat: 6, velocity: 0.4 }, { beat: 6.5, velocity: 0.3 },
+      { beat: 7, velocity: 0.4 }, { beat: 7.5, velocity: 0.3 },
+    ],
+    // 3-2 son clave: bar 1 @ 0, 1.5, 3 · bar 2 @ 5 (bar2 beat 1), 6 (bar2 beat 2).
+    crossStick: [
       { beat: 0, velocity: 0.8 },
       { beat: 1.5, velocity: 0.7 },
-      { beat: 2, velocity: 0.8 },
-      { beat: 3.5, velocity: 0.7 },
+      { beat: 3, velocity: 0.75 },
+      { beat: 5, velocity: 0.7 },
+      { beat: 6, velocity: 0.8 },
     ],
-    snares: [
-      { beat: 0, velocity: 0.7 },
-      { beat: 1.5, velocity: 0.6 },
-      { beat: 3, velocity: 0.7 },
-    ],
-    hats: EIGHTH_HATS,
   },
   {
     id: "ballad",
