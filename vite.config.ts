@@ -8,6 +8,11 @@ const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { ver
 
 export default defineConfig({
   base: process.env.VITE_MOBILE === 'true' ? './' : '/fretboard-app/',
+  server: {
+    watch: {
+      ignored: ['**/.claude/**', '**/.worktrees/**'],
+    },
+  },
   plugins: [
     react({
       // @ts-expect-error - Vite 6 dropped the babel types but we are following the task plan

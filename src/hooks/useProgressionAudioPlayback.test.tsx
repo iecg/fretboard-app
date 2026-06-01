@@ -770,7 +770,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       store.set(setProgressionPlayingAtom, true);
       renderWithStore(<Harness />, store);
 
-      // loading is set true synchronously by the effect before the async import.
+      // loading is set true synchronously by the effect before the async engine loads
       expect(store.get(progressionPlaybackLoadingAtom)).toBe(true);
 
       // Stop without ever firing the chord-onset callback.
