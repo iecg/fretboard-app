@@ -698,31 +698,31 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   describe("note layer a11y contract", () => {
+    // The visible SVG note layer renders inside an aria-hidden, pointer-events:none
+    // <svg>. Interaction + focus are owned by FretboardHitTargetLayer's real
+    // <button>s. The decorative <g>s must therefore NEVER be focusable (no role /
+    // tabindex / click / key handlers) — a focusable element inside an aria-hidden
+    // subtree is invalid ARIA and would create dead duplicate tab stops alongside
+    // the hit buttons. (The <g> keeps a descriptive aria-label, which is inert
+    // because the parent SVG is aria-hidden.)
     const getSvgNotes = () =>
       Array.from(
         document.querySelectorAll<SVGGElement>('g[class*="fretboard-note"]'),
       );
+    const getHitButtons = () =>
+      Array.from(document.querySelectorAll<HTMLButtonElement>("button.note-bubble"));
 
-    it("exposes interactive notes as labelled buttons and gives non-interactive notes no role", () => {
+    it("never makes the visible SVG notes focusable, even with onNoteClick", () => {
       render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
       const notes = getSvgNotes();
       expect(notes.length).toBeGreaterThan(0);
-      const interactive = notes.filter((g) => g.getAttribute("aria-hidden") !== "true");
-      const hidden = notes.filter((g) => g.getAttribute("aria-hidden") === "true");
-      expect(interactive.length).toBeGreaterThan(0);
-      interactive.forEach((g) => {
-        expect(g.getAttribute("role")).toBe("button");
-        const label = g.getAttribute("aria-label") || "";
-        expect(label).toMatch(/^[A-G][#♯♭b]?\d\s—\s.+$/);
-      });
-      // aria-hidden (non-interactive) notes must not advertise a button role.
-      hidden.forEach((g) => {
+      notes.forEach((g) => {
         expect(g.getAttribute("role")).toBeNull();
         expect(g.getAttribute("tabindex")).toBeNull();
       });
     });
 
-    it("aria-label includes the correct octave for open low/high E strings", () => {
+    it("keeps the descriptive aria-label with correct octave for open low/high E strings", () => {
       render(<FretboardSVG {...BASE_PROPS} highlightNotes={["E"]} onNoteClick={() => {}} />);
       const labels = getSvgNotes()
         .map((g) => g.getAttribute("aria-label") || "")
@@ -731,31 +731,24 @@ describe("FretboardSVG/FretboardSVG", () => {
       expect(labels.some((l) => l.startsWith("E4 — "))).toBe(true);
     });
 
-    it("toggles tabIndex based on onNoteClick presence", () => {
-      const { rerender } = render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
-      expect(getSvgNotes().some((g) => g.getAttribute("tabindex") === "0")).toBe(true);
-      // Without onNoteClick no note is interactive, so none is focusable.
-      rerender(<FretboardSVG {...BASE_PROPS} />);
-      getSvgNotes().forEach((g) => {
-        expect(g.getAttribute("tabindex")).toBeNull();
-        expect(g.getAttribute("role")).toBeNull();
+    it("exposes accessible names + interaction on the hit-target buttons", () => {
+      render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
+      const buttons = getHitButtons();
+      expect(buttons.length).toBeGreaterThan(0);
+      buttons.forEach((btn) => {
+        expect(btn.tagName).toBe("BUTTON");
+        expect(btn.getAttribute("aria-label") || "").toMatch(/ on string \d+, fret \d+/);
       });
     });
 
-    it.each([["Enter"], [" "]])("%s key invokes onNoteClick on focused note", (key) => {
+    it("clicking a hit-target button invokes onNoteClick; disabled without a handler", () => {
       const onNoteClick = vi.fn();
-      render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
-      fireEvent.keyDown(getSvgNotes()[0], { key });
+      const { rerender } = render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
+      fireEvent.click(getHitButtons()[0]);
       expect(onNoteClick).toHaveBeenCalledTimes(1);
-    });
 
-    it("ignores unrelated keys", () => {
-      const onNoteClick = vi.fn();
-      render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
-      const note = getSvgNotes()[0];
-      fireEvent.keyDown(note, { key: "a" });
-      fireEvent.keyDown(note, { key: "Tab" });
-      expect(onNoteClick).not.toHaveBeenCalled();
+      rerender(<FretboardSVG {...BASE_PROPS} />);
+      getHitButtons().forEach((btn) => expect(btn.disabled).toBe(true));
     });
   });
 });

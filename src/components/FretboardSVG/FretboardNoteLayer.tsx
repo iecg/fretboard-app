@@ -8,16 +8,19 @@ interface FretboardNoteLayerProps {
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
-  onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
   animationMode?: NoteAnimationMode;
 }
 
+// This visual layer is decorative (its <svg> is aria-hidden + pointer-events:none).
+// It intentionally does NOT receive onNoteClick: feeding a handler here would make
+// FretboardNote's notes focusable (role/tabIndex) inside an aria-hidden subtree —
+// invalid ARIA and dead duplicate tab stops. Interaction is owned by
+// FretboardHitTargetLayer's real <button>s.
 export const FretboardNoteLayer = memo(({
   notes,
   noteBubblePx,
   displayFormat,
   degreeColorsEnabled,
-  onNoteClick,
   animationMode = "css",
 }: FretboardNoteLayerProps) => (
   // NOTE: reading a new render-affecting field in FretboardNote? Also add it to
@@ -31,7 +34,6 @@ export const FretboardNoteLayer = memo(({
         noteBubblePx={noteBubblePx}
         displayFormat={displayFormat}
         degreeColorsEnabled={degreeColorsEnabled}
-        onNoteClick={onNoteClick}
       />
     ))}
   </g>
