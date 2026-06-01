@@ -45,6 +45,7 @@ describe("drumKit — Tone backend", () => {
   let scheduleSnare: typeof import("./drumKit").scheduleSnare;
   let scheduleHiHat: typeof import("./drumKit").scheduleHiHat;
   let scheduleRide: typeof import("./drumKit").scheduleRide;
+  let scheduleCrossStick: typeof import("./drumKit").scheduleCrossStick;
 
   beforeEach(async () => {
     const m = await membrane;
@@ -60,7 +61,7 @@ describe("drumKit — Tone backend", () => {
     n.reset();
     mt.reset();
     vi.resetModules();
-    ({ scheduleKick, scheduleSnare, scheduleHiHat, scheduleRide } =
+    ({ scheduleKick, scheduleSnare, scheduleHiHat, scheduleRide, scheduleCrossStick } =
       await import("./drumKit"));
   });
 
@@ -391,6 +392,32 @@ describe("drumKit — Tone backend", () => {
       expect(metalSpies.dispose).not.toHaveBeenCalled();
       vi.advanceTimersByTime(1600); // > RIDE_DISPOSE_MS (1500)
       expect(metalSpies.dispose).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("scheduleCrossStick", () => {
+    it("constructs a MembraneSynth with a triangle click voice", () => {
+      scheduleCrossStick({} as AudioNode, 1.5);
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
+      const [opts] = membraneSpies.ctorSpy.mock.calls[0]!;
+      expect(opts.oscillator.type).toBe("triangle");
+      expect(opts.envelope.sustain).toBe(0);
+      expect(opts.envelope.decay).toBeCloseTo(0.06, 3);
+    });
+
+    it("triggers a high woody click (G4) at the requested time + velocity", () => {
+      scheduleCrossStick({} as AudioNode, 2.5, { velocity: 0.8 });
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+      const [note, , time, velocity] =
+        membraneSpies.triggerAttackRelease.mock.calls[0]!;
+      expect(note).toBe("G4");
+      expect(time).toBeCloseTo(2.5, 3);
+      expect(velocity).toBeCloseTo(0.8, 2);
+    });
+
+    it("skips zero-velocity hits (no MembraneSynth constructed)", () => {
+      scheduleCrossStick({} as AudioNode, 1, { velocity: 0 });
+      expect(membraneSpies.ctorSpy).not.toHaveBeenCalled();
     });
   });
 

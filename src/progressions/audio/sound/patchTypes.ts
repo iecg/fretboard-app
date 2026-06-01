@@ -91,6 +91,7 @@ export interface DrumVoiceParams {
   hihat?: { decay?: number; resonance?: number; octaves?: number };
   openHat?: { decay?: number };
   ride?: { decay?: number; harmonicity?: number; resonance?: number; volume?: number };
+  crossStick?: { pitchDecay?: number; octaves?: number; envelope?: Partial<EnvelopeSpec> };
 }
 
 export interface DrumKitPatch {

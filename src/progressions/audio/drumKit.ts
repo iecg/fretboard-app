@@ -28,6 +28,7 @@ const SNARE_DISPOSE_MS = 300; // snare decay ~180 ms
 const HAT_CLOSED_DISPOSE_MS = 150; // closed hat decay ~50 ms
 const HAT_OPEN_DISPOSE_MS = 500; // open hat decay ~350 ms
 const RIDE_DISPOSE_MS = 1500; // ride decay ~1 s
+const CROSS_STICK_DISPOSE_MS = 120; // cross-stick decay ~60 ms
 
 const kitKey = (kit?: DrumKitPatch) => kit?.id ?? "__default";
 
@@ -308,4 +309,56 @@ export function scheduleRide(
   lease.setBusyUntil(busyUntil);
   lease.voice.triggerAttackRelease("D6", decay, time, velocity);
   return deferredDisposeHandle(lease, time, busyUntil, RIDE_DISPOSE_MS);
+}
+
+// ── Cross-Stick / Rim ────────────────────────────────────────────────────────
+// A dry woody "tok" for the bossa clave: a short, high-pitched MembraneSynth
+// click. Fully deterministic, no noise generation.
+const DEFAULT_CROSS_STICK_ENV = {
+  attack: 0.001,
+  decay: 0.06,
+  sustain: 0,
+  release: 0.02,
+  attackCurve: "exponential" as const,
+};
+const crossStickPools = new Map<
+  string,
+  ReturnType<typeof createReusableVoicePool<Tone.MembraneSynth>>
+>();
+function crossStickPool(kit?: DrumKitPatch) {
+  const key = kitKey(kit);
+  const existing = crossStickPools.get(key);
+  if (existing) return existing;
+  const ov = kit?.voices.crossStick;
+  const pool = createReusableVoicePool<Tone.MembraneSynth>({
+    createVoice: () =>
+      new Tone.MembraneSynth({
+        pitchDecay: ov?.pitchDecay ?? 0.008,
+        octaves: ov?.octaves ?? 2,
+        oscillator: { type: "triangle" },
+        envelope: { ...DEFAULT_CROSS_STICK_ENV, ...(ov?.envelope ?? {}) },
+      }),
+  });
+  crossStickPools.set(key, pool);
+  return pool;
+}
+
+/**
+ * Schedule a cross-stick / rim-click hit at `time`. Short MembraneSynth click
+ * (triangle, tiny pitch-decay, ~60 ms decay) — the bossa clave timbre.
+ */
+export function scheduleCrossStick(
+  dest: AudioNode,
+  time: number,
+  options: DrumHitOptions = {},
+): DrumVoiceHandle {
+  const velocity = clampVelocity(options.velocity);
+  if (velocity <= 0) return NOOP_HANDLE;
+  const now = Tone.now();
+  const playbackStartTime = Math.max(now, time);
+  const lease = crossStickPool(options.kit).lease(dest, now);
+  const busyUntil = playbackStartTime + 0.12;
+  lease.setBusyUntil(busyUntil);
+  lease.voice.triggerAttackRelease("G4", 0.05, time, velocity);
+  return deferredDisposeHandle(lease, time, busyUntil, CROSS_STICK_DISPOSE_MS);
 }
