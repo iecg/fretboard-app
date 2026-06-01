@@ -30,8 +30,8 @@ describe("shared.module.css icon-button size scale", () => {
     expect(css).toMatch(/\.icon-button--sm\s*\{[^}]*width:\s*2rem;[^}]*height:\s*2rem;/s);
     expect(css).toMatch(/\.icon-button--md\s*\{[^}]*width:\s*2\.75rem;/s);
   });
-  it("makes .icon-button compose the chrome surface", () => {
-    expect(css).toMatch(/\.icon-button\s*\{[^}]*composes:\s*surface--chrome/s);
+  it("makes .icon-button compose the control surface", () => {
+    expect(css).toMatch(/\.icon-button\s*\{[^}]*composes:\s*surface--control/s);
   });
 });
 
