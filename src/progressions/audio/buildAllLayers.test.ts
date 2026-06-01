@@ -378,6 +378,8 @@ describe("buildAllLayers", () => {
     // C major → rootless maj9 in the middle register: E4 / B4 / D5, no C.
     expect(out.chordStrums[0].value.voicing).toEqual(["E4", "B4", "D5"]);
     expect(out.chordStrums.every((s) => !s.value.voicing.some((n) => n.startsWith("C") && !n.startsWith("C#")))).toBe(true);
+    // …and every comp chord rings (sustained), end-to-end through the scheduler.
+    expect(out.chordStrums.every((s) => s.value.style === "sustained")).toBe(true);
   });
 
   it("leaves a default-voicing comp (jazz) using the standard rooted voicing", async () => {
