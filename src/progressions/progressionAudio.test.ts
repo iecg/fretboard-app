@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, buildFunkColorVoicing } from "./progressionAudio";
+import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, buildFunkColorVoicing, buildBossaColorVoicing } from "./progressionAudio";
 
 describe("resolveChordVoicing", () => {
   it("stacks the C Major Triad as C-E-G at octave 3", () => {
@@ -169,5 +169,47 @@ describe("buildFunkColorVoicing", () => {
 
   it("returns [] for an unknown root", () => {
     expect(buildFunkColorVoicing("H", "7")).toEqual([]);
+  });
+});
+
+describe("buildBossaColorVoicing", () => {
+  const PC: Record<string, number> = { C: 0, "C#": 1, D: 2, "D#": 3, E: 4, F: 5, "F#": 6, G: 7, "G#": 8, A: 9, "A#": 10, B: 11 };
+  const pcSet = (notes: readonly string[]) => new Set(notes.map((n) => n.replace(/-?\d+$/, "")));
+  const midi = (n: string) => { const m = n.match(/^([A-G]#?)(-?\d+)$/)!; return PC[m[1]] + (parseInt(m[2], 10) + 1) * 12; };
+
+  it("voices a major chord as a rootless maj9 (3 / 7 / 9) in the middle register", () => {
+    expect(buildBossaColorVoicing("C", "maj7")).toEqual(["E4", "B4", "D5"]);
+    expect(buildBossaColorVoicing("C", "M")).toEqual(["E4", "B4", "D5"]);
+  });
+
+  it("voices a minor 7 chord as a rootless m9 (b3 / b7 / 9)", () => {
+    expect(buildBossaColorVoicing("A", "m7")).toEqual(["C5", "G5", "B5"]);
+    expect(pcSet(buildBossaColorVoicing("A", "m7")).has("A")).toBe(false);
+  });
+
+  it("voices a dominant 7 chord as a rootless dom9 (3 / b7 / 9)", () => {
+    const v = buildBossaColorVoicing("G", "7");
+    expect(pcSet(v)).toEqual(new Set(["B", "F", "A"]));
+    expect(pcSet(v).has("G")).toBe(false);
+  });
+
+  it("keeps every defined voicing rootless and in the middle register (C4..C#6)", () => {
+    for (const [root, quality] of [["C", "maj7"], ["D", "M"], ["E", "m7"], ["G", "7"], ["B", "maj7"]] as const) {
+      const v = buildBossaColorVoicing(root, quality);
+      expect(pcSet(v).has(root), `${root}${quality} rootless`).toBe(false);
+      for (const n of v) {
+        const m = midi(n);
+        expect(m, `${root}${quality} ${n} low`).toBeGreaterThanOrEqual(60);
+        expect(m, `${root}${quality} ${n} high`).toBeLessThanOrEqual(86);
+      }
+    }
+  });
+
+  it("falls back to the plain voice-led triad for a quality without a grip", () => {
+    expect(buildBossaColorVoicing("C", "dim")).toEqual(resolveChordVoicing("C", "dim", undefined, undefined));
+  });
+
+  it("returns [] for an unknown root", () => {
+    expect(buildBossaColorVoicing("H", "maj7")).toEqual([]);
   });
 });

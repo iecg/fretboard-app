@@ -100,6 +100,52 @@ export function buildFunkColorVoicing(
   });
 }
 
+/**
+ * Rootless jazz comp tones per chord quality, as semitone offsets above the
+ * chord root. The root (offset 0) is omitted — the bossa bass covers it.
+ * 7ths + 9ths, the bossa comp idiom. Qualities not listed get the plain triad.
+ *   +3 = b3, +4 = 3, +10 = b7, +11 = maj7, +14 = 9
+ */
+const BOSSA_COLOR_TONES: Record<string, readonly number[]> = {
+  maj7: [4, 11, 14], // 3 / 7 / 9 — maj9
+  M: [4, 11, 14], // plain major voiced as maj9 (bossa idiom)
+  m7: [3, 10, 14], // b3 / b7 / 9 — m9
+  m: [3, 10, 14], // m9
+  "7": [4, 10, 14], // 3 / b7 / 9 — dom9
+};
+
+/** Middle-register piano comp octave — true comp register, an octave above the
+ *  guitar-ish octave-3 funk grip. */
+const BOSSA_COMP_ROOT_OCTAVE = 4;
+
+/**
+ * Build a rootless jazz comp voicing (7th + 9th colour) for a chord, in the
+ * middle piano register. Pure. Mirrors `buildFunkColorVoicing`'s open-ascending
+ * shape: each colour tone is an absolute pitch (comp octave + offset). Falls
+ * back to the plain voice-led triad when the quality has no defined grip
+ * (dim/aug/sus/6). Returns [] for an unknown root. `prevVoicing` is accepted for
+ * the triad fallback; the colour tones use a fixed open shape (voice-leading the
+ * rootless grips is a future refinement).
+ */
+export function buildBossaColorVoicing(
+  root: string,
+  quality: string,
+  prevVoicing?: string[],
+): string[] {
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex < 0) return [];
+  const offsets = BOSSA_COLOR_TONES[quality];
+  if (!offsets) {
+    return resolveChordVoicing(root, quality, undefined, prevVoicing);
+  }
+  const base = BOSSA_COMP_ROOT_OCTAVE * 12 + rootIndex;
+  return offsets.map((o) => {
+    const absolute = base + o;
+    const note = NOTES[((absolute % 12) + 12) % 12];
+    return `${note}${Math.floor(absolute / 12)}`;
+  });
+}
+
 export function resolveBassLineNotes(
   root: string,
   quality: string,
