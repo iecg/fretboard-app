@@ -225,16 +225,16 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     voicing: "rootless-jazz",
     // LH bass (root on beat 1, fifth on beat 3) + RH rootless chords on the
     // syncopated off-beats, with two cross-barline anticipations (3.5, 7.5).
-    // The chords + fifth ring (sustained); the LH root is short (no sustain).
+    // Only the LH fifth rings (sustained); the LH root and RH chords are short.
     hits: [
       { beat: 0, velocity: 0.6, voiceRole: "bass-root" },
-      { beat: 1.5, velocity: 0.5, voiceRole: "chord", style: "sustained" },
+      { beat: 1.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 2, velocity: 0.55, voiceRole: "bass-fifth", style: "sustained" },
-      { beat: 3.5, velocity: 0.55, voiceRole: "chord", style: "sustained" },
+      { beat: 3.5, velocity: 0.55, voiceRole: "chord" },
       { beat: 4, velocity: 0.6, voiceRole: "bass-root" },
-      { beat: 4.5, velocity: 0.5, voiceRole: "chord", style: "sustained" },
+      { beat: 4.5, velocity: 0.5, voiceRole: "chord" },
       { beat: 6, velocity: 0.55, voiceRole: "bass-fifth", style: "sustained" },
-      { beat: 7.5, velocity: 0.55, voiceRole: "chord", style: "sustained" },
+      { beat: 7.5, velocity: 0.55, voiceRole: "chord" },
     ],
   },
 ];

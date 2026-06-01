@@ -378,8 +378,9 @@ describe("buildAllLayers", () => {
     expect(at(0).value.voicing).toEqual(["C3"]); // bass-root (LH, octave 3)
     expect(at(2).value.voicing).toEqual(["G3"]); // bass-fifth (LH, octave 3)
     expect(at(1.5).value.voicing).toEqual(["B3", "D4", "E4", "G4"]); // RH rootless chord
-    expect(at(1.5).value.style).toBe("sustained"); // RH chord rings
-    expect(at(0).value.style).toBeUndefined(); // LH root is short (no sustain)
+    expect(at(2).value.style).toBe("sustained"); // LH fifth rings
+    expect(at(1.5).value.style).toBeUndefined(); // RH chord is short
+    expect(at(0).value.style).toBeUndefined(); // LH root is short
   });
 
   it("leaves a default-voicing comp (jazz) using the standard rooted voicing", async () => {
