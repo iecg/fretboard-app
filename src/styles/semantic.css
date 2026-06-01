@@ -219,6 +219,12 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
   --faceplate-accent: var(--neon-cyan);
   --faceplate-accent-glow: var(--glow-cyan-sm);
+  /* Progression-card sunken surfaces — dark values reproduce the historical
+     inline expressions so dark mode is unchanged. Light values (in the
+     modern-light block) route through the warm surface ladder instead. */
+  --faceplate-inset: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  --faceplate-key: color-mix(in srgb, var(--text-main) 3%, transparent);
+  --faceplate-surface: var(--faceplate-bg-elevated);
 
   /* DAW control recipe — compact cyan-on-navy interactive surface. Generalizes
      the TransportBar --tb-* pattern for shared input controls (toggles,
@@ -280,6 +286,14 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 8px 20px -16px rgb(0 0 0 / 0.18);
   --faceplate-accent: #147088;
   --faceplate-accent-glow: 0 0 4px rgb(20 112 136 / 0.20);
+  /* Progression-card surfaces — routed through the warm light ladder so the
+     card-in-card hierarchy reads as tan depth, never near-white:
+       inset   = sunken well (degree chip, pager, notes-strip container)
+       key     = note-key chip sitting in the well
+       surface = the nested focal editor card (lifted above the progression card) */
+  --faceplate-inset: var(--surface-well);
+  --faceplate-key: var(--surface-card-key);
+  --faceplate-surface: var(--surface-card-inset);
 
   /* DAW control — light mode: warm cream surfaces with CYAN teal accents.
      Reference palette: BG #ebebdc, PANEL #f6f2e9, CYAN #147088, INK #2a251d. */
@@ -338,6 +352,12 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
   --faceplate-accent: var(--neon-cyan);
   --faceplate-accent-glow: var(--glow-cyan-sm);
+  /* Progression-card sunken surfaces — dark values reproduce the historical
+     inline expressions so dark mode is unchanged. Light values (in the
+     modern-light block) route through the warm surface ladder instead. */
+  --faceplate-inset: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  --faceplate-key: color-mix(in srgb, var(--text-main) 3%, transparent);
+  --faceplate-surface: var(--faceplate-bg-elevated);
 
   /* DAW control — dark mode: navy substrate, bright cyan accent, neon glow.
      Re-declared explicitly to mirror the faceplate token convention. */

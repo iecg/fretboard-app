@@ -216,7 +216,7 @@
   padding: 0 0.45rem;
   border: 1px solid var(--faceplate-divider);
   border-radius: 6px;
-  background-color: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  background-color: var(--faceplate-inset);
   color: var(--dc-fg);
   font-family: var(--font-mono);
   font-size: 0.78rem;
