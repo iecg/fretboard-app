@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, lazy, Suspense, useDeferredValue } from "react";
 import { clsx } from "clsx";
 import styles from "./Fretboard.module.css";
 import {
@@ -83,8 +83,10 @@ interface FretboardProps {
 }
 
 export function Fretboard(props: FretboardProps) {
-  const state = useFretboardTopologyModel();
-  const viewport = useFretboardViewportModel();
+  const baseState = useFretboardTopologyModel();
+  const state = useDeferredValue(baseState);
+  const baseViewport = useFretboardViewportModel();
+  const viewport = useDeferredValue(baseViewport);
 
   // Fallback to props for testability; default to atom-driven state.
   const tuning = props.tuning ?? viewport.currentTuning;
@@ -158,7 +160,6 @@ export function Fretboard(props: FretboardProps) {
   const startX = useRef(0);
   const scrollLeft = useRef(0);
   const dragDistance = useRef(0);
-  const offsetLeftRef = useRef(0);
   const [hasOverflow, setHasOverflow] = useState(false);
 
   useEffect(() => {
@@ -247,8 +248,7 @@ export function Fretboard(props: FretboardProps) {
     isDraggingRef.current = false;
     pendingPointerId.current = e.pointerId;
     pendingTarget.current = e.currentTarget;
-    offsetLeftRef.current = scrollRef.current.offsetLeft;
-    startX.current = e.pageX - offsetLeftRef.current;
+    startX.current = e.pageX;
     scrollLeft.current = scrollRef.current.scrollLeft;
     dragDistance.current = 0;
   }, [hasOverflow]);
@@ -263,8 +263,7 @@ export function Fretboard(props: FretboardProps) {
     }
     if (!isDraggingRef.current) return;
     e.preventDefault();
-    const x = e.pageX - offsetLeftRef.current;
-    const walk = (x - startX.current) * 1.5;
+    const walk = (e.pageX - startX.current) * 1.5;
     scrollRef.current.scrollLeft = scrollLeft.current - walk;
   }, [updateCursor]);
 

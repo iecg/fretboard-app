@@ -16,6 +16,7 @@ const lazyAudio = vi.hoisted(() => ({
   setGuitarMutePreference: vi.fn(),
   setGuitarAudioErrorHandler: vi.fn(),
   resumeGuitarAudio: vi.fn(),
+  prefetchAudioModule: vi.fn(),
 }));
 
 vi.mock("./core/lazyGuitarAudio", () => lazyAudio);

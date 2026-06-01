@@ -1,3 +1,4 @@
+import React from "react";
 import { useAtomValue } from "jotai";
 import {
   chordTonesAtom,
@@ -70,7 +71,7 @@ export function useFretboardTopologyModel() {
   const visibleFullChordMatches = useAtomValue(visibleVoicingMatchesAtom);
   const chordBoxBounds = activePosition ? boxBounds : null;
 
-  return {
+  return React.useMemo(() => ({
     rootNote,
     scaleName,
     displayFormat,
@@ -89,13 +90,14 @@ export function useFretboardTopologyModel() {
     activeShape,
     shapeScope,
     fullChordMatches: visibleFullChordMatches,
-    /**
-     * Set of "stringIndex-fretIndex" keys that should render the chord-tone
-     * emphasis. Sourced from {@link chordHighlightPositionsAtom} (union of
-     * every fitting candidate's positions).
-     */
     fullChordPositions: chordHighlightPositions,
     showChordConnectors,
     chordBoxBounds,
-  };
+  }), [
+    rootNote, scaleName, displayFormat, preferFlats, noteSemanticMap,
+    highlightNotes, boxBounds, shapePolygons, wrappedNotes,
+    chordTones, chordRoot, colorNotes, hiddenNotes,
+    activePattern, activeShape, shapeScope, visibleFullChordMatches,
+    chordHighlightPositions, showChordConnectors, chordBoxBounds
+  ]);
 }

@@ -48,6 +48,7 @@ vi.mock("../../core/lazyGuitarAudio", () => ({
   resumeGuitarAudio: vi.fn(),
   playGuitarNote: vi.fn(),
   setGuitarAudioErrorHandler: vi.fn(),
+  prefetchAudioModule: vi.fn(),
 }));
 
 function renderOverlay(store: ReturnType<typeof createStore>) {

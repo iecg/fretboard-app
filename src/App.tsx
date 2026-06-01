@@ -8,6 +8,7 @@ import {
   resumeGuitarAudio,
   setGuitarAudioErrorHandler,
   setGuitarMutePreference,
+  prefetchAudioModule,
 } from "./core/lazyGuitarAudio";
 import { isMutedAtom, toggleMuteAtom, audioErrorAtom } from "./store/audioAtoms";
 import { chordTypeAtom } from "./store/chordOverlayAtoms";
@@ -77,6 +78,14 @@ function AppContent() {
       setGuitarAudioErrorHandler(undefined);
     };
   }, [setAudioError]);
+
+  useEffect(() => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => prefetchAudioModule());
+    } else {
+      setTimeout(() => prefetchAudioModule(), 1000);
+    }
+  }, []);
 
   // Safari/iOS robustness: resume AudioContext on first interaction
   useEffect(() => {
