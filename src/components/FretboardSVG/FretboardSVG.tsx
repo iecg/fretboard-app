@@ -707,7 +707,6 @@ export function FretboardSVG({
                     noteBubblePx={noteBubblePx}
                     displayFormat={displayFormat}
                     degreeColorsEnabled={degreeColorsEnabled}
-                    onNoteClick={onNoteClick}
                     animationMode={motionPolicy.noteMode}
                   />
                 </g>

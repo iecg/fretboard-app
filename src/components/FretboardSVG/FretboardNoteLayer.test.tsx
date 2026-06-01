@@ -126,42 +126,6 @@ describe("FretboardNoteLayer per-note memoization", () => {
     expect(noteRenders).toEqual(["2-2"]);
   });
 
-  it("a referentially-stable onNoteClick does not defeat the per-note memo", () => {
-    // Defined once, outside any re-render — the real FretboardSVG passes a
-    // useCallback-stable handler, and this guards that load-bearing assumption.
-    const onNoteClick = () => {};
-    const notes = fourStableNotes();
-
-    const { rerender } = render(
-      <svg>
-        <FretboardNoteLayer
-          notes={notes}
-          noteBubblePx={40}
-          displayFormat="notes"
-          onNoteClick={onNoteClick}
-        />
-      </svg>,
-    );
-
-    expect(noteRenders).toHaveLength(notes.length);
-    noteRenders.length = 0;
-
-    const nextNotes = notes.slice();
-    nextNotes[1] = makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 77 });
-
-    rerender(
-      <svg>
-        <FretboardNoteLayer
-          notes={nextNotes}
-          noteBubblePx={40}
-          displayFormat="notes"
-          onNoteClick={onNoteClick}
-        />
-      </svg>,
-    );
-
-    expect(noteRenders).toEqual(["1-1"]);
-  });
 });
 
 describe("FretboardNoteLayer", () => {
@@ -352,7 +316,6 @@ describe("FretboardNote a11y contract (issue #493)", () => {
   const renderNote = (
     note: RenderedFretboardNote,
     opts: {
-      onNoteClick?: (s: number, f: number, n: string) => void;
       displayFormat?: "notes" | "degrees" | "none";
     } = {},
   ) =>
@@ -362,7 +325,6 @@ describe("FretboardNote a11y contract (issue #493)", () => {
           notes={[note]}
           noteBubblePx={40}
           displayFormat={opts.displayFormat ?? "notes"}
-          onNoteClick={opts.onNoteClick}
         />
       </svg>,
     );
@@ -400,28 +362,20 @@ describe("FretboardNote a11y contract (issue #493)", () => {
     });
   });
 
-  describe("role and tabIndex are conditional on interactivity", () => {
-    it("non-interactive notes (no onNoteClick) have no button role and no tabIndex", () => {
+  describe("the decorative layer is never focusable", () => {
+    // FretboardNoteLayer takes no onNoteClick, so FretboardNote's interactive
+    // branch is never taken: the visible <g> stays non-focusable (no role /
+    // tabIndex). A focusable element inside the aria-hidden SVG would be invalid
+    // ARIA and a dead duplicate tab stop next to the real hit-target button.
+    it("active notes have no button role and no tabIndex", () => {
       const { container } = renderNote(makeNote("note-active"));
       const g = noteGroup(container);
       expect(g.getAttribute("role")).toBeNull();
       expect(g.getAttribute("tabindex")).toBeNull();
     });
 
-    it("interactive notes expose button role and tabIndex=0", () => {
-      const { container } = renderNote(makeNote("note-active"), {
-        onNoteClick: () => {},
-      });
-      const g = noteGroup(container);
-      expect(g.getAttribute("role")).toBe("button");
-      expect(g.getAttribute("tabindex")).toBe("0");
-    });
-
-    it("hidden notes stay aria-hidden with no button role even when onNoteClick is provided", () => {
-      const { container } = renderNote(
-        makeNote("note-inactive", { isHidden: true }),
-        { onNoteClick: () => {} },
-      );
+    it("hidden notes are aria-hidden with no button role and no tabIndex", () => {
+      const { container } = renderNote(makeNote("note-inactive", { isHidden: true }));
       const g = noteGroup(container);
       expect(g.getAttribute("aria-hidden")).toBe("true");
       expect(g.getAttribute("role")).toBeNull();
