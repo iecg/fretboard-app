@@ -303,7 +303,22 @@ export function useProgressionAudioPlayback() {
     startVisualClock(store);
 
     const gen = ++genRef.current;
-    
+
+    // Restart-tier reset: whenever this effect re-runs while playing — a
+    // style/genre swap, pattern change, chord edit, or time-signature change
+    // (everything in `buildKey`) — tear the old audio down *up front* and rewind
+    // the transport to bar 1 BEFORE compiling. `clearTimeline()` snaps the visual
+    // playhead to the top via the visual clock. The debounced spinner below
+    // covers the brief compile gap. This replaces the old make-before-break swap,
+    // whose build-completion-timed handoff made the restart point float
+    // unpredictably (skipped chords / "started over" / "next bar" at random).
+    if (engine) {
+      engine.disposeAll(primsRef.current);
+      primsRef.current = null;
+      engine.clearTimeline();
+      engine.getTransport().stop();
+    }
+
     // Defer the loading spinner to prevent rapid UI flashing for fast rebuilds
     // In test mode, we make it synchronous to satisfy strict test assertions.
     let loadingTimer: ReturnType<typeof setTimeout> | undefined;
@@ -397,10 +412,9 @@ export function useProgressionAudioPlayback() {
       if (gen !== genRef.current) return;
       if (built.chordOnsets.length === 0) { tearDownAndStop(); return; }
 
-      // Dispose OLD parts right before starting new ones to eliminate lag gap!
-      eng.disposeAll(primsRef.current);
-      eng.clearTimeline();
-
+      // Old parts and timeline were already disposed/cleared up front (see the
+      // restart-tier reset at the top of this effect), so the new Parts below
+      // build against a clean, rewound transport.
       const partStart = audio.ctx.currentTime + SCHEDULE_LEAD_SECONDS;
       const parts: ProgressionPartHandle[] = [];
       const totalDurationSec = built.totalDurationSec;

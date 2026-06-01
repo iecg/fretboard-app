@@ -421,6 +421,47 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(newOnsets?.startedOffset).toBe(0);
   });
 
+  it("rewinds the transport to bar 1 and rebuilds up front on a restart-tier change", async () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(0);
+    });
+    const initialParts = [...toneMocks.parts];
+
+    // The engine is now loaded, so the next restart-tier change must rewind the
+    // transport synchronously. Clear the spy so we measure only that change.
+    toneMocks.transport.stop.mockClear();
+
+    act(() => {
+      store.set(progressionStepsAtom, [
+        ...threeBars,
+        { id: "4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+    });
+
+    // Old parts are disposed up front (before the async rebuild completes).
+    initialParts.forEach((p) => expect(p.disposed).toBe(true));
+    // Transport was rewound to 0 (deterministic restart from bar 1).
+    expect(toneMocks.transport.stop).toHaveBeenCalled();
+
+    // The async rebuild then constructs a fresh set of Parts starting at offset 0.
+    await vi.waitFor(() => {
+      expect(toneMocks.parts.length).toBeGreaterThan(initialParts.length);
+    });
+    const newOnsets = toneMocks.parts
+      .slice(initialParts.length)
+      .find((p) => p.events.length === 4);
+    expect(newOnsets?.startedOffset).toBe(0);
+  });
+
   it("tempo change is a LIVE update (Transport.bpm.value); no new Parts constructed", async () => {
     // Sentinel: pre-load mock bpm to a value neither effect should leave
     // behind, so we can prove BOTH the initial-render AND the post-change
