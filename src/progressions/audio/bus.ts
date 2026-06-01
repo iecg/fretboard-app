@@ -142,6 +142,13 @@ export function restoreProgressionBus(): void {
 const GRAPH_LAYERS = ["chord", "bass", "drums", "metronome"] as const;
 
 let currentGraph: MaterializedGraph | null = null;
+// Serialized signature of the plan behind `currentGraph`. When the next call
+// presents a deeply-equal plan we reuse the live graph instead of tearing it
+// down and rebuilding — the rebuild (disconnect → dispose → materialize →
+// rewire) is synchronous and runs in the play-click task. MUST be reset to null
+// anywhere `currentGraph` is disposed/cleared, or a stale plan key could cause a
+// disposed graph to be wrongly reused.
+let lastPlanKey: string | null = null;
 
 /**
  * (Re)build the per-instrument mix graph for the active tier+genre and route
@@ -156,6 +163,12 @@ let currentGraph: MaterializedGraph | null = null;
 export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGraph | null {
   const audio = ensureProgressionAudio();
   if (!audio) return null;
+
+  // `planSignalGraph` returns a plain, serializable data object (no functions or
+  // Tone nodes), so JSON.stringify is a stable signature. When the plan is
+  // unchanged AND we still hold a live graph, skip the entire teardown/rebuild.
+  const planKey = JSON.stringify(plan);
+  if (planKey === lastPlanKey && currentGraph) return currentGraph;
 
   // Build the new graph FIRST. If materialization throws (Tone node
   // construction can fail on some devices/plans), we must not have already torn
@@ -173,12 +186,14 @@ export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGr
     audio.layers[layer].connect(graph.inputs[layer] as AudioNode);
   }
   currentGraph = graph;
+  lastPlanKey = planKey;
   return graph;
 }
 
 /** Test-only reset hook so the module behaves predictably across `vitest` runs. */
 export function _resetProgressionAudioForTests(): void {
   if (currentGraph) { try { currentGraph.dispose(); } catch { /* */ } currentGraph = null; }
+  lastPlanKey = null;
   ctx = null;
   bus = null;
   layers = null;
