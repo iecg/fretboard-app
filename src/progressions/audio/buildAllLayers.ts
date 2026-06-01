@@ -225,6 +225,12 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     const bassFifthVoicing =
       bossaLhNotes.length > 1 ? [bossaLhNotes[1]] : bassRootVoicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
+    // When the comp supplies its own LH bass (rootless-jazz), it doubles the
+    // upright bassline an octave up on beats 1 & 3. Grid-lock both voices'
+    // attacks (zero time jitter) so they sound in perfect unison — independent
+    // timing humanization flams two notes an octave apart. Velocity jitter still
+    // applies, and other comps keep their natural timing humanization.
+    const lockBassToGrid = chordPattern?.voicing === "rootless-jazz";
 
     const eventBeats = isBarUnit ? input.beatsPerBar : stepBeats;
     const eventSec = eventBeats * secondsPerBeat;
@@ -252,11 +258,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           ? sliceCellToBar(chordPattern.hits, absoluteBar % chordCellBars, input.beatsPerBar)
           : repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
+          const isLhBass =
+            hit.voiceRole === "bass-root" || hit.voiceRole === "bass-fifth";
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
             seed: stepIndex * 10000 + bar * 100 + hit.beat,
+            // LH bass doubles the upright an octave up — lock it to the grid.
+            ...(isLhBass ? { timeAmountSec: 0 } : {}),
           });
           chordStrums.push({
             time: hitTime,
@@ -307,6 +317,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             time: baseTime,
             velocity: hit.velocity,
             seed: stepIndex * 10000 + bar * 100 + hit.beat + 1, // slight offset for bass
+            // Lock to the grid when the comp doubles this line (bossa LH), so
+            // the two voices attack in perfect unison instead of flamming.
+            ...(lockBassToGrid ? { timeAmountSec: 0 } : {}),
           });
           bass.push({
             time: hitTime,

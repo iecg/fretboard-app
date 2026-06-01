@@ -381,6 +381,25 @@ describe("buildAllLayers", () => {
     expect(out.chordStrums.every((s) => s.value.style === undefined)).toBe(true); // all short, no sustain
   });
 
+  it("locks the bossa LH bass and upright bass to the same attack time (perfect unison)", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "bossa-comp",
+      drumPatternId: "bossa",
+      bassPatternId: "bossa",
+      steps: [step({ duration: { value: 2, unit: "bar" } })], // 2-bar C major cell
+    });
+    // LH bass strums are single notes on beats 0, 2, 4, 6 (octave 3).
+    const lhBass = out.chordStrums.filter((s) => s.value.voicing.length === 1);
+    expect(lhBass.map((s) => s.time).sort((a, b) => a - b)).toEqual([0, 2, 4, 6]);
+    // The upright bass plays the same beats one octave lower (octave 2).
+    expect(out.bass.map((b) => b.time).sort((a, b) => a - b)).toEqual([0, 2, 4, 6]);
+    // Both voices attack at the exact same time — grid-locked, no flam.
+    for (const lh of lhBass) {
+      expect(out.bass.some((b) => b.time === lh.time)).toBe(true);
+    }
+  });
+
   it("leaves a default-voicing comp (jazz) using the standard rooted voicing", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
