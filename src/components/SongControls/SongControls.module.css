@@ -169,7 +169,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
+  height: var(--control-height);
   width: var(--control-height);
   background: transparent;
   border: none;

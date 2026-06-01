@@ -23,8 +23,8 @@ describe("shared.module.css responsive selectors", () => {
     expect(sharedCSS).not.toMatch(barePattern);
   });
 
-  it("toggle-group base height is the 32px inspector control row", () => {
-    // Toggle bars align with the inspector's 32px field height. Mobile still
+  it("toggle-group base height uses the token-based control height", () => {
+    // Toggle bars align with the inspector using var(--control-height) (44px on mobile breakpoints). Mobile still
     // gets a separate touch-target override for accessibility.
     expect(sharedCSS).toMatch(/\.toggle-group[^{]*\{[^}]*height:\s*var\(--control-height\)/);
   });
