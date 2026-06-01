@@ -3,6 +3,7 @@ import {
   buildMetronomePattern,
   clipPatternToBeats,
   repeatPatternToBeats,
+  sliceCellToBar,
   CHORD_PATTERNS,
   BASS_PATTERNS,
   DRUM_PATTERNS,
@@ -461,5 +462,42 @@ describe("DRUM_VARIATIONS definitions are truthful", () => {
     expect(variationFiresOnBar(fill, 3)).toBe(true);
     expect(variationFiresOnBar(fill, 7)).toBe(true);
     expect(fill.pattern.snares.length).toBeGreaterThan(0);
+  });
+});
+
+describe("sliceCellToBar", () => {
+  // A 2-bar cell in 4/4: beats 0..7.99. Bar 1 = [0,4), bar 2 = [4,8).
+  const CELL = [
+    { beat: 0, velocity: 0.8 },
+    { beat: 1.5, velocity: 0.7 },
+    { beat: 3, velocity: 0.75 },
+    { beat: 5, velocity: 0.7 },
+    { beat: 6, velocity: 0.8 },
+  ];
+
+  it("returns bar 1 hits with original beats for cellBarIndex 0", () => {
+    expect(sliceCellToBar(CELL, 0, 4)).toEqual([
+      { beat: 0, velocity: 0.8 },
+      { beat: 1.5, velocity: 0.7 },
+      { beat: 3, velocity: 0.75 },
+    ]);
+  });
+
+  it("returns bar 2 hits shifted back by beatsPerBar for cellBarIndex 1", () => {
+    expect(sliceCellToBar(CELL, 1, 4)).toEqual([
+      { beat: 1, velocity: 0.7 },
+      { beat: 2, velocity: 0.8 },
+    ]);
+  });
+
+  it("returns an empty array for an out-of-range cellBarIndex", () => {
+    expect(sliceCellToBar(CELL, 2, 4)).toEqual([]);
+  });
+
+  it("preserves extra hit fields (only the beat is shifted)", () => {
+    const typed = [{ beat: 5, velocity: 0.5, type: "crossStick" as const }];
+    expect(sliceCellToBar(typed, 1, 4)).toEqual([
+      { beat: 1, velocity: 0.5, type: "crossStick" },
+    ]);
   });
 });

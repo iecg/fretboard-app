@@ -47,6 +47,9 @@ export interface ChordPattern {
   id: string;
   label: string;
   hits: readonly ChordHit[];
+  /** Cell length in bars (default 1). When > 1, `hits` span 0..bars*beatsPerBar
+   *  and the scheduler selects one bar per `absoluteBar % bars`. */
+  bars?: number;
 }
 
 interface CatalogBassHit {
@@ -61,6 +64,8 @@ export interface CatalogBassPattern {
   id: string;
   label: string;
   hits: readonly CatalogBassHit[];
+  /** Cell length in bars (default 1). See ChordPattern.bars. */
+  bars?: number;
 }
 
 export interface CatalogDrumPattern {
@@ -71,6 +76,10 @@ export interface CatalogDrumPattern {
   hats: readonly DrumHit[];
   openHats?: readonly DrumHit[];
   ride?: readonly DrumHit[];
+  /** Cross-stick / rim-click voice (bossa clave). */
+  crossStick?: readonly DrumHit[];
+  /** Cell length in bars (default 1). See ChordPattern.bars. */
+  bars?: number;
 }
 
 export interface DrumVariation {
@@ -576,6 +585,23 @@ export function clipPatternToBeats<T extends { beat: number }>(
 ): T[] {
   if (beatsAvailable <= 0) return [];
   return pattern.filter((hit) => hit.beat < beatsAvailable);
+}
+
+/**
+ * Select the hits belonging to a single bar of a multi-bar pattern cell and
+ * shift them back to bar-local beats (0..beatsPerBar). `cellBarIndex` is
+ * `absoluteBar % bars`. Pure — used for 2-bar patterns (e.g. the bossa clave);
+ * 1-bar patterns never call this (they keep the `repeatPatternToBeats` path).
+ */
+export function sliceCellToBar<T extends { beat: number }>(
+  hits: readonly T[],
+  cellBarIndex: number,
+  beatsPerBar: number,
+): T[] {
+  const offset = cellBarIndex * beatsPerBar;
+  return hits
+    .filter((h) => h.beat >= offset && h.beat < offset + beatsPerBar)
+    .map((h) => ({ ...h, beat: h.beat - offset }));
 }
 
 /**
