@@ -176,7 +176,27 @@ export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGr
   // disconnected from the master bus and the backing track would go permanently
   // silent. Materializing before the swap means a failure propagates with the
   // old graph + layer connections still intact.
-  const graph = materializeSignalGraph(audio.ctx, audio.bus, plan);
+  const rawGraph = materializeSignalGraph(audio.ctx, audio.bus, plan);
+
+  // Wrap dispose so tearing down the returned graph also invalidates the cache.
+  // The cached object exposes dispose() as part of its contract; if a caller
+  // disposed it without going through a rebuild, currentGraph/lastPlanKey would
+  // still point at a dead graph and the next identical plan would reuse it. No
+  // production caller disposes it today (only the rebuild path + test reset do),
+  // so this guards the public dispose() against future misuse. Idempotent.
+  let disposed = false;
+  const graph: MaterializedGraph = {
+    ...rawGraph,
+    dispose: () => {
+      if (disposed) return;
+      disposed = true;
+      rawGraph.dispose();
+      if (currentGraph === graph) {
+        currentGraph = null;
+        lastPlanKey = null;
+      }
+    },
+  };
 
   for (const layer of GRAPH_LAYERS) {
     try { audio.layers[layer].disconnect(); } catch { /* not connected */ }

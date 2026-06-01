@@ -94,4 +94,21 @@ describe("configureProgressionGraph", () => {
     expect(disposeSpies[0]).toHaveBeenCalledTimes(1);
     expect(disposeSpies[1]).not.toHaveBeenCalled();
   });
+
+  it("invalidates the cache when the returned graph is disposed externally", () => {
+    expect(ensureProgressionAudio()).not.toBeNull();
+    const plan = planSignalGraph(TIER_PROFILES.standard, DEFAULT_GENRE_MIX);
+    const g1 = configureProgressionGraph(plan);
+    expect(g1).not.toBeNull();
+    g1!.dispose(); // external teardown must clear currentGraph/lastPlanKey
+    expect(disposeSpies[0]).toHaveBeenCalledTimes(1);
+    // Same plan again: must NOT reuse the disposed graph — it rebuilds.
+    const g2 = configureProgressionGraph(
+      planSignalGraph(TIER_PROFILES.standard, DEFAULT_GENRE_MIX),
+    );
+    expect(g2).not.toBe(g1);
+    // Wrapped dispose is idempotent — a second call is a no-op.
+    g1!.dispose();
+    expect(disposeSpies[0]).toHaveBeenCalledTimes(1);
+  });
 });
