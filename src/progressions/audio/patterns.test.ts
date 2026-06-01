@@ -405,3 +405,33 @@ describe("variationFiresOnBar", () => {
     expect(variationFiresOnBar(v(-4, 0), 0)).toBe(false);
   });
 });
+
+describe("DRUM_VARIATIONS definitions are truthful", () => {
+  const byId = (id: string) => {
+    const found = DRUM_VARIATIONS.find((v) => v.id === id);
+    if (!found) throw new Error(`missing variation ${id}`);
+    return found;
+  };
+
+  it("fill-every-4 lands on the 4th bar (turnaround), not the 1st", () => {
+    const fill = byId("fill-every-4");
+    expect(fill.barInterval).toBe(4);
+    expect(variationFiresOnBar(fill, 0)).toBe(false);
+    expect(variationFiresOnBar(fill, 3)).toBe(true);
+    expect(variationFiresOnBar(fill, 7)).toBe(true);
+  });
+
+  it("crash-bar-1 lands on the 1st bar of each 4-bar group", () => {
+    const crash = byId("crash-bar-1");
+    expect(crash.barInterval).toBe(4);
+    expect(variationFiresOnBar(crash, 0)).toBe(true);
+    expect(variationFiresOnBar(crash, 1)).toBe(false);
+    expect(variationFiresOnBar(crash, 4)).toBe(true);
+  });
+
+  it("open-hat-and-of-4 still fires every bar (unchanged)", () => {
+    const oh = byId("open-hat-and-of-4");
+    expect(oh.barInterval).toBe(1);
+    expect([0, 1, 2, 3].every((b) => variationFiresOnBar(oh, b))).toBe(true);
+  });
+});
