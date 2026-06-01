@@ -15,6 +15,9 @@ import {
 import { buildAnimatedFretboardNotes } from "./useAnimatedFretboardView";
 import type { EmphasisContext } from "./useEmphasisContext";
 
+// NOTE: adding a render-affecting field here? Also add it to
+// `renderedNoteSignature` in useAnimatedFretboardView.ts, or cached notes will
+// render stale.
 export interface NoteData {
   stringIndex: number;
   fretIndex: number;

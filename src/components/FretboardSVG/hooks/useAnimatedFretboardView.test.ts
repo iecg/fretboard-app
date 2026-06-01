@@ -2,7 +2,8 @@ import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
-import { useAnimatedFretboardView } from "./useAnimatedFretboardView";
+import { useAnimatedFretboardView, buildRenderedFretboardNotes } from "./useAnimatedFretboardView";
+import type { NoteData } from "./useNoteData";
 import { useStaticFretboardTopology } from "./useStaticFretboardTopology";
 import {
   setProgressionPlayingAtom,
@@ -154,5 +155,80 @@ describe("useAnimatedFretboardView", () => {
     });
 
     expect(result.current.view.noteData).toBe(initialNoteData);
+  });
+});
+
+describe("buildRenderedFretboardNotes (object identity)", () => {
+  function makeNote(overrides: Partial<NoteData> = {}): NoteData {
+    return {
+      stringIndex: 0,
+      fretIndex: 0,
+      noteName: "C",
+      octave: 4,
+      noteClass: "note-active",
+      displayValue: "C",
+      applyDimOpacity: false,
+      applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
+      isHidden: false,
+      isTension: false,
+      isGuideTone: false,
+      ...overrides,
+    };
+  }
+
+  const fretCenterX = (fretIndex: number) => fretIndex * 10;
+  const stringYAt = (stringIndex: number) => stringIndex * 20;
+
+  it("returns the same object reference when a note's inputs are unchanged", () => {
+    const noteData: NoteData[] = [
+      makeNote({ stringIndex: 0, fretIndex: 3, noteName: "C" }),
+      makeNote({ stringIndex: 2, fretIndex: 5, noteName: "E" }),
+    ];
+
+    const a = buildRenderedFretboardNotes({ noteData, fretCenterX, stringYAt });
+
+    // Fresh, structurally-identical input objects on the second call.
+    const noteDataAgain: NoteData[] = [
+      makeNote({ stringIndex: 0, fretIndex: 3, noteName: "C" }),
+      makeNote({ stringIndex: 2, fretIndex: 5, noteName: "E" }),
+    ];
+
+    const b = buildRenderedFretboardNotes({
+      noteData: noteDataAgain,
+      fretCenterX,
+      stringYAt,
+    });
+
+    expect(b[0]).toBe(a[0]);
+    expect(b[1]).toBe(a[1]);
+  });
+
+  it("rebuilds only the note whose emphasis-affecting input changed", () => {
+    const noteData: NoteData[] = [
+      makeNote({ stringIndex: 0, fretIndex: 3, noteName: "C" }),
+      makeNote({ stringIndex: 2, fretIndex: 5, noteName: "E" }),
+    ];
+
+    const a = buildRenderedFretboardNotes({ noteData, fretCenterX, stringYAt });
+
+    const noteDataChanged: NoteData[] = [
+      makeNote({ stringIndex: 0, fretIndex: 3, noteName: "C" }),
+      makeNote({
+        stringIndex: 2,
+        fretIndex: 5,
+        noteName: "E",
+        applyLensEmphasis: { radiusBoost: 1.5, opacityBoost: 1 },
+      }),
+    ];
+
+    const b = buildRenderedFretboardNotes({
+      noteData: noteDataChanged,
+      fretCenterX,
+      stringYAt,
+    });
+
+    // Unchanged note keeps identity; changed note is a fresh object.
+    expect(b[0]).toBe(a[0]);
+    expect(b[1]).not.toBe(a[1]);
   });
 });

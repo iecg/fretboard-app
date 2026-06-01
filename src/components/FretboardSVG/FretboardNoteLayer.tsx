@@ -61,6 +61,9 @@ export const FretboardNoteLayer = memo(({
 }: FretboardNoteLayerProps) => {
   return (
     <g data-motion={animationMode}>
+      {/* NOTE: reading a new render-affecting field below? Also add it to
+          `renderedNoteSignature` in useAnimatedFretboardView.ts, or cached
+          notes will render stale. */}
       {notes.map(({
         stringIndex,
         fretIndex,
