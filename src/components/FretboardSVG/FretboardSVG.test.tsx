@@ -698,54 +698,52 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   describe("note layer a11y contract", () => {
+    // The visible SVG note layer is purely decorative: it lives inside an
+    // aria-hidden, pointer-events:none <svg>. Interaction + accessible names are
+    // owned by FretboardHitTargetLayer's real <button>s. These tests guard that
+    // split — the decorative <g> must expose NO interactive/ARIA semantics, and
+    // the buttons must carry the labels + handle activation.
     const getSvgNotes = () =>
       Array.from(
         document.querySelectorAll<SVGGElement>('g[class*="fretboard-note"]'),
       );
+    const getHitButtons = () =>
+      Array.from(document.querySelectorAll<HTMLButtonElement>("button.note-bubble"));
 
-    it("exposes each note as a button with a labelled role and aria-label", () => {
+    it("renders the visible SVG note layer as decorative — no role/aria-label/tabindex even with onNoteClick", () => {
       render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
       const notes = getSvgNotes();
       expect(notes.length).toBeGreaterThan(0);
       notes.forEach((g) => {
-        expect(g.getAttribute("role")).toBe("button");
-        const label = g.getAttribute("aria-label") || "";
-        expect(label).toMatch(/^[A-G][#♯♭b]?\d\s—\s.+$/);
+        expect(g.getAttribute("role")).toBeNull();
+        expect(g.getAttribute("aria-label")).toBeNull();
+        expect(g.getAttribute("tabindex")).toBeNull();
+        expect(g.getAttribute("aria-hidden")).toBeNull();
       });
     });
 
-    it("aria-label includes the correct octave for open low/high E strings", () => {
-      render(<FretboardSVG {...BASE_PROPS} highlightNotes={["E"]} onNoteClick={() => {}} />);
-      const labels = getSvgNotes()
-        .map((g) => g.getAttribute("aria-label") || "")
-        .filter(Boolean);
-      expect(labels.some((l) => l.startsWith("E2 — "))).toBe(true);
-      expect(labels.some((l) => l.startsWith("E4 — "))).toBe(true);
-    });
-
-    it("toggles tabIndex based on onNoteClick presence", () => {
-      const { rerender } = render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
-      expect(getSvgNotes().some((g) => g.getAttribute("tabindex") === "0")).toBe(true);
-      rerender(<FretboardSVG {...BASE_PROPS} />);
-      getSvgNotes().forEach((g) => {
-        expect(g.getAttribute("tabindex")).toBe("-1");
+    it("exposes accessible names + interaction on the hit-target buttons, not the SVG", () => {
+      render(<FretboardSVG {...BASE_PROPS} onNoteClick={() => {}} />);
+      const buttons = getHitButtons();
+      expect(buttons.length).toBeGreaterThan(0);
+      buttons.forEach((btn) => {
+        expect(btn.tagName).toBe("BUTTON");
+        expect(btn.getAttribute("aria-label") || "").toMatch(/ on string \d+, fret \d+/);
       });
     });
 
-    it.each([["Enter"], [" "]])("%s key invokes onNoteClick on focused note", (key) => {
+    it("clicking a hit-target button invokes onNoteClick", () => {
       const onNoteClick = vi.fn();
       render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
-      fireEvent.keyDown(getSvgNotes()[0], { key });
+      fireEvent.click(getHitButtons()[0]);
       expect(onNoteClick).toHaveBeenCalledTimes(1);
     });
 
-    it("ignores unrelated keys", () => {
-      const onNoteClick = vi.fn();
-      render(<FretboardSVG {...BASE_PROPS} onNoteClick={onNoteClick} />);
-      const note = getSvgNotes()[0];
-      fireEvent.keyDown(note, { key: "a" });
-      fireEvent.keyDown(note, { key: "Tab" });
-      expect(onNoteClick).not.toHaveBeenCalled();
+    it("disables hit-target buttons when no onNoteClick is provided", () => {
+      render(<FretboardSVG {...BASE_PROPS} />);
+      const buttons = getHitButtons();
+      expect(buttons.length).toBeGreaterThan(0);
+      buttons.forEach((btn) => expect(btn.disabled).toBe(true));
     });
   });
 });

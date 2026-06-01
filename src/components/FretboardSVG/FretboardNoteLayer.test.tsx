@@ -124,42 +124,6 @@ describe("FretboardNoteLayer per-note memoization", () => {
     expect(noteRenders).toEqual(["2-2"]);
   });
 
-  it("a referentially-stable onNoteClick does not defeat the per-note memo", () => {
-    // Defined once, outside any re-render — the real FretboardSVG passes a
-    // useCallback-stable handler, and this guards that load-bearing assumption.
-    const onNoteClick = () => {};
-    const notes = fourStableNotes();
-
-    const { rerender } = render(
-      <svg>
-        <FretboardNoteLayer
-          notes={notes}
-          noteBubblePx={40}
-          displayFormat="notes"
-          onNoteClick={onNoteClick}
-        />
-      </svg>,
-    );
-
-    expect(noteRenders).toHaveLength(notes.length);
-    noteRenders.length = 0;
-
-    const nextNotes = notes.slice();
-    nextNotes[1] = makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 77 });
-
-    rerender(
-      <svg>
-        <FretboardNoteLayer
-          notes={nextNotes}
-          noteBubblePx={40}
-          displayFormat="notes"
-          onNoteClick={onNoteClick}
-        />
-      </svg>,
-    );
-
-    expect(noteRenders).toEqual(["1-1"]);
-  });
 });
 
 describe("FretboardNoteLayer", () => {
@@ -248,6 +212,25 @@ describe("FretboardNoteLayer", () => {
     expect(roles).toContain("note-active");
   });
 
+  it("renders the visible note <g> as decorative — no role, aria-label, or tabindex", () => {
+    // The visible SVG note layer lives inside an aria-hidden, pointer-events:none
+    // <svg>; interaction + accessible names are owned by FretboardHitTargetLayer's
+    // real <button>s. The decorative <g> must therefore carry NO interactive or
+    // ARIA semantics (focusable-in-aria-hidden is invalid; role/label are dead).
+    const { container } = renderLayer([
+      makeNote("note-active", { stringIndex: 0, fretIndex: 0 }),
+      makeNote("note-inactive", { stringIndex: 1, fretIndex: 1, cx: 150, cy: 30, isHidden: true }),
+    ]);
+    const groups = container.querySelectorAll('g[class*="fretboard-note"]');
+    expect(groups.length).toBe(2);
+    groups.forEach((g) => {
+      expect(g.getAttribute("role")).toBeNull();
+      expect(g.getAttribute("aria-label")).toBeNull();
+      expect(g.getAttribute("tabindex")).toBeNull();
+      expect(g.getAttribute("aria-hidden")).toBeNull();
+    });
+  });
+
   it("applies correct data-note-shape attribute for each shape type", () => {
     const { container } = renderLayer(
       [
@@ -277,9 +260,16 @@ describe("FretboardNoteLayer", () => {
     expect(paths[pathIndex]!.getAttribute("d")).toBe(squirclePath(100, 50, expectedRadius));
   });
 
-  it("hidden notes do not render with data-note-role and are aria-hidden", () => {
-    const { container } = renderLayer([makeNote("note-active", { isHidden: true })]);
-    expect(container.querySelector("g[aria-hidden='true']")).toBeTruthy();
+  it("hidden notes carry the .hidden class (display:none) and no data-note-role", () => {
+    // Visibility is driven entirely by the `.hidden` class (display:none); the
+    // decorative layer has no ARIA of its own (the whole SVG is aria-hidden).
+    // A hidden note is always note-inactive in production (see
+    // buildStaticFretboardTopology: isHidden = noteClass === "note-inactive").
+    const { container } = renderLayer([makeNote("note-inactive", { isHidden: true })]);
+    const g = container.querySelector('g[class*="fretboard-note"]')!;
+    expect(g.classList.contains("hidden")).toBe(true);
+    expect(g.getAttribute("data-note-role")).toBeNull();
+    expect(g.getAttribute("aria-hidden")).toBeNull();
   });
 
   it("lens emphasis radiusBoost is applied as CSS transform scale, not baked into SVG geometry", () => {

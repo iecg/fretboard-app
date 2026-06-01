@@ -22,47 +22,28 @@ const CAGED_SHAPE_TEXT_VAR: Record<string, string> = {
   G: "var(--caged-g-fg)",
 };
 
-const ROLE_DESCRIPTIONS: Record<string, string> = {
-  "root-active": "scale root",
-  "chord-root": "chord root",
-  "chord-tone": "chord tone",
-  "chord-tone-in-scale": "chord tone in scale",
-  "chord-tone-outside-scale": "chord tone outside scale",
-  "note-diatonic-chord": "diatonic chord tone",
-  "note-blue": "blue note",
-  "note-active": "scale note",
-  "note-scale-only": "scale note",
-  "chord-outside": "chord tone outside scale",
-  "color-tone": "color tone",
-  "key-tonic": "key tonic",
-  "note-inactive": "inactive",
-};
-
-const formatRole = (noteClass: string): string =>
-  ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
-
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
-  onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
+// PURELY DECORATIVE. This SVG note layer lives inside an aria-hidden,
+// pointer-events:none <svg> (see FretboardSVG.tsx). All interaction and
+// accessible names are owned by FretboardHitTargetLayer's real <button>s, so
+// this component intentionally carries NO role / aria-label / tabIndex / click
+// or key handlers — a focusable element inside an aria-hidden subtree is invalid
+// ARIA, and pointer/keyboard handlers here could never fire anyway.
 export const FretboardNote = memo(function FretboardNote({
   note,
   noteBubblePx,
   displayFormat,
   degreeColorsEnabled,
-  onNoteClick,
 }: FretboardNoteProps) {
   const {
-    stringIndex,
-    fretIndex,
-    noteName,
     cx,
     cy,
-    octave,
     noteClass,
     displayValue,
     applyDimOpacity,
@@ -144,9 +125,6 @@ export const FretboardNote = memo(function FretboardNote({
 
   const baseOpacity = applyDimOpacity ? 0.8 : 1;
   const finalOpacity = baseOpacity * applyLensEmphasis.opacityBoost;
-  const roleLabel = formatRole(noteClass);
-  const ariaLabel = `${noteName}${octave} — ${roleLabel}`;
-  const interactive = !!onNoteClick && !isHidden;
   return (
     <g
       className={clsx(
@@ -154,25 +132,6 @@ export const FretboardNote = memo(function FretboardNote({
         styles[noteClass],
         isHidden && "hidden",
       )}
-      role="button"
-      aria-label={ariaLabel}
-      aria-hidden={isHidden || undefined}
-      tabIndex={interactive ? 0 : -1}
-      onClick={
-        interactive
-          ? () => onNoteClick!(stringIndex, fretIndex, noteName)
-          : undefined
-      }
-      onKeyDown={
-        interactive
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onNoteClick!(stringIndex, fretIndex, noteName);
-              }
-            }
-          : undefined
-      }
       data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
       data-note-shape={noteShape}
       data-note-tension={isTension || undefined}

@@ -8,16 +8,16 @@ interface FretboardNoteLayerProps {
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
   degreeColorsEnabled?: boolean;
-  onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
   animationMode?: NoteAnimationMode;
 }
 
+// Decorative-only visual layer. Interaction + accessible names live in
+// FretboardHitTargetLayer's real <button>s — this layer takes no onNoteClick.
 export const FretboardNoteLayer = memo(({
   notes,
   noteBubblePx,
   displayFormat,
   degreeColorsEnabled,
-  onNoteClick,
   animationMode = "css",
 }: FretboardNoteLayerProps) => (
   // NOTE: reading a new render-affecting field in FretboardNote? Also add it to
@@ -31,7 +31,6 @@ export const FretboardNoteLayer = memo(({
         noteBubblePx={noteBubblePx}
         displayFormat={displayFormat}
         degreeColorsEnabled={degreeColorsEnabled}
-        onNoteClick={onNoteClick}
       />
     ))}
   </g>
