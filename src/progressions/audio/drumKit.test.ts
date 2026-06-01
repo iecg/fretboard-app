@@ -419,6 +419,55 @@ describe("drumKit — Tone backend", () => {
       scheduleCrossStick({} as AudioNode, 1, { velocity: 0 });
       expect(membraneSpies.ctorSpy).not.toHaveBeenCalled();
     });
+
+    it("reuses one MembraneSynth for non-overlapping hits on the same destination", () => {
+      const dest = {} as AudioNode;
+      scheduleCrossStick(dest, 0, { velocity: 0.8 });
+      clock.now = 0.3; // past the first hit's busy window (0 + 0.12)
+      scheduleCrossStick(dest, 0.4, { velocity: 0.7 });
+
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it("allocates separate MembraneSynths for future hits scheduled in one pass", () => {
+      const dest = {} as AudioNode;
+      scheduleCrossStick(dest, 2, { velocity: 0.8 });
+      scheduleCrossStick(dest, 2.6, { velocity: 0.7 });
+
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it("keeps different destinations on different leased synths", () => {
+      const firstDest = {} as AudioNode;
+      const secondDest = {} as AudioNode;
+
+      scheduleCrossStick(firstDest, 0, { velocity: 0.8 });
+      clock.now = 0.3;
+      scheduleCrossStick(secondDest, 0.4, { velocity: 0.7 });
+
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneTone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
+      expect(membraneTone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
+    });
+
+    it("cancel() defers dispose past the cross-stick release tail", () => {
+      const handle = scheduleCrossStick({} as AudioNode, 0);
+      handle.cancel();
+      expect(membraneSpies.dispose).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(200); // > CROSS_STICK_DISPOSE_MS (120)
+      expect(membraneSpies.dispose).toHaveBeenCalledTimes(1);
+    });
+
+    it("cancel() is idempotent — repeated calls dispose only once", () => {
+      const handle = scheduleCrossStick({} as AudioNode, 0);
+      handle.cancel();
+      handle.cancel();
+      handle.cancel();
+      vi.advanceTimersByTime(200);
+      expect(membraneSpies.dispose).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("kit patch overrides", () => {
