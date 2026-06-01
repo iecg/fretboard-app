@@ -529,6 +529,8 @@ describe("bossa patterns", () => {
       "bass-root", "chord", "bass-fifth", "chord",
       "bass-root", "chord", "bass-fifth", "chord",
     ]);
-    expect(comp.hits.every((h) => h.style === "sustained")).toBe(true);
+    // RH chords + the LH fifth ring; the LH root is short (no sustain).
+    expect(comp.hits.filter((h) => h.voiceRole === "bass-root").every((h) => h.style === undefined)).toBe(true);
+    expect(comp.hits.filter((h) => h.voiceRole !== "bass-root").every((h) => h.style === "sustained")).toBe(true);
   });
 });
