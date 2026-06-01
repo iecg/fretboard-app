@@ -10,9 +10,11 @@ import {
   getChordPattern,
   getDrumPattern,
   getDrumVariation,
+  variationFiresOnBar,
   repeatPatternToBeats,
   type CatalogDrumPattern,
   type DrumHit,
+  type DrumVariation,
   type BassArticulation,
 } from "./patterns";
 import { applyJitter } from "./humanize";
@@ -141,13 +143,11 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   const chordPattern = getChordPattern(input.chordPatternId);
   const bassPattern = getBassPattern(input.bassPatternId);
   const drumPattern = getDrumPattern(input.drumPatternId);
-  const variationHits: VoicedDrumHit[] = input.drumVariations
-    .map((id) => getDrumVariation(id)?.pattern)
-    .filter((p): p is CatalogDrumPattern => Boolean(p))
-    .flatMap((p) => collectDrumHits(p));
-  const drumHits: VoicedDrumHit[] = drumPattern
-    ? [...collectDrumHits(drumPattern), ...variationHits]
-    : variationHits;
+  // Base drum pattern hits apply every bar; variations are gated per bar below.
+  const baseDrumHits: VoicedDrumHit[] = drumPattern ? collectDrumHits(drumPattern) : [];
+  const variations: DrumVariation[] = input.drumVariations
+    .map((id) => getDrumVariation(id))
+    .filter((v): v is DrumVariation => Boolean(v));
 
   const chordOnsets: Array<{ time: number; value: ChordOnsetEvent }> = [];
   const chordStrums: Array<{ time: number; value: ChordStrumEvent }> = [];
@@ -158,6 +158,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   let cumulativeSec = 0;
   let lastVoicing: string[] | undefined = undefined;
   let lastBassNote: string | undefined = undefined;
+  let absoluteBar = 0;
 
   for (let stepIndex = 0; stepIndex < input.steps.length; stepIndex++) {
     const step = input.steps[stepIndex];
@@ -172,8 +173,14 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       : step.duration.value;
     const stepDurationSec = stepBeats * secondsPerBeat;
 
+    const isBarUnit = step.duration.unit === "bar";
+    const barsInStep = isBarUnit
+      ? Math.max(1, Math.floor(step.duration.value))
+      : 1;
+
     if (step.unavailable || step.root === null || step.quality === null) {
       cumulativeSec += stepDurationSec;
+      absoluteBar += barsInStep; // a rest bar still occupies its phrase slot
       continue;
     }
 
@@ -199,10 +206,6 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       needsRootAnchor && plainVoicing.length > 0 ? [plainVoicing[0]] : voicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
-    const isBarUnit = step.duration.unit === "bar";
-    const barsInStep = isBarUnit
-      ? Math.max(1, Math.floor(step.duration.value))
-      : 1;
     const eventBeats = isBarUnit ? input.beatsPerBar : stepBeats;
     const eventSec = eventBeats * secondsPerBeat;
 
@@ -286,8 +289,12 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
         }
       }
 
-      if (drumHits.length > 0) {
-        const hits = repeatPatternToBeats(drumHits, eventBeats, input.beatsPerBar);
+      const firingVariationHits: VoicedDrumHit[] = variations
+        .filter((v) => variationFiresOnBar(v, absoluteBar))
+        .flatMap((v) => collectDrumHits(v.pattern));
+      const drumHitsForBar: VoicedDrumHit[] = [...baseDrumHits, ...firingVariationHits];
+      if (drumHitsForBar.length > 0) {
+        const hits = repeatPatternToBeats(drumHitsForBar, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
@@ -303,6 +310,8 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           });
         }
       }
+
+      absoluteBar++;
     }
 
     cumulativeSec += stepDurationSec;
