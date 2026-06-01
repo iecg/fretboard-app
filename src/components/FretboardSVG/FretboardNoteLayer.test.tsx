@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
+import { __getFretboardNoteRenderCount, __resetFretboardNoteRenderCount } from "./fretboardNoteRenderCounter";
 import { axe } from "../../test-utils/a11y";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 import {
@@ -68,6 +69,45 @@ function renderLayer(
     </svg>,
   );
 }
+
+describe("FretboardNoteLayer per-note memoization", () => {
+  beforeEach(() => {
+    __resetFretboardNoteRenderCount();
+  });
+
+  it("re-renders only the note whose object reference changed", () => {
+    // Stable references for all notes.
+    const notes: RenderedFretboardNote[] = [
+      makeNote("note-active", { stringIndex: 0, fretIndex: 0, cx: 10 }),
+      makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 20 }),
+      makeNote("note-active", { stringIndex: 2, fretIndex: 2, cx: 30 }),
+      makeNote("note-active", { stringIndex: 3, fretIndex: 3, cx: 40 }),
+    ];
+
+    const { rerender } = render(
+      <svg>
+        <FretboardNoteLayer notes={notes} noteBubblePx={40} displayFormat="notes" />
+      </svg>,
+    );
+
+    // Initial render: every note rendered once.
+    expect(__getFretboardNoteRenderCount()).toBe(notes.length);
+    __resetFretboardNoteRenderCount();
+
+    // Swap exactly ONE note's object reference; all others keep identity.
+    const nextNotes = notes.slice();
+    nextNotes[2] = makeNote("note-active", { stringIndex: 2, fretIndex: 2, cx: 99 });
+
+    rerender(
+      <svg>
+        <FretboardNoteLayer notes={nextNotes} noteBubblePx={40} displayFormat="notes" />
+      </svg>,
+    );
+
+    // Only the single changed note should re-render — memo skips the other 3.
+    expect(__getFretboardNoteRenderCount()).toBe(1);
+  });
+});
 
 describe("FretboardNoteLayer", () => {
   it("has no accessibility violations", async () => {
