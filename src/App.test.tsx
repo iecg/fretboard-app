@@ -67,6 +67,7 @@ vi.mock("./core/lazyGuitarAudio", () => ({
   setGuitarAudioErrorHandler: vi.fn(),
   resumeGuitarAudio: vi.fn(),
   playGuitarNote: vi.fn(),
+  prefetchAudioModule: vi.fn(),
 }));
 
 const mockResumeGuitarAudio = vi.mocked(resumeGuitarAudio);

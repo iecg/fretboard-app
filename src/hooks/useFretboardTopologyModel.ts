@@ -1,3 +1,4 @@
+import React from "react";
 import { useAtomValue } from "jotai";
 import {
   chordTonesAtom,
@@ -39,6 +40,11 @@ export function useFretboardTopologyModel() {
   const showChordConnectors = useAtomValue(voicingAtom) !== "off";
   const activePosition = useAtomValue(activePositionAtom);
 
+  // Stable key for cagedShapes to avoid useMemo recomputation on every render
+  const cagedShapesKey = cagedShapes.size > 0
+    ? Array.from(cagedShapes).sort().join(',')
+    : '';
+
   let activePattern: ActivePatternType | undefined;
   let activeShape: ActiveShapeType;
   let shapeScope: ShapeScope = "global";
@@ -70,7 +76,7 @@ export function useFretboardTopologyModel() {
   const visibleFullChordMatches = useAtomValue(visibleVoicingMatchesAtom);
   const chordBoxBounds = activePosition ? boxBounds : null;
 
-  return {
+  return React.useMemo(() => ({
     rootNote,
     scaleName,
     displayFormat,
@@ -89,13 +95,14 @@ export function useFretboardTopologyModel() {
     activeShape,
     shapeScope,
     fullChordMatches: visibleFullChordMatches,
-    /**
-     * Set of "stringIndex-fretIndex" keys that should render the chord-tone
-     * emphasis. Sourced from {@link chordHighlightPositionsAtom} (union of
-     * every fitting candidate's positions).
-     */
     fullChordPositions: chordHighlightPositions,
     showChordConnectors,
     chordBoxBounds,
-  };
+  }), [
+    rootNote, scaleName, displayFormat, preferFlats, noteSemanticMap,
+    highlightNotes, boxBounds, shapePolygons, wrappedNotes,
+    chordTones, chordRoot, colorNotes, hiddenNotes,
+    activePattern, cagedShapesKey, npsPosition, fingeringPattern, shapeScope, visibleFullChordMatches,
+    chordHighlightPositions, showChordConnectors, chordBoxBounds
+  ]);
 }

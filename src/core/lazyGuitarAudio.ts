@@ -22,6 +22,10 @@ export function setGuitarMutePreference(mute: boolean): void {
   });
 }
 
+export function prefetchAudioModule(): void {
+  void loadAudioModule();
+}
+
 export function setGuitarAudioErrorHandler(
   nextHandler: ((message: string) => void) | undefined,
 ): void {
