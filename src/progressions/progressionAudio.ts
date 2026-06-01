@@ -97,6 +97,45 @@ export function extendFunkVoicing(
   return [...voicing, ...added];
 }
 
+/**
+ * Rootless funk "color grip" tones per chord quality, as semitone offsets above
+ * the chord root. Compact guide-tone + color shapes — the root (offset 0) is
+ * intentionally omitted because the funk bass covers it (no low-register mud).
+ * Major deliberately uses 6/9 (no b7) so a tonic chord is coloured without being
+ * turned into a clashing dominant. Qualities not listed get the plain triad.
+ *   +3 = b3,  +4 = 3,  +9 = 6,  +10 = b7,  +11 = maj7,  +14 = 9
+ */
+const FUNK_COLOR_TONES: Record<string, readonly number[]> = {
+  "7": [4, 10, 14], // dominant: 3 / b7 / 9 — the classic "E9" grip
+  M: [4, 9, 14], // major: 3 / 6 / 9 — 6-9 colour, NO b7 (would clash on a tonic)
+  m: [3, 10, 14], // minor: b3 / b7 / 9 — m9
+  m7: [3, 10, 14], // m7: b3 / b7 / 9 — m9
+  maj7: [4, 11, 14], // maj7: 3 / 7 / 9 — maj9
+};
+
+/**
+ * Build a compact, rootless, voice-led funk colour voicing for a chord. Pure.
+ * Maps the quality's colour tones to note names and realises them voice-led near
+ * `prevVoicing` (via getNearestInversion) so the grip lands in the same register
+ * as the surrounding comp — no register jump. Falls back to the plain voice-led
+ * triad when the quality has no defined grip (dim/aug/sus/6). Returns [] for an
+ * unknown root.
+ */
+export function buildFunkColorVoicing(
+  root: string,
+  quality: string,
+  prevVoicing?: string[],
+): string[] {
+  const rootIndex = NOTES.indexOf(root);
+  if (rootIndex < 0) return [];
+  const offsets = FUNK_COLOR_TONES[quality];
+  if (!offsets) {
+    return resolveChordVoicing(root, quality, undefined, prevVoicing);
+  }
+  const noteNames = offsets.map((o) => NOTES[(((rootIndex + o) % 12) + 12) % 12]);
+  return getNearestInversion(prevVoicing ?? [], noteNames, PROGRESSION_CHORD_ROOT_OCTAVE);
+}
+
 export function resolveBassLineNotes(
   root: string,
   quality: string,

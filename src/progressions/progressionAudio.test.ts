@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, extendFunkVoicing } from "./progressionAudio";
+import { resolveBassLineNotes, resolveChordVoicing, resolveBassNoteForRole, extendFunkVoicing, buildFunkColorVoicing } from "./progressionAudio";
 
 describe("resolveChordVoicing", () => {
   it("stacks the C Major Triad as C-E-G at octave 3", () => {
@@ -155,5 +155,60 @@ describe("extendFunkVoicing", () => {
   it("returns the voicing unchanged for an unknown root or empty voicing", () => {
     expect(extendFunkVoicing([], "C", "M")).toEqual([]);
     expect(extendFunkVoicing(["C3"], "H", "M")).toEqual(["C3"]);
+  });
+});
+
+describe("buildFunkColorVoicing", () => {
+  const PC: Record<string, number> = { C: 0, "C#": 1, D: 2, "D#": 3, E: 4, F: 5, "F#": 6, G: 7, "G#": 8, A: 9, "A#": 10, B: 11 };
+  const pcSet = (notes: readonly string[]) => new Set(notes.map((n) => n.replace(/-?\d+$/, "")));
+  const midi = (n: string) => { const m = n.match(/^([A-G]#?)(-?\d+)$/)!; return PC[m[1]] + (parseInt(m[2], 10) + 1) * 12; };
+
+  it("dominant 7 grip is a rootless 3 / b7 / 9 (the E9 grip)", () => {
+    const v = buildFunkColorVoicing("G", "7");
+    expect(v).toHaveLength(3);
+    const pcs = pcSet(v);
+    expect(pcs).toEqual(new Set(["B", "F", "A"])); // 3=B, b7=F, 9=A
+    expect(pcs.has("F")).toBe(true); // dominant MUST carry the b7 color
+    expect(pcs.has("G")).toBe(false); // rootless — the bass covers the root
+  });
+
+  it("major grip is 3 / 6 / 9 and never adds a b7 (no tonic clash)", () => {
+    const v = buildFunkColorVoicing("C", "M");
+    expect(v).toHaveLength(3);
+    const pcs = pcSet(v);
+    expect(pcs).toEqual(new Set(["E", "A", "D"])); // 3 / 6 / 9
+    expect(pcs.has("A#")).toBe(false); // clash guard: NO b7 on a major chord
+    expect(pcs.has("C")).toBe(false); // rootless
+  });
+
+  it("minor grip is a rootless b3 / b7 / 9 (m9)", () => {
+    const v = buildFunkColorVoicing("A", "m");
+    expect(v).toHaveLength(3);
+    expect(pcSet(v)).toEqual(new Set(["C", "G", "B"])); // b3=C, b7=G, 9=B
+    expect(pcSet(v).has("A")).toBe(false);
+  });
+
+  it("every defined grip omits the chord root (rootless)", () => {
+    for (const [root, quality] of [["C", "7"], ["D", "M"], ["E", "m"], ["F", "m7"], ["G", "maj7"]] as const) {
+      expect(pcSet(buildFunkColorVoicing(root, quality)).has(root), `${root}${quality}`).toBe(false);
+    }
+  });
+
+  it("voice-leads the grip near the previous voicing (no register jump)", () => {
+    const prev = ["G3", "B3", "D4"];
+    const v = buildFunkColorVoicing("C", "7", prev);
+    const lo = Math.min(...v.map(midi)), hi = Math.max(...v.map(midi));
+    const prevLo = Math.min(...prev.map(midi)), prevHi = Math.max(...prev.map(midi));
+    expect(lo).toBeGreaterThanOrEqual(prevLo - 12);
+    expect(hi).toBeLessThanOrEqual(prevHi + 12);
+  });
+
+  it("falls back to the plain voice-led triad for a quality without a grip", () => {
+    // dim has no funk grip → delegates to resolveChordVoicing (the plain triad).
+    expect(buildFunkColorVoicing("C", "dim")).toEqual(resolveChordVoicing("C", "dim", undefined, undefined));
+  });
+
+  it("returns [] for an unknown root", () => {
+    expect(buildFunkColorVoicing("H", "7")).toEqual([]);
   });
 });
