@@ -162,8 +162,8 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     label: "Funk Scratch",
     // Researched chicken-scratch (Jimmy Nolen / James Brown): a single root-note
     // anchor on the one, one plain chord stab on the 2, then two syncopated
-    // color (extended) upstroke stabs on the "&" of 3 and "&" of 4, with muted
-    // ghost 16ths weaving between. Down on numbers/"&", up on "e"/"a".
+    // color (rootless funk grip) downstroke stabs on the "&" of 3 and "&" of 4,
+    // with muted ghost 16ths weaving between. Down on numbers/"&", up on "e"/"a".
     hits: [
       { beat: 0, velocity: 0.9, direction: "down", articulation: "root" },
       { beat: 0.5, velocity: 0.24, direction: "down", articulation: "muted" },
