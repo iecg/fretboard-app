@@ -270,6 +270,66 @@ describe("buildAllLayers", () => {
       expect(STAB_STRUM_DURATION_SEC).toBeGreaterThan(MUTED_STRUM_DURATION_SEC * 4);
     });
   });
+
+  describe("drum variation gating (absolute bar)", () => {
+    // Two 2-bar steps = 4 absolute bars (0..3). At 60bpm each bar is 4s.
+    const fourBarSteps = [
+      step({ id: "a", duration: { value: 2, unit: "bar" } }),
+      step({ id: "b", index: 1, root: "G", duration: { value: 2, unit: "bar" } }),
+    ];
+
+    it("fires fill-every-4 only on the 4th absolute bar (turnaround), not every bar", async () => {
+      const base = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: [] });
+      const withFill = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: ["fill-every-4"] });
+
+      const snares = (b: typeof base) => b.drums.filter((d) => d.value.type === "snare");
+      // The fill adds its 4-snare flurry exactly ONCE (one firing bar), not 4×.
+      expect(snares(withFill).length - snares(base).length).toBe(4);
+
+      // …and those 4 extra snares all land inside bar 3 (absolute), i.e. [12,16)s.
+      const inBar3 = (b: typeof base) => snares(b).filter((d) => d.time >= 12 && d.time < 16).length;
+      expect(inBar3(withFill) - inBar3(base)).toBe(4);
+      // Nothing added in bars 0..2 ([0,12)s).
+      const before = (b: typeof base) => snares(b).filter((d) => d.time < 12).length;
+      expect(before(withFill)).toBe(before(base));
+    });
+
+    it("keeps open-hat-and-of-4 firing every bar (backwards-compatible)", async () => {
+      const base = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: [] });
+      const withOpenHat = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: ["open-hat-and-of-4"] });
+      const openHats = (b: typeof base) => b.drums.filter((d) => d.value.type === "openHat").length;
+      // interval 1 → one open-hat per bar across all 4 bars.
+      expect(openHats(withOpenHat) - openHats(base)).toBe(4);
+    });
+
+    it("adds nothing when no variations are assigned (no-op)", async () => {
+      const a = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: [] });
+      const b = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: [] });
+      expect(a.drums).toEqual(b.drums);
+    });
+
+    it("is deterministic for the same input", async () => {
+      const a = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: ["fill-every-4"] });
+      const b = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: ["fill-every-4"] });
+      expect(a.drums).toEqual(b.drums);
+    });
+
+    it("counts an unavailable bar toward the absolute index (turnaround stays aligned)", async () => {
+      // [2-bar C][1-bar unavailable][1-bar G] → absolute bars 0,1,(2 rest),3.
+      // fill-every-4 (phase 3) must fire on absolute bar 3 = the final G bar (12..16s).
+      const steps = [
+        step({ id: "a", duration: { value: 2, unit: "bar" } }),
+        step({ id: "r", index: 1, unavailable: true, root: null, quality: null, duration: { value: 1, unit: "bar" } }),
+        step({ id: "g", index: 2, root: "G", duration: { value: 1, unit: "bar" } }),
+      ];
+      const base = await buildAllLayersAsync({ ...baseInput, steps, drumVariations: [] });
+      const withFill = await buildAllLayersAsync({ ...baseInput, steps, drumVariations: ["fill-every-4"] });
+      const snares = (b: typeof base) => b.drums.filter((d) => d.value.type === "snare");
+      const inBar3 = (b: typeof base) => snares(b).filter((d) => d.time >= 12 && d.time < 16).length;
+      expect(snares(withFill).length - snares(base).length).toBe(4);
+      expect(inBar3(withFill) - inBar3(base)).toBe(4);
+    });
+  });
 });
 
 describe("articulationToDurationSec", () => {

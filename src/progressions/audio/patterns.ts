@@ -77,6 +77,9 @@ export interface DrumVariation {
   id: string;
   label: string;
   barInterval: number;
+  /** Which bar of the `barInterval` cycle this fires on (default 0). A
+   *  variation fires on absolute bar N when N % barInterval === (barPhase ?? 0). */
+  barPhase?: number;
   pattern: CatalogDrumPattern;
 }
 
@@ -418,6 +421,7 @@ export const DRUM_VARIATIONS: readonly DrumVariation[] = [
     id: "fill-every-4",
     label: "Fill Every 4 Bars",
     barInterval: 4,
+    barPhase: 3, // turnaround: fires on the 4th bar of each 4-bar group
     pattern: {
       id: "fill-every-4-pattern",
       label: "Fill",
@@ -447,7 +451,8 @@ export const DRUM_VARIATIONS: readonly DrumVariation[] = [
   {
     id: "crash-bar-1",
     label: "Crash on Bar 1",
-    barInterval: 1,
+    barInterval: 4,
+    barPhase: 0, // fires on the 1st bar of each 4-bar group
     pattern: {
       id: "crash-bar-1-pattern",
       label: "Crash",
@@ -473,6 +478,18 @@ export function getDrumPattern(id: string): CatalogDrumPattern | undefined {
 
 export function getDrumVariation(id: string): DrumVariation | undefined {
   return DRUM_VARIATIONS.find((v) => v.id === id);
+}
+
+/**
+ * Pure gating predicate: does `variation` fire on the given absolute bar index?
+ * Total — a non-positive `barInterval` never fires (no divide-by-zero / nonsense).
+ */
+export function variationFiresOnBar(
+  variation: DrumVariation,
+  absoluteBar: number,
+): boolean {
+  if (variation.barInterval <= 0) return false;
+  return absoluteBar % variation.barInterval === (variation.barPhase ?? 0);
 }
 
 // ─── Utility Functions ───────────────────────────────────────────────────────

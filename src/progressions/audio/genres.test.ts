@@ -68,7 +68,7 @@ describe("genre drum variations", () => {
     expect(getGenreStyle("rock")!.drumVariations).toContain("open-hat-and-of-4");
   });
 
-  it("does NOT assign fill-every-4 to any genre (barInterval not yet honored)", () => {
+  it("does NOT assign fill-every-4 to any genre (genre default sets deferred)", () => {
     for (const g of GENRE_STYLES) {
       expect(g.drumVariations, `genre ${g.id}`).not.toContain("fill-every-4");
     }
