@@ -4,7 +4,6 @@ import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
 import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
-import { recordFretboardNoteRender } from "./fretboardNoteRenderCounter";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
 const CAGED_SHAPE_CSS_VAR: Record<string, string> = {
@@ -57,8 +56,6 @@ export const FretboardNote = memo(function FretboardNote({
   degreeColorsEnabled,
   onNoteClick,
 }: FretboardNoteProps) {
-  recordFretboardNoteRender();
-
   const {
     stringIndex,
     fretIndex,

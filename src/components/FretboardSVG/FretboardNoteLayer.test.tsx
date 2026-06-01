@@ -1,9 +1,24 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it } from "vitest";
+import { memo, type ComponentProps } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
-import { __getFretboardNoteRenderCount, __resetFretboardNoteRenderCount } from "./fretboardNoteRenderCounter";
 import { axe } from "../../test-utils/a11y";
+
+// Per-note render attribution: spy on FretboardNote, recording the note key each
+// time it actually renders. The spy is wrapped in `memo` so it bails on
+// unchanged props exactly like the real component — without that, it would
+// record every note on every layer render and defeat the assertion.
+const noteRenders = vi.hoisted(() => [] as string[]);
+vi.mock("./FretboardNote", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./FretboardNote")>();
+  return {
+    FretboardNote: memo((props: ComponentProps<typeof actual.FretboardNote>) => {
+      noteRenders.push(`${props.note.stringIndex}-${props.note.fretIndex}`);
+      return <actual.FretboardNote {...props} />;
+    }),
+  };
+});
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 import {
   CHORD_ROOT_HALO_RADIUS_PX,
@@ -72,17 +87,18 @@ function renderLayer(
 
 describe("FretboardNoteLayer per-note memoization", () => {
   beforeEach(() => {
-    __resetFretboardNoteRenderCount();
+    noteRenders.length = 0;
   });
 
+  const fourStableNotes = (): RenderedFretboardNote[] => [
+    makeNote("note-active", { stringIndex: 0, fretIndex: 0, cx: 10 }),
+    makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 20 }),
+    makeNote("note-active", { stringIndex: 2, fretIndex: 2, cx: 30 }),
+    makeNote("note-active", { stringIndex: 3, fretIndex: 3, cx: 40 }),
+  ];
+
   it("re-renders only the note whose object reference changed", () => {
-    // Stable references for all notes.
-    const notes: RenderedFretboardNote[] = [
-      makeNote("note-active", { stringIndex: 0, fretIndex: 0, cx: 10 }),
-      makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 20 }),
-      makeNote("note-active", { stringIndex: 2, fretIndex: 2, cx: 30 }),
-      makeNote("note-active", { stringIndex: 3, fretIndex: 3, cx: 40 }),
-    ];
+    const notes = fourStableNotes();
 
     const { rerender } = render(
       <svg>
@@ -91,8 +107,8 @@ describe("FretboardNoteLayer per-note memoization", () => {
     );
 
     // Initial render: every note rendered once.
-    expect(__getFretboardNoteRenderCount()).toBe(notes.length);
-    __resetFretboardNoteRenderCount();
+    expect(noteRenders).toHaveLength(notes.length);
+    noteRenders.length = 0;
 
     // Swap exactly ONE note's object reference; all others keep identity.
     const nextNotes = notes.slice();
@@ -105,7 +121,44 @@ describe("FretboardNoteLayer per-note memoization", () => {
     );
 
     // Only the single changed note should re-render — memo skips the other 3.
-    expect(__getFretboardNoteRenderCount()).toBe(1);
+    expect(noteRenders).toEqual(["2-2"]);
+  });
+
+  it("a referentially-stable onNoteClick does not defeat the per-note memo", () => {
+    // Defined once, outside any re-render — the real FretboardSVG passes a
+    // useCallback-stable handler, and this guards that load-bearing assumption.
+    const onNoteClick = () => {};
+    const notes = fourStableNotes();
+
+    const { rerender } = render(
+      <svg>
+        <FretboardNoteLayer
+          notes={notes}
+          noteBubblePx={40}
+          displayFormat="notes"
+          onNoteClick={onNoteClick}
+        />
+      </svg>,
+    );
+
+    expect(noteRenders).toHaveLength(notes.length);
+    noteRenders.length = 0;
+
+    const nextNotes = notes.slice();
+    nextNotes[1] = makeNote("note-active", { stringIndex: 1, fretIndex: 1, cx: 77 });
+
+    rerender(
+      <svg>
+        <FretboardNoteLayer
+          notes={nextNotes}
+          noteBubblePx={40}
+          displayFormat="notes"
+          onNoteClick={onNoteClick}
+        />
+      </svg>,
+    );
+
+    expect(noteRenders).toEqual(["1-1"]);
   });
 });
 
