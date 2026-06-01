@@ -219,6 +219,12 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
   --faceplate-accent: var(--neon-cyan);
   --faceplate-accent-glow: var(--glow-cyan-sm);
+  /* Progression-card sunken surfaces — dark values reproduce the historical
+     inline expressions so dark mode is unchanged. Light values (in the
+     modern-light block) route through the warm surface ladder instead. */
+  --faceplate-inset: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  --faceplate-key: color-mix(in srgb, var(--text-main) 3%, transparent);
+  --faceplate-surface: var(--faceplate-bg-elevated);
 
   /* DAW control recipe — compact cyan-on-navy interactive surface. Generalizes
      the TransportBar --tb-* pattern for shared input controls (toggles,
@@ -338,6 +344,12 @@
   --faceplate-shadow: 0 1px 0 rgb(255 255 255 / 0.02) inset, 0 18px 40px -28px rgb(0 0 0 / 0.7);
   --faceplate-accent: var(--neon-cyan);
   --faceplate-accent-glow: var(--glow-cyan-sm);
+  /* Progression-card sunken surfaces — dark values reproduce the historical
+     inline expressions so dark mode is unchanged. Light values (in the
+     modern-light block) route through the warm surface ladder instead. */
+  --faceplate-inset: color-mix(in srgb, var(--faceplate-bg) 60%, transparent);
+  --faceplate-key: color-mix(in srgb, var(--text-main) 3%, transparent);
+  --faceplate-surface: var(--faceplate-bg-elevated);
 
   /* DAW control — dark mode: navy substrate, bright cyan accent, neon glow.
      Re-declared explicitly to mirror the faceplate token convention. */
