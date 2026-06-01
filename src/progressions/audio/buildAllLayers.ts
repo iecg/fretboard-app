@@ -2,7 +2,7 @@ import {
   resolveBassNoteForRole,
   resolveChordVoicing,
   resolveBassLineNotes,
-  extendFunkVoicing,
+  buildFunkColorVoicing,
 } from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 import {
@@ -186,21 +186,17 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     if (voicing.length > 0) {
       lastVoicing = voicing;
     }
-    // The plain (non-voice-led) voicing is the register-safe base for funk
-    // extensions AND the source of the single-note root anchor. Computed only
-    // when the pattern needs it (a color-stab or root hit), to avoid a second
-    // resolveChordVoicing call on non-funk patterns.
-    const needsPlainVoicing = !!chordPattern?.hits.some(
-      (h) => h.articulation === "color-stab" || h.articulation === "root",
-    );
-    const plainVoicing = needsPlainVoicing
-      ? resolveChordVoicing(root, quality)
-      : voicing;
-    const spicyVoicing = needsPlainVoicing
-      ? extendFunkVoicing(plainVoicing, root, quality)
+    // Split the funk voicing intents: the "root" anchor needs the plain triad's
+    // root note; the "color-stab" needs a voice-led rootless funk grip in the
+    // current chord's register. Computed only when the pattern uses each hit.
+    const needsRootAnchor = !!chordPattern?.hits.some((h) => h.articulation === "root");
+    const needsColor = !!chordPattern?.hits.some((h) => h.articulation === "color-stab");
+    const plainVoicing = needsRootAnchor ? resolveChordVoicing(root, quality) : voicing;
+    const colorVoicing = needsColor
+      ? buildFunkColorVoicing(root, quality, lastVoicing)
       : voicing;
     const rootNoteVoicing =
-      needsPlainVoicing && plainVoicing.length > 0 ? [plainVoicing[0]] : voicing;
+      needsRootAnchor && plainVoicing.length > 0 ? [plainVoicing[0]] : voicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
     const isBarUnit = step.duration.unit === "bar";
@@ -241,7 +237,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             value: {
               voicing:
                 hit.articulation === "color-stab"
-                  ? spicyVoicing
+                  ? colorVoicing
                   : hit.articulation === "root"
                     ? rootNoteVoicing
                     : voicing,

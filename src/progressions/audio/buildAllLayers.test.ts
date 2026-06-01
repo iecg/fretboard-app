@@ -6,6 +6,7 @@ import {
   STAB_STRUM_DURATION_SEC,
   ROOT_STRUM_DURATION_SEC,
 } from "./buildAllLayers";
+import { buildFunkColorVoicing, resolveChordVoicing } from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
@@ -184,7 +185,7 @@ describe("buildAllLayers", () => {
     expect(approachBar2?.value.note).not.toBe(approachBar1?.value.note);
   });
 
-  it("voices funk hits by articulation: root=1 note, stab=plain, color-stab=spicy", async () => {
+  it("voices funk hits by articulation: root=1 note, stab=plain, color-stab=funk grip", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "funk-scratch",
@@ -194,7 +195,8 @@ describe("buildAllLayers", () => {
     const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
     expect(at(0).value.voicing).toEqual(["C3"]); // root anchor on the one
     expect(at(1).value.voicing).toEqual(["C3", "E3", "G3"]); // plain stab on 2
-    expect(at(2.5).value.voicing).toEqual(["C3", "E3", "G3", "A#3", "D4"]); // color-stab (dom9)
+    // color-stab uses the voice-led rootless funk grip, voice-led to the bar's triad.
+    expect(at(2.5).value.voicing).toEqual(buildFunkColorVoicing("C", "M", ["C3", "E3", "G3"]));
   });
 
   it("maps funk durations: root short, stab/color ring, ghost chokes", async () => {
@@ -212,9 +214,9 @@ describe("buildAllLayers", () => {
     ).toBe(true);
   });
 
-  it("keeps funk color-stab spice in the root-octave register regardless of the previous chord", async () => {
-    // Regression guard: color-stab spice is built from the NON-voice-led plain
-    // voicing, so extensions never drift below the chord on later bars.
+  it("voice-leads funk color-stabs into the current chord's register (rootless grip)", async () => {
+    // The colour grip is voice-led to the CURRENT bar's triad, so it sits with the
+    // comp instead of jumping to a fixed root-position extension stack.
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "funk-scratch",
@@ -225,7 +227,12 @@ describe("buildAllLayers", () => {
     });
     // Bar 2 starts at time 4; its color-stab on the "&" of 3 is at time 6.5.
     const bar2Color = out.chordStrums.find((s) => s.time === 6.5)!;
-    expect(bar2Color.value.voicing).toEqual(["F3", "A3", "C4", "D#4", "G4"]);
+    // Bar 2's lastVoicing = F major voice-led to the C triad; the grip voice-leads to that.
+    const fVoicing = resolveChordVoicing("F", "M", undefined, ["C3", "E3", "G3"]);
+    expect(bar2Color.value.voicing).toEqual(buildFunkColorVoicing("F", "M", fVoicing));
+    // Rootless: the grip never contains the chord root pitch class.
+    const pcs = new Set(bar2Color.value.voicing.map((n) => n.replace(/-?\d+$/, "")));
+    expect(pcs.has("F")).toBe(false);
   });
 
   describe("chord strum durationSec emission", () => {
