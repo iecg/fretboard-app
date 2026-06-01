@@ -41,10 +41,6 @@ interface ChordHit {
    *  "color-stab" rings a chord with funk extensions; "muted" chokes a plain
    *  chord short (chicken-scratch ghost). Omitted rings the patch default. */
   articulation?: ChordArticulation;
-  /** Bossa LH/RH split (used when the pattern's voicing is "rootless-jazz"):
-   *  "bass-root"/"bass-fifth" play a single low note (LH); "chord" plays the
-   *  rootless RH voicing. Omitted behaves as "chord". */
-  voiceRole?: "bass-root" | "bass-fifth" | "chord";
 }
 
 export interface ChordPattern {
@@ -223,23 +219,18 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     label: "Bossa Comp",
     bars: 2,
     voicing: "rootless-jazz",
-    // LH bass (root on beat 1, fifth on beat 3) + RH rootless chords on the
-    // off-beats. Authentic 2-bar arc: bar 1 is the basic sparse comp (2 stabs),
-    // bar 2 intensifies into a busier run of anticipated off-beat stabs (4).
-    // Every hit is short (no sustain) — a plucky, detached comp.
+    // Rooted chord stabs on the off-beats only — the piano carries its own bass
+    // note (root below the grip) here, while the upright bassline holds beats 1
+    // & 3, so the two no longer double. Authentic 2-bar arc: bar 1 is the basic
+    // sparse comp (2 stabs), bar 2 intensifies (3 anticipated stabs). All short.
     hits: [
-      // bar 1 — basic: bass on 1 & 3, chord stabs on the & of 2 and & of 4
-      { beat: 0, velocity: 0.6, voiceRole: "bass-root" },
-      { beat: 1.5, velocity: 0.5, voiceRole: "chord" },
-      { beat: 2, velocity: 0.55, voiceRole: "bass-fifth" },
-      { beat: 3.5, velocity: 0.55, voiceRole: "chord" },
-      // bar 2 — busier: chord stabs on the & of 1, 2 and 4, anticipating the
-      // following beats for forward momentum.
-      { beat: 4, velocity: 0.6, voiceRole: "bass-root" },
-      { beat: 4.5, velocity: 0.5, voiceRole: "chord" },
-      { beat: 5.5, velocity: 0.5, voiceRole: "chord" },
-      { beat: 6, velocity: 0.55, voiceRole: "bass-fifth" },
-      { beat: 7.5, velocity: 0.55, voiceRole: "chord" },
+      // bar 1 — basic: the & of 2 and & of 4
+      { beat: 1.5, velocity: 0.5 },
+      { beat: 3.5, velocity: 0.55 },
+      // bar 2 — busier: the & of 1, 2 and 4, anticipating the following beats
+      { beat: 4.5, velocity: 0.5 },
+      { beat: 5.5, velocity: 0.5 },
+      { beat: 7.5, velocity: 0.55 },
     ],
   },
 ];

@@ -298,7 +298,7 @@ describe("buildAllLayers", () => {
     expect(crossSticks).toEqual([0, 1.5, 3, 5, 6.5]);
   });
 
-  it("plays the bossa comp's bar-2 syncopations on the second bar", async () => {
+  it("plays the bossa comp off-beat chord stabs, busier in the second bar", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
       drumPatternId: "bossa",
@@ -306,7 +306,7 @@ describe("buildAllLayers", () => {
       bassPatternId: "bossa",
       steps: [step({ duration: { value: 2, unit: "bar" } })],
     });
-    expect(out.chordStrums.map((s) => s.time)).toEqual([0, 1.5, 2, 3.5, 4, 4.5, 5.5, 6, 7.5]);
+    expect(out.chordStrums.map((s) => s.time)).toEqual([1.5, 3.5, 4.5, 5.5, 7.5]);
   });
 
   it("leaves a 1-bar pattern (rock) emitting identical hits on every bar", async () => {
@@ -366,7 +366,7 @@ describe("buildAllLayers", () => {
       expect(a.drums).toEqual(b.drums);
     });
 
-  it("voices the bossa comp as LH bass (single notes) + RH rootless chords", async () => {
+  it("voices the bossa comp as rooted chords (root carried under the grip)", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "bossa-comp",
@@ -375,9 +375,9 @@ describe("buildAllLayers", () => {
       steps: [step({ duration: { value: 2, unit: "bar" } })], // C major
     });
     const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
-    expect(at(0).value.voicing).toEqual(["C3"]); // bass-root (LH, octave 3)
-    expect(at(2).value.voicing).toEqual(["G3"]); // bass-fifth (LH, octave 3)
-    expect(at(1.5).value.voicing).toEqual(["B3", "D4", "E4", "G4"]); // RH rootless chord
+    // Each off-beat stab is a rooted voicing: root C3 under the rootless grip.
+    expect(at(1.5).value.voicing).toEqual(["C3", "B3", "D4", "E4", "G4"]);
+    expect(out.chordStrums.every((s) => s.value.voicing[0] === "C3")).toBe(true); // root carried
     expect(out.chordStrums.every((s) => s.value.style === undefined)).toBe(true); // all short, no sustain
   });
 
