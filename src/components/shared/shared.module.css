@@ -501,9 +501,6 @@
   user-select: none;
 }
 
-.control-section:has(> .field-hint:last-child) + .control-section {
-  margin-top: -0.45rem;
-}
 
 .lens-hint {
   font-size: 0.75rem;
