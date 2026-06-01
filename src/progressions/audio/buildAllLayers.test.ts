@@ -367,7 +367,30 @@ describe("buildAllLayers", () => {
       expect(a.drums).toEqual(b.drums);
     });
 
-    it("is deterministic for the bossa 2-bar cell across a 4-bar span (drums, bass, comp)", async () => {
+    it("voices the bossa comp as rootless jazz chords (no root note)", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "bossa-comp",
+      drumPatternId: "bossa",
+      bassPatternId: "bossa",
+      steps: [step({ duration: { value: 2, unit: "bar" } })], // C major
+    });
+    // C major → rootless maj9 in the middle register: E4 / B4 / D5, no C.
+    expect(out.chordStrums[0].value.voicing).toEqual(["E4", "B4", "D5"]);
+    expect(out.chordStrums.every((s) => !s.value.voicing.some((n) => n.startsWith("C") && !n.startsWith("C#")))).toBe(true);
+  });
+
+  it("leaves a default-voicing comp (jazz) using the standard rooted voicing", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "jazz-comp",
+      steps: [step({ duration: { value: 1, unit: "bar" } })], // C major
+    });
+    // Default path: resolveChordVoicing keeps the root present (C3/E3/G3).
+    expect(out.chordStrums[0].value.voicing.some((n) => n === "C3")).toBe(true);
+  });
+
+  it("is deterministic for the bossa 2-bar cell across a 4-bar span (drums, bass, comp)", async () => {
       const bossaInput = {
         ...baseInput,
         steps: fourBarSteps,

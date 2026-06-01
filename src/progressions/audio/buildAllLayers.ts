@@ -3,6 +3,7 @@ import {
   resolveChordVoicing,
   resolveBassLineNotes,
   buildFunkColorVoicing,
+  buildBossaColorVoicing,
 } from "../progressionAudio";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 import {
@@ -206,6 +207,12 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       : voicing;
     const rootNoteVoicing =
       needsRootAnchor && plainVoicing.length > 0 ? [plainVoicing[0]] : voicing;
+    // Rootless jazz comp voicing (bossa) — opt-in per pattern. Falls back to the
+    // default voicing for every other comp.
+    const compVoicing =
+      chordPattern?.voicing === "rootless-jazz"
+        ? buildBossaColorVoicing(root, quality, lastVoicing)
+        : voicing;
     const bassLineNotes = resolveBassLineNotes(root, quality);
 
     const eventBeats = isBarUnit ? input.beatsPerBar : stepBeats;
@@ -248,7 +255,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
                   ? colorVoicing
                   : hit.articulation === "root"
                     ? rootNoteVoicing
-                    : voicing,
+                    : compVoicing,
               velocity,
               style: hit.style,
               direction: hit.direction,
