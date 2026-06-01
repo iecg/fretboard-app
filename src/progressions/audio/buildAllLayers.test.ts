@@ -271,6 +271,18 @@ describe("buildAllLayers", () => {
     });
   });
 
+  it("emits cross-stick drum events for the bossa clave pattern", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      drumPatternId: "bossa",
+      chordPatternId: "ballad-whole",
+      steps: [step({ duration: { value: 1, unit: "bar" } })],
+    });
+    const crossSticks = out.drums.filter((d) => d.value.type === "crossStick");
+    // Bar 1 (3-side) of the son clave: beats 0, 1.5, 3 → times 0, 1.5, 3 at 60bpm.
+    expect(crossSticks.map((d) => d.time)).toEqual([0, 1.5, 3]);
+  });
+
   describe("drum variation gating (absolute bar)", () => {
     // Two 2-bar steps = 4 absolute bars (0..3). At 60bpm each bar is 4s.
     const fourBarSteps = [

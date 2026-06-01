@@ -19,7 +19,7 @@ import {
 } from "./patterns";
 import { applyJitter } from "./humanize";
 
-type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride";
+type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride" | "crossStick";
 type StrumStyle = "staccato" | "sustained";
 type StrumDirection = "down" | "up";
 
@@ -125,6 +125,7 @@ function collectDrumHits(pattern: CatalogDrumPattern): VoicedDrumHit[] {
   for (const h of pattern.hats) out.push({ ...h, type: "hihat" });
   for (const h of pattern.openHats ?? []) out.push({ ...h, type: "openHat" });
   for (const h of pattern.ride ?? []) out.push({ ...h, type: "ride" });
+  for (const h of pattern.crossStick ?? []) out.push({ ...h, type: "crossStick" });
   return out;
 }
 
