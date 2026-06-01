@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom } from "./practiceLensAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -649,5 +649,36 @@ describe("anticipationActiveAtom", () => {
       stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: true,
     });
     expect(store.get(anticipationActiveAtom)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeLeadInWindowMs / isInLeadInWindow
+// ---------------------------------------------------------------------------
+
+describe("computeLeadInWindowMs", () => {
+  it("returns the proportional window for a long step", () => {
+    expect(computeLeadInWindowMs(2000)).toBe(1000);
+  });
+  it("clamps up to the readable floor for a short step", () => {
+    expect(computeLeadInWindowMs(800)).toBe(600);
+  });
+  it("never exceeds the step duration", () => {
+    expect(computeLeadInWindowMs(400)).toBe(400);
+  });
+  it("returns 0 for a non-positive step", () => {
+    expect(computeLeadInWindowMs(0)).toBe(0);
+    expect(computeLeadInWindowMs(-100)).toBe(0);
+  });
+});
+
+describe("isInLeadInWindow", () => {
+  it("is true once elapsed fraction crosses the window start", () => {
+    expect(isInLeadInWindow(0.49, 2000)).toBe(false);
+    expect(isInLeadInWindow(0.5, 2000)).toBe(true);
+    expect(isInLeadInWindow(0.95, 2000)).toBe(true);
+  });
+  it("is false for a non-positive step", () => {
+    expect(isInLeadInWindow(0.9, 0)).toBe(false);
   });
 });

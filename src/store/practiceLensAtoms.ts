@@ -108,6 +108,37 @@ export function isInAnticipationWindow(
   return localFraction >= (stepDurationBeats - 1) / stepDurationBeats;
 }
 
+/** Proportion of the step the lead-in ramp occupies (the final half). */
+const LEAD_IN_PROPORTION = 0.5;
+/** Minimum readable lead-in duration, so fast tempi still show the preview. */
+const LEAD_IN_FLOOR_MS = 600;
+
+/**
+ * Length of the lead-in preview window for a step of `stepDurationMs`.
+ * Proportional (the final {@link LEAD_IN_PROPORTION} of the step) but clamped
+ * up to {@link LEAD_IN_FLOOR_MS} and never longer than the step itself.
+ * Pure so it can be unit-tested without atom plumbing.
+ */
+export function computeLeadInWindowMs(stepDurationMs: number): number {
+  if (stepDurationMs <= 0) return 0;
+  const proportional = stepDurationMs * LEAD_IN_PROPORTION;
+  return Math.min(stepDurationMs, Math.max(proportional, LEAD_IN_FLOOR_MS));
+}
+
+/**
+ * True when the playhead is inside the lead-in window. `localFraction` is the
+ * [0,1] fraction of the step elapsed (same source as the anticipation check).
+ */
+export function isInLeadInWindow(
+  localFraction: number,
+  stepDurationMs: number,
+): boolean {
+  const windowMs = computeLeadInWindowMs(stepDurationMs);
+  if (windowMs <= 0) return false;
+  const startFraction = 1 - windowMs / stepDurationMs;
+  return localFraction >= startFraction;
+}
+
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
 
