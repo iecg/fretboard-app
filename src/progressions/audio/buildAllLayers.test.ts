@@ -444,6 +444,75 @@ describe("buildAllLayers", () => {
     });
   });
 
+  describe("end-of-phrase bass walk (§3.4)", () => {
+    const cToG = [
+      step({ root: "C" }),
+      step({ id: "g", index: 1, root: "G" }),
+    ];
+    const bassAt = (out: Awaited<ReturnType<typeof buildAllLayersAsync>>, time: number) =>
+      out.bass.find((e) => Math.abs(e.time - time) < 1e-6);
+    const pitchClass = (note: string) => note.replace(/[0-9]/g, "");
+
+    it("adds a chromatic approach on beat 3 of the turnaround bar (root-fifth, into G → F#)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "root-fifth",
+      });
+      const approach = bassAt(out, 3);
+      expect(approach).toBeDefined();
+      expect(pitchClass(approach!.value.note)).toBe("F#");
+      expect(bassAt(out, 2)).toBeDefined();
+      expect(out.bass.filter((e) => e.time > 3 && e.time < 4)).toHaveLength(0);
+    });
+
+    it("does not fire on the final bar of a non-looping progression (no next chord)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "root-fifth",
+      });
+      expect(bassAt(out, 7)).toBeUndefined();
+    });
+
+    it("loop-wraps the target on the last bar (G → C approach = B) when looping", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: true, bassPatternId: "root-fifth",
+      });
+      const approach = bassAt(out, 7);
+      expect(approach).toBeDefined();
+      expect(pitchClass(approach!.value.note)).toBe("B");
+    });
+
+    it("does not fire when the next chord shares the current root (no real change)", async () => {
+      const cToC = [step({ root: "C" }), step({ id: "c2", index: 1, root: "C" })];
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToC, loop: false, bassPatternId: "root-fifth",
+      });
+      expect(bassAt(out, 3)).toBeUndefined();
+    });
+
+    it("leaves a non-flagged pattern unchanged (pedal keeps its own root on beat 3)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "pedal",
+      });
+      const beat3 = bassAt(out, 3);
+      expect(beat3).toBeDefined();
+      expect(pitchClass(beat3!.value.note)).toBe("C");
+    });
+
+    it("applies to bossa too (into G → F# on beat 3)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "bossa",
+      });
+      const approach = bassAt(out, 3);
+      expect(approach).toBeDefined();
+      expect(pitchClass(approach!.value.note)).toBe("F#");
+    });
+
+    it("is deterministic for the same input", async () => {
+      const a = await buildAllLayersAsync({ ...baseInput, steps: cToG, loop: true, bassPatternId: "root-fifth" });
+      const b = await buildAllLayersAsync({ ...baseInput, steps: cToG, loop: true, bassPatternId: "root-fifth" });
+      expect(a.bass).toEqual(b.bass);
+    });
+  });
+
   describe("nextResolvableRoot", () => {
     it("returns the immediate next root", () => {
       const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];
