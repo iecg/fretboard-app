@@ -74,6 +74,7 @@ export const FretboardNote = memo(function FretboardNote({
     scaleDegree,
     degreeColor,
     fullChordShape,
+    transitionRole,
   } = note;
 
   const baseRadius = noteBubblePx / 2;
@@ -182,6 +183,8 @@ export const FretboardNote = memo(function FretboardNote({
       data-note-guide-tone={isGuideTone || undefined}
       data-full-chord-mode={fullChordShape || undefined}
       data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
+      data-transition-role={transitionRole ?? undefined}
+      data-in-region={note.isInRegion ? "true" : undefined}
       data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       style={{
@@ -197,16 +200,15 @@ export const FretboardNote = memo(function FretboardNote({
         ...(fullChordStyle as React.CSSProperties),
       } as React.CSSProperties}
     >
-      {applyLensEmphasis.glowColor && (
-        <circle
-          className={styles["note-glow-underlay"]}
-          cx={cx}
-          cy={cy}
-          r={r}
-          style={{ fill: applyLensEmphasis.glowColor }}
-          aria-hidden="true"
-        />
-      )}
+      <circle
+        className={styles["note-glow-underlay"]}
+        cx={cx}
+        cy={cy}
+        r={r}
+        style={applyLensEmphasis.glowColor ? { fill: applyLensEmphasis.glowColor } : undefined}
+        data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
+        aria-hidden="true"
+      />
       {shapeEl}
       {displayFormat !== "none" && (
         <text x={cx} y={cy}>

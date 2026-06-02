@@ -188,15 +188,27 @@ describe("FretboardNoteLayer", () => {
   });
 
   // Each role maps to a single SVG primitive — verify the others stay absent.
-  it.each<{ role: NoteClass; primitive: "circle" | "polygon" | "path"; count: number }>([
-    { role: "note-active", primitive: "circle", count: 1 },
-    { role: "chord-tone-outside-scale", primitive: "polygon", count: 1 },
-    { role: "note-blue", primitive: "polygon", count: 1 },
-  ])("$role renders exactly $count <$primitive> element with no other shape primitive", ({ role, primitive, count }) => {
+  // The underlay <circle> (data-glow) is always rendered, so every note carries
+  // at least 1 circle regardless of its shape primitive. Polygon/path notes have
+  // 1 underlay circle + 0 other shapes; circle notes have 2 circles (underlay +
+  // shape). Only polygon and path are mutually exclusive.
+  it.each<{ role: NoteClass; primitive: "circle" | "polygon" | "path"; shapeCount: number; underlayCircles: number }>([
+    { role: "note-active", primitive: "circle", shapeCount: 1, underlayCircles: 1 },
+    { role: "chord-tone-outside-scale", primitive: "polygon", shapeCount: 1, underlayCircles: 1 },
+    { role: "note-blue", primitive: "polygon", shapeCount: 1, underlayCircles: 1 },
+  ])("$role renders exactly $shapeCount <$primitive> shape element and always-present underlay circle", ({ role, primitive, shapeCount, underlayCircles }) => {
     const { container } = renderLayer([makeNote(role)]);
-    const other = (["circle", "polygon", "path"] as const).filter((p) => p !== primitive);
-    expect(container.querySelectorAll(primitive).length).toBe(count);
-    other.forEach((p) => expect(container.querySelectorAll(p).length).toBe(0));
+    // Underlay circle is always present (data-glow="on"|"off")
+    expect(container.querySelectorAll("circle[data-glow]").length).toBe(underlayCircles);
+    // No path or polygon where not expected
+    const otherShapes = (["polygon", "path"] as const).filter((p) => p !== primitive);
+    if (primitive === "circle") {
+      // Shape circle + underlay circle = 2 total
+      expect(container.querySelectorAll("circle").length).toBe(shapeCount + underlayCircles);
+    } else {
+      expect(container.querySelectorAll(primitive).length).toBe(shapeCount);
+    }
+    otherShapes.forEach((p) => expect(container.querySelectorAll(p).length).toBe(0));
   });
 
   it("applies correct data-note-role attribute for non-inactive notes", () => {
@@ -293,9 +305,18 @@ describe("FretboardNoteLayer", () => {
     expect(underlay?.getAttribute("style")).toContain("fill");
   });
 
-  it("does not render glow underlay when glowColor is absent", () => {
+  // Intentional change: the underlay is now always rendered so CSS can fade it
+  // in/out without mount/unmount. When glowColor is absent it carries data-glow="off"
+  // and has no inline fill (CSS keeps it at opacity 0).
+  it("always renders glow underlay even when glowColor is absent (data-glow='off')", () => {
     const { container } = renderLayer([makeNote("note-active")]);
-    expect(container.querySelector(".note-glow-underlay")).toBeNull();
+    const underlay = container.querySelector(".note-glow-underlay");
+    expect(underlay).not.toBeNull();
+    expect(underlay?.getAttribute("data-glow")).toBe("off");
+    expect(underlay?.getAttribute("aria-hidden")).toBe("true");
+    // No inline fill when glowColor is absent
+    const style = underlay?.getAttribute("style");
+    expect(style ?? "").not.toContain("fill");
   });
 
   it("marks note groups with CSS animation mode", () => {
