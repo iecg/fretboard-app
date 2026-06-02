@@ -433,18 +433,40 @@
   fill: transparent;
 }
 
-/* The incoming ghost ramps opacity/scale AND slides in from its paired source
-   note's position. --vl-dx/--vl-dy (SVG user units, set inline by FretboardNote)
-   default to 0, so unpaired ghosts simply fade/scale in place. Transform-only
-   slide stays on the compositor; reduced-motion disables this animation below. */
+/* Voice-leading slide — the WHOLE incoming ghost (crisp dashed ring + label +
+   glow) travels from its paired source note into place over the lead-in window,
+   so the eye tracks the moving voice. The crisp ring must carry the motion: when
+   only the blurred glow underlay slid, it read as a fade, not a slide. --vl-dx/
+   --vl-dy (SVG user units, set inline by FretboardNote) default to 0, so unpaired
+   ghosts just fade in place. Transform/opacity only → compositor-driven;
+   reduced-motion disables it below. */
+.fretboard-note[data-transition-role="incoming"][data-in-region="true"] {
+  animation: note-incoming-slide var(--lead-in-duration, 0.6s) ease-out both;
+}
+
+/* Glow underlay: fade + slight grow in PLACE (the soft halo). The travel is
+   carried by the note group via note-incoming-slide, so the halo no longer
+   translates on its own. */
 @keyframes note-incoming-ramp {
+  from { opacity: 0;   transform: scale(0.8); }
+  to   { opacity: 0.7; transform: scale(1); }
+}
+
+/* Whole-ghost travel: fade in over the first third (so the ring is visibly
+   present before it has moved far), then glide from the source offset to 0. */
+@keyframes note-incoming-slide {
   from {
     opacity: 0;
-    transform: translate(calc(var(--vl-dx, 0) * 1px), calc(var(--vl-dy, 0) * 1px)) scale(0.8);
+    transform: translate(calc(var(--vl-dx, 0) * 1px), calc(var(--vl-dy, 0) * 1px));
   }
+
+  30% {
+    opacity: 1;
+  }
+
   to {
-    opacity: 0.7;
-    transform: translate(0, 0) scale(1);
+    opacity: 1;
+    transform: translate(0, 0);
   }
 }
 
@@ -470,6 +492,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .fretboard-note[data-transition-role="incoming"][data-in-region="true"] {
+    animation: none;       /* no slide — the ghost appears statically at the target */
+  }
   .fretboard-note[data-transition-role="incoming"][data-in-region="true"] .note-glow-underlay {
     animation: none;
     opacity: 0.6;          /* static ghost — information preserved, motion removed */
