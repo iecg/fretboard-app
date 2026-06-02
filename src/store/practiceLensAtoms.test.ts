@@ -8,8 +8,8 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom } from "./progressionAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom } from "./practiceLensAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
@@ -716,5 +716,60 @@ describe("transition delta atoms", () => {
     store.set(progressionStepsAtom, []);
     expect(store.get(incomingTonesAtom).size).toBe(0);
     expect(store.get(departingTonesAtom).size).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// leadInActiveAtom / leadInDurationMsAtom
+// ---------------------------------------------------------------------------
+
+describe("leadInActiveAtom / leadInDurationMsAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("leadInDurationMsAtom matches computeLeadInWindowMs of the active step", () => {
+    const store = makeDefaultStore();
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    expect(store.get(leadInDurationMsAtom)).toBe(computeLeadInWindowMs(stepMs));
+  });
+
+  it("is false when not playing", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, false);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(false);
+  });
+
+  it("is false while paused", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: true });
+    expect(store.get(leadInActiveAtom)).toBe(false);
+  });
+
+  it("flips true once the playhead crosses the window start", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const windowMs = computeLeadInWindowMs(stepMs);
+    const startFraction = 1 - windowMs / stepMs;
+    // just before the window start (clamped to >= 0)
+    const before = Math.max(0, startFraction - 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: before, localFraction: before, paused: false });
+    // Only assert "before is false" when there is genuinely a gap (window < whole step):
+    if (startFraction > 0) {
+      expect(store.get(leadInActiveAtom)).toBe(false);
+    }
+    const after = Math.min(0.999, startFraction + 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: after, localFraction: after, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(true);
   });
 });

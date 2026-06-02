@@ -38,6 +38,7 @@ import {
   beatsPerBarAtom,
   progressionLoopEnabledAtom,
   progressionPlayingAtom,
+  progressionStepDurationMsAtom,
 } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import {
@@ -503,6 +504,30 @@ export const anticipationActiveAtom = atom((get): boolean => {
   const frame = get(progressionVisualFrameAtom);
   if (!frame || frame.paused) return false;
   return isInAnticipationWindow(frame.localFraction, get(activeStepDurationBeatsAtom));
+});
+
+/**
+ * Length of the active step's lead-in preview window, in milliseconds. Written
+ * to the `--lead-in-duration` CSS custom property so the ghost ramp animation
+ * lasts exactly the window. Changes only when the active step / tempo changes.
+ */
+export const leadInDurationMsAtom = atom((get): number =>
+  computeLeadInWindowMs(get(progressionStepDurationMsAtom)),
+);
+
+/**
+ * Discrete lead-in phase. Like `anticipationActiveAtom` it reads the per-frame
+ * visual frame, but its VALUE only flips at the window threshold, so Jotai
+ * subscribers re-render at most twice per step — never per animation frame.
+ */
+export const leadInActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  return isInLeadInWindow(
+    frame.localFraction,
+    get(progressionStepDurationMsAtom),
+  );
 });
 
 /**
