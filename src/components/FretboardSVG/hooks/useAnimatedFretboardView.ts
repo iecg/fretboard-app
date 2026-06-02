@@ -44,7 +44,6 @@ export function buildAnimatedFretboardNotes({
       leadContext = {
         notePc: note.noteName,
         commonWithNext: emphasisContext.commonWithNext,
-        nextGuideTones: emphasisContext.nextGuideTones,
         nextChordTones: emphasisContext.nextChordTones,
         incomingTones: emphasisContext.incomingTones,
         departingTones: emphasisContext.departingTones,

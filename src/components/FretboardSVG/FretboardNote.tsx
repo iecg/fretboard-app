@@ -185,7 +185,6 @@ export const FretboardNote = memo(function FretboardNote({
       data-note-tension={isTension || undefined}
       data-note-guide-tone={isGuideTone || undefined}
       data-full-chord-mode={fullChordShape || undefined}
-      data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
       data-transition-role={transitionRole ?? undefined}
       data-in-region={note.isInRegion ? "true" : undefined}
       data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}

@@ -302,7 +302,6 @@ describe("getEmphasis - voice-leading emphasis", () => {
   const baseLeadContext: LeadLensContext = {
     notePc: "A",
     commonWithNext: new Set<string>(),
-    nextGuideTones: new Set<string>(),
     nextChordTones: new Set<string>(),
     incomingTones: new Set<string>(),
     departingTones: new Set<string>(),

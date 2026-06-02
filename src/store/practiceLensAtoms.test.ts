@@ -8,8 +8,8 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom } from "./practiceLensAtoms";
+import { progressionStepsAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
@@ -343,7 +343,6 @@ describe("nextChordTonesAtom / commonTonesWithNextAtom", () => {
       [displayedStepIndexPrimitiveAtom, 1],
     ]);
     expect(store.get(nextChordTonesAtom)).toEqual(new Set());
-    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
   });
 
   it("nextChordTonesAtom still wraps around when loop is enabled and active step is the last step", () => {
@@ -479,66 +478,6 @@ describe("beatPositionAtom (Task 4.3)", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// nextChordGuideTonesAtom
-// ---------------------------------------------------------------------------
-
-describe("nextChordGuideTonesAtom", () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  function makeDefaultStore() {
-    const store = createStore();
-    const unsub = store.sub(progressionStepsAtom, () => {});
-    unsub();
-    return store;
-  }
-
-  it("returns the 3rd and 7th of the next chord (I→V in C Major: G Major has no 7th → returns 3rd B)", () => {
-    const store = makeDefaultStore();
-    const guideTones = store.get(nextChordGuideTonesAtom);
-    expect(guideTones).toEqual(new Set(["B"]));
-  });
-
-  it("returns both 3rd and 7th for a seventh chord", () => {
-    const store = makeDefaultStore();
-    const steps = store.get(progressionStepsAtom);
-    const updatedSteps = steps.map((s, i) =>
-      i === 1 ? { ...s, qualityOverride: "7" } : s
-    );
-    store.set(progressionStepsAtom, updatedSteps);
-    const guideTones = store.get(nextChordGuideTonesAtom);
-    expect(guideTones.has("B")).toBe(true);
-    expect(guideTones.has("F")).toBe(true);
-    expect(guideTones.size).toBe(2);
-  });
-
-  it("returns empty set when next chord has no guide tones (power chord)", () => {
-    const store = makeDefaultStore();
-    const steps = store.get(progressionStepsAtom);
-    const updatedSteps = steps.map((s, i) =>
-      i === 1 ? { ...s, qualityOverride: "5" } : s
-    );
-    store.set(progressionStepsAtom, updatedSteps);
-    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
-  });
-
-  it("returns empty set when progression is empty", () => {
-    const store = makeDefaultStore();
-    store.set(progressionStepsAtom, []);
-    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
-  });
-
-  it("wraps around: last step's next guide tones come from the first step", () => {
-    const store = makeDefaultStore();
-    store.set(activeProgressionStepIndexAtom, 3);
-    const guideTones = store.get(nextChordGuideTonesAtom);
-    expect(guideTones.has("E")).toBe(true);
-    expect(guideTones.size).toBe(1);
-  });
-});
-
 describe("chord-visual derivations follow displayedProgressionStepIndexAtom during playback", () => {
   it("activeResolvedProgressionStepAtom mirrors RAF-written index while playing", () => {
     const store = createStore();
@@ -606,49 +545,6 @@ describe("noteSemanticMapAtom — referential stability", () => {
     const second = store.get(noteSemanticMapAtom);
 
     expect(second).toBe(first);
-  });
-});
-
-describe("isInAnticipationWindow", () => {
-  it("is false when stepDurationBeats is non-positive", () => {
-    expect(isInAnticipationWindow(0.99, 0)).toBe(false);
-    expect(isInAnticipationWindow(0.99, -1)).toBe(false);
-  });
-  it("is false before the last beat", () => {
-    // 4-beat step: threshold = 3/4 = 0.75
-    expect(isInAnticipationWindow(0.74, 4)).toBe(false);
-  });
-  it("is true at/after the start of the last beat", () => {
-    expect(isInAnticipationWindow(0.75, 4)).toBe(true);
-    expect(isInAnticipationWindow(0.99, 4)).toBe(true);
-  });
-  it("treats a 1-beat step as always in-window", () => {
-    expect(isInAnticipationWindow(0, 1)).toBe(true);
-  });
-});
-
-describe("anticipationActiveAtom", () => {
-  it("is false when not playing", () => {
-    const store = createStore();
-    store.set(progressionPlayingStateAtom, false);
-    store.set(progressionVisualFrameAtom, {
-      stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: false,
-    });
-    expect(store.get(anticipationActiveAtom)).toBe(false);
-  });
-  it("is false when there is no frame", () => {
-    const store = createStore();
-    store.set(progressionPlayingStateAtom, true);
-    store.set(progressionVisualFrameAtom, null);
-    expect(store.get(anticipationActiveAtom)).toBe(false);
-  });
-  it("is false when paused", () => {
-    const store = createStore();
-    store.set(progressionPlayingStateAtom, true);
-    store.set(progressionVisualFrameAtom, {
-      stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: true,
-    });
-    expect(store.get(anticipationActiveAtom)).toBe(false);
   });
 });
 

@@ -390,9 +390,9 @@
   opacity: 0.68;
 }
 
-/* Lead lens emphasis — applied via data-lens-emphasis attribute (Task 4.5).
-   radiusBoost/opacityBoost are applied inline by FretboardNoteLayer.tsx via CSS transform scale.
-   Glow is now a dedicated underlay element (.note-glow-underlay) instead of an SVG filter. */
+/* Lead lens emphasis — radiusBoost/opacityBoost are applied inline by
+   FretboardNoteLayer.tsx via CSS transform scale. Glow is a dedicated underlay
+   element (.note-glow-underlay, keyed off data-glow) instead of an SVG filter. */
 
 /* Voice-leading glow underlay — fades/scales on the compositor (no SVG filter animation).
    Selector is `.fretboard-note circle.note-glow-underlay` (specificity 0,2,1, placed after
