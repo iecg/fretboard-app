@@ -156,6 +156,24 @@ export function isInLeadInWindow(
   return localFraction >= startFraction;
 }
 
+/**
+ * Fraction [0,1] of the active STEP elapsed, derived from the per-step deadline
+ * (`Date.now() + stepDurationMs`, set on each step advance) rather than the
+ * visual frame's `localFraction` — which the timeline resets every BAR, so a
+ * multi-bar chord would otherwise re-open the lead-in each bar. Pure: pass an
+ * explicit `nowMs` so it is unit-testable. Returns 0 when there is no deadline
+ * or a non-positive duration ("not started" → no lead-in).
+ */
+export function stepRelativeFraction(
+  deadlineMs: number | null,
+  nowMs: number,
+  stepDurationMs: number,
+): number {
+  if (deadlineMs == null || stepDurationMs <= 0) return 0;
+  const elapsed = stepDurationMs - (deadlineMs - nowMs);
+  return Math.min(1, Math.max(0, elapsed / stepDurationMs));
+}
+
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
 
@@ -556,11 +574,17 @@ export const leadInActiveAtom = atom((get): boolean => {
   // Audio has crossed into a later step than the fretboard is showing — hold
   // the highlight through the deferred-render gap until the shape catches up.
   if (frame.stepIndex !== get(displayedProgressionStepIndexAtom)) return true;
-  return isInLeadInWindow(
-    frame.localFraction,
-    get(progressionStepDurationMsAtom),
-    get(progressionBarDurationMsAtom),
+  // Step-relative progress, NOT frame.localFraction (which the timeline resets
+  // each bar — a multi-bar chord would re-open the window every bar). Reading
+  // `frame` above keeps this recomputing per frame; Date.now() is the live
+  // clock (same pattern as beatPositionAtom).
+  const stepMs = get(progressionStepDurationMsAtom);
+  const stepFraction = stepRelativeFraction(
+    get(progressionStepDeadlineAtom),
+    Date.now(),
+    stepMs,
   );
+  return isInLeadInWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
 });
 
 /**
