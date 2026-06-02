@@ -110,6 +110,24 @@ describe("FretboardNote — always-rendered glow underlay", () => {
   });
 });
 
+describe("FretboardNote — guide-target ring", () => {
+  it("renders a guide-target ring when the note's transition role is guide-target", () => {
+    const glowColor = "var(--note-incoming)" as `var(--${string})`;
+    const note = makeNote({
+      transitionRole: "guide-target",
+      applyLensEmphasis: { glowColor, radiusBoost: 1.15, opacityBoost: 1, transitionRole: "guide-target" },
+    });
+    const { container } = renderNote(note);
+    expect(container.querySelector("[data-guide-ring]")).not.toBeNull();
+  });
+
+  it("renders no guide-target ring for a normal note", () => {
+    const note = makeNote({ transitionRole: undefined });
+    const { container } = renderNote(note);
+    expect(container.querySelector("[data-guide-ring]")).toBeNull();
+  });
+});
+
 describe("FretboardNote — glow underlay sizing", () => {
   // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
   const BASE_RADIUS = 20;

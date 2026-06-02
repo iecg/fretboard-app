@@ -212,6 +212,16 @@ export const FretboardNote = memo(function FretboardNote({
         data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
         aria-hidden="true"
       />
+      {transitionRole === "guide-target" && (
+        <circle
+          className={styles["note-guide-ring"]}
+          data-guide-ring="true"
+          cx={cx}
+          cy={cy}
+          r={r + 4}
+          aria-hidden="true"
+        />
+      )}
       {shapeEl}
       {displayFormat !== "none" && (
         <text x={cx} y={cy}>
