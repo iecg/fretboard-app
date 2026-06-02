@@ -10,6 +10,7 @@ import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { leadInActiveAtom, leadInDurationMsAtom } from "../../store/practiceLensAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -327,6 +328,8 @@ export function FretboardSVG({
   const intervalPairs = useAtomValue(intervalPairsAtom);
   const bpm = useAtomValue(progressionTempoBpmAtom);
   const beatDurationSec = bpm > 0 ? 60 / bpm : 0.5;
+  const leadInActive = useAtomValue(leadInActiveAtom);
+  const leadInDurationMs = useAtomValue(leadInDurationMsAtom);
 
   // Playback snapshot is subscribed here (inside the lazy boundary) so that
   // frame ticks stay contained to FretboardSVG rather than re-rendering the
@@ -618,8 +621,12 @@ export function FretboardSVG({
       className={styles["fretboard-board"]}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       data-full-chord-mode={fullChordVoicings?.length ? "true" : undefined}
+      data-transition-phase={leadInActive ? "lead-in" : undefined}
       data-testid="fretboard-svg"
-      style={{ "--beat-duration": `${beatDurationSec}s` } as CSSProperties}
+      style={{
+        "--beat-duration": `${beatDurationSec}s`,
+        "--lead-in-duration": `${leadInDurationMs}ms`,
+      } as CSSProperties}
     >
       <div
         className={styles["fretboard-neck"]}

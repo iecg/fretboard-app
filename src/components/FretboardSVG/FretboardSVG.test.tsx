@@ -757,4 +757,44 @@ describe("FretboardSVG/FretboardSVG", () => {
       getHitButtons().forEach((btn) => expect(btn.disabled).toBe(true));
     });
   });
+
+  describe("lead-in board signals", () => {
+    it("exposes --lead-in-duration and data-transition-phase during the lead-in window", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(beatsPerBarAtom, 4);
+      store.set(setProgressionPlayingAtom, true);
+      store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
+
+      const { container } = renderWithStore(
+        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        store,
+      );
+      const board = container.querySelector('[data-testid="fretboard-svg"]') as HTMLElement;
+      expect(board.getAttribute("data-transition-phase")).toBe("lead-in");
+      expect(board.style.getPropertyValue("--lead-in-duration")).not.toBe("");
+    });
+
+    it("data-transition-phase is absent when the frame is outside the lead-in window", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(beatsPerBarAtom, 4);
+      store.set(setProgressionPlayingAtom, true);
+      // localFraction 0.0 is well before the lead-in window starts (~0.5)
+      store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.0, localFraction: 0.0, paused: false });
+
+      const { container } = renderWithStore(
+        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        store,
+      );
+      const board = container.querySelector('[data-testid="fretboard-svg"]') as HTMLElement;
+      expect(board.getAttribute("data-transition-phase")).toBeNull();
+    });
+  });
 });
