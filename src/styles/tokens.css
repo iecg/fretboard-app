@@ -198,7 +198,8 @@
   :root {
     --size-touch-target: 2.75rem; /* 44px */
     --control-height: 44px;
-    --mobile-bottom-nav-safe-zone: calc(3.5rem + env(safe-area-inset-bottom));
+    /* 3.5rem = empirical height of .placementBottom .tabList — keep in sync with Inspector.module.css */
+    --mobile-bottom-nav-safe-zone: calc(3.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
