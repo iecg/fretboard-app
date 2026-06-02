@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
+import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -83,6 +83,9 @@ export const FretboardNote = memo(function FretboardNote({
   const r = noteShape === "squircle"
     ? reduceSquircleRadius(rawRadius)
     : reduceCircleRadius(rawRadius);
+  // The glow underlay is enlarged for squircles so the soft halo reads around
+  // the shape instead of being hidden under its filled corners.
+  const glowR = glowUnderlayRadiusPx(r, noteShape === "squircle");
 
   const fullChordStyle = fullChordShape
     ? {
@@ -204,7 +207,7 @@ export const FretboardNote = memo(function FretboardNote({
         className={styles["note-glow-underlay"]}
         cx={cx}
         cy={cy}
-        r={r}
+        r={glowR}
         style={applyLensEmphasis.glowColor ? { fill: applyLensEmphasis.glowColor } : undefined}
         data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
         aria-hidden="true"

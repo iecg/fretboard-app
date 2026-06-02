@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
+import { RADIUS_SCALE_CHORD_TONE, RADIUS_SCALE_NOTE_ACTIVE } from "@fretflow/core";
 import { FretboardNote } from "./FretboardNote";
+import {
+  GLOW_RADIUS_SCALE_SQUIRCLE,
+  reduceCircleRadius,
+  reduceSquircleRadius,
+} from "./utils/noteSizing";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
 function makeNote(overrides: Partial<RenderedFretboardNote> = {}): RenderedFretboardNote {
@@ -101,5 +107,25 @@ describe("FretboardNote — always-rendered glow underlay", () => {
     // Inline fill style is set to the glowColor token
     const style = underlay?.getAttribute("style") ?? "";
     expect(style).toContain("fill");
+  });
+});
+
+describe("FretboardNote — glow underlay sizing", () => {
+  // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
+  const BASE_RADIUS = 20;
+
+  it("enlarges the underlay for squircle notes so the halo clears the filled shape", () => {
+    const { container } = renderNote(makeNote({ noteClass: "chord-tone-in-scale" }));
+    const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
+    const shapeR = reduceSquircleRadius(BASE_RADIUS * RADIUS_SCALE_CHORD_TONE);
+    expect(underlayR).toBeGreaterThan(shapeR);
+    expect(underlayR).toBeCloseTo(shapeR * GLOW_RADIUS_SCALE_SQUIRCLE, 5);
+  });
+
+  it("keeps the underlay at the shape radius for circle notes", () => {
+    const { container } = renderNote(makeNote({ noteClass: "note-active" }));
+    const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
+    const shapeR = reduceCircleRadius(BASE_RADIUS * RADIUS_SCALE_NOTE_ACTIVE);
+    expect(underlayR).toBeCloseTo(shapeR, 5);
   });
 });
