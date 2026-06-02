@@ -31,6 +31,13 @@
   display: none;
 }
 
+/* During the lead-in, an in-region incoming ghost is shown (as a ring) even if
+   it is otherwise a hidden out-of-scale position. */
+.fretboard-board[data-transition-phase="lead-in"]
+  .fretboard-note:global(.hidden)[data-transition-role="incoming"][data-in-region="true"] {
+  display: initial;
+}
+
 .fretboard-note:focus {
   outline: none;
 }
@@ -399,28 +406,55 @@
      specificity here, so !important is the robust, intent-correct exemption
      (the file already uses !important for the focus-visible stroke). */
   stroke: none !important;
-  opacity: 0.55;
+  opacity: 0;                 /* default invisible; raised by glow/transition rules */
   transform-box: fill-box;
   transform-origin: center;
   filter: blur(3px);
-  transition: opacity 0.15s ease, fill 0.15s ease;
+  transition: opacity var(--lead-in-duration, 0.3s) ease, fill 0.15s ease;
 }
 
-/* Anticipation pulse — duration matched to one beat via --beat-duration. */
-.fretboard-note[data-lens-emphasis="var(--note-glow-anticipation)"] .note-glow-underlay {
-  animation: note-anticipation-pulse var(--beat-duration, 0.5s) ease-in-out infinite alternate;
+.fretboard-note circle.note-glow-underlay[data-glow="on"] {
+  opacity: 0.55;
 }
 
-@keyframes note-anticipation-pulse {
-  from { opacity: 0.4; transform: scale(1); }
-  to   { opacity: 0.85; transform: scale(1.18); }
+/* Incoming preview — a hollow ghost ring in the dedicated incoming hue that
+   ramps in over the lead-in window, then promotes to solid at the boundary. */
+.fretboard-note[data-transition-role="incoming"] .note-glow-underlay {
+  fill: var(--note-incoming);
+  animation: note-incoming-ramp var(--lead-in-duration, 0.6s) ease-out both;
+}
+
+.fretboard-note[data-transition-role="incoming"] :is(circle, path, polygon) {
+  stroke: var(--note-incoming);
+  stroke-dasharray: 4 3;
+  fill: transparent;
+}
+
+@keyframes note-incoming-ramp {
+  from { opacity: 0;   transform: scale(0.8); }
+  to   { opacity: 0.7; transform: scale(1); }
+}
+
+/* Departing — calm dim; opacity already reduced inline via opacityBoost. */
+.fretboard-note[data-transition-role="departing"] :is(circle, path, polygon) {
+  filter: saturate(0.7);
+  transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+/* Held — steady hold glow, no pulse. */
+.fretboard-note[data-transition-role="held"] .note-glow-underlay[data-glow="on"] {
+  opacity: 0.5;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fretboard-note[data-lens-emphasis="var(--note-glow-anticipation)"] .note-glow-underlay { animation: none; }
+  .fretboard-note[data-transition-role="incoming"] .note-glow-underlay {
+    animation: none;
+    opacity: 0.6;          /* static ghost — information preserved, motion removed */
+  }
+  .fretboard-note circle.note-glow-underlay {
+    transition: none;
+  }
 }
-
-/* Departing: chord tone not in next chord — no glow (opacity already reduced inline). */
 
 /* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */
 .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, path, polygon) {
