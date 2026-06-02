@@ -155,6 +155,7 @@ const areConnectorPropsEqual = (prev: any, next: any) => {
   if (prev.showChordConnectors !== next.showChordConnectors) return false;
   if (prev.connectorMotionMode !== next.connectorMotionMode) return false;
   if (prev.clipPathUrl !== next.clipPathUrl) return false;
+  if (prev.playbackActive !== next.playbackActive) return false;
 
   if (prev.yBounds?.minY !== next.yBounds?.minY || prev.yBounds?.maxY !== next.yBounds?.maxY) return false;
 
@@ -239,6 +240,7 @@ interface ChordConnectorEvaluatorProps {
   connectorMotionMode: import("./motionPolicy").FretboardMotionPolicy["connectorMode"];
   clipPathUrl: string;
   pass: "below" | "above";
+  playbackActive: boolean;
 }
 
 const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
@@ -257,6 +259,7 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
   connectorMotionMode,
   clipPathUrl,
   pass,
+  playbackActive,
 }: ChordConnectorEvaluatorProps) {
   const chordPolylines = useChordConnectorPolylines({
     noteData,
@@ -282,6 +285,7 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
       connectorMotionMode={connectorMotionMode}
       clipPathUrl={clipPathUrl}
       pass={pass}
+      playbackActive={playbackActive}
     />
   );
 }, areConnectorPropsEqual);
@@ -704,6 +708,7 @@ export function FretboardSVG({
               showChordConnectors,
               connectorMotionMode: motionPolicy.connectorMode,
               clipPathUrl: svgDefUrl("fretboard-svg-box"),
+              playbackActive,
             };
             return (
               <>
