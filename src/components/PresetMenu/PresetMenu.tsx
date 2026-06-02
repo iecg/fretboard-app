@@ -119,6 +119,12 @@ export function PresetMenu({
           className={styles["preset-menu-content"]}
           sideOffset={4}
           align="start"
+          collisionPadding={{
+            top: 8,
+            right: 8,
+            bottom: 8,
+            left: 8,
+          }}
         >
           {categories.map((category) => (
             <DropdownMenu.Sub key={category.label}>
@@ -131,6 +137,12 @@ export function PresetMenu({
                   className={styles["preset-menu-content"]}
                   sideOffset={2}
                   alignOffset={-4}
+                  collisionPadding={{
+                    top: 8,
+                    right: 8,
+                    bottom: 8,
+                    left: 8,
+                  }}
                 >
                   {category.options.map((option) => (
                     <MenuOption
@@ -158,6 +170,12 @@ export function PresetMenu({
                     className={styles["preset-menu-content"]}
                     sideOffset={2}
                     alignOffset={-4}
+                    collisionPadding={{
+                      top: 8,
+                      right: 8,
+                      bottom: 8,
+                      left: 8,
+                    }}
                   >
                     {suggestionGroups.map((group, index) => (
                       <DropdownMenu.Group key={group.feel}>
