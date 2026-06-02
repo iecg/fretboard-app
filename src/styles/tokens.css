@@ -16,6 +16,7 @@
   --space-16: 4rem;
 
   --size-touch-target: 2.25rem;
+  --mobile-bottom-nav-safe-zone: 0px;
 
   /* Canonical height for every single-line control container — steppers,
      toggle bars, selects, sliders, list rows, and icon/text buttons all sit
@@ -197,6 +198,7 @@
   :root {
     --size-touch-target: 2.75rem; /* 44px */
     --control-height: 44px;
+    --mobile-bottom-nav-safe-zone: calc(3.5rem + env(safe-area-inset-bottom));
   }
 }
 
