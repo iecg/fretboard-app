@@ -90,6 +90,10 @@ export const STAB_STRUM_DURATION_SEC = 0.4;
 /** Note length (seconds) for the single root-note anchor on the one — a short,
  *  tight pluck, longer than a muted ghost but well short of a ringing stab. */
 export const ROOT_STRUM_DURATION_SEC = 0.12;
+/** Velocity for the §3.4 end-of-phrase chromatic approach note — slightly under
+ *  a downbeat so the leading tone leans into the next chord rather than
+ *  competing with it. */
+const TURNAROUND_APPROACH_VELOCITY = 0.75;
 /** Piano LH bass octave for the bossa comp — an octave above the upright bass. */
 const BOSSA_LH_OCTAVE = 3;
 
@@ -117,6 +121,33 @@ export function articulationToDurationSec(
   }
 }
 
+/**
+ * Find the root the next chord change leads into, scanning forward from
+ * `fromIndex` and skipping rests / unavailable steps. Wraps to the start of
+ * the progression when `loop` is true. Returns undefined when nothing
+ * resolvable follows (end of a non-looping progression, or all-rest tail).
+ * Pure — used to target the §3.4 end-of-phrase chromatic approach note.
+ */
+export function nextResolvableRoot(
+  steps: readonly ResolvedProgressionStep[],
+  fromIndex: number,
+  loop: boolean,
+): string | undefined {
+  const n = steps.length;
+  for (let offset = 1; offset <= n; offset++) {
+    const rawIdx = fromIndex + offset;
+    if (rawIdx >= n && !loop) return undefined;
+    const candidate = steps[rawIdx % n];
+    if (
+      !candidate.unavailable &&
+      candidate.root !== null &&
+      candidate.quality !== null
+    ) {
+      return candidate.root;
+    }
+  }
+  return undefined;
+}
 
 interface VoicedDrumHit extends DrumHit {
   type: DrumVoice;
@@ -193,6 +224,8 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     const quality = step.quality;
     const nextStep = input.steps[stepIndex + 1];
     const nextRoot = nextStep?.root ?? undefined;
+    // §3.4: the chord the next change leads into (loop-aware, skips rests).
+    const turnaroundTarget = nextResolvableRoot(input.steps, stepIndex, input.loop);
 
     const voicing = resolveChordVoicing(root, quality, undefined, lastVoicing);
     if (voicing.length > 0) {
@@ -299,15 +332,45 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
 
       if (bassPattern && bassLineNotes.length > 0) {
         const bassCellBars = bassPattern.bars ?? 1;
-        const hits = isBarUnit && bassCellBars > 1
+        const patternHits = isBarUnit && bassCellBars > 1
           ? sliceCellToBar(bassPattern.hits, absoluteBar % bassCellBars, input.beatsPerBar)
           : repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
+        // §3.4 end-of-phrase walk: on a step's last bar that precedes a real
+        // chord change, opted-in patterns drop their tail (any hit on/after the
+        // bar's last beat) and lead into the next root with one chromatic
+        // approach note. Patterns without the flag are untouched.
+        const isTurnaroundBar =
+          isBarUnit &&
+          isLast &&
+          bassPattern.turnaround === true &&
+          turnaroundTarget !== undefined &&
+          turnaroundTarget !== root;
+        const lastBeat = input.beatsPerBar - 1;
+        const hits = isTurnaroundBar
+          ? [
+              ...patternHits.filter((h) => h.beat < lastBeat),
+              {
+                beat: lastBeat,
+                velocity: TURNAROUND_APPROACH_VELOCITY,
+                note: "chromatic-approach" as const,
+                articulation: "legato" as const,
+              },
+            ]
+          : patternHits;
         for (const hit of hits) {
+          // The synthetic approach note targets the next chord (loop-aware);
+          // every other hit keeps today's behavior exactly.
+          const approachTarget =
+            isTurnaroundBar && hit.note === "chromatic-approach"
+              ? turnaroundTarget
+              : isLast
+                ? nextRoot
+                : root;
           const note = resolveBassNoteForRole(
             root,
             quality,
             hit.note,
-            isLast ? nextRoot : root,
+            approachTarget,
             undefined,
             lastBassNote,
           );

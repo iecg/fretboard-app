@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildAllLayersAsync,
   articulationToDurationSec,
+  nextResolvableRoot,
   MUTED_STRUM_DURATION_SEC,
   STAB_STRUM_DURATION_SEC,
   ROOT_STRUM_DURATION_SEC,
@@ -440,6 +441,155 @@ describe("buildAllLayers", () => {
       const inBar3 = (b: typeof base) => snares(b).filter((d) => d.time >= 12 && d.time < 16).length;
       expect(snares(withFill).length - snares(base).length).toBe(4);
       expect(inBar3(withFill) - inBar3(base)).toBe(4);
+    });
+  });
+
+  describe("end-of-phrase bass walk (§3.4)", () => {
+    const cToG = [
+      step({ root: "C" }),
+      step({ id: "g", index: 1, root: "G" }),
+    ];
+    const bassAt = (out: Awaited<ReturnType<typeof buildAllLayersAsync>>, time: number) =>
+      out.bass.find((e) => Math.abs(e.time - time) < 1e-6);
+    const pitchClass = (note: string) => note.replace(/[0-9]/g, "");
+
+    it("adds a chromatic approach on beat 3 of the turnaround bar (root-fifth, into G → F#)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "root-fifth",
+      });
+      const approach = bassAt(out, 3);
+      expect(approach).toBeDefined();
+      expect(pitchClass(approach!.value.note)).toBe("F#");
+      expect(bassAt(out, 2)).toBeDefined();
+      expect(out.bass.filter((e) => e.time > 3 && e.time < 4)).toHaveLength(0);
+    });
+
+    it("does not fire on the final bar of a non-looping progression (no next chord)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "root-fifth",
+      });
+      expect(bassAt(out, 7)).toBeUndefined();
+    });
+
+    it("loop-wraps the target on the last bar (G → C approach = B) when looping", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: true, bassPatternId: "root-fifth",
+      });
+      const approach = bassAt(out, 7);
+      expect(approach).toBeDefined();
+      expect(pitchClass(approach!.value.note)).toBe("B");
+    });
+
+    it("does not fire when the next chord shares the current root (no real change)", async () => {
+      const cToC = [step({ root: "C" }), step({ id: "c2", index: 1, root: "C" })];
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToC, loop: false, bassPatternId: "root-fifth",
+      });
+      expect(bassAt(out, 3)).toBeUndefined();
+    });
+
+    it("leaves a non-flagged pattern unchanged (pedal keeps its own root on beat 3)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "pedal",
+      });
+      const beat3 = bassAt(out, 3);
+      expect(beat3).toBeDefined();
+      expect(pitchClass(beat3!.value.note)).toBe("C");
+    });
+
+    it("applies to bossa too (into G → F# on beat 3)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "bossa",
+      });
+      const approach = bassAt(out, 3);
+      expect(approach).toBeDefined();
+      expect(pitchClass(approach!.value.note)).toBe("F#");
+    });
+
+    it("is deterministic for the same input", async () => {
+      const a = await buildAllLayersAsync({ ...baseInput, steps: cToG, loop: true, bassPatternId: "root-fifth" });
+      const b = await buildAllLayersAsync({ ...baseInput, steps: cToG, loop: true, bassPatternId: "root-fifth" });
+      expect(a.bass).toEqual(b.bass);
+    });
+
+    it("drops a flagged pattern's native last-beat hit and replaces it with the approach (arpeggiated beat-3 octave → F#)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "arpeggiated",
+      });
+      // Bar 0 (C) turnaround into G: beat-3 octave (C) is replaced by the F# approach.
+      const beat3 = bassAt(out, 3);
+      expect(beat3).toBeDefined();
+      expect(pitchClass(beat3!.value.note)).toBe("F#");
+      // The earlier hits survive (beats 0,1,2 = times 0,1,2).
+      expect(bassAt(out, 1)).toBeDefined();
+      expect(bassAt(out, 2)).toBeDefined();
+    });
+
+    it("fires only on a multi-bar step's final bar, not interior bars (isLast gate)", async () => {
+      const twoBarCThenG = [
+        step({ root: "C", duration: { value: 2, unit: "bar" } }),
+        step({ id: "g", index: 1, root: "G" }),
+      ];
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: twoBarCThenG, loop: false, bassPatternId: "arpeggiated",
+      });
+      // Bar 0 of the 2-bar C step ([0,4)s) is NOT the last bar → keeps its beat-3 octave (C).
+      expect(pitchClass(bassAt(out, 3)!.value.note)).toBe("C");
+      // Bar 1 ([4,8)s) IS the step's last bar before the change to G → F# approach at 7s.
+      expect(pitchClass(bassAt(out, 7)!.value.note)).toBe("F#");
+    });
+
+    it("targets the next resolvable root across a rest, and loop-wraps (root-fifth, [C, rest, G])", async () => {
+      const cRestG = [
+        step({ root: "C" }),
+        step({ id: "r", index: 1, unavailable: true, root: null, quality: null }),
+        step({ id: "g", index: 2, root: "G" }),
+      ];
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cRestG, loop: true, bassPatternId: "root-fifth",
+      });
+      // C bar ([0,4)s): next resolvable root skips the rest → G → F# approach at 3s.
+      expect(pitchClass(bassAt(out, 3)!.value.note)).toBe("F#");
+      // G bar ([8,12)s): loop-wraps to C → B approach at 11s.
+      expect(pitchClass(bassAt(out, 11)!.value.note)).toBe("B");
+    });
+  });
+
+  describe("nextResolvableRoot", () => {
+    it("returns the immediate next root", () => {
+      const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];
+      expect(nextResolvableRoot(steps, 0, false)).toBe("G");
+    });
+
+    it("skips an unavailable/rest step to the next real chord", () => {
+      const steps = [
+        step({ root: "C" }),
+        step({ id: "r", index: 1, unavailable: true, root: null, quality: null }),
+        step({ id: "g", index: 2, root: "G" }),
+      ];
+      expect(nextResolvableRoot(steps, 0, false)).toBe("G");
+    });
+
+    it("loop-wraps to the first root from the last step", () => {
+      const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];
+      expect(nextResolvableRoot(steps, 1, true)).toBe("C");
+    });
+
+    it("returns undefined at the end when not looping", () => {
+      const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];
+      expect(nextResolvableRoot(steps, 1, false)).toBeUndefined();
+    });
+
+    it("returns undefined when no later step is resolvable", () => {
+      const steps = [
+        step({ root: "C" }),
+        step({ id: "r", index: 1, unavailable: true, root: null, quality: null }),
+      ];
+      expect(nextResolvableRoot(steps, 0, false)).toBeUndefined();
+    });
+
+    it("returns undefined for an empty progression", () => {
+      expect(nextResolvableRoot([], 0, true)).toBeUndefined();
     });
   });
 });

@@ -505,6 +505,26 @@ describe("sliceCellToBar", () => {
   });
 });
 
+describe("BASS_PATTERNS turnaround opt-in", () => {
+  const byId = (id: string) => {
+    const found = BASS_PATTERNS.find((p) => p.id === id);
+    if (!found) throw new Error(`missing bass pattern ${id}`);
+    return found;
+  };
+
+  it("enables turnaround on the four idiomatic patterns", () => {
+    for (const id of ["root-fifth", "arpeggiated", "shuffle", "bossa"]) {
+      expect(byId(id).turnaround).toBe(true);
+    }
+  });
+
+  it("leaves turnaround unset on walking (already approaches), pedal, and funk-syncopated", () => {
+    for (const id of ["walking", "pedal", "funk-syncopated"]) {
+      expect(byId(id).turnaround).toBeUndefined();
+    }
+  });
+});
+
 describe("bossa patterns", () => {
   it("rewrites the bossa drum pattern as a 2-bar cell with a bossa-clave cross-stick", () => {
     const bossa = getDrumPattern("bossa")!;
