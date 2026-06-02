@@ -17,10 +17,17 @@ export function useTimelineViewModel() {
   const stepAtoms = useAtomValue(progressionStepAtomsAtom);
   const beatsPerBar = useAtomValue(beatsPerBarAtom);
   const activeStepIndex = useAtomValue(activeProgressionStepIndexAtom);
-  const displayedStepIndex = useAtomValue(fastDisplayedStepIndexPrimitiveAtom);
+  const fastStepIndex = useAtomValue(fastDisplayedStepIndexPrimitiveAtom);
   const currentProgressionBar = useAtomValue(currentProgressionBarAtom);
   const playbackBlockedReason = useAtomValue(progressionPlaybackBlockedReasonAtom);
   const playing = useAtomValue(progressionPlayingAtom);
+
+  // During playback: use the fast (non-transition-wrapped) primitive so the
+  // block highlight advances on the same frame the audio clock crosses into a
+  // new step — no scheduler lag. When stopped/paused: fall back to the logical
+  // editor selection so the active block follows whichever chord the user has
+  // clicked on, not a stale 0 left behind by the visualClock reset.
+  const displayedStepIndex = playing ? fastStepIndex : activeStepIndex;
 
   const staticView = useMemo(
     () => buildTimelineViewModel(steps, beatsPerBar),

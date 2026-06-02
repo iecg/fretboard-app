@@ -232,6 +232,32 @@ describe("ProgressionTrack", () => {
     expect(screen.getAllByRole("button")[0]).not.toHaveAttribute("data-active", "true");
   });
 
+  it("active block follows activeProgressionStepIndexAtom when not playing", async () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ] as never);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    // fastDisplayedStepIndexPrimitiveAtom stays 0 (visualClock resets it on stop)
+
+    render(
+      <Provider store={store}>
+        <ProgressionTrack />
+      </Provider>,
+    );
+
+    expect(screen.getAllByRole("button")[0]).toHaveAttribute("data-active", "true");
+
+    await act(() => {
+      store.set(setProgressionActiveStepIndexAtom, 1);
+    });
+
+    // Block highlight must follow the editor selection, not stay on chord 1
+    expect(screen.getAllByRole("button")[1]).toHaveAttribute("data-active", "true");
+    expect(screen.getAllByRole("button")[0]).not.toHaveAttribute("data-active", "true");
+  });
+
   it("no longer hosts the transport bar — only the timeline", () => {
     const { container } = renderWithAtoms(<ProgressionTrack />, [
       [progressionStepsAtom, fourStepProgression],
