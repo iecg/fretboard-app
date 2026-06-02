@@ -3,10 +3,17 @@ import { getEmphasis, type LeadLensContext } from "../utils/semantics";
 import type { NoteData } from "./useNoteData";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
 import { useEmphasisContext, type EmphasisContext } from "./useEmphasisContext";
+import { computeVoiceLeadingMoves } from "../utils/voiceLeading";
 
 export interface RenderedFretboardNote extends NoteData {
   cx: number;
   cy: number;
+  /**
+   * During the lead-in window, the (source − target) translate the incoming
+   * ghost animates FROM, in SVG user units. Present only on paired moving
+   * voices; absent notes fade/scale in place as before.
+   */
+  voiceLeadOffset?: { dx: number; dy: number };
 }
 
 interface BuildAnimatedFretboardNotesProps {
@@ -120,6 +127,7 @@ function renderedNoteSignature(
     note.degreeColor ?? "",
     note.fullChordShape ?? "",
     note.isInRegion,
+    note.voiceLeadOffset ? `${note.voiceLeadOffset.dx},${note.voiceLeadOffset.dy}` : "",
   ].join("|");
 }
 
@@ -136,16 +144,28 @@ export function buildRenderedFretboardNotes({
     { sig: string; result: RenderedFretboardNote }
   >();
 
-  const result = noteData.map((note) => {
+  // Pass 1: position every note (cx/cy) — needed before voice-leading pairing.
+  const positioned: RenderedFretboardNote[] = noteData.map((note) => {
     const cx = fretCenterX(note.fretIndex);
-    const candidate: RenderedFretboardNote = {
-      ...note,
-      cx,
-      cy: stringYAt(note.stringIndex, cx),
-    };
+    return { ...note, cx, cy: stringYAt(note.stringIndex, cx) };
+  });
 
-    const key = `${note.stringIndex}-${note.fretIndex}`;
-    const sig = renderedNoteSignature(candidate);
+  // Pass 2: pair moving voices (incoming target ← nearest departing/held
+  // source). Empty outside the lead-in window (no incoming roles), so it costs
+  // a couple of filters then bails — no per-frame work.
+  const offsetByKey = new Map<string, { dx: number; dy: number }>();
+  for (const move of computeVoiceLeadingMoves(positioned)) {
+    offsetByKey.set(move.targetKey, { dx: move.dx, dy: move.dy });
+  }
+
+  // Pass 3: attach offsets, then cache by signature for stable references.
+  const result = positioned.map((candidate) => {
+    const key = `${candidate.stringIndex}-${candidate.fretIndex}`;
+    const offset = offsetByKey.get(key);
+    const withOffset = offset
+      ? { ...candidate, voiceLeadOffset: offset }
+      : candidate;
+    const sig = renderedNoteSignature(withOffset);
     const prev = prevCache.get(key);
 
     if (prev && prev.sig === sig) {
@@ -154,8 +174,8 @@ export function buildRenderedFretboardNotes({
       return prev.result;
     }
 
-    nextCache.set(key, { sig, result: candidate });
-    return candidate;
+    nextCache.set(key, { sig, result: withOffset });
+    return withOffset;
   });
 
   renderedNoteCache = nextCache;

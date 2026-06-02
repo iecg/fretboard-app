@@ -235,3 +235,79 @@ describe("buildRenderedFretboardNotes (object identity)", () => {
     expect(b[1]).not.toBe(a[1]);
   });
 });
+
+describe("buildRenderedFretboardNotes — voice-leading offsets", () => {
+  function makeNoteData(
+    o: Partial<NoteData> & Pick<NoteData, "stringIndex" | "fretIndex">,
+  ): NoteData {
+    return {
+      noteName: "C",
+      octave: 4,
+      noteClass: "chord-tone-in-scale",
+      displayName: "C",
+      displayValue: "C",
+      applyDimOpacity: false,
+      applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
+      isInRegion: true,
+      isHidden: false,
+      isTension: false,
+      isGuideTone: false,
+      ...o,
+    };
+  }
+
+  it("stamps voiceLeadOffset on a paired incoming target, not on the source", () => {
+    const noteData = [
+      makeNoteData({ stringIndex: 0, fretIndex: 10, transitionRole: "incoming" }),
+      makeNoteData({ stringIndex: 1, fretIndex: 11, transitionRole: "departing" }),
+    ];
+    // fretCenterX = fret*10, stringYAt = string*20 (module consts in this test file):
+    //   target string0 fret10 -> cx 100, cy 0
+    //   source string1 fret11 -> cx 110, cy 20  (dist hypot(10,20) ≈ 22.4 ≥ 8)
+    const rendered = buildRenderedFretboardNotes({ noteData, fretCenterX, stringYAt });
+    const target = rendered.find((n) => n.stringIndex === 0 && n.fretIndex === 10)!;
+    const source = rendered.find((n) => n.stringIndex === 1 && n.fretIndex === 11)!;
+    expect(target.voiceLeadOffset).toEqual({ dx: 10, dy: 20 });
+    expect(source.voiceLeadOffset).toBeUndefined();
+  });
+
+  it("leaves voiceLeadOffset undefined when no transition roles are present", () => {
+    const noteData = [
+      makeNoteData({ stringIndex: 0, fretIndex: 3 }),
+      makeNoteData({ stringIndex: 1, fretIndex: 4 }),
+    ];
+    const rendered = buildRenderedFretboardNotes({ noteData, fretCenterX, stringYAt });
+    expect(rendered.every((n) => n.voiceLeadOffset === undefined)).toBe(true);
+  });
+});
+
+describe("useAnimatedFretboardView — no per-frame recompute", () => {
+  it("does not re-run when the visual frame advances within the same step", () => {
+    const store = makePlayingStore(0.6); // already inside the lead-in window
+    const wrapper = makeWrapper(store);
+    let renders = 0;
+    renderHook(
+      () => {
+        renders++;
+        const topology = useStaticFretboardTopology(TOPOLOGY_PROPS);
+        return useAnimatedFretboardView({
+          topology,
+          hasChordOverlay: true,
+          fretCenterX,
+          stringYAt,
+        });
+      },
+      { wrapper },
+    );
+    const before = renders;
+    act(() => {
+      store.set(progressionVisualFrameAtom, {
+        stepIndex: 0,
+        globalFraction: 0.35,
+        localFraction: 0.7,
+        paused: false,
+      });
+    });
+    expect(renders).toBe(before); // leadInActive unchanged -> no React re-render
+  });
+});
