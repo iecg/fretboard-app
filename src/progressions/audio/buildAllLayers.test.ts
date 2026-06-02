@@ -511,6 +511,48 @@ describe("buildAllLayers", () => {
       const b = await buildAllLayersAsync({ ...baseInput, steps: cToG, loop: true, bassPatternId: "root-fifth" });
       expect(a.bass).toEqual(b.bass);
     });
+
+    it("drops a flagged pattern's native last-beat hit and replaces it with the approach (arpeggiated beat-3 octave → F#)", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cToG, loop: false, bassPatternId: "arpeggiated",
+      });
+      // Bar 0 (C) turnaround into G: beat-3 octave (C) is replaced by the F# approach.
+      const beat3 = bassAt(out, 3);
+      expect(beat3).toBeDefined();
+      expect(pitchClass(beat3!.value.note)).toBe("F#");
+      // The earlier hits survive (beats 0,1,2 = times 0,1,2).
+      expect(bassAt(out, 1)).toBeDefined();
+      expect(bassAt(out, 2)).toBeDefined();
+    });
+
+    it("fires only on a multi-bar step's final bar, not interior bars (isLast gate)", async () => {
+      const twoBarCThenG = [
+        step({ root: "C", duration: { value: 2, unit: "bar" } }),
+        step({ id: "g", index: 1, root: "G" }),
+      ];
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: twoBarCThenG, loop: false, bassPatternId: "arpeggiated",
+      });
+      // Bar 0 of the 2-bar C step ([0,4)s) is NOT the last bar → keeps its beat-3 octave (C).
+      expect(pitchClass(bassAt(out, 3)!.value.note)).toBe("C");
+      // Bar 1 ([4,8)s) IS the step's last bar before the change to G → F# approach at 7s.
+      expect(pitchClass(bassAt(out, 7)!.value.note)).toBe("F#");
+    });
+
+    it("targets the next resolvable root across a rest, and loop-wraps (root-fifth, [C, rest, G])", async () => {
+      const cRestG = [
+        step({ root: "C" }),
+        step({ id: "r", index: 1, unavailable: true, root: null, quality: null }),
+        step({ id: "g", index: 2, root: "G" }),
+      ];
+      const out = await buildAllLayersAsync({
+        ...baseInput, steps: cRestG, loop: true, bassPatternId: "root-fifth",
+      });
+      // C bar ([0,4)s): next resolvable root skips the rest → G → F# approach at 3s.
+      expect(pitchClass(bassAt(out, 3)!.value.note)).toBe("F#");
+      // G bar ([8,12)s): loop-wraps to C → B approach at 11s.
+      expect(pitchClass(bassAt(out, 11)!.value.note)).toBe("B");
+    });
   });
 
   describe("nextResolvableRoot", () => {
