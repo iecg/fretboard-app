@@ -3,6 +3,7 @@ import { getEmphasis, type LeadLensContext } from "../utils/semantics";
 import type { NoteData } from "./useNoteData";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
 import { useEmphasisContext, type EmphasisContext } from "./useEmphasisContext";
+
 export interface RenderedFretboardNote extends NoteData {
   cx: number;
   cy: number;
@@ -143,6 +144,7 @@ export function buildRenderedFretboardNotes({
     const prev = prevCache.get(key);
 
     if (prev && prev.sig === sig) {
+      // Cache hit — reuse the stable object reference so the memoized per-note renderer can bail.
       nextCache.set(key, prev);
       return prev.result;
     }

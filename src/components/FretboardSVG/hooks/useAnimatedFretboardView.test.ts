@@ -238,7 +238,6 @@ describe("buildRenderedFretboardNotes (object identity)", () => {
   });
 });
 
-
 describe("useAnimatedFretboardView — no per-frame recompute", () => {
   it("does not re-run when the visual frame advances within the same step", () => {
     const store = makePlayingStore(0.6); // already inside the lead-in window
