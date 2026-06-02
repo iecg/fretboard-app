@@ -31,13 +31,6 @@
   display: none;
 }
 
-/* During the lead-in, an in-region incoming ghost is shown (as a ring) even if
-   it is otherwise a hidden out-of-scale position. */
-.fretboard-board[data-transition-phase="lead-in"]
-  .fretboard-note:global(.hidden)[data-transition-role="incoming"][data-in-region="true"] {
-  display: initial;
-}
-
 .fretboard-note:focus {
   outline: none;
 }
@@ -417,93 +410,35 @@
   opacity: 0.55;
 }
 
-/* Incoming preview — a hollow ghost ring in the dedicated incoming hue that
-   ramps in over the lead-in window, then promotes to solid at the boundary.
-   Region-gated: only in-region positions ghost, so out-of-region notes whose
-   pitch class happens to be an incoming tone are not painted across the whole
-   fretboard (matches the "only ghost in-region" design intent). */
-.fretboard-note[data-transition-role="incoming"][data-in-region="true"] .note-glow-underlay {
-  fill: var(--note-incoming);
-  animation: note-incoming-ramp var(--lead-in-duration, 0.6s) ease-out both;
-}
-
-.fretboard-note[data-transition-role="incoming"][data-in-region="true"] :is(circle, path, polygon) {
+/* Guide-target ring — a hollow ring on the next chord's guide tones during the
+   lead-in window. It starts wide + faint and contracts/brightens to "land" on
+   the target exactly at the downbeat: a visual countdown synced to the beat.
+   transform/opacity only -> compositor-driven (no per-frame JS, no perf hit).
+   The ring reuses the incoming hue token, so no new colour is introduced. */
+.note-guide-ring {
+  fill: none;
   stroke: var(--note-incoming);
-  stroke-dasharray: 4 3;
-  fill: transparent;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: note-guide-target-ring var(--lead-in-duration, 0.6s) ease-out both;
 }
 
-/* Voice-leading slide — the WHOLE incoming ghost (crisp dashed ring + label +
-   glow) travels from its paired source note into place over the lead-in window,
-   so the eye tracks the moving voice. The crisp ring must carry the motion: when
-   only the blurred glow underlay slid, it read as a fade, not a slide. --vl-dx/
-   --vl-dy (SVG user units, set inline by FretboardNote) default to 0, so unpaired
-   ghosts just fade in place. Transform/opacity only → compositor-driven;
-   reduced-motion disables it below. */
-.fretboard-note[data-transition-role="incoming"][data-in-region="true"] {
-  animation: note-incoming-slide var(--lead-in-duration, 0.6s) ease-out both;
+@keyframes note-guide-target-ring {
+  from { opacity: 0; transform: scale(2.4); }
+  35%  { opacity: 0.9; }
+  to   { opacity: 0.95; transform: scale(1); }
 }
 
-/* Glow underlay: fade + slight grow in PLACE (the soft halo). The travel is
-   carried by the note group via note-incoming-slide, so the halo no longer
-   translates on its own. */
-@keyframes note-incoming-ramp {
-  from { opacity: 0;   transform: scale(0.8); }
-  to   { opacity: 0.7; transform: scale(1); }
-}
-
-/* Whole-ghost travel: fade in over the first third (so the ring is visibly
-   present before it has moved far), then glide from the source offset to 0. */
-@keyframes note-incoming-slide {
-  from {
-    opacity: 0;
-    transform: translate(calc(var(--vl-dx, 0) * 1px), calc(var(--vl-dy, 0) * 1px));
-  }
-
-  30% {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(0, 0);
-  }
-}
-
-/* Departing — an active chord tone that leaves on the next change. It dims +
-   desaturates GRADUALLY over the lead-in window so it fades out in sync with the
-   incoming ghost ramping in (a cross-dissolve), instead of snapping. The dim
-   target (opacity 0.8, scale 0.95) is applied inline via the emphasis boost;
-   here we only stretch the transition to the full lead-in duration so the change
-   eases across the whole window. Gated to css-motion so reduced-motion snaps. */
-[data-motion="css"] .fretboard-note[data-transition-role="departing"] {
-  transition:
-    opacity var(--lead-in-duration, 0.6s) ease-out,
-    transform var(--lead-in-duration, 0.6s) ease-out;
-}
-.fretboard-note[data-transition-role="departing"] :is(circle, path, polygon) {
-  filter: saturate(0.7);
-  transition: filter var(--lead-in-duration, 0.6s) ease-out;
-}
-
-/* Held — steady hold glow, no pulse. */
-.fretboard-note[data-transition-role="held"] .note-glow-underlay[data-glow="on"] {
-  opacity: 0.5;
-}
-
+/* Reduced motion: no contraction/countdown — show a static ring so the
+   information (which notes are the targets) is preserved without animation. */
 @media (prefers-reduced-motion: reduce) {
-  .fretboard-note[data-transition-role="incoming"][data-in-region="true"] {
-    animation: none;       /* no slide — the ghost appears statically at the target */
-  }
-  .fretboard-note[data-transition-role="incoming"][data-in-region="true"] .note-glow-underlay {
+  .note-guide-ring {
     animation: none;
-    opacity: 0.6;          /* static ghost — information preserved, motion removed */
+    opacity: 0.9;
+    transform: none;
   }
   .fretboard-note circle.note-glow-underlay {
-    transition: none;
-  }
-  /* Departing snaps under reduced motion (the dim still applies, just no ramp). */
-  .fretboard-note[data-transition-role="departing"] :is(circle, path, polygon) {
     transition: none;
   }
 }

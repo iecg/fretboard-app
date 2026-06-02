@@ -212,6 +212,7 @@ export const FretboardNote = memo(function FretboardNote({
         data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
         aria-hidden="true"
       />
+      {/* Guide-target countdown ring — styled + animated in FretboardSVG.module.css */}
       {transitionRole === "guide-target" && (
         <circle
           className={styles["note-guide-ring"]}
