@@ -539,6 +539,56 @@ export const nextChordGuideTonesAtom = atom((get): Set<string> => {
 });
 
 /**
+ * Map of pitch-class → interval name for the guide tones of the next chord.
+ * Mirrors {@link nextChordGuideTonesAtom} exactly (same guards, same triad
+ * 5th-fallback, same bb7 / power-chord logic) but yields a
+ * `Map<pitchClass, memberName>` so the renderer can show each target's
+ * function in the incoming chord (e.g. "3", "b3", "5", "b7").
+ *
+ * Empty Map for all the cases where `nextChordGuideTonesAtom` returns an
+ * empty Set.
+ */
+export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Map();
+  const active = get(displayedProgressionStepIndexAtom);
+  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
+    return new Map();
+  }
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Map();
+  }
+  const def = CHORD_DEFINITIONS[step.quality];
+  if (!def) return new Map();
+  const rootIndex = NOTES.indexOf(step.root);
+  if (rootIndex === -1) return new Map();
+  const labels = new Map<string, string>();
+  let hasThird = false;
+  let hasSeventh = false;
+  for (const member of def.members) {
+    if (GUIDE_TONE_RAW.has(member.name)) {
+      labels.set(NOTES[(rootIndex + member.semitone) % 12], member.name);
+      if (member.name === "3" || member.name === "b3") hasThird = true;
+      if (member.name === "7" || member.name === "b7") hasSeventh = true;
+    } else if (member.name === "bb7") {
+      // doubly-flat 7th (dim7) — not a guide tone, but suppresses the triad
+      // 5th-fallback just as in nextChordGuideTonesAtom.
+      hasSeventh = true;
+    }
+  }
+  // Triad fallback: same guard as nextChordGuideTonesAtom.
+  if (hasThird && !hasSeventh) {
+    const fifth = def.members.find(
+      (m) => m.name === "5" || m.name === "b5" || m.name === "#5",
+    );
+    if (fifth) labels.set(NOTES[(rootIndex + fifth.semitone) % 12], fifth.name);
+  }
+  return labels;
+});
+
+/**
  * Duration of the active progression step in beats.
  *
  * Exported for reuse in Task 4.5 (anticipation window check:

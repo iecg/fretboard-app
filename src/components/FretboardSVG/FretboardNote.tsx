@@ -224,6 +224,17 @@ export const FretboardNote = memo(function FretboardNote({
         />
       )}
       {shapeEl}
+      {applyLensEmphasis.guideTargetLabel && (
+        <text
+          className={styles["note-guide-label"]}
+          data-guide-label="true"
+          x={cx + r + 2}
+          y={cy - r - 2}
+          aria-hidden="true"
+        >
+          {applyLensEmphasis.guideTargetLabel}
+        </text>
+      )}
       {displayFormat !== "none" && (
         <text x={cx} y={cy}>
           {formatAccidental(displayValue)}

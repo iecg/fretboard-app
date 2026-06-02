@@ -128,6 +128,23 @@ describe("FretboardNote — guide-target ring", () => {
   });
 });
 
+describe("FretboardNote — guide-target interval label", () => {
+  it("renders the guide-target interval label", () => {
+    const note = makeNote({
+      transitionRole: "guide-target",
+      applyLensEmphasis: {
+        glowColor: "var(--note-incoming)" as `var(--${string})`,
+        radiusBoost: 1.15,
+        opacityBoost: 1,
+        transitionRole: "guide-target",
+        guideTargetLabel: "3",
+      },
+    });
+    const { container } = renderNote(note);
+    expect(container.querySelector("[data-guide-label]")?.textContent).toBe("3");
+  });
+});
+
 describe("FretboardNote — glow underlay sizing", () => {
   // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
   const BASE_RADIUS = 20;

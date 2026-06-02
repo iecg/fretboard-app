@@ -443,6 +443,18 @@
   }
 }
 
+/* Guide-target interval label — small degree label (e.g. "3", "b7") placed
+   above-right of the note bubble so it reads alongside the guide-target ring
+   without overlapping the main note glyph. */
+.note-guide-label {
+  dominant-baseline: middle;
+  fill: var(--note-incoming);
+  font-size: 9px;
+  font-weight: 600;
+  pointer-events: none;
+  text-anchor: start;
+}
+
 /* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */
 .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, path, polygon) {
   fill: var(--note-degree-fill, var(--degree-color, #141e28));

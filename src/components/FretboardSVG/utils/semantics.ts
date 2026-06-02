@@ -18,6 +18,8 @@ export type LensEmphasis = {
   opacityBoost: number;
   /** Discrete voice-leading role during the lead-in window; undefined = static. */
   transitionRole?: TransitionRole;
+  /** Interval function of this note in the next chord (e.g. "3", "b3", "5", "b7"). */
+  guideTargetLabel?: string;
 };
 
 /**
@@ -33,6 +35,8 @@ export type LeadLensContext = {
   commonWithNext: Set<string>;
   /** Guide tones (3rd/7th) of the next chord — kept for clarity / future use. */
   nextGuideTones: Set<string>;
+  /** Interval labels for the next chord's guide tones (pitch class → name, e.g. "B" → "3"). */
+  nextGuideToneLabels: Map<string, string>;
   /** ALL pitch classes of the next chord. */
   nextChordTones: Set<string>;
   /** Pitch classes the next chord introduces (`next − current`). */
@@ -85,7 +89,7 @@ export function getEmphasis(
     return applyTonesBase(noteClass, isGuideTone);
   }
 
-  const { notePc, nextGuideTones, commonWithNext, leadInActive } = leadContext;
+  const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive } = leadContext;
 
   // Lead-in: bloom the next chord's guide tones, dim everything else. Only when
   // there ARE targets — an empty guide set (power chord / no next step) must not
@@ -97,6 +101,7 @@ export function getEmphasis(
         radiusBoost: 1.15,
         opacityBoost: 1,
         transitionRole: "guide-target",
+        guideTargetLabel: nextGuideToneLabels.get(notePc),
       };
     }
     return { radiusBoost: 1, opacityBoost: LEAD_IN_DIM_OPACITY };

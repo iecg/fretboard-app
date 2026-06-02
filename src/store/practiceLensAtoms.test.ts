@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction } from "./practiceLensAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -546,6 +546,24 @@ describe("nextChordGuideTonesAtom", () => {
     store.set(activeProgressionStepIndexAtom, 3);
     const guideTones = store.get(nextChordGuideTonesAtom);
     expect(guideTones).toEqual(new Set(["E", "G"]));
+  });
+
+  it("labels map gives each guide tone its function in the next chord (triad → 3, 5)", () => {
+    const store = makeDefaultStore();
+    expect(store.get(nextChordGuideToneLabelsAtom)).toEqual(
+      new Map([["B", "3"], ["D", "5"]]),
+    );
+  });
+
+  it("labels map for a seventh chord uses 3 and b7", () => {
+    const store = makeDefaultStore();
+    const steps = store.get(progressionStepsAtom);
+    store.set(progressionStepsAtom, steps.map((s, i) =>
+      i === 1 ? { ...s, qualityOverride: "7" } : s,
+    ));
+    expect(store.get(nextChordGuideToneLabelsAtom)).toEqual(
+      new Map([["B", "3"], ["F", "b7"]]),
+    );
   });
 });
 

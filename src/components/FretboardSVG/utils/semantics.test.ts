@@ -303,6 +303,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     notePc: "A",
     commonWithNext: new Set<string>(),
     nextGuideTones: new Set<string>(),
+    nextGuideToneLabels: new Map<string, string>(),
     nextChordTones: new Set<string>(),
     incomingTones: new Set<string>(),
     departingTones: new Set<string>(),
@@ -366,5 +367,14 @@ describe("getEmphasis - voice-leading emphasis", () => {
       ...baseLeadContext, notePc: "B", nextGuideTones: new Set(["B"]), leadInActive: false,
     };
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
+  });
+
+  it("guide-target carries its interval label from the next chord", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "B",
+      nextGuideTones: new Set(["B", "D"]),
+      nextGuideToneLabels: new Map([["B", "3"], ["D", "5"]]),
+    };
+    expect(getEmphasis("scale-only", false, ctx).guideTargetLabel).toBe("3");
   });
 });
