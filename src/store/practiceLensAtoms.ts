@@ -478,19 +478,22 @@ export const departingTonesAtom = atom((get): Set<string> => {
 });
 
 /**
- * Pitch-class set of guide tones (3rd and 7th) for the chord at the *next*
- * progression step. Used by the Lead lens anticipation window: when the
- * beat position enters the last beat of the current step, notes matching
- * these pitch classes receive "anticipation" emphasis.
+ * Pitch-class set of guide tones for the chord at the *next* progression
+ * step. Used by the Lead lens anticipation window: notes matching these pitch
+ * classes receive "anticipation" emphasis on the last beat of the current step.
  *
- * Guide tone detection mirrors `chordMembersAtom` / `GUIDE_TONE_RAW`:
- * filters ChordDefinition members whose name is b3, 3, b7, or 7, then
- * resolves the note from root + semitone offset.
- *
- * Returns an empty set when:
- * - The progression is empty.
- * - The next step is unavailable or missing root/quality.
- * - The next chord has no recognizable guide tones (e.g. power chords).
+ * Logic:
+ * - Always includes the 3rd (b3 or 3) when present.
+ * - Always includes the 7th (b7, 7, or bb7) when present.
+ * - Triad fallback: if a chord has a 3rd but no 7th, the 5th (b5/5/#5) is
+ *   also added so the soloist has two target notes. dim7 has a bb7 and is
+ *   therefore treated as a seventh chord — it returns only its 3rd (the bb7
+ *   is not in GUIDE_TONE_RAW and is not emitted, but it suppresses the 5th
+ *   fallback to avoid a misleading target).
+ * - Power chords (no 3rd) return an empty set — there is no quality-defining
+ *   tone to aim for.
+ * - Also returns an empty set when the progression is empty, the next step is
+ *   unavailable, or root/quality is missing.
  */
 export const nextChordGuideTonesAtom = atom((get): Set<string> => {
   const steps = get(resolvedProgressionStepsAtom);
@@ -516,6 +519,11 @@ export const nextChordGuideTonesAtom = atom((get): Set<string> => {
       guideTones.add(NOTES[(rootIndex + member.semitone) % 12]);
       if (member.name === "3" || member.name === "b3") hasThird = true;
       if (member.name === "7" || member.name === "b7") hasSeventh = true;
+    } else if (member.name === "bb7") {
+      // doubly-flat 7th (dim7) is not a recognized guide tone but it IS a
+      // seventh — suppress the triad 5th-fallback so dim7 doesn't get a
+      // misleading extra target.
+      hasSeventh = true;
     }
   }
   // Triad fallback: a chord with a 3rd but no 7th has only one guide tone, so

@@ -501,19 +501,6 @@ describe("nextChordGuideTonesAtom", () => {
     expect(guideTones).toEqual(new Set(["B", "D"]));
   });
 
-  it("returns both 3rd and 7th for a seventh chord", () => {
-    const store = makeDefaultStore();
-    const steps = store.get(progressionStepsAtom);
-    const updatedSteps = steps.map((s, i) =>
-      i === 1 ? { ...s, qualityOverride: "7" } : s
-    );
-    store.set(progressionStepsAtom, updatedSteps);
-    const guideTones = store.get(nextChordGuideTonesAtom);
-    expect(guideTones.has("B")).toBe(true);
-    expect(guideTones.has("F")).toBe(true);
-    expect(guideTones.size).toBe(2);
-  });
-
   it("returns empty set when next chord has no guide tones (power chord)", () => {
     const store = makeDefaultStore();
     const steps = store.get(progressionStepsAtom);
@@ -531,6 +518,21 @@ describe("nextChordGuideTonesAtom", () => {
       i === 1 ? { ...s, qualityOverride: "7" } : s,
     ));
     expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set(["B", "F"]));
+  });
+
+  it("dim7 next chord returns only the b3 — NOT the 5th — (G dim7: b3=A#, no 5th fallback)", () => {
+    // dim7 has a bb7 which is not a GUIDE_TONE_RAW entry, so the guide-tone
+    // set only ever contains the b3 (A# for root G). The bb7 must still be
+    // recognised as a "seventh" to suppress the triad 5th-fallback; otherwise
+    // the result would incorrectly include D (the perfect 5th of G).
+    const store = makeDefaultStore();
+    const steps = store.get(progressionStepsAtom);
+    store.set(progressionStepsAtom, steps.map((s, i) =>
+      i === 1 ? { ...s, qualityOverride: "dim7" } : s,
+    ));
+    const guideTones = store.get(nextChordGuideTonesAtom);
+    expect(guideTones).toEqual(new Set(["A#"]));
+    expect(guideTones.has("D")).toBe(false); // 5th must NOT be included
   });
 
   it("returns empty set when progression is empty", () => {
