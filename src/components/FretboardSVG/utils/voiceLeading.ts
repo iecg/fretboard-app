@@ -1,10 +1,15 @@
 import type { TransitionRole } from "./semantics";
 
 /** Most simultaneous move cues shown in one transition (keeps it legible). */
-export const MAX_VOICE_LEADING_MOVES = 4;
+export const MAX_VOICE_LEADING_MOVES = 3;
 /** Minimum source→target distance (SVG user units) for a cue; below this the
  *  ghost just fades in place — no visible slide, so don't add jitter. */
 export const MIN_VOICE_LEADING_TRAVEL_PX = 8;
+/** A voice-leading move stays within a hand position: at most this many frets… */
+export const MAX_VOICE_LEADING_FRET_SPAN = 3;
+/** …and at most this many strings away. Beyond EITHER, no slide — the incoming
+ *  note just fades in place (prevents cross-fretboard jumps). */
+export const MAX_VOICE_LEADING_STRING_SPAN = 2;
 
 /** Minimal positioned-note shape the pairing needs. `RenderedFretboardNote`
  *  satisfies this structurally. */
@@ -36,8 +41,8 @@ const keyOf = (n: { stringIndex: number; fretIndex: number }): string =>
 
 /**
  * Pair each in-region incoming note to its nearest in-region departing/held
- * source (greedy, one source per target). Drops near-zero travels, caps at
- * {@link MAX_VOICE_LEADING_MOVES} keeping the longest travels, and logs any
+ * source (greedy, one source per target). Keeps only moves within the fret/string span,
+ * caps at {@link MAX_VOICE_LEADING_MOVES} keeping the SHORTEST travels, and logs any
  * drop (no silent truncation). Returns [] outside the lead-in window because
  * there are no `incoming`-role notes then.
  */
@@ -61,13 +66,17 @@ export function computeVoiceLeadingMoves(
     let bestDist = Infinity;
     for (const source of sources) {
       if (usedSourceKeys.has(keyOf(source))) continue;
+      // A voice-leading move stays within a hand position — skip any source
+      // beyond the fret/string span so nothing slides across the neck.
+      if (Math.abs(source.fretIndex - target.fretIndex) > MAX_VOICE_LEADING_FRET_SPAN) continue;
+      if (Math.abs(source.stringIndex - target.stringIndex) > MAX_VOICE_LEADING_STRING_SPAN) continue;
       const d = Math.hypot(source.cx - target.cx, source.cy - target.cy);
       if (d < bestDist) {
         bestDist = d;
         best = source;
       }
     }
-    if (!best) break;
+    if (!best) continue;
     if (bestDist < MIN_VOICE_LEADING_TRAVEL_PX) continue;
     usedSourceKeys.add(keyOf(best));
     candidates.push({
@@ -88,7 +97,7 @@ export function computeVoiceLeadingMoves(
   }
 
   const kept = [...candidates]
-    .sort((a, b) => b.dist - a.dist)
+    .sort((a, b) => a.dist - b.dist)
     .slice(0, MAX_VOICE_LEADING_MOVES);
   console.debug(
     `[voiceLeading] capped ${candidates.length} moves to ${MAX_VOICE_LEADING_MOVES} (dropped ${candidates.length - kept.length})`,
