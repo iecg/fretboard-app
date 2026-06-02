@@ -720,6 +720,87 @@ describe("transition delta atoms", () => {
 });
 
 // ---------------------------------------------------------------------------
+// transition perf budget
+// ---------------------------------------------------------------------------
+
+describe("transition perf budget", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  /**
+   * Seed a store with a playing two-step I→V progression.
+   * Mirrors the pattern in the "leadInActiveAtom / leadInDurationMsAtom" block.
+   */
+  function makePlayingStore() {
+    const store = createStore();
+    // Subscribe once to trigger atomWithStorage init (same as other makeDefaultStore helpers).
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    store.set(progressionPlayingStateAtom, true);
+    return store;
+  }
+
+  it("frame writes within a phase do not notify the note-driving atoms", () => {
+    const store = makePlayingStore();
+
+    // Dynamically compute the window start so the test is robust to tempo/bar changes.
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const windowMs = computeLeadInWindowMs(stepMs);
+    const startFraction = 1 - windowMs / stepMs;
+    // Pick fractions strictly before the window start.
+    const safelyBefore = startFraction * 0.5;
+
+    // Prime the frame well before the lead-in window.
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: safelyBefore, localFraction: safelyBefore, paused: false });
+    // Force derived atom evaluation so Jotai caches the current values.
+    store.get(leadInActiveAtom);
+    store.get(incomingTonesAtom);
+
+    let leadInNotifs = 0;
+    let incomingNotifs = 0;
+    const u1 = store.sub(leadInActiveAtom, () => { leadInNotifs++; });
+    const u2 = store.sub(incomingTonesAtom, () => { incomingNotifs++; });
+
+    // Advance the frame several times, all staying before the window start.
+    const f1 = safelyBefore * 1.1;
+    const f2 = safelyBefore * 1.2;
+    const f3 = safelyBefore * 1.3;
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: f1, localFraction: f1, paused: false });
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: f2, localFraction: f2, paused: false });
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: f3, localFraction: f3, paused: false });
+
+    expect(leadInNotifs).toBe(0);   // boolean never flipped → no note re-render
+    expect(incomingNotifs).toBe(0); // delta set is frame-independent
+
+    u1(); u2();
+  });
+
+  it("crossing the lead-in threshold notifies leadInActiveAtom exactly once", () => {
+    const store = makePlayingStore();
+
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const windowMs = computeLeadInWindowMs(stepMs);
+    const startFraction = 1 - windowMs / stepMs;
+
+    // Start before the window.
+    const before = Math.max(0, startFraction - 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: before, localFraction: before, paused: false });
+    store.get(leadInActiveAtom);
+
+    let notifs = 0;
+    const u = store.sub(leadInActiveAtom, () => { notifs++; });
+
+    // Jump to well inside the window.
+    const inside = Math.min(0.999, startFraction + 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: inside, localFraction: inside, paused: false });
+    expect(notifs).toBe(1);
+    expect(store.get(leadInActiveAtom)).toBe(true);
+    u();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // leadInActiveAtom / leadInDurationMsAtom
 // ---------------------------------------------------------------------------
 

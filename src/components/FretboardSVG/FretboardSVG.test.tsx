@@ -796,5 +796,33 @@ describe("FretboardSVG/FretboardSVG", () => {
       const board = container.querySelector('[data-testid="fretboard-svg"]') as HTMLElement;
       expect(board.getAttribute("data-transition-phase")).toBeNull();
     });
+
+    it("incoming next-chord positions carry data-transition-role=incoming during lead-in", () => {
+      // I→V in C Major: next chord V = G(G/B/D); B and D are incoming tones.
+      // localFraction 0.75 is inside the lead-in window (starts ~0.5).
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(beatsPerBarAtom, 4);
+      store.set(setProgressionPlayingAtom, true);
+      store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
+
+      const { container } = renderWithStore(
+        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        store,
+      );
+
+      // B and D are the incoming tones (the next chord G introduces them).
+      const incoming = container.querySelectorAll('[data-transition-role="incoming"]');
+      expect(incoming.length).toBeGreaterThan(0);
+
+      // Every note also carries data-in-region. With no shapePolygons supplied,
+      // buildStaticFretboardTopology sets isInRegion = shapePolygons.length === 0 = true
+      // for every note, so this assertion passes (trivially: no polygons → all in-region).
+      const inRegionIncoming = container.querySelectorAll('[data-transition-role="incoming"][data-in-region="true"]');
+      expect(inRegionIncoming.length).toBeGreaterThan(0);
+    });
   });
 });
