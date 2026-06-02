@@ -140,20 +140,22 @@ export function computeLeadInWindowMs(
 }
 
 /**
- * True when the playhead is inside the lead-in window. `localFraction` is the
- * [0,1] fraction of the step elapsed (same source as the anticipation check).
- * `barDurationMs` is forwarded to {@link computeLeadInWindowMs} so the window
- * start matches the (bar-capped) duration.
+ * True when the playhead is inside the lead-in window. `stepFraction` is the
+ * [0,1] fraction of the *step* elapsed — `leadInActiveAtom` passes a
+ * step-relative value (see {@link stepRelativeFraction}), NOT the per-bar
+ * `frame.localFraction`. `barDurationMs` is forwarded to
+ * {@link computeLeadInWindowMs} so the window start matches the (bar-capped)
+ * duration.
  */
 export function isInLeadInWindow(
-  localFraction: number,
+  stepFraction: number,
   stepDurationMs: number,
   barDurationMs = Infinity,
 ): boolean {
   const windowMs = computeLeadInWindowMs(stepDurationMs, barDurationMs);
   if (windowMs <= 0) return false;
   const startFraction = 1 - windowMs / stepDurationMs;
-  return localFraction >= startFraction;
+  return stepFraction >= startFraction;
 }
 
 /**
