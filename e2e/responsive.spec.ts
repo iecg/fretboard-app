@@ -11,6 +11,32 @@ async function gotoApp(page: Page, width: number, height: number) {
   ).toBeVisible();
 }
 
+async function expectOpenMenuAboveBottomTabs(page: Page, viewportName: string) {
+  const metrics = await page.evaluate(() => {
+    const menu = document.querySelector('[role="listbox"], [role="menu"]');
+    const tabList = document.querySelector('[role="tablist"][aria-label="Inspector"]');
+    const getRect = (element: Element | null) => {
+      if (!(element instanceof HTMLElement)) return null;
+      const rect = element.getBoundingClientRect();
+      return {
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+        height: Math.round(rect.height),
+      };
+    };
+    return {
+      menu: getRect(menu),
+      tabList: getRect(tabList),
+      innerHeight: window.innerHeight,
+    };
+  });
+
+  expect(metrics.menu, viewportName).not.toBeNull();
+  expect(metrics.tabList, viewportName).not.toBeNull();
+  expect(metrics.menu!.height, viewportName).toBeGreaterThan(44);
+  expect(metrics.menu!.bottom, viewportName).toBeLessThanOrEqual(metrics.tabList!.top - 4);
+}
+
 async function getMetrics(page: Page) {
   return page.evaluate(() => {
     const app = document.querySelector('[data-testid="app-container"]');
@@ -216,5 +242,21 @@ test.describe("responsive layout regressions", () => {
     expect(metrics.settingsDrawerRect).not.toBeNull();
     expect(metrics.settingsDrawerRect!.width).toBeGreaterThanOrEqual(388);
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
+  });
+
+  test("keeps Overlay voicing dropdown above bottom tabs on mobile", async ({ page }) => {
+    for (const viewport of [
+      { width: 390, height: 844, name: "390x844" },
+      { width: 375, height: 667, name: "375x667" },
+    ]) {
+      await gotoApp(page, viewport.width, viewport.height);
+      await page.getByRole("tab", { name: "Overlay" }).click();
+
+      const voicing = page.getByRole("combobox", { name: "Voicing" });
+      await expect(voicing, viewport.name).toBeVisible();
+      await voicing.click();
+
+      await expectOpenMenuAboveBottomTabs(page, viewport.name);
+    }
   });
 });

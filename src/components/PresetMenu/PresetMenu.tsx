@@ -1,10 +1,28 @@
+import React from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 import type { SuggestionFeel } from "../../progressions/progressionGeneration";
 import styles from "./PresetMenu.module.css";
+import { getCollisionPadding } from "../../utils/collision";
 
-const COLLISION_PADDING = { top: 8, right: 8, bottom: 8, left: 8 } as const;
+const PresetMenuContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.Content>
+>((props, ref) => {
+  const padding = getCollisionPadding();
+  return <DropdownMenu.Content ref={ref} {...props} collisionPadding={padding} />;
+});
+PresetMenuContent.displayName = "PresetMenuContent";
+
+const PresetMenuSubContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<typeof DropdownMenu.SubContent>
+>((props, ref) => {
+  const padding = getCollisionPadding();
+  return <DropdownMenu.SubContent ref={ref} {...props} collisionPadding={padding} />;
+});
+PresetMenuSubContent.displayName = "PresetMenuSubContent";
 
 export interface PresetMenuOption {
   id: string;
@@ -117,11 +135,10 @@ export function PresetMenu({
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
-        <DropdownMenu.Content
+        <PresetMenuContent
           className={styles["preset-menu-content"]}
           sideOffset={4}
           align="start"
-          collisionPadding={COLLISION_PADDING}
         >
           {categories.map((category) => (
             <DropdownMenu.Sub key={category.label}>
@@ -130,11 +147,10 @@ export function PresetMenu({
                 <ChevronRight size={14} aria-hidden="true" />
               </DropdownMenu.SubTrigger>
               <DropdownMenu.Portal>
-                <DropdownMenu.SubContent
+                <PresetMenuSubContent
                   className={styles["preset-menu-content"]}
                   sideOffset={2}
                   alignOffset={-4}
-                  collisionPadding={COLLISION_PADDING}
                 >
                   {category.options.map((option) => (
                     <MenuOption
@@ -144,7 +160,7 @@ export function PresetMenu({
                       onSelect={onSelect}
                     />
                   ))}
-                </DropdownMenu.SubContent>
+                </PresetMenuSubContent>
               </DropdownMenu.Portal>
             </DropdownMenu.Sub>
           ))}
@@ -158,11 +174,10 @@ export function PresetMenu({
                   <ChevronRight size={14} aria-hidden="true" />
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal>
-                  <DropdownMenu.SubContent
+                  <PresetMenuSubContent
                     className={styles["preset-menu-content"]}
                     sideOffset={2}
                     alignOffset={-4}
-                    collisionPadding={COLLISION_PADDING}
                   >
                     {suggestionGroups.map((group, index) => (
                       <DropdownMenu.Group key={group.feel}>
@@ -184,12 +199,12 @@ export function PresetMenu({
                         ))}
                       </DropdownMenu.Group>
                     ))}
-                  </DropdownMenu.SubContent>
+                  </PresetMenuSubContent>
                 </DropdownMenu.Portal>
               </DropdownMenu.Sub>
             </>
           )}
-        </DropdownMenu.Content>
+        </PresetMenuContent>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );

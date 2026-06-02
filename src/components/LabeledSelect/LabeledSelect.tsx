@@ -3,6 +3,7 @@ import * as Select from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import clsx from 'clsx';
 import styles from './LabeledSelect.module.css';
+import { getCollisionPadding } from '../../utils/collision';
 
 export interface LabeledSelectOption {
   value: string;
@@ -81,6 +82,16 @@ function LabeledSelectItem({ value, label, disabled, content }: LabeledSelectOpt
   );
 }
 
+const LabeledSelectContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<typeof Select.Content>
+>((props, ref) => {
+  const padding = getCollisionPadding();
+  return <Select.Content ref={ref} {...props} collisionPadding={padding} />;
+});
+LabeledSelectContent.displayName = 'LabeledSelectContent';
+
+
 export function LabeledSelect({
   label,
   value,
@@ -150,16 +161,10 @@ export function LabeledSelect({
           </Select.Icon>
         </Select.Trigger>
         <Select.Portal>
-          <Select.Content
+          <LabeledSelectContent
             className={styles['labeled-select-content']}
             position="popper"
             sideOffset={4}
-            collisionPadding={{
-              top: 8,
-              right: 8,
-              bottom: 8,
-              left: 8,
-            }}
           >
             <Select.ScrollUpButton className={styles['labeled-select-scroll-button']}>
               ▲
@@ -194,7 +199,7 @@ export function LabeledSelect({
             <Select.ScrollDownButton className={styles['labeled-select-scroll-button']}>
               ▼
             </Select.ScrollDownButton>
-          </Select.Content>
+          </LabeledSelectContent>
         </Select.Portal>
       </Select.Root>
     </div>
