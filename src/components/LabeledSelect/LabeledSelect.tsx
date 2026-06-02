@@ -154,6 +154,12 @@ export function LabeledSelect({
             className={styles['labeled-select-content']}
             position="popper"
             sideOffset={4}
+            collisionPadding={{
+              top: 8,
+              right: 8,
+              bottom: 8,
+              left: 8,
+            }}
           >
             <Select.ScrollUpButton className={styles['labeled-select-scroll-button']}>
               ▲
