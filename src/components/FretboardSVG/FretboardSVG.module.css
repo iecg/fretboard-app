@@ -418,13 +418,16 @@
 }
 
 /* Incoming preview — a hollow ghost ring in the dedicated incoming hue that
-   ramps in over the lead-in window, then promotes to solid at the boundary. */
-.fretboard-note[data-transition-role="incoming"] .note-glow-underlay {
+   ramps in over the lead-in window, then promotes to solid at the boundary.
+   Region-gated: only in-region positions ghost, so out-of-region notes whose
+   pitch class happens to be an incoming tone are not painted across the whole
+   fretboard (matches the "only ghost in-region" design intent). */
+.fretboard-note[data-transition-role="incoming"][data-in-region="true"] .note-glow-underlay {
   fill: var(--note-incoming);
   animation: note-incoming-ramp var(--lead-in-duration, 0.6s) ease-out both;
 }
 
-.fretboard-note[data-transition-role="incoming"] :is(circle, path, polygon) {
+.fretboard-note[data-transition-role="incoming"][data-in-region="true"] :is(circle, path, polygon) {
   stroke: var(--note-incoming);
   stroke-dasharray: 4 3;
   fill: transparent;
@@ -447,7 +450,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fretboard-note[data-transition-role="incoming"] .note-glow-underlay {
+  .fretboard-note[data-transition-role="incoming"][data-in-region="true"] .note-glow-underlay {
     animation: none;
     opacity: 0.6;          /* static ghost — information preserved, motion removed */
   }
