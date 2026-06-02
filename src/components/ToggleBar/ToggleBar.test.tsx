@@ -97,8 +97,8 @@ describe("ToggleBar/ToggleBar", () => {
     });
   });
 
-  it("shared toggle group keeps a 32px control height", () => {
-    expect(sharedCSS).toMatch(/\.toggle-group\s*\{[^}]*height:\s*32px/s);
+  it("shared toggle group uses token-based control height via var(--control-height)", () => {
+    expect(sharedCSS).toMatch(/\.toggle-group\s*\{[^}]*height:\s*var\(--control-height\)/s);
   });
 
   it("variant defaults to default when omitted", () => {

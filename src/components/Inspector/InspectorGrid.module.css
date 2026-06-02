@@ -116,7 +116,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  min-height: 32px;
+  min-height: var(--control-height);
 }
 
 .propControl > * {
@@ -165,8 +165,8 @@
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  min-height: 32px;
-  height: 32px;
+  min-height: var(--control-height);
+  height: var(--control-height);
   box-sizing: border-box;
   min-width: 0;
   grid-column: span 2;

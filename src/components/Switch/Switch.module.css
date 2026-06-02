@@ -1,6 +1,6 @@
 .switch {
   /* 36 x 20 pill switch with an internal LED thumb — sized to read as a
-   * peer of the 32px control row it sits beside. Replaces ToggleBar for
+   * peer of the control row it sits beside. Replaces ToggleBar for
    * true binary state. */
   width: 36px;
   height: 20px;

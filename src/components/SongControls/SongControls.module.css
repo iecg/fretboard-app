@@ -169,8 +169,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
-  width: 32px;
+  height: var(--control-height);
+  width: var(--control-height);
   background: transparent;
   border: none;
   border-radius: calc(var(--dc-radius) - 2px);
