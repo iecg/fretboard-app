@@ -44,17 +44,17 @@ function renderNote(note: RenderedFretboardNote) {
 }
 
 describe("FretboardNote — transition-role data attribute", () => {
-  it("renders data-transition-role='incoming' on <g> when transitionRole is 'incoming'", () => {
+  it("renders data-transition-role='guide-target' on <g> when transitionRole is 'guide-target'", () => {
     const glowColor = "var(--note-incoming)" as `var(--${string})`;
     const { container } = renderNote(
       makeNote({
-        transitionRole: "incoming",
+        transitionRole: "guide-target",
         applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor },
       }),
     );
     const g = container.querySelector("g[data-note-shape]");
     expect(g).not.toBeNull();
-    expect(g?.getAttribute("data-transition-role")).toBe("incoming");
+    expect(g?.getAttribute("data-transition-role")).toBe("guide-target");
   });
 
   it("does not emit data-transition-role when transitionRole is undefined", () => {
@@ -135,7 +135,7 @@ describe("FretboardNote — voice-leading offset CSS vars", () => {
     const glowColor = "var(--note-incoming)" as `var(--${string})`;
     const { container } = renderNote(
       makeNote({
-        transitionRole: "incoming",
+        transitionRole: "guide-target",
         voiceLeadOffset: { dx: -30, dy: 20 },
         applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor },
       }),

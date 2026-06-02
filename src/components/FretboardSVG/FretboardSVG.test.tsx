@@ -474,10 +474,10 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  it("renders incoming-tone emphasis when the playback frame crosses the lead-in threshold", () => {
+  it("lights guide tones of the next chord during the lead-in window", () => {
     // Seed a I→V progression at localFraction=0.75 (inside the lead-in window).
     // Current chord = C (C/E/G); next chord V = G (G/B/D) → B and D are the
-    // incoming tones the next chord introduces. Highlight them so they render.
+    // guide tones (3rd/7th) of G major that receive the spotlight emphasis.
     const store = createStore();
     store.set(progressionStepsAtom, [
       { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },

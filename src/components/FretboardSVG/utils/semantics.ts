@@ -10,7 +10,7 @@ import {
 
 export type BoxBound = { minFret: number; maxFret: number };
 
-export type TransitionRole = "held" | "incoming" | "departing" | "guide-target";
+export type TransitionRole = "guide-target";
 
 export type LensEmphasis = {
   glowColor?: `var(--${string})`;

@@ -1,4 +1,3 @@
-import type { TransitionRole } from "./semantics";
 
 /** Most simultaneous move cues shown in one transition (keeps it legible). */
 export const MAX_VOICE_LEADING_MOVES = 3;
@@ -19,7 +18,7 @@ export interface VoiceLeadingNote {
   cx: number;
   cy: number;
   isInRegion: boolean;
-  transitionRole?: TransitionRole;
+  transitionRole?: string;
 }
 
 export interface VoiceLeadingMove {

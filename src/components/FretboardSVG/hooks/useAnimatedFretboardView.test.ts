@@ -258,21 +258,6 @@ describe("buildRenderedFretboardNotes — voice-leading offsets", () => {
     };
   }
 
-  it("stamps voiceLeadOffset on a paired incoming target, not on the source", () => {
-    const noteData = [
-      makeNoteData({ stringIndex: 0, fretIndex: 10, transitionRole: "incoming" }),
-      makeNoteData({ stringIndex: 1, fretIndex: 11, transitionRole: "departing" }),
-    ];
-    // fretCenterX = fret*10, stringYAt = string*20 (module consts in this test file):
-    //   target string0 fret10 -> cx 100, cy 0
-    //   source string1 fret11 -> cx 110, cy 20  (dist hypot(10,20) ≈ 22.4 ≥ 8)
-    const rendered = buildRenderedFretboardNotes({ noteData, fretCenterX, stringYAt });
-    const target = rendered.find((n) => n.stringIndex === 0 && n.fretIndex === 10)!;
-    const source = rendered.find((n) => n.stringIndex === 1 && n.fretIndex === 11)!;
-    expect(target.voiceLeadOffset).toEqual({ dx: 10, dy: 20 });
-    expect(source.voiceLeadOffset).toBeUndefined();
-  });
-
   it("leaves voiceLeadOffset undefined when no transition roles are present", () => {
     const noteData = [
       makeNoteData({ stringIndex: 0, fretIndex: 3 }),
