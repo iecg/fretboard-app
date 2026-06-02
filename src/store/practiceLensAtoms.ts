@@ -478,75 +478,23 @@ export const departingTonesAtom = atom((get): Set<string> => {
 });
 
 /**
- * Pitch-class set of guide tones for the chord at the *next* progression
- * step. Used by the Lead lens anticipation window: notes matching these pitch
- * classes receive "anticipation" emphasis on the last beat of the current step.
+ * Map of pitch-class → interval name for the guide tones of the chord at the
+ * *next* progression step. This is the canonical source for guide-tone logic —
+ * {@link nextChordGuideTonesAtom} derives its Set directly from this Map's keys.
  *
- * Logic:
+ * Guide-tone rules:
  * - Always includes the 3rd (b3 or 3) when present.
- * - Always includes the 7th (b7, 7, or bb7) when present.
+ * - Always includes the 7th (b7 or 7) when present.
  * - Triad fallback: if a chord has a 3rd but no 7th, the 5th (b5/5/#5) is
- *   also added so the soloist has two target notes. dim7 has a bb7 and is
- *   therefore treated as a seventh chord — it returns only its 3rd (the bb7
- *   is not in GUIDE_TONE_RAW and is not emitted, but it suppresses the 5th
- *   fallback to avoid a misleading target).
- * - Power chords (no 3rd) return an empty set — there is no quality-defining
+ *   also added so the soloist has two target notes.
+ * - dim7 has a bb7 — it is treated as a seventh chord (the bb7 suppresses the
+ *   triad 5th-fallback to avoid a misleading extra target), but the bb7 itself
+ *   is not emitted as a guide tone since it is not in GUIDE_TONE_RAW.
+ * - Power chords (no 3rd) return an empty Map — there is no quality-defining
  *   tone to aim for.
- * - Also returns an empty set when the progression is empty, the next step is
- *   unavailable, or root/quality is missing.
- */
-export const nextChordGuideTonesAtom = atom((get): Set<string> => {
-  const steps = get(resolvedProgressionStepsAtom);
-  if (steps.length === 0) return new Set();
-  const active = get(displayedProgressionStepIndexAtom);
-  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
-    return new Set();
-  }
-  const nextIndex = (active + 1) % steps.length;
-  const step = steps[nextIndex];
-  if (!step || step.unavailable || step.root === null || step.quality === null) {
-    return new Set();
-  }
-  const def = CHORD_DEFINITIONS[step.quality];
-  if (!def) return new Set();
-  const rootIndex = NOTES.indexOf(step.root);
-  if (rootIndex === -1) return new Set();
-  const guideTones = new Set<string>();
-  let hasThird = false;
-  let hasSeventh = false;
-  for (const member of def.members) {
-    if (GUIDE_TONE_RAW.has(member.name)) {
-      guideTones.add(NOTES[(rootIndex + member.semitone) % 12]);
-      if (member.name === "3" || member.name === "b3") hasThird = true;
-      if (member.name === "7" || member.name === "b7") hasSeventh = true;
-    } else if (member.name === "bb7") {
-      // doubly-flat 7th (dim7) is not a recognized guide tone but it IS a
-      // seventh — suppress the triad 5th-fallback so dim7 doesn't get a
-      // misleading extra target.
-      hasSeventh = true;
-    }
-  }
-  // Triad fallback: a chord with a 3rd but no 7th has only one guide tone, so
-  // add the 5th to give the soloist a second target. Power chords (no 3rd) get
-  // nothing — there's no quality-defining tone to aim for.
-  if (hasThird && !hasSeventh) {
-    const fifth = def.members.find(
-      (m) => m.name === "5" || m.name === "b5" || m.name === "#5",
-    );
-    if (fifth) guideTones.add(NOTES[(rootIndex + fifth.semitone) % 12]);
-  }
-  return guideTones;
-});
-
-/**
- * Map of pitch-class → interval name for the guide tones of the next chord.
- * Mirrors {@link nextChordGuideTonesAtom} exactly (same guards, same triad
- * 5th-fallback, same bb7 / power-chord logic) but yields a
- * `Map<pitchClass, memberName>` so the renderer can show each target's
- * function in the incoming chord (e.g. "3", "b3", "5", "b7").
  *
- * Empty Map for all the cases where `nextChordGuideTonesAtom` returns an
- * empty Set.
+ * Also returns an empty Map when the progression is empty, the next step is
+ * unavailable, or root/quality is missing.
  */
 export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
   const steps = get(resolvedProgressionStepsAtom);
@@ -574,11 +522,13 @@ export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
       if (member.name === "7" || member.name === "b7") hasSeventh = true;
     } else if (member.name === "bb7") {
       // doubly-flat 7th (dim7) — not a guide tone, but suppresses the triad
-      // 5th-fallback just as in nextChordGuideTonesAtom.
+      // 5th-fallback so dim7 doesn't get a misleading extra target.
       hasSeventh = true;
     }
   }
-  // Triad fallback: same guard as nextChordGuideTonesAtom.
+  // Triad fallback: a chord with a 3rd but no 7th has only one guide tone, so
+  // add the 5th to give the soloist a second target. Power chords (no 3rd) get
+  // nothing — there's no quality-defining tone to aim for.
   if (hasThird && !hasSeventh) {
     const fifth = def.members.find(
       (m) => m.name === "5" || m.name === "b5" || m.name === "#5",
@@ -587,6 +537,17 @@ export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
   }
   return labels;
 });
+
+/**
+ * Pitch-class set of guide tones for the chord at the *next* progression step.
+ * Derived from {@link nextChordGuideToneLabelsAtom} (which carries the same
+ * tones plus their interval labels and is the canonical home of the triad-5th
+ * fallback / bb7 / power-chord logic). Returns an empty set for all the same
+ * cases that the labels atom returns an empty Map.
+ */
+export const nextChordGuideTonesAtom = atom((get): Set<string> =>
+  new Set(get(nextChordGuideToneLabelsAtom).keys()),
+);
 
 /**
  * Duration of the active progression step in beats.
