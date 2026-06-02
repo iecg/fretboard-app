@@ -1,6 +1,9 @@
 # Mobile Progression Master Detail Draft Plan
 
-> **For agentic workers:** Draft plan. Expand with `superpowers:writing-plans` before execution if detailed step-by-step instructions are needed.
+> **SUPERSEDED** — Progression master-detail stacking is fully covered by Task 4 of the detailed plan:
+> `docs/superpowers/plans/2026-06-01-mobile-song-progression-layout.md`
+>
+> Use that plan for execution. This draft is kept for reference only.
 
 **Goal:** Prevent the progression chord list and chord editing detail panel from overlapping on mobile.
 

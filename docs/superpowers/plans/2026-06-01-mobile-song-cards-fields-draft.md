@@ -1,6 +1,9 @@
 # Mobile Song Cards Fields Draft Plan
 
-> **For agentic workers:** Draft plan. Expand with `superpowers:writing-plans` before execution if detailed step-by-step instructions are needed.
+> **SUPERSEDED** — Song card field pairing is fully covered by Task 2 of the detailed plan:
+> `docs/superpowers/plans/2026-06-01-mobile-song-progression-layout.md`
+>
+> Use that plan for execution. This draft is kept for reference only.
 
 **Goal:** Use mobile width more efficiently in Song cards by pairing related fields while preserving 44px touch targets.
 

@@ -1,6 +1,9 @@
 # Mobile App Header Actions Draft Plan
 
-> **For agentic workers:** Draft plan. Expand with `superpowers:writing-plans` before execution if detailed step-by-step instructions are needed.
+> **SUPERSEDED** — Header action layout is fully covered by Task 2 of the detailed plan:
+> `docs/superpowers/plans/2026-06-01-mobile-header-transport.md`
+>
+> Use that plan for execution. This draft is kept for reference only.
 
 **Goal:** Make the first mobile header row fit cleanly: brand on the left, touch-sized utility actions on the right, no clipping on `390x844` or `375x667`.
 

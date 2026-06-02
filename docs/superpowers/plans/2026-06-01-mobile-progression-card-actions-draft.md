@@ -1,6 +1,9 @@
 # Mobile Progression Card Actions Draft Plan
 
-> **For agentic workers:** Draft plan. Expand with `superpowers:writing-plans` before execution if detailed step-by-step instructions are needed.
+> **SUPERSEDED** — Progression card action compaction is fully covered by Task 3 of the detailed plan:
+> `docs/superpowers/plans/2026-06-01-mobile-song-progression-layout.md`
+>
+> Use that plan for execution. This draft is kept for reference only.
 
 **Goal:** Keep progression card title and actions compact on mobile without adding a wasteful extra header row.
 

@@ -1,6 +1,9 @@
 # Mobile Song Tab Density Checkpoint Draft Plan
 
-> **For agentic workers:** Draft plan. Expand with `superpowers:writing-plans` before execution if the checkpoint decides a new tab is needed.
+> **SUPERSEDED** — The density checkpoint is fully covered by Task 5 of the detailed plan:
+> `docs/superpowers/plans/2026-06-01-mobile-song-progression-layout.md`
+>
+> Use that plan for execution. This draft is kept for reference only.
 
 **Goal:** Decide whether the existing Song tab remains too dense after the mobile field, action, and editor layout fixes.
 

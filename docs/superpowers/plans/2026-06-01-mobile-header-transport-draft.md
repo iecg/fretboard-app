@@ -1,6 +1,9 @@
 # Mobile Header Transport Draft Plan
 
-> **For agentic workers:** Draft plan. Expand with `superpowers:writing-plans` before execution if detailed step-by-step instructions are needed.
+> **SUPERSEDED** — Transport layout is fully covered by Tasks 3 and 4 of the detailed plan:
+> `docs/superpowers/plans/2026-06-01-mobile-header-transport.md`
+>
+> Use that plan for execution. This draft is kept for reference only.
 
 **Goal:** Make mobile transport controls, position, tempo, and scale readouts readable and tappable without making the header too tall.
 
