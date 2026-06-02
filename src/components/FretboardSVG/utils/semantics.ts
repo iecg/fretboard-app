@@ -10,7 +10,7 @@ import {
 
 export type BoxBound = { minFret: number; maxFret: number };
 
-export type TransitionRole = "held" | "incoming" | "departing";
+export type TransitionRole = "held" | "incoming" | "departing" | "guide-target";
 
 export type LensEmphasis = {
   glowColor?: `var(--${string})`;
@@ -72,6 +72,10 @@ function applyTonesBase(
   return { radiusBoost: 1, opacityBoost: 1 };
 }
 
+/** Opacity multiplier applied to every non-target note during the lead-in
+ *  window — the "dim-the-rest" spotlight that makes the guide tones pop. */
+const LEAD_IN_DIM_OPACITY = 0.4;
+
 export function getEmphasis(
   noteClass: string,
   isGuideTone: boolean,
@@ -81,43 +85,26 @@ export function getEmphasis(
     return applyTonesBase(noteClass, isGuideTone);
   }
 
-  const {
-    notePc,
-    commonWithNext,
-    incomingTones,
-    departingTones,
-    leadInActive,
-  } = leadContext;
+  const { notePc, nextGuideTones, commonWithNext, leadInActive } = leadContext;
 
-  const isCurrentChordTone = CHORD_TONE_CLASSES.has(noteClass);
-
-  if (leadInActive) {
-    // 1. Incoming: a pitch the next chord introduces. Ghost-ring preview.
-    if (incomingTones.has(notePc)) {
+  // Lead-in: bloom the next chord's guide tones, dim everything else. Only when
+  // there ARE targets — an empty guide set (power chord / no next step) must not
+  // dim the whole board for no reason.
+  if (leadInActive && nextGuideTones.size > 0) {
+    if (nextGuideTones.has(notePc)) {
       return {
         glowColor: "var(--note-incoming)",
-        radiusBoost: 1,
-        opacityBoost: 1,
-        transitionRole: "incoming",
-      };
-    }
-    // 2. Departing: a current chord tone the next chord drops. Calm dim.
-    if (isCurrentChordTone && departingTones.has(notePc)) {
-      return { radiusBoost: 0.95, opacityBoost: 0.8, transitionRole: "departing" };
-    }
-    // 3. Held: a current chord tone that carries through. Steady, no pulse.
-    if (isCurrentChordTone && commonWithNext.has(notePc)) {
-      return {
-        glowColor: "var(--note-glow-hold)",
         radiusBoost: 1.15,
         opacityBoost: 1,
-        transitionRole: "held",
+        transitionRole: "guide-target",
       };
     }
+    return { radiusBoost: 1, opacityBoost: LEAD_IN_DIM_OPACITY };
   }
 
-  // 4. Static: held chord tones outside the window keep a gentle hold glow.
-  if (isCurrentChordTone && commonWithNext.has(notePc)) {
+  // Outside the window (or no targets): held common tones keep a gentle hold
+  // glow; everything else uses the base model.
+  if (CHORD_TONE_CLASSES.has(noteClass) && commonWithNext.has(notePc)) {
     return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
   }
   return applyTonesBase(noteClass, isGuideTone);
