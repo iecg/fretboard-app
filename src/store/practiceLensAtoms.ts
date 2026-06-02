@@ -39,6 +39,7 @@ import {
   progressionLoopEnabledAtom,
   progressionPlayingAtom,
   progressionStepDurationMsAtom,
+  progressionBarDurationMsAtom,
 } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import {
@@ -116,25 +117,40 @@ const LEAD_IN_FLOOR_MS = 600;
 
 /**
  * Length of the lead-in preview window for a step of `stepDurationMs`.
- * Proportional (the final {@link LEAD_IN_PROPORTION} of the step) but clamped
- * up to {@link LEAD_IN_FLOOR_MS} and never longer than the step itself.
- * Pure so it can be unit-tested without atom plumbing.
+ *
+ * Proportional (the final {@link LEAD_IN_PROPORTION} of the step), but:
+ *  - capped at `barDurationMs` (one bar) so chords longer than a bar don't
+ *    ghost the next chord for multiple bars — a 4-bar chord previews over its
+ *    final bar, not its final two bars;
+ *  - floored at {@link LEAD_IN_FLOOR_MS} so fast tempi still show the preview;
+ *  - never longer than the step itself.
+ *
+ * `barDurationMs` defaults to `Infinity` (no cap) so callers that don't supply
+ * a bar length keep the pure proportional+floor behaviour. Pure so it can be
+ * unit-tested without atom plumbing.
  */
-export function computeLeadInWindowMs(stepDurationMs: number): number {
+export function computeLeadInWindowMs(
+  stepDurationMs: number,
+  barDurationMs = Infinity,
+): number {
   if (stepDurationMs <= 0) return 0;
   const proportional = stepDurationMs * LEAD_IN_PROPORTION;
-  return Math.min(stepDurationMs, Math.max(proportional, LEAD_IN_FLOOR_MS));
+  const capped = Math.min(proportional, barDurationMs);
+  return Math.min(stepDurationMs, Math.max(capped, LEAD_IN_FLOOR_MS));
 }
 
 /**
  * True when the playhead is inside the lead-in window. `localFraction` is the
  * [0,1] fraction of the step elapsed (same source as the anticipation check).
+ * `barDurationMs` is forwarded to {@link computeLeadInWindowMs} so the window
+ * start matches the (bar-capped) duration.
  */
 export function isInLeadInWindow(
   localFraction: number,
   stepDurationMs: number,
+  barDurationMs = Infinity,
 ): boolean {
-  const windowMs = computeLeadInWindowMs(stepDurationMs);
+  const windowMs = computeLeadInWindowMs(stepDurationMs, barDurationMs);
   if (windowMs <= 0) return false;
   const startFraction = 1 - windowMs / stepDurationMs;
   return localFraction >= startFraction;
@@ -512,7 +528,10 @@ export const anticipationActiveAtom = atom((get): boolean => {
  * lasts exactly the window. Changes only when the active step / tempo changes.
  */
 export const leadInDurationMsAtom = atom((get): number =>
-  computeLeadInWindowMs(get(progressionStepDurationMsAtom)),
+  computeLeadInWindowMs(
+    get(progressionStepDurationMsAtom),
+    get(progressionBarDurationMsAtom),
+  ),
 );
 
 /**
@@ -527,6 +546,7 @@ export const leadInActiveAtom = atom((get): boolean => {
   return isInLeadInWindow(
     frame.localFraction,
     get(progressionStepDurationMsAtom),
+    get(progressionBarDurationMsAtom),
   );
 });
 

@@ -394,6 +394,19 @@ export const progressionStepDurationMsAtom = atom((get) => {
   return getProgressionDurationMs(step.duration, get(progressionTempoBpmAtom), beatsPerBar);
 });
 
+/**
+ * Duration of a single bar in milliseconds at the current tempo / meter. Used
+ * to cap the chord-transition lead-in window so long chords don't preview the
+ * next chord for multiple bars.
+ */
+export const progressionBarDurationMsAtom = atom((get) =>
+  getProgressionDurationMs(
+    { value: 1, unit: "bar" },
+    get(progressionTempoBpmAtom),
+    get(beatsPerBarAtom),
+  ),
+);
+
 export const progressionPlaybackBlockedReasonAtom = atom((get) => {
   const resolved = get(resolvedProgressionStepsAtom);
   if (resolved.length === 0) return "Add or load progression steps to start playback.";

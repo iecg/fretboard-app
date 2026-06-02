@@ -9,7 +9,7 @@ import {
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
 import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom } from "./progressionAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
@@ -670,6 +670,29 @@ describe("computeLeadInWindowMs", () => {
     expect(computeLeadInWindowMs(0)).toBe(0);
     expect(computeLeadInWindowMs(-100)).toBe(0);
   });
+
+  // Bar cap: chords longer than one bar preview over their final bar only.
+  it("caps a long (4-bar) chord's lead-in at one bar", () => {
+    // 8000ms step (4 bars), 2000ms bar. Proportional 50% = 4000ms (2 bars),
+    // capped to one bar = 2000ms.
+    expect(computeLeadInWindowMs(8000, 2000)).toBe(2000);
+  });
+  it("caps a 2-bar chord at one bar", () => {
+    // 4000ms step, 2000ms bar. Proportional = 2000ms, equal to the cap.
+    expect(computeLeadInWindowMs(4000, 2000)).toBe(2000);
+  });
+  it("leaves a 1-bar chord at its proportional window (cap does not bind)", () => {
+    // 2000ms step == 1 bar. Proportional = 1000ms, below the 2000ms cap.
+    expect(computeLeadInWindowMs(2000, 2000)).toBe(1000);
+  });
+  it("still honors the readable floor for a short chord under the cap", () => {
+    // 800ms step, 2000ms bar. Proportional 400 < floor 600 → 600.
+    expect(computeLeadInWindowMs(800, 2000)).toBe(600);
+  });
+  it("treats an Infinity bar (no cap) as the pure proportional window", () => {
+    expect(computeLeadInWindowMs(8000, Infinity)).toBe(4000);
+    expect(computeLeadInWindowMs(8000)).toBe(4000);
+  });
 });
 
 describe("isInLeadInWindow", () => {
@@ -680,6 +703,14 @@ describe("isInLeadInWindow", () => {
   });
   it("is false for a non-positive step", () => {
     expect(isInLeadInWindow(0.9, 0)).toBe(false);
+  });
+  it("starts later for a long chord when the bar cap applies", () => {
+    // 8000ms step, 2000ms bar → window 2000ms → starts at fraction 0.75
+    // (vs 0.5 uncapped). The preview is the final bar only.
+    expect(isInLeadInWindow(0.74, 8000, 2000)).toBe(false);
+    expect(isInLeadInWindow(0.76, 8000, 2000)).toBe(true);
+    // Uncapped (no bar) the same step would already be in-window at 0.6.
+    expect(isInLeadInWindow(0.6, 8000)).toBe(true);
   });
 });
 
@@ -816,10 +847,26 @@ describe("leadInActiveAtom / leadInDurationMsAtom", () => {
     return store;
   }
 
-  it("leadInDurationMsAtom matches computeLeadInWindowMs of the active step", () => {
+  it("leadInDurationMsAtom matches the bar-capped window of the active step", () => {
     const store = makeDefaultStore();
     const stepMs = store.get(progressionStepDurationMsAtom);
-    expect(store.get(leadInDurationMsAtom)).toBe(computeLeadInWindowMs(stepMs));
+    const barMs = store.get(progressionBarDurationMsAtom);
+    expect(store.get(leadInDurationMsAtom)).toBe(computeLeadInWindowMs(stepMs, barMs));
+  });
+
+  it("caps leadInDurationMsAtom at one bar for a multi-bar chord", () => {
+    const store = makeDefaultStore();
+    // Replace the active step with a 4-bar chord.
+    store.set(progressionStepsAtom, [
+      { id: "long", degree: "I", duration: { value: 4, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    const barMs = store.get(progressionBarDurationMsAtom);
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    // ~4 bars (per-call rounding makes 4-bar ≠ exactly 4× a 1-bar value).
+    expect(stepMs).toBeGreaterThan(barMs * 3);
+    // Proportional would be ~2 bars; the cap pins it to one bar.
+    expect(store.get(leadInDurationMsAtom)).toBe(barMs);
   });
 
   it("is false when not playing", () => {
