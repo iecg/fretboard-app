@@ -31,8 +31,6 @@ export type LeadLensContext = {
   notePc: string;
   /** Notes shared between the active chord and the next chord (common tones). */
   commonWithNext: Set<string>;
-  /** Guide tones (3rd/7th) of the next chord — kept for clarity / future use. */
-  nextGuideTones: Set<string>;
   /** ALL pitch classes of the next chord. */
   nextChordTones: Set<string>;
   /** Pitch classes the next chord introduces (`next − current`). */

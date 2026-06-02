@@ -9,7 +9,6 @@ import {
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
-import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
 import { leadInActiveAtom, leadInDurationMsAtom } from "../../store/practiceLensAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
@@ -330,8 +329,6 @@ export function FretboardSVG({
   const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
-  const bpm = useAtomValue(progressionTempoBpmAtom);
-  const beatDurationSec = bpm > 0 ? 60 / bpm : 0.5;
   const leadInActive = useAtomValue(leadInActiveAtom);
   const leadInDurationMs = useAtomValue(leadInDurationMsAtom);
 
@@ -628,7 +625,6 @@ export function FretboardSVG({
       data-transition-phase={leadInActive ? "lead-in" : undefined}
       data-testid="fretboard-svg"
       style={{
-        "--beat-duration": `${beatDurationSec}s`,
         "--lead-in-duration": `${leadInDurationMs}ms`,
       } as CSSProperties}
     >

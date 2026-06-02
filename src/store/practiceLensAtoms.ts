@@ -3,7 +3,6 @@ import {
   NOTES,
   ENHARMONICS,
   INTERVAL_NAMES,
-  CHORD_DEFINITIONS,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
@@ -95,19 +94,6 @@ function memoizeNoteSemanticMap(next: Map<string, NoteSemantics>): Map<string, N
   }
   cachedNoteSemanticMap = next;
   return next;
-}
-
-/**
- * True when the playhead is inside the final beat of the active step — the
- * window in which the next chord's guide tones are previewed (anticipation).
- * Pure so it can be unit-tested without atom plumbing.
- */
-export function isInAnticipationWindow(
-  localFraction: number,
-  stepDurationBeats: number,
-): boolean {
-  if (stepDurationBeats <= 0) return false;
-  return localFraction >= (stepDurationBeats - 1) / stepDurationBeats;
 }
 
 /** Proportion of the step the lead-in ramp occupies (the final half). */
@@ -458,68 +444,14 @@ export const departingTonesAtom = atom((get): Set<string> => {
 });
 
 /**
- * Pitch-class set of guide tones (3rd and 7th) for the chord at the *next*
- * progression step. Used by the Lead lens anticipation window: when the
- * beat position enters the last beat of the current step, notes matching
- * these pitch classes receive "anticipation" emphasis.
- *
- * Guide tone detection mirrors `chordMembersAtom` / `GUIDE_TONE_RAW`:
- * filters ChordDefinition members whose name is b3, 3, b7, or 7, then
- * resolves the note from root + semitone offset.
- *
- * Returns an empty set when:
- * - The progression is empty.
- * - The next step is unavailable or missing root/quality.
- * - The next chord has no recognizable guide tones (e.g. power chords).
- */
-export const nextChordGuideTonesAtom = atom((get): Set<string> => {
-  const steps = get(resolvedProgressionStepsAtom);
-  if (steps.length === 0) return new Set();
-  const active = get(displayedProgressionStepIndexAtom);
-  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
-    return new Set();
-  }
-  const nextIndex = (active + 1) % steps.length;
-  const step = steps[nextIndex];
-  if (!step || step.unavailable || step.root === null || step.quality === null) {
-    return new Set();
-  }
-  const def = CHORD_DEFINITIONS[step.quality];
-  if (!def) return new Set();
-  const rootIndex = NOTES.indexOf(step.root);
-  if (rootIndex === -1) return new Set();
-  const guideTones = new Set<string>();
-  for (const member of def.members) {
-    if (GUIDE_TONE_RAW.has(member.name)) {
-      guideTones.add(NOTES[(rootIndex + member.semitone) % 12]);
-    }
-  }
-  return guideTones;
-});
-
-/**
- * Duration of the active progression step in beats.
- *
- * Exported for reuse in Task 4.5 (anticipation window check:
- * `beatPosition >= stepDurationBeats - 1`).
+ * Duration of the active progression step in beats. Derived from the active
+ * step's `duration` and the current meter (`beatsPerBar`).
  */
 export const activeStepDurationBeatsAtom = atom((get): number => {
   const step = get(activeResolvedProgressionStepAtom);
   if (!step || step.unavailable) return 0;
   const beatsPerBar = get(beatsPerBarAtom);
   return getProgressionDurationBeats(step.duration, beatsPerBar);
-});
-
-/**
- * Discrete anticipation phase. Reads the per-frame visual-frame atom but its
- * VALUE only flips at the last-beat threshold, so Jotai subscribers re-render
- * at most twice per step instead of every animation frame.
- */
-export const anticipationActiveAtom = atom((get): boolean => {
-  if (!get(progressionPlayingAtom)) return false;
-  const frame = get(progressionVisualFrameAtom);
-  if (!frame || frame.paused) return false;
-  return isInAnticipationWindow(frame.localFraction, get(activeStepDurationBeatsAtom));
 });
 
 /**
