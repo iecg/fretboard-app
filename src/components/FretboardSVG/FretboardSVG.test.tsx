@@ -473,8 +473,10 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  it("renders anticipation emphasis when the playback frame crosses the last-beat threshold", () => {
-    // Seed a I→V progression at localFraction=0.75 (beat 3 of 4 = anticipation active)
+  it("renders incoming-tone emphasis when the playback frame crosses the lead-in threshold", () => {
+    // Seed a I→V progression at localFraction=0.75 (inside the lead-in window).
+    // Current chord = C (C/E/G); next chord V = G (G/B/D) → B and D are the
+    // incoming tones the next chord introduces. Highlight them so they render.
     const store = createStore();
     store.set(progressionStepsAtom, [
       { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -490,11 +492,15 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
 
     const { container } = renderWithStore(
-      <FretboardSVG {...BASE_PROPS} {...C_MAJOR} />,
+      <FretboardSVG
+        {...BASE_PROPS}
+        {...C_MAJOR}
+        highlightNotes={["C", "E", "G", "B", "D"]}
+      />,
       store,
     );
 
-    expect(container.querySelectorAll('[data-lens-emphasis="var(--note-glow-anticipation)"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-lens-emphasis="var(--note-incoming)"]').length).toBeGreaterThan(0);
   });
 
   describe("shape scope and membership", () => {

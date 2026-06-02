@@ -58,6 +58,7 @@ function makeNote(noteClass: NoteClass, overrides: Partial<RenderedFretboardNote
     displayValue: "C",
     applyDimOpacity: false,
     applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
+    isInRegion: true,
     isHidden: false,
     isTension: false,
     isGuideTone: false,
