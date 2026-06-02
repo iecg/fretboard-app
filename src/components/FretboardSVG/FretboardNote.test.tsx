@@ -130,25 +130,3 @@ describe("FretboardNote — glow underlay sizing", () => {
   });
 });
 
-describe("FretboardNote — voice-leading offset CSS vars", () => {
-  it("emits --vl-dx/--vl-dy on the <g> when voiceLeadOffset is present", () => {
-    const glowColor = "var(--note-incoming)" as `var(--${string})`;
-    const { container } = renderNote(
-      makeNote({
-        transitionRole: "guide-target",
-        voiceLeadOffset: { dx: -30, dy: 20 },
-        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor },
-      }),
-    );
-    const g = container.querySelector("g[data-note-shape]") as SVGGElement;
-    expect(g.style.getPropertyValue("--vl-dx")).toBe("-30");
-    expect(g.style.getPropertyValue("--vl-dy")).toBe("20");
-  });
-
-  it("omits --vl-dx/--vl-dy when there is no voiceLeadOffset", () => {
-    const { container } = renderNote(makeNote({}));
-    const g = container.querySelector("g[data-note-shape]") as SVGGElement;
-    expect(g.style.getPropertyValue("--vl-dx")).toBe("");
-    expect(g.style.getPropertyValue("--vl-dy")).toBe("");
-  });
-});

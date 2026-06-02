@@ -75,7 +75,6 @@ export const FretboardNote = memo(function FretboardNote({
     degreeColor,
     fullChordShape,
     transitionRole,
-    voiceLeadOffset,
   } = note;
 
   const baseRadius = noteBubblePx / 2;
@@ -197,9 +196,6 @@ export const FretboardNote = memo(function FretboardNote({
         transformBox: "fill-box",
         transformOrigin: "center",
         transform: "scale(var(--emph-scale, 1))",
-        ...(voiceLeadOffset
-          ? { "--vl-dx": voiceLeadOffset.dx, "--vl-dy": voiceLeadOffset.dy }
-          : undefined),
         opacity: finalOpacity !== 1 ? finalOpacity : undefined,
         ...(degreeColor && degreeColorsEnabled
           ? { "--degree-color": degreeColor }

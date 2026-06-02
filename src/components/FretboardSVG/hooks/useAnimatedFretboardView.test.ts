@@ -238,35 +238,6 @@ describe("buildRenderedFretboardNotes (object identity)", () => {
   });
 });
 
-describe("buildRenderedFretboardNotes — voice-leading offsets", () => {
-  function makeNoteData(
-    o: Partial<NoteData> & Pick<NoteData, "stringIndex" | "fretIndex">,
-  ): NoteData {
-    return {
-      noteName: "C",
-      octave: 4,
-      noteClass: "chord-tone-in-scale",
-      displayName: "C",
-      displayValue: "C",
-      applyDimOpacity: false,
-      applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
-      isInRegion: true,
-      isHidden: false,
-      isTension: false,
-      isGuideTone: false,
-      ...o,
-    };
-  }
-
-  it("leaves voiceLeadOffset undefined when no transition roles are present", () => {
-    const noteData = [
-      makeNoteData({ stringIndex: 0, fretIndex: 3 }),
-      makeNoteData({ stringIndex: 1, fretIndex: 4 }),
-    ];
-    const rendered = buildRenderedFretboardNotes({ noteData, fretCenterX, stringYAt });
-    expect(rendered.every((n) => n.voiceLeadOffset === undefined)).toBe(true);
-  });
-});
 
 describe("useAnimatedFretboardView — no per-frame recompute", () => {
   it("does not re-run when the visual frame advances within the same step", () => {
