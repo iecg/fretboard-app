@@ -535,14 +535,27 @@ export const leadInDurationMsAtom = atom((get): number =>
 );
 
 /**
- * Discrete lead-in phase. Like `anticipationActiveAtom` it reads the per-frame
- * visual frame, but its VALUE only flips at the window threshold, so Jotai
+ * Discrete lead-in phase. Reads the per-frame visual frame, but its VALUE only
+ * flips at the window threshold (and the boundary gap below), so Jotai
  * subscribers re-render at most twice per step — never per animation frame.
+ *
+ * Boundary-gap coherence: the audio frame's `stepIndex` advances urgently, but
+ * the displayed step index (which drives the fretboard shape + chord emphasis
+ * sets) is committed via `startTransition` in the visual clock, so the shape
+ * advances a few frames later. If the highlight turned off the instant the
+ * frame crossed (localFraction → ~0), it would go dark while the old shape
+ * still showed, then the new shape would snap in — a visible delay that breaks
+ * the flow. So while the audio frame leads the displayed step, we hold the
+ * lead-in on: the ghost keeps previewing the next chord and promotes in the
+ * SAME commit the displayed step (and shape) advances.
  */
 export const leadInActiveAtom = atom((get): boolean => {
   if (!get(progressionPlayingAtom)) return false;
   const frame = get(progressionVisualFrameAtom);
   if (!frame || frame.paused) return false;
+  // Audio has crossed into a later step than the fretboard is showing — hold
+  // the highlight through the deferred-render gap until the shape catches up.
+  if (frame.stepIndex !== get(displayedProgressionStepIndexAtom)) return true;
   return isInLeadInWindow(
     frame.localFraction,
     get(progressionStepDurationMsAtom),

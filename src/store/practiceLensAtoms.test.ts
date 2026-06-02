@@ -900,4 +900,29 @@ describe("leadInActiveAtom / leadInDurationMsAtom", () => {
     store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: after, localFraction: after, paused: false });
     expect(store.get(leadInActiveAtom)).toBe(true);
   });
+
+  // Boundary-gap coherence: the audio frame advances to the next step urgently,
+  // but the displayed step index is deferred via startTransition (the fretboard
+  // shape advances a few frames later). The lead-in highlight must hold through
+  // this gap so the ghost promotes in the SAME commit the shape advances —
+  // otherwise the highlight turns off before the next shape appears (the
+  // flow-breaking delay).
+  it("stays true during the boundary gap (audio advanced, displayed step deferred)", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    // Displayed (deferred) step still 0; audio frame already crossed into step 1
+    // at the very start of that step (localFraction ~0).
+    store.set(displayedStepIndexPrimitiveAtom, 0);
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(true);
+  });
+
+  it("turns false once the displayed step catches up to the audio step", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    // Shape has advanced: displayed == audio frame step, early in the new step.
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0.05, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(false);
+  });
 });
