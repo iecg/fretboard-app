@@ -10,10 +10,14 @@ import {
 
 export type BoxBound = { minFret: number; maxFret: number };
 
+export type TransitionRole = "held" | "incoming" | "departing";
+
 export type LensEmphasis = {
   glowColor?: `var(--${string})`;
   radiusBoost: number;
   opacityBoost: number;
+  /** Discrete voice-leading role during the lead-in window; undefined = static. */
+  transitionRole?: TransitionRole;
 };
 
 /**
@@ -29,10 +33,14 @@ export type LeadLensContext = {
   commonWithNext: Set<string>;
   /** Guide tones (3rd/7th) of the next chord — kept for clarity / future use. */
   nextGuideTones: Set<string>;
-  /** ALL pitch classes of the next chord — used as the full anticipation gate. */
+  /** ALL pitch classes of the next chord. */
   nextChordTones: Set<string>;
-  /** Discrete phase: true only during the final beat of the active step. */
-  anticipationActive: boolean;
+  /** Pitch classes the next chord introduces (`next − current`). */
+  incomingTones: Set<string>;
+  /** Pitch classes the active chord drops on the change (`current − next`). */
+  departingTones: Set<string>;
+  /** True only during the lead-in preview window. */
+  leadInActive: boolean;
 };
 
 /**
@@ -69,44 +77,49 @@ export function getEmphasis(
   isGuideTone: boolean,
   leadContext?: LeadLensContext,
 ): LensEmphasis {
-  // Voice-leading emphasis based on how the current note relates to the
-  // upcoming chord change. Priority order (highest → lowest):
-  //   1. Anticipation — next chord's guide tone in the last beat window
-  //      (fires even on notes not in the current chord)
-  //   2. Hold — current chord tone that carries into the next chord
-  //   3. Departing — current chord tone that resolves away on the change
-  //   4. Tones base — guide-tone glow + scale-only dim
-  //
-  // When leadContext is not provided (e.g. no active progression),
-  // fall back to tones-base behavior so visuals still render meaningfully.
   if (!leadContext) {
     return applyTonesBase(noteClass, isGuideTone);
   }
 
-  const { notePc, commonWithNext, nextChordTones, anticipationActive } = leadContext;
+  const {
+    notePc,
+    commonWithNext,
+    incomingTones,
+    departingTones,
+    leadInActive,
+  } = leadContext;
 
   const isCurrentChordTone = CHORD_TONE_CLASSES.has(noteClass);
 
-  // 1. Anticipation: any pitch class of the next chord during the last-beat window.
-  //    Guide tones are a subset of nextChordTones, so they are naturally included.
-  if (anticipationActive && nextChordTones.has(notePc)) {
-    return { glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 };
+  if (leadInActive) {
+    // 1. Incoming: a pitch the next chord introduces. Ghost-ring preview.
+    if (incomingTones.has(notePc)) {
+      return {
+        glowColor: "var(--note-incoming)",
+        radiusBoost: 1,
+        opacityBoost: 1,
+        transitionRole: "incoming",
+      };
+    }
+    // 2. Departing: a current chord tone the next chord drops. Calm dim.
+    if (isCurrentChordTone && departingTones.has(notePc)) {
+      return { radiusBoost: 0.95, opacityBoost: 0.8, transitionRole: "departing" };
+    }
+    // 3. Held: a current chord tone that carries through. Steady, no pulse.
+    if (isCurrentChordTone && commonWithNext.has(notePc)) {
+      return {
+        glowColor: "var(--note-glow-hold)",
+        radiusBoost: 1.15,
+        opacityBoost: 1,
+        transitionRole: "held",
+      };
+    }
   }
 
-  // 2. Hold: current chord tone that persists into the next chord.
+  // 4. Static: held chord tones outside the window keep a gentle hold glow.
   if (isCurrentChordTone && commonWithNext.has(notePc)) {
-    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 };
+    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
   }
-
-  // 3. Departing: current chord tone that doesn't carry into the next chord.
-  //    Soft dim — keeps the note clearly playable while signalling that it's
-  //    about to leave. Avoids the F→G case (no common tones) where every
-  //    current-chord note would otherwise fade beyond legibility.
-  if (isCurrentChordTone && !commonWithNext.has(notePc)) {
-    return { radiusBoost: 0.95, opacityBoost: 0.85 };
-  }
-
-  // 4. Tones base.
   return applyTonesBase(noteClass, isGuideTone);
 }
 
