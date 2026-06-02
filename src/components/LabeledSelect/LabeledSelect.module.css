@@ -119,6 +119,7 @@
   max-width: min(90vw, 30rem);
   max-height: min(
     var(--radix-select-content-available-height, 60vh),
+    /* keep above the mobile bottom nav bar (see --mobile-bottom-nav-safe-zone in tokens.css) */
     calc(100dvh - var(--mobile-bottom-nav-safe-zone, 0px) - 1rem),
     480px
   );
