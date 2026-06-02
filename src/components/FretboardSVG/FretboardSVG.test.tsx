@@ -15,6 +15,7 @@ import {
   setProgressionPlayingAtom,
   progressionStepsAtom,
   beatsPerBarAtom,
+  progressionStepDeadlineAtom,
 } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 
@@ -490,6 +491,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       localFraction: 0.75,
       paused: false,
     });
+    store.set(progressionStepDeadlineAtom, Date.now() + 100);
 
     const { container } = renderWithStore(
       <FretboardSVG
@@ -768,6 +770,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(beatsPerBarAtom, 4);
       store.set(setProgressionPlayingAtom, true);
       store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
+      store.set(progressionStepDeadlineAtom, Date.now() + 100);
 
       const { container } = renderWithStore(
         <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
@@ -808,6 +811,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(beatsPerBarAtom, 4);
       store.set(setProgressionPlayingAtom, true);
       store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
+      store.set(progressionStepDeadlineAtom, Date.now() + 100);
 
       const { container } = renderWithStore(
         <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,

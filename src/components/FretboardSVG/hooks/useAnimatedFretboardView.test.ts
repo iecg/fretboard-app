@@ -9,6 +9,7 @@ import {
   setProgressionPlayingAtom,
   progressionStepsAtom,
   beatsPerBarAtom,
+  progressionStepDeadlineAtom,
 } from "../../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../../store/progressionVisualAtoms";
 
@@ -99,6 +100,7 @@ describe("useAnimatedFretboardView", () => {
         localFraction: 0.75,
         paused: false,
       });
+      store.set(progressionStepDeadlineAtom, Date.now() + 100);
     });
 
     const updatedView = result.current.view;
