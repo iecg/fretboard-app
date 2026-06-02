@@ -509,10 +509,23 @@ export const nextChordGuideTonesAtom = atom((get): Set<string> => {
   const rootIndex = NOTES.indexOf(step.root);
   if (rootIndex === -1) return new Set();
   const guideTones = new Set<string>();
+  let hasThird = false;
+  let hasSeventh = false;
   for (const member of def.members) {
     if (GUIDE_TONE_RAW.has(member.name)) {
       guideTones.add(NOTES[(rootIndex + member.semitone) % 12]);
+      if (member.name === "3" || member.name === "b3") hasThird = true;
+      if (member.name === "7" || member.name === "b7") hasSeventh = true;
     }
+  }
+  // Triad fallback: a chord with a 3rd but no 7th has only one guide tone, so
+  // add the 5th to give the soloist a second target. Power chords (no 3rd) get
+  // nothing — there's no quality-defining tone to aim for.
+  if (hasThird && !hasSeventh) {
+    const fifth = def.members.find(
+      (m) => m.name === "5" || m.name === "b5" || m.name === "#5",
+    );
+    if (fifth) guideTones.add(NOTES[(rootIndex + fifth.semitone) % 12]);
   }
   return guideTones;
 });

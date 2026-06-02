@@ -495,10 +495,10 @@ describe("nextChordGuideTonesAtom", () => {
     return store;
   }
 
-  it("returns the 3rd and 7th of the next chord (I→V in C Major: G Major has no 7th → returns 3rd B)", () => {
+  it("triad next chord (no 7th) returns 3rd + 5th (I→V in C Major: G major → B, D)", () => {
     const store = makeDefaultStore();
     const guideTones = store.get(nextChordGuideTonesAtom);
-    expect(guideTones).toEqual(new Set(["B"]));
+    expect(guideTones).toEqual(new Set(["B", "D"]));
   });
 
   it("returns both 3rd and 7th for a seventh chord", () => {
@@ -524,18 +524,26 @@ describe("nextChordGuideTonesAtom", () => {
     expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
   });
 
+  it("seventh chord does NOT add the 5th (3rd + 7th only)", () => {
+    const store = makeDefaultStore();
+    const steps = store.get(progressionStepsAtom);
+    store.set(progressionStepsAtom, steps.map((s, i) =>
+      i === 1 ? { ...s, qualityOverride: "7" } : s,
+    ));
+    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set(["B", "F"]));
+  });
+
   it("returns empty set when progression is empty", () => {
     const store = makeDefaultStore();
     store.set(progressionStepsAtom, []);
     expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set());
   });
 
-  it("wraps around: last step's next guide tones come from the first step", () => {
+  it("wraps around: last step's next guide tones come from the first step (C major → E, G)", () => {
     const store = makeDefaultStore();
     store.set(activeProgressionStepIndexAtom, 3);
     const guideTones = store.get(nextChordGuideTonesAtom);
-    expect(guideTones.has("E")).toBe(true);
-    expect(guideTones.size).toBe(1);
+    expect(guideTones).toEqual(new Set(["E", "G"]));
   });
 });
 
