@@ -117,6 +117,33 @@ export function articulationToDurationSec(
   }
 }
 
+/**
+ * Find the root the next chord change leads into, scanning forward from
+ * `fromIndex` and skipping rests / unavailable steps. Wraps to the start of
+ * the progression when `loop` is true. Returns undefined when nothing
+ * resolvable follows (end of a non-looping progression, or all-rest tail).
+ * Pure — used to target the §3.4 end-of-phrase chromatic approach note.
+ */
+export function nextResolvableRoot(
+  steps: readonly ResolvedProgressionStep[],
+  fromIndex: number,
+  loop: boolean,
+): string | undefined {
+  const n = steps.length;
+  for (let offset = 1; offset <= n; offset++) {
+    const rawIdx = fromIndex + offset;
+    if (rawIdx >= n && !loop) return undefined;
+    const candidate = steps[rawIdx % n];
+    if (
+      !candidate.unavailable &&
+      candidate.root !== null &&
+      candidate.quality !== null
+    ) {
+      return candidate.root;
+    }
+  }
+  return undefined;
+}
 
 interface VoicedDrumHit extends DrumHit {
   type: DrumVoice;

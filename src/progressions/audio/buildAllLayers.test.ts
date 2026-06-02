@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildAllLayersAsync,
   articulationToDurationSec,
+  nextResolvableRoot,
   MUTED_STRUM_DURATION_SEC,
   STAB_STRUM_DURATION_SEC,
   ROOT_STRUM_DURATION_SEC,
@@ -440,6 +441,44 @@ describe("buildAllLayers", () => {
       const inBar3 = (b: typeof base) => snares(b).filter((d) => d.time >= 12 && d.time < 16).length;
       expect(snares(withFill).length - snares(base).length).toBe(4);
       expect(inBar3(withFill) - inBar3(base)).toBe(4);
+    });
+  });
+
+  describe("nextResolvableRoot", () => {
+    it("returns the immediate next root", () => {
+      const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];
+      expect(nextResolvableRoot(steps, 0, false)).toBe("G");
+    });
+
+    it("skips an unavailable/rest step to the next real chord", () => {
+      const steps = [
+        step({ root: "C" }),
+        step({ id: "r", index: 1, unavailable: true, root: null, quality: null }),
+        step({ id: "g", index: 2, root: "G" }),
+      ];
+      expect(nextResolvableRoot(steps, 0, false)).toBe("G");
+    });
+
+    it("loop-wraps to the first root from the last step", () => {
+      const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];
+      expect(nextResolvableRoot(steps, 1, true)).toBe("C");
+    });
+
+    it("returns undefined at the end when not looping", () => {
+      const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];
+      expect(nextResolvableRoot(steps, 1, false)).toBeUndefined();
+    });
+
+    it("returns undefined when no later step is resolvable", () => {
+      const steps = [
+        step({ root: "C" }),
+        step({ id: "r", index: 1, unavailable: true, root: null, quality: null }),
+      ];
+      expect(nextResolvableRoot(steps, 0, false)).toBeUndefined();
+    });
+
+    it("returns undefined for an empty progression", () => {
+      expect(nextResolvableRoot([], 0, true)).toBeUndefined();
     });
   });
 });
