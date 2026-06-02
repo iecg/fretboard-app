@@ -73,6 +73,13 @@ export interface CatalogBassPattern {
   hits: readonly CatalogBassHit[];
   /** Cell length in bars (default 1). See ChordPattern.bars. */
   bars?: number;
+  /** When true, on the last bar of a step that precedes a chord change the
+   *  scheduler replaces this pattern's tail with a single chromatic-approach
+   *  note on the bar's last beat, leading into the next chord's root (Slice 2
+   *  §3.4). Omitted = the pattern plays unchanged on every bar. Leave omitted
+   *  for patterns that already embed their own approach/lead-in on the last
+   *  beat (e.g. `walking`), so they don't double up. */
+  turnaround?: boolean;
 }
 
 export interface CatalogDrumPattern {
@@ -252,6 +259,7 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
       { beat: 0, velocity: 1, note: "root" },
       { beat: 2, velocity: 0.85, note: "fifth" },
     ],
+    turnaround: true,
   },
   {
     id: "walking",
@@ -272,6 +280,7 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
       { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
       { beat: 3, velocity: 0.7, note: "octave", articulation: "legato" },
     ],
+    turnaround: true,
   },
   {
     id: "shuffle",
@@ -285,6 +294,7 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
       { beat: 2, velocity: 0.85, note: "fifth", articulation: "legato" },
       { beat: 3.5, velocity: 0.6, note: "root", articulation: "legato" },
     ],
+    turnaround: true,
   },
   {
     id: "pedal",
@@ -324,6 +334,7 @@ export const BASS_PATTERNS: readonly CatalogBassPattern[] = [
       { beat: 0, velocity: 1, note: "root", articulation: "legato" },
       { beat: 2, velocity: 0.8, note: "fifth", articulation: "legato" },
     ],
+    turnaround: true,
   },
 ];
 
