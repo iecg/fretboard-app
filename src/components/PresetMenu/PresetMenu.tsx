@@ -4,6 +4,8 @@ import clsx from "clsx";
 import type { SuggestionFeel } from "../../progressions/progressionGeneration";
 import styles from "./PresetMenu.module.css";
 
+const COLLISION_PADDING = { top: 8, right: 8, bottom: 8, left: 8 } as const;
+
 export interface PresetMenuOption {
   id: string;
   label: string;
@@ -119,12 +121,7 @@ export function PresetMenu({
           className={styles["preset-menu-content"]}
           sideOffset={4}
           align="start"
-          collisionPadding={{
-            top: 8,
-            right: 8,
-            bottom: 8,
-            left: 8,
-          }}
+          collisionPadding={COLLISION_PADDING}
         >
           {categories.map((category) => (
             <DropdownMenu.Sub key={category.label}>
@@ -137,12 +134,7 @@ export function PresetMenu({
                   className={styles["preset-menu-content"]}
                   sideOffset={2}
                   alignOffset={-4}
-                  collisionPadding={{
-                    top: 8,
-                    right: 8,
-                    bottom: 8,
-                    left: 8,
-                  }}
+                  collisionPadding={COLLISION_PADDING}
                 >
                   {category.options.map((option) => (
                     <MenuOption
@@ -170,12 +162,7 @@ export function PresetMenu({
                     className={styles["preset-menu-content"]}
                     sideOffset={2}
                     alignOffset={-4}
-                    collisionPadding={{
-                      top: 8,
-                      right: 8,
-                      bottom: 8,
-                      left: 8,
-                    }}
+                    collisionPadding={COLLISION_PADDING}
                   >
                     {suggestionGroups.map((group, index) => (
                       <DropdownMenu.Group key={group.feel}>

@@ -70,7 +70,9 @@
   max-width: min(90vw, 22rem);
   max-height: min(
     var(--radix-dropdown-menu-content-available-height, 60vh),
-    /* keep above the mobile bottom nav bar (see --mobile-bottom-nav-safe-zone in tokens.css) */
+    /* keep above the mobile bottom nav bar (see --mobile-bottom-nav-safe-zone in tokens.css);
+       note: for SubContent this is a best-effort clamp — Radix collision avoidance handles
+       the precise boundary when the flyout opens mid-screen */
     calc(100dvh - var(--mobile-bottom-nav-safe-zone, 0px) - 1rem),
     480px
   );
