@@ -438,10 +438,20 @@
   to   { opacity: 0.7; transform: scale(1); }
 }
 
-/* Departing — calm dim; opacity already reduced inline via opacityBoost. */
+/* Departing — an active chord tone that leaves on the next change. It dims +
+   desaturates GRADUALLY over the lead-in window so it fades out in sync with the
+   incoming ghost ramping in (a cross-dissolve), instead of snapping. The dim
+   target (opacity 0.8, scale 0.95) is applied inline via the emphasis boost;
+   here we only stretch the transition to the full lead-in duration so the change
+   eases across the whole window. Gated to css-motion so reduced-motion snaps. */
+[data-motion="css"] .fretboard-note[data-transition-role="departing"] {
+  transition:
+    opacity var(--lead-in-duration, 0.6s) ease-out,
+    transform var(--lead-in-duration, 0.6s) ease-out;
+}
 .fretboard-note[data-transition-role="departing"] :is(circle, path, polygon) {
   filter: saturate(0.7);
-  transition: opacity 0.15s ease, filter 0.15s ease;
+  transition: filter var(--lead-in-duration, 0.6s) ease-out;
 }
 
 /* Held — steady hold glow, no pulse. */
@@ -455,6 +465,10 @@
     opacity: 0.6;          /* static ghost — information preserved, motion removed */
   }
   .fretboard-note circle.note-glow-underlay {
+    transition: none;
+  }
+  /* Departing snaps under reduced motion (the dim still applies, just no ramp). */
+  .fretboard-note[data-transition-role="departing"] :is(circle, path, polygon) {
     transition: none;
   }
 }
