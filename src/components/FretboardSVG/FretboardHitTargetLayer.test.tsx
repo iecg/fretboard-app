@@ -16,6 +16,7 @@ function makeNote(overrides: Partial<NoteData> = {}): NoteData {
     displayValue: "C",
     applyDimOpacity: false,
     applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
+    isInRegion: true,
     isHidden: false,
     isTension: false,
     isGuideTone: false,

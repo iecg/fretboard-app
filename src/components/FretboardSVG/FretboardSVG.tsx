@@ -10,6 +10,7 @@ import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
 import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { leadInActiveAtom, leadInDurationMsAtom } from "../../store/practiceLensAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -154,6 +155,7 @@ const areConnectorPropsEqual = (prev: any, next: any) => {
   if (prev.showChordConnectors !== next.showChordConnectors) return false;
   if (prev.connectorMotionMode !== next.connectorMotionMode) return false;
   if (prev.clipPathUrl !== next.clipPathUrl) return false;
+  if (prev.playbackActive !== next.playbackActive) return false;
 
   if (prev.yBounds?.minY !== next.yBounds?.minY || prev.yBounds?.maxY !== next.yBounds?.maxY) return false;
 
@@ -238,6 +240,7 @@ interface ChordConnectorEvaluatorProps {
   connectorMotionMode: import("./motionPolicy").FretboardMotionPolicy["connectorMode"];
   clipPathUrl: string;
   pass: "below" | "above";
+  playbackActive: boolean;
 }
 
 const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
@@ -256,6 +259,7 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
   connectorMotionMode,
   clipPathUrl,
   pass,
+  playbackActive,
 }: ChordConnectorEvaluatorProps) {
   const chordPolylines = useChordConnectorPolylines({
     noteData,
@@ -281,6 +285,7 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
       connectorMotionMode={connectorMotionMode}
       clipPathUrl={clipPathUrl}
       pass={pass}
+      playbackActive={playbackActive}
     />
   );
 }, areConnectorPropsEqual);
@@ -327,6 +332,8 @@ export function FretboardSVG({
   const intervalPairs = useAtomValue(intervalPairsAtom);
   const bpm = useAtomValue(progressionTempoBpmAtom);
   const beatDurationSec = bpm > 0 ? 60 / bpm : 0.5;
+  const leadInActive = useAtomValue(leadInActiveAtom);
+  const leadInDurationMs = useAtomValue(leadInDurationMsAtom);
 
   // Playback snapshot is subscribed here (inside the lazy boundary) so that
   // frame ticks stay contained to FretboardSVG rather than re-rendering the
@@ -618,8 +625,12 @@ export function FretboardSVG({
       className={styles["fretboard-board"]}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       data-full-chord-mode={fullChordVoicings?.length ? "true" : undefined}
+      data-transition-phase={leadInActive ? "lead-in" : undefined}
       data-testid="fretboard-svg"
-      style={{ "--beat-duration": `${beatDurationSec}s` } as CSSProperties}
+      style={{
+        "--beat-duration": `${beatDurationSec}s`,
+        "--lead-in-duration": `${leadInDurationMs}ms`,
+      } as CSSProperties}
     >
       <div
         className={styles["fretboard-neck"]}
@@ -697,6 +708,7 @@ export function FretboardSVG({
               showChordConnectors,
               connectorMotionMode: motionPolicy.connectorMode,
               clipPathUrl: svgDefUrl("fretboard-svg-box"),
+              playbackActive,
             };
             return (
               <>

@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
+import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -74,6 +74,7 @@ export const FretboardNote = memo(function FretboardNote({
     scaleDegree,
     degreeColor,
     fullChordShape,
+    transitionRole,
   } = note;
 
   const baseRadius = noteBubblePx / 2;
@@ -82,6 +83,9 @@ export const FretboardNote = memo(function FretboardNote({
   const r = noteShape === "squircle"
     ? reduceSquircleRadius(rawRadius)
     : reduceCircleRadius(rawRadius);
+  // The glow underlay is enlarged for squircles so the soft halo reads around
+  // the shape instead of being hidden under its filled corners.
+  const glowR = glowUnderlayRadiusPx(r, noteShape === "squircle");
 
   const fullChordStyle = fullChordShape
     ? {
@@ -182,6 +186,8 @@ export const FretboardNote = memo(function FretboardNote({
       data-note-guide-tone={isGuideTone || undefined}
       data-full-chord-mode={fullChordShape || undefined}
       data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
+      data-transition-role={transitionRole ?? undefined}
+      data-in-region={note.isInRegion ? "true" : undefined}
       data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       style={{
@@ -197,16 +203,15 @@ export const FretboardNote = memo(function FretboardNote({
         ...(fullChordStyle as React.CSSProperties),
       } as React.CSSProperties}
     >
-      {applyLensEmphasis.glowColor && (
-        <circle
-          className={styles["note-glow-underlay"]}
-          cx={cx}
-          cy={cy}
-          r={r}
-          style={{ fill: applyLensEmphasis.glowColor }}
-          aria-hidden="true"
-        />
-      )}
+      <circle
+        className={styles["note-glow-underlay"]}
+        cx={cx}
+        cy={cy}
+        r={glowR}
+        style={applyLensEmphasis.glowColor ? { fill: applyLensEmphasis.glowColor } : undefined}
+        data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
+        aria-hidden="true"
+      />
       {shapeEl}
       {displayFormat !== "none" && (
         <text x={cx} y={cy}>

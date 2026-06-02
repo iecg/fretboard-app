@@ -315,6 +315,8 @@ export function buildStaticFretboardTopology({
         displayValue,
         applyDimOpacity,
         applyLensEmphasis: DEFAULT_LENS_EMPHASIS,
+        transitionRole: undefined,
+        isInRegion: isInsideAnyPolygon || shapePolygons.length === 0,
         isHidden,
         isTension: effectiveSemantics?.isTension ?? false,
         isGuideTone: effectiveSemantics?.isGuideTone ?? false,

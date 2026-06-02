@@ -38,6 +38,8 @@ import {
   beatsPerBarAtom,
   progressionLoopEnabledAtom,
   progressionPlayingAtom,
+  progressionStepDurationMsAtom,
+  progressionBarDurationMsAtom,
 } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import {
@@ -106,6 +108,52 @@ export function isInAnticipationWindow(
 ): boolean {
   if (stepDurationBeats <= 0) return false;
   return localFraction >= (stepDurationBeats - 1) / stepDurationBeats;
+}
+
+/** Proportion of the step the lead-in ramp occupies (the final half). */
+const LEAD_IN_PROPORTION = 0.5;
+/** Minimum readable lead-in duration, so fast tempi still show the preview. */
+const LEAD_IN_FLOOR_MS = 600;
+
+/**
+ * Length of the lead-in preview window for a step of `stepDurationMs`.
+ *
+ * Proportional (the final {@link LEAD_IN_PROPORTION} of the step), but:
+ *  - capped at `barDurationMs` (one bar) so chords longer than a bar don't
+ *    ghost the next chord for multiple bars — a 4-bar chord previews over its
+ *    final bar, not its final two bars;
+ *  - floored at {@link LEAD_IN_FLOOR_MS} so fast tempi still show the preview;
+ *  - never longer than the step itself.
+ *
+ * `barDurationMs` defaults to `Infinity` (no cap) so callers that don't supply
+ * a bar length keep the pure proportional+floor behaviour. Pure so it can be
+ * unit-tested without atom plumbing.
+ */
+export function computeLeadInWindowMs(
+  stepDurationMs: number,
+  barDurationMs = Infinity,
+): number {
+  if (stepDurationMs <= 0) return 0;
+  const proportional = stepDurationMs * LEAD_IN_PROPORTION;
+  const capped = Math.min(proportional, barDurationMs);
+  return Math.min(stepDurationMs, Math.max(capped, LEAD_IN_FLOOR_MS));
+}
+
+/**
+ * True when the playhead is inside the lead-in window. `localFraction` is the
+ * [0,1] fraction of the step elapsed (same source as the anticipation check).
+ * `barDurationMs` is forwarded to {@link computeLeadInWindowMs} so the window
+ * start matches the (bar-capped) duration.
+ */
+export function isInLeadInWindow(
+  localFraction: number,
+  stepDurationMs: number,
+  barDurationMs = Infinity,
+): boolean {
+  const windowMs = computeLeadInWindowMs(stepDurationMs, barDurationMs);
+  if (windowMs <= 0) return false;
+  const startFraction = 1 - windowMs / stepDurationMs;
+  return localFraction >= startFraction;
 }
 
 // Guide tone members: 3rd and 7th
@@ -353,26 +401,60 @@ export const nextChordTonesAtom = atom((get): Set<string> => {
 });
 
 /**
+ * Pitch-class set of the active progression chord. Reads the active step via
+ * `activeResolvedProgressionStepAtom` so the index is clamped to the current
+ * progression length. Sharps convention. Empty when unresolvable.
+ */
+export const activeChordTonesAtom = atom((get): Set<string> => {
+  const activeStep = get(activeResolvedProgressionStepAtom);
+  if (
+    !activeStep ||
+    activeStep.unavailable ||
+    activeStep.root === null ||
+    activeStep.quality === null
+  ) {
+    return new Set();
+  }
+  return new Set(getChordNotes(activeStep.root, activeStep.quality));
+});
+
+/**
  * Pitch-class set of notes shared between the active chord and the next chord
  * in the progression (common tones). Useful for the Lead lens to identify
  * pivot/guide notes when navigating between chords.
  *
- * Reads the active step via `activeResolvedProgressionStepAtom` so the index
- * is clamped to the current progression length — protects against transient
- * out-of-range states (e.g. after a step is removed).
+ * Reads the active step via `activeChordTonesAtom` so the index is clamped to
+ * the current progression length — protects against transient out-of-range
+ * states (e.g. after a step is removed).
  *
  * Both sets use the same sharps convention so the intersection is reliable.
  * Returns an empty set when the progression is empty or the active step is
  * unresolvable.
  */
 export const commonTonesWithNextAtom = atom((get): Set<string> => {
-  const activeStep = get(activeResolvedProgressionStepAtom);
-  if (!activeStep || activeStep.unavailable || activeStep.root === null || activeStep.quality === null) {
-    return new Set();
-  }
-  const activeTones = new Set(getChordNotes(activeStep.root, activeStep.quality));
+  const activeTones = get(activeChordTonesAtom);
   const next = get(nextChordTonesAtom);
   return new Set([...activeTones].filter((n) => next.has(n)));
+});
+
+/**
+ * Pitch classes the next chord introduces that the active chord lacks
+ * (`next − current`). These are the positions previewed as incoming ghosts.
+ */
+export const incomingTonesAtom = atom((get): Set<string> => {
+  const current = get(activeChordTonesAtom);
+  const next = get(nextChordTonesAtom);
+  return new Set([...next].filter((n) => !current.has(n)));
+});
+
+/**
+ * Pitch classes the active chord drops on the change (`current − next`).
+ */
+export const departingTonesAtom = atom((get): Set<string> => {
+  const current = get(activeChordTonesAtom);
+  const next = get(nextChordTonesAtom);
+  if (next.size === 0) return new Set();
+  return new Set([...current].filter((n) => !next.has(n)));
 });
 
 /**
@@ -438,6 +520,47 @@ export const anticipationActiveAtom = atom((get): boolean => {
   const frame = get(progressionVisualFrameAtom);
   if (!frame || frame.paused) return false;
   return isInAnticipationWindow(frame.localFraction, get(activeStepDurationBeatsAtom));
+});
+
+/**
+ * Length of the active step's lead-in preview window, in milliseconds. Written
+ * to the `--lead-in-duration` CSS custom property so the ghost ramp animation
+ * lasts exactly the window. Changes only when the active step / tempo changes.
+ */
+export const leadInDurationMsAtom = atom((get): number =>
+  computeLeadInWindowMs(
+    get(progressionStepDurationMsAtom),
+    get(progressionBarDurationMsAtom),
+  ),
+);
+
+/**
+ * Discrete lead-in phase. Reads the per-frame visual frame, but its VALUE only
+ * flips at the window threshold (and the boundary gap below), so Jotai
+ * subscribers re-render at most twice per step — never per animation frame.
+ *
+ * Boundary-gap coherence: the audio frame's `stepIndex` advances urgently, but
+ * the displayed step index (which drives the fretboard shape + chord emphasis
+ * sets) is committed via `startTransition` in the visual clock, so the shape
+ * advances a few frames later. If the highlight turned off the instant the
+ * frame crossed (localFraction → ~0), it would go dark while the old shape
+ * still showed, then the new shape would snap in — a visible delay that breaks
+ * the flow. So while the audio frame leads the displayed step, we hold the
+ * lead-in on: the ghost keeps previewing the next chord and promotes in the
+ * SAME commit the displayed step (and shape) advances.
+ */
+export const leadInActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  // Audio has crossed into a later step than the fretboard is showing — hold
+  // the highlight through the deferred-render gap until the shape catches up.
+  if (frame.stepIndex !== get(displayedProgressionStepIndexAtom)) return true;
+  return isInLeadInWindow(
+    frame.localFraction,
+    get(progressionStepDurationMsAtom),
+    get(progressionBarDurationMsAtom),
+  );
 });
 
 /**

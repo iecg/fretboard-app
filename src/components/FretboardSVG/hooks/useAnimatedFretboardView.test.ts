@@ -63,8 +63,8 @@ function makeWrapper(store: ReturnType<typeof createStore>) {
 }
 
 describe("useAnimatedFretboardView", () => {
-  it("updates rendered notes when emphasis context crosses the anticipation threshold", () => {
-    // Beat 1 of 4 (localFraction=0.25) → below anticipation threshold (0.75)
+  it("updates rendered notes when emphasis context crosses the lead-in threshold", () => {
+    // localFraction=0.25 → below the lead-in window threshold (0.5)
     const store = makePlayingStore(0.25);
     const wrapper = makeWrapper(store);
 
@@ -91,7 +91,7 @@ describe("useAnimatedFretboardView", () => {
     const initialView = result.current.view;
     const initialBNote = initialView.renderedNotes.find((note) => note.noteName === "B");
 
-    // Advance to beat 3 of 4 (localFraction=0.75) → crosses anticipation threshold
+    // Advance to localFraction=0.75 → crosses into the lead-in window
     act(() => {
       store.set(progressionVisualFrameAtom, {
         stepIndex: 0,
@@ -109,15 +109,16 @@ describe("useAnimatedFretboardView", () => {
     // noteData and renderedNotes must be new references (emphasis changed)
     expect(updatedView.noteData).not.toBe(initialView.noteData);
     expect(updatedView.renderedNotes).not.toBe(initialView.renderedNotes);
-    // B is a guide tone of V (G major) — should get anticipation glow at beat 3
+    // B is the 3rd of V (G major) — an incoming tone the next chord introduces,
+    // so its emphasis must change once the lead-in window opens.
     expect(updatedBNote?.applyLensEmphasis).not.toEqual(initialBNote?.applyLensEmphasis);
     // Geometry must be unchanged
     expect(updatedBNote?.cx).toBe(initialBNote?.cx);
     expect(updatedBNote?.cy).toBe(initialBNote?.cy);
   });
 
-  it("keeps noteData reference-stable when the frame advances within a step (below anticipation threshold)", () => {
-    // Beat 1 of 4 (localFraction=0.25) → below anticipation threshold (0.75)
+  it("keeps noteData reference-stable when the frame advances within a step (below lead-in threshold)", () => {
+    // localFraction=0.25 → below the lead-in window threshold (0.5)
     const store = makePlayingStore(0.25);
     const wrapper = makeWrapper(store);
 
@@ -142,14 +143,14 @@ describe("useAnimatedFretboardView", () => {
 
     const initialNoteData = result.current.view.noteData;
 
-    // Advance the frame within the same step — localFraction changes (0.25 → 0.50)
-    // but stays below the 0.75 anticipation threshold and stepIndex is unchanged.
+    // Advance the frame within the same step — localFraction changes (0.25 → 0.40)
+    // but stays below the lead-in window threshold (0.5) and stepIndex is unchanged.
     // Emphasis must NOT recompute: noteData keeps the same reference.
     act(() => {
       store.set(progressionVisualFrameAtom, {
         stepIndex: 0,
-        globalFraction: 0.25,
-        localFraction: 0.5,
+        globalFraction: 0.2,
+        localFraction: 0.4,
         paused: false,
       });
     });
@@ -170,6 +171,7 @@ describe("buildRenderedFretboardNotes (object identity)", () => {
       displayValue: "C",
       applyDimOpacity: false,
       applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
+      isInRegion: true,
       isHidden: false,
       isTension: false,
       isGuideTone: false,

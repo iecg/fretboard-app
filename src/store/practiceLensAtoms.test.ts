@@ -8,8 +8,8 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom } from "./practiceLensAtoms";
-import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom } from "./progressionAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, beatPositionAtom, activeStepDurationBeatsAtom, isInAnticipationWindow, anticipationActiveAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom } from "./practiceLensAtoms";
+import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
 import { effectiveShapeDataAtom } from "./shapeAtoms";
@@ -649,5 +649,280 @@ describe("anticipationActiveAtom", () => {
       stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: true,
     });
     expect(store.get(anticipationActiveAtom)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeLeadInWindowMs / isInLeadInWindow
+// ---------------------------------------------------------------------------
+
+describe("computeLeadInWindowMs", () => {
+  it("returns the proportional window for a long step", () => {
+    expect(computeLeadInWindowMs(2000)).toBe(1000);
+  });
+  it("clamps up to the readable floor for a short step", () => {
+    expect(computeLeadInWindowMs(800)).toBe(600);
+  });
+  it("never exceeds the step duration", () => {
+    expect(computeLeadInWindowMs(400)).toBe(400);
+  });
+  it("returns 0 for a non-positive step", () => {
+    expect(computeLeadInWindowMs(0)).toBe(0);
+    expect(computeLeadInWindowMs(-100)).toBe(0);
+  });
+
+  // Bar cap: chords longer than one bar preview over their final bar only.
+  it("caps a long (4-bar) chord's lead-in at one bar", () => {
+    // 8000ms step (4 bars), 2000ms bar. Proportional 50% = 4000ms (2 bars),
+    // capped to one bar = 2000ms.
+    expect(computeLeadInWindowMs(8000, 2000)).toBe(2000);
+  });
+  it("caps a 2-bar chord at one bar", () => {
+    // 4000ms step, 2000ms bar. Proportional = 2000ms, equal to the cap.
+    expect(computeLeadInWindowMs(4000, 2000)).toBe(2000);
+  });
+  it("leaves a 1-bar chord at its proportional window (cap does not bind)", () => {
+    // 2000ms step == 1 bar. Proportional = 1000ms, below the 2000ms cap.
+    expect(computeLeadInWindowMs(2000, 2000)).toBe(1000);
+  });
+  it("still honors the readable floor for a short chord under the cap", () => {
+    // 800ms step, 2000ms bar. Proportional 400 < floor 600 → 600.
+    expect(computeLeadInWindowMs(800, 2000)).toBe(600);
+  });
+  it("treats an Infinity bar (no cap) as the pure proportional window", () => {
+    expect(computeLeadInWindowMs(8000, Infinity)).toBe(4000);
+    expect(computeLeadInWindowMs(8000)).toBe(4000);
+  });
+});
+
+describe("isInLeadInWindow", () => {
+  it("is true once elapsed fraction crosses the window start", () => {
+    expect(isInLeadInWindow(0.49, 2000)).toBe(false);
+    expect(isInLeadInWindow(0.5, 2000)).toBe(true);
+    expect(isInLeadInWindow(0.95, 2000)).toBe(true);
+  });
+  it("is false for a non-positive step", () => {
+    expect(isInLeadInWindow(0.9, 0)).toBe(false);
+  });
+  it("starts later for a long chord when the bar cap applies", () => {
+    // 8000ms step, 2000ms bar → window 2000ms → starts at fraction 0.75
+    // (vs 0.5 uncapped). The preview is the final bar only.
+    expect(isInLeadInWindow(0.74, 8000, 2000)).toBe(false);
+    expect(isInLeadInWindow(0.76, 8000, 2000)).toBe(true);
+    // Uncapped (no bar) the same step would already be in-window at 0.6.
+    expect(isInLeadInWindow(0.6, 8000)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// transition delta atoms
+// ---------------------------------------------------------------------------
+
+describe("transition delta atoms", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("activeChordTonesAtom returns the active chord's tones", () => {
+    const store = makeDefaultStore();
+    expect(store.get(activeChordTonesAtom)).toEqual(new Set(["C", "E", "G"]));
+  });
+  it("incomingTonesAtom = next − current", () => {
+    const store = makeDefaultStore();
+    expect(store.get(incomingTonesAtom)).toEqual(new Set(["B", "D"]));
+  });
+  it("departingTonesAtom = current − next", () => {
+    const store = makeDefaultStore();
+    expect(store.get(departingTonesAtom)).toEqual(new Set(["C", "E"]));
+  });
+  it("returns empty deltas when there is no next chord", () => {
+    const store = makeDefaultStore();
+    store.set(progressionStepsAtom, []);
+    expect(store.get(incomingTonesAtom).size).toBe(0);
+    expect(store.get(departingTonesAtom).size).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// transition perf budget
+// ---------------------------------------------------------------------------
+
+describe("transition perf budget", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  /**
+   * Seed a store with a playing two-step I→V progression.
+   * Mirrors the pattern in the "leadInActiveAtom / leadInDurationMsAtom" block.
+   */
+  function makePlayingStore() {
+    const store = createStore();
+    // Subscribe once to trigger atomWithStorage init (same as other makeDefaultStore helpers).
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    store.set(progressionPlayingStateAtom, true);
+    return store;
+  }
+
+  it("frame writes within a phase do not notify the note-driving atoms", () => {
+    const store = makePlayingStore();
+
+    // Dynamically compute the window start so the test is robust to tempo/bar changes.
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const windowMs = computeLeadInWindowMs(stepMs);
+    const startFraction = 1 - windowMs / stepMs;
+    // Pick fractions strictly before the window start.
+    const safelyBefore = startFraction * 0.5;
+
+    // Prime the frame well before the lead-in window.
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: safelyBefore, localFraction: safelyBefore, paused: false });
+    // Force derived atom evaluation so Jotai caches the current values.
+    store.get(leadInActiveAtom);
+    store.get(incomingTonesAtom);
+
+    let leadInNotifs = 0;
+    let incomingNotifs = 0;
+    const u1 = store.sub(leadInActiveAtom, () => { leadInNotifs++; });
+    const u2 = store.sub(incomingTonesAtom, () => { incomingNotifs++; });
+
+    // Advance the frame several times, all staying before the window start.
+    const f1 = safelyBefore * 1.1;
+    const f2 = safelyBefore * 1.2;
+    const f3 = safelyBefore * 1.3;
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: f1, localFraction: f1, paused: false });
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: f2, localFraction: f2, paused: false });
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: f3, localFraction: f3, paused: false });
+
+    expect(leadInNotifs).toBe(0);   // boolean never flipped → no note re-render
+    expect(incomingNotifs).toBe(0); // delta set is frame-independent
+
+    u1(); u2();
+  });
+
+  it("crossing the lead-in threshold notifies leadInActiveAtom exactly once", () => {
+    const store = makePlayingStore();
+
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const windowMs = computeLeadInWindowMs(stepMs);
+    const startFraction = 1 - windowMs / stepMs;
+
+    // Start before the window.
+    const before = Math.max(0, startFraction - 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: before, localFraction: before, paused: false });
+    store.get(leadInActiveAtom);
+
+    let notifs = 0;
+    const u = store.sub(leadInActiveAtom, () => { notifs++; });
+
+    // Jump to well inside the window.
+    const inside = Math.min(0.999, startFraction + 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: inside, localFraction: inside, paused: false });
+    expect(notifs).toBe(1);
+    expect(store.get(leadInActiveAtom)).toBe(true);
+    u();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// leadInActiveAtom / leadInDurationMsAtom
+// ---------------------------------------------------------------------------
+
+describe("leadInActiveAtom / leadInDurationMsAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("leadInDurationMsAtom matches the bar-capped window of the active step", () => {
+    const store = makeDefaultStore();
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const barMs = store.get(progressionBarDurationMsAtom);
+    expect(store.get(leadInDurationMsAtom)).toBe(computeLeadInWindowMs(stepMs, barMs));
+  });
+
+  it("caps leadInDurationMsAtom at one bar for a multi-bar chord", () => {
+    const store = makeDefaultStore();
+    // Replace the active step with a 4-bar chord.
+    store.set(progressionStepsAtom, [
+      { id: "long", degree: "I", duration: { value: 4, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    const barMs = store.get(progressionBarDurationMsAtom);
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    // ~4 bars (per-call rounding makes 4-bar ≠ exactly 4× a 1-bar value).
+    expect(stepMs).toBeGreaterThan(barMs * 3);
+    // Proportional would be ~2 bars; the cap pins it to one bar.
+    expect(store.get(leadInDurationMsAtom)).toBe(barMs);
+  });
+
+  it("is false when not playing", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, false);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(false);
+  });
+
+  it("is false while paused", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.9, localFraction: 0.9, paused: true });
+    expect(store.get(leadInActiveAtom)).toBe(false);
+  });
+
+  it("flips true once the playhead crosses the window start", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const windowMs = computeLeadInWindowMs(stepMs);
+    const startFraction = 1 - windowMs / stepMs;
+    // just before the window start (clamped to >= 0)
+    const before = Math.max(0, startFraction - 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: before, localFraction: before, paused: false });
+    // Only assert "before is false" when there is genuinely a gap (window < whole step):
+    if (startFraction > 0) {
+      expect(store.get(leadInActiveAtom)).toBe(false);
+    }
+    const after = Math.min(0.999, startFraction + 0.05);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: after, localFraction: after, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(true);
+  });
+
+  // Boundary-gap coherence: the audio frame advances to the next step urgently,
+  // but the displayed step index is deferred via startTransition (the fretboard
+  // shape advances a few frames later). The lead-in highlight must hold through
+  // this gap so the ghost promotes in the SAME commit the shape advances —
+  // otherwise the highlight turns off before the next shape appears (the
+  // flow-breaking delay).
+  it("stays true during the boundary gap (audio advanced, displayed step deferred)", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    // Displayed (deferred) step still 0; audio frame already crossed into step 1
+    // at the very start of that step (localFraction ~0).
+    store.set(displayedStepIndexPrimitiveAtom, 0);
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(true);
+  });
+
+  it("turns false once the displayed step catches up to the audio step", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    // Shape has advanced: displayed == audio frame step, early in the new step.
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0.05, paused: false });
+    expect(store.get(leadInActiveAtom)).toBe(false);
   });
 });

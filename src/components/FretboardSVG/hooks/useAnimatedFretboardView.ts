@@ -46,17 +46,17 @@ export function buildAnimatedFretboardNotes({
         commonWithNext: emphasisContext.commonWithNext,
         nextGuideTones: emphasisContext.nextGuideTones,
         nextChordTones: emphasisContext.nextChordTones,
-        anticipationActive: emphasisContext.anticipationActive,
+        incomingTones: emphasisContext.incomingTones,
+        departingTones: emphasisContext.departingTones,
+        leadInActive: emphasisContext.leadInActive,
       };
     }
 
+    const applyLensEmphasis = getEmphasis(note.noteClass, note.isGuideTone, leadContext);
     return {
       ...note,
-      applyLensEmphasis: getEmphasis(
-        note.noteClass,
-        note.isGuideTone,
-        leadContext,
-      ),
+      applyLensEmphasis,
+      transitionRole: applyLensEmphasis.transitionRole,
     };
   });
 }
@@ -112,12 +112,14 @@ function renderedNoteSignature(
     emph.opacityBoost,
     emph.radiusBoost,
     emph.glowColor ?? "",
+    emph.transitionRole ?? "",
     note.isHidden,
     note.isTension,
     note.isGuideTone,
     note.scaleDegree ?? "",
     note.degreeColor ?? "",
     note.fullChordShape ?? "",
+    note.isInRegion,
   ].join("|");
 }
 

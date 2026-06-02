@@ -473,8 +473,10 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
-  it("renders anticipation emphasis when the playback frame crosses the last-beat threshold", () => {
-    // Seed a I→V progression at localFraction=0.75 (beat 3 of 4 = anticipation active)
+  it("renders incoming-tone emphasis when the playback frame crosses the lead-in threshold", () => {
+    // Seed a I→V progression at localFraction=0.75 (inside the lead-in window).
+    // Current chord = C (C/E/G); next chord V = G (G/B/D) → B and D are the
+    // incoming tones the next chord introduces. Highlight them so they render.
     const store = createStore();
     store.set(progressionStepsAtom, [
       { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -490,11 +492,15 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
 
     const { container } = renderWithStore(
-      <FretboardSVG {...BASE_PROPS} {...C_MAJOR} />,
+      <FretboardSVG
+        {...BASE_PROPS}
+        {...C_MAJOR}
+        highlightNotes={["C", "E", "G", "B", "D"]}
+      />,
       store,
     );
 
-    expect(container.querySelectorAll('[data-lens-emphasis="var(--note-glow-anticipation)"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-lens-emphasis="var(--note-incoming)"]').length).toBeGreaterThan(0);
   });
 
   describe("shape scope and membership", () => {
@@ -749,6 +755,74 @@ describe("FretboardSVG/FretboardSVG", () => {
 
       rerender(<FretboardSVG {...BASE_PROPS} />);
       getHitButtons().forEach((btn) => expect(btn.disabled).toBe(true));
+    });
+  });
+
+  describe("lead-in board signals", () => {
+    it("exposes --lead-in-duration and data-transition-phase during the lead-in window", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(beatsPerBarAtom, 4);
+      store.set(setProgressionPlayingAtom, true);
+      store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
+
+      const { container } = renderWithStore(
+        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        store,
+      );
+      const board = container.querySelector('[data-testid="fretboard-svg"]') as HTMLElement;
+      expect(board.getAttribute("data-transition-phase")).toBe("lead-in");
+      expect(board.style.getPropertyValue("--lead-in-duration")).not.toBe("");
+    });
+
+    it("data-transition-phase is absent when the frame is outside the lead-in window", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(beatsPerBarAtom, 4);
+      store.set(setProgressionPlayingAtom, true);
+      // localFraction 0.0 is well before the lead-in window starts (~0.5)
+      store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.0, localFraction: 0.0, paused: false });
+
+      const { container } = renderWithStore(
+        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        store,
+      );
+      const board = container.querySelector('[data-testid="fretboard-svg"]') as HTMLElement;
+      expect(board.getAttribute("data-transition-phase")).toBeNull();
+    });
+
+    it("incoming next-chord positions carry data-transition-role=incoming during lead-in", () => {
+      // I→V in C Major: next chord V = G(G/B/D); B and D are incoming tones.
+      // localFraction 0.75 is inside the lead-in window (starts ~0.5).
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(beatsPerBarAtom, 4);
+      store.set(setProgressionPlayingAtom, true);
+      store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
+
+      const { container } = renderWithStore(
+        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        store,
+      );
+
+      // B and D are the incoming tones (the next chord G introduces them).
+      const incoming = container.querySelectorAll('[data-transition-role="incoming"]');
+      expect(incoming.length).toBeGreaterThan(0);
+
+      // Every note also carries data-in-region. With no shapePolygons supplied,
+      // buildStaticFretboardTopology sets isInRegion = shapePolygons.length === 0 = true
+      // for every note, so this assertion passes (trivially: no polygons → all in-region).
+      const inRegionIncoming = container.querySelectorAll('[data-transition-role="incoming"][data-in-region="true"]');
+      expect(inRegionIncoming.length).toBeGreaterThan(0);
     });
   });
 });

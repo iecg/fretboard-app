@@ -211,9 +211,9 @@
   --caged-g-bg: rgba(204, 121, 167, 0.35);  /* G #CC79A7 (unchanged) */
 
   /* Lens-emphasis glows — light-mode rebound to the reference palette accents.
-     Anticipation = ORANGE rust (warm signal for the incoming chord change).
-     Hold         = CYAN teal  (cool signal for stable / sustained tones). */
-  --note-glow-anticipation: #b1431b;
+     Incoming = deeper green-teal (visible against warm wood contrast).
+     Hold     = CYAN teal  (cool signal for stable / sustained tones). */
+  --note-incoming: #0f9d72;  /* deeper green-teal for light wood contrast */
   --note-glow-hold:         #147088;
 
   /* Note ring tokens — light mode, reference palette */
