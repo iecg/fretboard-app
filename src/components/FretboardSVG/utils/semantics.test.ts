@@ -368,7 +368,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     const ctx: LeadLensContext = {
       ...baseLeadContext, notePc: "C", nextGuideTones: new Set<string>(),
     };
-    // Falls through to the base model: scale-only dims to its normal 0.7, NOT 0.4.
+    // Falls through to the base model: scale-only keeps its resting 0.7 — no dim.
     expect(getEmphasis("scale-only", false, ctx)).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
@@ -387,6 +387,5 @@ describe("getEmphasis - voice-leading emphasis", () => {
     };
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
   });
-
 
 });
