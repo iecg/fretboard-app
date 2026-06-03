@@ -145,6 +145,16 @@ describe("FretboardNote — guide-target interval label", () => {
   });
 });
 
+describe("FretboardNote — full-chord mode no longer recolors by shape", () => {
+  it("does not recolor notes by CAGED shape in full-chord mode", () => {
+    const { container } = renderNote(
+      makeNote({ noteClass: "chord-tone-in-scale", fullChordShape: "E" }),
+    );
+    const g = container.querySelector("g[data-note-shape]") as SVGGElement;
+    expect((g.style as CSSStyleDeclaration).getPropertyValue("--shape-fill")).toBe("");
+  });
+});
+
 describe("FretboardNote — chromatic diamond rendering", () => {
   it("renders a chord-tone-outside-scale note as a diamond <polygon>", () => {
     const { container } = renderNote(makeNote({ noteClass: "chord-tone-outside-scale" }));

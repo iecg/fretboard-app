@@ -7,22 +7,6 @@ import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, re
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
-const CAGED_SHAPE_CSS_VAR: Record<string, string> = {
-  E: "var(--caged-e)",
-  D: "var(--caged-d)",
-  C: "var(--caged-c)",
-  A: "var(--caged-a)",
-  G: "var(--caged-g)",
-};
-
-const CAGED_SHAPE_TEXT_VAR: Record<string, string> = {
-  E: "var(--caged-e-fg)",
-  D: "var(--caged-d-fg)",
-  C: "var(--caged-c-fg)",
-  A: "var(--caged-a-fg)",
-  G: "var(--caged-g-fg)",
-};
-
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   "root-active": "scale root",
   "chord-root": "chord root",
@@ -90,22 +74,6 @@ export const FretboardNote = memo(function FretboardNote({
   // The glow underlay is enlarged for squircles so the soft halo reads around
   // the shape instead of being hidden under its filled corners.
   const glowR = glowUnderlayRadiusPx(r, noteShape === "squircle");
-
-  const fullChordStyle = fullChordShape
-    ? {
-        "--shape-fill": CAGED_SHAPE_CSS_VAR[fullChordShape],
-        "--shape-stroke":
-          noteClass === "chord-root"
-            ? "var(--note-ring-tonic)"
-            : CAGED_SHAPE_CSS_VAR[fullChordShape],
-        "--shape-stroke-width":
-          noteClass === "chord-root" ? "3.2" : undefined,
-        "--text-fill":
-          noteClass === "chord-root"
-            ? "#ffffff"
-            : CAGED_SHAPE_TEXT_VAR[fullChordShape],
-      }
-    : undefined;
 
   const shapeEl =
     noteShape === "squircle" ? (
@@ -196,7 +164,6 @@ export const FretboardNote = memo(function FretboardNote({
         ...(degreeColor && degreeColorsEnabled
           ? { "--degree-color": degreeColor }
           : undefined),
-        ...(fullChordStyle as React.CSSProperties),
       } as React.CSSProperties}
     >
       <circle

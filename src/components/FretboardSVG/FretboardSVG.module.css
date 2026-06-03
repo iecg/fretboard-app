@@ -115,30 +115,6 @@
   stroke-width: 1.7;
 }
 
-/* Full-chord voicing mode: each note <g> carries --shape-fill and
-   --shape-stroke CSS variables computed inline from the CAGED shape
-   identity. Inner shape elements inherit from the <g> via var().
-   The `data-full-chord-mode` attribute on the board div gates this
-   so normal scale/chord mode is unaffected. */
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] :is(circle, path, polygon) {
-  fill: var(--shape-fill);
-  stroke: var(--shape-stroke, var(--shape-fill));
-  stroke-width: var(--shape-stroke-width, 1.9);
-}
-
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] text {
-  fill: var(--text-fill, #ffffff);
-}
-
-/* Light-theme full-chord-mode labels: shape colors are saturated, so revert
-   to the dark-mode treatment — white fill + 45%-opacity black stroke — instead
-   of the global light-mode INK + cream halo (which washes out against the
-   saturated shape fills). */
-:global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] text {
-  fill: var(--text-fill, #ffffff);
-  stroke: rgb(0 0 0 / 0.45);
-}
-
 /* note-inactive: usually hidden — neutral hollow fallback so it's never bare. */
 .fretboard-note.note-inactive :is(circle, path, polygon) {
   fill: none;

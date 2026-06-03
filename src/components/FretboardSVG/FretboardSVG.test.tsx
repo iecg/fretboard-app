@@ -252,12 +252,10 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(0);
     expect(container.querySelector('.chord-root[data-full-chord-mode]')).not.toBeNull();
     expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
-    const rootG = container.querySelector('.chord-root[data-full-chord-mode]');
-    expect(rootG).toHaveStyle({ "--shape-fill": "var(--caged-e)" });
-    expect(rootG).toHaveStyle({ "--shape-stroke": "var(--note-ring-tonic)" });
-    expect(
-      container.querySelector('.chord-root[data-full-chord-mode] text'),
-    ).toHaveStyle({ "--text-fill": "#ffffff" });
+    // Notes are no longer recolored by CAGED shape in full-chord mode — role-based
+    // colors apply in all voicing modes, so the <g> carries no --shape-fill style.
+    const rootG = container.querySelector('.chord-root[data-full-chord-mode]') as SVGGElement;
+    expect(rootG.style.getPropertyValue("--shape-fill")).toBe("");
   });
 
   it("hides chord connectors when showChordConnectors is false", () => {
