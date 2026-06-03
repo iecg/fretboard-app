@@ -352,12 +352,12 @@ describe("FretboardSVG/FretboardSVG", () => {
       },
       {
         role: "color-tone",
-        shape: "hexagon",
+        shape: "circle",
         props: { ...DORIAN, chordTones: ["D", "F", "A"], chordRoot: "D" },
       },
       {
         role: "note-blue",
-        shape: "hexagon",
+        shape: "diamond",
         props: { ...DORIAN },
       },
     ])("$role notes have data-note-shape=$shape", ({ role, shape, props }) => {

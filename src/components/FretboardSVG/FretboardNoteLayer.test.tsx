@@ -26,12 +26,8 @@ import {
   SQUIRCLE_RADIUS_REDUCTION_PX,
   squirclePath,
 } from "./utils/noteSizing";
-import {
-  formatAccidental,
-  RADIUS_SCALE_CHORD_ROOT,
-  RADIUS_SCALE_CHORD_TONE,
-  RADIUS_SCALE_NOTE_ACTIVE,
-} from "@fretflow/core";
+import { getNoteVisuals } from "./utils/semantics";
+import { formatAccidental } from "@fretflow/core";
 
 type NoteClass =
   | "chord-root"
@@ -137,7 +133,7 @@ describe("FretboardNoteLayer", () => {
 
   it("renders squircle as a superellipse path with halo for chord-root", () => {
     const noteBubblePx = 40;
-    const visualRadius = (noteBubblePx / 2) * 0.86 - SQUIRCLE_RADIUS_REDUCTION_PX;
+    const visualRadius = (noteBubblePx / 2) * getNoteVisuals("chord-root").radiusScale - SQUIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer([makeNote("chord-root")], { bubblePx: noteBubblePx });
 
     const paths = container.querySelectorAll("path");
@@ -156,7 +152,7 @@ describe("FretboardNoteLayer", () => {
 
   it("reduces circular note geometry by CIRCLE_RADIUS_REDUCTION_PX", () => {
     const noteBubblePx = 40;
-    const expectedCircleRadius = (noteBubblePx / 2) * 0.82 - CIRCLE_RADIUS_REDUCTION_PX;
+    const expectedCircleRadius = (noteBubblePx / 2) * getNoteVisuals("note-active").radiusScale - CIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer([makeNote("note-active")], { bubblePx: noteBubblePx });
     expect(Number(container.querySelector("circle")!.getAttribute("r"))).toBeCloseTo(expectedCircleRadius);
   });
@@ -241,15 +237,15 @@ describe("FretboardNoteLayer", () => {
     expect(shapeFor("chord-root")).toBe("squircle");
     expect(shapeFor("note-active")).toBe("circle");
     expect(shapeFor("chord-tone-outside-scale")).toBe("diamond");
-    expect(shapeFor("note-blue")).toBe("hexagon");
+    expect(shapeFor("note-blue")).toBe("diamond");
   });
 
-  it.each<{ role: NoteClass; scale: number; pathIndex: number; totalPaths: number }>([
-    { role: "chord-root", scale: RADIUS_SCALE_CHORD_ROOT, pathIndex: 1, totalPaths: 2 },
-    { role: "chord-tone-in-scale", scale: RADIUS_SCALE_CHORD_TONE, pathIndex: 0, totalPaths: 1 },
-  ])("$role squircle radius reduced by SQUIRCLE_RADIUS_REDUCTION_PX", ({ role, scale, pathIndex, totalPaths }) => {
+  it.each<{ role: NoteClass; pathIndex: number; totalPaths: number }>([
+    { role: "chord-root", pathIndex: 1, totalPaths: 2 },
+    { role: "chord-tone-in-scale", pathIndex: 0, totalPaths: 1 },
+  ])("$role squircle radius reduced by SQUIRCLE_RADIUS_REDUCTION_PX", ({ role, pathIndex, totalPaths }) => {
     const noteBubblePx = 40;
-    const expectedRadius = (noteBubblePx / 2) * scale - SQUIRCLE_RADIUS_REDUCTION_PX;
+    const expectedRadius = (noteBubblePx / 2) * getNoteVisuals(role).radiusScale - SQUIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer([makeNote(role)], { bubblePx: noteBubblePx });
     const paths = container.querySelectorAll("path");
     expect(paths.length).toBe(totalPaths);
@@ -264,7 +260,7 @@ describe("FretboardNoteLayer", () => {
   it("lens emphasis radiusBoost is applied as CSS transform scale, not baked into SVG geometry", () => {
     const noteBubblePx = 40, radiusBoost = 1.15;
     // Radius is computed WITHOUT radiusBoost — boost goes to --emph-scale CSS var instead
-    const expectedBaseRadius = (noteBubblePx / 2) * RADIUS_SCALE_NOTE_ACTIVE - CIRCLE_RADIUS_REDUCTION_PX;
+    const expectedBaseRadius = (noteBubblePx / 2) * getNoteVisuals("note-active").radiusScale - CIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer(
       [makeNote("note-active", { applyLensEmphasis: { radiusBoost, opacityBoost: 1 } })],
       { bubblePx: noteBubblePx },
