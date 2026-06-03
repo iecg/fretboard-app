@@ -476,8 +476,9 @@ describe("FretboardSVG/FretboardSVG", () => {
 
   it("lights guide tones of the next chord during the lead-in window", () => {
     // Seed a I→V progression at localFraction=0.75 (inside the lead-in window).
-    // Current chord = C (C/E/G); next chord V = G (G/B/D) → B and D are the
-    // guide tones (3rd/7th) of G major that receive the spotlight emphasis.
+    // Current chord = C (C/E/G); next chord V = G (G/B/D). Only B — the 3rd — is
+    // a guide tone of the G-major triad and receives the spotlight emphasis; D
+    // (the perfect 5th) is not a guide tone and stays dimmed.
     const store = createStore();
     store.set(progressionStepsAtom, [
       { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },

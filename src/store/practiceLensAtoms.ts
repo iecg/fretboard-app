@@ -482,14 +482,13 @@ export const departingTonesAtom = atom((get): Set<string> => {
  * *next* progression step. This is the canonical source for guide-tone logic —
  * {@link nextChordGuideTonesAtom} derives its Set directly from this Map's keys.
  *
- * Guide-tone rules:
- * - Always includes the 3rd (b3 or 3) when present.
- * - Always includes the 7th (b7 or 7) when present.
- * - Triad fallback: if a chord has a 3rd but no 7th, the 5th (b5/5/#5) is
- *   also added so the soloist has two target notes.
- * - dim7 has a bb7 — it is treated as a seventh chord (the bb7 suppresses the
- *   triad 5th-fallback to avoid a misleading extra target), but the bb7 itself
- *   is not emitted as a guide tone since it is not in GUIDE_TONE_RAW.
+ * Guide tones are strictly the 3rd and 7th — the "money notes" that define
+ * chord quality (the root and 5th are harmonically inert, so they are never
+ * targets):
+ * - Includes the 3rd (b3 or 3) when present.
+ * - Includes the 7th (b7 or 7) when present.
+ * - A triad (3rd, no 7th) yields a single target: the 3rd. dim7's bb7 is not a
+ *   GUIDE_TONE_RAW entry, so dim7 likewise yields just its b3.
  * - Power chords (no 3rd) return an empty Map — there is no quality-defining
  *   tone to aim for.
  *
@@ -513,27 +512,10 @@ export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
   const rootIndex = NOTES.indexOf(step.root);
   if (rootIndex === -1) return new Map();
   const labels = new Map<string, string>();
-  let hasThird = false;
-  let hasSeventh = false;
   for (const member of def.members) {
     if (GUIDE_TONE_RAW.has(member.name)) {
       labels.set(NOTES[(rootIndex + member.semitone) % 12], member.name);
-      if (member.name === "3" || member.name === "b3") hasThird = true;
-      if (member.name === "7" || member.name === "b7") hasSeventh = true;
-    } else if (member.name === "bb7") {
-      // doubly-flat 7th (dim7) — not a guide tone, but suppresses the triad
-      // 5th-fallback so dim7 doesn't get a misleading extra target.
-      hasSeventh = true;
     }
-  }
-  // Triad fallback: a chord with a 3rd but no 7th has only one guide tone, so
-  // add the 5th to give the soloist a second target. Power chords (no 3rd) get
-  // nothing — there's no quality-defining tone to aim for.
-  if (hasThird && !hasSeventh) {
-    const fifth = def.members.find(
-      (m) => m.name === "5" || m.name === "b5" || m.name === "#5",
-    );
-    if (fifth) labels.set(NOTES[(rootIndex + fifth.semitone) % 12], fifth.name);
   }
   return labels;
 });
