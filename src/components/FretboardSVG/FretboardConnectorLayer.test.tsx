@@ -165,6 +165,31 @@ describe("FretboardConnectorLayer", () => {
     expect(container.querySelector('g[data-render-path="animated"]')).toBeTruthy();
   });
 
+  it("enters with a fade by default (group mode, not playing)", () => {
+    const polylines = [makePolyline("0,5|1,5|2,5", "E")];
+    const { container } = renderInSvg(
+      <FretboardConnectorLayer
+        {...BASE_PROPS}
+        chordPolylines={polylines}
+        connectorMotionMode="group"
+      />,
+    );
+    expect(container.querySelector('g[data-render-path="animated"]')?.getAttribute("data-enter")).toBe("fade");
+  });
+
+  it("enters instantly during playback so the connector swaps in sync with the chord", () => {
+    const polylines = [makePolyline("0,5|1,5|2,5", "E")];
+    const { container } = renderInSvg(
+      <FretboardConnectorLayer
+        {...BASE_PROPS}
+        chordPolylines={polylines}
+        connectorMotionMode="group"
+        playbackActive
+      />,
+    );
+    expect(container.querySelector('g[data-render-path="animated"]')?.getAttribute("data-enter")).toBe("instant");
+  });
+
   it("renders a static connector wrapper when group fades are disabled", () => {
     const polylines = [makePolyline("0,5|1,5|2,5", "E")];
 

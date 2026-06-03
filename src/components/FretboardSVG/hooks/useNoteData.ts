@@ -31,6 +31,10 @@ export interface NoteData {
   displayValue: string;
   applyDimOpacity: boolean;
   applyLensEmphasis: LensEmphasis;
+  /** Discrete voice-leading role during the lead-in window. */
+  transitionRole?: import("../utils/semantics").TransitionRole;
+  /** Whether this position is inside the active chord/shape region. */
+  isInRegion: boolean;
   isHidden: boolean;
   isTension: boolean;
   isGuideTone: boolean;

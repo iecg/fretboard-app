@@ -303,234 +303,89 @@ describe("getEmphasis - voice-leading emphasis", () => {
     notePc: "A",
     commonWithNext: new Set<string>(),
     nextGuideTones: new Set<string>(),
+    nextGuideToneLabels: new Map<string, string>(),
     nextChordTones: new Set<string>(),
-    anticipationActive: false,
+    incomingTones: new Set<string>(),
+    departingTones: new Set<string>(),
+    leadInActive: true,
   };
 
-  // -------------------------------------------------------------------------
-  // Fallback: no leadContext → tones-base behavior
-  // -------------------------------------------------------------------------
   it("falls back to tones-base when leadContext is undefined", () => {
-    // Guide tone gets hold-glow token.
     expect(getEmphasis("chord-tone-in-scale", true, undefined))
       .toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 });
-    // Scale-only dims.
     expect(getEmphasis("scale-only", false, undefined))
       .toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
-    // Default chord tone → full intensity.
     expect(getEmphasis("chord-root", false, undefined))
       .toEqual({ radiusBoost: 1, opacityBoost: 1 });
   });
 
-  // -------------------------------------------------------------------------
-  // Hold: common tone with next chord
-  // -------------------------------------------------------------------------
-  it("marks common-tone chord note as hold (Am→Dm: A is common)", () => {
+  it("marks a next-chord guide tone as 'guide-target' with full opacity and NO size bloom", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "A",
-      commonWithNext: new Set(["A"]),
-    };
-    const result = getEmphasis("chord-tone-in-scale", false, ctx);
-    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 });
-  });
-
-  it("hold applies to chord-root class too (root is a common tone)", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "A",
-      commonWithNext: new Set(["A"]),
-    };
-    const result = getEmphasis("chord-root", false, ctx);
-    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 });
-  });
-
-  it("hold applies to chord-tone-outside-scale class", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "C",
-      commonWithNext: new Set(["C"]),
-    };
-    const result = getEmphasis("chord-tone-outside-scale", false, ctx);
-    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.2, opacityBoost: 1 });
-  });
-
-  // -------------------------------------------------------------------------
-  // Departing: current chord tone not in next chord
-  // -------------------------------------------------------------------------
-  it("marks chord-tone-not-in-common as departing (Am→Dm: C departs)", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "C",
-      commonWithNext: new Set(["A"]),
-    };
-    const result = getEmphasis("chord-tone-in-scale", false, ctx);
-    expect(result).toEqual({ radiusBoost: 0.95, opacityBoost: 0.85 });
-  });
-
-  it("departing overrides guide-tone emphasis (voice-leading > chord-quality)", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "C",
-      commonWithNext: new Set(["A"]),
-    };
-    const result = getEmphasis("chord-tone-in-scale", true /* isGuideTone */, ctx);
-    expect(result).toEqual({ radiusBoost: 0.95, opacityBoost: 0.85 });
-  });
-
-  it("non-chord-tone class does NOT get departing emphasis (only chord tones depart)", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "G",
-      commonWithNext: new Set(["A"]),
-    };
-    const result = getEmphasis("scale-only", false, ctx);
-    expect(result).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
-  });
-
-  // -------------------------------------------------------------------------
-  // Anticipation: next chord's guide tone during the last-beat window
-  // -------------------------------------------------------------------------
-  it("marks next-chord guide tones as anticipation when anticipationActive is true", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "F",
-      nextGuideTones: new Set(["F"]),
-      nextChordTones: new Set(["F"]),
-      anticipationActive: true,
-    };
-    const result = getEmphasis("scale-only", false, ctx);
-    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
-  });
-
-  it("anticipation fires even on notes not in the current chord", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "F",
-      nextGuideTones: new Set(["F"]),
-      nextChordTones: new Set(["F"]),
-      commonWithNext: new Set(["A"]),
-      anticipationActive: true,
-    };
-    const result = getEmphasis("note-inactive", false, ctx);
-    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
-  });
-
-  it("anticipation takes priority over hold when a note is both common AND a next-chord guide tone", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "A",
-      commonWithNext: new Set(["A"]),
-      nextGuideTones: new Set(["A"]),
-      nextChordTones: new Set(["A"]),
-      anticipationActive: true,
-    };
-    const result = getEmphasis("chord-tone-in-scale", false, ctx);
-    expect(result).toEqual({ glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1 });
-  });
-
-  it("does NOT mark anticipation when anticipationActive is false", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "F",
-      nextGuideTones: new Set(["F"]),
-      nextChordTones: new Set(["F"]),
-      anticipationActive: false,
-    };
-    const result = getEmphasis("scale-only", false, ctx);
-    expect(result).not.toMatchObject({ glowColor: "var(--note-glow-anticipation)" });
-    expect(result).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
-  });
-
-  it("anticipation: next-chord guide tone while anticipationActive", () => {
-    const ctx: LeadLensContext = {
-      notePc: "B",
-      commonWithNext: new Set<string>(),
+      ...baseLeadContext, notePc: "B",
       nextGuideTones: new Set(["B"]),
-      nextChordTones: new Set(["B"]),
-      anticipationActive: true,
+      nextGuideToneLabels: new Map([["B", "3"]]),
     };
+    // scale-only rests at radius 0.85; the target keeps that size (no bloom),
+    // is brought to full opacity, and gets the ring hue + role + label.
     expect(getEmphasis("scale-only", false, ctx)).toEqual({
-      glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1,
+      glowColor: "var(--note-incoming)", radiusBoost: 0.85, opacityBoost: 1,
+      transitionRole: "guide-target", guideTargetLabel: "3",
     });
   });
 
-  it("no anticipation when anticipationActive is false", () => {
+  it("guide-target fires regardless of the underlying noteClass", () => {
     const ctx: LeadLensContext = {
-      notePc: "B",
-      commonWithNext: new Set<string>(),
-      nextGuideTones: new Set(["B"]),
-      nextChordTones: new Set(["B"]),
-      anticipationActive: false,
+      ...baseLeadContext, notePc: "F", nextGuideTones: new Set(["F"]),
     };
-    // Falls through to tones-base (scale-only dim).
+    expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBe("guide-target");
+  });
+
+  it("a non-target scale note is UNCHANGED during lead-in (no dim)", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "C", nextGuideTones: new Set(["B"]),
+    };
     expect(getEmphasis("scale-only", false, ctx)).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
-  it("anticipation: any next-chord tone (not just guide tones) glows in the window", () => {
+  it("a non-target chord tone is UNCHANGED during lead-in (no dim)", () => {
     const ctx: LeadLensContext = {
-      notePc: "G",                              // e.g. the 5th of the next chord, not a guide tone
-      commonWithNext: new Set<string>(),
-      nextGuideTones: new Set<string>(["B"]),   // G is NOT a guide tone here
-      nextChordTones: new Set<string>(["G", "B", "D"]),
-      anticipationActive: true,
+      ...baseLeadContext, notePc: "C", nextGuideTones: new Set(["B"]),
     };
-    expect(getEmphasis("scale-only", false, ctx)).toEqual({
-      glowColor: "var(--note-glow-anticipation)", radiusBoost: 1.15, opacityBoost: 1,
+    expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({ radiusBoost: 1, opacityBoost: 1 });
+  });
+
+  it("a held common tone keeps its hold glow DURING the lead-in (no flicker)", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "A",
+      commonWithNext: new Set(["A"]), nextGuideTones: new Set(["B"]),
+    };
+    expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
+      glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1,
     });
   });
 
-  // -------------------------------------------------------------------------
-  // Tones-base fallthrough for non-chord, non-common, non-anticipated notes
-  // -------------------------------------------------------------------------
-  it("falls through to tones-base for scale-only notes (not in any chord)", () => {
-    const ctx: LeadLensContext = { ...baseLeadContext, notePc: "G" };
-    expect(getEmphasis("scale-only", false, ctx))
-      .toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
-  });
-
-  it("falls through to full intensity for inactive notes (no glow, no dim)", () => {
-    const ctx: LeadLensContext = { ...baseLeadContext, notePc: "G" };
-    expect(getEmphasis("note-inactive", false, ctx))
-      .toEqual({ radiusBoost: 1, opacityBoost: 1 });
-  });
-
-  it("guide tone emphasis fires for non-chord-tone classes when not departing or common", () => {
+  it("does NOT dim when there are no targets (empty guide set)", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext,
-      notePc: "F",
-      commonWithNext: new Set<string>(),
+      ...baseLeadContext, notePc: "C", nextGuideTones: new Set<string>(),
     };
-    // F is scale-only (not a chord tone in current chord), guide tone flag from semantics
-    const result = getEmphasis("scale-only", true /* isGuideTone */, ctx);
-    // Falls to tones-base: isGuideTone=true → hold-glow token
-    expect(result).toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 });
+    // Falls through to the base model: scale-only keeps its resting 0.7 — no dim.
+    expect(getEmphasis("scale-only", false, ctx)).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
-  // -------------------------------------------------------------------------
-  // CSS var token references for lens-emphasis glow colors
-  // -------------------------------------------------------------------------
-  it("uses CSS var references for lens-emphasis glow colors (anticipation path)", () => {
-    const leadCtx: LeadLensContext = {
-      notePc: "G",
-      commonWithNext: new Set<string>(),
-      nextGuideTones: new Set(["G"]),
-      nextChordTones: new Set(["G"]),
-      anticipationActive: true,
+  it("outside the lead-in window, a held common tone keeps a static hold glow (no role)", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "A", commonWithNext: new Set(["A"]), leadInActive: false,
     };
-    const result = getEmphasis("scale-only", false, leadCtx);
-    expect(result.glowColor).toBe("var(--note-glow-anticipation)");
+    expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
+      glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1,
+    });
   });
 
-  it("uses the hold-glow CSS var on a current chord tone that carries through", () => {
-    const leadCtx: LeadLensContext = {
-      notePc: "C",
-      commonWithNext: new Set(["C"]),
-      nextGuideTones: new Set<string>(),
-      nextChordTones: new Set<string>(),
-      anticipationActive: false,
+  it("outside the lead-in window, a guide tone produces no role", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "B", nextGuideTones: new Set(["B"]), leadInActive: false,
     };
-    const result = getEmphasis("chord-tone-in-scale", false, leadCtx);
-    expect(result.glowColor).toBe("var(--note-glow-hold)");
+    expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
   });
+
 });

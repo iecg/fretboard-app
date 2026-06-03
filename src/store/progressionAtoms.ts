@@ -394,6 +394,19 @@ export const progressionStepDurationMsAtom = atom((get) => {
   return getProgressionDurationMs(step.duration, get(progressionTempoBpmAtom), beatsPerBar);
 });
 
+/**
+ * Duration of a single bar in milliseconds at the current tempo / meter. Used
+ * to cap the chord-transition lead-in window so long chords don't preview the
+ * next chord for multiple bars.
+ */
+export const progressionBarDurationMsAtom = atom((get) =>
+  getProgressionDurationMs(
+    { value: 1, unit: "bar" },
+    get(progressionTempoBpmAtom),
+    get(beatsPerBarAtom),
+  ),
+);
+
 export const progressionPlaybackBlockedReasonAtom = atom((get) => {
   const resolved = get(resolvedProgressionStepsAtom);
   if (resolved.length === 0) return "Add or load progression steps to start playback.";
@@ -406,7 +419,22 @@ export const progressionPlaybackBlockedReasonAtom = atom((get) => {
 export const progressionPlayingAtom = atom((get) => get(progressionPlayingStateAtom));
 
 export const setProgressionActiveStepIndexAtom = atom(null, (get, set, index: number) => {
-  set(activeProgressionStepIndexAtom, clampProgressionIndex(index, get(progressionStepsAtom)));
+  const clamped = clampProgressionIndex(index, get(progressionStepsAtom));
+  set(activeProgressionStepIndexAtom, clamped);
+  // Keep the per-step deadline fresh on every advance DURING PLAYBACK. The audio
+  // loop drives steps through here (once per step), and leadInActiveAtom derives
+  // its step-relative lead-in progress from this deadline. Without this refresh
+  // the deadline would freeze at the first step's end and the lead-in/slide would
+  // stick ON for every chord after the first. Mirrors next/previousProgressionStepAtom.
+  if (get(progressionPlayingStateAtom)) {
+    const step = get(progressionStepsAtom)[clamped];
+    if (step) {
+      set(
+        progressionStepDeadlineAtom,
+        Date.now() + getProgressionDurationMs(step.duration, get(progressionTempoBpmAtom), get(beatsPerBarAtom)),
+      );
+    }
+  }
 });
 
 /**
