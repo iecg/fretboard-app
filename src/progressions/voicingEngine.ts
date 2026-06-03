@@ -57,6 +57,14 @@ function toNoteStrings(absolutes: number[]): string[] {
  * strings (e.g. ["C3","E3","G3","A4"]), or [] when the root or quality is
  * unrecognized (same contract as resolveChordVoicing — callers treat [] as
  * "no audible chord").
+ *
+ * Note on bass voice: tones are placed in ascending pitch-class order from
+ * `floorAbs`, NOT stacked from the root. So a chord whose root has a higher
+ * chroma than its other intervals comes out inverted (e.g. G major → D3 G3 B3,
+ * not G3 B3 D4). This is intentional — the bass line carries the root, and
+ * ascending-pitch-class placement is what lets the low-interval limit keep the
+ * grip clean. It is also a deliberate behavior change from the old root-stacked
+ * `resolveChordVoicing` on the strum path.
  */
 export function buildVoicing(
   root: string,

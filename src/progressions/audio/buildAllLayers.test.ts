@@ -228,7 +228,9 @@ describe("buildAllLayers", () => {
     });
     // Bar 2 starts at time 4; its color-stab on the "&" of 3 is at time 6.5.
     const bar2Color = out.chordStrums.find((s) => s.time === 6.5)!;
-    // Bar 2's lastVoicing = F major voice-led to the C triad; the grip voice-leads to that.
+    // Bar 2's lastVoicing = F major voice-led to the C triad; the grip voice-leads
+    // to that. resolveChordVoicing and the engine's buildVoicing return the same
+    // result for this input, so it models the threaded lastVoicing faithfully.
     const fVoicing = resolveChordVoicing("F", "M", undefined, ["C3", "E3", "G3"]);
     expect(bar2Color.value.voicing).toEqual(buildFunkColorVoicing("F", "M", fVoicing));
     // Rootless: the grip never contains the chord root pitch class.
@@ -407,7 +409,7 @@ describe("buildAllLayers", () => {
       chordPatternId: "jazz-comp",
       steps: [step({ duration: { value: 1, unit: "bar" } })], // C major
     });
-    // Default path: resolveChordVoicing keeps the root present (C3/E3/G3).
+    // Default path: the engine's buildVoicing keeps the root present (C major → C3).
     expect(out.chordStrums[0].value.voicing.some((n) => n === "C3")).toBe(true);
   });
 
