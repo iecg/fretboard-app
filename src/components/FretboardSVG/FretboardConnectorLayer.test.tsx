@@ -74,14 +74,14 @@ describe("FretboardConnectorLayer", () => {
       makePolyline("3,10|4,10|5,10", "G"),
     ];
 
-    // pass="below": halo + fill + spine per voicing (3 layers × 3 voicings = 9 paths)
+    // pass="below": line-only connector = halo + spine per voicing (2 layers × 3 voicings = 6 paths)
     const { container: belowContainer } = renderInSvg(
       <FretboardConnectorLayer {...BASE_PROPS} pass="below" chordPolylines={polylines} />,
     );
     const belowPaths = belowContainer.querySelectorAll("path");
-    expect(belowPaths.length).toBe(9);
+    expect(belowPaths.length).toBe(6);
     for (const path of belowPaths) {
-      expect(path.getAttribute("data-layer")).toMatch(/^(halo|fill|spine)$/);
+      expect(path.getAttribute("data-layer")).toMatch(/^(halo|spine)$/);
       expect(path.classList.contains("chord-connector--primary")).toBe(false);
       expect(path.classList.contains("chord-connector--secondary")).toBe(false);
       expect(path.getAttribute("data-voicing-role")).toBeNull();

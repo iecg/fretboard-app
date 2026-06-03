@@ -343,30 +343,24 @@
    All layers render in the "below" pass so note markers occlude the spine.
    Color driven by --chord-connector-color-N (see [data-layer] rule below).
    ----------------------------------------------------------------------- */
+/* Halo underlay — a soft, slightly wider stroke beneath the accent line so the
+   connector reads over busy wood grain and where lines cross. */
 .chord-connectors path[data-layer="halo"] {
-  stroke: none;
-}
-
-.chord-connectors path[data-layer="fill"] {
-  fill: currentColor;
-  fill-opacity: var(--chord-connector-fill-opacity, 0.15);
-  stroke: none;
-}
-
-/* Spine — single solid center line. */
-.chord-connectors path[data-layer="spine"] {
   fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6px;
-  stroke-opacity: 0.9;
+  stroke: var(--fb-connector-halo, rgb(0 0 0 / 0.5));
+  stroke-width: 4px;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* Close-voicing (isFallback) connectors read at full strength — same fill
-   opacity as full voicings, no de-emphasis. */
-.chord-connectors path[data-layer="fill"][data-fallback="true"] {
-  fill-opacity: var(--chord-connector-fill-opacity, 0.15);
+/* Spine — the solid accent center line connecting the voicing notes. */
+.chord-connectors path[data-layer="spine"] {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2px;
+  stroke-opacity: 0.95;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* -----------------------------------------------------------------------

@@ -29,9 +29,10 @@ const renderChordLayers = (
   pass: "below" | "above",
 ) => (
   <>
+    {/* Line-only connector: a halo underlay (legibility over wood) + the accent
+        center line, both drawn BELOW the notes so the markers occlude them. No
+        soft band fill — it muddied over the wood texture. */}
     {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill"))}
-    {/* Center line renders BELOW the notes so the markers occlude it. */}
     {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "spine"))}
   </>
 );
@@ -80,11 +81,11 @@ const renderAnimatedChordConnectorGroup = (
   </motion.g>
 );
 
-const renderChordPath = (v: ChordConnectorVoicing, layer: "halo" | "fill" | "spine") => (
+const renderChordPath = (v: ChordConnectorVoicing, layer: "halo" | "spine") => (
   <path
     key={`${layer}-${v.voicingKey}`}
     className={layer === "halo" ? undefined : styles["chord-connector-path"]}
-    d={layer === "spine" ? v.spinePath : v.paths.fill}
+    d={v.spinePath}
     data-layer={layer}
     data-caged-shape={v.shape}
     data-palette-index={v.paletteIndex + 1}

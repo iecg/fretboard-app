@@ -246,12 +246,13 @@ describe("FretboardSVG/FretboardSVG", () => {
       "G on string 2, fret 8, chord tone",
       "G on string 5, fret 10, chord tone",
     ]);
+    // Line-only connector: halo underlay + spine accent line, no band fill, no outline edges.
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
-    expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(0);
     expect(container.querySelectorAll('path[data-layer="spine"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(0);
     expect(container.querySelector('.chord-root[data-full-chord-mode]')).not.toBeNull();
-    expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
+    expect(container.querySelector('path[data-layer="spine"][data-caged-shape="E"]')).not.toBeNull();
     // Notes are no longer recolored by CAGED shape in full-chord mode — role-based
     // colors apply in all voicing modes, so the <g> carries no --shape-fill style.
     const rootG = container.querySelector('.chord-root[data-full-chord-mode]') as SVGGElement;
