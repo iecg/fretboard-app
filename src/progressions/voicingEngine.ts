@@ -21,6 +21,25 @@ export interface VoicingPreset {
   minLowIntervalSemitones: number;
 }
 
+/** Strum voicing selection weights — eyeball-tuned, adjustable. Lower cost wins. */
+export const STRUM_VOICING_SCORE_WEIGHTS = {
+  /** Voice-leading: distance to the previous chord. Dominates once a prev exists. */
+  lead: 2,
+  /** Keep the grip near the comp register center. */
+  center: 1,
+  /** Mild preference for compact grips. */
+  span: 0.3,
+  /** Mild discouragement of a 5th-in-bass (2nd-inversion) grip. */
+  bassFifth: 5,
+} as const;
+
+/**
+ * The register the whole comp gravitates toward (A3, low-mid). Sole register
+ * dial — raise for brighter/higher grips, lower for darker/open ones. Tuned by
+ * ear; the exact inversion per chord is an emergent consequence, not pinned.
+ */
+const REGISTER_CENTER = 45;
+
 /** Default strum voicing style for Rock / Pop / Blues / Ballad. */
 export const STRUM_PRESET: VoicingPreset = {
   includeRoot: true,
@@ -146,17 +165,17 @@ export const __testables = {
 
 /**
  * Build a clean, well-spaced strum voicing for a chord. Pure. Returns note
- * strings (e.g. ["C3","E3","G3","A4"]), or [] when the root or quality is
+ * strings (e.g. ["E3","A3","C4","G4"]), or [] when the root or quality is
  * unrecognized (same contract as resolveChordVoicing — callers treat [] as
  * "no audible chord").
  *
- * Note on bass voice: tones are placed in ascending pitch-class order from
- * `floorAbs`, NOT stacked from the root. So a chord whose root has a higher
- * chroma than its other intervals comes out inverted (e.g. G major → D3 G3 B3,
- * not G3 B3 D4). This is intentional — the bass line carries the root, and
- * ascending-pitch-class placement is what lets the low-interval limit keep the
- * grip clean. It is also a deliberate behavior change from the old root-stacked
- * `resolveChordVoicing` on the strum path.
+ * Strategy: generate → filter → score. All inversions (plus a spread-5th
+ * variant) are enumerated at two octave anchors and register-normalized.
+ * Candidates that violate spacing (low-interval limit) or put a color tone
+ * (6/9/13) on the top or bottom voice are rejected. The surviving pool is
+ * scored by voice-leading distance to the previous chord, proximity to
+ * REGISTER_CENTER, compactness, and a mild penalty for 5th-in-bass. The
+ * lowest-cost candidate wins (tie-broken deterministically).
  */
 export function buildVoicing(
   root: string,
@@ -188,57 +207,75 @@ export function buildVoicing(
   }
   if (members.length === 0) return [];
 
-  const chromasSorted = members
-    .map((m) => (rootIndex + m.semitone) % 12)
-    .sort((a, b) => a - b);
+  const tones: Tone[] = members.map((m) => ({
+    pc: (rootIndex + m.semitone) % 12,
+    role: roleOf(m.name),
+  }));
 
-  // Steps 2 + 3 — placement (low-interval limit) and register normalization,
-  // anchored from a given floor.
-  const place = (floorAbs: number): number[] => {
-    const placed: number[] = [];
-    for (let i = 0; i < chromasSorted.length; i++) {
-      const min = i === 0 ? floorAbs : placed[i - 1] + 1;
-      let abs = liftToPc(min, chromasSorted[i]);
-      // Low-interval limit: while below the threshold and tighter than the
-      // minimum interval above the voice below, raise an octave.
-      while (
-        i > 0 &&
-        abs < preset.lilThresholdAbs &&
-        abs - placed[i - 1] < preset.minLowIntervalSemitones
-      ) {
-        abs += 12;
-      }
-      placed.push(abs);
+  // Step 2 — generate candidates: every inversion (+ a spread-5th variant) at two
+  // octave anchors, each register-normalized.
+  const anchors = [preset.floorAbs, preset.floorAbs + 12];
+  const candidates: Voice[][] = [];
+  for (const anchor of anchors) {
+    for (let b = 0; b < tones.length; b++) {
+      const inv = buildInversion(tones, b, anchor);
+      candidates.push(normalizeRegister(inv, preset.ceilAbs));
+      const spread = spreadFifth(inv);
+      if (spread) candidates.push(normalizeRegister(spread, preset.ceilAbs));
     }
-    // Register normalization: drop the whole voicing an octave until the top
-    // voice fits under the ceiling.
-    while (placed.length > 0 && Math.max(...placed) > preset.ceilAbs) {
-      for (let i = 0; i < placed.length; i++) placed[i] -= 12;
-    }
-    return placed;
-  };
-
-  // Step 4 — spacing-safe voice leading. Each candidate already satisfies the
-  // spacing invariant, so voice leading can never reintroduce a low cluster.
-  if (prevVoicing && prevVoicing.length > 0) {
-    // Three octave anchors span C2–C4; register normalization folds anything above C5 back down.
-    const anchors = [
-      preset.floorAbs - 12,
-      preset.floorAbs,
-      preset.floorAbs + 12,
-    ];
-    const candidates = anchors.map((a) => toNoteStrings(place(a)));
-    let best = candidates[0];
-    let minDistance = Infinity;
-    for (const candidate of candidates) {
-      const d = calculateDistance(prevVoicing, candidate);
-      if (d < minDistance) {
-        minDistance = d;
-        best = candidate;
-      }
-    }
-    return best;
   }
 
-  return toNoteStrings(place(preset.floorAbs));
+  // Step 3 — filter to the hard invariants.
+  const valid = candidates.filter(
+    (c) =>
+      passesSpacing(c, preset.lilThresholdAbs, preset.minLowIntervalSemitones) &&
+      colorInternal(c),
+  );
+  const pool = valid.length > 0 ? valid : [fallbackStack(tones, preset)];
+
+  // Step 4 — score and select (deterministic).
+  const w = STRUM_VOICING_SCORE_WEIGHTS;
+  let best: Voice[] | null = null;
+  let bestKey: readonly [number, number, string] | null = null;
+  for (const cand of pool) {
+    const s = [...cand].sort((a, b) => a.abs - b.abs);
+    const notes = toNoteStrings(s.map((v) => v.abs));
+    const lead = prevVoicing && prevVoicing.length > 0 ? calculateDistance(prevVoicing, notes) : 0;
+    const center = s.reduce((acc, v) => acc + Math.abs(v.abs - REGISTER_CENTER), 0);
+    const span = s[s.length - 1].abs - s[0].abs;
+    const bassFifth = s[0].role === "fifth" ? 1 : 0;
+    const cost = w.lead * lead + w.center * center + w.span * span + w.bassFifth * bassFifth;
+    const key = [cost, s[0].abs, notes.join(",")] as const;
+    if (
+      bestKey === null ||
+      key[0] < bestKey[0] ||
+      (key[0] === bestKey[0] && key[1] < bestKey[1]) ||
+      (key[0] === bestKey[0] && key[1] === bestKey[1] && key[2] < bestKey[2])
+    ) {
+      best = s;
+      bestKey = key;
+    }
+  }
+  return best ? toNoteStrings(best.map((v) => v.abs)) : [];
+}
+
+/** Degenerate fallback: the old ascending stack, used only if every candidate is filtered out. */
+function fallbackStack(tones: Tone[], preset: VoicingPreset): Voice[] {
+  const sorted = [...tones].sort((a, b) => a.pc - b.pc);
+  const voices: Voice[] = [];
+  let prev = preset.floorAbs;
+  for (let i = 0; i < sorted.length; i++) {
+    const min = i === 0 ? preset.floorAbs : prev + 1;
+    let abs = liftToPc(min, sorted[i].pc);
+    while (
+      i > 0 &&
+      abs < preset.lilThresholdAbs &&
+      abs - prev < preset.minLowIntervalSemitones
+    ) {
+      abs += 12;
+    }
+    voices.push({ abs, role: sorted[i].role });
+    prev = abs;
+  }
+  return normalizeRegister(voices, preset.ceilAbs);
 }
