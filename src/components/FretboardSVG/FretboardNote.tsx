@@ -1,8 +1,9 @@
 import React, { memo } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { CHORD_ROOT_HALO_RADIUS_PX, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
+import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -74,7 +75,11 @@ export const FretboardNote = memo(function FretboardNote({
     scaleDegree,
     degreeColor,
     fullChordShape,
+    transitionRole,
   } = note;
+
+  const prefersReducedMotion = useReducedMotion();
+  const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -82,6 +87,9 @@ export const FretboardNote = memo(function FretboardNote({
   const r = noteShape === "squircle"
     ? reduceSquircleRadius(rawRadius)
     : reduceCircleRadius(rawRadius);
+  // The glow underlay is enlarged for squircles so the soft halo reads around
+  // the shape instead of being hidden under its filled corners.
+  const glowR = glowUnderlayRadiusPx(r, noteShape === "squircle");
 
   const fullChordStyle = fullChordShape
     ? {
@@ -181,7 +189,8 @@ export const FretboardNote = memo(function FretboardNote({
       data-note-tension={isTension || undefined}
       data-note-guide-tone={isGuideTone || undefined}
       data-full-chord-mode={fullChordShape || undefined}
-      data-lens-emphasis={applyLensEmphasis.glowColor ?? undefined}
+      data-transition-role={transitionRole ?? undefined}
+      data-in-region={note.isInRegion ? "true" : undefined}
       data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
       data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       style={{
@@ -197,17 +206,57 @@ export const FretboardNote = memo(function FretboardNote({
         ...(fullChordStyle as React.CSSProperties),
       } as React.CSSProperties}
     >
-      {applyLensEmphasis.glowColor && (
-        <circle
-          className={styles["note-glow-underlay"]}
-          cx={cx}
-          cy={cy}
-          r={r}
-          style={{ fill: applyLensEmphasis.glowColor }}
-          aria-hidden="true"
-        />
-      )}
+      <circle
+        className={styles["note-glow-underlay"]}
+        cx={cx}
+        cy={cy}
+        r={glowR}
+        style={applyLensEmphasis.glowColor ? { fill: applyLensEmphasis.glowColor } : undefined}
+        data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
+        aria-hidden="true"
+      />
+      {/* Guide-target countdown ring. CSS animates the scale CONTRACTION (the
+          beat countdown, timed to --lead-in-duration); motion owns OPACITY so
+          AnimatePresence fades it in on mount and OUT on removal — decoupling
+          the fade-out from React's (startTransition-jittered) unmount timing,
+          which is what caused the boundary flash. The ring lands bright on the
+          beat, then fades as the chord arrives. */}
+      <AnimatePresence>
+        {transitionRole === "guide-target" && (
+          <motion.circle
+            key="guide-ring"
+            className={styles["note-guide-ring"]}
+            data-guide-ring="true"
+            cx={cx}
+            cy={cy}
+            r={r + 4}
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.95 }}
+            exit={{ opacity: 0 }}
+            transition={guideFade}
+          />
+        )}
+      </AnimatePresence>
       {shapeEl}
+      <AnimatePresence>
+        {applyLensEmphasis.guideTargetLabel && (
+          <motion.text
+            key="guide-label"
+            className={styles["note-guide-label"]}
+            data-guide-label="true"
+            x={cx + r + 2}
+            y={cy - r - 2}
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={guideFade}
+          >
+            {applyLensEmphasis.guideTargetLabel}
+          </motion.text>
+        )}
+      </AnimatePresence>
       {displayFormat !== "none" && (
         <text x={cx} y={cy}>
           {formatAccidental(displayValue)}

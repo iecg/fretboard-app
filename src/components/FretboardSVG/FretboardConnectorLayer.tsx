@@ -16,6 +16,12 @@ interface FretboardConnectorLayerProps {
   connectorMotionMode: FretboardMotionPolicy["connectorMode"];
   clipPathUrl: string;
   pass: "below" | "above";
+  /**
+   * During playback the connector enters instantly (no fade-in) so it changes in
+   * sync with the notes instead of trailing them by the fade duration. The exit
+   * fade-out is kept so the outgoing voicing leaves gracefully.
+   */
+  playbackActive?: boolean;
 }
 
 const renderStaticChordConnectorGroup = (
@@ -56,6 +62,7 @@ const renderAnimatedChordConnectorGroup = (
     data-connector-source={connectorSource}
     data-motion="group"
     data-render-path="animated"
+    data-enter={skipInitial ? "instant" : "fade"}
     aria-hidden="true"
     pointerEvents="none"
   >
@@ -102,9 +109,13 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   connectorMotionMode,
   clipPathUrl,
   pass,
+  playbackActive = false,
 }: FretboardConnectorLayerProps) {
   const [prevMode, setPrevMode] = useState(connectorMotionMode);
-  const skipInitial = prevMode === "none" && connectorMotionMode === "group";
+  // Skip the enter fade when first turning the group fades on (none → group) or
+  // during playback (so the connector swaps in sync with the chord, not after).
+  const skipInitial =
+    (prevMode === "none" && connectorMotionMode === "group") || playbackActive;
 
   useLayoutEffect(() => {
     setPrevMode(connectorMotionMode);
