@@ -574,19 +574,15 @@
 }
 
 /* -----------------------------------------------------------------------
-   Chord-tone connector layer — three-pass halo + fill + outline render.
-   Halo layer: wide semi-transparent white stroke for background contrast.
-   Fill layer: low-opacity closed polygon beneath note bubbles.
-   Outline layer: thin contrasting stroke traced on top.
-   All layers use the same closed-path geometry (polygon or capsule).
-   Color driven by --chord-connector-color-N via data-palette-index attribute selectors.
+   Chord-tone connector layer — the ribbon connector.
+   Halo layer: disabled (stroke: none) so both themes match.
+   Fill layer: low-opacity translucent band beneath the note bubbles.
+   Spine layer: a single solid center line through the voicing notes.
+   All layers render in the "below" pass so note markers occlude the spine.
+   Color driven by --chord-connector-color-N (see [data-layer] rule below).
    ----------------------------------------------------------------------- */
 .chord-connectors path[data-layer="halo"] {
-  fill: none;
-  stroke: var(--chord-connector-halo-color, rgba(255, 255, 255, 0.5));
-  stroke-width: var(--chord-connector-halo-width, 3px);
-  stroke-linejoin: round;
-  stroke-linecap: round;
+  stroke: none;
 }
 
 .chord-connectors path[data-layer="fill"] {
@@ -595,50 +591,20 @@
   stroke: none;
 }
 
-.chord-connectors path[data-layer="outline"] {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: var(--chord-connector-outline-width, 1.25px);
-  stroke-opacity: var(--chord-connector-outline-opacity, 0.85);
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-/* Close-voicing fallback (rendered inside a CAGED/3NPS position that has no
-   full-chord template match). Dashed outline + softer fill make the substitute
-   nature legible at a glance without changing the voicing's color identity. */
-.chord-connectors path[data-layer="outline"][data-fallback="true"] {
-  stroke-dasharray: 5 3;
-  stroke-opacity: var(--chord-connector-fallback-outline-opacity, 0.75);
-}
-
-.chord-connectors path[data-layer="fill"][data-fallback="true"] {
-  fill-opacity: var(--chord-connector-fallback-fill-opacity, 0.08);
-}
-
-/* THROWAWAY PROTOTYPE — connector grouping-model spike.
-   "region" mode: closed enclosing hull. "hybrid" mode: region (softer fill)
-   plus a faint dotted centerline spine. Remove with the prototype. */
-.chord-connectors[data-connector-mode="hybrid"] path[data-layer="fill"] {
-  fill-opacity: var(--chord-connector-hybrid-fill-opacity, 0.1);
-}
-
+/* Spine — single solid center line. */
 .chord-connectors path[data-layer="spine"] {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.4px;
-  stroke-opacity: 0.55;
-  stroke-dasharray: 2 3;
+  stroke-width: 1.6px;
+  stroke-opacity: 0.9;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-/* Ribbon / edge-line center line: solid + crisp (the clean "mockup A" look). */
-.chord-connectors[data-connector-mode="ribbon"] path[data-layer="spine"],
-.chord-connectors[data-connector-mode="edge-line"] path[data-layer="spine"] {
-  stroke-width: 1.6px;
-  stroke-opacity: 0.9;
-  stroke-dasharray: none;
+/* Close-voicing (isFallback) connectors read at full strength — same fill
+   opacity as full voicings, no de-emphasis. */
+.chord-connectors path[data-layer="fill"][data-fallback="true"] {
+  fill-opacity: var(--chord-connector-fill-opacity, 0.15);
 }
 
 /* -----------------------------------------------------------------------
@@ -661,38 +627,16 @@
 .chord-connectors path[data-caged-shape="A"] { color: var(--caged-a); }
 .chord-connectors path[data-caged-shape="G"] { color: var(--caged-g); }
 
-/* THROWAWAY PROTOTYPE — connector grouping-model spike.
-   All alternative modes (everything except the current "tube") use the
-   higher-contrast close-voicing orange instead of the per-CAGED-shape colors,
-   which reads better over CAGED region shading. The [data-layer] attribute
-   lifts specificity above the palette-index / caged-shape rules above so this
-   wins regardless of source order. Remove with the prototype. */
-.chord-connectors:not([data-connector-mode="tube"]) path[data-layer] {
+/* The ribbon connector uses the higher-contrast close-voicing color instead of
+   the per-CAGED-shape colors, which reads better over CAGED region shading. The
+   [data-layer] attribute lifts specificity above the palette-index / caged-shape
+   rules above so this wins regardless of source order. */
+.chord-connectors path[data-layer] {
   color: var(--chord-connector-color-1); /* dark mode: Okabe-Ito orange #E69F00 */
 }
 
-:global([data-theme="modern-light"]) .chord-connectors:not([data-connector-mode="tube"]) path[data-layer] {
+:global([data-theme="modern-light"]) .chord-connectors path[data-layer] {
   color: var(--chord-connector-color-2); /* light mode: Okabe-Ito vermillion #D55E00 */
-}
-
-/* Drop the halo for the alternative connectors in BOTH themes so light matches
-   dark: the light theme's white halo otherwise reads as a pale gray ribbon on
-   light wood. With the halo gone, light mode uses the exact same orange + fill
-   opacity as dark mode. */
-.chord-connectors:not([data-connector-mode="tube"]) path[data-layer="halo"] {
-  stroke: none;
-}
-
-/* Normalize close-voicing (isFallback) connectors to full visibility in the
-   alternative modes — they should read as strongly as full voicings, not be
-   de-emphasized with the dashed / faded fallback treatment. */
-.chord-connectors:not([data-connector-mode="tube"]) path[data-layer="fill"][data-fallback="true"] {
-  fill-opacity: var(--chord-connector-fill-opacity, 0.15);
-}
-
-.chord-connectors:not([data-connector-mode="tube"]) path[data-layer="outline"][data-fallback="true"] {
-  stroke-dasharray: none;
-  stroke-opacity: var(--chord-connector-outline-opacity, 0.85);
 }
 
 /* -----------------------------------------------------------------------

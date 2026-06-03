@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { offsetOpenPolylinePath, offsetOutlinePath, polarSort } from "../utils/pathGeometry";
+import { offsetOpenPolylinePath } from "../utils/pathGeometry";
 import { type CagedShape } from "@fretflow/core";
 import {
   type ConnectorYBounds,
@@ -58,13 +58,8 @@ export interface ChordConnectorVoicing {
    */
   paths: { fill: string; outline: string };
   /**
-   * THROWAWAY PROTOTYPE (connector grouping-model spike): rounded closed
-   * enclosing region (convex hull offset) for "region"/"hybrid" render modes.
-   */
-  regionPath: string;
-  /**
-   * THROWAWAY PROTOTYPE: faint centerline through the voicing notes in string
-   * order, drawn over the region in "hybrid" mode as a path hint.
+   * Solid center line through the voicing notes in string order — the ribbon
+   * connector's spine, drawn under the note markers.
    */
   spinePath: string;
   /** Original chord-tone pixel positions in string-index order. */
@@ -715,8 +710,7 @@ function finalizeChordConnectorPolylines(
     const r = radii[idx]!;
     const pathStr = offsetOpenPolylinePath(pv.rawVertices, r);
     const paths = { fill: pathStr, outline: pathStr };
-    // THROWAWAY PROTOTYPE: region = rounded closed hull; spine = centerline.
-    const regionPath = offsetOutlinePath(polarSort(pv.rawVertices), r);
+    // Ribbon spine: solid center line through the voicing notes in string order.
     const spinePath = pv.rawVertices.length === 0
       ? ""
       : "M " + pv.rawVertices
@@ -724,7 +718,6 @@ function finalizeChordConnectorPolylines(
           .join(" L ");
     return {
       paths,
-      regionPath,
       spinePath,
       vertices: pv.rawVertices,
       paletteIndex: pv.paletteIndex,

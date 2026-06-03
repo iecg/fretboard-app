@@ -248,7 +248,8 @@ describe("FretboardSVG/FretboardSVG", () => {
     ]);
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
     expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
-    expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="spine"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(0);
     expect(container.querySelector('.chord-root[data-full-chord-mode]')).not.toBeNull();
     expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
     const rootG = container.querySelector('.chord-root[data-full-chord-mode]');
