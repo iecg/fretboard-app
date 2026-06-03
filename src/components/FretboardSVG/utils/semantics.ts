@@ -91,6 +91,14 @@ export function getEmphasis(
 
   const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive } = leadContext;
 
+  // The note's resting emphasis when not actively targeted — held common tones
+  // keep a gentle hold glow, everything else uses the base model. This is the
+  // size/shape a note shows OUTSIDE the lead-in window.
+  const resting: LensEmphasis =
+    CHORD_TONE_CLASSES.has(noteClass) && commonWithNext.has(notePc)
+      ? { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 }
+      : applyTonesBase(noteClass, isGuideTone);
+
   // Lead-in: bloom the next chord's guide tones, dim everything else. Only when
   // there ARE targets — an empty guide set (power chord / no next step) must not
   // dim the whole board for no reason.
@@ -104,15 +112,13 @@ export function getEmphasis(
         guideTargetLabel: nextGuideToneLabels.get(notePc),
       };
     }
-    return { radiusBoost: 1, opacityBoost: LEAD_IN_DIM_OPACITY };
+    // Dim the rest. Keep each note's RESTING size (don't force radiusBoost to 1)
+    // so non-target notes only fade — they never resize when the window opens or
+    // closes. Glow is dropped so the spotlight reads cleanly on the targets.
+    return { radiusBoost: resting.radiusBoost, opacityBoost: LEAD_IN_DIM_OPACITY };
   }
 
-  // Outside the window (or no targets): held common tones keep a gentle hold
-  // glow; everything else uses the base model.
-  if (CHORD_TONE_CLASSES.has(noteClass) && commonWithNext.has(notePc)) {
-    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
-  }
-  return applyTonesBase(noteClass, isGuideTone);
+  return resting;
 }
 
 export function classifyNote(

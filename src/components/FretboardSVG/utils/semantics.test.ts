@@ -336,11 +336,23 @@ describe("getEmphasis - voice-leading emphasis", () => {
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBe("guide-target");
   });
 
-  it("dims a non-target note during lead-in when targets exist", () => {
+  it("dims a non-target scale note but PRESERVES its resting size (no resize)", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "C", nextGuideTones: new Set(["B", "D"]),
+      ...baseLeadContext, notePc: "C", nextGuideTones: new Set(["B"]),
     };
-    expect(getEmphasis("chord-tone-in-scale", true, ctx)).toEqual({
+    // scale-only rests at radius 0.85; the dim must keep that — only opacity
+    // drops — so non-target scale notes never grow/shrink when the window opens.
+    expect(getEmphasis("scale-only", false, ctx)).toEqual({
+      radiusBoost: 0.85, opacityBoost: 0.4,
+    });
+  });
+
+  it("dims a non-target chord tone at its resting size (no resize)", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "C", nextGuideTones: new Set(["B"]),
+    };
+    // chord-tone-in-scale rests at radius 1; dim keeps 1, drops opacity to 0.4.
+    expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
       radiusBoost: 1, opacityBoost: 0.4,
     });
   });
