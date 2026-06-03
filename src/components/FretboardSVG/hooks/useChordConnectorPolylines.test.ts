@@ -557,9 +557,9 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
   });
 
   it("(c) uniform base radius regardless of fretted position count; offset adds linearly", () => {
-    // Uniform span base would be 0.42 × 36 = 15.12, but the chord-tone marker
-    // floor governs here: (36 / 2) × 0.95 + 2 = 19.1.
-    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 0)).toBeCloseTo(19.1);
+    // Uniform span base = 0.42 × 36 = 15.12 (above the chord-root squircle
+    // floor of ~14.5, so the base governs — a slim ribbon, not marker-width).
+    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 0)).toBeCloseTo(15.12);
     expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 0))
       .toBeGreaterThan(chordRootVisualRadiusPx(STRING_ROW_PX));
     const base = computeChordConnectorRadiusPx(STRING_ROW_PX, 0);

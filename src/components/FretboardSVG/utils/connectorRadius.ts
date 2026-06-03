@@ -67,41 +67,21 @@ export function resolveConnectorRadiusPx({
 }
 
 /**
- * Largest chord-tier marker radius (chord tones / diatonic / root) as drawn by
- * `getNoteVisuals` — `RADIUS_CHORD` scaled against the half-row. The connector
- * band half-width must clear this so tight vertical voicings near the nut don't
- * vanish behind their own markers.
- */
-const CHORD_TONE_MARKER_RADIUS_FACTOR = 0.95;
-
-function chordToneMarkerRadiusPx(stringRowPx: number): number {
-  return (stringRowPx / 2) * CHORD_TONE_MARKER_RADIUS_FACTOR;
-}
-
-/**
- * Lift a raw span-based connector radius above the chord-tier marker's outer
+ * Lift a raw span-based connector radius above the chord-root squircle's outer
  * edge plus a small halo so the contour never collapses inside the note bubble.
  * Shared by chord connectors and interval connectors.
  *
- * The floor is keyed to the *chord-tone* marker radius (the largest marker a
- * voicing draws), not the chord-root squircle alone — for tight voicings near
- * the nut the band half-width would otherwise be smaller than the chord-tone
- * markers and the band + center line would hide entirely behind them.
- *
- * Computed in pixel space (rather than as a factor of `stringRowPx`) so the
- * halo gap is constant across the adaptive row-height range — at large row
- * heights the relative gap shrinks, which matches the intent that the floor
- * is a "minimum visible separation" rather than a proportional adjustment.
+ * Keep this a slim ribbon: the floor only guards against the band shrinking
+ * INSIDE the root bubble — it must NOT inflate the band to chord-tone-marker
+ * width, which reads as a fat smudge over the wood texture.
  */
 export function applyConnectorRadiusFloor(
   spanRadiusPx: number,
   stringRowPx: number,
 ): number {
-  const markerFloor =
-    chordToneMarkerRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX;
   const squircleFloor =
     chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX;
-  return Math.max(spanRadiusPx, markerFloor, squircleFloor);
+  return Math.max(spanRadiusPx, squircleFloor);
 }
 
 /**

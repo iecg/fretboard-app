@@ -96,15 +96,6 @@ describe("applyConnectorRadiusFloor", () => {
   it("returns a finite value for plausible inputs", () => {
     expect(Number.isFinite(applyConnectorRadiusFloor(12, 40))).toBe(true);
   });
-  it("floors the connector band radius above the chord-tone marker radius for tight voicings", () => {
-    const stringRowPx = 18;
-    const markerRadius = (stringRowPx / 2) * 0.95;
-    const r = applyConnectorRadiusFloor(
-      stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-      stringRowPx,
-    );
-    expect(r).toBeGreaterThanOrEqual(markerRadius + 2);
-  });
 });
 
 describe("computeChordConnectorRadiusPx", () => {
