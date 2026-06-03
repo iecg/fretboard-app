@@ -1,0 +1,55 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`funk/bossa builders are untouched by the engine work > bossa color voicings match their known outputs 1`] = `
+[
+  [
+    "B3",
+    "D4",
+    "E4",
+    "G4",
+  ],
+  [
+    "F#3",
+    "A3",
+    "B3",
+    "D4",
+  ],
+  [
+    "G3",
+    "B3",
+    "C4",
+    "E4",
+  ],
+  [
+    "E4",
+    "G4",
+    "A4",
+    "C5",
+  ],
+]
+`;
+
+exports[`funk/bossa builders are untouched by the engine work > funk color voicings match their known outputs 1`] = `
+[
+  [
+    "E3",
+    "A3",
+    "D4",
+  ],
+  [
+    "B3",
+    "E4",
+    "A4",
+  ],
+  [
+    "C4",
+    "G4",
+    "B4",
+  ],
+  [
+    "A3",
+    "D4",
+    "G4",
+  ],
+]
+`;

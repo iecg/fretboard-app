@@ -2,6 +2,10 @@ import { describe, it, expect } from "vitest";
 import { buildVoicing, STRUM_PRESET } from "./voicingEngine";
 import { CHORD_DEFINITIONS, NOTES } from "@fretflow/core";
 import { calculateDistance } from "./voiceLeading";
+import {
+  buildFunkColorVoicing,
+  buildBossaColorVoicing,
+} from "./progressionAudio";
 
 describe("buildVoicing — golden voicings (no prevVoicing)", () => {
   it("C6 voices as C3 E3 G3 A4 (the 6th lifts off the 5th — no low major 2nd)", () => {
@@ -112,5 +116,22 @@ describe("buildVoicing — voice leading", () => {
     expect(calculateDistance(prev, next)).toBeLessThanOrEqual(
       calculateDistance(prev, defaultFloor),
     );
+  });
+});
+
+describe("funk/bossa builders are untouched by the engine work", () => {
+  const set: Array<[string, string]> = [
+    ["C", "M"],
+    ["G", "M"],
+    ["A", "m"],
+    ["F", "M"],
+  ];
+
+  it("funk color voicings match their known outputs", () => {
+    expect(set.map(([r, q]) => buildFunkColorVoicing(r, q))).toMatchSnapshot();
+  });
+
+  it("bossa color voicings match their known outputs", () => {
+    expect(set.map(([r, q]) => buildBossaColorVoicing(r, q))).toMatchSnapshot();
   });
 });
