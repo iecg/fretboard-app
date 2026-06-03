@@ -136,6 +136,41 @@ describe("semantics utils", () => {
       expect(res).toBe("chord-root");
     });
 
+    it("classifies an outside-key chord root as chord-root-outside", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: true,
+        isDiatonicChord: false,
+        isInScale: false,
+        isChordTone: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+      };
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-root-outside");
+    });
+
+    it("keeps an in-scale chord root as chord-root", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: true,
+        isDiatonicChord: false,
+        isInScale: true,
+        isChordTone: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+      };
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-root");
+    });
+
+    it("returns a chord-tier diamond for chord-root-outside", () => {
+      expect(getNoteVisuals("chord-root-outside")).toEqual({
+        radiusScale: 0.95,
+        noteShape: "diamond",
+      });
+    });
+
     it("falls through to chord-tone-in-scale when isDiatonicChord is false", () => {
       const sem: NoteSemantics = {
         isScaleRoot: false,
@@ -206,9 +241,9 @@ describe("semantics utils", () => {
       expect(res).toBe("chord-tone-in-scale");
     });
 
-    it("chord-root in-shape but out-of-voicing-range still returns chord-root", () => {
-      // Out-of-scale chord tone that is the chord root: must be classified as
-      // chord-root regardless of whether it falls within the voicing range.
+    it("chord-root in-shape but out-of-scale returns chord-root-outside", () => {
+      // Out-of-scale chord tone that is the chord root: classified as
+      // chord-root-outside (still home/amber, but chromatic → diamond).
       const sem: NoteSemantics = {
         isScaleRoot: false,
         isChordRoot: true,
@@ -225,7 +260,7 @@ describe("semantics utils", () => {
         /* hasChordOverlay */ true,
         /* isHighlighted */ true,
       );
-      expect(res).toBe("chord-root");
+      expect(res).toBe("chord-root-outside");
     });
 
     it("note-diatonic-chord in-shape but out-of-voicing-range still returns note-diatonic-chord", () => {

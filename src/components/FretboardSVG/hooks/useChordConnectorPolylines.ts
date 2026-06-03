@@ -374,6 +374,7 @@ export const CHORD_TONE_CLASSES = new Set([
   "chord-tone-in-scale",
   "note-diatonic-chord",
   "chord-root",
+  "chord-root-outside",
   "key-tonic",
 ]);
 

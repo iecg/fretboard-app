@@ -7,6 +7,7 @@ import type { NoteData } from "./hooks/useNoteData";
 const NOTE_CLASS_ROLE: Record<string, string> = {
   "key-tonic": "root",
   "chord-root": "root",
+  "chord-root-outside": "root",
   "chord-tone-in-scale": "chord tone",
   "note-blue": "blue note",
   "scale-only": "scale tone",

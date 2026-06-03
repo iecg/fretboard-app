@@ -170,6 +170,14 @@ describe("FretboardNote — chromatic diamond rendering", () => {
     expect(g?.getAttribute("data-note-shape")).toBe("diamond");
     expect(g?.querySelector("polygon")).not.toBeNull();
   });
+
+  it("renders a chord-root-outside note as a diamond <polygon>", () => {
+    const { container } = renderNote(makeNote({ noteClass: "chord-root-outside" }));
+    const g = container.querySelector("g[data-note-shape]");
+    expect(g).not.toBeNull();
+    expect(g?.getAttribute("data-note-shape")).toBe("diamond");
+    expect(g?.querySelector("polygon")).not.toBeNull();
+  });
 });
 
 describe("FretboardNote — glow underlay sizing", () => {

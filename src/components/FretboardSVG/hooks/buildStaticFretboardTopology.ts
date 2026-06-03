@@ -244,9 +244,12 @@ export function buildStaticFretboardTopology({
 
       const isVoicingVertex =
         hasFullChordPositionFilter && fullChordPositionKeys.has(positionKey);
-      const finalNoteClass = isVoicingVertex && noteClass !== "chord-root"
-        ? "chord-tone-in-scale"
-        : noteClass;
+      const finalNoteClass =
+        isVoicingVertex &&
+        noteClass !== "chord-root" &&
+        noteClass !== "chord-root-outside"
+          ? "chord-tone-in-scale"
+          : noteClass;
 
       if (isNoteHidden) continue;
 
@@ -278,6 +281,7 @@ export function buildStaticFretboardTopology({
             finalNoteClass === "chord-tone-in-scale" ||
             finalNoteClass === "note-diatonic-chord" ||
             finalNoteClass === "chord-root" ||
+            finalNoteClass === "chord-root-outside" ||
             finalNoteClass === "key-tonic")) ||
         (isWrapped && isHighlighted);
 

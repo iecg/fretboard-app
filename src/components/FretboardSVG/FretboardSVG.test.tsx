@@ -422,15 +422,20 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   describe("composable renderer contract — noteSemantics", () => {
-    it("outside chord root gets data-note-tension and chord-root visual role", () => {
+    it("outside-key chord root gets the chord-root-outside diamond role", () => {
       const semantics = sem([
         ["C#", { isChordRoot: true, isChordTone: true, isTension: true, memberName: "root" }],
       ]);
       const { container } = renderCMajor({
         chordTones: ["C#", "F", "G#"], chordRoot: "C#", noteSemantics: semantics,
       });
-      expect(container.querySelectorAll(".chord-root").length).toBeGreaterThan(0);
-      expect(container.querySelectorAll('.chord-root[data-note-tension="true"]').length).toBeGreaterThan(0);
+      // Outside the scale → no plain chord-root (squircle); renders as the
+      // chord-root-outside diamond instead.
+      expect(container.querySelectorAll(".chord-root").length).toBe(0);
+      const outside = container.querySelectorAll(".chord-root-outside");
+      expect(outside.length).toBeGreaterThan(0);
+      expect(outside[0]!.getAttribute("data-note-shape")).toBe("diamond");
+      expect(outside[0]!.querySelector("polygon")).not.toBeNull();
     });
 
     it("in-scale chord root does NOT get data-note-tension", () => {

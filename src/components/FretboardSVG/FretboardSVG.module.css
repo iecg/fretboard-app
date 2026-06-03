@@ -70,20 +70,22 @@
   fill: var(--fretboard-note-text-fill);
 }
 
-/* Home: chord root + key tonic — amber anchor, white label both themes. */
-.fretboard-note:is(.chord-root, .key-tonic) :is(circle, path, polygon) {
+/* Home: chord root + key tonic — amber anchor, white label both themes.
+   chord-root-outside is also "home" (still the root → amber) but renders as a
+   diamond because it's chromatic; color stays amber, shape carries the meaning. */
+.fretboard-note:is(.chord-root, .chord-root-outside, .key-tonic) :is(circle, path, polygon) {
   fill: var(--fb-home-fill);
   stroke: var(--fb-home-stroke);
   stroke-width: 2.4;
 }
-.fretboard-note:is(.chord-root, .key-tonic) text { fill: #ffffff; }
-:global([data-theme="modern-light"]) .fretboard-note:is(.chord-root, .key-tonic) text { fill: #ffffff; stroke: rgb(0 0 0 / 0.4); }
+.fretboard-note:is(.chord-root, .chord-root-outside, .key-tonic) text { fill: #ffffff; }
+:global([data-theme="modern-light"]) .fretboard-note:is(.chord-root, .chord-root-outside, .key-tonic) text { fill: #ffffff; stroke: rgb(0 0 0 / 0.4); }
 
 .fretboard-note.key-tonic text {
   stroke-width: 2.3;
 }
 
-.fretboard-note.chord-root text {
+.fretboard-note:is(.chord-root, .chord-root-outside) text {
   stroke-width: 2.3;
 }
 
@@ -123,7 +125,7 @@
 }
 
 /* Light-mode chord-tone-in-scale and note-diatonic-chord label override.
-   These roles use a CYAN-tinted cream fill (--fretboard-note-fill-chord-tone).
+   These roles use the neutral fill (--fb-neutral-fill).
    INK text + very faint halo stroke for legibility on the slightly-saturated fill. */
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
 :global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text {
@@ -189,13 +191,6 @@
 .fretboard-note[data-note-role="note-blue"],
 .fretboard-note[data-note-role="color-tone"] {
   filter: var(--fretboard-svg-glow-violet-url);
-}
-
-.fretboard-note.chord-root[data-note-tension] path:last-of-type {
-  stroke-dasharray: 6 3;
-  fill: var(--fretboard-note-fill-tension-emph);
-  stroke: var(--neon-orange);
-  stroke-width: 2.8;
 }
 
 /* Lead lens emphasis — radiusBoost/opacityBoost are applied inline by

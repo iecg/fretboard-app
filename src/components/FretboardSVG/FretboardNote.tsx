@@ -10,6 +10,7 @@ import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   "root-active": "scale root",
   "chord-root": "chord root",
+  "chord-root-outside": "chord root (outside key)",
   "chord-tone": "chord tone",
   "chord-tone-in-scale": "chord tone in scale",
   "chord-tone-outside-scale": "chord tone outside scale",
@@ -83,11 +84,8 @@ export const FretboardNote = memo(function FretboardNote({
             d={squirclePath(cx, cy, r + CHORD_ROOT_HALO_RADIUS_PX)}
             style={{
               fill: "none",
-              stroke: isTension
-                ? "var(--neon-orange-dim)"
-                : "var(--note-ring-tonic)",
+              stroke: "var(--note-ring-tonic)",
               strokeWidth: 1.8,
-              strokeDasharray: isTension ? "6 3" : undefined,
               paintOrder: "stroke",
             }}
           />

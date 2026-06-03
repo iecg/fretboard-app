@@ -49,6 +49,7 @@ export type LeadLensContext = {
  */
 const CHORD_TONE_CLASSES = new Set([
   "chord-root",
+  "chord-root-outside",
   "chord-tone-in-scale",
   "chord-tone-outside-scale",
   "note-diatonic-chord",
@@ -146,7 +147,8 @@ export function classifyNoteFromSemantics(
     );
   }
 
-  if (sem.isChordRoot && sem.isChordTone && isInActiveShape) return "chord-root";
+  if (sem.isChordRoot && sem.isChordTone && isInActiveShape)
+    return sem.isInScale ? "chord-root" : "chord-root-outside";
   if (sem.isDiatonicChord && sem.isChordTone && isInActiveShape) return "note-diatonic-chord";
   if (sem.isInScale && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
@@ -180,6 +182,10 @@ export function getNoteVisuals(noteClass: string): NoteVisuals {
       return { radiusScale: RADIUS_SCALE, noteShape: "circle" };
     case "color-tone":
       return { radiusScale: RADIUS_OUTSIDE, noteShape: "circle" };
+    // An outside-key chord root keeps its home (amber) identity via color, but
+    // the diamond shape marks it chromatic — and it stays chord-tier sized.
+    case "chord-root-outside":
+      return { radiusScale: RADIUS_CHORD, noteShape: "diamond" };
     // Shape encodes harmonic insideness: chromatic / outside-key → angular diamond.
     case "note-blue":
     case "chord-tone-outside-scale":
