@@ -76,7 +76,7 @@ export interface ChordConnectorVoicing {
    * renders.
    */
   voicingKey: string;
-  /** Close-voicing fallback flag — drives the dashed stroke in the connector layer. */
+  /** Close-voicing fallback flag — marks a close-voicing substitute (rendered at full ribbon strength, same as full voicings). */
   isFallback?: boolean;
 }
 

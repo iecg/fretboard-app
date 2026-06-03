@@ -122,7 +122,7 @@ interface FretboardSVGProps {
     voicingKey: string;
     notes: FullChordMatchNote[];
     shape?: CagedShape;
-    /** Close-voicing fallback flag — toggles dashed connector stroke. */
+    /** Close-voicing fallback flag — marks a close-voicing substitute (rendered at full ribbon strength). */
     isFallback?: boolean;
   }>;
   /** When false, chord voicing connector polylines are not rendered. Defaults to true. */
