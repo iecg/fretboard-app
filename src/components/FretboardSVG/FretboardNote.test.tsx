@@ -145,6 +145,23 @@ describe("FretboardNote — guide-target interval label", () => {
   });
 });
 
+describe("FretboardNote — chromatic diamond rendering", () => {
+  it("renders a chord-tone-outside-scale note as a diamond <polygon>", () => {
+    const { container } = renderNote(makeNote({ noteClass: "chord-tone-outside-scale" }));
+    const g = container.querySelector("g[data-note-shape]");
+    expect(g).not.toBeNull();
+    expect(g?.getAttribute("data-note-shape")).toBe("diamond");
+    expect(g?.querySelector("polygon")).not.toBeNull();
+  });
+
+  it("renders a note-blue note as a diamond <polygon>", () => {
+    const { container } = renderNote(makeNote({ noteClass: "note-blue" }));
+    const g = container.querySelector("g[data-note-shape]");
+    expect(g?.getAttribute("data-note-shape")).toBe("diamond");
+    expect(g?.querySelector("polygon")).not.toBeNull();
+  });
+});
+
 describe("FretboardNote — glow underlay sizing", () => {
   // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
   const BASE_RADIUS = 20;

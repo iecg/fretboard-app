@@ -250,6 +250,21 @@ describe("semantics utils", () => {
       expect(res).toBe("note-diatonic-chord");
     });
 
+    it("classifies an in-shape chord tone not in the scale as chord-tone-outside-scale", () => {
+      const sem = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isDiatonicChord: false,
+        isInScale: false,
+        isChordTone: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+      } as NoteSemantics;
+      // signature: classifyNoteFromSemantics(sem, isInActiveShape, hasChordOverlay, isHighlighted)
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-tone-outside-scale");
+    });
+
     it("chord-tone-outside-scale in-shape but out-of-voicing-range still returns chord-tone-outside-scale", () => {
       // e.g. the b7 of a dominant 7th chord: not diatonic, not highlighted,
       // inside the 3NPS shape but outside the voicing's narrower range window.
