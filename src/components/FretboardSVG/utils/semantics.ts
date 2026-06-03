@@ -10,7 +10,7 @@ import {
 
 export type BoxBound = { minFret: number; maxFret: number };
 
-export type TransitionRole = "held" | "incoming" | "departing";
+export type TransitionRole = "guide-target";
 
 export type LensEmphasis = {
   glowColor?: `var(--${string})`;
@@ -18,6 +18,8 @@ export type LensEmphasis = {
   opacityBoost: number;
   /** Discrete voice-leading role during the lead-in window; undefined = static. */
   transitionRole?: TransitionRole;
+  /** Interval function of this note in the next chord (e.g. "3", "b3", "5", "b7"). */
+  guideTargetLabel?: string;
 };
 
 /**
@@ -31,6 +33,10 @@ export type LeadLensContext = {
   notePc: string;
   /** Notes shared between the active chord and the next chord (common tones). */
   commonWithNext: Set<string>;
+  /** Guide tones (3rd/7th) of the next chord. */
+  nextGuideTones: Set<string>;
+  /** Interval labels for the next chord's guide tones (pitch class → name, e.g. "B" → "3"). */
+  nextGuideToneLabels: Map<string, string>;
   /** ALL pitch classes of the next chord. */
   nextChordTones: Set<string>;
   /** Pitch classes the next chord introduces (`next − current`). */
@@ -79,46 +85,31 @@ export function getEmphasis(
     return applyTonesBase(noteClass, isGuideTone);
   }
 
-  const {
-    notePc,
-    commonWithNext,
-    incomingTones,
-    departingTones,
-    leadInActive,
-  } = leadContext;
+  const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive } = leadContext;
 
-  const isCurrentChordTone = CHORD_TONE_CLASSES.has(noteClass);
+  // The note's resting emphasis when not actively targeted — held common tones
+  // keep a gentle hold glow, everything else uses the base model. This is the
+  // size/shape a note shows OUTSIDE the lead-in window.
+  const resting: LensEmphasis =
+    CHORD_TONE_CLASSES.has(noteClass) && commonWithNext.has(notePc)
+      ? { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 }
+      : applyTonesBase(noteClass, isGuideTone);
 
-  if (leadInActive) {
-    // 1. Incoming: a pitch the next chord introduces. Ghost-ring preview.
-    if (incomingTones.has(notePc)) {
-      return {
-        glowColor: "var(--note-incoming)",
-        radiusBoost: 1,
-        opacityBoost: 1,
-        transitionRole: "incoming",
-      };
-    }
-    // 2. Departing: a current chord tone the next chord drops. Calm dim.
-    if (isCurrentChordTone && departingTones.has(notePc)) {
-      return { radiusBoost: 0.95, opacityBoost: 0.8, transitionRole: "departing" };
-    }
-    // 3. Held: a current chord tone that carries through. Steady, no pulse.
-    if (isCurrentChordTone && commonWithNext.has(notePc)) {
-      return {
-        glowColor: "var(--note-glow-hold)",
-        radiusBoost: 1.15,
-        opacityBoost: 1,
-        transitionRole: "held",
-      };
-    }
+  // Lead-in: ONLY the next chord's guide tones deviate from their resting
+  // emphasis. A target keeps its resting SIZE (no bloom), is brought to full
+  // opacity, and gets the ring hue + role + label. Every other note returns its
+  // resting emphasis untouched — nothing dims, so the board holds still and the
+  // ring's onset carries the attention by itself.
+  if (leadInActive && nextGuideTones.has(notePc)) {
+    return {
+      glowColor: "var(--note-incoming)",
+      radiusBoost: resting.radiusBoost,
+      opacityBoost: 1,
+      transitionRole: "guide-target",
+      guideTargetLabel: nextGuideToneLabels.get(notePc),
+    };
   }
-
-  // 4. Static: held chord tones outside the window keep a gentle hold glow.
-  if (isCurrentChordTone && commonWithNext.has(notePc)) {
-    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
-  }
-  return applyTonesBase(noteClass, isGuideTone);
+  return resting;
 }
 
 export function classifyNote(

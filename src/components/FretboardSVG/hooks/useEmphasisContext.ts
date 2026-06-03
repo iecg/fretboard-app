@@ -1,6 +1,8 @@
 import { useAtomValue } from "jotai";
 import {
   commonTonesWithNextAtom,
+  nextChordGuideTonesAtom,
+  nextChordGuideToneLabelsAtom,
   nextChordTonesAtom,
   incomingTonesAtom,
   departingTonesAtom,
@@ -10,6 +12,8 @@ import { progressionPlayingAtom } from "../../../store/progressionAtoms";
 
 export interface EmphasisContext {
   commonWithNext: Set<string>;
+  nextGuideTones: Set<string>;
+  nextGuideToneLabels: Map<string, string>;
   nextChordTones: Set<string>;
   incomingTones: Set<string>;
   departingTones: Set<string>;
@@ -25,12 +29,16 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
   const playing = useAtomValue(progressionPlayingAtom);
   const leadInActive = useAtomValue(leadInActiveAtom);
   const commonWithNext = useAtomValue(commonTonesWithNextAtom);
+  const nextGuideTones = useAtomValue(nextChordGuideTonesAtom);
+  const nextGuideToneLabels = useAtomValue(nextChordGuideToneLabelsAtom);
   const nextChordTones = useAtomValue(nextChordTonesAtom);
   const incomingTones = useAtomValue(incomingTonesAtom);
   const departingTones = useAtomValue(departingTonesAtom);
   if (!enabled || !playing) return null;
   return {
     commonWithNext,
+    nextGuideTones,
+    nextGuideToneLabels,
     nextChordTones,
     incomingTones,
     departingTones,

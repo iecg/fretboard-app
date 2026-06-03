@@ -44,17 +44,17 @@ function renderNote(note: RenderedFretboardNote) {
 }
 
 describe("FretboardNote — transition-role data attribute", () => {
-  it("renders data-transition-role='incoming' on <g> when transitionRole is 'incoming'", () => {
+  it("renders data-transition-role='guide-target' on <g> when transitionRole is 'guide-target'", () => {
     const glowColor = "var(--note-incoming)" as `var(--${string})`;
     const { container } = renderNote(
       makeNote({
-        transitionRole: "incoming",
+        transitionRole: "guide-target",
         applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor },
       }),
     );
     const g = container.querySelector("g[data-note-shape]");
     expect(g).not.toBeNull();
-    expect(g?.getAttribute("data-transition-role")).toBe("incoming");
+    expect(g?.getAttribute("data-transition-role")).toBe("guide-target");
   });
 
   it("does not emit data-transition-role when transitionRole is undefined", () => {
@@ -110,6 +110,41 @@ describe("FretboardNote — always-rendered glow underlay", () => {
   });
 });
 
+describe("FretboardNote — guide-target ring", () => {
+  it("renders a guide-target ring when the note's transition role is guide-target", () => {
+    const glowColor = "var(--note-incoming)" as `var(--${string})`;
+    const note = makeNote({
+      transitionRole: "guide-target",
+      applyLensEmphasis: { glowColor, radiusBoost: 1.15, opacityBoost: 1, transitionRole: "guide-target" },
+    });
+    const { container } = renderNote(note);
+    expect(container.querySelector("[data-guide-ring]")).not.toBeNull();
+  });
+
+  it("renders no guide-target ring for a normal note", () => {
+    const note = makeNote({ transitionRole: undefined });
+    const { container } = renderNote(note);
+    expect(container.querySelector("[data-guide-ring]")).toBeNull();
+  });
+});
+
+describe("FretboardNote — guide-target interval label", () => {
+  it("renders the guide-target interval label", () => {
+    const note = makeNote({
+      transitionRole: "guide-target",
+      applyLensEmphasis: {
+        glowColor: "var(--note-incoming)" as `var(--${string})`,
+        radiusBoost: 1.15,
+        opacityBoost: 1,
+        transitionRole: "guide-target",
+        guideTargetLabel: "3",
+      },
+    });
+    const { container } = renderNote(note);
+    expect(container.querySelector("[data-guide-label]")?.textContent).toBe("3");
+  });
+});
+
 describe("FretboardNote — glow underlay sizing", () => {
   // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
   const BASE_RADIUS = 20;
@@ -129,3 +164,4 @@ describe("FretboardNote — glow underlay sizing", () => {
     expect(underlayR).toBeCloseTo(shapeR, 5);
   });
 });
+

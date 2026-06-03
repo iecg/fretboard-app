@@ -37,6 +37,8 @@ import {
   timeSignatureDenominatorAtom,
   updateProgressionStepRootAtom,
   progressionPlaybackLoadingAtom,
+  progressionPlayingStateAtom,
+  progressionStepDeadlineAtom,
 } from "./progressionAtoms";
 import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
@@ -689,5 +691,60 @@ describe("loadedPresetId clearing", () => {
     const firstId = store.get(progressionStepsAtom)[0].id;
     store.set(moveProgressionStepAtom, { id: firstId, direction: -1 }); // already at top → no-op
     expect(store.get(currentProgressionPresetIdAtom)).toBe("one-five-six-four");
+  });
+});
+
+describe("setProgressionActiveStepIndexAtom — deadline refresh during playback", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.useRealTimers();
+  });
+
+  it("refreshes progressionStepDeadlineAtom to the new step's duration when playing", () => {
+    const store = createStore();
+    // Seed two steps with different durations: 4-bar "I" then 1-bar "V".
+    // At 120 bpm with 4 beats/bar: 1 bar = (60000 / 120) * 4 = 2000ms.
+    store.set(progressionTempoBpmAtom, 120);
+    store.set(beatsPerBarAtom, 4);
+    store.set(progressionStepsAtom, [
+      { id: "I", degree: "I", duration: { value: 4, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "V", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    // Set playing state true.
+    store.set(progressionPlayingStateAtom, true);
+
+    // Advance to index 1 (the 1-bar "V" step).
+    const before = Date.now();
+    store.set(setProgressionActiveStepIndexAtom, 1);
+
+    // expectedMs: 1 bar at 120 bpm with 4 beats/bar = 2000ms.
+    // We compute it directly rather than through progressionStepDurationMsAtom,
+    // because that derived atom reads displayedProgressionStepIndexAtom which
+    // (during play) routes through the RAF primitive (still at 0).
+    const expectedMs = 2000;
+    const deadline = store.get(progressionStepDeadlineAtom);
+
+    expect(deadline).not.toBeNull();
+    expect(deadline!).toBeGreaterThanOrEqual(before + expectedMs - 50);
+    expect(deadline!).toBeLessThanOrEqual(Date.now() + expectedMs + 50);
+  });
+
+  it("does NOT refresh progressionStepDeadlineAtom when not playing", () => {
+    const store = createStore();
+    store.set(progressionTempoBpmAtom, 120);
+    store.set(beatsPerBarAtom, 4);
+    store.set(progressionStepsAtom, [
+      { id: "I", degree: "I", duration: { value: 4, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "V", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    // Sentinel deadline; playback is stopped (default false).
+    store.set(progressionStepDeadlineAtom, 123456);
+    expect(store.get(progressionPlayingStateAtom)).toBe(false);
+
+    // Advance index while stopped.
+    store.set(setProgressionActiveStepIndexAtom, 1);
+
+    // Deadline must remain at the sentinel value.
+    expect(store.get(progressionStepDeadlineAtom)).toBe(123456);
   });
 });

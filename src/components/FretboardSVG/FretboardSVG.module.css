@@ -31,13 +31,6 @@
   display: none;
 }
 
-/* During the lead-in, an in-region incoming ghost is shown (as a ring) even if
-   it is otherwise a hidden out-of-scale position. */
-.fretboard-board[data-transition-phase="lead-in"]
-  .fretboard-note:global(.hidden)[data-transition-role="incoming"][data-in-region="true"] {
-  display: initial;
-}
-
 .fretboard-note:focus {
   outline: none;
 }
@@ -417,60 +410,54 @@
   opacity: 0.55;
 }
 
-/* Incoming preview — a hollow ghost ring in the dedicated incoming hue that
-   ramps in over the lead-in window, then promotes to solid at the boundary.
-   Region-gated: only in-region positions ghost, so out-of-region notes whose
-   pitch class happens to be an incoming tone are not painted across the whole
-   fretboard (matches the "only ghost in-region" design intent). */
-.fretboard-note[data-transition-role="incoming"][data-in-region="true"] .note-glow-underlay {
-  fill: var(--note-incoming);
-  animation: note-incoming-ramp var(--lead-in-duration, 0.6s) ease-out both;
-}
-
-.fretboard-note[data-transition-role="incoming"][data-in-region="true"] :is(circle, path, polygon) {
+/* Guide-target ring — a hollow ring on the next chord's guide tones during the
+   lead-in window. CSS animates ONLY the scale contraction (the beat countdown,
+   timed to --lead-in-duration); OPACITY is owned by motion/AnimatePresence in
+   FretboardNote, which fades the ring in on mount and OUT on removal. Splitting
+   the two (CSS=transform, JS=opacity) is deliberate: the fade-out is driven by
+   the animation system on unmount rather than racing React's startTransition-
+   jittered removal, which is what caused the boundary flash. The ring lands
+   bright on the beat (scale 1, held) and fades cleanly as the chord arrives.
+   transform/opacity only -> compositor-driven (no per-frame JS, no perf hit).
+   The ring reuses the incoming hue token, so no new colour is introduced. */
+.note-guide-ring {
+  fill: none;
   stroke: var(--note-incoming);
-  stroke-dasharray: 4 3;
-  fill: transparent;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: note-guide-ring-contract var(--lead-in-duration, 0.6s) ease-out both;
 }
 
-@keyframes note-incoming-ramp {
-  from { opacity: 0;   transform: scale(0.8); }
-  to   { opacity: 0.7; transform: scale(1); }
+@keyframes note-guide-ring-contract {
+  0%   { transform: scale(2.4); }
+  55%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
 }
 
-/* Departing — an active chord tone that leaves on the next change. It dims +
-   desaturates GRADUALLY over the lead-in window so it fades out in sync with the
-   incoming ghost ramping in (a cross-dissolve), instead of snapping. The dim
-   target (opacity 0.8, scale 0.95) is applied inline via the emphasis boost;
-   here we only stretch the transition to the full lead-in duration so the change
-   eases across the whole window. Gated to css-motion so reduced-motion snaps. */
-[data-motion="css"] .fretboard-note[data-transition-role="departing"] {
-  transition:
-    opacity var(--lead-in-duration, 0.6s) ease-out,
-    transform var(--lead-in-duration, 0.6s) ease-out;
-}
-.fretboard-note[data-transition-role="departing"] :is(circle, path, polygon) {
-  filter: saturate(0.7);
-  transition: filter var(--lead-in-duration, 0.6s) ease-out;
-}
-
-/* Held — steady hold glow, no pulse. */
-.fretboard-note[data-transition-role="held"] .note-glow-underlay[data-glow="on"] {
-  opacity: 0.5;
-}
-
+/* Reduced motion: no contraction/countdown — the ring snaps to its landed size.
+   Opacity is motion-owned (its fade collapses to an instant change because
+   FretboardNote passes a 0s transition under prefers-reduced-motion). */
 @media (prefers-reduced-motion: reduce) {
-  .fretboard-note[data-transition-role="incoming"][data-in-region="true"] .note-glow-underlay {
+  .note-guide-ring {
     animation: none;
-    opacity: 0.6;          /* static ghost — information preserved, motion removed */
+    transform: none;
   }
   .fretboard-note circle.note-glow-underlay {
     transition: none;
   }
-  /* Departing snaps under reduced motion (the dim still applies, just no ramp). */
-  .fretboard-note[data-transition-role="departing"] :is(circle, path, polygon) {
-    transition: none;
-  }
+}
+
+/* Guide-target interval label — small degree label (e.g. "3", "b7") placed
+   above-right of the note bubble so it reads alongside the guide-target ring
+   without overlapping the main note glyph. */
+.note-guide-label {
+  dominant-baseline: middle;
+  fill: var(--note-incoming);
+  font-size: 9px;
+  font-weight: 600;
+  pointer-events: none;
+  text-anchor: start;
 }
 
 /* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */

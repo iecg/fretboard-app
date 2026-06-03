@@ -9,6 +9,8 @@ import {
   setProgressionPlayingAtom,
   progressionStepsAtom,
   beatsPerBarAtom,
+  progressionStepDeadlineAtom,
+  progressionStepDurationMsAtom,
 } from "../../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../../store/progressionVisualAtoms";
 
@@ -99,6 +101,7 @@ describe("useAnimatedFretboardView", () => {
         localFraction: 0.75,
         paused: false,
       });
+      store.set(progressionStepDeadlineAtom, Date.now() + 100);
     });
 
     const updatedView = result.current.view;
@@ -233,5 +236,42 @@ describe("buildRenderedFretboardNotes (object identity)", () => {
     // Unchanged note keeps identity; changed note is a fresh object.
     expect(b[0]).toBe(a[0]);
     expect(b[1]).not.toBe(a[1]);
+  });
+});
+
+describe("useAnimatedFretboardView — no per-frame recompute", () => {
+  it("does not re-run when the visual frame advances within the same step", () => {
+    const store = makePlayingStore(0.6);
+    // Seed a deadline 30% into the step's remaining time so the step fraction
+    // (~0.7) is genuinely inside the lead-in window and leadInActiveAtom is
+    // TRUE — the invariant under test ("a frame advance within the step does
+    // not re-run the hook") matters most while the lead-in is on. Without a
+    // deadline leadInActive would be false and the test would pass vacuously.
+    store.set(progressionStepDeadlineAtom, Date.now() + store.get(progressionStepDurationMsAtom) * 0.3);
+    const wrapper = makeWrapper(store);
+    let renders = 0;
+    renderHook(
+      () => {
+        renders++;
+        const topology = useStaticFretboardTopology(TOPOLOGY_PROPS);
+        return useAnimatedFretboardView({
+          topology,
+          hasChordOverlay: true,
+          fretCenterX,
+          stringYAt,
+        });
+      },
+      { wrapper },
+    );
+    const before = renders;
+    act(() => {
+      store.set(progressionVisualFrameAtom, {
+        stepIndex: 0,
+        globalFraction: 0.35,
+        localFraction: 0.7,
+        paused: false,
+      });
+    });
+    expect(renders).toBe(before); // leadInActive unchanged -> no React re-render
   });
 });

@@ -3,6 +3,7 @@ import {
   NOTES,
   ENHARMONICS,
   INTERVAL_NAMES,
+  CHORD_DEFINITIONS,
   getNoteDisplay,
   formatAccidental,
   getDiatonicChord,
@@ -31,6 +32,7 @@ import { activeChordCachedDegreeAtom } from "./songStateAtoms";
 import {
   resolvedProgressionStepsAtom,
   displayedProgressionStepIndexAtom,
+  activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   progressionTempoBpmAtom,
   progressionStepDeadlineAtom,
@@ -126,20 +128,40 @@ export function computeLeadInWindowMs(
 }
 
 /**
- * True when the playhead is inside the lead-in window. `localFraction` is the
- * [0,1] fraction of the step elapsed (same source as the anticipation check).
- * `barDurationMs` is forwarded to {@link computeLeadInWindowMs} so the window
- * start matches the (bar-capped) duration.
+ * True when the playhead is inside the lead-in window. `stepFraction` is the
+ * [0,1] fraction of the *step* elapsed — `leadInActiveAtom` passes a
+ * step-relative value (see {@link stepRelativeFraction}), NOT the per-bar
+ * `frame.localFraction`. `barDurationMs` is forwarded to
+ * {@link computeLeadInWindowMs} so the window start matches the (bar-capped)
+ * duration.
  */
 export function isInLeadInWindow(
-  localFraction: number,
+  stepFraction: number,
   stepDurationMs: number,
   barDurationMs = Infinity,
 ): boolean {
   const windowMs = computeLeadInWindowMs(stepDurationMs, barDurationMs);
   if (windowMs <= 0) return false;
   const startFraction = 1 - windowMs / stepDurationMs;
-  return localFraction >= startFraction;
+  return stepFraction >= startFraction;
+}
+
+/**
+ * Fraction [0,1] of the active STEP elapsed, derived from the per-step deadline
+ * (`Date.now() + stepDurationMs`, set on each step advance) rather than the
+ * visual frame's `localFraction` — which the timeline resets every BAR, so a
+ * multi-bar chord would otherwise re-open the lead-in each bar. Pure: pass an
+ * explicit `nowMs` so it is unit-testable. Returns 0 when there is no deadline
+ * or a non-positive duration ("not started" → no lead-in).
+ */
+export function stepRelativeFraction(
+  deadlineMs: number | null,
+  nowMs: number,
+  stepDurationMs: number,
+): number {
+  if (deadlineMs == null || stepDurationMs <= 0) return 0;
+  const elapsed = stepDurationMs - (deadlineMs - nowMs);
+  return Math.min(1, Math.max(0, elapsed / stepDurationMs));
 }
 
 // Guide tone members: 3rd and 7th
@@ -444,6 +466,60 @@ export const departingTonesAtom = atom((get): Set<string> => {
 });
 
 /**
+ * Map of pitch-class → interval name for the guide tones of the chord at the
+ * *next* progression step. This is the canonical source for guide-tone logic —
+ * {@link nextChordGuideTonesAtom} derives its Set directly from this Map's keys.
+ *
+ * Guide tones are strictly the 3rd and 7th — the "money notes" that define
+ * chord quality (the root and 5th are harmonically inert, so they are never
+ * targets):
+ * - Includes the 3rd (b3 or 3) when present.
+ * - Includes the 7th (b7 or 7) when present.
+ * - A triad (3rd, no 7th) yields a single target: the 3rd. dim7's bb7 is not a
+ *   GUIDE_TONE_RAW entry, so dim7 likewise yields just its b3.
+ * - Power chords (no 3rd) return an empty Map — there is no quality-defining
+ *   tone to aim for.
+ *
+ * Also returns an empty Map when the progression is empty, the next step is
+ * unavailable, or root/quality is missing.
+ */
+export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
+  const steps = get(resolvedProgressionStepsAtom);
+  if (steps.length === 0) return new Map();
+  const active = get(displayedProgressionStepIndexAtom);
+  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
+    return new Map();
+  }
+  const nextIndex = (active + 1) % steps.length;
+  const step = steps[nextIndex];
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Map();
+  }
+  const def = CHORD_DEFINITIONS[step.quality];
+  if (!def) return new Map();
+  const rootIndex = NOTES.indexOf(step.root);
+  if (rootIndex === -1) return new Map();
+  const labels = new Map<string, string>();
+  for (const member of def.members) {
+    if (GUIDE_TONE_RAW.has(member.name)) {
+      labels.set(NOTES[(rootIndex + member.semitone) % 12], member.name);
+    }
+  }
+  return labels;
+});
+
+/**
+ * Pitch-class set of guide tones for the chord at the *next* progression step.
+ * Derived from {@link nextChordGuideToneLabelsAtom} (which carries the same
+ * tones plus their interval labels and is the canonical home of the triad-5th
+ * fallback / bb7 / power-chord logic). Returns an empty set for all the same
+ * cases that the labels atom returns an empty Map.
+ */
+export const nextChordGuideTonesAtom = atom((get): Set<string> =>
+  new Set(get(nextChordGuideToneLabelsAtom).keys()),
+);
+
+/**
  * Duration of the active progression step in beats. Derived from the active
  * step's `duration` and the current meter (`beatsPerBar`).
  */
@@ -485,14 +561,31 @@ export const leadInActiveAtom = atom((get): boolean => {
   if (!get(progressionPlayingAtom)) return false;
   const frame = get(progressionVisualFrameAtom);
   if (!frame || frame.paused) return false;
+  const displayed = get(displayedProgressionStepIndexAtom);
   // Audio has crossed into a later step than the fretboard is showing — hold
   // the highlight through the deferred-render gap until the shape catches up.
-  if (frame.stepIndex !== get(displayedProgressionStepIndexAtom)) return true;
-  return isInLeadInWindow(
-    frame.localFraction,
-    get(progressionStepDurationMsAtom),
-    get(progressionBarDurationMsAtom),
-  );
+  if (frame.stepIndex !== displayed) return true;
+  // The per-step deadline is written together with activeProgressionStepIndexAtom
+  // (setProgressionActiveStepIndexAtom), so it ALWAYS belongs to `active`. At a
+  // chord boundary the displayed step advances ~one audio-lookahead BEFORE the
+  // deadline refreshes: setActiveStep updates the timeline (→ visual clock →
+  // displayed) at SCHEDULE time, but the active-index + deadline refresh runs
+  // from a Tone.Draw callback at the audio ONSET. In that window `displayed` is
+  // the new chord while the deadline still reflects the previous chord (and is
+  // still slightly in the FUTURE), so a step fraction would read ~1.0 and, with
+  // displayed already advanced, open the lead-in for the chord AFTER the next
+  // one — a brief guide-ring flash right at the transition. Only trust the step
+  // fraction when the deadline's step (active) matches the displayed step.
+  if (get(activeProgressionStepIndexAtom) !== displayed) return false;
+  const deadline = get(progressionStepDeadlineAtom);
+  if (deadline == null) return false;
+  // Step-relative progress, NOT frame.localFraction (which the timeline resets
+  // each bar — a multi-bar chord would re-open the window every bar). Reading
+  // `frame` above keeps this recomputing per frame; Date.now() is the live
+  // clock (same pattern as beatPositionAtom).
+  const stepMs = get(progressionStepDurationMsAtom);
+  const stepFraction = stepRelativeFraction(deadline, Date.now(), stepMs);
+  return isInLeadInWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
 });
 
 /**

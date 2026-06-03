@@ -44,6 +44,8 @@ export function buildAnimatedFretboardNotes({
       leadContext = {
         notePc: note.noteName,
         commonWithNext: emphasisContext.commonWithNext,
+        nextGuideTones: emphasisContext.nextGuideTones,
+        nextGuideToneLabels: emphasisContext.nextGuideToneLabels,
         nextChordTones: emphasisContext.nextChordTones,
         incomingTones: emphasisContext.incomingTones,
         departingTones: emphasisContext.departingTones,
@@ -112,6 +114,7 @@ function renderedNoteSignature(
     emph.radiusBoost,
     emph.glowColor ?? "",
     emph.transitionRole ?? "",
+    emph.guideTargetLabel ?? "",
     note.isHidden,
     note.isTension,
     note.isGuideTone,
@@ -136,25 +139,19 @@ export function buildRenderedFretboardNotes({
   >();
 
   const result = noteData.map((note) => {
-    const cx = fretCenterX(note.fretIndex);
-    const candidate: RenderedFretboardNote = {
-      ...note,
-      cx,
-      cy: stringYAt(note.stringIndex, cx),
-    };
-
     const key = `${note.stringIndex}-${note.fretIndex}`;
-    const sig = renderedNoteSignature(candidate);
+    const cx = fretCenterX(note.fretIndex);
+    const positioned: RenderedFretboardNote = { ...note, cx, cy: stringYAt(note.stringIndex, cx) };
+    const sig = renderedNoteSignature(positioned);
     const prev = prevCache.get(key);
 
     if (prev && prev.sig === sig) {
-      // Cache hit — reuse the stable object reference.
+      // Cache hit — reuse the stable object reference so the memoized per-note renderer can bail.
       nextCache.set(key, prev);
       return prev.result;
     }
-
-    nextCache.set(key, { sig, result: candidate });
-    return candidate;
+    nextCache.set(key, { sig, result: positioned });
+    return positioned;
   });
 
   renderedNoteCache = nextCache;
