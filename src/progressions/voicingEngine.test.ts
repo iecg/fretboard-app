@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildVoicing, STRUM_PRESET } from "./voicingEngine";
+import { buildVoicing, STRUM_PRESET, __testables } from "./voicingEngine";
 import { CHORD_DEFINITIONS, NOTES } from "@fretflow/core";
 import { calculateDistance } from "./voiceLeading";
 import {
@@ -133,5 +133,78 @@ describe("funk/bossa builders are untouched by the engine work", () => {
 
   it("bossa color voicings match their known outputs", () => {
     expect(set.map(([r, q]) => buildBossaColorVoicing(r, q))).toMatchSnapshot();
+  });
+});
+
+describe("voicing engine helpers", () => {
+  const { roleOf, buildInversion, spreadFifth, normalizeRegister, passesSpacing, colorInternal } = __testables;
+
+  it("roleOf classifies members", () => {
+    expect(roleOf("root")).toBe("root");
+    expect(roleOf("3")).toBe("guide");
+    expect(roleOf("b7")).toBe("guide");
+    expect(roleOf("5")).toBe("fifth");
+    expect(roleOf("6")).toBe("color");
+    expect(roleOf("9")).toBe("color");
+    expect(roleOf("4")).toBe("other");
+  });
+
+  it("buildInversion stacks ascending from a chosen bass, wrapping octaves", () => {
+    // C6 tones pcs: root0, guide4, fifth7, color9; bass = guide (idx1), floor 36
+    const tones = [
+      { pc: 0, role: "root" as const },
+      { pc: 4, role: "guide" as const },
+      { pc: 7, role: "fifth" as const },
+      { pc: 9, role: "color" as const },
+    ];
+    const inv = buildInversion(tones, 1, 36); // bass E
+    expect(inv.map((v) => v.abs)).toEqual([40, 43, 45, 48]); // E3 G3 A3 C4
+  });
+
+  it("spreadFifth raises the 5th just above the top voice", () => {
+    const voices = [
+      { abs: 40, role: "guide" as const }, // E3
+      { abs: 43, role: "fifth" as const }, // G3
+      { abs: 45, role: "color" as const }, // A3
+      { abs: 48, role: "root" as const }, // C4
+    ];
+    const out = spreadFifth(voices);
+    expect(out!.map((v) => v.abs)).toEqual([40, 45, 48, 55]); // E3 A3 C4 G4
+  });
+
+  it("colorInternal rejects a color tone on top or bottom", () => {
+    const top = [
+      { abs: 36, role: "root" as const },
+      { abs: 40, role: "guide" as const },
+      { abs: 45, role: "color" as const }, // top
+    ];
+    expect(colorInternal(top)).toBe(false);
+    const internal = [
+      { abs: 40, role: "guide" as const },
+      { abs: 45, role: "color" as const },
+      { abs: 48, role: "root" as const },
+    ];
+    expect(colorInternal(internal)).toBe(true);
+  });
+
+  it("passesSpacing rejects a sub-minor-third below C4", () => {
+    const muddy = [
+      { abs: 43, role: "fifth" as const }, // G3
+      { abs: 45, role: "color" as const }, // A3 — 2 semis above, below C4
+    ];
+    expect(passesSpacing(muddy, 48, 3)).toBe(false);
+    const clean = [
+      { abs: 40, role: "guide" as const },
+      { abs: 45, role: "color" as const }, // 5 semis
+    ];
+    expect(passesSpacing(clean, 48, 3)).toBe(true);
+  });
+
+  it("normalizeRegister drops octaves until the top fits the ceiling", () => {
+    const high = [
+      { abs: 64, role: "root" as const },
+      { abs: 68, role: "guide" as const },
+    ];
+    expect(normalizeRegister(high, 60).map((v) => v.abs)).toEqual([52, 56]);
   });
 });

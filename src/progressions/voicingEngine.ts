@@ -52,6 +52,98 @@ function toNoteStrings(absolutes: number[]): string[] {
   });
 }
 
+export type ToneRole = "root" | "guide" | "fifth" | "color" | "other";
+
+interface Tone {
+  pc: number;
+  role: ToneRole;
+}
+
+interface Voice {
+  abs: number;
+  role: ToneRole;
+}
+
+/** Classify a chord member by its harmonic function for voicing rules. */
+function roleOf(name: string): ToneRole {
+  if (name === "root") return "root";
+  if (name === "3" || name === "b3" || name === "7" || name === "b7" || name === "bb7") {
+    return "guide";
+  }
+  if (name === "5" || name === "b5" || name === "#5") return "fifth";
+  if (name === "6" || name === "9" || name === "13") return "color";
+  return "other"; // 2, 4 (sus)
+}
+
+/**
+ * Stack a chord as an inversion: `bassIdx` selects the lowest tone; the rest are
+ * stacked strictly ascending above it, wrapping octaves, anchored so the bass is
+ * the lowest pitch >= floorAbs.
+ */
+function buildInversion(tones: Tone[], bassIdx: number, floorAbs: number): Voice[] {
+  const n = tones.length;
+  const voices: Voice[] = [];
+  let prev = liftToPc(floorAbs, tones[bassIdx].pc);
+  voices.push({ abs: prev, role: tones[bassIdx].role });
+  for (let i = 1; i < n; i++) {
+    const t = tones[(bassIdx + i) % n];
+    const abs = liftToPc(prev + 1, t.pc);
+    voices.push({ abs, role: t.role });
+    prev = abs;
+  }
+  return voices;
+}
+
+/**
+ * Open-voicing move: raise the 5th to just above the current top voice, keeping
+ * the color tone internal. Returns null if there is no 5th or it is already on top.
+ */
+function spreadFifth(voices: Voice[]): Voice[] | null {
+  const sorted = [...voices].sort((a, b) => a.abs - b.abs);
+  const top = sorted[sorted.length - 1].abs;
+  const idx = sorted.findIndex((v) => v.role === "fifth");
+  if (idx < 0 || sorted[idx].abs >= top) return null;
+  let abs = sorted[idx].abs;
+  while (abs <= top) abs += 12;
+  const raised = sorted.map((v, i) => (i === idx ? { abs, role: v.role } : v));
+  return raised.sort((a, b) => a.abs - b.abs);
+}
+
+/** Transpose the whole voicing down by octaves until the top voice fits the ceiling. */
+function normalizeRegister(voices: Voice[], ceilAbs: number): Voice[] {
+  let v = [...voices];
+  while (v.length > 0 && Math.max(...v.map((x) => x.abs)) > ceilAbs) {
+    v = v.map((x) => ({ abs: x.abs - 12, role: x.role }));
+  }
+  return v;
+}
+
+/** No interval tighter than `minLow` between adjacent voices that are both below `threshold`. */
+function passesSpacing(voices: Voice[], threshold: number, minLow: number): boolean {
+  const s = [...voices].sort((a, b) => a.abs - b.abs);
+  for (let i = 1; i < s.length; i++) {
+    if (s[i].abs < threshold && s[i].abs - s[i - 1].abs < minLow) return false;
+  }
+  return true;
+}
+
+/** A color tone (6/9/13) may not be the highest or lowest voice when a non-color tone exists. */
+function colorInternal(voices: Voice[]): boolean {
+  const s = [...voices].sort((a, b) => a.abs - b.abs);
+  if (!s.some((v) => v.role !== "color")) return true; // all-color: impossible for real chords
+  return s[0].role !== "color" && s[s.length - 1].role !== "color";
+}
+
+/** Test-only handle so the pure helpers can be unit-tested without widening the public API. */
+export const __testables = {
+  roleOf,
+  buildInversion,
+  spreadFifth,
+  normalizeRegister,
+  passesSpacing,
+  colorInternal,
+};
+
 /**
  * Build a clean, well-spaced strum voicing for a chord. Pure. Returns note
  * strings (e.g. ["C3","E3","G3","A4"]), or [] when the root or quality is
