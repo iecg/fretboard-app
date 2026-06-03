@@ -920,35 +920,44 @@ describe("leadInActiveAtom / leadInDurationMsAtom", () => {
     expect(store.get(leadInActiveAtom)).toBe(true);
   });
 
-  it("turns false once the displayed step catches up to the audio step", () => {
+  it("is false at the very start of a step once active+displayed agree (not yet in its lead-in window)", () => {
     const store = makeDefaultStore();
     store.set(progressionPlayingStateAtom, true);
+    store.set(activeProgressionStepIndexAtom, 1);
     store.set(displayedStepIndexPrimitiveAtom, 1);
     store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0.05, paused: false });
     store.set(progressionStepDeadlineAtom, Date.now() + store.get(progressionStepDurationMsAtom));
     expect(store.get(leadInActiveAtom)).toBe(false);
   });
 
-  // Regression: going C→G, the guide ring for Am (the chord AFTER the next one)
-  // flashed right after the transition. Cause: the displayed step advances via
-  // the rAF visual clock a tick before the per-step deadline is refreshed by the
-  // audio scheduler, so the stale (past) deadline clamps the step fraction to
-  // ~1.0 and opens the lead-in immediately — for displayed+1, which is now the
-  // chord-after-next.
-  it("suppresses lead-in when the deadline is stale (just advanced, not yet refreshed)", () => {
+  // Regression (root cause): going C→G the guide ring for Am — the chord AFTER
+  // the next one — flashed right at the transition. At a boundary the displayed
+  // step advances ~one audio-lookahead BEFORE the deadline is refreshed:
+  // setActiveStep updates the timeline (→ visual clock → displayed) at SCHEDULE
+  // time, but the active-index + deadline refresh runs from a Tone.Draw callback
+  // at the audio ONSET. In that window `displayed` is the new chord while the
+  // deadline still reflects the previous chord AND is still slightly in the
+  // FUTURE — so a step fraction reads ~1.0 (in-window) and, with displayed
+  // already advanced, nextChordGuideTonesAtom points at the chord-after-next.
+  it("suppresses lead-in during the boundary lookahead (displayed advanced, active+deadline not yet refreshed, old deadline still slightly future)", () => {
     const store = makeDefaultStore();
     store.set(progressionPlayingStateAtom, true);
-    // Gap closed (audio frame == displayed), but the deadline still points at the
-    // previous step's end, now in the past.
+    // Displayed advanced to step 1 (timeline/visual clock at schedule time);
+    // active still 0 and the deadline still the previous step's, ~80ms out.
+    store.set(activeProgressionStepIndexAtom, 0);
     store.set(displayedStepIndexPrimitiveAtom, 1);
     store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0, paused: false });
-    store.set(progressionStepDeadlineAtom, Date.now() - 50);
+    store.set(progressionStepDeadlineAtom, Date.now() + 80);
+    // Old code: deadline is future so the now>=deadline guard misses it; the step
+    // fraction clamps to ~0.97 → in window → TRUE (the Am flash). The
+    // active!==displayed guard is what makes this false.
     expect(store.get(leadInActiveAtom)).toBe(false);
   });
 
   it("is false when the deadline is null (timing not yet established)", () => {
     const store = makeDefaultStore();
     store.set(progressionPlayingStateAtom, true);
+    store.set(activeProgressionStepIndexAtom, 0);
     store.set(displayedStepIndexPrimitiveAtom, 0);
     store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0, localFraction: 0, paused: false });
     store.set(progressionStepDeadlineAtom, null);

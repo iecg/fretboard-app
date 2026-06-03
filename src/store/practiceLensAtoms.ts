@@ -32,6 +32,7 @@ import { activeChordCachedDegreeAtom } from "./songStateAtoms";
 import {
   resolvedProgressionStepsAtom,
   displayedProgressionStepIndexAtom,
+  activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   progressionTempoBpmAtom,
   progressionStepDeadlineAtom,
@@ -587,26 +588,30 @@ export const leadInActiveAtom = atom((get): boolean => {
   if (!get(progressionPlayingAtom)) return false;
   const frame = get(progressionVisualFrameAtom);
   if (!frame || frame.paused) return false;
+  const displayed = get(displayedProgressionStepIndexAtom);
   // Audio has crossed into a later step than the fretboard is showing — hold
   // the highlight through the deferred-render gap until the shape catches up.
-  if (frame.stepIndex !== get(displayedProgressionStepIndexAtom)) return true;
-  // A genuinely in-progress step always has its deadline in the FUTURE. If it is
-  // null or already passed while the audio frame matches the displayed step, the
-  // displayed step just advanced (via the rAF visual clock) but its per-step
-  // deadline has not been refreshed yet (the audio scheduler does that a tick
-  // later). Computing a step fraction from that stale deadline clamps to ~1.0
-  // and would wrongly open the lead-in for the chord AFTER the next one — a
-  // brief guide-ring flash right after the transition. Suppress until the
-  // deadline is refreshed; the gap-hold above already covers the real boundary.
+  if (frame.stepIndex !== displayed) return true;
+  // The per-step deadline is written together with activeProgressionStepIndexAtom
+  // (setProgressionActiveStepIndexAtom), so it ALWAYS belongs to `active`. At a
+  // chord boundary the displayed step advances ~one audio-lookahead BEFORE the
+  // deadline refreshes: setActiveStep updates the timeline (→ visual clock →
+  // displayed) at SCHEDULE time, but the active-index + deadline refresh runs
+  // from a Tone.Draw callback at the audio ONSET. In that window `displayed` is
+  // the new chord while the deadline still reflects the previous chord (and is
+  // still slightly in the FUTURE), so a step fraction would read ~1.0 and, with
+  // displayed already advanced, open the lead-in for the chord AFTER the next
+  // one — a brief guide-ring flash right at the transition. Only trust the step
+  // fraction when the deadline's step (active) matches the displayed step.
+  if (get(activeProgressionStepIndexAtom) !== displayed) return false;
   const deadline = get(progressionStepDeadlineAtom);
-  const now = Date.now();
-  if (deadline == null || now >= deadline) return false;
+  if (deadline == null) return false;
   // Step-relative progress, NOT frame.localFraction (which the timeline resets
   // each bar — a multi-bar chord would re-open the window every bar). Reading
   // `frame` above keeps this recomputing per frame; Date.now() is the live
   // clock (same pattern as beatPositionAtom).
   const stepMs = get(progressionStepDurationMsAtom);
-  const stepFraction = stepRelativeFraction(deadline, now, stepMs);
+  const stepFraction = stepRelativeFraction(deadline, Date.now(), stepMs);
   return isInLeadInWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
 });
 
