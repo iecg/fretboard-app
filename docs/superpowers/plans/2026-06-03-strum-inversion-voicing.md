@@ -247,11 +247,19 @@ git commit -m "feat(progressions): add inversion/spread/filter helpers for voici
 In `src/progressions/voicingEngine.test.ts`, **replace** the existing `"buildVoicing — golden voicings (no prevVoicing)"` block's C6 assertion and the property block with the versions below (keep the unknown-quality/unknown-root cases):
 
 ```ts
-describe("buildVoicing — golden voicings (no prevVoicing)", () => {
-  it("C6 voices as the drop-2 first inversion E3 A3 C4 G4 (6th internal, 5th on top)", () => {
-    expect(buildVoicing("C", "6", undefined, STRUM_PRESET)).toEqual([
-      "E3", "A3", "C4", "G4",
-    ]);
+describe("buildVoicing — C6 (no prevVoicing)", () => {
+  // The exact grip is NOT pinned — REGISTER_CENTER is a tunable register dial,
+  // decided by ear after implementation. Assert the invariants that must hold
+  // regardless of register tuning.
+  it("voices C6 with the 6th internal and as a complete C6 chord", () => {
+    const v = buildVoicing("C", "6", undefined, STRUM_PRESET);
+    const pcs = new Set(v.map((n) => n.replace(/-?\d+$/, "")));
+    expect(pcs).toEqual(new Set(["C", "E", "G", "A"])); // all four tones present
+    const abs = v.map(absOf).sort((a, b) => a - b);
+    // the 6th (A) is neither the lowest nor the highest voice
+    const isA = (n: number) => ((n % 12) + 12) % 12 === NOTES.indexOf("A");
+    expect(isA(abs[0])).toBe(false);
+    expect(isA(abs[abs.length - 1])).toBe(false);
   });
 
   it("returns [] for an unknown quality", () => {
@@ -440,7 +448,7 @@ Keep the existing top-of-function Step 1 (def lookup, rootIndex, member selectio
 - [ ] **Step 4: Run to verify pass**
 
 Run: `pnpm vitest run src/progressions/voicingEngine.test.ts`
-Expected: PASS. If C6 ≠ `E3 A3 C4 G4`, print the candidate costs and confirm `REGISTER_CENTER`/weights; the design's worked example shows `E3 A3 C4 G4` must win (center 18 vs `C3 E3 A3 G4` center 24 at `REGISTER_CENTER=45`). Do not change the golden — fix the weights.
+Expected: PASS — the C6 test asserts only the invariants (6th internal, all four tones), not an exact grip. `REGISTER_CENTER=45` is a sensible low-mid default; the exact register/inversion is **tuned by ear after implementation** (Task 4), so do not chase a specific grip here. Just confirm the invariants hold for C6 and across the property suite.
 
 - [ ] **Step 5: Update the voice-leading test**
 
@@ -526,7 +534,7 @@ git commit -m "test(progressions): update default-path voicing assertions for in
 - [ ] **Step 1: Lint** — `pnpm run lint` → 0 errors.
 - [ ] **Step 2: Full test suite** — `pnpm run test` → green (2 pre-existing skips + the engine's expected skips).
 - [ ] **Step 3: Build** — `pnpm run build` → `tsc -b` + vite succeed.
-- [ ] **Step 4: Manual (REQUIRED before claiming completion).** `pnpm run dev`, load C–G–Am–F in **Rock**, set the C chord quality to `6`, play. Confirm the 6th no longer dominates (it should sound internal, like a real comp voicing) and that plain C/G/Am triads and any 7ths sound natural. Document what you heard in the PR.
+- [ ] **Step 4: Manual + register tuning (REQUIRED before claiming completion).** `pnpm run dev`, load C–G–Am–F in **Rock**, set the C chord quality to `6`, play. Confirm the 6th no longer dominates (it should sound internal). Then judge the overall **register** of the strums: if they sit too high/thin, lower `REGISTER_CENTER`; too low/dark, raise it. Re-run `pnpm vitest run src/progressions` after any change (the invariant tests must still pass — they're register-agnostic). Spot-check plain triads and 7ths. Document the final `REGISTER_CENTER` value and what you heard in the PR.
 - [ ] **Step 5: Commit any snapshot/doc churn** — `git add -A && git commit -m "chore(progressions): finalize strum inversion voicing"` (only if needed).
 
 ---

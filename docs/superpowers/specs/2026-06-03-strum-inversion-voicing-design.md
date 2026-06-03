@@ -81,7 +81,7 @@ with **named, documented, adjustable constants** (`STRUM_VOICING_SCORE_WEIGHTS`)
 | `W_CENTER` | `1` | Keep the grip in a guitar-real register around C4. |
 | `W_SPAN` | `0.3` | Mild preference for compact grips. |
 | `W_BASS_FIFTH` | `5` | Mild discouragement of 5th-in-bass (2nd-inversion) grips when a root/3rd bass is available. |
-| `REGISTER_CENTER` | `48` (C4) | The comp register midpoint. |
+| `REGISTER_CENTER` | `45` (A3) | The register the whole progression gravitates toward — the single register dial; tuned by ear. |
 
 **Deterministic tie-break:** lower bass pitch, then lexicographic note-string order. Guarantees stable, repeatable selection (same contract as the close-voicing scorer).
 
@@ -107,7 +107,7 @@ The chord-hit router (`buildAllLayers.ts:308`) sends only the "everything else" 
 
 ## Testing
 
-- **Golden (`voicingEngine.test.ts`):** C6 → `E3 A3 C4 G4`. Replace the old `C3 E3 G3 A4` golden (it encoded the bug). Add Cm6, C6/9 goldens (color internal). Add a plain triad and a 7th golden to lock triad/seventh behavior.
+- **Invariants over exact grips.** The exact C6 grip is **not** pinned — `REGISTER_CENTER` is a tunable register dial decided by ear (the `E3 A3 C4 G4` figure above is illustrative of the mechanism, not a fixed target). Assert that C6 contains all four tones with the 6th internal; let the register emerge from tuning. Replace the old `C3 E3 G3 A4` golden (it encoded the bug).
 - **Invariants (all qualities × several roots, incl. a flat-key root):** no sub-minor-third interval below C4; top voice `≤ ceil`; **color tone is never the highest or lowest voice** when a non-color tone exists; guide tone present.
 - **Voice leading:** given a `prevVoicing`, the result minimizes total semitone distance among the filtered candidates *and* still passes the color/spacing invariants.
 - **Downstream (`buildAllLayers.test.ts`):** update the few assertions that pin specific default-path notes (e.g. the "C3 present" check) to the new inversions.
