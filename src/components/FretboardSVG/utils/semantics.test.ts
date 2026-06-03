@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { getEmphasis, classifyNote, classifyNoteFromSemantics, getNoteVisuals } from "./semantics";
 import type { LeadLensContext } from "./semantics";
 import type { NoteSemantics } from "@fretflow/core";
-import { RADIUS_SCALE_CHORD_TONE } from "@fretflow/core";
 
 describe("semantics utils", () => {
   describe("getEmphasis — tones-base fallback (no leadContext)", () => {
@@ -276,20 +275,28 @@ describe("semantics utils", () => {
   });
 
   describe("getNoteVisuals", () => {
-    it("returns squircle for chord tones", () => {
-      const res = getNoteVisuals("chord-tone-in-scale");
-      expect(res.noteShape).toBe("squircle");
+    it("returns squircle for diatonic chord tones (chord size)", () => {
+      expect(getNoteVisuals("chord-tone-in-scale")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
+      expect(getNoteVisuals("note-diatonic-chord")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
+      expect(getNoteVisuals("chord-root")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
     });
 
-    it("returns circle for active notes", () => {
-      const res = getNoteVisuals("note-active");
-      expect(res.noteShape).toBe("circle");
+    it("returns small circle for scale tones", () => {
+      expect(getNoteVisuals("scale-only")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
+      expect(getNoteVisuals("note-active")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
     });
 
-    it("returns squircle + RADIUS_SCALE_CHORD_TONE for note-diatonic-chord", () => {
-      const res = getNoteVisuals("note-diatonic-chord");
-      expect(res.noteShape).toBe("squircle");
-      expect(res.radiusScale).toBe(RADIUS_SCALE_CHORD_TONE);
+    it("returns circle for diatonic color tones", () => {
+      expect(getNoteVisuals("color-tone")).toEqual({ radiusScale: 0.8, noteShape: "circle" });
+    });
+
+    it("returns DIAMOND for chromatic / outside-key notes", () => {
+      expect(getNoteVisuals("chord-tone-outside-scale").noteShape).toBe("diamond");
+      expect(getNoteVisuals("note-blue").noteShape).toBe("diamond");
+    });
+
+    it("returns circle for key tonic", () => {
+      expect(getNoteVisuals("key-tonic").noteShape).toBe("circle");
     });
   });
 });

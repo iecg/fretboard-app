@@ -1,10 +1,6 @@
 import type { NoteSemantics } from "@fretflow/core";
 import {
   RADIUS_SCALE_KEY_TONIC,
-  RADIUS_SCALE_CHORD_ROOT,
-  RADIUS_SCALE_CHORD_TONE,
-  RADIUS_SCALE_NOTE_ACTIVE,
-  RADIUS_SCALE_COLOR_TONE,
   RADIUS_SCALE_DEFAULT,
 } from "@fretflow/core";
 
@@ -166,96 +162,29 @@ export type NoteVisuals = {
   noteShape: NoteShape;
 };
 
-// THROWAWAY PROTOTYPE — tiered marker scheme radius scales.
-// chord tier large, scale tier small (recedes), outside tier medium.
-const TIERED_RADIUS_CHORD = 0.95;
-const TIERED_RADIUS_SCALE = 0.66;
-const TIERED_RADIUS_OUTSIDE = 0.8;
+// Marker sizing: chord tier large, scale tier small (recedes), outside tier medium.
+const RADIUS_CHORD = 0.95;
+const RADIUS_SCALE = 0.66;
+const RADIUS_OUTSIDE = 0.8;
 
-// THROWAWAY PROTOTYPE — tiered marker scheme: shape = membership tier
-// (squircle chord · circle scale · diamond outside), size = salience.
-function getTieredNoteVisuals(noteClass: string): NoteVisuals {
+export function getNoteVisuals(noteClass: string): NoteVisuals {
   switch (noteClass) {
     case "key-tonic":
       return { radiusScale: RADIUS_SCALE_KEY_TONIC, noteShape: "circle" };
     case "chord-root":
     case "chord-tone-in-scale":
     case "note-diatonic-chord":
-      return { radiusScale: TIERED_RADIUS_CHORD, noteShape: "squircle" };
+      return { radiusScale: RADIUS_CHORD, noteShape: "squircle" };
     case "note-active":
     case "scale-only":
-      return { radiusScale: TIERED_RADIUS_SCALE, noteShape: "circle" };
-    // Color tones / extensions are IN the scale (diatonic) → round circle,
-    // violet hue (CSS) marks the "flavor" sub-role.
+      return { radiusScale: RADIUS_SCALE, noteShape: "circle" };
     case "color-tone":
-      return { radiusScale: TIERED_RADIUS_OUTSIDE, noteShape: "circle" };
-    // Shape encodes harmonic insideness: a CHROMATIC note (outside the key)
-    // gets the angular diamond — pops out pre-attentively (Treisman) and is
-    // semantically congruent with tension (Bouba/Kiki). Applies whether or not
-    // it's a chord tone; the connector band still conveys chord membership.
+      return { radiusScale: RADIUS_OUTSIDE, noteShape: "circle" };
+    // Shape encodes harmonic insideness: chromatic / outside-key → angular diamond.
     case "note-blue":
     case "chord-tone-outside-scale":
-      return { radiusScale: TIERED_RADIUS_OUTSIDE, noteShape: "diamond" };
+      return { radiusScale: RADIUS_OUTSIDE, noteShape: "diamond" };
     default:
       return { radiusScale: RADIUS_SCALE_DEFAULT, noteShape: "circle" };
-  }
-}
-
-export function getNoteVisuals(
-  noteClass: string,
-  system: "current" | "tiered" = "current",
-): NoteVisuals {
-  if (system === "tiered") return getTieredNoteVisuals(noteClass);
-  switch (noteClass) {
-    case "key-tonic":
-      return {
-        radiusScale: RADIUS_SCALE_KEY_TONIC,
-        noteShape: "circle",
-      };
-    case "chord-root":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_ROOT,
-        noteShape: "squircle",
-      };
-    case "chord-tone-in-scale":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_TONE,
-        noteShape: "squircle",
-      };
-    case "note-active":
-      return {
-        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
-        noteShape: "circle",
-      };
-    case "note-blue":
-      return {
-        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
-        noteShape: "hexagon",
-      };
-    case "scale-only":
-      return {
-        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
-        noteShape: "circle",
-      };
-    case "color-tone":
-      return {
-        radiusScale: RADIUS_SCALE_COLOR_TONE,
-        noteShape: "hexagon",
-      };
-    case "chord-tone-outside-scale":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_TONE,
-        noteShape: "diamond",
-      };
-    case "note-diatonic-chord":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_TONE,
-        noteShape: "squircle",
-      };
-    default:
-      return {
-        radiusScale: RADIUS_SCALE_DEFAULT,
-        noteShape: "circle",
-      };
   }
 }
