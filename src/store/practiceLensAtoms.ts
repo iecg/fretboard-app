@@ -590,16 +590,23 @@ export const leadInActiveAtom = atom((get): boolean => {
   // Audio has crossed into a later step than the fretboard is showing — hold
   // the highlight through the deferred-render gap until the shape catches up.
   if (frame.stepIndex !== get(displayedProgressionStepIndexAtom)) return true;
+  // A genuinely in-progress step always has its deadline in the FUTURE. If it is
+  // null or already passed while the audio frame matches the displayed step, the
+  // displayed step just advanced (via the rAF visual clock) but its per-step
+  // deadline has not been refreshed yet (the audio scheduler does that a tick
+  // later). Computing a step fraction from that stale deadline clamps to ~1.0
+  // and would wrongly open the lead-in for the chord AFTER the next one — a
+  // brief guide-ring flash right after the transition. Suppress until the
+  // deadline is refreshed; the gap-hold above already covers the real boundary.
+  const deadline = get(progressionStepDeadlineAtom);
+  const now = Date.now();
+  if (deadline == null || now >= deadline) return false;
   // Step-relative progress, NOT frame.localFraction (which the timeline resets
   // each bar — a multi-bar chord would re-open the window every bar). Reading
   // `frame` above keeps this recomputing per frame; Date.now() is the live
   // clock (same pattern as beatPositionAtom).
   const stepMs = get(progressionStepDurationMsAtom);
-  const stepFraction = stepRelativeFraction(
-    get(progressionStepDeadlineAtom),
-    Date.now(),
-    stepMs,
-  );
+  const stepFraction = stepRelativeFraction(deadline, now, stepMs);
   return isInLeadInWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
 });
 

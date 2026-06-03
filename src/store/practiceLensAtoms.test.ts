@@ -928,6 +928,32 @@ describe("leadInActiveAtom / leadInDurationMsAtom", () => {
     store.set(progressionStepDeadlineAtom, Date.now() + store.get(progressionStepDurationMsAtom));
     expect(store.get(leadInActiveAtom)).toBe(false);
   });
+
+  // Regression: going C→G, the guide ring for Am (the chord AFTER the next one)
+  // flashed right after the transition. Cause: the displayed step advances via
+  // the rAF visual clock a tick before the per-step deadline is refreshed by the
+  // audio scheduler, so the stale (past) deadline clamps the step fraction to
+  // ~1.0 and opens the lead-in immediately — for displayed+1, which is now the
+  // chord-after-next.
+  it("suppresses lead-in when the deadline is stale (just advanced, not yet refreshed)", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    // Gap closed (audio frame == displayed), but the deadline still points at the
+    // previous step's end, now in the past.
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0, paused: false });
+    store.set(progressionStepDeadlineAtom, Date.now() - 50);
+    expect(store.get(leadInActiveAtom)).toBe(false);
+  });
+
+  it("is false when the deadline is null (timing not yet established)", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    store.set(displayedStepIndexPrimitiveAtom, 0);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0, localFraction: 0, paused: false });
+    store.set(progressionStepDeadlineAtom, null);
+    expect(store.get(leadInActiveAtom)).toBe(false);
+  });
 });
 
 describe("stepRelativeFraction", () => {
