@@ -131,22 +131,6 @@
   fill: var(--note-label-on-color);
 }
 
-/* Light-mode lens-emphasized labels — same white-on-amber treatment as tonic/chord-root. */
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
-}
-
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
-}
-
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
-}
-
 /* Dark-mode per-role label-fill overrides (audit rows 1, 2, 3).
    Chord-tone roles have light fills (cream #fef3e2, yellow #fde68a) that pair
    with the dark-wood backdrop to produce near-invisible dark labels. Override
@@ -214,94 +198,6 @@
   stroke-width: 2.8;
 }
 
-/* Lens emphasis selectors */
-[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, path, polygon) {
-  stroke-width: 3.8;
-  fill: var(--fretboard-note-fill-guide-emph);
-  stroke: var(--neon-orange);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] {
-  filter: var(--fretboard-svg-glow-orange-url);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) path:last-of-type,
-[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, path, polygon),
-[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) :is(circle, path, polygon) {
-  stroke-width: 1.4;
-  fill: var(--fretboard-note-fill-deemphasis-chord);
-  stroke: rgb(200 110 40);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]),
-[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]),
-[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) {
-  filter: none;
-  opacity: 0.68;
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, path, polygon) {
-  stroke: var(--note-ring-color-tone);
-  fill: var(--fretboard-note-fill-deemphasis-violet);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.color-tone {
-  filter: none;
-  opacity: 0.68;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale :is(circle, path, polygon) {
-  stroke: var(--neon-orange);
-  fill: var(--fretboard-note-fill-tension-strong);
-  stroke-dasharray: 6 3;
-  stroke-width: 3.8;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale {
-  filter: var(--fretboard-svg-glow-orange-url);
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] path:last-of-type {
-  stroke: var(--neon-orange);
-  fill: var(--fretboard-note-fill-tension-strong);
-  stroke-dasharray: 6 3;
-  stroke-width: 3.8;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) path:last-of-type {
-  stroke-width: 1.8;
-  fill: var(--fretboard-note-fill-chord-root);
-  stroke: rgb(255 154 77);
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) {
-  filter: none;
-  opacity: 0.72;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, path, polygon),
-[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord :is(circle, path, polygon) {
-  stroke-width: 1.4;
-  fill: var(--fretboard-note-fill-deemphasis-chord);
-  stroke: rgb(200 110 40);
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale,
-[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord {
-  filter: none;
-  opacity: 0.68;
-}
-
-[data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, path, polygon) {
-  stroke: var(--note-ring-color-tone);
-  fill: var(--fretboard-note-fill-deemphasis-violet);
-}
-
-[data-practice-lens="tension"] .fretboard-note.color-tone {
-  filter: none;
-  opacity: 0.68;
-}
-
 /* Lead lens emphasis — radiusBoost/opacityBoost are applied inline by
    FretboardNoteLayer.tsx via CSS transform scale. Glow is a dedicated underlay
    element (.note-glow-underlay, keyed off data-glow) instead of an SVG filter. */
@@ -313,8 +209,8 @@
    not a crisp ring. */
 .fretboard-note circle.note-glow-underlay {
   pointer-events: none;
-  /* The underlay must read as a pure soft glow. Role/full-chord stroke rules
-     (e.g. the 0,4,1 [data-full-chord-mode] rule) outrank any practical class
+  /* The underlay must read as a pure soft glow. The role stroke rules
+     (the `:is(circle, path, polygon)` selectors) outrank any practical class
      specificity here, so !important is the robust, intent-correct exemption
      (the file already uses !important for the focus-visible stroke). */
   stroke: none !important;
