@@ -195,7 +195,11 @@ describe("buildAllLayers", () => {
     // tempo 60 => 1 beat = 1s, so hit time === beat.
     const at = (t: number) => out.chordStrums.find((s) => s.time === t)!;
     expect(at(0).value.voicing).toEqual(["C3"]); // root anchor on the one
-    expect(at(1).value.voicing).toEqual(["C3", "E3", "G3"]); // plain stab on 2
+    // plain stab on 2 → the default comp voicing (an inversion of the C triad);
+    // assert the chord identity rather than an exact register.
+    expect(new Set(at(1).value.voicing.map((n) => n.replace(/-?\d+$/, "")))).toEqual(
+      new Set(["C", "E", "G"]),
+    );
     // color-stab uses the voice-led rootless funk grip, voice-led to the bar's triad.
     expect(at(2.5).value.voicing).toEqual(buildFunkColorVoicing("C", "M", ["C3", "E3", "G3"]));
   });
@@ -409,8 +413,11 @@ describe("buildAllLayers", () => {
       chordPatternId: "jazz-comp",
       steps: [step({ duration: { value: 1, unit: "bar" } })], // C major
     });
-    // Default path: the engine's buildVoicing keeps the root present (C major → C3).
-    expect(out.chordStrums[0].value.voicing.some((n) => n === "C3")).toBe(true);
+    // Default path: the engine's buildVoicing keeps the root present (in some
+    // octave — the grip may be an inversion, so match the C pitch class).
+    expect(
+      out.chordStrums[0].value.voicing.some((n) => n.replace(/-?\d+$/, "") === "C"),
+    ).toBe(true);
   });
 
   it("is deterministic for the bossa 2-bar cell across a 4-bar span (drums, bass, comp)", async () => {
