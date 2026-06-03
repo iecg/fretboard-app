@@ -43,7 +43,6 @@
   transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
 }
 
-
 .fretboard-note :is(circle, path, polygon) {
   stroke-width: 1.9;
   paint-order: stroke;
@@ -412,8 +411,9 @@
 }
 
 /* Guide-target ring — a hollow ring on the next chord's guide tones during the
-   lead-in window. It starts wide + faint and contracts/brightens to "land" on
-   the target exactly at the downbeat: a visual countdown synced to the beat.
+   lead-in window. It starts wide + faint, brightens as it contracts (the
+   countdown), then fades out as it lands on the downbeat — so its conditional
+   unmount is imperceptible: a visual countdown synced to the beat.
    transform/opacity only -> compositor-driven (no per-frame JS, no perf hit).
    The ring reuses the incoming hue token, so no new colour is introduced. */
 .note-guide-ring {
