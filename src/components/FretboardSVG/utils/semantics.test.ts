@@ -319,13 +319,17 @@ describe("getEmphasis - voice-leading emphasis", () => {
       .toEqual({ radiusBoost: 1, opacityBoost: 1 });
   });
 
-  it("marks a next-chord guide tone as 'guide-target' during lead-in", () => {
+  it("marks a next-chord guide tone as 'guide-target' with full opacity and NO size bloom", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "B", nextGuideTones: new Set(["B", "D"]),
+      ...baseLeadContext, notePc: "B",
+      nextGuideTones: new Set(["B"]),
+      nextGuideToneLabels: new Map([["B", "3"]]),
     };
+    // scale-only rests at radius 0.85; the target keeps that size (no bloom),
+    // is brought to full opacity, and gets the ring hue + role + label.
     expect(getEmphasis("scale-only", false, ctx)).toEqual({
-      glowColor: "var(--note-incoming)", radiusBoost: 1.15, opacityBoost: 1,
-      transitionRole: "guide-target",
+      glowColor: "var(--note-incoming)", radiusBoost: 0.85, opacityBoost: 1,
+      transitionRole: "guide-target", guideTargetLabel: "3",
     });
   });
 
@@ -336,24 +340,27 @@ describe("getEmphasis - voice-leading emphasis", () => {
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBe("guide-target");
   });
 
-  it("dims a non-target scale note but PRESERVES its resting size (no resize)", () => {
+  it("a non-target scale note is UNCHANGED during lead-in (no dim)", () => {
     const ctx: LeadLensContext = {
       ...baseLeadContext, notePc: "C", nextGuideTones: new Set(["B"]),
     };
-    // scale-only rests at radius 0.85; the dim must keep that — only opacity
-    // drops — so non-target scale notes never grow/shrink when the window opens.
-    expect(getEmphasis("scale-only", false, ctx)).toEqual({
-      radiusBoost: 0.85, opacityBoost: 0.4,
-    });
+    expect(getEmphasis("scale-only", false, ctx)).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
-  it("dims a non-target chord tone at its resting size (no resize)", () => {
+  it("a non-target chord tone is UNCHANGED during lead-in (no dim)", () => {
     const ctx: LeadLensContext = {
       ...baseLeadContext, notePc: "C", nextGuideTones: new Set(["B"]),
     };
-    // chord-tone-in-scale rests at radius 1; dim keeps 1, drops opacity to 0.4.
+    expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({ radiusBoost: 1, opacityBoost: 1 });
+  });
+
+  it("a held common tone keeps its hold glow DURING the lead-in (no flicker)", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "A",
+      commonWithNext: new Set(["A"]), nextGuideTones: new Set(["B"]),
+    };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
-      radiusBoost: 1, opacityBoost: 0.4,
+      glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1,
     });
   });
 
@@ -381,12 +388,5 @@ describe("getEmphasis - voice-leading emphasis", () => {
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
   });
 
-  it("guide-target carries its interval label from the next chord", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "B",
-      nextGuideTones: new Set(["B", "D"]),
-      nextGuideToneLabels: new Map([["B", "3"], ["D", "5"]]),
-    };
-    expect(getEmphasis("scale-only", false, ctx).guideTargetLabel).toBe("3");
-  });
+
 });

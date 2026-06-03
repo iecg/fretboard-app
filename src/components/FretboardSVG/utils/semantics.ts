@@ -76,10 +76,6 @@ function applyTonesBase(
   return { radiusBoost: 1, opacityBoost: 1 };
 }
 
-/** Opacity multiplier applied to every non-target note during the lead-in
- *  window — the "dim-the-rest" spotlight that makes the guide tones pop. */
-const LEAD_IN_DIM_OPACITY = 0.4;
-
 export function getEmphasis(
   noteClass: string,
   isGuideTone: boolean,
@@ -99,25 +95,20 @@ export function getEmphasis(
       ? { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 }
       : applyTonesBase(noteClass, isGuideTone);
 
-  // Lead-in: bloom the next chord's guide tones, dim everything else. Only when
-  // there ARE targets — an empty guide set (power chord / no next step) must not
-  // dim the whole board for no reason.
-  if (leadInActive && nextGuideTones.size > 0) {
-    if (nextGuideTones.has(notePc)) {
-      return {
-        glowColor: "var(--note-incoming)",
-        radiusBoost: 1.15,
-        opacityBoost: 1,
-        transitionRole: "guide-target",
-        guideTargetLabel: nextGuideToneLabels.get(notePc),
-      };
-    }
-    // Dim the rest. Keep each note's RESTING size (don't force radiusBoost to 1)
-    // so non-target notes only fade — they never resize when the window opens or
-    // closes. Glow is dropped so the spotlight reads cleanly on the targets.
-    return { radiusBoost: resting.radiusBoost, opacityBoost: LEAD_IN_DIM_OPACITY };
+  // Lead-in: ONLY the next chord's guide tones deviate from their resting
+  // emphasis. A target keeps its resting SIZE (no bloom), is brought to full
+  // opacity, and gets the ring hue + role + label. Every other note returns its
+  // resting emphasis untouched — nothing dims, so the board holds still and the
+  // ring's onset carries the attention by itself.
+  if (leadInActive && nextGuideTones.has(notePc)) {
+    return {
+      glowColor: "var(--note-incoming)",
+      radiusBoost: resting.radiusBoost,
+      opacityBoost: 1,
+      transitionRole: "guide-target",
+      guideTargetLabel: nextGuideToneLabels.get(notePc),
+    };
   }
-
   return resting;
 }
 
