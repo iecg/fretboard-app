@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
@@ -76,6 +77,9 @@ export const FretboardNote = memo(function FretboardNote({
     fullChordShape,
     transitionRole,
   } = note;
+
+  const prefersReducedMotion = useReducedMotion();
+  const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -212,29 +216,48 @@ export const FretboardNote = memo(function FretboardNote({
         data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
         aria-hidden="true"
       />
-      {/* Guide-target countdown ring — styled + animated in FretboardSVG.module.css */}
-      {transitionRole === "guide-target" && (
-        <circle
-          className={styles["note-guide-ring"]}
-          data-guide-ring="true"
-          cx={cx}
-          cy={cy}
-          r={r + 4}
-          aria-hidden="true"
-        />
-      )}
+      {/* Guide-target countdown ring. CSS animates the scale CONTRACTION (the
+          beat countdown, timed to --lead-in-duration); motion owns OPACITY so
+          AnimatePresence fades it in on mount and OUT on removal — decoupling
+          the fade-out from React's (startTransition-jittered) unmount timing,
+          which is what caused the boundary flash. The ring lands bright on the
+          beat, then fades as the chord arrives. */}
+      <AnimatePresence>
+        {transitionRole === "guide-target" && (
+          <motion.circle
+            key="guide-ring"
+            className={styles["note-guide-ring"]}
+            data-guide-ring="true"
+            cx={cx}
+            cy={cy}
+            r={r + 4}
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.95 }}
+            exit={{ opacity: 0 }}
+            transition={guideFade}
+          />
+        )}
+      </AnimatePresence>
       {shapeEl}
-      {applyLensEmphasis.guideTargetLabel && (
-        <text
-          className={styles["note-guide-label"]}
-          data-guide-label="true"
-          x={cx + r + 2}
-          y={cy - r - 2}
-          aria-hidden="true"
-        >
-          {applyLensEmphasis.guideTargetLabel}
-        </text>
-      )}
+      <AnimatePresence>
+        {applyLensEmphasis.guideTargetLabel && (
+          <motion.text
+            key="guide-label"
+            className={styles["note-guide-label"]}
+            data-guide-label="true"
+            x={cx + r + 2}
+            y={cy - r - 2}
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={guideFade}
+          >
+            {applyLensEmphasis.guideTargetLabel}
+          </motion.text>
+        )}
+      </AnimatePresence>
       {displayFormat !== "none" && (
         <text x={cx} y={cy}>
           {formatAccidental(displayValue)}

@@ -411,14 +411,13 @@
 }
 
 /* Guide-target ring — a hollow ring on the next chord's guide tones during the
-   lead-in window. It starts wide + faint, brightens as it contracts (the
-   countdown), then dissolves to nothing and FINISHES just before the end of the
-   window (by ~85%), holding opacity 0 for the remaining tail. That tail is the
-   important part: the ring element unmounts at the downbeat, but the displayed
-   step is committed via startTransition (visualClock.ts) so the ring mounts a
-   frame or two late — without the held-invisible tail the unmount could catch
-   the ring mid-dissolve and pop. The tail absorbs that render-timing skew so the
-   disappearance is always imperceptible.
+   lead-in window. CSS animates ONLY the scale contraction (the beat countdown,
+   timed to --lead-in-duration); OPACITY is owned by motion/AnimatePresence in
+   FretboardNote, which fades the ring in on mount and OUT on removal. Splitting
+   the two (CSS=transform, JS=opacity) is deliberate: the fade-out is driven by
+   the animation system on unmount rather than racing React's startTransition-
+   jittered removal, which is what caused the boundary flash. The ring lands
+   bright on the beat (scale 1, held) and fades cleanly as the chord arrives.
    transform/opacity only -> compositor-driven (no per-frame JS, no perf hit).
    The ring reuses the incoming hue token, so no new colour is introduced. */
 .note-guide-ring {
@@ -427,28 +426,22 @@
   stroke-width: 2;
   transform-box: fill-box;
   transform-origin: center;
-  animation: note-guide-target-ring var(--lead-in-duration, 0.6s) ease-out both;
+  animation: note-guide-ring-contract var(--lead-in-duration, 0.6s) ease-out both;
 }
 
-@keyframes note-guide-target-ring {
-  0%   { opacity: 0;   transform: scale(2.4); }
-  18%  { opacity: 0.9; }
-  50%  { opacity: 0.9; transform: scale(1.12); }
-  85%  { opacity: 0;   transform: scale(1); }
-  100% { opacity: 0;   transform: scale(1); }
+@keyframes note-guide-ring-contract {
+  0%   { transform: scale(2.4); }
+  55%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
 }
 
-/* Reduced motion: no contraction/countdown — show a static ring so the
-   information (which notes are the targets) is preserved without animation. */
+/* Reduced motion: no contraction/countdown — the ring snaps to its landed size.
+   Opacity is motion-owned (its fade collapses to an instant change because
+   FretboardNote passes a 0s transition under prefers-reduced-motion). */
 @media (prefers-reduced-motion: reduce) {
   .note-guide-ring {
     animation: none;
-    opacity: 0.9;
     transform: none;
-  }
-  .note-guide-label {
-    animation: none;
-    opacity: 1;
   }
   .fretboard-note circle.note-glow-underlay {
     transition: none;
@@ -459,21 +452,12 @@
    above-right of the note bubble so it reads alongside the guide-target ring
    without overlapping the main note glyph. */
 .note-guide-label {
-  animation: note-guide-label-fade var(--lead-in-duration, 0.6s) ease-out both;
   dominant-baseline: middle;
   fill: var(--note-incoming);
   font-size: 9px;
   font-weight: 600;
   pointer-events: none;
   text-anchor: start;
-}
-
-@keyframes note-guide-label-fade {
-  0%   { opacity: 0; }
-  18%  { opacity: 1; }
-  60%  { opacity: 1; }
-  85%  { opacity: 0; }
-  100% { opacity: 0; }
 }
 
 /* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */
