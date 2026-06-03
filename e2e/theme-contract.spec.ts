@@ -138,7 +138,9 @@ test.describe("Theme Contract", () => {
 
     // Check fretboard notes - they use stroke for the ring.
     // The role class is on the g element, so we look for circle inside.
-    const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
+    // Exclude the always-rendered glow underlay (`[data-glow]`, stroke:none) so
+    // `.first()` resolves to the tonic ring circle, not the underlay.
+    const tonicNote = page.locator('g[data-note-role="key-tonic"] circle:not([data-glow])').first();
     await expect(tonicNote).toBeVisible();
     const tonicNoteStroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
     // light: --note-ring-tonic = #b1431b -> rgb(177, 67, 27) (ORANGE — reference palette)
@@ -747,7 +749,9 @@ test.describe("Theme Contract", () => {
         await loadVisualState(page, { theme, progressionSteps: [] });
         await expect(page.getByTestId("fretboard-svg")).toBeVisible();
 
-        const tonicNote = page.locator('g[data-note-role="key-tonic"] circle').first();
+        // Exclude the always-rendered glow underlay (`[data-glow]`, stroke:none) so
+    // `.first()` resolves to the tonic ring circle, not the underlay.
+    const tonicNote = page.locator('g[data-note-role="key-tonic"] circle:not([data-glow])').first();
         await expect(tonicNote).toBeVisible();
 
         const stroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);

@@ -141,9 +141,9 @@
   --note-glow: var(--glow-cyan-sm);
   --note-glow-tonic: var(--glow-orange-sm);
   /* Lens-emphasis glows (used by getEmphasis in FretboardSVG/utils/semantics.ts).
-     Anticipation: next chord's guide tones in the last beat of the current step.
-     Hold:         current chord tones that persist into the next chord. */
-  --note-glow-anticipation: #fb923c;  /* warm orange, matches dark-mode chord-tone-ring family */
+     Incoming: next chord's notes previewed as a ghost ring in the lead-in window.
+     Hold:     current chord tones that persist into the next chord. */
+  --note-incoming: #34d399;  /* green-teal "go here next" — distinct from cyan hold, orange tension, violet color */
   --note-glow-hold:         #06b6d4;  /* cyan, matches dark-mode in-scale chord-tone family */
 
   --text-brand: var(--neon-cyan-bright);
