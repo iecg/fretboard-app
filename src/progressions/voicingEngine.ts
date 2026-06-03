@@ -118,17 +118,16 @@ export function buildVoicing(
     return placed;
   };
 
-  const toNotes = toNoteStrings;
-
   // Step 4 — spacing-safe voice leading. Each candidate already satisfies the
   // spacing invariant, so voice leading can never reintroduce a low cluster.
   if (prevVoicing && prevVoicing.length > 0) {
+    // Three octave anchors span C2–C4; register normalization folds anything above C5 back down.
     const anchors = [
       preset.floorAbs - 12,
       preset.floorAbs,
       preset.floorAbs + 12,
     ];
-    const candidates = anchors.map((a) => toNotes(place(a)));
+    const candidates = anchors.map((a) => toNoteStrings(place(a)));
     let best = candidates[0];
     let minDistance = Infinity;
     for (const candidate of candidates) {
@@ -141,5 +140,5 @@ export function buildVoicing(
     return best;
   }
 
-  return toNotes(place(preset.floorAbs));
+  return toNoteStrings(place(preset.floorAbs));
 }

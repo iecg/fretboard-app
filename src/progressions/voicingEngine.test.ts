@@ -36,6 +36,7 @@ function absOf(note: string): number {
 
 describe("buildVoicing — extended qualities", () => {
   const present = (q: string) => Boolean(CHORD_DEFINITIONS[q]);
+  const has13ths = ["13", "maj13", "m13"].some(present);
 
   it("m6 keeps all four tones, top <= C5", () => {
     const v = buildVoicing("C", "m6", undefined, STRUM_PRESET);
@@ -43,7 +44,7 @@ describe("buildVoicing — extended qualities", () => {
     expect(Math.max(...v.map(absOf))).toBeLessThanOrEqual(STRUM_PRESET.ceilAbs);
   });
 
-  it("13th chords drop the 5th to a five-note grip, top <= C5", () => {
+  it.runIf(has13ths)("13th chords drop the 5th to a five-note grip, top <= C5", () => {
     for (const q of ["13", "maj13", "m13"]) {
       if (!present(q)) continue;
       const v = buildVoicing("C", q, undefined, STRUM_PRESET);
