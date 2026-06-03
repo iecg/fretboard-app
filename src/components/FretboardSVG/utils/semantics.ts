@@ -157,7 +157,7 @@ export function classifyNoteFromSemantics(
   return "note-inactive";
 }
 
-type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
+type NoteShape = "circle" | "squircle" | "diamond";
 
 export type NoteVisuals = {
   radiusScale: number;
