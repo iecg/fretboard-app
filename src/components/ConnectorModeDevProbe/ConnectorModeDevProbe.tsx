@@ -15,22 +15,12 @@ import {
   connectorRenderModeAtom,
   type ConnectorRenderMode,
 } from "../../store/connectorPrototypeAtoms";
-import {
-  MARKER_SYSTEMS,
-  markerSystemAtom,
-  type MarkerSystem,
-} from "../../store/markerPrototypeAtoms";
 
 const CONNECTOR_LABEL: Record<ConnectorRenderMode, string> = {
   tube: "A · Tube edges (current)",
   ribbon: "A′ · Ribbon (band + center line)",
   "edge-line": "A* · Tube edges + center line",
   hybrid: "C · Hybrid (region + spine)",
-};
-
-const MARKER_LABEL: Record<MarkerSystem, string> = {
-  current: "Current (squircle/circle/hex)",
-  tiered: "Tiered (shape=tier, size=salience)",
 };
 
 const PILL: React.CSSProperties = {
@@ -48,15 +38,10 @@ const PILL: React.CSSProperties = {
 
 export function ConnectorModeDevProbe() {
   const [connector, setConnector] = useAtom(connectorRenderModeAtom);
-  const [marker, setMarker] = useAtom(markerSystemAtom);
 
   const cycleConnector = () => {
     const i = CONNECTOR_RENDER_MODES.indexOf(connector);
     setConnector(CONNECTOR_RENDER_MODES[(i + 1) % CONNECTOR_RENDER_MODES.length]!);
-  };
-  const cycleMarker = () => {
-    const i = MARKER_SYSTEMS.indexOf(marker);
-    setMarker(MARKER_SYSTEMS[(i + 1) % MARKER_SYSTEMS.length]!);
   };
 
   return (
@@ -74,9 +59,6 @@ export function ConnectorModeDevProbe() {
     >
       <button type="button" onClick={cycleConnector} title="Cycle chord-connector grouping model (prototype)" style={PILL}>
         connector: {CONNECTOR_LABEL[connector]} ↻
-      </button>
-      <button type="button" onClick={cycleMarker} title="Toggle note marker system (prototype)" style={PILL}>
-        markers: {MARKER_LABEL[marker]} ↻
       </button>
     </div>
   );

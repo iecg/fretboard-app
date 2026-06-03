@@ -1,9 +1,7 @@
 import React, { memo } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useAtomValue } from "jotai";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
-import { markerSystemAtom } from "../../store/markerPrototypeAtoms";
 import { getNoteVisuals } from "./utils/semantics";
 import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
@@ -83,9 +81,8 @@ export const FretboardNote = memo(function FretboardNote({
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
 
-  const markerSystem = useAtomValue(markerSystemAtom);
   const baseRadius = noteBubblePx / 2;
-  const { radiusScale, noteShape } = getNoteVisuals(noteClass, markerSystem);
+  const { radiusScale, noteShape } = getNoteVisuals(noteClass);
   const rawRadius = baseRadius * radiusScale;
   const r = noteShape === "squircle"
     ? reduceSquircleRadius(rawRadius)
@@ -132,13 +129,6 @@ export const FretboardNote = memo(function FretboardNote({
     ) : noteShape === "diamond" ? (
       <polygon
         points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
-      />
-    ) : noteShape === "hexagon" ? (
-      <polygon
-        points={Array.from({ length: 6 }, (_, i) => {
-          const a = (Math.PI / 3) * i - Math.PI / 6;
-          return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
-        }).join(" ")}
       />
     ) : (
       <>
@@ -188,7 +178,6 @@ export const FretboardNote = memo(function FretboardNote({
           : undefined
       }
       data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
-      data-marker-system={markerSystem}
       data-note-shape={noteShape}
       data-note-tension={isTension || undefined}
       data-note-guide-tone={isGuideTone || undefined}
