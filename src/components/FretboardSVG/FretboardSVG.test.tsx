@@ -503,7 +503,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       store,
     );
 
-    expect(container.querySelectorAll('[data-lens-emphasis="var(--note-incoming)"]').length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('[data-transition-role="incoming"]').length).toBeGreaterThan(0);
   });
 
   describe("shape scope and membership", () => {
