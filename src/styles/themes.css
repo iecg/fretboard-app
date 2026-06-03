@@ -308,6 +308,16 @@
      --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
 
+  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest. */
+  --fb-home-fill: #b5670a;
+  --fb-home-stroke: var(--note-ring-tonic);
+  --fb-guide-fill: #cfeefb;
+  --fb-guide-stroke: #1583a6;
+  --fb-neutral-fill: #e3ddd8;
+  --fb-neutral-stroke: #6b5d4f;
+  --fb-region-tint: rgba(107, 93, 79, 0.20);
+  --fb-connector-accent: var(--chord-connector-color-2); /* vermillion */
+
   /* Chord-tone connector palette — canonical Okabe-Ito 8-color palette.
      Identical across light and dark themes for consistent voicing identity.
      Light mode: lower fill-opacity (0.22 vs dark 0.15) because the warm tan
@@ -347,6 +357,16 @@
      to the more vivid chord-tone fills. Replaces the cool blue-gray #121a26
      which drifts away from the mirror-warm-amber palette anchor. */
   --fretboard-note-fill-scale-only: #3a2f28;
+
+  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest. */
+  --fb-home-fill: #b5670a;
+  --fb-home-stroke: var(--note-ring-tonic);
+  --fb-guide-fill: #1f5876;
+  --fb-guide-stroke: #7cecff;
+  --fb-neutral-fill: #1b232c;
+  --fb-neutral-stroke: #9aa3ab;
+  --fb-region-tint: rgba(154, 163, 171, 0.14);
+  --fb-connector-accent: var(--chord-connector-color-1); /* orange */
 
   /* Chord-tone connector overrides for dark mode.
      Same canonical Okabe-Ito palette as light mode. Lower fill opacity because
