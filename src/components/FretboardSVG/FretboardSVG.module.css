@@ -412,8 +412,13 @@
 
 /* Guide-target ring — a hollow ring on the next chord's guide tones during the
    lead-in window. It starts wide + faint, brightens as it contracts (the
-   countdown), then fades out as it lands on the downbeat — so its conditional
-   unmount is imperceptible: a visual countdown synced to the beat.
+   countdown), then dissolves to nothing and FINISHES just before the end of the
+   window (by ~85%), holding opacity 0 for the remaining tail. That tail is the
+   important part: the ring element unmounts at the downbeat, but the displayed
+   step is committed via startTransition (visualClock.ts) so the ring mounts a
+   frame or two late — without the held-invisible tail the unmount could catch
+   the ring mid-dissolve and pop. The tail absorbs that render-timing skew so the
+   disappearance is always imperceptible.
    transform/opacity only -> compositor-driven (no per-frame JS, no perf hit).
    The ring reuses the incoming hue token, so no new colour is introduced. */
 .note-guide-ring {
@@ -427,8 +432,9 @@
 
 @keyframes note-guide-target-ring {
   0%   { opacity: 0;   transform: scale(2.4); }
-  20%  { opacity: 0.9; }
-  75%  { opacity: 0.9; transform: scale(1.08); }
+  18%  { opacity: 0.9; }
+  50%  { opacity: 0.9; transform: scale(1.12); }
+  85%  { opacity: 0;   transform: scale(1); }
   100% { opacity: 0;   transform: scale(1); }
 }
 
@@ -464,8 +470,9 @@
 
 @keyframes note-guide-label-fade {
   0%   { opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
+  18%  { opacity: 1; }
+  60%  { opacity: 1; }
+  85%  { opacity: 0; }
   100% { opacity: 0; }
 }
 
