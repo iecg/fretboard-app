@@ -43,16 +43,6 @@
   transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
 }
 
-/* During the lead-in, the dim-the-rest spotlight and the target bloom should
-   pull focus GRADUALLY rather than snapping. The dim eases across the whole
-   lead-in window (so non-targets recede in step with the ring closing in), and
-   the bloom scales over a short beat. At the downbeat the phase attribute
-   clears and notes revert to the snappier 0.15s transition above for a clean
-   release. Compositor-only (opacity/transform); reduced motion sets
-   data-motion="none", so this rule is inert there. */
-.fretboard-board[data-transition-phase="lead-in"] [data-motion="css"] .fretboard-note {
-  transition: opacity var(--lead-in-duration, 0.6s) ease, transform 0.3s ease;
-}
 
 .fretboard-note :is(circle, path, polygon) {
   stroke-width: 1.9;
@@ -436,9 +426,10 @@
 }
 
 @keyframes note-guide-target-ring {
-  from { opacity: 0; transform: scale(2.4); }
-  35%  { opacity: 0.9; }
-  to   { opacity: 0.95; transform: scale(1); }
+  0%   { opacity: 0;   transform: scale(2.4); }
+  20%  { opacity: 0.9; }
+  75%  { opacity: 0.9; transform: scale(1.08); }
+  100% { opacity: 0;   transform: scale(1); }
 }
 
 /* Reduced motion: no contraction/countdown — show a static ring so the
@@ -449,6 +440,10 @@
     opacity: 0.9;
     transform: none;
   }
+  .note-guide-label {
+    animation: none;
+    opacity: 1;
+  }
   .fretboard-note circle.note-glow-underlay {
     transition: none;
   }
@@ -458,12 +453,20 @@
    above-right of the note bubble so it reads alongside the guide-target ring
    without overlapping the main note glyph. */
 .note-guide-label {
+  animation: note-guide-label-fade var(--lead-in-duration, 0.6s) ease-out both;
   dominant-baseline: middle;
   fill: var(--note-incoming);
   font-size: 9px;
   font-weight: 600;
   pointer-events: none;
   text-anchor: start;
+}
+
+@keyframes note-guide-label-fade {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 /* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */
