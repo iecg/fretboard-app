@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { offsetOpenPolylinePath } from "../utils/pathGeometry";
+import { offsetOpenPolylinePath, offsetOutlinePath, polarSort } from "../utils/pathGeometry";
 import { type CagedShape } from "@fretflow/core";
 import {
   type ConnectorYBounds,
@@ -57,6 +57,16 @@ export interface ChordConnectorVoicing {
    * For collinear voicings: both are inflatedCapsulePath strings (contain arc `A` commands).
    */
   paths: { fill: string; outline: string };
+  /**
+   * THROWAWAY PROTOTYPE (connector grouping-model spike): rounded closed
+   * enclosing region (convex hull offset) for "region"/"hybrid" render modes.
+   */
+  regionPath: string;
+  /**
+   * THROWAWAY PROTOTYPE: faint centerline through the voicing notes in string
+   * order, drawn over the region in "hybrid" mode as a path hint.
+   */
+  spinePath: string;
   /** Original chord-tone pixel positions in string-index order. */
   vertices: ChordConnectorVertex[];
   /**
@@ -702,10 +712,20 @@ function finalizeChordConnectorPolylines(
   );
 
   return pendingVoicings.map((pv, idx) => {
-    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
+    const r = radii[idx]!;
+    const pathStr = offsetOpenPolylinePath(pv.rawVertices, r);
     const paths = { fill: pathStr, outline: pathStr };
+    // THROWAWAY PROTOTYPE: region = rounded closed hull; spine = centerline.
+    const regionPath = offsetOutlinePath(polarSort(pv.rawVertices), r);
+    const spinePath = pv.rawVertices.length === 0
+      ? ""
+      : "M " + pv.rawVertices
+          .map((v) => `${Math.round(v.x * 100) / 100} ${Math.round(v.y * 100) / 100}`)
+          .join(" L ");
     return {
       paths,
+      regionPath,
+      spinePath,
       vertices: pv.rawVertices,
       paletteIndex: pv.paletteIndex,
       shape: pv.shape,

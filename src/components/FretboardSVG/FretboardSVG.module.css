@@ -97,6 +97,54 @@
   stroke-width: 2.3;
 }
 
+/* THROWAWAY PROTOTYPE — tiered marker scheme. Deep-amber root anchor (theme
+   aware: deeper on light wood so it doesn't wash out) with a light label,
+   consistent with the other markers. Shape/size differences come from
+   getNoteVisuals. The chord-root halo ring keeps its inline fill:none, so only
+   the main shape fills amber. Remove with the marker prototype. */
+.fretboard-note[data-marker-system="tiered"].chord-root :is(path, circle, polygon) {
+  fill: #b5670a;
+  stroke: var(--note-ring-tonic);
+}
+
+.fretboard-note[data-marker-system="tiered"].chord-root text {
+  fill: #ffffff;
+}
+
+/* Light theme flips note labels dark (line ~68); the amber root needs a white
+   label with a dark stroke for contrast, same as dark mode. */
+:global([data-theme="modern-light"]) .fretboard-note[data-marker-system="tiered"].chord-root text {
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.4);
+}
+
+/* THROWAWAY PROTOTYPE — tiered scheme: subtle pre-attentive brightness lift on
+   guide tones (3rd & 7th) inside the chord view. Grounded: a single luminance
+   channel pops the "money notes" without foveal label-reading and without
+   adding a static ring (the ring stays reserved for the transition onset,
+   where its abrupt appearance actually captures attention). NO dimming of
+   other notes — the lift is additive so the board holds still. */
+:global([data-theme="modern-dark"]) .fretboard-note[data-marker-system="tiered"][data-note-guide-tone]:is(.chord-tone-in-scale, .note-diatonic-chord) :is(path, circle, polygon) {
+  fill: #1f5876;
+  stroke: #7cecff;
+  stroke-width: 2.6;
+}
+
+:global([data-theme="modern-light"]) .fretboard-note[data-marker-system="tiered"][data-note-guide-tone]:is(.chord-tone-in-scale, .note-diatonic-chord) :is(path, circle, polygon) {
+  fill: #cfeefb;
+  stroke: #1583a6;
+  stroke-width: 2.6;
+}
+
+/* THROWAWAY PROTOTYPE — tiered lower tiers. In-scale context (scale tones and
+   diatonic color/extension tones) renders HOLLOW (no fill) so it recedes
+   ("available", not "active"); cyan = plain scale tone, violet = color tone.
+   Chromatic notes (note-blue, chord-tone-outside-scale) stay filled diamonds
+   so they pop. Remove with the marker prototype. */
+.fretboard-note[data-marker-system="tiered"]:is(.scale-only, .note-active, .color-tone) :is(circle, path, polygon) {
+  fill: none;
+}
+
 /* Full-chord voicing mode: each note <g> carries --shape-fill and
    --shape-stroke CSS variables computed inline from the CAGED shape
    identity. Inner shape elements inherit from the <g> via var().
@@ -568,6 +616,31 @@
   fill-opacity: var(--chord-connector-fallback-fill-opacity, 0.08);
 }
 
+/* THROWAWAY PROTOTYPE — connector grouping-model spike.
+   "region" mode: closed enclosing hull. "hybrid" mode: region (softer fill)
+   plus a faint dotted centerline spine. Remove with the prototype. */
+.chord-connectors[data-connector-mode="hybrid"] path[data-layer="fill"] {
+  fill-opacity: var(--chord-connector-hybrid-fill-opacity, 0.1);
+}
+
+.chord-connectors path[data-layer="spine"] {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4px;
+  stroke-opacity: 0.55;
+  stroke-dasharray: 2 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Ribbon / edge-line center line: solid + crisp (the clean "mockup A" look). */
+.chord-connectors[data-connector-mode="ribbon"] path[data-layer="spine"],
+.chord-connectors[data-connector-mode="edge-line"] path[data-layer="spine"] {
+  stroke-width: 1.6px;
+  stroke-opacity: 0.9;
+  stroke-dasharray: none;
+}
+
 /* -----------------------------------------------------------------------
    Palette-index color rules — one rule per voicing slot (N = 1..8).
    Color property is set so the layers can pick it up via currentColor,
@@ -587,6 +660,40 @@
 .chord-connectors path[data-caged-shape="C"] { color: var(--caged-c); }
 .chord-connectors path[data-caged-shape="A"] { color: var(--caged-a); }
 .chord-connectors path[data-caged-shape="G"] { color: var(--caged-g); }
+
+/* THROWAWAY PROTOTYPE — connector grouping-model spike.
+   All alternative modes (everything except the current "tube") use the
+   higher-contrast close-voicing orange instead of the per-CAGED-shape colors,
+   which reads better over CAGED region shading. The [data-layer] attribute
+   lifts specificity above the palette-index / caged-shape rules above so this
+   wins regardless of source order. Remove with the prototype. */
+.chord-connectors:not([data-connector-mode="tube"]) path[data-layer] {
+  color: var(--chord-connector-color-1); /* dark mode: Okabe-Ito orange #E69F00 */
+}
+
+:global([data-theme="modern-light"]) .chord-connectors:not([data-connector-mode="tube"]) path[data-layer] {
+  color: var(--chord-connector-color-2); /* light mode: Okabe-Ito vermillion #D55E00 */
+}
+
+/* Drop the halo for the alternative connectors in BOTH themes so light matches
+   dark: the light theme's white halo otherwise reads as a pale gray ribbon on
+   light wood. With the halo gone, light mode uses the exact same orange + fill
+   opacity as dark mode. */
+.chord-connectors:not([data-connector-mode="tube"]) path[data-layer="halo"] {
+  stroke: none;
+}
+
+/* Normalize close-voicing (isFallback) connectors to full visibility in the
+   alternative modes — they should read as strongly as full voicings, not be
+   de-emphasized with the dashed / faded fallback treatment. */
+.chord-connectors:not([data-connector-mode="tube"]) path[data-layer="fill"][data-fallback="true"] {
+  fill-opacity: var(--chord-connector-fill-opacity, 0.15);
+}
+
+.chord-connectors:not([data-connector-mode="tube"]) path[data-layer="outline"][data-fallback="true"] {
+  stroke-dasharray: none;
+  stroke-opacity: var(--chord-connector-outline-opacity, 0.85);
+}
 
 /* -----------------------------------------------------------------------
    Active-voicing highlight ring.

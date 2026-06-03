@@ -1,7 +1,9 @@
 import React, { memo } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useAtomValue } from "jotai";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
+import { markerSystemAtom } from "../../store/markerPrototypeAtoms";
 import { getNoteVisuals } from "./utils/semantics";
 import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
@@ -81,8 +83,9 @@ export const FretboardNote = memo(function FretboardNote({
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
 
+  const markerSystem = useAtomValue(markerSystemAtom);
   const baseRadius = noteBubblePx / 2;
-  const { radiusScale, noteShape } = getNoteVisuals(noteClass);
+  const { radiusScale, noteShape } = getNoteVisuals(noteClass, markerSystem);
   const rawRadius = baseRadius * radiusScale;
   const r = noteShape === "squircle"
     ? reduceSquircleRadius(rawRadius)
@@ -185,6 +188,7 @@ export const FretboardNote = memo(function FretboardNote({
           : undefined
       }
       data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
+      data-marker-system={markerSystem}
       data-note-shape={noteShape}
       data-note-tension={isTension || undefined}
       data-note-guide-tone={isGuideTone || undefined}

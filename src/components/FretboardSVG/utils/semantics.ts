@@ -166,9 +166,46 @@ export type NoteVisuals = {
   noteShape: NoteShape;
 };
 
+// THROWAWAY PROTOTYPE — tiered marker scheme radius scales.
+// chord tier large, scale tier small (recedes), outside tier medium.
+const TIERED_RADIUS_CHORD = 0.95;
+const TIERED_RADIUS_SCALE = 0.66;
+const TIERED_RADIUS_OUTSIDE = 0.8;
+
+// THROWAWAY PROTOTYPE — tiered marker scheme: shape = membership tier
+// (squircle chord · circle scale · diamond outside), size = salience.
+function getTieredNoteVisuals(noteClass: string): NoteVisuals {
+  switch (noteClass) {
+    case "key-tonic":
+      return { radiusScale: RADIUS_SCALE_KEY_TONIC, noteShape: "circle" };
+    case "chord-root":
+    case "chord-tone-in-scale":
+    case "note-diatonic-chord":
+      return { radiusScale: TIERED_RADIUS_CHORD, noteShape: "squircle" };
+    case "note-active":
+    case "scale-only":
+      return { radiusScale: TIERED_RADIUS_SCALE, noteShape: "circle" };
+    // Color tones / extensions are IN the scale (diatonic) → round circle,
+    // violet hue (CSS) marks the "flavor" sub-role.
+    case "color-tone":
+      return { radiusScale: TIERED_RADIUS_OUTSIDE, noteShape: "circle" };
+    // Shape encodes harmonic insideness: a CHROMATIC note (outside the key)
+    // gets the angular diamond — pops out pre-attentively (Treisman) and is
+    // semantically congruent with tension (Bouba/Kiki). Applies whether or not
+    // it's a chord tone; the connector band still conveys chord membership.
+    case "note-blue":
+    case "chord-tone-outside-scale":
+      return { radiusScale: TIERED_RADIUS_OUTSIDE, noteShape: "diamond" };
+    default:
+      return { radiusScale: RADIUS_SCALE_DEFAULT, noteShape: "circle" };
+  }
+}
+
 export function getNoteVisuals(
   noteClass: string,
+  system: "current" | "tiered" = "current",
 ): NoteVisuals {
+  if (system === "tiered") return getTieredNoteVisuals(noteClass);
   switch (noteClass) {
     case "key-tonic":
       return {

@@ -31,6 +31,7 @@ import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton, TimelineSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
+import { ConnectorModeDevProbe } from "./components/ConnectorModeDevProbe/ConnectorModeDevProbe";
 import "./styles/App.css";
 
 const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/SettingsOverlay"));
@@ -253,6 +254,7 @@ function AppContent() {
         </button>
       </div>
     )}
+    {import.meta.env.DEV && <ConnectorModeDevProbe />}
   </>
   </TooltipProvider>
   );

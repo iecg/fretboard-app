@@ -1,6 +1,8 @@
 import { memo, useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAtomValue } from "jotai";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
+import { connectorRenderModeAtom, type ConnectorRenderMode } from "../../store/connectorPrototypeAtoms";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
 import type { IntervalConnectorPolyline } from "./hooks/useIntervalConnectorPolylines";
 import type { FretboardMotionPolicy } from "./motionPolicy";
@@ -24,24 +26,42 @@ interface FretboardConnectorLayerProps {
   playbackActive?: boolean;
 }
 
+const renderChordLayers = (
+  chordPolylines: ChordConnectorVoicing[],
+  pass: "below" | "above",
+  mode: ConnectorRenderMode,
+) => (
+  <>
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo", mode))}
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill", mode))}
+    {/* Center line / spine renders BELOW the notes so markers occlude it
+        (lines never paint over the note circles). "tube" has no center line. */}
+    {pass === "below" && mode !== "tube" &&
+      chordPolylines.map((v) => renderChordPath(v, "spine", mode))}
+    {/* Boundary edges render ABOVE. "ribbon" intentionally hides its edges. */}
+    {pass === "above" && mode !== "ribbon" &&
+      chordPolylines.map((v) => renderChordPath(v, "outline", mode))}
+  </>
+);
+
 const renderStaticChordConnectorGroup = (
   chordPolylines: ChordConnectorVoicing[],
   connectorSource: "full-chord" | "generated",
   motionKey: string,
   pass: "below" | "above",
+  mode: ConnectorRenderMode,
 ) => (
   <g
     key={motionKey}
     className={styles["chord-connectors"]}
     data-connector-source={connectorSource}
+    data-connector-mode={mode}
     data-motion="none"
     data-render-path="static"
     aria-hidden="true"
     pointerEvents="none"
   >
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill"))}
-    {pass === "above" && chordPolylines.map((v) => renderChordPath(v, "outline"))}
+    {renderChordLayers(chordPolylines, pass, mode)}
   </g>
 );
 
@@ -51,6 +71,7 @@ const renderAnimatedChordConnectorGroup = (
   motionKey: string,
   skipInitial: boolean,
   pass: "below" | "above",
+  mode: ConnectorRenderMode,
 ) => (
   <motion.g
     key={motionKey}
@@ -60,32 +81,44 @@ const renderAnimatedChordConnectorGroup = (
     transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
     className={styles["chord-connectors"]}
     data-connector-source={connectorSource}
+    data-connector-mode={mode}
     data-motion="group"
     data-render-path="animated"
     data-enter={skipInitial ? "instant" : "fade"}
     aria-hidden="true"
     pointerEvents="none"
   >
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill"))}
-    {pass === "above" && chordPolylines.map((v) => renderChordPath(v, "outline"))}
+    {renderChordLayers(chordPolylines, pass, mode)}
   </motion.g>
 );
 
 const renderChordPath = (
   v: ChordConnectorVoicing,
-  layer: "halo" | "fill" | "outline",
-) => (
-  <path
-    key={`${layer}-${v.voicingKey}`}
-    className={layer === "halo" ? undefined : styles["chord-connector-path"]}
-    d={layer === "fill" ? v.paths.fill : v.paths.outline}
-    data-layer={layer}
-    data-caged-shape={v.shape}
-    data-palette-index={v.paletteIndex + 1}
-    data-fallback={v.isFallback ? "true" : undefined}
-  />
-);
+  layer: "halo" | "fill" | "outline" | "spine",
+  mode: ConnectorRenderMode,
+) => {
+  let d: string;
+  if (layer === "spine") {
+    d = v.spinePath;
+  } else if (mode === "tube" || mode === "ribbon" || mode === "edge-line") {
+    // tube + ribbon + edge-line use the open-polyline band for halo/fill/outline.
+    d = layer === "fill" ? v.paths.fill : v.paths.outline;
+  } else {
+    // region + hybrid both use the closed enclosing region for fill/outline.
+    d = v.regionPath;
+  }
+  return (
+    <path
+      key={`${layer}-${v.voicingKey}`}
+      className={layer === "halo" ? undefined : styles["chord-connector-path"]}
+      d={d}
+      data-layer={layer}
+      data-caged-shape={v.shape}
+      data-palette-index={v.paletteIndex + 1}
+      data-fallback={v.isFallback ? "true" : undefined}
+    />
+  );
+};
 
 const renderIntervalPath = (
   l: IntervalConnectorPolyline,
@@ -111,6 +144,7 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
   pass,
   playbackActive = false,
 }: FretboardConnectorLayerProps) {
+  const connectorRenderMode = useAtomValue(connectorRenderModeAtom);
   const [prevMode, setPrevMode] = useState(connectorMotionMode);
   // Skip the enter fade when first turning the group fades on (none → group) or
   // during playback (so the connector swaps in sync with the chord, not after).
@@ -133,8 +167,8 @@ export const FretboardConnectorLayer = memo(function FretboardConnectorLayer({
       <AnimatePresence mode="sync">
         {showChordConnectors && chordPolylines.length > 0 && (
           connectorMotionMode === "group"
-            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey, skipInitial, pass)
-            : renderStaticChordConnectorGroup(chordPolylines, connectorSource, motionKey, pass)
+            ? renderAnimatedChordConnectorGroup(chordPolylines, connectorSource, motionKey, skipInitial, pass, connectorRenderMode)
+            : renderStaticChordConnectorGroup(chordPolylines, connectorSource, motionKey, pass, connectorRenderMode)
         )}
       </AnimatePresence>
       {pass === "below" && intervalPolylines.length > 0 && (

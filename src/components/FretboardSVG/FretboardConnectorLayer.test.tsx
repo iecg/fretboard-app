@@ -9,6 +9,8 @@ import type { CagedShape } from "@fretflow/core";
 // (halo + fill + outline) per voicing.
 const makePolyline = (voicingKey: string, shape?: CagedShape): ChordConnectorVoicing => ({
   paths: { fill: "M0,0 L10,0", outline: "M0,0 L10,0" },
+  regionPath: "M0,0 L10,0 Z",
+  spinePath: "M 0 0 L 10 0",
   vertices: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
   paletteIndex: 0,
   shape,
