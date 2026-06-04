@@ -180,15 +180,15 @@ export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
   if (boxBounds !== null) {
     const { highlightNotes } = get(shapeDataAtom);
     const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
-    result = selectCloseFallbacksForThreeNpsPosition(closes, patternPositions).map(
-      (v) => ({ ...v, isFallback: true }),
-    );
+    result = selectCloseFallbacksForThreeNpsPosition(closes, patternPositions)
+      .slice(0, 1)
+      .map((v) => ({ ...v, isFallback: true }));
   } else {
     result = [];
     for (const polygon of polygons) {
-      const fallbacks = selectCloseFallbacksForCagedPosition(closes, polygon);
-      for (const fb of fallbacks) {
-        result.push({ ...fb, shape: polygon.shape, isFallback: true });
+      const ranked = selectCloseFallbacksForCagedPosition(closes, polygon);
+      if (ranked.length > 0) {
+        result.push({ ...ranked[0], shape: polygon.shape, isFallback: true });
       }
     }
   }

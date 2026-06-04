@@ -105,6 +105,30 @@ describe("fallbackVoicingMatchesAtom — full-mode string-set bypass (Task 3 reg
   });
 });
 
+describe("fallbackVoicingMatchesAtom — one grip per polygon (Phase 1)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("emits exactly one fallback grip per qualifying polygon (collapses multiple fits)", () => {
+    // C6 has no full-chord template, and the C-shape window fits 3 close grips
+    // per polygon (2 polygons). Pre-fix this rendered 6 overlapping grips;
+    // the de-clutter must collapse to one grip per polygon.
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "6" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C"])],
+    ]);
+    const polys = store.get(fallbackPolygonsAtom);
+    const matches = store.get(fallbackVoicingMatchesAtom);
+    expect(polys.length).toBeGreaterThan(1);
+    expect(matches.length).toBe(polys.length);
+  });
+});
+
 describe("fallbackVoicingMatchesAtom — referential stability", () => {
   beforeEach(() => {
     localStorage.clear();

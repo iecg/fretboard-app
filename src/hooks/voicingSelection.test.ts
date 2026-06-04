@@ -62,6 +62,41 @@ describe("selectCloseFallbacksForCagedPosition", () => {
   });
 });
 
+function vc(frets: Array<[number, number]>): Voicing {
+  return {
+    positionKeys: frets.map(([s, f]) => `${s}-${f}`),
+    notes: frets.map(([s, f]) => ({ stringIndex: s, fretIndex: f, noteName: "X", midi: 0 })),
+  };
+}
+
+// distanceOutsidePolygon only reads vertices[i].fret, so a minimal vertex list
+// (6 left bounds then 6 mirrored right bounds) is enough. Box covering [lo, hi]
+// on every string.
+function boxPolygon(lo: number, hi: number): ShapePolygon {
+  const vertices = [
+    ...Array.from({ length: 6 }, () => ({ fret: lo })),
+    ...Array.from({ length: 6 }, () => ({ fret: hi })),
+  ];
+  return { vertices } as unknown as ShapePolygon;
+}
+
+describe("selectCloseFallbacksForCagedPosition ranking", () => {
+  it("returns fitting grips ordered best-first", () => {
+    const box = boxPolygon(0, 5);
+    const wide = vc([[0, 1], [1, 4], [2, 4]]); // span 3
+    const compact = vc([[0, 1], [1, 2], [2, 2]]); // span 1 — better
+    const out = selectCloseFallbacksForCagedPosition([wide, compact], box);
+    expect(out.length).toBe(2);
+    expect(out[0]).toBe(compact);
+  });
+
+  it("still excludes grips with any note outside the polygon", () => {
+    const box = boxPolygon(0, 3);
+    const outside = vc([[0, 1], [1, 5], [2, 2]]); // fret 5 > 3
+    expect(selectCloseFallbacksForCagedPosition([outside], box)).toEqual([]);
+  });
+});
+
 describe("selectCloseFallbacksForThreeNpsPosition", () => {
   // Represents strings 0–5 all sharing frets 5–7 (the diagonal pattern's position keys).
   const patternPositions = new Set<string>([

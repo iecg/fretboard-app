@@ -5,6 +5,7 @@
  * (see visibleVoicingMatchesAtom in chordOverlayAtoms.ts).
  */
 import type { CagedShape, Voicing, VoicingNote, ShapePolygon } from "@fretflow/core";
+import { compareCloseVoicings } from "@fretflow/core";
 
 function distanceOutsidePolygon(
   polygon: ShapePolygon,
@@ -185,12 +186,15 @@ export function selectCloseFallbacksForThreeNpsPosition(
   closeMatches: Voicing[],
   patternPositions: Set<string>,
 ): Voicing[] {
-  if (patternPositions.size === 0) return closeMatches;
-  return closeMatches.filter((match) =>
-    match.notes.every((note) =>
-      patternPositions.has(`${note.stringIndex}-${note.fretIndex}`),
-    ),
-  );
+  const fitted =
+    patternPositions.size === 0
+      ? closeMatches
+      : closeMatches.filter((match) =>
+          match.notes.every((note) =>
+            patternPositions.has(`${note.stringIndex}-${note.fretIndex}`),
+          ),
+        );
+  return [...fitted].sort(compareCloseVoicings);
 }
 
 /**
@@ -208,7 +212,7 @@ export function selectCloseFallbacksForCagedPosition(
   closeMatches: Voicing[],
   polygon: ShapePolygon,
 ): Voicing[] {
-  return closeMatches.filter((match) =>
-    match.notes.every((note) => distanceOutsidePolygon(polygon, note) === 0),
-  );
+  return closeMatches
+    .filter((match) => match.notes.every((note) => distanceOutsidePolygon(polygon, note) === 0))
+    .sort(compareCloseVoicings);
 }
