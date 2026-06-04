@@ -5,6 +5,7 @@ import {
   buildFunkColorVoicing,
   buildBossaColorVoicing,
 } from "../progressionAudio";
+import { buildVoicing, STRUM_PRESET } from "../voicingEngine";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 import {
   getBassPattern,
@@ -227,7 +228,7 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     // §3.4: the chord the next change leads into (loop-aware, skips rests).
     const turnaroundTarget = nextResolvableRoot(input.steps, stepIndex, input.loop);
 
-    const voicing = resolveChordVoicing(root, quality, undefined, lastVoicing);
+    const voicing = buildVoicing(root, quality, lastVoicing, STRUM_PRESET);
     if (voicing.length > 0) {
       lastVoicing = voicing;
     }

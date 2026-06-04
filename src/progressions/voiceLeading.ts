@@ -21,7 +21,7 @@ function getChroma(noteStr: string): number | null {
  * Assumes arrays are the same length. If not, it pads the shorter one
  * with the last note or slices the longer one.
  */
-function calculateDistance(notesA: string[], notesB: string[]): number {
+export function calculateDistance(notesA: string[], notesB: string[]): number {
   let totalDistance = 0;
   const len = Math.max(notesA.length, notesB.length);
   
