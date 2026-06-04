@@ -15,7 +15,8 @@ const fmt = (hex) => {
 
 const TOKENS = {
   "--fb-home-fill        (light=dark)": "#b5670a",
-  "--fb-home-stroke      (light=dark)": "#b1431b",
+  "--fb-home-stroke      light": "#b1431b",
+  "--fb-home-stroke      dark":  "#FF9A4D",
   "--fb-guide-fill       light": "#cfeefb",
   "--fb-guide-fill       dark":  "#1f5876",
   "--fb-guide-stroke     light": "#1583a6",

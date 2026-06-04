@@ -307,14 +307,17 @@
      --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
 
-  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest. */
-  --fb-home-fill: #b5670a;
-  --fb-home-stroke: var(--note-ring-tonic);
-  --fb-guide-fill: #cfeefb;
-  --fb-guide-stroke: #1583a6;
-  --fb-neutral-fill: #e3ddd8;
-  --fb-neutral-stroke: #574d40;
-  --fb-region-tint: rgba(107, 93, 79, 0.20);
+  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest.
+     Single-source oklch() literals, equivalence-preserving (original hex in comments).
+     Hues differ per theme by design (warm maple here vs cool rosewood in dark) — there is
+     no shared hue, so each triplet is independent. Triplets from scripts/derive-fb-oklch.mjs. */
+  --fb-home-fill: oklch(0.5898 0.1342 60.9); /* was #b5670a */
+  --fb-home-stroke: oklch(0.5285 0.1524 38.7); /* was var(--note-ring-tonic) → #b1431b */
+  --fb-guide-fill: oklch(0.9307 0.0370 225.0); /* was #cfeefb */
+  --fb-guide-stroke: oklch(0.5695 0.1042 226.2); /* was #1583a6 */
+  --fb-neutral-fill: oklch(0.9009 0.0095 62.6); /* was #e3ddd8 */
+  --fb-neutral-stroke: oklch(0.4262 0.0246 74.3); /* was #574d40 */
+  --fb-region-tint: oklch(0.4878 0.0283 67.1 / 0.20); /* was rgba(107, 93, 79, 0.20) */
   --fb-connector-accent: var(--chord-connector-color-2); /* vermillion */
   --fb-connector-halo: rgb(255 255 255 / 0.7); /* light wood: pale halo lifts the line */
 
@@ -358,14 +361,19 @@
      which drifts away from the mirror-warm-amber palette anchor. */
   --fretboard-note-fill-scale-only: #3a2f28;
 
-  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest. */
-  --fb-home-fill: #b5670a;
-  --fb-home-stroke: var(--note-ring-tonic);
-  --fb-guide-fill: #1f5876;
-  --fb-guide-stroke: #7cecff;
-  --fb-neutral-fill: #1b232c;
-  --fb-neutral-stroke: #9aa3ab;
-  --fb-region-tint: rgba(154, 163, 171, 0.14);
+  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest.
+     Single-source oklch() literals, equivalence-preserving (original hex in comments).
+     Hues differ per theme by design (cool rosewood here vs warm maple in light) — there is
+     no shared hue, so each triplet is independent. Triplets from scripts/derive-fb-oklch.mjs.
+     Note: home-stroke here resolves through :root's --neon-orange (#FF9A4D), not light's
+     #b1431b, because dark does not redefine --note-ring-tonic — preserved verbatim. */
+  --fb-home-fill: oklch(0.5898 0.1342 60.9); /* was #b5670a — identical to light by design */
+  --fb-home-stroke: oklch(0.7775 0.1512 55.4); /* was var(--note-ring-tonic) → #FF9A4D */
+  --fb-guide-fill: oklch(0.4375 0.0764 235.5); /* was #1f5876 */
+  --fb-guide-stroke: oklch(0.8837 0.1056 209.8); /* was #7cecff */
+  --fb-neutral-fill: oklch(0.2525 0.0206 251.6); /* was #1b232c */
+  --fb-neutral-stroke: oklch(0.7108 0.0155 244.8); /* was #9aa3ab */
+  --fb-region-tint: oklch(0.7108 0.0155 244.8 / 0.14); /* was rgba(154, 163, 171, 0.14) */
   --fb-connector-accent: var(--chord-connector-color-1); /* orange */
   --fb-connector-halo: rgb(0 0 0 / 0.5); /* dark wood: shadow halo carves the line */
 
