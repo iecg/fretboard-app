@@ -2,7 +2,7 @@
  * Atoms that compute close-voicing fallbacks for CAGED / 3NPS positions
  * lacking a full-chord template. Surfaced in Full mode only — does not
  * displace the connector source for positions where a full match exists.
- * See docs/superpowers/specs/2026-05-26-close-voicing-fallback-design.md.
+ * See docs/superpowers/specs/2026-06-03-full-voicing-fallback-design.md.
  *
  * Architecture (post systematic-debug 2026-05-26):
  *
