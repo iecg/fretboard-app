@@ -43,13 +43,20 @@ core discipline — it is what keeps a dense board legible.
 | **Color (hue)** | the *two harmonic anchors* | **amber** = home (tonal center) · **teal** = chord identity (guide tones 3rd/7th) · **neutral** = everything else |
 | **Motion / glow** | *voice leading* only (during transitions) | reserved for change: incoming / held / departing |
 
-Two meta-principles govern the model:
+Three meta-principles govern the model:
 
 - **One channel, one meaning.** No hue, shape, or motion does double duty. *(Bertin: shape
   is a nominal channel and should carry a single categorical distinction — §7.)*
 - **Spend scarce, strong channels on what the player actually tracks.** Hue is scarce
   (small marks can't carry many hues — §7) and is reserved for the two signals an
   improviser tracks: where home is, and what the current chord's defining tones are.
+- **Salience is figure-relative.** Hollow/recede means "ground *behind the current
+  figure*," so it only applies when something else is the figure. A chord overlay makes
+  the chord the figure and the scale the ground (scale tones recede, hollow + small); with
+  **no** overlay the scale *is* the figure and its tones are **present** (filled, medium),
+  not recessed. The root/tonic stays the salient anchor in both modes. *(Gestalt
+  figure–ground; scale-diagram convention — all scale tones solid, root highlighted — §7.
+  The `Size` and `Fill` rows above describe the figure tones; ground tones recede.)*
 
 ---
 
@@ -182,7 +189,11 @@ Two meta-principles govern the model:
 
 ---
 
-## 4. The model in one table (current target state)
+## 4. The model in two tables (target state, by figure)
+
+Because salience is figure-relative, the presentation differs by mode.
+
+**Chord overlay ON** — the chord is the figure; the scale is ground (recedes):
 
 | Role | Shape | Size | Fill | Color |
 |---|---|---|---|---|
@@ -190,13 +201,21 @@ Two meta-principles govern the model:
 | Chord root, outside key | **diamond** | largest | filled | amber |
 | Guide tone (3rd/7th) | circle | large | filled | **teal** |
 | Other chord tone | circle | large | filled | neutral |
-| Scale tone | circle | small | **hollow** | neutral |
-| Modal characteristic tone | circle | small–med | hollow + **accent (TBD)** | neutral |
-| Chromatic / blue / outside-key tone | **diamond** | medium | filled | neutral |
-| Key tonic (no chord) | circle | med-large | filled/ring | amber-ring |
+| Scale tone (ground) | circle | small | **hollow** | neutral |
+| Diatonic color tone (ground) | circle | small | **hollow** | neutral |
+| Chromatic / outside chord tone | **diamond** | medium | filled | neutral |
 
-*(This reflects the v2 simplification: squircle dropped, shape = circle/diamond only. See
-§10 for the spec that lands it.)*
+**Chord overlay OFF** — the scale is the figure (present, not recessed):
+
+| Role | Shape | Size | Fill | Color |
+|---|---|---|---|---|
+| Root / key-tonic | circle | largest | filled | amber |
+| Scale tone | circle | **medium** | **filled** | neutral |
+| Blue / chromatic tone | **diamond** | medium | filled | neutral |
+| Modal characteristic tone | circle | medium | filled + **accent (TBD, deferred — §6)** | neutral |
+
+*(v2 simplification: squircle dropped, shape = circle/diamond only. No teal with the
+overlay off — guide tones exist only in chord context. See §10 for the spec that lands it.)*
 
 ---
 
