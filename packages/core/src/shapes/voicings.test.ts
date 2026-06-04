@@ -88,7 +88,7 @@ describe("generateVoicings — v2.0", () => {
     }
   });
 
-  it("'close' returns [] for chord types with <3 members (dyad: Power Chord)", () => {
+  it("'close' returns 2-note dyads for a power chord (root + 5th)", () => {
     const result = generateVoicings({
       chordRoot: "C",
       chordType: "5",
@@ -96,7 +96,16 @@ describe("generateVoicings — v2.0", () => {
       maxFret: 24,
       voicingType: "close",
     });
-    expect(result).toEqual([]);
+    expect(result.length).toBeGreaterThan(0);
+    for (const v of result) {
+      expect(v.notes.length).toBe(2);
+      // Adjacent string pair.
+      const strings = v.notes.map((n) => n.stringIndex).sort((a, b) => a - b);
+      expect(strings[1] - strings[0]).toBe(1);
+      // Only the two power-chord pitch classes: C (0) and G (7).
+      const pcs = new Set(v.notes.map((n) => n.midi % 12));
+      expect(pcs).toEqual(new Set([0, 7]));
+    }
   });
 
   it("'close' returns [] when tuning.length !== 6", () => {

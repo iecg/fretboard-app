@@ -224,9 +224,10 @@ function getPermutations<T>(arr: T[]): T[][] {
 }
 
 /**
- * Generate Close voicings: 3/4/5-note polygons on adjacent strings, where each
- * polygon contains every chord tone (no skipped tones). Note count matches the
- * chord's tone count: triads = 3, tetrads = 4, pentads = 5.
+ * Generate Close voicings: 2/3/4/5-note polygons on adjacent strings, where
+ * each polygon contains every chord tone (no skipped tones). Note count matches
+ * the chord's tone count: dyads (power chords) = 2, triads = 3, tetrads = 4,
+ * pentads = 5.
  *
  * Span limit: see {@link CLOSE_VOICING_SPAN_LIMIT}.
  */
@@ -237,7 +238,7 @@ function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
   if (!def || rootIndex < 0 || tuning.length !== 6) return [];
 
   const voiceCount = def.members.length;
-  if (voiceCount < 3 || voiceCount > 5) return [];
+  if (voiceCount < 2 || voiceCount > 5) return [];
 
   const chordPCs = def.members.map((m) => (rootIndex + m.semitone) % 12);
   const openMidis = tuning.map(openStringMidi);
