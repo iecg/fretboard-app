@@ -438,6 +438,13 @@ describe("FretboardSVG/FretboardSVG", () => {
       expect(container.querySelectorAll(".note-blue").length).toBeGreaterThan(0);
       expect(container.querySelectorAll(".color-tone").length).toBe(0);
     });
+
+    it("with no chord overlay, scale tones are note-active circles (present)", () => {
+      const { container } = render(
+        <FretboardSVG {...BASE_PROPS} rootNote="C" highlightNotes={["C", "D", "E", "F", "G", "A", "B"]} />
+      );
+      expect(container.querySelectorAll('.note-active[data-note-shape="circle"]').length).toBeGreaterThan(0);
+    });
   });
 
   describe("scale visibility 'off' mode — empty highlightNotes", () => {

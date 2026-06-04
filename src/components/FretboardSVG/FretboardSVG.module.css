@@ -110,9 +110,16 @@
   stroke-width: 2;
 }
 
-/* Scale tones + diatonic color tones — neutral HOLLOW (recede). */
-.fretboard-note:is(.scale-only, .note-active, .color-tone) :is(circle, path, polygon) {
+/* Scale CONTEXT under a chord overlay — neutral HOLLOW (recede as ground). */
+.fretboard-note:is(.scale-only, .color-tone) :is(circle, path, polygon) {
   fill: none;
+  stroke: var(--fb-neutral-stroke);
+  stroke-width: 1.7;
+}
+
+/* No-overlay scale tone — the scale IS the figure: neutral FILLED, present. */
+.fretboard-note.note-active :is(circle, path, polygon) {
+  fill: var(--fb-neutral-fill);
   stroke: var(--fb-neutral-stroke);
   stroke-width: 1.7;
 }
@@ -169,7 +176,7 @@
    reads as a ghosted number that recedes into the light wood while staying
    legible. paint-order: stroke (set on the base text rule) keeps the halo
    under the fill. */
-:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .note-active, .color-tone) text {
+:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .color-tone) text {
   fill: var(--fb-neutral-fill);
   stroke: var(--fb-neutral-stroke);
   stroke-width: 1.6;

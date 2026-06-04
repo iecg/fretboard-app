@@ -176,9 +176,12 @@ export function getNoteVisuals(noteClass: string): NoteVisuals {
     case "chord-tone-in-scale":
     case "note-diatonic-chord":
       return { radiusScale: RADIUS_CHORD, noteShape: "circle" };
-    case "note-active":
     case "scale-only":
       return { radiusScale: RADIUS_SCALE, noteShape: "circle" };
+    // No-overlay scale tone — the scale IS the figure, so it stays present
+    // (medium) rather than receding to scale-tier size.
+    case "note-active":
+      return { radiusScale: RADIUS_OUTSIDE, noteShape: "circle" };
     case "color-tone":
       return { radiusScale: RADIUS_OUTSIDE, noteShape: "circle" };
     // An outside-key chord root keeps its home (amber) identity via color, but

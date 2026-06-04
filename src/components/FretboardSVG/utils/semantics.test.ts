@@ -350,7 +350,11 @@ describe("semantics utils", () => {
 
     it("returns small circle for scale tones", () => {
       expect(getNoteVisuals("scale-only")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
-      expect(getNoteVisuals("note-active")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
+    });
+
+    it("note-active (no-overlay scale tone) is medium-sized, scale-only stays small", () => {
+      expect(getNoteVisuals("note-active").radiusScale).toBe(0.8); // RADIUS_OUTSIDE — present/medium
+      expect(getNoteVisuals("scale-only").radiusScale).toBe(0.66); // RADIUS_SCALE — ground stays small
     });
 
     it("returns circle for diatonic color tones", () => {
