@@ -40,6 +40,19 @@ describe("buildStringSetOptions", () => {
     ]);
   });
 
+  it("emits 5 windows for a dyad (power chord)", () => {
+    const opts = buildStringSetOptions(2);
+    expect(opts).toHaveLength(5);
+    expect(opts.map((o) => o.strings)).toEqual([
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [3, 4],
+      [4, 5],
+    ]);
+    expect(opts.every((o) => o.id !== "all")).toBe(true);
+  });
+
   it("each option has a stable id derived from strings", () => {
     const opts = buildStringSetOptions(4);
     expect(opts[0].id).toBe("0-1-2-3");

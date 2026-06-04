@@ -2,7 +2,14 @@ import { describe, it, expect } from "vitest";
 import {
   generateVoicings,
   CLOSE_VOICING_SPAN_LIMIT,
+  scoreCloseVoicing,
+  compareCloseVoicings,
+  CLOSE_VOICING_SCORE_WEIGHTS,
+  HIGH_NECK_THRESHOLD,
+  selectNeckSpread,
+  NECK_SPREAD_OVERLAP_TOLERANCE,
   type VoicingType,
+  type Voicing,
 } from "./voicings";
 import { NOTES } from "../theory";
 
@@ -81,7 +88,7 @@ describe("generateVoicings — v2.0", () => {
     }
   });
 
-  it("'close' returns [] for chord types with <3 members (dyad: Power Chord)", () => {
+  it("'close' returns 2-note dyads for a power chord (root + 5th)", () => {
     const result = generateVoicings({
       chordRoot: "C",
       chordType: "5",
@@ -89,7 +96,16 @@ describe("generateVoicings — v2.0", () => {
       maxFret: 24,
       voicingType: "close",
     });
-    expect(result).toEqual([]);
+    expect(result.length).toBeGreaterThan(0);
+    for (const v of result) {
+      expect(v.notes.length).toBe(2);
+      // Adjacent string pair.
+      const strings = v.notes.map((n) => n.stringIndex).sort((a, b) => a - b);
+      expect(strings[1] - strings[0]).toBe(1);
+      // Only the two power-chord pitch classes: C (0) and G (7).
+      const pcs = new Set(v.notes.map((n) => n.midi % 12));
+      expect(pcs).toEqual(new Set([0, 7]));
+    }
   });
 
   it("'close' returns [] when tuning.length !== 6", () => {
@@ -254,4 +270,75 @@ describe("Voicing Search Space Complexity Scaling Guardrail", () => {
   });
 });
 
+// frets: [stringIndex, fretIndex][] — noteName/midi are irrelevant to scoring.
+function vc(frets: Array<[number, number]>): Voicing {
+  return {
+    positionKeys: frets.map(([s, f]) => `${s}-${f}`),
+    notes: frets.map(([s, f]) => ({ stringIndex: s, fretIndex: f, noteName: "X", midi: 0 })),
+  };
+}
+
+describe("scoreCloseVoicing", () => {
+  it("exposes named weights and the high-neck threshold", () => {
+    expect(CLOSE_VOICING_SCORE_WEIGHTS.span).toBe(3);
+    expect(CLOSE_VOICING_SCORE_WEIGHTS.open).toBe(1.5);
+    expect(HIGH_NECK_THRESHOLD).toBe(7);
+  });
+
+  it("prefers a compact low grip over a wide high stretch", () => {
+    const compactLow = vc([[0, 1], [1, 2], [2, 2]]);
+    const wideHigh = vc([[0, 12], [1, 16], [2, 14]]);
+    expect(scoreCloseVoicing(compactLow)).toBeLessThan(scoreCloseVoicing(wideHigh));
+  });
+
+  it("rewards open strings over a fully fretted equivalent", () => {
+    const withOpen = vc([[0, 0], [1, 2], [2, 2]]);
+    const allFretted = vc([[0, 2], [1, 2], [2, 2]]);
+    expect(scoreCloseVoicing(withOpen)).toBeLessThan(scoreCloseVoicing(allFretted));
+  });
+});
+
+describe("compareCloseVoicings tie-break", () => {
+  it("breaks equal scores by lower top fret", () => {
+    const low = vc([[0, 1], [1, 2], [2, 2]]);
+    const high = vc([[0, 3], [1, 4], [2, 4]]); // same shape, shifted up — equal score
+    expect(scoreCloseVoicing(low)).toBe(scoreCloseVoicing(high));
+    expect(compareCloseVoicings(low, high)).toBeLessThan(0);
+  });
+
+  it("then breaks ties by lower lowest-string index", () => {
+    const lowStrings = vc([[0, 2], [1, 3], [2, 3]]);
+    const highStrings = vc([[3, 2], [4, 3], [5, 3]]); // identical frets, higher strings
+    expect(scoreCloseVoicing(lowStrings)).toBe(scoreCloseVoicing(highStrings));
+    expect(compareCloseVoicings(lowStrings, highStrings)).toBeLessThan(0);
+  });
+});
+
+describe("selectNeckSpread", () => {
+  it("exposes the overlap tolerance constant", () => {
+    expect(NECK_SPREAD_OVERLAP_TOLERANCE).toBe(1);
+  });
+
+  it("collapses a within-tolerance cluster to a single grip", () => {
+    const a = vc([[0, 1], [1, 2], [2, 2]]); // fretted window [1,2]
+    const b = vc([[0, 2], [1, 3], [2, 3]]); // fretted window [2,3] — touches a
+    expect(selectNeckSpread([a, b]).length).toBe(1);
+  });
+
+  it("keeps grips separated by more than the tolerance", () => {
+    const low = vc([[0, 1], [1, 2], [2, 2]]); // [1,2]
+    const high = vc([[3, 9], [4, 10], [5, 10]]); // [9,10]
+    expect(selectNeckSpread([low, high]).length).toBe(2);
+  });
+
+  it("orders the spread best-first", () => {
+    const wideHigh = vc([[0, 10], [1, 14], [2, 12]]);
+    const compactLow = vc([[3, 1], [4, 2], [5, 2]]);
+    expect(selectNeckSpread([wideHigh, compactLow])[0]).toBe(compactLow);
+  });
+
+  it("returns [] for an empty candidate list", () => {
+    expect(selectNeckSpread([])).toEqual([]);
+  });
+});
 

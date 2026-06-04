@@ -2,7 +2,7 @@
  * Atoms that compute close-voicing fallbacks for CAGED / 3NPS positions
  * lacking a full-chord template. Surfaced in Full mode only — does not
  * displace the connector source for positions where a full match exists.
- * See docs/superpowers/specs/2026-05-26-close-voicing-fallback-design.md.
+ * See docs/superpowers/specs/2026-06-03-full-voicing-fallback-design.md.
  *
  * Architecture (post systematic-debug 2026-05-26):
  *
@@ -19,9 +19,16 @@
  * the picker — only the rendered connector list changes. Otherwise picking
  * a string set with no in-polygon fit would unmount the picker and trap
  * the user.
+ *
+ * Position-less path (Phase 2): in Full mode with no full-chord template and
+ * no active position (Scale None / multi-shape CAGED / string modes),
+ * `neckSpreadFallbackActiveAtom` routes `closeCandidatesAllStringSetsAtom`
+ * through `selectNeckSpread` to produce a non-overlapping neck spread —
+ * mutually exclusive with the polygon/box paths above.
  */
 import { atom } from "jotai";
 import type { ShapePolygon, Voicing } from "@fretflow/core";
+import { selectNeckSpread } from "@fretflow/core";
 import {
   voicingAtom,
   voicingMatchesAtom,
@@ -36,6 +43,8 @@ import type { BoxBound } from "../components/FretboardSVG/utils/semantics";
 import {
   selectCloseFallbacksForCagedPosition,
   selectCloseFallbacksForThreeNpsPosition,
+  hasCloseFallbackForCagedPosition,
+  hasCloseFallbackForThreeNpsPosition,
   scoreFullChordForCagedPosition,
   scoreFullChordForThreeNpsPosition,
 } from "../hooks/voicingSelection";
@@ -54,6 +63,21 @@ const fallbackContextActiveAtom = atom((get): boolean => {
   const pattern = get(fingeringPatternAtom);
   if (pattern !== "caged" && pattern !== "3nps") return false;
   if (!get(activePositionAtom)) return false;
+  return true;
+});
+
+/**
+ * Phase 2: the position-less fallback path. Active in Full mode when the active
+ * chord has NO full-chord template (voicingMatchesAtom empty) AND there is no
+ * single active CAGED/3NPS position to scope to (Scale None, multi-shape CAGED,
+ * one-string / two-strings modes). Mutually exclusive with the polygon/box
+ * paths, which require an active position.
+ */
+const neckSpreadFallbackActiveAtom = atom((get): boolean => {
+  if (get(voicingAtom) !== "full") return false;
+  if (get(chordOverlayHiddenAtom)) return false;
+  if (get(activePositionAtom)) return false;
+  if (get(voicingMatchesAtom).length > 0) return false;
   return true;
 });
 
@@ -98,8 +122,7 @@ export const fallbackPolygonsAtom = atom((get): readonly ShapePolygon[] => {
     if (hasFull) continue;
     // Only register as "needing" if some close voicing can actually fill it —
     // otherwise the picker would surface a position the user can't recover.
-    const anyCloseFits =
-      selectCloseFallbacksForCagedPosition(allCloses, polygon).length > 0;
+    const anyCloseFits = hasCloseFallbackForCagedPosition(allCloses, polygon);
     if (anyCloseFits) needing.push(polygon);
   }
   return needing.length === 0 ? EMPTY_POLYGONS : needing;
@@ -124,11 +147,10 @@ export const fallback3NpsBoxBoundsAtom = atom((get): BoxBound[] | null => {
   if (hasFull) return null;
   // Same recoverability constraint as the CAGED path: only surface the
   // picker when at least one close voicing can actually fill the box.
-  const anyCloseFits =
-    selectCloseFallbacksForThreeNpsPosition(
-      get(closeCandidatesAllStringSetsAtom),
-      patternPositions,
-    ).length > 0;
+  const anyCloseFits = hasCloseFallbackForThreeNpsPosition(
+    get(closeCandidatesAllStringSetsAtom),
+    patternPositions,
+  );
   return anyCloseFits ? boxBounds : null;
 });
 
@@ -164,7 +186,18 @@ function memoizeFallbackVoicings(next: readonly Voicing[]): Voicing[] {
 export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
   const polygons = get(fallbackPolygonsAtom);
   const boxBounds = get(fallback3NpsBoxBoundsAtom);
-  if (polygons.length === 0 && boxBounds === null) return memoizeFallbackVoicings([]);
+
+  if (polygons.length === 0 && boxBounds === null) {
+    // Phase 2: no active position — spread best grips across the neck instead.
+    if (!get(neckSpreadFallbackActiveAtom)) return memoizeFallbackVoicings([]);
+    // Full mode always uses all six strings (effectiveStringSetAtom), so the
+    // neck-spread candidate set is simply every close voicing — no string-set
+    // narrowing applies here (unlike the position-scoped path below).
+    const closes = get(closeCandidatesAllStringSetsAtom);
+    if (closes.length === 0) return memoizeFallbackVoicings([]);
+    const spread = selectNeckSpread(closes).map((v) => ({ ...v, isFallback: true }));
+    return memoizeFallbackVoicings(spread);
+  }
 
   const allCloses = get(closeCandidatesAllStringSetsAtom);
   const stringSet = new Set(get(effectiveStringSetAtom));
@@ -180,15 +213,15 @@ export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
   if (boxBounds !== null) {
     const { highlightNotes } = get(shapeDataAtom);
     const patternPositions = new Set(highlightNotes.filter((n) => n.includes("-")));
-    result = selectCloseFallbacksForThreeNpsPosition(closes, patternPositions).map(
-      (v) => ({ ...v, isFallback: true }),
-    );
+    result = selectCloseFallbacksForThreeNpsPosition(closes, patternPositions)
+      .slice(0, 1)
+      .map((v) => ({ ...v, isFallback: true }));
   } else {
     result = [];
     for (const polygon of polygons) {
-      const fallbacks = selectCloseFallbacksForCagedPosition(closes, polygon);
-      for (const fb of fallbacks) {
-        result.push({ ...fb, shape: polygon.shape, isFallback: true });
+      const ranked = selectCloseFallbacksForCagedPosition(closes, polygon);
+      if (ranked.length > 0) {
+        result.push({ ...ranked[0], shape: polygon.shape, isFallback: true });
       }
     }
   }
