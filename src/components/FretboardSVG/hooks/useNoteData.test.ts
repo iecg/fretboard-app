@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useNoteData } from "./useNoteData";
+import { BLUE_NOTE_COLOR } from "@fretflow/core";
 import type { ShapePolygon, CagedShape } from "@fretflow/core";
 
 describe("useNoteData", () => {
@@ -329,7 +330,8 @@ describe("useNoteData", () => {
 
     const blueNote = result.current.find((n) => n.noteName === "F#");
     expect(blueNote?.scaleDegree).toBe("b5");
-    expect(blueNote?.degreeColor).toBe("#0047ff");
+    // b5 is a chromatic blue note → neutral slate (never a hue).
+    expect(blueNote?.degreeColor).toBe(BLUE_NOTE_COLOR);
   });
 
   describe("useNoteData — full-voicing preserves insideness classification", () => {

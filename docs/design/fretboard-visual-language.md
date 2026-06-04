@@ -97,12 +97,18 @@ Three meta-principles govern the model:
 - **Connector accent = one Okabe-Ito color** (orange dark / vermillion light). Lines
   tolerate hue far better than dots, and Okabe-Ito is colorblind-safe. **[spec]**
   (Okabe & Ito colorblind-safe palette.)
-- **Degree-color lens → Hooktheory mapping.** The opt-in degree lens (which *deliberately
-  overrides* the amber-home palette while active) adopts Hookpad's familiar mapping:
-  1=red, 2=orange, 3=yellow, 4=green, 5=blue, 6=purple, 7=pink, cycled by interval so
-  relationships hold across keys/modes. Rationale: maximal cross-tool familiarity for the
-  millions of learners who use Hookpad; the lens is a distinct mode so red-tonic does not
-  conflict with the default board's amber-home. **[web]** Hooktheory scale-degree colors.
+- **Degree-color lens → Hooktheory mapping (shipped 2026-06-04).** The opt-in
+  degree lens (which *deliberately overrides* the amber-home palette while active)
+  adopts Hookpad's mapping by degree number: 1=red, 2=orange, 3=yellow, 4=green,
+  5=blue, 6=purple, 7=pink (all quality variants share their number's hue;
+  `data-scale-degree` is key-relative, so it's interval-relative across keys).
+  Hues are realized as OKLCH-disciplined fills tuned for wood + the APCA
+  glyph-on-fill gate; labels are uniform **white + dark contour** in both themes
+  (the contour carries legibility, not a per-degree glyph color). Chromatic/blue
+  notes (e.g. the blues ♭5) use a distinct low-chroma **slate** — never a hue —
+  so they can't be read as degree-5 blue; the diamond shape carries "chromatic".
+  Rationale: maximal cross-tool familiarity for Hookpad learners, within our
+  color discipline. **[web]** Hooktheory scale-degree colors.
 
 ### B. Marker shape & size
 
@@ -248,7 +254,6 @@ overlay off — guide tones exist only in chord context. See §10 for the spec t
   exploration; not in current scope.)*
 - **"Show all CAGED positions" overview** — the only place the 5-hue palette would survive,
   behind a toggle. *(Deferred feature.)*
-- **Degree lens → Hooktheory** chromatic/blue-note degree hue and dark-mode muting values.
 
 ---
 
