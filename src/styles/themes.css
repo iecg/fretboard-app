@@ -434,13 +434,25 @@
 }
 
 [data-theme="modern-dark"] [data-scale-degree] {
-  --note-degree-fill: color-mix(in srgb, var(--degree-color, #4daf4a) 62%, #0f172a);
+  --note-degree-fill: color-mix(in srgb, var(--degree-color, #377eb8) 62%, #0f172a);
 }
 
-[data-theme="modern-dark"] :is([data-scale-degree="III"], [data-scale-degree="iii"], [data-scale-degree="iii°"], [data-scale-degree="III+"]) {
-  --note-degree-fill: color-mix(in srgb, var(--degree-color, #4daf4a) 54%, #0f172a);
+/* Bright hues are muted harder toward the navy base so the white label clears
+   the APCA glyph-on-fill gate (see fbColorTokens.test.ts). Percentages are
+   gate-locked — keep them in sync with DARK_DEGREE_MIX_PCT in that test. */
+[data-theme="modern-dark"]
+  :is([data-scale-degree="II"], [data-scale-degree="ii"], [data-scale-degree="ii°"], [data-scale-degree="II+"]) {
+  --note-degree-fill: color-mix(in srgb, var(--degree-color) 52%, #0f172a); /* orange */
 }
-
-[data-theme="modern-dark"] :is([data-scale-degree="VI"], [data-scale-degree="vi"], [data-scale-degree="vi°"], [data-scale-degree="VI+"]) {
-  --note-degree-fill: color-mix(in srgb, var(--degree-color, #fdd835) 42%, #0f172a);
+[data-theme="modern-dark"]
+  :is([data-scale-degree="III"], [data-scale-degree="iii"], [data-scale-degree="iii°"], [data-scale-degree="III+"]) {
+  --note-degree-fill: color-mix(in srgb, var(--degree-color) 46%, #0f172a); /* yellow */
+}
+[data-theme="modern-dark"]
+  :is([data-scale-degree="IV"], [data-scale-degree="iv"], [data-scale-degree="iv°"], [data-scale-degree="IV+"]) {
+  --note-degree-fill: color-mix(in srgb, var(--degree-color) 52%, #0f172a); /* green */
+}
+[data-theme="modern-dark"]
+  :is([data-scale-degree="VII"], [data-scale-degree="vii"], [data-scale-degree="vii°"], [data-scale-degree="VII+"]) {
+  --note-degree-fill: color-mix(in srgb, var(--degree-color) 56%, #0f172a); /* pink */
 }
