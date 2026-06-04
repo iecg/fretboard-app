@@ -96,3 +96,24 @@ describe("APCA: glyph legible on solid marker fills (text gate)", () => {
     }
   }
 });
+
+import { readFileSync as _readFileSync } from "node:fs";
+import { fileURLToPath as _fileURLToPath } from "node:url";
+
+describe("no orphaned overlay hue tokens remain", () => {
+  const cssFiles = ["../themes.css", "../semantic.css", "../tokens.css"].map((p) =>
+    _readFileSync(_fileURLToPath(new URL(p, import.meta.url)), "utf8"),
+  );
+  const allCss = cssFiles.join("\n");
+  for (const token of ["--note-blue", "--note-blue-glow"]) {
+    it(`${token} is fully removed (no definition, no consumer)`, () => {
+      // Consumer check: exact var(--token) call.
+      expect(allCss.includes(`var(${token})`), `${token} still consumed`).toBe(false);
+      // Definition check: token NOT followed by another name char ([-\w]), then optional
+      // whitespace, then ":". The negative lookahead keeps `--note-blue` from matching the
+      // `--note-blue-glow:` definition while staying exact for each token's own assertion.
+      const defRe = new RegExp(`${token}(?![-\\w])\\s*:`);
+      expect(defRe.test(allCss), `${token} still defined`).toBe(false);
+    });
+  }
+});

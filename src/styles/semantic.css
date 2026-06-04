@@ -130,7 +130,6 @@
   --transition-accent: box-shadow var(--transition-fast) ease, fill var(--transition-fast) ease;
   --transition-motion: transform var(--transition-fast) ease, opacity var(--transition-base) ease;
 
-  --note-ring: var(--neon-cyan);
   --note-ring-tonic: var(--neon-orange);
   --note-ring-dim: var(--neon-cyan-dim);
   --note-ring-color-tone: var(--neon-violet);

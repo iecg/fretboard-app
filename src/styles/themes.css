@@ -217,16 +217,11 @@
   --note-glow-hold:         #147088;
 
   /* Note ring tokens — light mode, reference palette */
-  --note-ring:            #147088;  /* CYAN — default note ring (reference palette) */
   --note-ring-tonic:      #b1431b;  /* ORANGE — tonic stands out warm (reference palette) */
   --note-ring-dim:        #857c6c;  /* MUTE — subdued ring (reference palette) */
   --note-ring-color-tone: #6b8c70;  /* desaturated sage — earthy third hue, distinguishable from CYAN+ORANGE */
   --note-glow:            color-mix(in srgb, #147088 50%, transparent); /* CYAN glow (reference palette) */
   --note-glow-tonic:      color-mix(in srgb, #b1431b 50%, transparent); /* ORANGE glow (reference palette) */
-
-  /* Note colors — primary and secondary note emphasis */
-  --note-blue: #147088; /* CYAN — reference palette */
-  --note-blue-glow: transparent;
 
   /* Shadows for notes — removed glow */
   --shadow-note-root: none;
@@ -304,7 +299,7 @@
   /* Dead-token candidates — no var() consumers found via rg across src/components.
      Safe to remove in a future cleanup pass after confirming unused:
      --text-on-highlight, --text-soft-white, --accent-glow,
-     --note-blue, --note-blue-glow, --shadow-note-root, --shadow-note-active,
+     --shadow-note-root, --shadow-note-active,
      --shadow-ping-start, --shadow-ping-end */
 
   /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest.
