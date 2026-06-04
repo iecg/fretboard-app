@@ -157,18 +157,19 @@
   stroke: rgb(0 0 0 / 0.45);
 }
 
-:global([data-theme="modern-dark"]) .fretboard-note.chord-tone-outside-scale text {
+:global([data-theme="modern-dark"]) .fretboard-note:is(.chord-tone-outside-scale, .note-blue) text {
   fill: #ffffff;
   stroke: rgb(0 0 0 / 0.45);
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale text {
+:global([data-theme="modern-light"]) .fretboard-note:is(.chord-tone-outside-scale, .note-blue) text {
   stroke: var(--note-label-on-color-stroke);
   fill: var(--note-label-on-color);
 }
 
-.fretboard-note.chord-tone-outside-scale text {
-  opacity: 0.9;
+/* Chromatic-diamond labels read crisply — subordination comes from SIZE, not a dim glyph. */
+.fretboard-note:is(.chord-tone-outside-scale, .note-blue) text {
+  opacity: 1;
 }
 
 /* Light-mode recessed scale notes (hollow neutral roles) — LIGHT label.
