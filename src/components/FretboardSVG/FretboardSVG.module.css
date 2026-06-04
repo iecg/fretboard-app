@@ -162,6 +162,19 @@
   opacity: 0.9;
 }
 
+/* Light-mode recessed scale notes (hollow neutral roles) — LIGHT label.
+   These notes have no fill (transparent ring only), so the default dark INK
+   label reads as a heavy solid glyph and fights the "recessed" intent. Give
+   the label a cream fill with a brown halo (both system neutral tokens) so it
+   reads as a ghosted number that recedes into the light wood while staying
+   legible. paint-order: stroke (set on the base text rule) keeps the halo
+   under the fill. */
+:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .note-active, .color-tone) text {
+  fill: var(--fb-neutral-fill);
+  stroke: var(--fb-neutral-stroke);
+  stroke-width: 1.6;
+}
+
 /* Light-mode stroke-width — uniform across all roles, matching the tonic value (3.6).
    Must sit AFTER role base rules; equal specificity, source order wins.
    Circle radius is compensated via the CSS r property (using --note-r set in JS)
