@@ -282,7 +282,7 @@ describe("scoreCloseVoicing", () => {
 
   it("rewards open strings over a fully fretted equivalent", () => {
     const withOpen = vc([[0, 0], [1, 2], [2, 2]]);
-    const allFretted = vc([[0, 3], [1, 2], [2, 2]]);
+    const allFretted = vc([[0, 2], [1, 2], [2, 2]]);
     expect(scoreCloseVoicing(withOpen)).toBeLessThan(scoreCloseVoicing(allFretted));
   });
 });

@@ -58,8 +58,9 @@ export function scoreCloseVoicing(
   const fretted = voicing.notes.map((n) => n.fretIndex).filter((f) => f > 0);
   const openCount = voicing.notes.length - fretted.length;
   const span = fretted.length > 0 ? Math.max(...fretted) - Math.min(...fretted) : 0;
-  // Compute mean-absolute-deviation scaled by n to avoid floating-point drift:
-  // sum |f*n - sum(frets)| / n — numerically stable for transposed grips.
+  // Sum of absolute deviations from the mean fret (= n × MAD). The integer-
+  // arithmetic form below is translation-invariant, so transposed grips score
+  // bit-identically (avoids the floating-point drift a direct mean would cause).
   const n = fretted.length;
   const sum = fretted.reduce((a, b) => a + b, 0);
   const compact = n > 0 ? fretted.reduce((s, f) => s + Math.abs(f * n - sum), 0) / n : 0;
@@ -83,11 +84,11 @@ export function compareCloseVoicings(a: Voicing, b: Voicing): number {
   const sa = scoreCloseVoicing(a);
   const sb = scoreCloseVoicing(b);
   if (sa !== sb) return sa - sb;
-  const topA = Math.max(...a.notes.map((n) => n.fretIndex));
-  const topB = Math.max(...b.notes.map((n) => n.fretIndex));
+  const topA = a.notes.length > 0 ? Math.max(...a.notes.map((n) => n.fretIndex)) : 0;
+  const topB = b.notes.length > 0 ? Math.max(...b.notes.map((n) => n.fretIndex)) : 0;
   if (topA !== topB) return topA - topB;
-  const lowA = Math.min(...a.notes.map((n) => n.stringIndex));
-  const lowB = Math.min(...b.notes.map((n) => n.stringIndex));
+  const lowA = a.notes.length > 0 ? Math.min(...a.notes.map((n) => n.stringIndex)) : 0;
+  const lowB = b.notes.length > 0 ? Math.min(...b.notes.map((n) => n.stringIndex)) : 0;
   return lowA - lowB;
 }
 
