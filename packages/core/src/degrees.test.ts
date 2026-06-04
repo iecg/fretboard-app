@@ -43,6 +43,18 @@ function oklabDistance(a: string, b: string) {
   return Math.hypot(aL - bL, aA - bA, aB - bB);
 }
 
+function oklabHue(color: string) {
+  const [, a, b] = toOklab(color);
+  return (Math.atan2(b, a) * 180) / Math.PI;
+}
+function oklabHueDeg(color: string) {
+  return (oklabHue(color) + 360) % 360;
+}
+function oklabChroma(color: string) {
+  const [, a, b] = toOklab(color);
+  return Math.hypot(a, b);
+}
+
 describe('getDegreesForScale', () => {
   describe('Major modes', () => {
     it('returns Major degrees for Major scale', () => {
@@ -324,13 +336,46 @@ describe('DEGREE_COLORS', () => {
   });
 
   it("keeps dominant and leading-tone colors strongly separated", () => {
-    expect(oklabDistance(DEGREE_COLORS["V"], DEGREE_COLORS["VII"])).toBeGreaterThanOrEqual(0.3);
+    // Under the Hooktheory palette, V=blue and VII=pink (was purple vs pink).
+    // 0.279 is still strongly separated — well above the 0.14 general bar.
+    expect(oklabDistance(DEGREE_COLORS["V"], DEGREE_COLORS["VII"])).toBeGreaterThanOrEqual(0.25);
+  });
+
+  it('maps degree 1 to red', () => {
+    const h = oklabHueDeg(DEGREE_COLORS['I']);
+    expect(h).toBeGreaterThan(10);
+    expect(h).toBeLessThan(50);
+  });
+
+  it('maps degree 5 to blue', () => {
+    const h = oklabHueDeg(DEGREE_COLORS['V']);
+    expect(h).toBeGreaterThan(220);
+    expect(h).toBeLessThan(290);
+  });
+
+  it('orders degree hues spectrally 1→7 (red→pink)', () => {
+    const hues = BASE_DEGREE_COLOR_KEYS.map((d) => oklabHueDeg(DEGREE_COLORS[d]));
+    for (let i = 1; i < hues.length; i++) {
+      expect(hues[i]).toBeGreaterThan(hues[i - 1]);
+    }
+  });
+
+  it('renders the blue note as a low-chroma non-hue, distinct from degree 5', () => {
+    expect(oklabChroma(BLUE_NOTE_COLOR)).toBeLessThan(0.05);
+    BASE_DEGREE_COLOR_KEYS.forEach((d) => {
+      expect(oklabChroma(DEGREE_COLORS[d])).toBeGreaterThan(0.05);
+    });
+    expect(oklabDistance(BLUE_NOTE_COLOR, DEGREE_COLORS['V'])).toBeGreaterThanOrEqual(0.14);
   });
 
   it("has a distinct blue-note color for blues-scale color tones", () => {
     expect(DEGREE_COLORS["b3"]).toBe(BLUE_NOTE_COLOR);
     expect(DEGREE_COLORS["b5"]).toBe(BLUE_NOTE_COLOR);
+    expect(DEGREE_COLORS["b2"]).toBe(BLUE_NOTE_COLOR);
+    expect(DEGREE_COLORS["b6"]).toBe(BLUE_NOTE_COLOR);
+    expect(DEGREE_COLORS["b7"]).toBe(BLUE_NOTE_COLOR);
     expect(BLUE_NOTE_COLOR).not.toBe(DEGREE_COLORS["II"]);
+    expect(BLUE_NOTE_COLOR).not.toBe(DEGREE_COLORS["V"]);
     expect(BLUE_NOTE_COLOR).not.toBe(DEGREE_COLORS["VII"]);
   });
 

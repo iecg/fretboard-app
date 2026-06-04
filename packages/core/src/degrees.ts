@@ -95,39 +95,30 @@ const BLUES_DEGREES: Record<string, Record<number, string>> = {
   "minor blues": PENTATONIC_DEGREES["minor pentatonic"],
 };
 
-export const BLUE_NOTE_COLOR = "#0047ff";
+// Slate — chromatic/blue-note degrees. A deliberate low-chroma non-hue so it
+// can't be mistaken for any of the seven degree hues (esp. degree-5 blue); the
+// diamond shape carries the "chromatic" meaning. Darkened so it clears the
+// 0.14 OKLab separation bar vs degree-5 blue (#377eb8 → 0.159) and improves
+// white-label contrast. See docs/design/fretboard-visual-language.md §A.
+export const BLUE_NOTE_COLOR = "#4d5560";
 
+// Hooktheory/Hookpad scale-degree palette, mapped BY DEGREE NUMBER (all quality
+// variants share their number's hue): 1=red, 2=orange, 3=yellow, 4=green,
+// 5=blue, 6=purple, 7=pink. These are the seven previously-shipped, separation-
+// passing colors reassigned to Hooktheory positions.
 export const DEGREE_COLORS: Record<string, string> = {
-  "I": "#ff7f00",
-  "I+": "#ff7f00",
-  "i": "#ff7f00",
-  "i°": "#ff7f00",
-  "II": "#377eb8",
-  "II+": "#377eb8",
-  "ii": "#377eb8",
-  "ii°": "#377eb8",
-  "III": "#4daf4a",
-  "III+": "#4daf4a",
-  "iii": "#4daf4a",
-  "iii°": "#4daf4a",
-  "IV": "#e41a1c",
-  "IV+": "#e41a1c",
-  "iv": "#e41a1c",
-  "iv°": "#e41a1c",
-  "V": "#7e22ce",
-  "V+": "#7e22ce",
-  "v": "#7e22ce",
-  "v°": "#7e22ce",
-  "VI": "#fdd835",
-  "VI+": "#fdd835",
-  "vi": "#fdd835",
-  "vi°": "#fdd835",
-  "VII": "#f781bf",
-  "VII+": "#f781bf",
-  "vii": "#f781bf",
-  "vii°": "#f781bf",
+  "I": "#e41a1c", "I+": "#e41a1c", "i": "#e41a1c", "i°": "#e41a1c",          // 1 red
+  "II": "#ff7f00", "II+": "#ff7f00", "ii": "#ff7f00", "ii°": "#ff7f00",      // 2 orange
+  "III": "#fdd835", "III+": "#fdd835", "iii": "#fdd835", "iii°": "#fdd835",  // 3 yellow
+  "IV": "#4daf4a", "IV+": "#4daf4a", "iv": "#4daf4a", "iv°": "#4daf4a",      // 4 green
+  "V": "#377eb8", "V+": "#377eb8", "v": "#377eb8", "v°": "#377eb8",          // 5 blue
+  "VI": "#7e22ce", "VI+": "#7e22ce", "vi": "#7e22ce", "vi°": "#7e22ce",      // 6 purple
+  "VII": "#f781bf", "VII+": "#f781bf", "vii": "#f781bf", "vii°": "#f781bf",  // 7 pink
+  "b2": BLUE_NOTE_COLOR,
   "b3": BLUE_NOTE_COLOR,
   "b5": BLUE_NOTE_COLOR,
+  "b6": BLUE_NOTE_COLOR,
+  "b7": BLUE_NOTE_COLOR,
 };
 
 // Diatonic triad quality for each scale degree (semitone offset → chord-name key).
