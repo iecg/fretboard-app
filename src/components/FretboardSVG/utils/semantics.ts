@@ -157,7 +157,7 @@ export function classifyNoteFromSemantics(
   return "note-inactive";
 }
 
-type NoteShape = "circle" | "squircle" | "diamond";
+type NoteShape = "circle" | "diamond";
 
 export type NoteVisuals = {
   radiusScale: number;
@@ -176,7 +176,7 @@ export function getNoteVisuals(noteClass: string): NoteVisuals {
     case "chord-root":
     case "chord-tone-in-scale":
     case "note-diatonic-chord":
-      return { radiusScale: RADIUS_CHORD, noteShape: "squircle" };
+      return { radiusScale: RADIUS_CHORD, noteShape: "circle" };
     case "note-active":
     case "scale-only":
       return { radiusScale: RADIUS_SCALE, noteShape: "circle" };

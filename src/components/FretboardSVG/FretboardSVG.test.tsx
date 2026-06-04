@@ -327,12 +327,12 @@ describe("FretboardSVG/FretboardSVG", () => {
     it.each<{ role: string; shape: string; props: Record<string, unknown> }>([
       {
         role: "chord-root",
-        shape: "squircle",
+        shape: "circle",
         props: { ...SCALE_CEG, chordTones: ["C", "E", "G"], chordRoot: "C" },
       },
       {
         role: "chord-tone-in-scale",
-        shape: "squircle",
+        shape: "circle",
         props: { ...SCALE_CEG, chordTones: ["C", "E", "G"], chordRoot: "C" },
       },
       {
@@ -609,7 +609,7 @@ describe("FretboardSVG/FretboardSVG", () => {
 
     it.each<[string, string, Record<string, unknown>]>([
       ["scale-only", "circle", { chordTones: ["C"] }],
-      ["chord-tone-in-scale", "squircle", {}],
+      ["chord-tone-in-scale", "circle", {}],
     ])("%s notes render (not hidden) with data-note-shape=%s under chord overlay", (cls, shape, extra) => {
       const { container } = renderCMajor(extra);
       const notes = container.querySelectorAll(`.fretboard-note.${cls}:not(.hidden)`);
