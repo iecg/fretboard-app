@@ -195,21 +195,6 @@ export const FretboardDefs = memo(({
         />
       </filter>
       <filter
-        id={svgDefId("glow-cyan")}
-        x="-50%"
-        y="-50%"
-        width="200%"
-        height="200%"
-      >
-        <feDropShadow
-          dx="0"
-          dy="0"
-          stdDeviation="3"
-          floodColor="var(--neon-cyan)"
-          floodOpacity="var(--fretboard-glow-opacity)"
-        />
-      </filter>
-      <filter
         id={svgDefId("glow-orange")}
         x="-50%"
         y="-50%"
@@ -221,21 +206,6 @@ export const FretboardDefs = memo(({
           dy="0"
           stdDeviation="3"
           floodColor="var(--neon-orange)"
-          floodOpacity="var(--fretboard-glow-opacity)"
-        />
-      </filter>
-      <filter
-        id={svgDefId("glow-violet")}
-        x="-50%"
-        y="-50%"
-        width="200%"
-        height="200%"
-      >
-        <feDropShadow
-          dx="0"
-          dy="0"
-          stdDeviation="3"
-          floodColor="var(--neon-violet)"
           floodOpacity="var(--fretboard-glow-opacity)"
         />
       </filter>

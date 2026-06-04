@@ -351,9 +351,7 @@ export function FretboardSVG({
   const svgDefId = useCallback((id: string) => `${defsPrefix}-${id}`, [defsPrefix]);
   const svgDefUrl = useCallback((id: string) => `url(#${svgDefId(id)})`, [svgDefId]);
   const glowFilterUrls = useMemo(() => ({
-    cyan: svgDefUrl("glow-cyan"),
     orange: svgDefUrl("glow-orange"),
-    violet: svgDefUrl("glow-violet"),
   }), [svgDefUrl]);
 
   const noteBubblePx = Math.round(stringRowPx * NOTE_BUBBLE_RATIO);
@@ -636,9 +634,7 @@ export function FretboardSVG({
             width: `${neckWidthPx}px`,
             willChange: "transform",
             "--string-row-px": `${stringRowPx}px`,
-            "--fretboard-svg-glow-cyan-url": glowFilterUrls.cyan,
             "--fretboard-svg-glow-orange-url": glowFilterUrls.orange,
-            "--fretboard-svg-glow-violet-url": glowFilterUrls.violet,
           } as CSSProperties
         }
       >

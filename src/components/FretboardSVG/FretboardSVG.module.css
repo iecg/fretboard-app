@@ -209,16 +209,6 @@
   filter: var(--fretboard-svg-glow-orange-url);
 }
 
-.fretboard-note[data-note-role="note-active"],
-.fretboard-note[data-note-role="scale-only"] {
-  filter: var(--fretboard-svg-glow-cyan-url);
-}
-
-.fretboard-note[data-note-role="note-blue"],
-.fretboard-note[data-note-role="color-tone"] {
-  filter: var(--fretboard-svg-glow-violet-url);
-}
-
 /* Lead lens emphasis — radiusBoost/opacityBoost are applied inline by
    FretboardNoteLayer.tsx via CSS transform scale. Glow is a dedicated underlay
    element (.note-glow-underlay, keyed off data-glow) instead of an SVG filter. */
