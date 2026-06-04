@@ -10,8 +10,8 @@ describe("cssTokens helper", () => {
 
   it("one-hop resolves a var() reference within the block", () => {
     const light = readThemeBlock("modern-light");
-    // --fb-home-stroke: var(--note-ring-tonic); --note-ring-tonic: #b1431b
-    expect(resolveVar(light["--fb-home-stroke"], light)).toBe("#b1431b");
+    // --fb-connector-accent: var(--chord-connector-color-2); --chord-connector-color-2: #D55E00
+    expect(resolveVar(light["--fb-connector-accent"], light)).toBe("#D55E00");
   });
 
   it("computes APCA Lc with the expected sign and magnitude", () => {

@@ -36,6 +36,7 @@ describe("--fb-* tokens migrated to equivalent OKLCH", () => {
         const got = toRgb(parse(raw));
         const want = toRgb(parse(hex));
         expect(got).toBeTruthy();
+        expect(want).toBeTruthy();
         expect(deltaE(got!, want!)).toBeLessThan(0.02);
       });
     }
