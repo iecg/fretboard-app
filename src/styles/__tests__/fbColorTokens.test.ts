@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
-import { differenceEuclidean, parse, converter, formatHex } from "culori";
+import { differenceEuclidean, parse, converter, formatHex, interpolate } from "culori";
+import { DEGREE_COLORS, BLUE_NOTE_COLOR } from "@fretflow/core";
 import { readThemeBlock, resolveVar } from "./cssTokens";
 import { contrastAPCA } from "./cssTokens";
 
@@ -130,4 +131,54 @@ describe("no orphaned overlay hue tokens remain", () => {
       expect(defRe.test(allCss), `${token} still defined`).toBe(false);
     });
   }
+});
+
+/**
+ * Degree-lens glyph gate. The lens renders a WHITE number glyph + dark contour
+ * on each degree fill (FretboardSVG.module.css). We gate white-on-fill at the
+ * text tier (|Lc| >= 45); the contour is an additional, un-credited safety
+ * margin. Light fills are resolvable theme tokens; dark fills are computed as
+ * color-mix(in srgb, <base hue> N%, #0f172a) with the base hue from the core
+ * DEGREE_COLORS map. DARK_DEGREE_MIX_PCT MUST mirror the modern-dark
+ * [data-scale-degree] percentages in themes.css.
+ */
+describe("APCA: degree-lens white glyph on degree fills (text gate)", () => {
+  const DEGREES = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
+  const NAVY = "#0f172a";
+  const DARK_DEGREE_MIX_PCT: Record<string, number> = {
+    I: 62,
+    II: 52,
+    III: 46,
+    IV: 52,
+    V: 62,
+    VI: 62,
+    VII: 56,
+  };
+  // culori 4.x registers the gamma-sRGB space under the mode name "rgb"
+  // (not "srgb"); this matches CSS `color-mix(in srgb, ...)` semantics.
+  const mixSrgb = (hue: string, pct: number) =>
+    formatHex(interpolate([NAVY, hue], "rgb")(pct / 100)) ?? hue;
+
+  const lb = readThemeBlock("modern-light");
+  for (const d of DEGREES) {
+    it(`modern-light white glyph on degree ${d} fill |Lc|>=${APCA_TEXT_MIN}`, () => {
+      const fill = hexOf(resolveVar(lb[`--degree-light-fill-${d}`], lb));
+      expect(Math.abs(contrastAPCA("#ffffff", fill))).toBeGreaterThanOrEqual(APCA_TEXT_MIN);
+    });
+  }
+  it(`modern-light white glyph on blue-note (slate) fill |Lc|>=${APCA_TEXT_MIN}`, () => {
+    const fill = hexOf(resolveVar(lb["--degree-light-fill-blue"], lb));
+    expect(Math.abs(contrastAPCA("#ffffff", fill))).toBeGreaterThanOrEqual(APCA_TEXT_MIN);
+  });
+
+  for (const d of DEGREES) {
+    it(`modern-dark white glyph on degree ${d} fill |Lc|>=${APCA_TEXT_MIN}`, () => {
+      const fill = mixSrgb(DEGREE_COLORS[d], DARK_DEGREE_MIX_PCT[d]);
+      expect(Math.abs(contrastAPCA("#ffffff", fill))).toBeGreaterThanOrEqual(APCA_TEXT_MIN);
+    });
+  }
+  it(`modern-dark white glyph on blue-note (slate) fill |Lc|>=${APCA_TEXT_MIN}`, () => {
+    const fill = mixSrgb(BLUE_NOTE_COLOR, 62);
+    expect(Math.abs(contrastAPCA("#ffffff", fill))).toBeGreaterThanOrEqual(APCA_TEXT_MIN);
+  });
 });
