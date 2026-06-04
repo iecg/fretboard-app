@@ -14,6 +14,15 @@ export const CHORD_TYPE_SHORT_LABELS: Record<string, string> = {
   dim7: "dim7",
   m7b5: "m7♭5",
   mMaj7: "mM7",
+  add9: "add9",
+  "9": "9",
+  maj9: "M9",
+  m9: "m9",
+  "6/9": "6/9",
+  "9sus4": "9sus4",
+  "13": "13",
+  maj13: "M13",
+  m13: "m13",
 };
 
 export const CHORD_TYPE_DISPLAY_ORDER: readonly string[] = [
@@ -32,6 +41,15 @@ export const CHORD_TYPE_DISPLAY_ORDER: readonly string[] = [
   "dim7",
   "m7b5",
   "mMaj7",
+  "add9",
+  "9",
+  "maj9",
+  "m9",
+  "6/9",
+  "9sus4",
+  "13",
+  "maj13",
+  "m13",
 ];
 
 export const CHORD_NONE_VALUE = "__none__";

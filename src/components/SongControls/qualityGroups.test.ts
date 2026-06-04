@@ -7,6 +7,7 @@ const labels = {
   sus: "Sus",
   sixths: "Sixths",
   sevenths: "Sevenths",
+  extensions: "Extensions",
 };
 
 describe("buildQualityGroupsWithDiatonic — in-key root", () => {
@@ -20,7 +21,7 @@ describe("buildQualityGroupsWithDiatonic — in-key root", () => {
   });
   it("keeps the existing quality groups after Diatonic", () => {
     expect(groups.map((g) => g.groupLabel)).toEqual(
-      ["Diatonic", "Triads", "Sus", "Sixths", "Sevenths"],
+      ["Diatonic", "Triads", "Sus", "Sixths", "Sevenths", "Extensions"],
     );
   });
   it("does not duplicate diatonic values in the base groups", () => {
@@ -54,5 +55,33 @@ describe("buildQualityGroupsWithDiatonic — borrowed root falls back to guess",
     const groups = buildQualityGroupsWithDiatonic("major", "C", "A#", labels);
     expect(groups[0].groupLabel).toBe("Diatonic");
     expect(groups[0].options.map((o) => o.value)).toContain("M");
+  });
+});
+
+describe("Extensions group", () => {
+  const labelsWithExt = {
+    diatonic: "Diatonic",
+    triads: "Triads",
+    sus: "Sus",
+    sixths: "Sixths",
+    sevenths: "Sevenths",
+    extensions: "Extensions",
+  };
+
+  // Use a root with no diatonic match so the base groups render in full.
+  const groups = buildQualityGroupsWithDiatonic("major", "C", "C#", labelsWithExt);
+
+  it("emits an Extensions group with the nine extended qualities in order", () => {
+    const ext = groups.find((g) => g.groupLabel === "Extensions");
+    expect(ext).toBeDefined();
+    expect(ext!.options.map((o) => o.value)).toEqual([
+      "add9", "9", "maj9", "m9", "6/9", "9sus4", "13", "maj13", "m13",
+    ]);
+  });
+
+  it("Extensions options carry their short display labels", () => {
+    const ext = groups.find((g) => g.groupLabel === "Extensions")!;
+    expect(ext.options.find((o) => o.value === "maj9")?.label).toBe("M9");
+    expect(ext.options.find((o) => o.value === "13")?.label).toBe("13");
   });
 });

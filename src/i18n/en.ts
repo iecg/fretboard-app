@@ -175,6 +175,7 @@ export const en: Dictionary = {
     qualityGroupSus: "Suspended / Power",
     qualityGroupSixths: "6th Chords",
     qualityGroupSevenths: "7th Chords",
+    qualityGroupExtensions: "Extended Chords",
     qualityGroupDiatonic: "Diatonic",
     lockQuality: "Lock quality",
     lockQualityHint: "Keep this quality when changing the chord root",

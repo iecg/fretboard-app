@@ -134,6 +134,7 @@ export function SongControls() {
       sus: t("controls.qualityGroupSus"),
       sixths: t("controls.qualityGroupSixths"),
       sevenths: t("controls.qualityGroupSevenths"),
+      extensions: t("controls.qualityGroupExtensions"),
     },
   );
   // When the quality lock is engaged, the root dropdown previews the *locked*
@@ -468,6 +469,7 @@ export function SongControls() {
                           width="fixed"
                           widthValue="7rem"
                           accentValue={qualityLock}
+                          data-testid="quality-select"
                           value={
                             activeStep?.qualityOverride
                             ?? activeResolvedProgressionStep?.quality

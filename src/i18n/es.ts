@@ -175,6 +175,7 @@ export const es: Dictionary = {
     qualityGroupSus: "Suspendidos / Quinta",
     qualityGroupSixths: "Acordes de 6ª",
     qualityGroupSevenths: "Acordes de 7ª",
+    qualityGroupExtensions: "Acordes Extendidos",
     qualityGroupDiatonic: "Diatónico",
     lockQuality: "Bloquear cualidad",
     lockQualityHint: "Mantén esta cualidad al cambiar la fundamental del acorde",
