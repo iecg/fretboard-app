@@ -325,18 +325,6 @@ describe("semantics utils", () => {
   });
 
   describe("getNoteVisuals", () => {
-    it("returns a circle for chord roles (squircle retired in v2)", () => {
-      expect(getNoteVisuals("chord-root").noteShape).toBe("circle");
-      expect(getNoteVisuals("chord-tone-in-scale").noteShape).toBe("circle");
-      expect(getNoteVisuals("note-diatonic-chord").noteShape).toBe("circle");
-    });
-
-    it("keeps diamonds for chromatic / outside-key roles", () => {
-      expect(getNoteVisuals("chord-root-outside").noteShape).toBe("diamond");
-      expect(getNoteVisuals("chord-tone-outside-scale").noteShape).toBe("diamond");
-      expect(getNoteVisuals("note-blue").noteShape).toBe("diamond");
-    });
-
     it("returns circle for diatonic chord tones (chord size)", () => {
       expect(getNoteVisuals("chord-tone-in-scale")).toEqual({ radiusScale: 0.95, noteShape: "circle" });
       expect(getNoteVisuals("note-diatonic-chord")).toEqual({ radiusScale: 0.95, noteShape: "circle" });
@@ -353,6 +341,7 @@ describe("semantics utils", () => {
     });
 
     it("returns DIAMOND for chromatic / outside-key notes", () => {
+      expect(getNoteVisuals("chord-root-outside").noteShape).toBe("diamond");
       expect(getNoteVisuals("chord-tone-outside-scale").noteShape).toBe("diamond");
       expect(getNoteVisuals("note-blue").noteShape).toBe("diamond");
     });

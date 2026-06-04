@@ -430,7 +430,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       const { container } = renderCMajor({
         chordTones: ["C#", "F", "G#"], chordRoot: "C#", noteSemantics: semantics,
       });
-      // Outside the scale → no plain chord-root (squircle); renders as the
+      // Outside the scale → no plain chord-root; renders as the
       // chord-root-outside diamond instead.
       expect(container.querySelectorAll(".chord-root").length).toBe(0);
       const outside = container.querySelectorAll(".chord-root-outside");
@@ -554,7 +554,7 @@ describe("FretboardSVG/FretboardSVG", () => {
         chordTones: ["C#", "F", "G#"], chordRoot: "C#",
         shapePolygons: [cShapeSmall], activePattern: "caged", activeShape: "E", shapeScope: "single", chordBoxBounds: [],
       });
-      expect(container.querySelectorAll('.chord-root[data-note-shape="squircle"]').length).toBe(0);
+      expect(container.querySelectorAll(".chord-root").length).toBe(0);
     });
 
     it("in-scale chord tone outside active shape is suppressed (not scale-only)", () => {
