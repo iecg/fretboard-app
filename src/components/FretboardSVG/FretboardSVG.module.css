@@ -110,9 +110,16 @@
   stroke-width: 2;
 }
 
-/* Scale tones + diatonic color tones — neutral HOLLOW (recede). */
-.fretboard-note:is(.scale-only, .note-active, .color-tone) :is(circle, path, polygon) {
+/* Scale CONTEXT under a chord overlay — neutral HOLLOW (recede as ground). */
+.fretboard-note:is(.scale-only, .color-tone) :is(circle, path, polygon) {
   fill: none;
+  stroke: var(--fb-neutral-stroke);
+  stroke-width: 1.7;
+}
+
+/* No-overlay scale tone — the scale IS the figure: neutral FILLED, present. */
+.fretboard-note.note-active :is(circle, path, polygon) {
+  fill: var(--fb-neutral-fill);
   stroke: var(--fb-neutral-stroke);
   stroke-width: 1.7;
 }
@@ -124,11 +131,13 @@
   stroke-width: 1.7;
 }
 
-/* Light-mode chord-tone-in-scale and note-diatonic-chord label override.
-   These roles use the neutral fill (--fb-neutral-fill).
+/* Light-mode neutral-filled marker label override.
+   These roles use the neutral fill (--fb-neutral-fill) — including the
+   no-overlay scale tone (.note-active), which is filled like the others.
    INK text + very faint halo stroke for legibility on the slightly-saturated fill. */
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
-:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text {
+:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text,
+:global([data-theme="modern-light"]) .fretboard-note.note-active text {
   stroke: var(--note-label-on-color-stroke);
   fill: var(--note-label-on-color);
 }
@@ -148,18 +157,19 @@
   stroke: rgb(0 0 0 / 0.45);
 }
 
-:global([data-theme="modern-dark"]) .fretboard-note.chord-tone-outside-scale text {
+:global([data-theme="modern-dark"]) .fretboard-note:is(.chord-tone-outside-scale, .note-blue) text {
   fill: #ffffff;
   stroke: rgb(0 0 0 / 0.45);
 }
 
-:global([data-theme="modern-light"]) .fretboard-note.chord-tone-outside-scale text {
+:global([data-theme="modern-light"]) .fretboard-note:is(.chord-tone-outside-scale, .note-blue) text {
   stroke: var(--note-label-on-color-stroke);
   fill: var(--note-label-on-color);
 }
 
-.fretboard-note.chord-tone-outside-scale text {
-  opacity: 0.9;
+/* Chromatic-diamond labels read crisply — subordination comes from SIZE, not a dim glyph. */
+.fretboard-note:is(.chord-tone-outside-scale, .note-blue) text {
+  opacity: 1;
 }
 
 /* Light-mode recessed scale notes (hollow neutral roles) — LIGHT label.
@@ -169,22 +179,25 @@
    reads as a ghosted number that recedes into the light wood while staying
    legible. paint-order: stroke (set on the base text rule) keeps the halo
    under the fill. */
-:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .note-active, .color-tone) text {
+:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .color-tone) text {
   fill: var(--fb-neutral-fill);
   stroke: var(--fb-neutral-stroke);
   stroke-width: 1.6;
 }
 
-/* Light-mode stroke-width — uniform across all roles, matching the tonic value (3.6).
-   Must sit AFTER role base rules; equal specificity, source order wins.
+/* Light-mode heavy stroke for FILLED markers only. Hollow context roles
+   (scale-only / color-tone / note-inactive) keep their thin 1.7 stroke (base
+   rules) so they read as recessive ground. note-active is filled (a figure)
+   so it keeps the heavier stroke.
    Circle radius is compensated via the CSS r property (using --note-r set in JS)
    to preserve the outer edge of the majority of note bubbles: baseline chosen as
-   note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px. */
-:global([data-theme="modern-light"]) .fretboard-note :is(circle, path, polygon) {
+   note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px.
+   Hollow roles are excluded, so they keep full --note-r (no compensation needed). */
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) :is(circle, path, polygon) {
   stroke-width: 3.6;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note circle {
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) circle {
   r: calc(var(--note-r) * 1px - 0.4px);
 }
 
@@ -194,16 +207,6 @@
 .fretboard-note[data-note-role="note-diatonic-chord"],
 .fretboard-note[data-note-role="chord-tone-outside-scale"] {
   filter: var(--fretboard-svg-glow-orange-url);
-}
-
-.fretboard-note[data-note-role="note-active"],
-.fretboard-note[data-note-role="scale-only"] {
-  filter: var(--fretboard-svg-glow-cyan-url);
-}
-
-.fretboard-note[data-note-role="note-blue"],
-.fretboard-note[data-note-role="color-tone"] {
-  filter: var(--fretboard-svg-glow-violet-url);
 }
 
 /* Lead lens emphasis — radiusBoost/opacityBoost are applied inline by

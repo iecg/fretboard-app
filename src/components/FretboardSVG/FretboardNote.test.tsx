@@ -4,9 +4,7 @@ import { render } from "@testing-library/react";
 import { FretboardNote } from "./FretboardNote";
 import { getNoteVisuals } from "./utils/semantics";
 import {
-  GLOW_RADIUS_SCALE_SQUIRCLE,
   reduceCircleRadius,
-  reduceSquircleRadius,
 } from "./utils/noteSizing";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -184,19 +182,16 @@ describe("FretboardNote — glow underlay sizing", () => {
   // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
   const BASE_RADIUS = 20;
 
-  it("enlarges the underlay for squircle notes so the halo clears the filled shape", () => {
-    const { container } = renderNote(makeNote({ noteClass: "chord-tone-in-scale" }));
-    const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
-    const shapeR = reduceSquircleRadius(BASE_RADIUS * getNoteVisuals("chord-tone-in-scale").radiusScale);
-    expect(underlayR).toBeGreaterThan(shapeR);
-    expect(underlayR).toBeCloseTo(shapeR * GLOW_RADIUS_SCALE_SQUIRCLE, 5);
-  });
-
-  it("keeps the underlay at the shape radius for circle notes", () => {
-    const { container } = renderNote(makeNote({ noteClass: "note-active" }));
-    const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
-    const shapeR = reduceCircleRadius(BASE_RADIUS * getNoteVisuals("note-active").radiusScale);
-    expect(underlayR).toBeCloseTo(shapeR, 5);
-  });
+  // With squircles retired, every shape is a circle or diamond and the underlay
+  // tracks the shape radius exactly — no enlargement needed.
+  it.each(["chord-tone-in-scale", "note-active", "note-blue"] as const)(
+    "keeps the underlay at the shape radius for %s",
+    (noteClass) => {
+      const { container } = renderNote(makeNote({ noteClass }));
+      const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
+      const shapeR = reduceCircleRadius(BASE_RADIUS * getNoteVisuals(noteClass).radiusScale);
+      expect(underlayR).toBeCloseTo(shapeR, 5);
+    },
+  );
 });
 

@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, reduceSquircleRadius, squirclePath } from "./utils/noteSizing";
+import { glowUnderlayRadiusPx, reduceCircleRadius } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -69,45 +69,16 @@ export const FretboardNote = memo(function FretboardNote({
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
   const rawRadius = baseRadius * radiusScale;
-  const r = noteShape === "squircle"
-    ? reduceSquircleRadius(rawRadius)
-    : reduceCircleRadius(rawRadius);
-  // The glow underlay is enlarged for squircles so the soft halo reads around
-  // the shape instead of being hidden under its filled corners.
-  const glowR = glowUnderlayRadiusPx(r, noteShape === "squircle");
+  const r = reduceCircleRadius(rawRadius);
+  const glowR = glowUnderlayRadiusPx(r);
 
   const shapeEl =
-    noteShape === "squircle" ? (
-      <>
-        {noteClass === "chord-root" && (
-          <path
-            d={squirclePath(cx, cy, r + CHORD_ROOT_HALO_RADIUS_PX)}
-            style={{
-              fill: "none",
-              stroke: "var(--note-ring-tonic)",
-              strokeWidth: 1.8,
-              paintOrder: "stroke",
-            }}
-          />
-        )}
-        <path d={squirclePath(cx, cy, r)} />
-      </>
-    ) : noteShape === "diamond" ? (
+    noteShape === "diamond" ? (
       <polygon
         points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
       />
     ) : (
-      <>
-        {noteClass === "key-tonic" && (
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r + CHORD_ROOT_HALO_RADIUS_PX}
-            style={{ fill: "none", stroke: "var(--note-ring-tonic)", strokeWidth: 1.8, paintOrder: "stroke" }}
-          />
-        )}
-        <circle cx={cx} cy={cy} r={r} />
-      </>
+      <circle cx={cx} cy={cy} r={r} />
     );
 
   const baseOpacity = applyDimOpacity ? 0.8 : 1;
@@ -155,8 +126,15 @@ export const FretboardNote = memo(function FretboardNote({
       style={{
         "--note-r": r,
         "--emph-scale": applyLensEmphasis.radiusBoost,
-        transformBox: "fill-box",
-        transformOrigin: "center",
+        // Pin the emphasis scale to the note's FIXED geometric center in user
+        // space. `transform-box: fill-box` + `transform-origin: center` would
+        // pivot about the element's BOUNDING-BOX center, which moves whenever
+        // the marker's radius changes (the bbox is asymmetric — guide ring,
+        // guide label, and value text extend it past (cx,cy)). On a chord
+        // transition that shifted pivot translated the marker ("jitter").
+        // Anchoring to (cx,cy) keeps the center stable so only size/shape/color
+        // change, never position.
+        transformOrigin: `${cx}px ${cy}px`,
         transform: "scale(var(--emph-scale, 1))",
         opacity: finalOpacity !== 1 ? finalOpacity : undefined,
         ...(degreeColor && degreeColorsEnabled

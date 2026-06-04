@@ -10,10 +10,11 @@ describe("semantics utils", () => {
       expect(res).toEqual({ radiusBoost: 1, opacityBoost: 1 });
     });
 
-    it("boosts guide tones with hold-glow token", () => {
-      const res = getEmphasis("chord-tone", true);
-      expect(res.glowColor).toBe("var(--note-glow-hold)");
-      expect(res.radiusBoost).toBeGreaterThan(1);
+    it("guide tones get no static glow in the base emphasis (teal hue carries identity)", () => {
+      const e = getEmphasis("chord-tone-in-scale", /*isGuideTone*/ true);
+      expect(e.glowColor).toBeUndefined();
+      expect(e.radiusBoost).toBe(1);
+      expect(e.opacityBoost).toBe(1);
     });
 
     it("renders non-guide chord tones at full intensity (no dimming)", () => {
@@ -22,18 +23,15 @@ describe("semantics utils", () => {
       expect(res.opacityBoost).toBe(1);
     });
 
-    it("emphasizes guide tones with the hold-glow token and larger radius", () => {
+    it("treats guide tones the same as non-guide chord tones in the base emphasis", () => {
       expect(getEmphasis("chord-tone-in-scale", true)).toEqual({
-        glowColor: "var(--note-glow-hold)",
-        radiusBoost: 1.15,
+        radiusBoost: 1,
         opacityBoost: 1,
       });
     });
 
-    it("emphasizes guide tones regardless of underlying noteClass", () => {
-      expect(getEmphasis("chord-tone-outside-scale", true)).toMatchObject({
-        glowColor: "var(--note-glow-hold)",
-      });
+    it("never adds a static glow for guide tones regardless of underlying noteClass", () => {
+      expect(getEmphasis("chord-tone-outside-scale", true).glowColor).toBeUndefined();
     });
 
     it("renders non-guide chord tones at full intensity", () => {
@@ -322,18 +320,41 @@ describe("semantics utils", () => {
       );
       expect(res).toBe("chord-tone-outside-scale");
     });
+
+    it("classifies a non-chord color tone under an overlay as note-blue (diamond)", () => {
+      const sem = {
+        isScaleRoot: false, isChordRoot: false, isChordTone: false,
+        isInScale: true, isColorTone: true, isGuideTone: false, isTension: false,
+        isDiatonicChord: false,
+      } as NoteSemantics;
+      expect(classifyNoteFromSemantics(sem, /*isInActiveShape*/ true, /*hasChordOverlay*/ true, /*isHighlighted*/ true))
+        .toBe("note-blue");
+    });
+
+    it("a color tone that is also a chord tone stays a chord tone (chord wins)", () => {
+      const sem = {
+        isScaleRoot: false, isChordRoot: false, isChordTone: true,
+        isInScale: true, isColorTone: true, isGuideTone: false, isTension: false,
+        isDiatonicChord: false,
+      } as NoteSemantics;
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-tone-in-scale");
+    });
   });
 
   describe("getNoteVisuals", () => {
-    it("returns squircle for diatonic chord tones (chord size)", () => {
-      expect(getNoteVisuals("chord-tone-in-scale")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
-      expect(getNoteVisuals("note-diatonic-chord")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
-      expect(getNoteVisuals("chord-root")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
+    it("returns circle for diatonic chord tones (chord size)", () => {
+      expect(getNoteVisuals("chord-tone-in-scale")).toEqual({ radiusScale: 0.95, noteShape: "circle" });
+      expect(getNoteVisuals("note-diatonic-chord")).toEqual({ radiusScale: 0.95, noteShape: "circle" });
+      expect(getNoteVisuals("chord-root")).toEqual({ radiusScale: 0.95, noteShape: "circle" });
     });
 
     it("returns small circle for scale tones", () => {
       expect(getNoteVisuals("scale-only")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
-      expect(getNoteVisuals("note-active")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
+    });
+
+    it("note-active (no-overlay scale tone) is medium-sized, scale-only stays small", () => {
+      expect(getNoteVisuals("note-active").radiusScale).toBe(0.8); // RADIUS_OUTSIDE — present/medium
+      expect(getNoteVisuals("scale-only").radiusScale).toBe(0.66); // RADIUS_SCALE — ground stays small
     });
 
     it("returns circle for diatonic color tones", () => {
@@ -341,6 +362,7 @@ describe("semantics utils", () => {
     });
 
     it("returns DIAMOND for chromatic / outside-key notes", () => {
+      expect(getNoteVisuals("chord-root-outside").noteShape).toBe("diamond");
       expect(getNoteVisuals("chord-tone-outside-scale").noteShape).toBe("diamond");
       expect(getNoteVisuals("note-blue").noteShape).toBe("diamond");
     });
@@ -369,7 +391,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
 
   it("falls back to tones-base when leadContext is undefined", () => {
     expect(getEmphasis("chord-tone-in-scale", true, undefined))
-      .toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 });
+      .toEqual({ radiusBoost: 1, opacityBoost: 1 });
     expect(getEmphasis("scale-only", false, undefined))
       .toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
     expect(getEmphasis("chord-root", false, undefined))

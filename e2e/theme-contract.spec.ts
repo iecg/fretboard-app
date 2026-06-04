@@ -1,5 +1,44 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { loadVisualState } from "./visual-helpers";
+
+/**
+ * Resolve a CSS custom property to the browser's COMPUTED color string, matching
+ * the serialization the engine uses for properties like `stroke`. Reading the
+ * raw `getPropertyValue('--x')` returns the authored text (e.g. an `oklch(...)`
+ * literal), which won't string-compare against a computed `stroke`. Setting a
+ * probe's `color` to `var(--x)` and reading back `getComputedStyle().color`
+ * yields the same normalized form the renderer produces.
+ */
+async function resolveTokenColor(page: Page, token: string): Promise<string> {
+  return page.evaluate((t) => {
+    const probe = document.createElement("span");
+    probe.style.color = `var(${t})`;
+    document.body.appendChild(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }, token);
+}
+
+/**
+ * Read back the sRGB channels of any CSS color (including OKLCH) by painting it
+ * onto a 1×1 canvas — the browser performs the color-space conversion for us.
+ */
+async function colorChannels(page: Page, color: string): Promise<[number, number, number]> {
+  return page.evaluate((c) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = c;
+    ctx.fillRect(0, 0, 1, 1);
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    return [d[0], d[1], d[2]] as [number, number, number];
+  }, color);
+}
+
+function isWarmOrange([r, g, b]: [number, number, number]): boolean {
+  return r >= 170 && g < 180 && b < 100;
+}
 
 function colorToHex(color: string): string {
   const c = color.replace(/\s*,\s*/g, ",").replace(/\s+/g, " ").trim().toLowerCase();
@@ -143,8 +182,14 @@ test.describe("Theme Contract", () => {
     const tonicNote = page.locator('g[data-note-role="key-tonic"] circle:not([data-glow])').first();
     await expect(tonicNote).toBeVisible();
     const tonicNoteStroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
-    // light: --note-ring-tonic = #b1431b -> rgb(177, 67, 27) (ORANGE — reference palette)
-    expect(tonicNoteStroke.replace(/\s/g, "")).toBe("rgb(177,67,27)");
+    // Marker v2 dropped the orange concentric ring; the tonic circle now carries
+    // the warm "home" anchor stroke directly (--fb-home-stroke, an OKLCH token).
+    // Assert the circle resolves to the SAME computed color as the token so the
+    // contract survives the OKLCH serialization (no brittle literal rgb()).
+    const homeStroke = await resolveTokenColor(page, "--fb-home-stroke");
+    expect(tonicNoteStroke).toBe(homeStroke);
+    // …and the home anchor is unmistakably warm/orange (R high, G mid, B low).
+    expect(isWarmOrange(await colorChannels(page, homeStroke))).toBe(true);
   });
 
   test("modern-dark should use dark wood tokens", async ({ page }) => {
@@ -755,16 +800,17 @@ test.describe("Theme Contract", () => {
         await expect(tonicNote).toBeVisible();
 
         const stroke = await tonicNote.evaluate((el) => getComputedStyle(el).stroke);
-        // light: --note-ring-tonic = #b1431b → rgb(177, 67, 27) (ORANGE — reference palette)
-        // dark:  --note-ring-tonic = #FF9A4D → rgb(255, 154, 77)
-        const m = stroke.replace(/\s/g, "").match(/rgb\((\d+),(\d+),(\d+)\)/);
-        expect(m).not.toBeNull();
-        if (m) {
-          // Orange/Rose: high R, low-mid G, low B (light #b1431b = R=177; dark #FF9A4D = R=255)
-          expect(Number(m[1])).toBeGreaterThanOrEqual(170); // R high (≥170 covers both light and dark)
-          expect(Number(m[2])).toBeLessThan(180);            // G mid
-          expect(Number(m[3])).toBeLessThan(100);            // B low
-        }
+        // Marker v2: the tonic circle carries the warm "home" anchor stroke
+        // (--fb-home-stroke, an OKLCH token) — light ≈ #b1431b, dark ≈ #FF9A4D.
+        // Assert it matches the token's computed color, then confirm warmth via
+        // an sRGB channel readback (OKLCH → rgb) so the orange identity holds in
+        // both themes regardless of color-space serialization.
+        const homeStroke = await resolveTokenColor(page, "--fb-home-stroke");
+        expect(stroke).toBe(homeStroke);
+        const [r, g, b] = await colorChannels(page, homeStroke);
+        expect(r).toBeGreaterThanOrEqual(170); // R high (light R≈177, dark R≈255)
+        expect(g).toBeLessThan(180);            // G mid
+        expect(b).toBeLessThan(100);            // B low
       }
     });
 

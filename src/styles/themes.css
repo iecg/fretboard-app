@@ -187,11 +187,10 @@
   --fretboard-bottom-edge-color: rgba(0, 0, 0, 0.15);
   --fretboard-nut-slot-color: rgba(0, 0, 0, 0.2);
   --fretboard-headstock-bg: var(--fretboard-wood-mid);
-  /* Light-mode glow opacity. Consumed by all three SVG <feDropShadow> filters
-     (glow-cyan, glow-orange, glow-violet) in FretboardDefs.tsx — so this
-     also affects role glows (chord-root orange, note-active cyan, note-blue
-     violet) in light mode, not just the lens-emphasis hold/anticipation
-     glow. 0.45 is the soft-but-clear target against the cream PANEL. */
+  /* Light-mode glow opacity. Consumed by the glow-orange SVG <feDropShadow>
+     filter in FretboardDefs.tsx — so this also affects the chord-tone role
+     glow in light mode, not just the lens-emphasis hold/anticipation glow.
+     0.45 is the soft-but-clear target against the cream PANEL. */
   --fretboard-glow-opacity: 0.45;
 
   /* CAGED shapes — light mode rebalance round 2.

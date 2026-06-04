@@ -21,16 +21,14 @@ vi.mock("./FretboardNote", async (importOriginal) => {
 });
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 import {
-  CHORD_ROOT_HALO_RADIUS_PX,
   CIRCLE_RADIUS_REDUCTION_PX,
-  SQUIRCLE_RADIUS_REDUCTION_PX,
-  squirclePath,
 } from "./utils/noteSizing";
 import { getNoteVisuals } from "./utils/semantics";
 import { formatAccidental } from "@fretflow/core";
 
 type NoteClass =
   | "chord-root"
+  | "chord-root-outside"
   | "chord-tone-in-scale"
   | "chord-tone-outside-scale"
   | "note-diatonic-chord"
@@ -131,17 +129,20 @@ describe("FretboardNoteLayer", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("renders squircle as a superellipse path with halo for chord-root", () => {
+  it("renders chord-root as a single circle marker with no concentric halo ring", () => {
     const noteBubblePx = 40;
-    const visualRadius = (noteBubblePx / 2) * getNoteVisuals("chord-root").radiusScale - SQUIRCLE_RADIUS_REDUCTION_PX;
+    const visualRadius = (noteBubblePx / 2) * getNoteVisuals("chord-root").radiusScale - CIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer([makeNote("chord-root")], { bubblePx: noteBubblePx });
 
-    const paths = container.querySelectorAll("path");
-    expect(paths.length).toBe(2);
-    expect(paths[1]!.getAttribute("d")).toBe(squirclePath(100, 50, visualRadius));
-    expect(paths[0]!.getAttribute("d")).toBe(
-      squirclePath(100, 50, visualRadius + CHORD_ROOT_HALO_RADIUS_PX),
-    );
+    const g = container.querySelector('g[data-note-role="chord-root"]')!;
+    expect(g.getAttribute("data-note-shape")).toBe("circle");
+
+    // Exactly one marker circle + the always-present glow underlay circle — no
+    // second halo-ring circle. The marker carries the reduced visual radius.
+    const markerCircle = g.querySelector("circle:not([data-glow])")!;
+    expect(Number(markerCircle.getAttribute("r"))).toBeCloseTo(visualRadius);
+    expect(g.querySelectorAll("circle:not([data-glow])").length).toBe(1);
+    expect(container.querySelectorAll("path").length).toBe(0);
     expect(container.querySelectorAll("rect").length).toBe(0);
 
     const label = container.querySelector("text")!;
@@ -171,14 +172,16 @@ describe("FretboardNoteLayer", () => {
     expect(container.querySelectorAll("text").length).toBe(0);
   });
 
-  it("renders chord-root with squircle+halo and chord-tone with squircle but no halo", () => {
+  it("renders chord-root and chord-tone-in-scale each as a single circle marker, no halo paths", () => {
     const { container } = renderLayer(
       [
         makeNote("chord-root", { stringIndex: 0, fretIndex: 1 }),
         makeNote("chord-tone-in-scale", { stringIndex: 1, fretIndex: 2, cx: 200, cy: 30 }),
       ],
     );
-    expect(container.querySelectorAll("path").length).toBe(3); // chord-root halo+main, chord-tone main
+    // Both are circle-shape markers now — no superellipse paths, no halo rings.
+    expect(container.querySelectorAll("path").length).toBe(0);
+    expect(container.querySelectorAll("circle:not([data-glow])").length).toBe(2);
     expect(container.querySelectorAll("rect").length).toBe(0);
     expect(container.querySelectorAll("text").length).toBe(2);
   });
@@ -234,22 +237,22 @@ describe("FretboardNoteLayer", () => {
     );
     const shapeFor = (role: string) =>
       container.querySelector(`g[data-note-role="${role}"]`)?.getAttribute("data-note-shape");
-    expect(shapeFor("chord-root")).toBe("squircle");
+    expect(shapeFor("chord-root")).toBe("circle");
     expect(shapeFor("note-active")).toBe("circle");
     expect(shapeFor("chord-tone-outside-scale")).toBe("diamond");
     expect(shapeFor("note-blue")).toBe("diamond");
   });
 
-  it.each<{ role: NoteClass; pathIndex: number; totalPaths: number }>([
-    { role: "chord-root", pathIndex: 1, totalPaths: 2 },
-    { role: "chord-tone-in-scale", pathIndex: 0, totalPaths: 1 },
-  ])("$role squircle radius reduced by SQUIRCLE_RADIUS_REDUCTION_PX", ({ role, pathIndex, totalPaths }) => {
+  it.each<{ role: NoteClass }>([
+    { role: "chord-root" },
+    { role: "chord-tone-in-scale" },
+  ])("$role renders a circle marker reduced by CIRCLE_RADIUS_REDUCTION_PX", ({ role }) => {
     const noteBubblePx = 40;
-    const expectedRadius = (noteBubblePx / 2) * getNoteVisuals(role).radiusScale - SQUIRCLE_RADIUS_REDUCTION_PX;
+    const expectedRadius = (noteBubblePx / 2) * getNoteVisuals(role).radiusScale - CIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer([makeNote(role)], { bubblePx: noteBubblePx });
-    const paths = container.querySelectorAll("path");
-    expect(paths.length).toBe(totalPaths);
-    expect(paths[pathIndex]!.getAttribute("d")).toBe(squirclePath(100, 50, expectedRadius));
+    expect(container.querySelectorAll("path").length).toBe(0);
+    const markerCircle = container.querySelector("circle:not([data-glow])")!;
+    expect(Number(markerCircle.getAttribute("r"))).toBeCloseTo(expectedRadius);
   });
 
   it("hidden notes do not render with data-note-role and are aria-hidden", () => {
@@ -270,6 +273,64 @@ describe("FretboardNoteLayer", () => {
     // The note <g> should carry --emph-scale set to the boost value
     const noteG = container.querySelector("g[data-note-shape]") as HTMLElement;
     expect(noteG.style.getPropertyValue("--emph-scale")).toBe(String(radiusBoost));
+  });
+
+  // Regression: marker jitter on chord transition (Task 10).
+  // The note F is `chord-root-outside` (diamond, radius-tier 0.95) under an F
+  // chord and `chord-tone-outside-scale` (diamond, radius-tier 0.80) under Dm.
+  // Its fret is fixed, so its CENTER must not translate across the change — only
+  // its size/shape/color may. The animated `<g>` carries
+  // `transform: scale(var(--emph-scale))`; that scale must pivot about the note's
+  // FIXED geometric center (cx,cy). With `transform-box: fill-box` the pivot is
+  // the element's bounding-box center, which moves when r shrinks (the bbox is
+  // asymmetric: guide label/ring/text extend it past (cx,cy)). The fix pins the
+  // origin to the note center in user space, so the pivot is identical in both
+  // states and the size change animates with zero positional drift.
+  describe("marker stays centered across a chord transition (no jitter)", () => {
+    const diamondCentroid = (container: HTMLElement) => {
+      const pts = container
+        .querySelector("polygon")!
+        .getAttribute("points")!
+        .trim()
+        .split(/\s+/)
+        .map((p) => p.split(",").map(Number));
+      const cx = pts.reduce((s, [x]) => s + x, 0) / pts.length;
+      const cy = pts.reduce((s, [, y]) => s + y, 0) / pts.length;
+      return { cx, cy };
+    };
+
+    const noteG = (container: HTMLElement) =>
+      container.querySelector("g[data-note-shape='diamond']") as HTMLElement;
+
+    it("F diamond centroid is the fixed (cx,cy) in BOTH chord states even as radius changes", () => {
+      const cx = 120, cy = 70, bubblePx = 40;
+      const fChord = renderLayer([makeNote("chord-root-outside", { cx, cy })], { bubblePx });
+      const dmChord = renderLayer([makeNote("chord-tone-outside-scale", { cx, cy })], { bubblePx });
+
+      const a = diamondCentroid(fChord.container);
+      const b = diamondCentroid(dmChord.container);
+
+      // Radius tiers differ (0.95 vs 0.80) — the markers are NOT the same size.
+      expect(getNoteVisuals("chord-root-outside").radiusScale).not.toBe(
+        getNoteVisuals("chord-tone-outside-scale").radiusScale,
+      );
+      // ...but the geometric center is identical and equals the note's fixed center.
+      expect(a).toEqual(b);
+      expect(a).toEqual({ cx, cy });
+    });
+
+    it("the scale transform pivots about the note center, not the asymmetric bounding box", () => {
+      const cx = 120, cy = 70;
+      const { container } = renderLayer([makeNote("chord-root-outside", { cx, cy })]);
+      const g = noteG(container);
+
+      // The scale() origin must be pinned to the note's fixed center in user
+      // space. `transform-box: fill-box` would pivot about the (asymmetric,
+      // size-dependent) bounding-box center and drift the marker on resize, so
+      // it must NOT be used for the scale layer.
+      expect(g.style.transformBox).not.toBe("fill-box");
+      expect(g.style.transformOrigin).toBe(`${cx}px ${cy}px`);
+    });
   });
 
   it("renders all notes (no filter) — all notes are in a single layer", () => {

@@ -259,6 +259,40 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(rootG.style.getPropertyValue("--shape-fill")).toBe("");
   });
 
+  it("outside-scale chord tone renders a diamond even in full-voicing mode", () => {
+    // C major scale (no A#). A Cm7b... -style voicing that includes A# as a
+    // matched full-chord vertex. The legacy override used to force every
+    // non-root voicing vertex to chord-tone-in-scale (circle); A# must now
+    // classify as chord-tone-outside-scale (diamond).
+    const semantics = sem([
+      ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root", isFullChordMode: true }],
+      ["E", { isChordTone: true, isInScale: true, memberName: "3", isFullChordMode: true }],
+      ["A#", { isChordTone: true, isInScale: false, isTension: true, memberName: "b7", isFullChordMode: true }],
+    ]);
+    // A#=string0/fret6, E=string1/fret5, C=string2/fret5.
+    const fullChordPositionKeys = new Set(["0-6", "1-5", "2-5"]);
+    const voicing = {
+      shape: "C" as CagedShape,
+      voicingKey: "c-dom7-fragment",
+      notes: [
+        { stringIndex: 0, fretIndex: 6, noteName: "A#" },
+        { stringIndex: 1, fretIndex: 5, noteName: "E" },
+        { stringIndex: 2, fretIndex: 5, noteName: "C" },
+      ],
+    };
+
+    const { container } = renderCMajor({
+      chordTones: ["C", "E", "G", "A#"],
+      noteSemantics: semantics,
+      fullChordPositionKeys,
+      fullChordVoicings: [voicing],
+    });
+
+    expect(
+      container.querySelectorAll('.chord-tone-outside-scale[data-note-shape="diamond"]').length,
+    ).toBeGreaterThan(0);
+  });
+
   it("hides chord connectors when showChordConnectors is false", () => {
     const { container } = renderCMajor({
       fullChordVoicings: [E_SHAPE_C_MAJOR_VOICING],
@@ -327,12 +361,12 @@ describe("FretboardSVG/FretboardSVG", () => {
     it.each<{ role: string; shape: string; props: Record<string, unknown> }>([
       {
         role: "chord-root",
-        shape: "squircle",
+        shape: "circle",
         props: { ...SCALE_CEG, chordTones: ["C", "E", "G"], chordRoot: "C" },
       },
       {
         role: "chord-tone-in-scale",
-        shape: "squircle",
+        shape: "circle",
         props: { ...SCALE_CEG, chordTones: ["C", "E", "G"], chordRoot: "C" },
       },
       {
@@ -351,8 +385,10 @@ describe("FretboardSVG/FretboardSVG", () => {
         props: { ...SCALE_CEG },
       },
       {
-        role: "color-tone",
-        shape: "circle",
+        // Color note inside the active shape under a chord overlay → blue
+        // diamond (prop-path classifier now matches the semantics path).
+        role: "note-blue",
+        shape: "diamond",
         props: { ...DORIAN, chordTones: ["D", "F", "A"], chordRoot: "D" },
       },
       {
@@ -404,6 +440,13 @@ describe("FretboardSVG/FretboardSVG", () => {
       expect(container.querySelectorAll(".note-blue").length).toBeGreaterThan(0);
       expect(container.querySelectorAll(".color-tone").length).toBe(0);
     });
+
+    it("with no chord overlay, scale tones are note-active circles (present)", () => {
+      const { container } = render(
+        <FretboardSVG {...BASE_PROPS} rootNote="C" highlightNotes={["C", "D", "E", "F", "G", "A", "B"]} />
+      );
+      expect(container.querySelectorAll('.note-active[data-note-shape="circle"]').length).toBeGreaterThan(0);
+    });
   });
 
   describe("scale visibility 'off' mode — empty highlightNotes", () => {
@@ -430,13 +473,41 @@ describe("FretboardSVG/FretboardSVG", () => {
       const { container } = renderCMajor({
         chordTones: ["C#", "F", "G#"], chordRoot: "C#", noteSemantics: semantics,
       });
-      // Outside the scale → no plain chord-root (squircle); renders as the
+      // Outside the scale → no plain chord-root; renders as the
       // chord-root-outside diamond instead.
       expect(container.querySelectorAll(".chord-root").length).toBe(0);
       const outside = container.querySelectorAll(".chord-root-outside");
       expect(outside.length).toBeGreaterThan(0);
       expect(outside[0]!.getAttribute("data-note-shape")).toBe("diamond");
       expect(outside[0]!.querySelector("polygon")).not.toBeNull();
+    });
+
+    it("non-chord color tone under a chord overlay renders as a note-blue diamond", () => {
+      // D Dorian with a C-major overlay (C/E/G). B is a designated color tone
+      // but is NOT in the chord, so under the overlay it must render as
+      // note-blue (diamond) — matching the no-overlay path — not color-tone.
+      const semantics = sem([
+        ["B", { isInScale: true, isColorTone: true, memberName: "7" }],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          rootNote="D"
+          highlightNotes={["D", "E", "F", "G", "A", "B", "C"]}
+          colorNotes={["B"]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          noteSemantics={semantics}
+        />,
+      );
+      expect(
+        container.querySelectorAll('.note-blue[data-note-shape="diamond"]').length,
+      ).toBeGreaterThan(0);
+      // B is not a chord tone, so it must not be classified as a chord/color circle.
+      const colorTones = container.querySelectorAll(".color-tone");
+      expect(
+        Array.from(colorTones).some((el) => el.getAttribute("aria-label")?.includes("B")),
+      ).toBe(false);
     });
 
     it("in-scale chord root does NOT get data-note-tension", () => {
@@ -554,7 +625,10 @@ describe("FretboardSVG/FretboardSVG", () => {
         chordTones: ["C#", "F", "G#"], chordRoot: "C#",
         shapePolygons: [cShapeSmall], activePattern: "caged", activeShape: "E", shapeScope: "single", chordBoxBounds: [],
       });
-      expect(container.querySelectorAll('.chord-root[data-note-shape="squircle"]').length).toBe(0);
+      expect(container.querySelectorAll(".chord-root").length).toBe(0);
+      // A leak could also surface as the chromatic diamond variant; assert both
+      // root roles are absent so the "note-inactive" intent is fully enforced.
+      expect(container.querySelectorAll(".chord-root-outside").length).toBe(0);
     });
 
     it("in-scale chord tone outside active shape is suppressed (not scale-only)", () => {
@@ -609,7 +683,7 @@ describe("FretboardSVG/FretboardSVG", () => {
 
     it.each<[string, string, Record<string, unknown>]>([
       ["scale-only", "circle", { chordTones: ["C"] }],
-      ["chord-tone-in-scale", "squircle", {}],
+      ["chord-tone-in-scale", "circle", {}],
     ])("%s notes render (not hidden) with data-note-shape=%s under chord overlay", (cls, shape, extra) => {
       const { container } = renderCMajor(extra);
       const notes = container.querySelectorAll(`.fretboard-note.${cls}:not(.hidden)`);

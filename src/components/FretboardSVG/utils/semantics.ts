@@ -57,16 +57,12 @@ const CHORD_TONE_CLASSES = new Set([
 
 /**
  * Fallback emphasis when no progression is active or no voice-leading
- * context applies. Boosts guide tones with the hold-glow token and dims
- * scale-only / color-tone notes.
+ * context applies. Dims scale-only / color-tone notes. Guide tones (3rd/7th)
+ * carry their identity entirely through their teal hue (CSS
+ * `[data-note-guide-tone]`), so the base emphasis adds no static glow or size
+ * boost — that channel is reserved for the progression lead-in ring.
  */
-function applyTonesBase(
-  noteClass: string,
-  isGuideTone: boolean,
-): LensEmphasis {
-  if (isGuideTone) {
-    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
-  }
+function applyTonesBase(noteClass: string): LensEmphasis {
   if (noteClass === "scale-only" || noteClass === "color-tone") {
     return { radiusBoost: 0.85, opacityBoost: 0.7 };
   }
@@ -75,11 +71,14 @@ function applyTonesBase(
 
 export function getEmphasis(
   noteClass: string,
-  isGuideTone: boolean,
+  // Guide-tone identity is carried by the teal hue, not the emphasis layer, so
+  // this flag no longer affects the result. The parameter is retained to keep
+  // the call-site contract (and the lead-in voice-leading path) stable.
+  _isGuideTone: boolean,
   leadContext?: LeadLensContext,
 ): LensEmphasis {
   if (!leadContext) {
-    return applyTonesBase(noteClass, isGuideTone);
+    return applyTonesBase(noteClass);
   }
 
   const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive } = leadContext;
@@ -90,7 +89,7 @@ export function getEmphasis(
   const resting: LensEmphasis =
     CHORD_TONE_CLASSES.has(noteClass) && commonWithNext.has(notePc)
       ? { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 }
-      : applyTonesBase(noteClass, isGuideTone);
+      : applyTonesBase(noteClass);
 
   // Lead-in: ONLY the next chord's guide tones deviate from their resting
   // emphasis. A target keeps its resting SIZE (no bloom), is brought to full
@@ -127,7 +126,10 @@ export function classifyNote(
 
   if (isChordRootNote && isChordTone && isInActiveShape) return "chord-root";
   if (isHighlighted && isChordTone && isInActiveShape) return "chord-tone-in-scale";
-  if (isHighlighted && isColorNote && isInActiveShape) return "color-tone";
+  // Chromatic-to-key color note inside the active shape → blue diamond, matching
+  // classifyNoteFromSemantics (the production path). Keeps both classifiers in
+  // lockstep so identical note states never diverge by render path.
+  if (isHighlighted && isColorNote && isInActiveShape) return "note-blue";
   if (isHighlighted && isInActiveShape) return "scale-only";
   if (!isHighlighted && isChordTone && isInActiveShape)
     return "chord-tone-outside-scale";
@@ -151,13 +153,13 @@ export function classifyNoteFromSemantics(
     return sem.isInScale ? "chord-root" : "chord-root-outside";
   if (sem.isDiatonicChord && sem.isChordTone && isInActiveShape) return "note-diatonic-chord";
   if (sem.isInScale && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
-  if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
+  if (sem.isColorTone && isInActiveShape && isHighlighted) return "note-blue";
   if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
   if (sem.isChordTone && isInActiveShape) return "chord-tone-outside-scale";
   return "note-inactive";
 }
 
-type NoteShape = "circle" | "squircle" | "diamond";
+type NoteShape = "circle" | "diamond";
 
 export type NoteVisuals = {
   radiusScale: number;
@@ -176,10 +178,13 @@ export function getNoteVisuals(noteClass: string): NoteVisuals {
     case "chord-root":
     case "chord-tone-in-scale":
     case "note-diatonic-chord":
-      return { radiusScale: RADIUS_CHORD, noteShape: "squircle" };
-    case "note-active":
+      return { radiusScale: RADIUS_CHORD, noteShape: "circle" };
     case "scale-only":
       return { radiusScale: RADIUS_SCALE, noteShape: "circle" };
+    // No-overlay scale tone — the scale IS the figure, so it stays present
+    // (medium) rather than receding to scale-tier size.
+    case "note-active":
+      return { radiusScale: RADIUS_OUTSIDE, noteShape: "circle" };
     case "color-tone":
       return { radiusScale: RADIUS_OUTSIDE, noteShape: "circle" };
     // An outside-key chord root keeps its home (amber) identity via color, but

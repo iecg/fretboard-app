@@ -95,6 +95,20 @@ describe("APCA: glyph legible on solid marker fills (text gate)", () => {
       });
     }
   }
+
+  // Chromatic-diamond labels (.chord-tone-outside-scale, .note-blue) render at
+  // full opacity on the neutral fill — light uses the INK glyph, dark uses white.
+  it("modern-light chromatic-diamond glyph vs --fb-neutral-fill |Lc|≥45", () => {
+    const b = readThemeBlock("modern-light");
+    const fill = hexOf(resolveVar(b["--fb-neutral-fill"], b));
+    const glyph = hexOf(resolveVar(b["--note-label-on-color"], b));
+    expect(Math.abs(contrastAPCA(glyph, fill))).toBeGreaterThanOrEqual(45);
+  });
+  it("modern-dark chromatic-diamond glyph (white) vs --fb-neutral-fill |Lc|≥45", () => {
+    const b = readThemeBlock("modern-dark");
+    const fill = hexOf(resolveVar(b["--fb-neutral-fill"], b));
+    expect(Math.abs(contrastAPCA("#ffffff", fill))).toBeGreaterThanOrEqual(45);
+  });
 });
 
 import { readFileSync as _readFileSync } from "node:fs";
