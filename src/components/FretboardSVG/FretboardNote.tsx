@@ -126,8 +126,15 @@ export const FretboardNote = memo(function FretboardNote({
       style={{
         "--note-r": r,
         "--emph-scale": applyLensEmphasis.radiusBoost,
-        transformBox: "fill-box",
-        transformOrigin: "center",
+        // Pin the emphasis scale to the note's FIXED geometric center in user
+        // space. `transform-box: fill-box` + `transform-origin: center` would
+        // pivot about the element's BOUNDING-BOX center, which moves whenever
+        // the marker's radius changes (the bbox is asymmetric — guide ring,
+        // guide label, and value text extend it past (cx,cy)). On a chord
+        // transition that shifted pivot translated the marker ("jitter").
+        // Anchoring to (cx,cy) keeps the center stable so only size/shape/color
+        // change, never position.
+        transformOrigin: `${cx}px ${cy}px`,
         transform: "scale(var(--emph-scale, 1))",
         opacity: finalOpacity !== 1 ? finalOpacity : undefined,
         ...(degreeColor && degreeColorsEnabled
