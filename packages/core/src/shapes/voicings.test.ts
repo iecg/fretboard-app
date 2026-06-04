@@ -357,6 +357,10 @@ describe("extended-chord close voicings", () => {
       for (const v of voicings) {
         // root, 3/b3, b7/7, 9, 13 — the perfect 5th is omitted
         expect(v.notes).toHaveLength(5);
+        // Lock the omission contract: the dropped tone is specifically the
+        // perfect 5th (pitch class 7 above the C root, i.e. G), not just any tone.
+        const pitchClasses = new Set(v.notes.map((n) => n.midi % 12));
+        expect(pitchClasses.has(7)).toBe(false);
       }
     }
   });
