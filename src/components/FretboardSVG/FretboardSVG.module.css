@@ -291,9 +291,12 @@
   fill: var(--note-degree-fill, var(--degree-color, #141e28));
 }
 
+/* Degree-lens labels render white + dark contour in BOTH themes (dark mode
+   already does via the base rule). The contour — not a per-degree glyph color —
+   carries legibility across the palette, incl. the paler yellow and slate. */
 :global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] text {
-  fill: var(--note-label-on-color);
-  stroke: var(--note-label-on-color-stroke);
+  fill: #ffffff;
+  stroke: rgb(0 0 0 / 0.4);
 }
 
 /* Accessibility layer */
