@@ -10,10 +10,11 @@ describe("semantics utils", () => {
       expect(res).toEqual({ radiusBoost: 1, opacityBoost: 1 });
     });
 
-    it("boosts guide tones with hold-glow token", () => {
-      const res = getEmphasis("chord-tone", true);
-      expect(res.glowColor).toBe("var(--note-glow-hold)");
-      expect(res.radiusBoost).toBeGreaterThan(1);
+    it("guide tones get no static glow in the base emphasis (teal hue carries identity)", () => {
+      const e = getEmphasis("chord-tone-in-scale", /*isGuideTone*/ true);
+      expect(e.glowColor).toBeUndefined();
+      expect(e.radiusBoost).toBe(1);
+      expect(e.opacityBoost).toBe(1);
     });
 
     it("renders non-guide chord tones at full intensity (no dimming)", () => {
@@ -22,18 +23,15 @@ describe("semantics utils", () => {
       expect(res.opacityBoost).toBe(1);
     });
 
-    it("emphasizes guide tones with the hold-glow token and larger radius", () => {
+    it("treats guide tones the same as non-guide chord tones in the base emphasis", () => {
       expect(getEmphasis("chord-tone-in-scale", true)).toEqual({
-        glowColor: "var(--note-glow-hold)",
-        radiusBoost: 1.15,
+        radiusBoost: 1,
         opacityBoost: 1,
       });
     });
 
-    it("emphasizes guide tones regardless of underlying noteClass", () => {
-      expect(getEmphasis("chord-tone-outside-scale", true)).toMatchObject({
-        glowColor: "var(--note-glow-hold)",
-      });
+    it("never adds a static glow for guide tones regardless of underlying noteClass", () => {
+      expect(getEmphasis("chord-tone-outside-scale", true).glowColor).toBeUndefined();
     });
 
     it("renders non-guide chord tones at full intensity", () => {
@@ -389,7 +387,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
 
   it("falls back to tones-base when leadContext is undefined", () => {
     expect(getEmphasis("chord-tone-in-scale", true, undefined))
-      .toEqual({ glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 });
+      .toEqual({ radiusBoost: 1, opacityBoost: 1 });
     expect(getEmphasis("scale-only", false, undefined))
       .toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
     expect(getEmphasis("chord-root", false, undefined))

@@ -57,16 +57,12 @@ const CHORD_TONE_CLASSES = new Set([
 
 /**
  * Fallback emphasis when no progression is active or no voice-leading
- * context applies. Boosts guide tones with the hold-glow token and dims
- * scale-only / color-tone notes.
+ * context applies. Dims scale-only / color-tone notes. Guide tones (3rd/7th)
+ * carry their identity entirely through their teal hue (CSS
+ * `[data-note-guide-tone]`), so the base emphasis adds no static glow or size
+ * boost — that channel is reserved for the progression lead-in ring.
  */
-function applyTonesBase(
-  noteClass: string,
-  isGuideTone: boolean,
-): LensEmphasis {
-  if (isGuideTone) {
-    return { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 };
-  }
+function applyTonesBase(noteClass: string): LensEmphasis {
   if (noteClass === "scale-only" || noteClass === "color-tone") {
     return { radiusBoost: 0.85, opacityBoost: 0.7 };
   }
@@ -75,11 +71,14 @@ function applyTonesBase(
 
 export function getEmphasis(
   noteClass: string,
-  isGuideTone: boolean,
+  // Guide-tone identity is carried by the teal hue, not the emphasis layer, so
+  // this flag no longer affects the result. The parameter is retained to keep
+  // the call-site contract (and the lead-in voice-leading path) stable.
+  _isGuideTone: boolean,
   leadContext?: LeadLensContext,
 ): LensEmphasis {
   if (!leadContext) {
-    return applyTonesBase(noteClass, isGuideTone);
+    return applyTonesBase(noteClass);
   }
 
   const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive } = leadContext;
@@ -90,7 +89,7 @@ export function getEmphasis(
   const resting: LensEmphasis =
     CHORD_TONE_CLASSES.has(noteClass) && commonWithNext.has(notePc)
       ? { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 }
-      : applyTonesBase(noteClass, isGuideTone);
+      : applyTonesBase(noteClass);
 
   // Lead-in: ONLY the next chord's guide tones deviate from their resting
   // emphasis. A target keeps its resting SIZE (no bloom), is brought to full
