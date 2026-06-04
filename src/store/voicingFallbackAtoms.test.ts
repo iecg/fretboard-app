@@ -42,9 +42,14 @@ describe("fallbackVoicingMatchesAtom", () => {
     expect(store.get(fallbackVoicingMatchesAtom)).toEqual([]);
   });
 
-  it("returns empty when no fingering pattern is active", () => {
-    store.set(voicingAtom, "full");
-    store.set(fingeringPatternAtom, "none");
+  it("returns empty in 'none' pattern when the active chord has a full template", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "none"],
+    ]);
     expect(store.get(fallbackVoicingMatchesAtom)).toEqual([]);
   });
 });
@@ -149,5 +154,46 @@ describe("fallbackVoicingMatchesAtom — referential stability", () => {
     const second = store.get(fallbackVoicingMatchesAtom);
 
     expect(second).toBe(first);
+  });
+});
+
+describe("fallbackVoicingMatchesAtom — neck spread in Scale None (Phase 2)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("returns a non-empty fallback spread for a no-template chord (C6) in Scale None", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "6" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "none"],
+    ]);
+    const matches = store.get(fallbackVoicingMatchesAtom);
+    expect(matches.length).toBeGreaterThan(0);
+    expect(matches.every((m) => m.isFallback === true)).toBe(true);
+  });
+
+  it("returns a non-empty spread for a power chord in Scale None", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "5" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "none"],
+    ]);
+    expect(store.get(fallbackVoicingMatchesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("stays empty for a CAGED-able chord (C major) in Scale None — a full template exists", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "M" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "none"],
+    ]);
+    expect(store.get(fallbackVoicingMatchesAtom)).toEqual([]);
   });
 });

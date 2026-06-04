@@ -22,6 +22,7 @@
  */
 import { atom } from "jotai";
 import type { ShapePolygon, Voicing } from "@fretflow/core";
+import { selectNeckSpread } from "@fretflow/core";
 import {
   voicingAtom,
   voicingMatchesAtom,
@@ -54,6 +55,21 @@ const fallbackContextActiveAtom = atom((get): boolean => {
   const pattern = get(fingeringPatternAtom);
   if (pattern !== "caged" && pattern !== "3nps") return false;
   if (!get(activePositionAtom)) return false;
+  return true;
+});
+
+/**
+ * Phase 2: the position-less fallback path. Active in Full mode when the active
+ * chord has NO full-chord template (voicingMatchesAtom empty) AND there is no
+ * single active CAGED/3NPS position to scope to (Scale None, multi-shape CAGED,
+ * one-string / two-strings modes). Mutually exclusive with the polygon/box
+ * paths, which require an active position.
+ */
+const neckSpreadFallbackActiveAtom = atom((get): boolean => {
+  if (get(voicingAtom) !== "full") return false;
+  if (get(chordOverlayHiddenAtom)) return false;
+  if (get(activePositionAtom)) return false;
+  if (get(voicingMatchesAtom).length > 0) return false;
   return true;
 });
 
@@ -164,7 +180,20 @@ function memoizeFallbackVoicings(next: readonly Voicing[]): Voicing[] {
 export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
   const polygons = get(fallbackPolygonsAtom);
   const boxBounds = get(fallback3NpsBoxBoundsAtom);
-  if (polygons.length === 0 && boxBounds === null) return memoizeFallbackVoicings([]);
+
+  if (polygons.length === 0 && boxBounds === null) {
+    // Phase 2: no active position — spread best grips across the neck instead.
+    if (!get(neckSpreadFallbackActiveAtom)) return memoizeFallbackVoicings([]);
+    const allCloses = get(closeCandidatesAllStringSetsAtom);
+    const stringSet = new Set(get(effectiveStringSetAtom));
+    const closes =
+      stringSet.size === 6
+        ? allCloses
+        : allCloses.filter((v) => v.notes.every((n) => stringSet.has(n.stringIndex)));
+    if (closes.length === 0) return memoizeFallbackVoicings([]);
+    const spread = selectNeckSpread(closes).map((v) => ({ ...v, isFallback: true as const }));
+    return memoizeFallbackVoicings(spread);
+  }
 
   const allCloses = get(closeCandidatesAllStringSetsAtom);
   const stringSet = new Set(get(effectiveStringSetAtom));
