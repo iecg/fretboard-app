@@ -322,6 +322,25 @@ describe("semantics utils", () => {
       );
       expect(res).toBe("chord-tone-outside-scale");
     });
+
+    it("classifies a non-chord color tone under an overlay as note-blue (diamond)", () => {
+      const sem = {
+        isScaleRoot: false, isChordRoot: false, isChordTone: false,
+        isInScale: true, isColorTone: true, isGuideTone: false, isTension: false,
+        isDiatonicChord: false,
+      } as NoteSemantics;
+      expect(classifyNoteFromSemantics(sem, /*isInActiveShape*/ true, /*hasChordOverlay*/ true, /*isHighlighted*/ true))
+        .toBe("note-blue");
+    });
+
+    it("a color tone that is also a chord tone stays a chord tone (chord wins)", () => {
+      const sem = {
+        isScaleRoot: false, isChordRoot: false, isChordTone: true,
+        isInScale: true, isColorTone: true, isGuideTone: false, isTension: false,
+        isDiatonicChord: false,
+      } as NoteSemantics;
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-tone-in-scale");
+    });
   });
 
   describe("getNoteVisuals", () => {

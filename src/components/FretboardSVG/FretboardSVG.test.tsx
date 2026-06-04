@@ -473,6 +473,34 @@ describe("FretboardSVG/FretboardSVG", () => {
       expect(outside[0]!.querySelector("polygon")).not.toBeNull();
     });
 
+    it("non-chord color tone under a chord overlay renders as a note-blue diamond", () => {
+      // D Dorian with a C-major overlay (C/E/G). B is a designated color tone
+      // but is NOT in the chord, so under the overlay it must render as
+      // note-blue (diamond) — matching the no-overlay path — not color-tone.
+      const semantics = sem([
+        ["B", { isInScale: true, isColorTone: true, memberName: "7" }],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          rootNote="D"
+          highlightNotes={["D", "E", "F", "G", "A", "B", "C"]}
+          colorNotes={["B"]}
+          chordTones={["C", "E", "G"]}
+          chordRoot="C"
+          noteSemantics={semantics}
+        />,
+      );
+      expect(
+        container.querySelectorAll('.note-blue[data-note-shape="diamond"]').length,
+      ).toBeGreaterThan(0);
+      // B is not a chord tone, so it must not be classified as a chord/color circle.
+      const colorTones = container.querySelectorAll(".color-tone");
+      expect(
+        Array.from(colorTones).some((el) => el.getAttribute("aria-label")?.includes("B")),
+      ).toBe(false);
+    });
+
     it("in-scale chord root does NOT get data-note-tension", () => {
       const semantics = sem([
         ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root" }],
