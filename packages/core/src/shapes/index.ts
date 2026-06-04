@@ -14,7 +14,11 @@ export { get3NPSCoordinates } from "./threeNPS";
 export type {
   Voicing, VoicingNote, VoicingType,
   GenerateVoicingsParams,
+  CloseVoicingScoreWeights,
 } from "./voicings";
 export {
   generateVoicings, openStringMidi,
+  scoreCloseVoicing, compareCloseVoicings,
+  CLOSE_VOICING_SCORE_WEIGHTS, HIGH_NECK_THRESHOLD,
+  selectNeckSpread, NECK_SPREAD_OVERLAP_TOLERANCE,
 } from "./voicings";

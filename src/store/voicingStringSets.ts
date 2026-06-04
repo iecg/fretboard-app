@@ -15,14 +15,15 @@ export interface StringSetOption {
 
 /**
  * For a chord requiring `voiceCount` notes on a 6-string instrument,
- * enumerates every consecutive-string window plus an "all" sentinel.
- * Returns options in top-to-bottom string order (high strings first).
+ * enumerates every consecutive-string window. Returns options in
+ * top-to-bottom string order (high strings first).
  *
- * Voice counts outside [3, 5] collapse to just the "all" sentinel —
- * dyads and hexads don't carve into meaningful string-set windows.
+ * Supports dyads (power chords, 2) through pentads (5). Voice counts
+ * outside [2, 5] return no windows; the no-options case is handled
+ * upstream by effectiveStringSetAtom / stringSetOptionsAtom.
  */
 export function buildStringSetOptions(voiceCount: number): StringSetOption[] {
-  if (voiceCount < 3 || voiceCount > 5) return [];
+  if (voiceCount < 2 || voiceCount > 5) return [];
   const sets: StringSetOption[] = [];
   const windowCount = 6 - voiceCount + 1;
   for (let start = 0; start < windowCount; start += 1) {

@@ -1561,3 +1561,57 @@ describe("chordLookup slice atoms — selectAtom reference stability", () => {
     expect(notifications).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe("visibleVoicingMatchesAtom — Full + Scale None fallback (regression 2026-06-03)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("C6 + Scale None + Full renders connector voicings (was zero)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "6" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "none"],
+    ]);
+    expect(store.get(visibleVoicingMatchesAtom).length).toBeGreaterThan(0);
+  });
+
+  it("power chord + Scale None + Full renders connector voicings", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "5" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "none"],
+    ]);
+    expect(store.get(visibleVoicingMatchesAtom).length).toBeGreaterThan(0);
+  });
+
+  it.each(["aug", "6", "m6", "mMaj7", "5"])(
+    "renders connector voicings for template-less quality %s in Full + Scale None",
+    (quality) => {
+      const store = makeAtomStore([
+        [rootNoteAtom, "C"],
+        [scaleNameAtom, "major"],
+        [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: quality })],
+        [voicingAtom, "full"],
+        [fingeringPatternAtom, "none"],
+      ]);
+      expect(store.get(visibleVoicingMatchesAtom).length).toBeGreaterThan(0);
+    },
+  );
+
+  it("renders neck-spread connectors for C6 in multi-shape CAGED (no single active position)", () => {
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, progressionWith({ degree: "I", manualRoot: "C", qualityOverride: "6" })],
+      [voicingAtom, "full"],
+      [fingeringPatternAtom, "caged"],
+      [cagedShapesAtom, new Set<CagedShape>(["C", "A", "G", "E", "D"])],
+    ]);
+    expect(store.get(visibleVoicingMatchesAtom).length).toBeGreaterThan(0);
+  });
+});
