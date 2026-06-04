@@ -94,14 +94,14 @@
   --note-role-tension-fill: #9a6a00;        /* amber-dark — tension fill (kept from prior) */
   --note-role-border: #b1431b;              /* ORANGE — reference palette */
   --degree-light-fill-default: color-mix(in srgb, var(--degree-color) 52%, #0f172a);
-  --degree-light-fill-I: #b45d00;
-  --degree-light-fill-II: #1f5f95;
-  --degree-light-fill-III: #2f8a3d;
-  --degree-light-fill-IV: #b5161b;
-  --degree-light-fill-V: #5f22ab;
-  --degree-light-fill-VI: #8f6e00;
-  --degree-light-fill-VII: #ad4b80;
-  --degree-light-fill-blue: #0a40bb;
+  --degree-light-fill-I: #b5161b;   /* 1 red */
+  --degree-light-fill-II: #b45d00;  /* 2 orange */
+  --degree-light-fill-III: #8f6e00; /* 3 yellow */
+  --degree-light-fill-IV: #2f8a3d;  /* 4 green */
+  --degree-light-fill-V: #1f5f95;   /* 5 blue */
+  --degree-light-fill-VI: #5f22ab;  /* 6 purple */
+  --degree-light-fill-VII: #ad4b80; /* 7 pink */
+  --degree-light-fill-blue: #56646e; /* slate — chromatic/blue note (light tuning of core BLUE_NOTE_COLOR) */
 
   /* Glow effects — minimal to none in modern-light */
   --glow-cyan-sm: 0 1px 2px rgba(20, 112, 136, 0.12); /* CYAN teal glow (reference palette) */
@@ -422,7 +422,14 @@
   --note-degree-fill: var(--degree-light-fill-VII);
 }
 
-[data-theme="modern-light"] :is([data-scale-degree="b3"], [data-scale-degree="b5"]) {
+[data-theme="modern-light"]
+  :is(
+    [data-scale-degree="b2"],
+    [data-scale-degree="b3"],
+    [data-scale-degree="b5"],
+    [data-scale-degree="b6"],
+    [data-scale-degree="b7"]
+  ) {
   --note-degree-fill: var(--degree-light-fill-blue);
 }
 
