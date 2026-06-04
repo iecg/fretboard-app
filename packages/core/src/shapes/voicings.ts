@@ -25,6 +25,72 @@ export interface Voicing {
   isFallback?: boolean;
 }
 
+export interface CloseVoicingScoreWeights {
+  span: number;
+  fretted: number;
+  compact: number;
+  highNeck: number;
+  open: number;
+}
+
+/** Lower total = more playable. Hand-tuned starting weights; adjustable. */
+export const CLOSE_VOICING_SCORE_WEIGHTS: CloseVoicingScoreWeights = {
+  span: 3, // wide stretches hurt most
+  fretted: 1, // fewer fretted notes = easier
+  compact: 1, // reward grips clustered near one hand position
+  highNeck: 0.5, // mild lower-neck preference
+  open: 1.5, // reward open strings
+};
+
+/** Fret above which a grip starts paying the high-neck penalty. */
+export const HIGH_NECK_THRESHOLD = 7;
+
+/**
+ * Playability cost for a close voicing. Pure of any polygon/position/string-set
+ * context — depends only on `voicing.notes` — so the same scorer ranks grips
+ * both inside a CAGED polygon (Phase 1) and across the whole neck (Phase 2).
+ * Lower is better.
+ */
+export function scoreCloseVoicing(
+  voicing: Voicing,
+  weights: CloseVoicingScoreWeights = CLOSE_VOICING_SCORE_WEIGHTS,
+): number {
+  const fretted = voicing.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+  const openCount = voicing.notes.length - fretted.length;
+  const span = fretted.length > 0 ? Math.max(...fretted) - Math.min(...fretted) : 0;
+  // Compute mean-absolute-deviation scaled by n to avoid floating-point drift:
+  // sum |f*n - sum(frets)| / n — numerically stable for transposed grips.
+  const n = fretted.length;
+  const sum = fretted.reduce((a, b) => a + b, 0);
+  const compact = n > 0 ? fretted.reduce((s, f) => s + Math.abs(f * n - sum), 0) / n : 0;
+  const topFret = voicing.notes.length > 0 ? Math.max(...voicing.notes.map((n) => n.fretIndex)) : 0;
+  const highNeck = Math.max(0, topFret - HIGH_NECK_THRESHOLD);
+
+  return (
+    weights.span * span +
+    weights.fretted * fretted.length +
+    weights.compact * compact +
+    weights.highNeck * highNeck -
+    weights.open * openCount
+  );
+}
+
+/**
+ * Deterministic ordering: lower cost first; ties broken by lower top fret, then
+ * lower lowest-string index. Guarantees stable, repeatable grip selection.
+ */
+export function compareCloseVoicings(a: Voicing, b: Voicing): number {
+  const sa = scoreCloseVoicing(a);
+  const sb = scoreCloseVoicing(b);
+  if (sa !== sb) return sa - sb;
+  const topA = Math.max(...a.notes.map((n) => n.fretIndex));
+  const topB = Math.max(...b.notes.map((n) => n.fretIndex));
+  if (topA !== topB) return topA - topB;
+  const lowA = Math.min(...a.notes.map((n) => n.stringIndex));
+  const lowB = Math.min(...b.notes.map((n) => n.stringIndex));
+  return lowA - lowB;
+}
+
 export function openStringMidi(openString: string): number | null {
   const parsed = parseNote(openString);
   if (!parsed) return null;
