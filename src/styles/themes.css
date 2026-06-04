@@ -14,9 +14,7 @@
   --surface-highlight: #cdc9c0; /* borders, dividers — darker than PANEL-SOFT (reference palette) */
   --text-main: #2a251d;         /* INK — dark warm brown (reference palette) */
   --text-muted: #857c6c;        /* MUTE — warm gray (reference palette) */
-  --text-on-highlight: #2a251d; /* INK — reference palette */
   --text-on-accent: #ffffff;
-  --text-soft-white: #3d3529;   /* slightly lighter than INK (reference palette) */
 
   /* App Shell — Modern Light (reference palette warm parchment) */
   --bg-app-gradient-start: #f6f2e9; /* PANEL — cream top edge */
@@ -64,7 +62,6 @@
 
   /* Interaction — Primary theme accent */
   --accent-primary: #147088; /* CYAN — reference palette primary accent */
-  --accent-glow: rgb(20 112 136 / 0.06); /* CYAN glow — reference palette */
 
   --interactive-hover: color-mix(in srgb, var(--accent-primary) 90%, black);
   --interactive-active: color-mix(in srgb, var(--accent-primary) 80%, black);
@@ -80,7 +77,6 @@
   --neon-cyan-dim: #0f5568;    /* CYAN darkened ~15% */
   --neon-orange: #b1431b;      /* ORANGE — reference palette warm accent */
   --neon-orange-bright: #d05620; /* ORANGE lightened ~15% */
-  --neon-orange-dim: #7d2e12;  /* ORANGE darkened ~25% */
   --neon-violet: #7e22ce;
   --neon-violet-dim: #4c1d95;
   --neon-brand-gradient: linear-gradient(90deg, #147088 0%, #b1431b 100%); /* CYAN → ORANGE reference palette */
@@ -223,12 +219,6 @@
   --note-glow:            color-mix(in srgb, #147088 50%, transparent); /* CYAN glow (reference palette) */
   --note-glow-tonic:      color-mix(in srgb, #b1431b 50%, transparent); /* ORANGE glow (reference palette) */
 
-  /* Shadows for notes — removed glow */
-  --shadow-note-root: none;
-  --shadow-note-active: none;
-  --shadow-ping-start: rgba(180, 83, 9, 0.2);
-  --shadow-ping-end: rgba(180, 83, 9, 0);
-
   /* Nav active tokens — light mode routes to accent-primary */
   --nav-active-fg: var(--accent-primary);
   --nav-active-indicator: var(--accent-primary);
@@ -291,16 +281,9 @@
   --fretboard-note-fill-chord-tone:     color-mix(in srgb, #147088 18%, #f6f2e9); /* CYAN 18% into PANEL */
   --fretboard-note-fill-scale-only:     #e3ddd8;                                   /* PANEL-SOFT — neutral */
   --fretboard-note-fill-chord-outside:  color-mix(in srgb, #b1431b 40%, #f6f2e9); /* ORANGE 40% into PANEL */
-  --fretboard-note-fill-tension-strong: color-mix(in srgb, #b1431b 70%, #f6f2e9); /* ORANGE 70% into PANEL */
   --fretboard-note-fill-guide-emph:     color-mix(in srgb, #147088 35%, #f6f2e9); /* CYAN 35% into PANEL */
   --fretboard-note-fill-deemphasis-chord:  var(--fretboard-guide-tones-deemphasis-fill);
   --fretboard-note-fill-deemphasis-violet: var(--fretboard-guide-tones-color-tone-fill);
-
-  /* Dead-token candidates — no var() consumers found via rg across src/components.
-     Safe to remove in a future cleanup pass after confirming unused:
-     --text-on-highlight, --text-soft-white, --accent-glow,
-     --shadow-note-root, --shadow-note-active,
-     --shadow-ping-start, --shadow-ping-end */
 
   /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest.
      Single-source oklch() literals, equivalence-preserving (original hex in comments).
