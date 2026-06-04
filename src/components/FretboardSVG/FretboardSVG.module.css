@@ -184,16 +184,19 @@
   stroke-width: 1.6;
 }
 
-/* Light-mode stroke-width — uniform across all roles, matching the tonic value (3.6).
-   Must sit AFTER role base rules; equal specificity, source order wins.
+/* Light-mode heavy stroke for FILLED markers only. Hollow context roles
+   (scale-only / color-tone / note-inactive) keep their thin 1.7 stroke (base
+   rules) so they read as recessive ground. note-active is filled (a figure)
+   so it keeps the heavier stroke.
    Circle radius is compensated via the CSS r property (using --note-r set in JS)
    to preserve the outer edge of the majority of note bubbles: baseline chosen as
-   note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px. */
-:global([data-theme="modern-light"]) .fretboard-note :is(circle, path, polygon) {
+   note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px.
+   Hollow roles are excluded, so they keep full --note-r (no compensation needed). */
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) :is(circle, path, polygon) {
   stroke-width: 3.6;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note circle {
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) circle {
   r: calc(var(--note-r) * 1px - 0.4px);
 }
 
