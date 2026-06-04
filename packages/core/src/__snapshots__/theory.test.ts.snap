@@ -2,6 +2,35 @@
 
 exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapshot — full structure including member names 1`] = `
 {
+  "13": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+      {
+        "name": "13",
+        "semitone": 9,
+      },
+    ],
+    "quality": "extended",
+  },
   "5": {
     "members": [
       {
@@ -36,6 +65,31 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "sixth",
   },
+  "6/9": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "6",
+        "semitone": 9,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+    ],
+    "quality": "extended",
+  },
   "7": {
     "members": [
       {
@@ -57,6 +111,56 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "seventh",
   },
+  "9": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+    ],
+    "quality": "extended",
+  },
+  "9sus4": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "4",
+        "semitone": 5,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+    ],
+    "quality": "extended",
+  },
   "M": {
     "members": [
       {
@@ -73,6 +177,27 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
       },
     ],
     "quality": "triad",
+  },
+  "add9": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+    ],
+    "quality": "extended",
   },
   "aug": {
     "members": [
@@ -146,6 +271,35 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "triad",
   },
+  "m13": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+      {
+        "name": "13",
+        "semitone": 9,
+      },
+    ],
+    "quality": "extended",
+  },
   "m6": {
     "members": [
       {
@@ -209,6 +363,31 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "seventh",
   },
+  "m9": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "b3",
+        "semitone": 3,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "b7",
+        "semitone": 10,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+    ],
+    "quality": "extended",
+  },
   "mMaj7": {
     "members": [
       {
@@ -230,6 +409,35 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
     ],
     "quality": "seventh",
   },
+  "maj13": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "7",
+        "semitone": 11,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+      {
+        "name": "13",
+        "semitone": 9,
+      },
+    ],
+    "quality": "extended",
+  },
   "maj7": {
     "members": [
       {
@@ -250,6 +458,31 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
       },
     ],
     "quality": "seventh",
+  },
+  "maj9": {
+    "members": [
+      {
+        "name": "root",
+        "semitone": 0,
+      },
+      {
+        "name": "3",
+        "semitone": 4,
+      },
+      {
+        "name": "5",
+        "semitone": 7,
+      },
+      {
+        "name": "7",
+        "semitone": 11,
+      },
+      {
+        "name": "9",
+        "semitone": 2,
+      },
+    ],
+    "quality": "extended",
   },
   "sus2": {
     "members": [
@@ -288,8 +521,16 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORD_DEFINITIONS snapsh
 }
 `;
 
-exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 15 entries 1`] = `
+exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 24 entries 1`] = `
 {
+  "13": [
+    0,
+    4,
+    7,
+    10,
+    2,
+    9,
+  ],
   "5": [
     0,
     7,
@@ -300,16 +541,43 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 
     7,
     9,
   ],
+  "6/9": [
+    0,
+    4,
+    7,
+    9,
+    2,
+  ],
   "7": [
     0,
     4,
     7,
     10,
   ],
+  "9": [
+    0,
+    4,
+    7,
+    10,
+    2,
+  ],
+  "9sus4": [
+    0,
+    5,
+    7,
+    10,
+    2,
+  ],
   "M": [
     0,
     4,
     7,
+  ],
+  "add9": [
+    0,
+    4,
+    7,
+    2,
   ],
   "aug": [
     0,
@@ -332,6 +600,14 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 
     3,
     7,
   ],
+  "m13": [
+    0,
+    3,
+    7,
+    10,
+    2,
+    9,
+  ],
   "m6": [
     0,
     3,
@@ -350,17 +626,39 @@ exports[`catalog snapshots (pre-Tonal-migration lock) > CHORDS snapshot — all 
     6,
     10,
   ],
+  "m9": [
+    0,
+    3,
+    7,
+    10,
+    2,
+  ],
   "mMaj7": [
     0,
     3,
     7,
     11,
   ],
+  "maj13": [
+    0,
+    4,
+    7,
+    11,
+    2,
+    9,
+  ],
   "maj7": [
     0,
     4,
     7,
     11,
+  ],
+  "maj9": [
+    0,
+    4,
+    7,
+    11,
+    2,
   ],
   "sus2": [
     0,

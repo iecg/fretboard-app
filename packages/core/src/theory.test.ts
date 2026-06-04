@@ -392,8 +392,8 @@ describe("resolver + key signature integration", () => {
 });
 
 describe("CHORD_DEFINITIONS — new chord types", () => {
-  it("CHORD_DEFINITIONS contains 15 entries (9 original + 6 new)", () => {
-    expect(Object.keys(CHORD_DEFINITIONS).length).toBe(15);
+  it("CHORD_DEFINITIONS contains 24 entries (15 original + 9 extended)", () => {
+    expect(Object.keys(CHORD_DEFINITIONS).length).toBe(24);
   });
 
   it("original keys are still present", () => {
@@ -429,7 +429,7 @@ describe("CHORD_DEFINITIONS — new chord types", () => {
 describe("CHORD_DEFINITIONS", () => {
   it("every chord in CHORD_DEFINITIONS has a quality and members", () => {
     for (const [name, def] of Object.entries(CHORD_DEFINITIONS)) {
-      expect(def.quality).toMatch(/^(triad|seventh|power|sixth|suspended)$/);
+      expect(def.quality).toMatch(/^(triad|seventh|power|sixth|suspended|extended)$/);
       expect(def.members.length).toBeGreaterThan(0);
       expect(def.members[0].name).toBe("root");
       void name;
@@ -564,7 +564,7 @@ describe("catalog snapshots (pre-Tonal-migration lock)", () => {
     expect(SCALES).toMatchSnapshot();
   });
 
-  it("CHORDS snapshot — all 15 entries", () => {
+  it("CHORDS snapshot — all 24 entries", () => {
     expect(CHORDS).toMatchSnapshot();
   });
 
@@ -590,5 +590,36 @@ describe("getDiatonicChord — Tonal Progression agreement (major mode)", () => 
   ])('major degree %s in C agrees with Tonal Progression (expected root %s)', (degree, expectedRoot) => {
     const ours = getDiatonicChord(degree, "major", "C");
     expect(ours?.root).toBe(expectedRoot);
+  });
+});
+
+describe("extended chord qualities", () => {
+  // [definition key, expected member NAMES in order]
+  const cases: Array<[string, string[]]> = [
+    ["add9", ["root", "3", "5", "9"]],
+    ["9", ["root", "3", "5", "b7", "9"]],
+    ["maj9", ["root", "3", "5", "7", "9"]],
+    ["m9", ["root", "b3", "5", "b7", "9"]],
+    ["6/9", ["root", "3", "5", "6", "9"]],
+    ["9sus4", ["root", "4", "5", "b7", "9"]],
+    ["13", ["root", "3", "5", "b7", "9", "13"]],
+    ["maj13", ["root", "3", "5", "7", "9", "13"]],
+    ["m13", ["root", "b3", "5", "b7", "9", "13"]],
+  ];
+
+  it.each(cases)("%s is defined as an extended quality with the expected members", (key, names) => {
+    const def = CHORD_DEFINITIONS[key];
+    expect(def).toBeDefined();
+    expect(def.quality).toBe("extended");
+    expect(def.members.map((m) => m.name)).toEqual(names);
+  });
+
+  it("resolves Cmaj9 to C E G B D (member order)", () => {
+    expect(getChordNotes("C", "maj9")).toEqual(["C", "E", "G", "B", "D"]);
+  });
+
+  it("resolves a flat-key root to sharps-form internal names with the right count", () => {
+    // Fm9 = F Ab C Eb G — internal names are sharps-form, so 5 distinct notes.
+    expect(getChordNotes("F", "m9")).toHaveLength(5);
   });
 });

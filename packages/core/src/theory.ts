@@ -65,8 +65,8 @@ export function isFlatKey(rootNote: string): boolean {
 
 export { normalizeScaleName, SCALES, SCALE_TO_PARENT_MAJOR_OFFSET };
 
-export type ChordMemberName = "root" | "2" | "b3" | "3" | "4" | "b5" | "#5" | "5" | "6" | "b7" | "7" | "bb7";
-export type ChordQuality = "triad" | "seventh" | "power" | "sixth" | "suspended";
+export type ChordMemberName = "root" | "2" | "b3" | "3" | "4" | "b5" | "#5" | "5" | "6" | "b7" | "7" | "bb7" | "9" | "11" | "13";
+export type ChordQuality = "triad" | "seventh" | "power" | "sixth" | "suspended" | "extended";
 
 export interface ChordMember {
   name: ChordMemberName;
@@ -216,6 +216,15 @@ export const CHORD_DEFINITIONS: Record<string, ChordDefinition> = {
   m7b5:  buildChordDef("m7b5",  "seventh",   ["root", "b3", "b5", "b7"]),
   mMaj7: buildChordDef("mMaj7", "seventh",   ["root", "b3", "5", "7"]),
   "5":   buildChordDef("5",     "power",     ["root", "5"]),
+  add9:    buildChordDef("add9",  "extended", ["root", "3", "5", "9"]),
+  "9":     buildChordDef("9",     "extended", ["root", "3", "5", "b7", "9"]),
+  maj9:    buildChordDef("maj9",  "extended", ["root", "3", "5", "7", "9"]),
+  m9:      buildChordDef("m9",    "extended", ["root", "b3", "5", "b7", "9"]),
+  "6/9":   buildChordDef("6/9",   "extended", ["root", "3", "5", "6", "9"]),
+  "9sus4": buildChordDef("9sus4", "extended", ["root", "4", "5", "b7", "9"]),
+  "13":    buildChordDef("13",    "extended", ["root", "3", "5", "b7", "9", "13"]),
+  maj13:   buildChordDef("maj13", "extended", ["root", "3", "5", "7", "9", "13"]),
+  m13:     buildChordDef("m13",   "extended", ["root", "b3", "5", "b7", "9", "13"]),
 };
 
 // Backward compatibility mapping from CHORD_DEFINITIONS
