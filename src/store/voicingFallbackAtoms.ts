@@ -19,6 +19,12 @@
  * the picker — only the rendered connector list changes. Otherwise picking
  * a string set with no in-polygon fit would unmount the picker and trap
  * the user.
+ *
+ * Position-less path (Phase 2): in Full mode with no full-chord template and
+ * no active position (Scale None / multi-shape CAGED / string modes),
+ * `neckSpreadFallbackActiveAtom` routes `closeCandidatesAllStringSetsAtom`
+ * through `selectNeckSpread` to produce a non-overlapping neck spread —
+ * mutually exclusive with the polygon/box paths above.
  */
 import { atom } from "jotai";
 import type { ShapePolygon, Voicing } from "@fretflow/core";
@@ -184,14 +190,12 @@ export const fallbackVoicingMatchesAtom = atom((get): Voicing[] => {
   if (polygons.length === 0 && boxBounds === null) {
     // Phase 2: no active position — spread best grips across the neck instead.
     if (!get(neckSpreadFallbackActiveAtom)) return memoizeFallbackVoicings([]);
-    const allCloses = get(closeCandidatesAllStringSetsAtom);
-    const stringSet = new Set(get(effectiveStringSetAtom));
-    const closes =
-      stringSet.size === 6
-        ? allCloses
-        : allCloses.filter((v) => v.notes.every((n) => stringSet.has(n.stringIndex)));
+    // Full mode always uses all six strings (effectiveStringSetAtom), so the
+    // neck-spread candidate set is simply every close voicing — no string-set
+    // narrowing applies here (unlike the position-scoped path below).
+    const closes = get(closeCandidatesAllStringSetsAtom);
     if (closes.length === 0) return memoizeFallbackVoicings([]);
-    const spread = selectNeckSpread(closes).map((v) => ({ ...v, isFallback: true as const }));
+    const spread = selectNeckSpread(closes).map((v) => ({ ...v, isFallback: true }));
     return memoizeFallbackVoicings(spread);
   }
 
