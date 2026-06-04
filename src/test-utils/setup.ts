@@ -29,29 +29,34 @@ configure({ asyncUtilTimeout: 5000 });
     disconnect() {}
   };
 
-// jsdom does not implement scrollTo on DOM elements
-window.HTMLElement.prototype.scrollTo = () => {};
+// The DOM stubs below only apply when a DOM is present. Tests that opt into the
+// `node` environment (e.g. CSS-token parsing helpers that read files) have no
+// `window`, so guard these so the shared setup stays environment-agnostic.
+if (typeof window !== 'undefined') {
+  // jsdom does not implement scrollTo on DOM elements
+  window.HTMLElement.prototype.scrollTo = () => {};
 
-// jsdom does not implement scrollIntoView on DOM elements
-window.HTMLElement.prototype.scrollIntoView = () => {};
+  // jsdom does not implement scrollIntoView on DOM elements
+  window.HTMLElement.prototype.scrollIntoView = () => {};
 
-// jsdom does not implement Pointer Capture. Radix Select calls these on its
-// trigger during pointer interactions; stub them so the listbox can open.
-window.HTMLElement.prototype.hasPointerCapture = () => false;
-window.HTMLElement.prototype.setPointerCapture = () => {};
-window.HTMLElement.prototype.releasePointerCapture = () => {};
+  // jsdom does not implement Pointer Capture. Radix Select calls these on its
+  // trigger during pointer interactions; stub them so the listbox can open.
+  window.HTMLElement.prototype.hasPointerCapture = () => false;
+  window.HTMLElement.prototype.setPointerCapture = () => {};
+  window.HTMLElement.prototype.releasePointerCapture = () => {};
 
-// jsdom does not implement matchMedia
-window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-  matches: query === '(prefers-color-scheme: dark)',
-  media: query,
-  onchange: null,
-  addListener: vi.fn(),
-  removeListener: vi.fn(),
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  dispatchEvent: vi.fn(),
-}));
+  // jsdom does not implement matchMedia
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches: query === '(prefers-color-scheme: dark)',
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }));
+}
 
 // motion/react uses RAF-sequenced animations which never fire in jsdom, causing
 // AnimatePresence to defer rendering its children indefinitely and making any

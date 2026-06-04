@@ -5,18 +5,12 @@
   --surface-highlight: #3a3a3c;
   --text-main: #f5f5f7;
   --text-muted: #a0a0a5;
-  --text-on-highlight: #ffffff;
   --text-on-accent: #ffffff;
-  --text-soft-white: #e8eef6;
 
   /* Interaction — Primary theme accent (cyan-leaning in dark) */
   --accent-primary: #0a84ff;
   --accent-secondary: #ff9f0a;
-  --accent-glow: rgba(10, 132, 255, 0.15);
 
-  /* Note colors (note-blue refers to the musical "blue note") */
-  --note-blue: #9333ea;
-  --note-blue-glow: rgba(147, 51, 234, 0.5);
   --caged-e: #56B4E9;      /* Okabe-Ito sky blue, decoupled from connector slot 1 */
   --caged-e-fg: #f0f9ff;
   --caged-d: #999999;      /* Okabe-Ito gray, connector slot 3 */
