@@ -5,10 +5,11 @@ import { render } from "@testing-library/react";
 import type { ChordConnectorVoicing } from "./hooks/useChordConnectorPolylines";
 import type { CagedShape } from "@fretflow/core";
 
-// Stub polyline: just enough for the renderer to emit three <path> elements
-// (halo + fill + outline) per voicing.
+// Stub polyline: just enough for the renderer to emit the ribbon <path> elements
+// (halo + fill + spine) per voicing.
 const makePolyline = (voicingKey: string, shape?: CagedShape): ChordConnectorVoicing => ({
   paths: { fill: "M0,0 L10,0", outline: "M0,0 L10,0" },
+  spinePath: "M 0 0 L 10 0",
   vertices: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
   paletteIndex: 0,
   shape,
@@ -73,31 +74,27 @@ describe("FretboardConnectorLayer", () => {
       makePolyline("3,10|4,10|5,10", "G"),
     ];
 
-    // pass="below": halo + fill per voicing (2 layers × 3 voicings = 6 paths)
+    // pass="below": line-only connector = halo + spine per voicing (2 layers × 3 voicings = 6 paths)
     const { container: belowContainer } = renderInSvg(
       <FretboardConnectorLayer {...BASE_PROPS} pass="below" chordPolylines={polylines} />,
     );
     const belowPaths = belowContainer.querySelectorAll("path");
     expect(belowPaths.length).toBe(6);
     for (const path of belowPaths) {
-      expect(path.getAttribute("data-layer")).toMatch(/^(halo|fill)$/);
+      expect(path.getAttribute("data-layer")).toMatch(/^(halo|spine)$/);
       expect(path.classList.contains("chord-connector--primary")).toBe(false);
       expect(path.classList.contains("chord-connector--secondary")).toBe(false);
       expect(path.getAttribute("data-voicing-role")).toBeNull();
     }
+    // The ribbon spine renders below the notes; no boundary outline edges.
+    expect(belowContainer.querySelector('path[data-layer="spine"]')).toBeTruthy();
+    expect(belowContainer.querySelector('path[data-layer="outline"]')).toBeNull();
 
-    // pass="above": outline only per voicing (1 layer × 3 voicings = 3 paths)
+    // pass="above": chord connectors render nothing above the notes.
     const { container: aboveContainer } = renderInSvg(
       <FretboardConnectorLayer {...BASE_PROPS} pass="above" chordPolylines={polylines} />,
     );
-    const abovePaths = aboveContainer.querySelectorAll("path");
-    expect(abovePaths.length).toBe(3);
-    for (const path of abovePaths) {
-      expect(path.getAttribute("data-layer")).toBe("outline");
-      expect(path.classList.contains("chord-connector--primary")).toBe(false);
-      expect(path.classList.contains("chord-connector--secondary")).toBe(false);
-      expect(path.getAttribute("data-voicing-role")).toBeNull();
-    }
+    expect(aboveContainer.querySelectorAll("path").length).toBe(0);
   });
 
   it("renders nothing when showChordConnectors is false", () => {

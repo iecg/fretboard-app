@@ -67,23 +67,21 @@ export function resolveConnectorRadiusPx({
 }
 
 /**
- * Lift a raw span-based connector radius above the chord-root squircle's
- * outer edge plus a small halo so the contour never collapses inside the
- * note bubble. Shared by chord connectors and interval connectors.
+ * Lift a raw span-based connector radius above the chord-root squircle's outer
+ * edge plus a small halo so the contour never collapses inside the note bubble.
+ * Shared by chord connectors and interval connectors.
  *
- * Computed in pixel space (rather than as a factor of `stringRowPx`) so the
- * halo gap is constant across the adaptive row-height range — at large row
- * heights the relative gap shrinks, which matches the intent that the floor
- * is a "minimum visible separation" rather than a proportional adjustment.
+ * Keep this a slim ribbon: the floor only guards against the band shrinking
+ * INSIDE the root bubble — it must NOT inflate the band to chord-tone-marker
+ * width, which reads as a fat smudge over the wood texture.
  */
 export function applyConnectorRadiusFloor(
   spanRadiusPx: number,
   stringRowPx: number,
 ): number {
-  return Math.max(
-    spanRadiusPx,
-    chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX,
-  );
+  const squircleFloor =
+    chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX;
+  return Math.max(spanRadiusPx, squircleFloor);
 }
 
 /**

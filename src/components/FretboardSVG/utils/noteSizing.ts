@@ -12,7 +12,7 @@ export const CHORD_ROOT_HALO_RADIUS_PX = 3.5;
  * fills its whole r×r box (reaching r at the cardinal edges), so a circle of the
  * same radius sits entirely under the opaque squircle fill and the glow can't be
  * seen. Enlarge the underlay for squircles so a soft halo reads around the shape.
- * Circle / diamond / hexagon shapes are narrower than r at their diagonals, so
+ * Circle / diamond shapes are narrower than r at their diagonals, so
  * the glow already peeks through there — they keep the shape radius.
  */
 export const GLOW_RADIUS_SCALE_SQUIRCLE = 1.3;

@@ -7,25 +7,10 @@ import { CHORD_ROOT_HALO_RADIUS_PX, glowUnderlayRadiusPx, reduceCircleRadius, re
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
-const CAGED_SHAPE_CSS_VAR: Record<string, string> = {
-  E: "var(--caged-e)",
-  D: "var(--caged-d)",
-  C: "var(--caged-c)",
-  A: "var(--caged-a)",
-  G: "var(--caged-g)",
-};
-
-const CAGED_SHAPE_TEXT_VAR: Record<string, string> = {
-  E: "var(--caged-e-fg)",
-  D: "var(--caged-d-fg)",
-  C: "var(--caged-c-fg)",
-  A: "var(--caged-a-fg)",
-  G: "var(--caged-g-fg)",
-};
-
 const ROLE_DESCRIPTIONS: Record<string, string> = {
   "root-active": "scale root",
   "chord-root": "chord root",
+  "chord-root-outside": "chord root (outside key)",
   "chord-tone": "chord tone",
   "chord-tone-in-scale": "chord tone in scale",
   "chord-tone-outside-scale": "chord tone outside scale",
@@ -91,22 +76,6 @@ export const FretboardNote = memo(function FretboardNote({
   // the shape instead of being hidden under its filled corners.
   const glowR = glowUnderlayRadiusPx(r, noteShape === "squircle");
 
-  const fullChordStyle = fullChordShape
-    ? {
-        "--shape-fill": CAGED_SHAPE_CSS_VAR[fullChordShape],
-        "--shape-stroke":
-          noteClass === "chord-root"
-            ? "var(--note-ring-tonic)"
-            : CAGED_SHAPE_CSS_VAR[fullChordShape],
-        "--shape-stroke-width":
-          noteClass === "chord-root" ? "3.2" : undefined,
-        "--text-fill":
-          noteClass === "chord-root"
-            ? "#ffffff"
-            : CAGED_SHAPE_TEXT_VAR[fullChordShape],
-      }
-    : undefined;
-
   const shapeEl =
     noteShape === "squircle" ? (
       <>
@@ -115,11 +84,8 @@ export const FretboardNote = memo(function FretboardNote({
             d={squirclePath(cx, cy, r + CHORD_ROOT_HALO_RADIUS_PX)}
             style={{
               fill: "none",
-              stroke: isTension
-                ? "var(--neon-orange-dim)"
-                : "var(--note-ring-tonic)",
+              stroke: "var(--note-ring-tonic)",
               strokeWidth: 1.8,
-              strokeDasharray: isTension ? "6 3" : undefined,
               paintOrder: "stroke",
             }}
           />
@@ -129,13 +95,6 @@ export const FretboardNote = memo(function FretboardNote({
     ) : noteShape === "diamond" ? (
       <polygon
         points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
-      />
-    ) : noteShape === "hexagon" ? (
-      <polygon
-        points={Array.from({ length: 6 }, (_, i) => {
-          const a = (Math.PI / 3) * i - Math.PI / 6;
-          return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
-        }).join(" ")}
       />
     ) : (
       <>
@@ -203,7 +162,6 @@ export const FretboardNote = memo(function FretboardNote({
         ...(degreeColor && degreeColorsEnabled
           ? { "--degree-color": degreeColor }
           : undefined),
-        ...(fullChordStyle as React.CSSProperties),
       } as React.CSSProperties}
     >
       <circle

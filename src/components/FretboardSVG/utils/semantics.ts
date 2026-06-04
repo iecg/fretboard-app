@@ -1,10 +1,6 @@
 import type { NoteSemantics } from "@fretflow/core";
 import {
   RADIUS_SCALE_KEY_TONIC,
-  RADIUS_SCALE_CHORD_ROOT,
-  RADIUS_SCALE_CHORD_TONE,
-  RADIUS_SCALE_NOTE_ACTIVE,
-  RADIUS_SCALE_COLOR_TONE,
   RADIUS_SCALE_DEFAULT,
 } from "@fretflow/core";
 
@@ -53,6 +49,7 @@ export type LeadLensContext = {
  */
 const CHORD_TONE_CLASSES = new Set([
   "chord-root",
+  "chord-root-outside",
   "chord-tone-in-scale",
   "chord-tone-outside-scale",
   "note-diatonic-chord",
@@ -150,7 +147,8 @@ export function classifyNoteFromSemantics(
     );
   }
 
-  if (sem.isChordRoot && sem.isChordTone && isInActiveShape) return "chord-root";
+  if (sem.isChordRoot && sem.isChordTone && isInActiveShape)
+    return sem.isInScale ? "chord-root" : "chord-root-outside";
   if (sem.isDiatonicChord && sem.isChordTone && isInActiveShape) return "note-diatonic-chord";
   if (sem.isInScale && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (sem.isInScale && sem.isColorTone && isInActiveShape && isHighlighted) return "color-tone";
@@ -159,66 +157,40 @@ export function classifyNoteFromSemantics(
   return "note-inactive";
 }
 
-type NoteShape = "circle" | "squircle" | "diamond" | "hexagon";
+type NoteShape = "circle" | "squircle" | "diamond";
 
 export type NoteVisuals = {
   radiusScale: number;
   noteShape: NoteShape;
 };
 
-export function getNoteVisuals(
-  noteClass: string,
-): NoteVisuals {
+// Marker sizing: chord tier large, scale tier small (recedes), outside tier medium.
+const RADIUS_CHORD = 0.95;
+const RADIUS_SCALE = 0.66;
+const RADIUS_OUTSIDE = 0.8;
+
+export function getNoteVisuals(noteClass: string): NoteVisuals {
   switch (noteClass) {
     case "key-tonic":
-      return {
-        radiusScale: RADIUS_SCALE_KEY_TONIC,
-        noteShape: "circle",
-      };
+      return { radiusScale: RADIUS_SCALE_KEY_TONIC, noteShape: "circle" };
     case "chord-root":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_ROOT,
-        noteShape: "squircle",
-      };
     case "chord-tone-in-scale":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_TONE,
-        noteShape: "squircle",
-      };
-    case "note-active":
-      return {
-        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
-        noteShape: "circle",
-      };
-    case "note-blue":
-      return {
-        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
-        noteShape: "hexagon",
-      };
-    case "scale-only":
-      return {
-        radiusScale: RADIUS_SCALE_NOTE_ACTIVE,
-        noteShape: "circle",
-      };
-    case "color-tone":
-      return {
-        radiusScale: RADIUS_SCALE_COLOR_TONE,
-        noteShape: "hexagon",
-      };
-    case "chord-tone-outside-scale":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_TONE,
-        noteShape: "diamond",
-      };
     case "note-diatonic-chord":
-      return {
-        radiusScale: RADIUS_SCALE_CHORD_TONE,
-        noteShape: "squircle",
-      };
+      return { radiusScale: RADIUS_CHORD, noteShape: "squircle" };
+    case "note-active":
+    case "scale-only":
+      return { radiusScale: RADIUS_SCALE, noteShape: "circle" };
+    case "color-tone":
+      return { radiusScale: RADIUS_OUTSIDE, noteShape: "circle" };
+    // An outside-key chord root keeps its home (amber) identity via color, but
+    // the diamond shape marks it chromatic — and it stays chord-tier sized.
+    case "chord-root-outside":
+      return { radiusScale: RADIUS_CHORD, noteShape: "diamond" };
+    // Shape encodes harmonic insideness: chromatic / outside-key → angular diamond.
+    case "note-blue":
+    case "chord-tone-outside-scale":
+      return { radiusScale: RADIUS_OUTSIDE, noteShape: "diamond" };
     default:
-      return {
-        radiusScale: RADIUS_SCALE_DEFAULT,
-        noteShape: "circle",
-      };
+      return { radiusScale: RADIUS_SCALE_DEFAULT, noteShape: "circle" };
   }
 }

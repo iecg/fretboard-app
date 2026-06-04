@@ -70,146 +70,65 @@
   fill: var(--fretboard-note-text-fill);
 }
 
-.fretboard-note.key-tonic :is(circle, path, polygon) {
-  stroke: var(--note-ring-tonic);
-  fill: var(--fretboard-note-fill-tonic);
-  stroke-width: 2.3;
+/* Home: chord root + key tonic — amber anchor, white label both themes.
+   chord-root-outside is also "home" (still the root → amber) but renders as a
+   diamond because it's chromatic; color stays amber, shape carries the meaning. */
+.fretboard-note:is(.chord-root, .chord-root-outside, .key-tonic) :is(circle, path, polygon) {
+  fill: var(--fb-home-fill);
+  stroke: var(--fb-home-stroke);
+  stroke-width: 2.4;
 }
+.fretboard-note:is(.chord-root, .chord-root-outside, .key-tonic) text { fill: #ffffff; }
+:global([data-theme="modern-light"]) .fretboard-note:is(.chord-root, .chord-root-outside, .key-tonic) text { fill: #ffffff; stroke: rgb(0 0 0 / 0.4); }
 
 .fretboard-note.key-tonic text {
   stroke-width: 2.3;
 }
 
-.fretboard-note.chord-root :is(circle, path, polygon) {
-  stroke: var(--note-ring-tonic);
-  fill: var(--fretboard-note-fill-chord-root);
-  stroke-width: 2.5;
-}
-
-.fretboard-note.chord-root text {
+.fretboard-note:is(.chord-root, .chord-root-outside) text {
   stroke-width: 2.3;
 }
 
-.fretboard-note.chord-tone-in-scale :is(circle, path, polygon),
-.fretboard-note.note-diatonic-chord :is(circle, path, polygon) {
-  stroke: var(--note-ring-tonic);
-  fill: var(--fretboard-note-fill-chord-tone);
-  stroke-width: 2.3;
+/* Diatonic chord tones (non-guide) — neutral filled. */
+.fretboard-note:is(.chord-tone-in-scale, .note-diatonic-chord) :is(circle, path, polygon) {
+  fill: var(--fb-neutral-fill);
+  stroke: var(--fb-neutral-stroke);
+  stroke-width: 2.2;
 }
 
-/* Full-chord voicing mode: each note <g> carries --shape-fill and
-   --shape-stroke CSS variables computed inline from the CAGED shape
-   identity. Inner shape elements inherit from the <g> via var().
-   The `data-full-chord-mode` attribute on the board div gates this
-   so normal scale/chord mode is unaffected. */
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] :is(circle, path, polygon) {
-  fill: var(--shape-fill);
-  stroke: var(--shape-stroke, var(--shape-fill));
-  stroke-width: var(--shape-stroke-width, 1.9);
+/* Guide tones (3rd & 7th) — teal "chord identity". */
+.fretboard-note[data-note-guide-tone]:is(.chord-tone-in-scale, .note-diatonic-chord) :is(circle, path, polygon) {
+  fill: var(--fb-guide-fill);
+  stroke: var(--fb-guide-stroke);
+  stroke-width: 2.6;
 }
 
-.fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] text {
-  fill: var(--text-fill, #ffffff);
+/* Chromatic / outside-key (blue notes + outside-scale chord tones) — neutral FILLED diamonds (shape carries the meaning). */
+.fretboard-note:is(.note-blue, .chord-tone-outside-scale) :is(circle, path, polygon) {
+  fill: var(--fb-neutral-fill);
+  stroke: var(--fb-neutral-stroke);
+  stroke-width: 2;
 }
 
-/* Light-theme full-chord-mode labels: shape colors are saturated, so revert
-   to the dark-mode treatment — white fill + 45%-opacity black stroke — instead
-   of the global light-mode INK + cream halo (which washes out against the
-   saturated shape fills). */
-:global([data-theme="modern-light"]) .fretboard-board[data-full-chord-mode="true"] .fretboard-note[data-full-chord-mode] text {
-  fill: var(--text-fill, #ffffff);
-  stroke: rgb(0 0 0 / 0.45);
-}
-
-.fretboard-note.note-active :is(circle, path, polygon) {
-  stroke: var(--note-ring);
-  fill: var(--fretboard-note-fill-chord-tone);
-  stroke-width: 1.9;
-}
-
-.fretboard-note.note-blue :is(circle, path, polygon) {
-  stroke: var(--note-ring-color-tone);
-  fill: var(--fretboard-note-fill-chord-tone);
-  stroke-width: 1.9;
-}
-
-/* Dark-mode: note-blue and color-tone white-label override (deferred from Phase 2, now landed).
-   Light-purple label (#e8d8ff) on cream fill (#fef3e2) against dark wood is too low-contrast;
-   white + dark stroke matches the chord-tone role treatment. */
-:global([data-theme="modern-dark"]) .fretboard-note.note-blue text {
-  fill: #ffffff;
-  stroke: rgb(0 0 0 / 0.45);
-}
-
-.fretboard-note.note-blue text {
-  fill: #e8d8ff;
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.note-blue text {
-  stroke: var(--fretboard-note-text-stroke);
-  fill: var(--fretboard-note-text-fill);
-}
-
-.fretboard-note.scale-only :is(circle, path, polygon),
-.fretboard-note.note-inactive :is(circle, path, polygon) {
-  stroke: var(--note-ring);
-  fill: var(--fretboard-note-fill-scale-only);
+/* Scale tones + diatonic color tones — neutral HOLLOW (recede). */
+.fretboard-note:is(.scale-only, .note-active, .color-tone) :is(circle, path, polygon) {
+  fill: none;
+  stroke: var(--fb-neutral-stroke);
   stroke-width: 1.7;
 }
 
-.fretboard-note.color-tone :is(circle, path, polygon) {
-  stroke: var(--note-ring-color-tone);
-  fill: var(--fretboard-note-fill-chord-tone);
-  stroke-width: 1.9;
-}
-
-:global([data-theme="modern-dark"]) .fretboard-note.color-tone text {
-  fill: #ffffff;
-  stroke: rgb(0 0 0 / 0.45);
-}
-
-.fretboard-note.color-tone text {
-  fill: #e8d8ff;
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.color-tone text {
-  stroke: var(--fretboard-note-text-stroke);
-  fill: var(--fretboard-note-text-fill);
-}
-
-/* Light-mode tonic and chord-root use saturated amber fills — restore white labels
-   with a dark outline so text pops against the colored background. */
-:global([data-theme="modern-light"]) .fretboard-note.key-tonic text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
-}
-
-:global([data-theme="modern-light"]) .fretboard-note.chord-root text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
+/* note-inactive: usually hidden — neutral hollow fallback so it's never bare. */
+.fretboard-note.note-inactive :is(circle, path, polygon) {
+  fill: none;
+  stroke: var(--fb-neutral-stroke);
+  stroke-width: 1.7;
 }
 
 /* Light-mode chord-tone-in-scale and note-diatonic-chord label override.
-   These roles use a CYAN-tinted cream fill (--fretboard-note-fill-chord-tone).
+   These roles use the neutral fill (--fb-neutral-fill).
    INK text + very faint halo stroke for legibility on the slightly-saturated fill. */
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
 :global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
-}
-
-/* Light-mode lens-emphasized labels — same white-on-amber treatment as tonic/chord-root. */
-:global([data-theme="modern-light"]) [data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
-}
-
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
-}
-
-:global([data-theme="modern-light"]) [data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] text {
   stroke: var(--note-label-on-color-stroke);
   fill: var(--note-label-on-color);
 }
@@ -239,22 +158,21 @@
   fill: var(--note-label-on-color);
 }
 
-.fretboard-note.chord-tone-outside-scale :is(circle, path, polygon) {
-  stroke: var(--neon-orange-dim);
-  fill: var(--fretboard-note-fill-chord-outside);
-  stroke-width: 2.0;
-  stroke-dasharray: 5 3;
-}
-
-:global([data-theme="modern-dark"]) .fretboard-note.chord-tone-outside-scale :is(circle, rect, polygon) {
-  stroke: #e8985a;
-  stroke-width: 2.4;
-  fill: #3a2210;
-  stroke-dasharray: 4 3;
-}
-
 .fretboard-note.chord-tone-outside-scale text {
   opacity: 0.9;
+}
+
+/* Light-mode recessed scale notes (hollow neutral roles) — LIGHT label.
+   These notes have no fill (transparent ring only), so the default dark INK
+   label reads as a heavy solid glyph and fights the "recessed" intent. Give
+   the label a cream fill with a brown halo (both system neutral tokens) so it
+   reads as a ghosted number that recedes into the light wood while staying
+   legible. paint-order: stroke (set on the base text rule) keeps the halo
+   under the fill. */
+:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .note-active, .color-tone) text {
+  fill: var(--fb-neutral-fill);
+  stroke: var(--fb-neutral-stroke);
+  stroke-width: 1.6;
 }
 
 /* Light-mode stroke-width — uniform across all roles, matching the tonic value (3.6).
@@ -288,101 +206,6 @@
   filter: var(--fretboard-svg-glow-violet-url);
 }
 
-.fretboard-note.chord-root[data-note-tension] path:last-of-type {
-  stroke-dasharray: 6 3;
-  fill: var(--fretboard-note-fill-tension-emph);
-  stroke: var(--neon-orange);
-  stroke-width: 2.8;
-}
-
-/* Lens emphasis selectors */
-[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] :is(circle, path, polygon) {
-  stroke-width: 3.8;
-  fill: var(--fretboard-note-fill-guide-emph);
-  stroke: var(--neon-orange);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note[data-note-guide-tone] {
-  filter: var(--fretboard-svg-glow-orange-url);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]) path:last-of-type,
-[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]) :is(circle, path, polygon),
-[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) :is(circle, path, polygon) {
-  stroke-width: 1.4;
-  fill: var(--fretboard-note-fill-deemphasis-chord);
-  stroke: rgb(200 110 40);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.chord-root:not([data-note-guide-tone]),
-[data-practice-lens="guide-tones"] .fretboard-note.chord-tone-in-scale:not([data-note-guide-tone]),
-[data-practice-lens="guide-tones"] .fretboard-note.note-diatonic-chord:not([data-note-guide-tone]) {
-  filter: none;
-  opacity: 0.68;
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.color-tone :is(circle, path, polygon) {
-  stroke: var(--note-ring-color-tone);
-  fill: var(--fretboard-note-fill-deemphasis-violet);
-}
-
-[data-practice-lens="guide-tones"] .fretboard-note.color-tone {
-  filter: none;
-  opacity: 0.68;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale :is(circle, path, polygon) {
-  stroke: var(--neon-orange);
-  fill: var(--fretboard-note-fill-tension-strong);
-  stroke-dasharray: 6 3;
-  stroke-width: 3.8;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-outside-scale {
-  filter: var(--fretboard-svg-glow-orange-url);
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-root[data-note-tension] path:last-of-type {
-  stroke: var(--neon-orange);
-  fill: var(--fretboard-note-fill-tension-strong);
-  stroke-dasharray: 6 3;
-  stroke-width: 3.8;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) path:last-of-type {
-  stroke-width: 1.8;
-  fill: var(--fretboard-note-fill-chord-root);
-  stroke: rgb(255 154 77);
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-root:not([data-note-tension]) {
-  filter: none;
-  opacity: 0.72;
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale :is(circle, path, polygon),
-[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord :is(circle, path, polygon) {
-  stroke-width: 1.4;
-  fill: var(--fretboard-note-fill-deemphasis-chord);
-  stroke: rgb(200 110 40);
-}
-
-[data-practice-lens="tension"] .fretboard-note.chord-tone-in-scale,
-[data-practice-lens="tension"] .fretboard-note.note-diatonic-chord {
-  filter: none;
-  opacity: 0.68;
-}
-
-[data-practice-lens="tension"] .fretboard-note.color-tone :is(circle, path, polygon) {
-  stroke: var(--note-ring-color-tone);
-  fill: var(--fretboard-note-fill-deemphasis-violet);
-}
-
-[data-practice-lens="tension"] .fretboard-note.color-tone {
-  filter: none;
-  opacity: 0.68;
-}
-
 /* Lead lens emphasis — radiusBoost/opacityBoost are applied inline by
    FretboardNoteLayer.tsx via CSS transform scale. Glow is a dedicated underlay
    element (.note-glow-underlay, keyed off data-glow) instead of an SVG filter. */
@@ -394,8 +217,8 @@
    not a crisp ring. */
 .fretboard-note circle.note-glow-underlay {
   pointer-events: none;
-  /* The underlay must read as a pure soft glow. Role/full-chord stroke rules
-     (e.g. the 0,4,1 [data-full-chord-mode] rule) outrank any practical class
+  /* The underlay must read as a pure soft glow. The role stroke rules
+     (the `:is(circle, path, polygon)` selectors) outrank any practical class
      specificity here, so !important is the robust, intent-correct exemption
      (the file already uses !important for the focus-visible stroke). */
   stroke: none !important;
@@ -526,46 +349,31 @@
 }
 
 /* -----------------------------------------------------------------------
-   Chord-tone connector layer — three-pass halo + fill + outline render.
-   Halo layer: wide semi-transparent white stroke for background contrast.
-   Fill layer: low-opacity closed polygon beneath note bubbles.
-   Outline layer: thin contrasting stroke traced on top.
-   All layers use the same closed-path geometry (polygon or capsule).
-   Color driven by --chord-connector-color-N via data-palette-index attribute selectors.
+   Chord-tone connector layer — the ribbon connector.
+   Halo layer: disabled (stroke: none) so both themes match.
+   Fill layer: low-opacity translucent band beneath the note bubbles.
+   Spine layer: a single solid center line through the voicing notes.
+   All layers render in the "below" pass so note markers occlude the spine.
+   Color driven by --chord-connector-color-N (see [data-layer] rule below).
    ----------------------------------------------------------------------- */
+/* Halo underlay — a soft, slightly wider stroke beneath the accent line so the
+   connector reads over busy wood grain and where lines cross. */
 .chord-connectors path[data-layer="halo"] {
   fill: none;
-  stroke: var(--chord-connector-halo-color, rgba(255, 255, 255, 0.5));
-  stroke-width: var(--chord-connector-halo-width, 3px);
-  stroke-linejoin: round;
+  stroke: var(--fb-connector-halo, rgb(0 0 0 / 0.5));
+  stroke-width: 4px;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.chord-connectors path[data-layer="fill"] {
-  fill: currentColor;
-  fill-opacity: var(--chord-connector-fill-opacity, 0.15);
-  stroke: none;
-}
-
-.chord-connectors path[data-layer="outline"] {
+/* Spine — the solid accent center line connecting the voicing notes. */
+.chord-connectors path[data-layer="spine"] {
   fill: none;
   stroke: currentColor;
-  stroke-width: var(--chord-connector-outline-width, 1.25px);
-  stroke-opacity: var(--chord-connector-outline-opacity, 0.85);
-  stroke-linejoin: round;
+  stroke-width: 2px;
+  stroke-opacity: 0.95;
   stroke-linecap: round;
-}
-
-/* Close-voicing fallback (rendered inside a CAGED/3NPS position that has no
-   full-chord template match). Dashed outline + softer fill make the substitute
-   nature legible at a glance without changing the voicing's color identity. */
-.chord-connectors path[data-layer="outline"][data-fallback="true"] {
-  stroke-dasharray: 5 3;
-  stroke-opacity: var(--chord-connector-fallback-outline-opacity, 0.75);
-}
-
-.chord-connectors path[data-layer="fill"][data-fallback="true"] {
-  fill-opacity: var(--chord-connector-fallback-fill-opacity, 0.08);
+  stroke-linejoin: round;
 }
 
 /* -----------------------------------------------------------------------
@@ -587,6 +395,14 @@
 .chord-connectors path[data-caged-shape="C"] { color: var(--caged-c); }
 .chord-connectors path[data-caged-shape="A"] { color: var(--caged-a); }
 .chord-connectors path[data-caged-shape="G"] { color: var(--caged-g); }
+
+/* The ribbon connector uses the higher-contrast close-voicing color instead of
+   the per-CAGED-shape colors, which reads better over CAGED region shading. The
+   [data-layer] attribute lifts specificity above the palette-index / caged-shape
+   rules above so this wins regardless of source order. */
+.chord-connectors path[data-layer] {
+  color: var(--fb-connector-accent);
+}
 
 /* -----------------------------------------------------------------------
    Active-voicing highlight ring.

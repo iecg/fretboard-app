@@ -246,17 +246,17 @@ describe("FretboardSVG/FretboardSVG", () => {
       "G on string 2, fret 8, chord tone",
       "G on string 5, fret 10, chord tone",
     ]);
+    // Line-only connector: halo underlay + spine accent line, no band fill, no outline edges.
     expect(container.querySelectorAll('path[data-layer="halo"]').length).toBe(1);
-    expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(1);
-    expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="fill"]').length).toBe(0);
+    expect(container.querySelectorAll('path[data-layer="spine"]').length).toBe(1);
+    expect(container.querySelectorAll('path[data-layer="outline"]').length).toBe(0);
     expect(container.querySelector('.chord-root[data-full-chord-mode]')).not.toBeNull();
-    expect(container.querySelector('path[data-layer="fill"][data-caged-shape="E"]')).not.toBeNull();
-    const rootG = container.querySelector('.chord-root[data-full-chord-mode]');
-    expect(rootG).toHaveStyle({ "--shape-fill": "var(--caged-e)" });
-    expect(rootG).toHaveStyle({ "--shape-stroke": "var(--note-ring-tonic)" });
-    expect(
-      container.querySelector('.chord-root[data-full-chord-mode] text'),
-    ).toHaveStyle({ "--text-fill": "#ffffff" });
+    expect(container.querySelector('path[data-layer="spine"][data-caged-shape="E"]')).not.toBeNull();
+    // Notes are no longer recolored by CAGED shape in full-chord mode — role-based
+    // colors apply in all voicing modes, so the <g> carries no --shape-fill style.
+    const rootG = container.querySelector('.chord-root[data-full-chord-mode]') as SVGGElement;
+    expect(rootG.style.getPropertyValue("--shape-fill")).toBe("");
   });
 
   it("hides chord connectors when showChordConnectors is false", () => {
@@ -352,12 +352,12 @@ describe("FretboardSVG/FretboardSVG", () => {
       },
       {
         role: "color-tone",
-        shape: "hexagon",
+        shape: "circle",
         props: { ...DORIAN, chordTones: ["D", "F", "A"], chordRoot: "D" },
       },
       {
         role: "note-blue",
-        shape: "hexagon",
+        shape: "diamond",
         props: { ...DORIAN },
       },
     ])("$role notes have data-note-shape=$shape", ({ role, shape, props }) => {
@@ -423,15 +423,20 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   describe("composable renderer contract — noteSemantics", () => {
-    it("outside chord root gets data-note-tension and chord-root visual role", () => {
+    it("outside-key chord root gets the chord-root-outside diamond role", () => {
       const semantics = sem([
         ["C#", { isChordRoot: true, isChordTone: true, isTension: true, memberName: "root" }],
       ]);
       const { container } = renderCMajor({
         chordTones: ["C#", "F", "G#"], chordRoot: "C#", noteSemantics: semantics,
       });
-      expect(container.querySelectorAll(".chord-root").length).toBeGreaterThan(0);
-      expect(container.querySelectorAll('.chord-root[data-note-tension="true"]').length).toBeGreaterThan(0);
+      // Outside the scale → no plain chord-root (squircle); renders as the
+      // chord-root-outside diamond instead.
+      expect(container.querySelectorAll(".chord-root").length).toBe(0);
+      const outside = container.querySelectorAll(".chord-root-outside");
+      expect(outside.length).toBeGreaterThan(0);
+      expect(outside[0]!.getAttribute("data-note-shape")).toBe("diamond");
+      expect(outside[0]!.querySelector("polygon")).not.toBeNull();
     });
 
     it("in-scale chord root does NOT get data-note-tension", () => {

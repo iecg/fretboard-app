@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { getEmphasis, classifyNote, classifyNoteFromSemantics, getNoteVisuals } from "./semantics";
 import type { LeadLensContext } from "./semantics";
 import type { NoteSemantics } from "@fretflow/core";
-import { RADIUS_SCALE_CHORD_TONE } from "@fretflow/core";
 
 describe("semantics utils", () => {
   describe("getEmphasis — tones-base fallback (no leadContext)", () => {
@@ -137,6 +136,41 @@ describe("semantics utils", () => {
       expect(res).toBe("chord-root");
     });
 
+    it("classifies an outside-key chord root as chord-root-outside", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: true,
+        isDiatonicChord: false,
+        isInScale: false,
+        isChordTone: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+      };
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-root-outside");
+    });
+
+    it("keeps an in-scale chord root as chord-root", () => {
+      const sem: NoteSemantics = {
+        isScaleRoot: false,
+        isChordRoot: true,
+        isDiatonicChord: false,
+        isInScale: true,
+        isChordTone: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+      };
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-root");
+    });
+
+    it("returns a chord-tier diamond for chord-root-outside", () => {
+      expect(getNoteVisuals("chord-root-outside")).toEqual({
+        radiusScale: 0.95,
+        noteShape: "diamond",
+      });
+    });
+
     it("falls through to chord-tone-in-scale when isDiatonicChord is false", () => {
       const sem: NoteSemantics = {
         isScaleRoot: false,
@@ -207,9 +241,9 @@ describe("semantics utils", () => {
       expect(res).toBe("chord-tone-in-scale");
     });
 
-    it("chord-root in-shape but out-of-voicing-range still returns chord-root", () => {
-      // Out-of-scale chord tone that is the chord root: must be classified as
-      // chord-root regardless of whether it falls within the voicing range.
+    it("chord-root in-shape but out-of-scale returns chord-root-outside", () => {
+      // Out-of-scale chord tone that is the chord root: classified as
+      // chord-root-outside (still home/amber, but chromatic → diamond).
       const sem: NoteSemantics = {
         isScaleRoot: false,
         isChordRoot: true,
@@ -226,7 +260,7 @@ describe("semantics utils", () => {
         /* hasChordOverlay */ true,
         /* isHighlighted */ true,
       );
-      expect(res).toBe("chord-root");
+      expect(res).toBe("chord-root-outside");
     });
 
     it("note-diatonic-chord in-shape but out-of-voicing-range still returns note-diatonic-chord", () => {
@@ -249,6 +283,21 @@ describe("semantics utils", () => {
         /* isHighlighted */ true,
       );
       expect(res).toBe("note-diatonic-chord");
+    });
+
+    it("classifies an in-shape chord tone not in the scale as chord-tone-outside-scale", () => {
+      const sem = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isDiatonicChord: false,
+        isInScale: false,
+        isChordTone: true,
+        isColorTone: false,
+        isGuideTone: false,
+        isTension: false,
+      } as NoteSemantics;
+      // signature: classifyNoteFromSemantics(sem, isInActiveShape, hasChordOverlay, isHighlighted)
+      expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-tone-outside-scale");
     });
 
     it("chord-tone-outside-scale in-shape but out-of-voicing-range still returns chord-tone-outside-scale", () => {
@@ -276,20 +325,28 @@ describe("semantics utils", () => {
   });
 
   describe("getNoteVisuals", () => {
-    it("returns squircle for chord tones", () => {
-      const res = getNoteVisuals("chord-tone-in-scale");
-      expect(res.noteShape).toBe("squircle");
+    it("returns squircle for diatonic chord tones (chord size)", () => {
+      expect(getNoteVisuals("chord-tone-in-scale")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
+      expect(getNoteVisuals("note-diatonic-chord")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
+      expect(getNoteVisuals("chord-root")).toEqual({ radiusScale: 0.95, noteShape: "squircle" });
     });
 
-    it("returns circle for active notes", () => {
-      const res = getNoteVisuals("note-active");
-      expect(res.noteShape).toBe("circle");
+    it("returns small circle for scale tones", () => {
+      expect(getNoteVisuals("scale-only")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
+      expect(getNoteVisuals("note-active")).toEqual({ radiusScale: 0.66, noteShape: "circle" });
     });
 
-    it("returns squircle + RADIUS_SCALE_CHORD_TONE for note-diatonic-chord", () => {
-      const res = getNoteVisuals("note-diatonic-chord");
-      expect(res.noteShape).toBe("squircle");
-      expect(res.radiusScale).toBe(RADIUS_SCALE_CHORD_TONE);
+    it("returns circle for diatonic color tones", () => {
+      expect(getNoteVisuals("color-tone")).toEqual({ radiusScale: 0.8, noteShape: "circle" });
+    });
+
+    it("returns DIAMOND for chromatic / outside-key notes", () => {
+      expect(getNoteVisuals("chord-tone-outside-scale").noteShape).toBe("diamond");
+      expect(getNoteVisuals("note-blue").noteShape).toBe("diamond");
+    });
+
+    it("returns circle for key tonic", () => {
+      expect(getNoteVisuals("key-tonic").noteShape).toBe("circle");
     });
   });
 });

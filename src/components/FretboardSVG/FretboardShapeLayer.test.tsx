@@ -41,7 +41,7 @@ describe("FretboardShapeLayer", () => {
     expect(rendered.length).toBe(2);
   });
 
-  it("sets fill and points attributes on each polygon", () => {
+  it("renders points and a single neutral region tint regardless of the per-shape color", () => {
     const polygons = [
       { key: "shape-C", points: "0,0 50,0 50,30 0,30", color: "#ff00ff" },
     ];
@@ -52,7 +52,8 @@ describe("FretboardShapeLayer", () => {
     );
     const poly = container.querySelector("polygon")!;
     expect(poly.getAttribute("points")).toBe("0,0 50,0 50,30 0,30");
-    expect(poly.getAttribute("fill")).toBe("#ff00ff");
+    // Active-shape shading uses one neutral tint, not the per-CAGED color.
+    expect(poly.getAttribute("fill")).toBe("var(--fb-region-tint)");
   });
 
   it("sets pointerEvents to none on rendered polygons", () => {

@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { RADIUS_SCALE_CHORD_TONE, RADIUS_SCALE_NOTE_ACTIVE } from "@fretflow/core";
 import { FretboardNote } from "./FretboardNote";
+import { getNoteVisuals } from "./utils/semantics";
 import {
   GLOW_RADIUS_SCALE_SQUIRCLE,
   reduceCircleRadius,
@@ -145,6 +145,41 @@ describe("FretboardNote — guide-target interval label", () => {
   });
 });
 
+describe("FretboardNote — full-chord mode no longer recolors by shape", () => {
+  it("does not recolor notes by CAGED shape in full-chord mode", () => {
+    const { container } = renderNote(
+      makeNote({ noteClass: "chord-tone-in-scale", fullChordShape: "E" }),
+    );
+    const g = container.querySelector("g[data-note-shape]") as SVGGElement;
+    expect((g.style as CSSStyleDeclaration).getPropertyValue("--shape-fill")).toBe("");
+  });
+});
+
+describe("FretboardNote — chromatic diamond rendering", () => {
+  it("renders a chord-tone-outside-scale note as a diamond <polygon>", () => {
+    const { container } = renderNote(makeNote({ noteClass: "chord-tone-outside-scale" }));
+    const g = container.querySelector("g[data-note-shape]");
+    expect(g).not.toBeNull();
+    expect(g?.getAttribute("data-note-shape")).toBe("diamond");
+    expect(g?.querySelector("polygon")).not.toBeNull();
+  });
+
+  it("renders a note-blue note as a diamond <polygon>", () => {
+    const { container } = renderNote(makeNote({ noteClass: "note-blue" }));
+    const g = container.querySelector("g[data-note-shape]");
+    expect(g?.getAttribute("data-note-shape")).toBe("diamond");
+    expect(g?.querySelector("polygon")).not.toBeNull();
+  });
+
+  it("renders a chord-root-outside note as a diamond <polygon>", () => {
+    const { container } = renderNote(makeNote({ noteClass: "chord-root-outside" }));
+    const g = container.querySelector("g[data-note-shape]");
+    expect(g).not.toBeNull();
+    expect(g?.getAttribute("data-note-shape")).toBe("diamond");
+    expect(g?.querySelector("polygon")).not.toBeNull();
+  });
+});
+
 describe("FretboardNote — glow underlay sizing", () => {
   // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
   const BASE_RADIUS = 20;
@@ -152,7 +187,7 @@ describe("FretboardNote — glow underlay sizing", () => {
   it("enlarges the underlay for squircle notes so the halo clears the filled shape", () => {
     const { container } = renderNote(makeNote({ noteClass: "chord-tone-in-scale" }));
     const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
-    const shapeR = reduceSquircleRadius(BASE_RADIUS * RADIUS_SCALE_CHORD_TONE);
+    const shapeR = reduceSquircleRadius(BASE_RADIUS * getNoteVisuals("chord-tone-in-scale").radiusScale);
     expect(underlayR).toBeGreaterThan(shapeR);
     expect(underlayR).toBeCloseTo(shapeR * GLOW_RADIUS_SCALE_SQUIRCLE, 5);
   });
@@ -160,7 +195,7 @@ describe("FretboardNote — glow underlay sizing", () => {
   it("keeps the underlay at the shape radius for circle notes", () => {
     const { container } = renderNote(makeNote({ noteClass: "note-active" }));
     const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
-    const shapeR = reduceCircleRadius(BASE_RADIUS * RADIUS_SCALE_NOTE_ACTIVE);
+    const shapeR = reduceCircleRadius(BASE_RADIUS * getNoteVisuals("note-active").radiusScale);
     expect(underlayR).toBeCloseTo(shapeR, 5);
   });
 });

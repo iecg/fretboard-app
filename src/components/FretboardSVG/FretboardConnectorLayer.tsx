@@ -24,6 +24,19 @@ interface FretboardConnectorLayerProps {
   playbackActive?: boolean;
 }
 
+const renderChordLayers = (
+  chordPolylines: ChordConnectorVoicing[],
+  pass: "below" | "above",
+) => (
+  <>
+    {/* Line-only connector: a halo underlay (legibility over wood) + the accent
+        center line, both drawn BELOW the notes so the markers occlude them. No
+        soft band fill — it muddied over the wood texture. */}
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
+    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "spine"))}
+  </>
+);
+
 const renderStaticChordConnectorGroup = (
   chordPolylines: ChordConnectorVoicing[],
   connectorSource: "full-chord" | "generated",
@@ -39,9 +52,7 @@ const renderStaticChordConnectorGroup = (
     aria-hidden="true"
     pointerEvents="none"
   >
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill"))}
-    {pass === "above" && chordPolylines.map((v) => renderChordPath(v, "outline"))}
+    {renderChordLayers(chordPolylines, pass)}
   </g>
 );
 
@@ -66,20 +77,15 @@ const renderAnimatedChordConnectorGroup = (
     aria-hidden="true"
     pointerEvents="none"
   >
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "fill"))}
-    {pass === "above" && chordPolylines.map((v) => renderChordPath(v, "outline"))}
+    {renderChordLayers(chordPolylines, pass)}
   </motion.g>
 );
 
-const renderChordPath = (
-  v: ChordConnectorVoicing,
-  layer: "halo" | "fill" | "outline",
-) => (
+const renderChordPath = (v: ChordConnectorVoicing, layer: "halo" | "spine") => (
   <path
     key={`${layer}-${v.voicingKey}`}
     className={layer === "halo" ? undefined : styles["chord-connector-path"]}
-    d={layer === "fill" ? v.paths.fill : v.paths.outline}
+    d={v.spinePath}
     data-layer={layer}
     data-caged-shape={v.shape}
     data-palette-index={v.paletteIndex + 1}

@@ -57,6 +57,11 @@ export interface ChordConnectorVoicing {
    * For collinear voicings: both are inflatedCapsulePath strings (contain arc `A` commands).
    */
   paths: { fill: string; outline: string };
+  /**
+   * Solid center line through the voicing notes in string order — the ribbon
+   * connector's spine, drawn under the note markers.
+   */
+  spinePath: string;
   /** Original chord-tone pixel positions in string-index order. */
   vertices: ChordConnectorVertex[];
   /**
@@ -71,7 +76,7 @@ export interface ChordConnectorVoicing {
    * renders.
    */
   voicingKey: string;
-  /** Close-voicing fallback flag — drives the dashed stroke in the connector layer. */
+  /** Close-voicing fallback flag — marks a close-voicing substitute (rendered at full ribbon strength, same as full voicings). */
   isFallback?: boolean;
 }
 
@@ -369,6 +374,7 @@ export const CHORD_TONE_CLASSES = new Set([
   "chord-tone-in-scale",
   "note-diatonic-chord",
   "chord-root",
+  "chord-root-outside",
   "key-tonic",
 ]);
 
@@ -702,10 +708,18 @@ function finalizeChordConnectorPolylines(
   );
 
   return pendingVoicings.map((pv, idx) => {
-    const pathStr = offsetOpenPolylinePath(pv.rawVertices, radii[idx]!);
+    const r = radii[idx]!;
+    const pathStr = offsetOpenPolylinePath(pv.rawVertices, r);
     const paths = { fill: pathStr, outline: pathStr };
+    // Ribbon spine: solid center line through the voicing notes in string order.
+    const spinePath = pv.rawVertices.length === 0
+      ? ""
+      : "M " + pv.rawVertices
+          .map((v) => `${Math.round(v.x * 100) / 100} ${Math.round(v.y * 100) / 100}`)
+          .join(" L ");
     return {
       paths,
+      spinePath,
       vertices: pv.rawVertices,
       paletteIndex: pv.paletteIndex,
       shape: pv.shape,
