@@ -1,4 +1,4 @@
-import { NOTES, CHORD_DEFINITIONS } from "../theory";
+import { NOTES, CHORD_DEFINITIONS, type ChordMemberName } from "../theory";
 import { parseNote } from "../guitar";
 import type { CagedShape } from "./templates";
 import { getFullChordShapeMatches } from "./fullChordShapes";
@@ -210,6 +210,19 @@ function fullVoicings(params: GenerateVoicingsParams): Voicing[] {
  */
 export const CLOSE_VOICING_SPAN_LIMIT = 3;
 
+/**
+ * Member tones dropped before close-voicing generation, to reduce 6-note
+ * extended chords to a playable grip. Tonal already omits the 11th on 13th
+ * chords; dropping the 5th brings them to the standard 5-note jazz voicing
+ * (root, 3/b3, b7/7, 9, 13). This is the extension hook that deferred
+ * altered-dominant voicings will reuse — keyed by CHORD_DEFINITIONS key.
+ */
+export const VOICING_OMISSIONS: Record<string, ChordMemberName[]> = {
+  "13": ["5"],
+  maj13: ["5"],
+  m13: ["5"],
+};
+
 function getPermutations<T>(arr: T[]): T[][] {
   if (arr.length <= 1) return [arr];
   const result: T[][] = [];
@@ -237,10 +250,13 @@ function closeVoicings(params: GenerateVoicingsParams): Voicing[] {
   const rootIndex = NOTES.indexOf(chordRoot);
   if (!def || rootIndex < 0 || tuning.length !== 6) return [];
 
-  const voiceCount = def.members.length;
+  const omit = VOICING_OMISSIONS[chordType] ?? [];
+  const members = def.members.filter((m) => !omit.includes(m.name));
+
+  const voiceCount = members.length;
   if (voiceCount < 2 || voiceCount > 5) return [];
 
-  const chordPCs = def.members.map((m) => (rootIndex + m.semitone) % 12);
+  const chordPCs = members.map((m) => (rootIndex + m.semitone) % 12);
   const openMidis = tuning.map(openStringMidi);
   if (openMidis.some((m) => m === null)) return [];
 
