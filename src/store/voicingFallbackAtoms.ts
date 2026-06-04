@@ -43,6 +43,8 @@ import type { BoxBound } from "../components/FretboardSVG/utils/semantics";
 import {
   selectCloseFallbacksForCagedPosition,
   selectCloseFallbacksForThreeNpsPosition,
+  hasCloseFallbackForCagedPosition,
+  hasCloseFallbackForThreeNpsPosition,
   scoreFullChordForCagedPosition,
   scoreFullChordForThreeNpsPosition,
 } from "../hooks/voicingSelection";
@@ -120,8 +122,7 @@ export const fallbackPolygonsAtom = atom((get): readonly ShapePolygon[] => {
     if (hasFull) continue;
     // Only register as "needing" if some close voicing can actually fill it —
     // otherwise the picker would surface a position the user can't recover.
-    const anyCloseFits =
-      selectCloseFallbacksForCagedPosition(allCloses, polygon).length > 0;
+    const anyCloseFits = hasCloseFallbackForCagedPosition(allCloses, polygon);
     if (anyCloseFits) needing.push(polygon);
   }
   return needing.length === 0 ? EMPTY_POLYGONS : needing;
@@ -146,11 +147,10 @@ export const fallback3NpsBoxBoundsAtom = atom((get): BoxBound[] | null => {
   if (hasFull) return null;
   // Same recoverability constraint as the CAGED path: only surface the
   // picker when at least one close voicing can actually fill the box.
-  const anyCloseFits =
-    selectCloseFallbacksForThreeNpsPosition(
-      get(closeCandidatesAllStringSetsAtom),
-      patternPositions,
-    ).length > 0;
+  const anyCloseFits = hasCloseFallbackForThreeNpsPosition(
+    get(closeCandidatesAllStringSetsAtom),
+    patternPositions,
+  );
   return anyCloseFits ? boxBounds : null;
 });
 

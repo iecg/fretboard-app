@@ -177,6 +177,13 @@ export function selectFullChordMatchesForThreeNpsPosition(
   return Array.from(byPosition.values()).map((s) => s.match);
 }
 
+/** Whether every note of `match` lands on a key in the 3NPS diagonal pattern. */
+function fitsThreeNpsPattern(match: Voicing, patternPositions: Set<string>): boolean {
+  return match.notes.every((note) =>
+    patternPositions.has(`${note.stringIndex}-${note.fretIndex}`),
+  );
+}
+
 /**
  * 3NPS analogue of selectCloseFallbacksForCagedPosition. Requires every note
  * in the voicing to be present in the diagonal pattern's position-key set.
@@ -189,12 +196,21 @@ export function selectCloseFallbacksForThreeNpsPosition(
   const fitted =
     patternPositions.size === 0
       ? closeMatches
-      : closeMatches.filter((match) =>
-          match.notes.every((note) =>
-            patternPositions.has(`${note.stringIndex}-${note.fretIndex}`),
-          ),
-        );
+      : closeMatches.filter((match) => fitsThreeNpsPattern(match, patternPositions));
   return [...fitted].sort(compareCloseVoicings);
+}
+
+/**
+ * Existence-only counterpart to {@link selectCloseFallbacksForThreeNpsPosition}.
+ * Skips the ranking sort — used by `fallback3NpsBoxBoundsAtom` to decide whether
+ * a position needs a fallback at all, where the sorted order would be discarded.
+ */
+export function hasCloseFallbackForThreeNpsPosition(
+  closeMatches: Voicing[],
+  patternPositions: Set<string>,
+): boolean {
+  if (patternPositions.size === 0) return closeMatches.length > 0;
+  return closeMatches.some((match) => fitsThreeNpsPattern(match, patternPositions));
 }
 
 /**
@@ -213,6 +229,23 @@ export function selectCloseFallbacksForCagedPosition(
   polygon: ShapePolygon,
 ): Voicing[] {
   return closeMatches
-    .filter((match) => match.notes.every((note) => distanceOutsidePolygon(polygon, note) === 0))
+    .filter((match) => fitsCagedPolygon(match, polygon))
     .sort(compareCloseVoicings);
+}
+
+/** Whether every note of `match` falls within the polygon's per-string bounds. */
+function fitsCagedPolygon(match: Voicing, polygon: ShapePolygon): boolean {
+  return match.notes.every((note) => distanceOutsidePolygon(polygon, note) === 0);
+}
+
+/**
+ * Existence-only counterpart to {@link selectCloseFallbacksForCagedPosition}.
+ * Skips the ranking sort — used by `fallbackPolygonsAtom` to decide whether a
+ * polygon needs a fallback at all, where the sorted order would be discarded.
+ */
+export function hasCloseFallbackForCagedPosition(
+  closeMatches: Voicing[],
+  polygon: ShapePolygon,
+): boolean {
+  return closeMatches.some((match) => fitsCagedPolygon(match, polygon));
 }

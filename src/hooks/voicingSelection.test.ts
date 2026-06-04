@@ -3,6 +3,8 @@ import type { Voicing, ShapePolygon } from "@fretflow/core";
 import {
   selectCloseFallbacksForCagedPosition,
   selectCloseFallbacksForThreeNpsPosition,
+  hasCloseFallbackForCagedPosition,
+  hasCloseFallbackForThreeNpsPosition,
 } from "./voicingSelection";
 
 describe("selectCloseFallbacksForCagedPosition", () => {
@@ -132,5 +134,30 @@ describe("selectCloseFallbacksForThreeNpsPosition", () => {
   it("returns empty when no candidate fits the pattern", () => {
     const result = selectCloseFallbacksForThreeNpsPosition([outside], patternPositions);
     expect(result).toEqual([]);
+  });
+});
+
+describe("hasCloseFallback existence helpers", () => {
+  it("hasCloseFallbackForCagedPosition is true iff a candidate fits the polygon", () => {
+    const box = boxPolygon(0, 3);
+    const fits = vc([[0, 1], [1, 2], [2, 2]]);
+    const outside = vc([[0, 1], [1, 5], [2, 2]]); // fret 5 > 3
+    expect(hasCloseFallbackForCagedPosition([fits, outside], box)).toBe(true);
+    expect(hasCloseFallbackForCagedPosition([outside], box)).toBe(false);
+    expect(hasCloseFallbackForCagedPosition([], box)).toBe(false);
+  });
+
+  it("hasCloseFallbackForThreeNpsPosition is true iff a candidate fits the pattern", () => {
+    const patternPositions = new Set<string>(["0-5", "1-6", "2-7"]);
+    const fits = vc([[1, 6], [2, 7]]);
+    const outside = vc([[1, 9], [2, 7]]);
+    expect(hasCloseFallbackForThreeNpsPosition([fits, outside], patternPositions)).toBe(true);
+    expect(hasCloseFallbackForThreeNpsPosition([outside], patternPositions)).toBe(false);
+  });
+
+  it("hasCloseFallbackForThreeNpsPosition mirrors the size-0 passthrough (any candidate counts)", () => {
+    const empty = new Set<string>();
+    expect(hasCloseFallbackForThreeNpsPosition([vc([[0, 3]])], empty)).toBe(true);
+    expect(hasCloseFallbackForThreeNpsPosition([], empty)).toBe(false);
   });
 });
