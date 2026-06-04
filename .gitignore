@@ -45,8 +45,11 @@ src/__snapshots__/
 # === Generated Files ===
 scripts/gif-capture/frames/
 # Ignore docs/ contents, but keep superpowers specs/plans tracked so they aren't lost.
+# docs/design/ is also tracked: durable design references that must SURVIVE the
+# periodic pruning of ephemeral specs/plans under docs/superpowers/.
 docs/*
 !docs/superpowers/
+!docs/design/
 
 .superpowers/
 .pnpm-store/
