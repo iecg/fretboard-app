@@ -332,8 +332,8 @@ describe("useNoteData", () => {
     expect(blueNote?.degreeColor).toBe("#0047ff");
   });
 
-  describe("useNoteData — full-voicing classifies vertices as in-scale chord tones", () => {
-    it("classifies a fullChordPositionKeys member as chord-tone-in-scale even when chordToneSet excludes it", () => {
+  describe("useNoteData — full-voicing preserves insideness classification", () => {
+    it("classifies an outside-scale full-voicing vertex as chord-tone-outside-scale", () => {
       const layoutRow = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E"];
       const { result } = renderHook(() =>
         useNoteData({
@@ -344,10 +344,12 @@ describe("useNoteData", () => {
           maxFret: 13,
           highlightNotes: ["C", "E", "G"],
           hasChordOverlay: true,
-          // Intentionally omit "Bb" / "A#" from chordTones to simulate a stale
-          // chord-tones snapshot for a half-dim voicing whose b5 is part of
-          // the rendered voicing but not yet in the overlay's tone list.
-          chordTones: ["C", "E", "G"],
+          // A# is a genuine chord tone (e.g. the b7 of a C7 voicing) but is
+          // outside the C major scale. Marker shape encodes insideness only,
+          // so the voicing vertex must classify as chord-tone-outside-scale
+          // (diamond) — the legacy override that forced voicing vertices to
+          // chord-tone-in-scale has been removed.
+          chordTones: ["C", "E", "G", "A#"],
           rootNote: "C",
           chordRoot: "C",
           colorNotes: [],
@@ -361,7 +363,7 @@ describe("useNoteData", () => {
           preferFlats: false,
           wrappedNotes: new Set<string>(),
           tuning: ["E"],
-          // A# (string 0, fret 6) — NOT in chordTones, but IS in the voicing.
+          // A# (string 0, fret 6) — an outside-scale chord tone in the voicing.
           fullChordPositionKeys: new Set(["0-6"]),
           fullChordShapeByPosition: new Map([["0-6", "E"]]),
         })
@@ -371,7 +373,7 @@ describe("useNoteData", () => {
         (n) => n.stringIndex === 0 && n.fretIndex === 6,
       );
       expect(voicingVertex).toBeDefined();
-      expect(voicingVertex!.noteClass).toBe("chord-tone-in-scale");
+      expect(voicingVertex!.noteClass).toBe("chord-tone-outside-scale");
     });
   });
 

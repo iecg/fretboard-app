@@ -242,14 +242,7 @@ export function buildStaticFretboardTopology({
               isInActiveShape,
             );
 
-      const isVoicingVertex =
-        hasFullChordPositionFilter && fullChordPositionKeys.has(positionKey);
-      const finalNoteClass =
-        isVoicingVertex &&
-        noteClass !== "chord-root" &&
-        noteClass !== "chord-root-outside"
-          ? "chord-tone-in-scale"
-          : noteClass;
+      const finalNoteClass = noteClass;
 
       if (isNoteHidden) continue;
 

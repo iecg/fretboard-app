@@ -259,6 +259,40 @@ describe("FretboardSVG/FretboardSVG", () => {
     expect(rootG.style.getPropertyValue("--shape-fill")).toBe("");
   });
 
+  it("outside-scale chord tone renders a diamond even in full-voicing mode", () => {
+    // C major scale (no A#). A Cm7b... -style voicing that includes A# as a
+    // matched full-chord vertex. The legacy override used to force every
+    // non-root voicing vertex to chord-tone-in-scale (circle); A# must now
+    // classify as chord-tone-outside-scale (diamond).
+    const semantics = sem([
+      ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root", isFullChordMode: true }],
+      ["E", { isChordTone: true, isInScale: true, memberName: "3", isFullChordMode: true }],
+      ["A#", { isChordTone: true, isInScale: false, isTension: true, memberName: "b7", isFullChordMode: true }],
+    ]);
+    // A#=string0/fret6, E=string1/fret5, C=string2/fret5.
+    const fullChordPositionKeys = new Set(["0-6", "1-5", "2-5"]);
+    const voicing = {
+      shape: "C" as CagedShape,
+      voicingKey: "c-dom7-fragment",
+      notes: [
+        { stringIndex: 0, fretIndex: 6, noteName: "A#" },
+        { stringIndex: 1, fretIndex: 5, noteName: "E" },
+        { stringIndex: 2, fretIndex: 5, noteName: "C" },
+      ],
+    };
+
+    const { container } = renderCMajor({
+      chordTones: ["C", "E", "G", "A#"],
+      noteSemantics: semantics,
+      fullChordPositionKeys,
+      fullChordVoicings: [voicing],
+    });
+
+    expect(
+      container.querySelectorAll('.chord-tone-outside-scale[data-note-shape="diamond"]').length,
+    ).toBeGreaterThan(0);
+  });
+
   it("hides chord connectors when showChordConnectors is false", () => {
     const { container } = renderCMajor({
       fullChordVoicings: [E_SHAPE_C_MAJOR_VOICING],
