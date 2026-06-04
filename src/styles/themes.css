@@ -296,7 +296,6 @@
   --fretboard-note-fill-chord-tone:     color-mix(in srgb, #147088 18%, #f6f2e9); /* CYAN 18% into PANEL */
   --fretboard-note-fill-scale-only:     #e3ddd8;                                   /* PANEL-SOFT — neutral */
   --fretboard-note-fill-chord-outside:  color-mix(in srgb, #b1431b 40%, #f6f2e9); /* ORANGE 40% into PANEL */
-  --fretboard-note-fill-tension-emph:   color-mix(in srgb, #b1431b 55%, #f6f2e9); /* ORANGE 55% into PANEL */
   --fretboard-note-fill-tension-strong: color-mix(in srgb, #b1431b 70%, #f6f2e9); /* ORANGE 70% into PANEL */
   --fretboard-note-fill-guide-emph:     color-mix(in srgb, #147088 35%, #f6f2e9); /* CYAN 35% into PANEL */
   --fretboard-note-fill-deemphasis-chord:  var(--fretboard-guide-tones-deemphasis-fill);
