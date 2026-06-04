@@ -131,11 +131,13 @@
   stroke-width: 1.7;
 }
 
-/* Light-mode chord-tone-in-scale and note-diatonic-chord label override.
-   These roles use the neutral fill (--fb-neutral-fill).
+/* Light-mode neutral-filled marker label override.
+   These roles use the neutral fill (--fb-neutral-fill) — including the
+   no-overlay scale tone (.note-active), which is filled like the others.
    INK text + very faint halo stroke for legibility on the slightly-saturated fill. */
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
-:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text {
+:global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text,
+:global([data-theme="modern-light"]) .fretboard-note.note-active text {
   stroke: var(--note-label-on-color-stroke);
   fill: var(--note-label-on-color);
 }
