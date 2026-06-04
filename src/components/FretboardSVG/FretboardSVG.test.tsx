@@ -385,8 +385,10 @@ describe("FretboardSVG/FretboardSVG", () => {
         props: { ...SCALE_CEG },
       },
       {
-        role: "color-tone",
-        shape: "circle",
+        // Color note inside the active shape under a chord overlay → blue
+        // diamond (prop-path classifier now matches the semantics path).
+        role: "note-blue",
+        shape: "diamond",
         props: { ...DORIAN, chordTones: ["D", "F", "A"], chordRoot: "D" },
       },
       {
@@ -624,6 +626,9 @@ describe("FretboardSVG/FretboardSVG", () => {
         shapePolygons: [cShapeSmall], activePattern: "caged", activeShape: "E", shapeScope: "single", chordBoxBounds: [],
       });
       expect(container.querySelectorAll(".chord-root").length).toBe(0);
+      // A leak could also surface as the chromatic diamond variant; assert both
+      // root roles are absent so the "note-inactive" intent is fully enforced.
+      expect(container.querySelectorAll(".chord-root-outside").length).toBe(0);
     });
 
     it("in-scale chord tone outside active shape is suppressed (not scale-only)", () => {

@@ -126,7 +126,10 @@ export function classifyNote(
 
   if (isChordRootNote && isChordTone && isInActiveShape) return "chord-root";
   if (isHighlighted && isChordTone && isInActiveShape) return "chord-tone-in-scale";
-  if (isHighlighted && isColorNote && isInActiveShape) return "color-tone";
+  // Chromatic-to-key color note inside the active shape → blue diamond, matching
+  // classifyNoteFromSemantics (the production path). Keeps both classifiers in
+  // lockstep so identical note states never diverge by render path.
+  if (isHighlighted && isColorNote && isInActiveShape) return "note-blue";
   if (isHighlighted && isInActiveShape) return "scale-only";
   if (!isHighlighted && isChordTone && isInActiveShape)
     return "chord-tone-outside-scale";
