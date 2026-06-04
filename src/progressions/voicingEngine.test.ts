@@ -47,7 +47,7 @@ function absOf(note: string): number {
 }
 
 describe("buildVoicing — invariants (all qualities x several roots)", () => {
-  const roots = ["C", "G", "A#", "F", "B"];
+  const roots = NOTES.slice(); // all 12 chromatic roots
   const qualities = Object.keys(CHORD_DEFINITIONS);
 
   const COLOR = new Set(["6", "9", "13"]);

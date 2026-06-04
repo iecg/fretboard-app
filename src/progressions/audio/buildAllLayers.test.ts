@@ -7,7 +7,8 @@ import {
   STAB_STRUM_DURATION_SEC,
   ROOT_STRUM_DURATION_SEC,
 } from "./buildAllLayers";
-import { buildFunkColorVoicing, resolveChordVoicing } from "../progressionAudio";
+import { buildFunkColorVoicing } from "../progressionAudio";
+import { buildVoicing, STRUM_PRESET } from "../voicingEngine";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
@@ -200,8 +201,10 @@ describe("buildAllLayers", () => {
     expect(new Set(at(1).value.voicing.map((n) => n.replace(/-?\d+$/, "")))).toEqual(
       new Set(["C", "E", "G"]),
     );
-    // color-stab uses the voice-led rootless funk grip, voice-led to the bar's triad.
-    expect(at(2.5).value.voicing).toEqual(buildFunkColorVoicing("C", "M", ["C3", "E3", "G3"]));
+    // color-stab uses the rootless funk grip. "M" has a defined FUNK_COLOR_TONES
+    // grip, so buildFunkColorVoicing ignores the threaded seed — the stab is the
+    // same regardless of the previous voicing.
+    expect(at(2.5).value.voicing).toEqual(buildFunkColorVoicing("C", "M"));
   });
 
   it("maps funk durations: root short, stab/color ring, ghost chokes", async () => {
@@ -232,14 +235,35 @@ describe("buildAllLayers", () => {
     });
     // Bar 2 starts at time 4; its color-stab on the "&" of 3 is at time 6.5.
     const bar2Color = out.chordStrums.find((s) => s.time === 6.5)!;
-    // Bar 2's lastVoicing = F major voice-led to the C triad; the grip voice-leads
-    // to that. resolveChordVoicing and the engine's buildVoicing return the same
-    // result for this input, so it models the threaded lastVoicing faithfully.
-    const fVoicing = resolveChordVoicing("F", "M", undefined, ["C3", "E3", "G3"]);
-    expect(bar2Color.value.voicing).toEqual(buildFunkColorVoicing("F", "M", fVoicing));
+    // "F" "M" has a defined funk grip, so buildFunkColorVoicing ignores the
+    // threaded seed — the color stab is identical regardless of the previous
+    // voicing. (The grip-less threaded path is covered separately below.)
+    expect(bar2Color.value.voicing).toEqual(buildFunkColorVoicing("F", "M"));
     // Rootless: the grip never contains the chord root pitch class.
     const pcs = new Set(bar2Color.value.voicing.map((n) => n.replace(/-?\d+$/, "")));
     expect(pcs.has("F")).toBe(false);
+  });
+
+  it("funk color-stab for a grip-less quality voice-leads against the engine's threaded voicing", async () => {
+    // "6" has no FUNK_COLOR_TONES grip, so buildFunkColorVoicing falls back to a
+    // voice-led grip seeded by `lastVoicing` — which is now the strum engine's
+    // output. This locks that threaded path (the seed source changed from the old
+    // root-stacked voicing to buildVoicing).
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "funk-scratch",
+      steps: [
+        step({ root: "C", quality: "M", duration: { value: 1, unit: "bar" } }),
+        step({ id: "b", index: 1, root: "A", quality: "6", duration: { value: 1, unit: "bar" } }),
+      ],
+    });
+    // Bar 2 (A6) starts at t=4; its color-stab on the "&" of 3 is at t=6.5.
+    const a6Color = out.chordStrums.find((s) => s.time === 6.5)!;
+    // The threaded seed is the A6 step's own engine voicing, voice-led from the C step.
+    const vC = buildVoicing("C", "M", undefined, STRUM_PRESET);
+    const vA6 = buildVoicing("A", "6", vC, STRUM_PRESET);
+    expect(a6Color.value.voicing).toEqual(buildFunkColorVoicing("A", "6", vA6));
+    expect(a6Color.value.voicing.length).toBeGreaterThan(0);
   });
 
   describe("chord strum durationSec emission", () => {
