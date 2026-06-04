@@ -100,6 +100,16 @@ it("has a distinct blue-note color for blues-scale color tones", () => {
 });
 ```
 
+Finally, the pre-existing `it("keeps dominant and leading-tone colors strongly separated", …)` test asserts `oklabDistance(V, VII) >= 0.3`. That bound was calibrated to the OLD palette (V=purple vs VII=pink). Under the Hooktheory reassignment V=blue (`#377eb8`) and VII=pink (`#f781bf`), whose distance is `0.279` — still well above the `0.14` general-separation bar (visually unambiguous blue vs pink), but below `0.3`. Lower the threshold and update the comment:
+
+```ts
+it("keeps dominant and leading-tone colors strongly separated", () => {
+  // Under the Hooktheory palette, V=blue and VII=pink (was purple vs pink).
+  // 0.279 is still strongly separated — well above the 0.14 general bar.
+  expect(oklabDistance(DEGREE_COLORS["V"], DEGREE_COLORS["VII"])).toBeGreaterThanOrEqual(0.25);
+});
+```
+
 - [ ] **Step 2: Run the tests to confirm they fail**
 
 Run: `pnpm --filter @fretflow/core exec vitest run src/degrees.test.ts -t "DEGREE_COLORS"`
@@ -112,9 +122,10 @@ Replace lines `98-131` of `packages/core/src/degrees.ts` (the `BLUE_NOTE_COLOR` 
 ```ts
 // Slate — chromatic/blue-note degrees. A deliberate low-chroma non-hue so it
 // can't be mistaken for any of the seven degree hues (esp. degree-5 blue); the
-// diamond shape carries the "chromatic" meaning. See
-// docs/design/fretboard-visual-language.md §A.
-export const BLUE_NOTE_COLOR = "#6b7884";
+// diamond shape carries the "chromatic" meaning. Darkened so it clears the
+// 0.14 OKLab separation bar vs degree-5 blue (#377eb8 → 0.159) and improves
+// white-label contrast. See docs/design/fretboard-visual-language.md §A.
+export const BLUE_NOTE_COLOR = "#4d5560";
 
 // Hooktheory/Hookpad scale-degree palette, mapped BY DEGREE NUMBER (all quality
 // variants share their number's hue): 1=red, 2=orange, 3=yellow, 4=green,
