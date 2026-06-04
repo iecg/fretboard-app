@@ -6,6 +6,8 @@ import {
   compareCloseVoicings,
   CLOSE_VOICING_SCORE_WEIGHTS,
   HIGH_NECK_THRESHOLD,
+  selectNeckSpread,
+  NECK_SPREAD_OVERLAP_TOLERANCE,
   type VoicingType,
   type Voicing,
 } from "./voicings";
@@ -300,6 +302,30 @@ describe("compareCloseVoicings tie-break", () => {
     const highStrings = vc([[3, 2], [4, 3], [5, 3]]); // identical frets, higher strings
     expect(scoreCloseVoicing(lowStrings)).toBe(scoreCloseVoicing(highStrings));
     expect(compareCloseVoicings(lowStrings, highStrings)).toBeLessThan(0);
+  });
+});
+
+describe("selectNeckSpread", () => {
+  it("exposes the overlap tolerance constant", () => {
+    expect(NECK_SPREAD_OVERLAP_TOLERANCE).toBe(1);
+  });
+
+  it("collapses a within-tolerance cluster to a single grip", () => {
+    const a = vc([[0, 1], [1, 2], [2, 2]]); // fretted window [1,2]
+    const b = vc([[0, 2], [1, 3], [2, 3]]); // fretted window [2,3] — touches a
+    expect(selectNeckSpread([a, b]).length).toBe(1);
+  });
+
+  it("keeps grips separated by more than the tolerance", () => {
+    const low = vc([[0, 1], [1, 2], [2, 2]]); // [1,2]
+    const high = vc([[3, 9], [4, 10], [5, 10]]); // [9,10]
+    expect(selectNeckSpread([low, high]).length).toBe(2);
+  });
+
+  it("orders the spread best-first", () => {
+    const wideHigh = vc([[0, 10], [1, 14], [2, 12]]);
+    const compactLow = vc([[3, 1], [4, 2], [5, 2]]);
+    expect(selectNeckSpread([wideHigh, compactLow])[0]).toBe(compactLow);
   });
 });
 

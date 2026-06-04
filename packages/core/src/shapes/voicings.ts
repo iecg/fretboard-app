@@ -92,6 +92,41 @@ export function compareCloseVoicings(a: Voicing, b: Voicing): number {
   return lowA - lowB;
 }
 
+/**
+ * Max fret gap below which two grips are considered to share neck space.
+ * Grips whose fretted-fret windows are within this many frets of each other
+ * collapse to the single best-scored grip, so the neck spread never draws
+ * overlapping/crossing connectors.
+ */
+export const NECK_SPREAD_OVERLAP_TOLERANCE = 1;
+
+/**
+ * Position-less grip selection for Full mode when no scale pattern is active.
+ * Ranks candidates best-first, then greedily accepts a grip only if its
+ * fretted-fret window does not overlap an already-accepted grip's window
+ * (within NECK_SPREAD_OVERLAP_TOLERANCE). Yields a clean, non-overlapping
+ * spread of best grips up the neck — mirroring how Full mode already spreads
+ * multiple CAGED shapes across the neck in Scale None.
+ */
+export function selectNeckSpread(candidates: Voicing[]): Voicing[] {
+  const ranked = [...candidates].sort(compareCloseVoicings);
+  const accepted: Voicing[] = [];
+  const windows: Array<{ lo: number; hi: number }> = [];
+
+  for (const v of ranked) {
+    const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
+    const lo = fretted.length > 0 ? Math.min(...fretted) : 0;
+    const hi = fretted.length > 0 ? Math.max(...fretted) : 0;
+    const overlaps = windows.some(
+      (w) => lo <= w.hi + NECK_SPREAD_OVERLAP_TOLERANCE && hi >= w.lo - NECK_SPREAD_OVERLAP_TOLERANCE,
+    );
+    if (overlaps) continue;
+    accepted.push(v);
+    windows.push({ lo, hi });
+  }
+  return accepted;
+}
+
 export function openStringMidi(openString: string): number | null {
   const parsed = parseNote(openString);
   if (!parsed) return null;
