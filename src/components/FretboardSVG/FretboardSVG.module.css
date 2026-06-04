@@ -299,6 +299,27 @@
   stroke: rgb(0 0 0 / 0.4);
 }
 
+/* Light-mode degree lens: the global heavy 3.6 "definition on wood" outline
+   reads as too thick over the colored degree fills. Thin it back to the
+   dark-mode role weight and restore full radius (the -0.4px compensation only
+   existed to offset the heavy stroke), so light matches dark in this mode.
+   Scoped to degree mode only — the default board keeps its 3.6 treatment.
+   Root (key-tonic) is excluded here; it gets its own rule below. */
+:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree]:not(.scale-only):not(.color-tone):not(.note-inactive):not(.key-tonic) :is(circle, path, polygon) {
+  stroke-width: 1.7;
+}
+:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree]:not(.scale-only):not(.color-tone):not(.note-inactive) circle {
+  r: calc(var(--note-r) * 1px);
+}
+
+/* Light-mode degree-lens root: the degree-1 red fill swallows the dark rust
+   home ring (--fb-home-stroke). Use the vivid dark-theme home orange so the
+   root still reads as "home", kept slightly heavier than the other markers. */
+:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note.key-tonic[data-scale-degree] :is(circle, path, polygon) {
+  stroke: oklch(0.7775 0.1512 55.4);
+  stroke-width: 2.4;
+}
+
 /* Accessibility layer */
 .fretboard-a11y-layer {
   /* Positioned via inline styles in TSX */
