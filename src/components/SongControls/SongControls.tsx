@@ -134,6 +134,7 @@ export function SongControls() {
       sus: t("controls.qualityGroupSus"),
       sixths: t("controls.qualityGroupSixths"),
       sevenths: t("controls.qualityGroupSevenths"),
+      extensions: t("controls.qualityGroupExtensions"),
     },
   );
   // When the quality lock is engaged, the root dropdown previews the *locked*

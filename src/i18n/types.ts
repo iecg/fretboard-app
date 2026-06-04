@@ -172,6 +172,7 @@ export interface Dictionary {
     qualityGroupSus: string;
     qualityGroupSixths: string;
     qualityGroupSevenths: string;
+    qualityGroupExtensions: string;
     qualityGroupDiatonic: string;
     lockQuality: string;
     lockQualityHint: string;

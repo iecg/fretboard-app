@@ -11,6 +11,7 @@ export interface QualityGroupLabels {
   sus: string;
   sixths: string;
   sevenths: string;
+  extensions: string;
 }
 
 const TRIAD_KEYS: readonly string[] = [
@@ -38,6 +39,18 @@ const SEVENTH_KEYS: readonly string[] = [
   "dim7",
   "m7b5",
   "mMaj7",
+];
+
+const EXTENSION_KEYS: readonly string[] = [
+  "add9",
+  "9",
+  "maj9",
+  "m9",
+  "6/9",
+  "9sus4",
+  "13",
+  "maj13",
+  "m13",
 ];
 
 function toOptions(keys: readonly string[]) {
@@ -114,5 +127,6 @@ export function buildQualitySelectGroups(
     { groupLabel: labels.sus, options: toOptions(SUS_KEYS) },
     { groupLabel: labels.sixths, options: toOptions(SIXTH_KEYS) },
     { groupLabel: labels.sevenths, options: toOptions(SEVENTH_KEYS) },
+    { groupLabel: labels.extensions, options: toOptions(EXTENSION_KEYS) },
   ];
 }
