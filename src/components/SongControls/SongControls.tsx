@@ -469,6 +469,7 @@ export function SongControls() {
                           width="fixed"
                           widthValue="7rem"
                           accentValue={qualityLock}
+                          data-testid="quality-select"
                           value={
                             activeStep?.qualityOverride
                             ?? activeResolvedProgressionStep?.quality
