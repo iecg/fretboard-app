@@ -114,6 +114,8 @@ export function selectNeckSpread(candidates: Voicing[]): Voicing[] {
   const windows: Array<{ lo: number; hi: number }> = [];
 
   for (const v of ranked) {
+    // Open strings (fret 0) are excluded from the window, so any all-open grip
+    // collapses to {0,0} — two all-open voicings of a chord never both appear.
     const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
     const lo = fretted.length > 0 ? Math.min(...fretted) : 0;
     const hi = fretted.length > 0 ? Math.max(...fretted) : 0;

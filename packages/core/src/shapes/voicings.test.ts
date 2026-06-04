@@ -327,5 +327,9 @@ describe("selectNeckSpread", () => {
     const compactLow = vc([[3, 1], [4, 2], [5, 2]]);
     expect(selectNeckSpread([wideHigh, compactLow])[0]).toBe(compactLow);
   });
+
+  it("returns [] for an empty candidate list", () => {
+    expect(selectNeckSpread([])).toEqual([]);
+  });
 });
 
