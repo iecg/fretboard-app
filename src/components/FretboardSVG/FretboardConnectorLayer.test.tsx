@@ -7,11 +7,12 @@ import type { CagedShape } from "@fretflow/core";
 
 // Stub polyline: just enough for the renderer to emit the ribbon <path> elements
 // (halo + fill + spine) per voicing.
-const makePolyline = (voicingKey: string, shape?: CagedShape): ChordConnectorVoicing => ({
+const makePolyline = (voicingKey: string, shape?: CagedShape, dashed = false): ChordConnectorVoicing => ({
   paths: { fill: "M0,0 L10,0", outline: "M0,0 L10,0" },
   spinePath: "M 0 0 L 10 0",
   vertices: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
   paletteIndex: 0,
+  dashed,
   shape,
   voicingKey,
 });
@@ -95,6 +96,30 @@ describe("FretboardConnectorLayer", () => {
       <FretboardConnectorLayer {...BASE_PROPS} pass="above" chordPolylines={polylines} />,
     );
     expect(aboveContainer.querySelectorAll("path").length).toBe(0);
+  });
+
+  it("emits data-dash='true' on the spine of a dashed voicing", () => {
+    const { container } = renderInSvg(
+      <FretboardConnectorLayer
+        {...BASE_PROPS}
+        pass="below"
+        chordPolylines={[makePolyline("0,0|1,2|2,4", undefined, true)]}
+      />,
+    );
+    expect(
+      container.querySelector('path[data-layer="spine"][data-dash="true"]'),
+    ).not.toBeNull();
+  });
+
+  it("omits data-dash on a solid voicing", () => {
+    const { container } = renderInSvg(
+      <FretboardConnectorLayer
+        {...BASE_PROPS}
+        pass="below"
+        chordPolylines={[makePolyline("0,0|1,2|2,4", undefined, false)]}
+      />,
+    );
+    expect(container.querySelector('path[data-layer="spine"][data-dash]')).toBeNull();
   });
 
   it("renders nothing when showChordConnectors is false", () => {

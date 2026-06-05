@@ -515,7 +515,8 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
       // close: strict in-polygon fit. Dedupe across polygon instances —
       // a single voicing may fit multiple octave instances of the same shape;
       // emitting it once per polygon would create phantom conflicts in
-      // assignConflictOffsets and assign non-zero offsets to non-overlapping voicings.
+      // assignConflictEncodings and hand what is really one voicing a distinct
+      // color/dash as if it overlapped itself.
       // Truncated polygons (e.g. the open D-shape clipped at the nut) are
       // valid hosts — selectCloseFallbacksForCagedPosition only accepts
       // voicings whose notes fit per-string vertex bounds, so the visible

@@ -89,6 +89,7 @@ const renderChordPath = (v: ChordConnectorVoicing, layer: "halo" | "spine") => (
     data-layer={layer}
     data-caged-shape={v.shape}
     data-palette-index={v.paletteIndex + 1}
+    data-dash={layer === "spine" && v.dashed ? "true" : undefined}
     data-fallback={v.isFallback ? "true" : undefined}
   />
 );

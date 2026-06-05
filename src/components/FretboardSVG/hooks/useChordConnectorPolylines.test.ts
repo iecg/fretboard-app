@@ -8,10 +8,11 @@ import {
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
   useChordConnectorPolylines,
+  assignConflictEncodings,
+  CONNECTOR_PALETTE_ROTATION,
 } from "./useChordConnectorPolylines";
 import {
   clampConnectorRadiusToYBounds,
-  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
   computeChordConnectorRadiusPx,
   resolveConnectorRadiusPx,
@@ -508,30 +509,42 @@ describe("regression: 3NPS Position 2 bottom-string voicing", () => {
   });
 });
 
-describe("paletteIndex field (v2.0 — single accent)", () => {
-  it("every voicing carries paletteIndex === 0 (maps to --chord-connector-color-1)", () => {
+describe("paletteIndex + dashed encoding", () => {
+  it("a lone voicing keeps the default slot (paletteIndex 0, solid)", () => {
     const result = build(notes([[0, 0, "C"], [1, 2, "E"], [2, 4, "G"]]), ["C", "E", "G"]);
     expect(result.length).toBeGreaterThan(0);
-    for (const v of result) expect(v.paletteIndex).toBe(0);
+    expect(result[0]!.paletteIndex).toBe(0);
+    expect(result[0]!.dashed).toBe(false);
+  });
+
+  it("overlapping voicings receive distinct palette indices", () => {
+    const result = build(
+      notes([
+        [0, 0, "E"], [0, 3, "G"], [0, 8, "C"],
+        [1, 1, "C"], [1, 5, "E"], [1, 8, "G"],
+        [2, 0, "G"], [2, 5, "C"], [2, 9, "E"],
+        [3, 2, "E"], [3, 5, "G"], [3, 10, "C"],
+      ]),
+      ["C", "E", "G"],
+    );
+    const distinct = new Set(result.map((v) => v.paletteIndex));
+    expect(result.length).toBeGreaterThan(1);
+    expect(distinct.size).toBeGreaterThan(1);
   });
 });
 
 // -------------------------------------------------------------------------
-// Per-voicing offset: determinism and paletteIndex independence
+// Determinism and paletteIndex independence across separate calls.
 //
-// Phase 3 (plan 02) uses adjacency-aware cluster assignment instead of a
-// static canonicalKeyHash. Each call to buildChordConnectorPolylines is
-// independent — when a call contains only one voicing, it forms a singleton
-// cluster and receives offset 0. Two separate calls with different note
-// positions produce different path strings because the vertex coordinates
-// themselves differ (different fret positions → different x values).
+// Each call to buildChordConnectorPolylines is independent. A call containing
+// a single voicing has no conflicts, so it gets the default slot
+// (paletteIndex 0, solid). Two separate single-voicing calls at different neck
+// positions therefore share the same paletteIndex (0) yet produce different
+// path strings, because the vertex coordinates differ.
 //
 // The key property tested here: same paletteIndex does NOT guarantee the same
 // path — different neck positions still produce different paths. Determinism:
 // the same inputs always produce the same output.
-//
-// Both voicings have G on the highest-stringIndex string (string 2) → same
-// paletteIndex (7) regardless of fret position.
 // -------------------------------------------------------------------------
 
 describe("per-voicing offset: determinism and paletteIndex independence", () => {
@@ -635,182 +648,32 @@ describe("useChordConnectorPolylines", () => {
   });
 });
 
-// -------------------------------------------------------------------------
-// Adjacency-aware offset assignment (updated 2026-05-27)
-//
-// assignConflictOffsets is now fully discrete: two voicings conflict iff
-// they share at least one (stringIndex, fretIndex) coordinate. No pixel
-// math, no calibration constants, no screen-size dependency. Greedy color
-// pass uses OFFSET_BUCKET=[0,3]; clusters of 3+ wrap modulo.
-//
-// Overlap rules in this test file:
-//   "share a vertex" = conflict → get distinct offsets (2-color bucket).
-//   "share no vertex" = no conflict → both default radius (offset 0).
-// -------------------------------------------------------------------------
+describe("conflict encoding over the full neck", () => {
+  const gMajor = notes([
+    [0, 3, "G"], [0, 7, "B"], [0, 10, "D"], [0, 15, "G"],
+    [1, 0, "B"], [1, 3, "D"], [1, 8, "G"], [1, 12, "B"],
+    [2, 0, "G"], [2, 4, "B"], [2, 7, "D"], [2, 12, "G"],
+    [3, 0, "D"], [3, 5, "G"], [3, 9, "B"], [3, 12, "D"],
+  ]);
 
-describe("adjacency-aware offset assignment", () => {
-  // -------------------------------------------------------------------------
-  // Overlapping voicings (sharing strings at the same fret) form a conflict
-  // cluster. With OFFSET_BUCKET=[0,3], clusters of size 2 get distinct paths
-  // (offsets 0,3); clusters of size 3+ wrap modulo (offsets 0,3,0,…) so the
-  // first and third voicings collide — intentional UX trade-off.
-  // Non-overlapping voicings stay as singletons with offset 0.
-  // -------------------------------------------------------------------------
-
-  const extractRadius = (path: string): number =>
-    parseFloat(path.match(/A ([\d.]+)/)?.[1] ?? "0");
-
-  it.each<{ n: number; expectedDistinctRadii: number; specs: NoteSpec[] }>([
-    {
-      n: 2,
-      expectedDistinctRadii: 2,
-      specs: [[0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"], [3, 5, "C", "chord-root"]],
-    },
-    {
-      n: 3,
-      expectedDistinctRadii: 2,
-      specs: [[0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"],
-        [3, 5, "C", "chord-root"], [4, 5, "E"]],
-    },
-  ])(
-    "$n overlapping voicings use ≤2 distinct radii (2-color bucket; cluster of 3+ collides)",
-    ({ n, expectedDistinctRadii, specs }) => {
-      const result = build(notes(specs), ["C", "E", "G"]);
-      expect(result).toHaveLength(n);
-      const radii = new Set(result.map((v) => extractRadius(v.paths.fill)));
-      expect(radii.size).toBe(expectedDistinctRadii);
-    },
-  );
-
-  it("non-overlapping voicings get offset 0 (matching singleton baselines)", () => {
-    const baseline1 = build(notes([[0, 1, "C", "chord-root"], [1, 2, "E"], [2, 3, "G"]]), ["C", "E", "G"]);
-    const baseline2 = build(notes([[0, 9, "C", "chord-root"], [1, 10, "E"], [2, 11, "G"]]), ["C", "E", "G"]);
-    const combined = build(
-      notes([
-        [0, 1, "C", "chord-root"], [1, 2, "E"], [2, 3, "G"],
-        [0, 9, "C", "chord-root"], [1, 10, "E"], [2, 11, "G"],
-      ]),
-      ["C", "E", "G"],
-    );
-    const v1 = combined.find((v) => v.vertices.some((p) => p.x === fretCenterX(1)));
-    const v2 = combined.find((v) => v.vertices.some((p) => p.x === fretCenterX(9)));
-    expect(v1!.paths.fill).toBe(baseline1[0]!.paths.fill);
-    expect(v2!.paths.fill).toBe(baseline2[0]!.paths.fill);
-  });
-
-  it("determinism: same inputs produce identical per-voicing paths across re-runs", () => {
-    const noteData = notes([
-      [0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"],
-      [3, 5, "C", "chord-root"], [4, 5, "E"],
-    ]);
-    const run1 = build(noteData, ["C", "E", "G"]);
-    const run2 = build(noteData, ["C", "E", "G"]);
-    expect(run1.length).toBe(run2.length);
-    run1.forEach((v, i) => expect(v.paths.fill).toBe(run2[i]!.paths.fill));
-  });
-
-  // -------------------------------------------------------------------------
-  // Cluster size 6 stress: six overlapping voicings, 2-color bucket caps
-  // distinct paths at 2. Offsets alternate 0,3,0,3,0,3 along canonical-key
-  // sort order. Intentional collision per OFFSET_BUCKET trade-off.
-  // -------------------------------------------------------------------------
-  it("cluster of 6 voicings: only 2 distinct radii used (2-color bucket)", () => {
-    const result = build(
-      notes(["C", "E", "G", "B", "C", "E", "G", "B", "C"].map(
-        (n, si) => [si, 5, n, n === "C" ? "chord-root" : "chord-tone-in-scale"] as NoteSpec,
-      )),
-      ["C", "E", "G", "B"],
-    );
-    expect(result).toHaveLength(6);
-    const radii = new Set(
-      result.map((v) => parseFloat(v.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0")),
-    );
-    expect(radii.size).toBe(2);
-  });
-});
-
-// -------------------------------------------------------------------------
-// Overlap offset regression: G major triad on full neck
-//
-// C major scale, degree V (G major = G, B, D).
-// Standard tuning high-to-low: E4(str0) B3(str1) G3(str2) D3(str3) A2(str4) E2(str5)
-//
-// Chord-tone positions (frets 0–22):
-//   G: str0@{3,15}, str1@{8,20}, str2@{0,12}, str3@{5,17}, str4@{10,22}, str5@{3,15}
-//   B: str0@{7,19}, str1@{0,12}, str2@{4,16}, str3@{9,21}, str4@{2,14}, str5@{7,19}
-//   D: str0@{10,22}, str1@{3,15}, str2@{7,19}, str3@{0,12}, str4@{5,17}, str5@{10,22}
-//
-// The E-shape CAGED voicings cluster around frets 7–10 and repeat at 19–22.
-// Both groups should receive independent offset budgets so their
-// overlapping connectors are visually separated.
-// -------------------------------------------------------------------------
-
-describe("G major triad overlap offsets (full neck)", () => {
-  // G/B/D chord-tone positions across all 6 strings, frets 0-22. Root role on G.
-  const gMajorChordTones = (): NoteData[] => {
-    const POSITIONS: Record<string, ReadonlyArray<readonly [number, number]>> = {
-      G: [[0, 3], [0, 15], [1, 8], [1, 20], [2, 0], [2, 12], [3, 5], [3, 17], [4, 10], [4, 22], [5, 3], [5, 15]],
-      B: [[0, 7], [0, 19], [1, 0], [1, 12], [2, 4], [2, 16], [3, 9], [3, 21], [4, 2], [4, 14], [5, 7], [5, 19]],
-      D: [[0, 10], [0, 22], [1, 3], [1, 15], [2, 7], [2, 19], [3, 0], [3, 12], [4, 5], [4, 17], [5, 10], [5, 22]],
-    };
-    return Object.entries(POSITIONS).flatMap(([name, positions]) =>
-      positions.map(([si, fi]) => makeNote(si, fi, name, name === "G" ? "chord-root" : "chord-tone-in-scale")),
-    );
-  };
-
-  const voicingsInFretRange = (
-    voicings: ReturnType<typeof buildChordConnectorPolylines>,
-    minFret: number,
-    maxFret: number,
-  ) =>
-    voicings.filter((v) => {
-      const frets = v.voicingKey.split("|").map((p) => Number(p.split(",")[1]));
-      return frets.every((f) => f >= minFret && f <= maxFret);
-    });
-
-  const expectPositionSharingPairsDiffer = (
-    group: ReturnType<typeof buildChordConnectorPolylines>,
-    context: string,
-  ) => {
-    for (let i = 0; i < group.length; i++) {
-      for (let j = i + 1; j < group.length; j++) {
-        const setA = new Set(group[i]!.voicingKey.split("|"));
-        const overlap = group[j]!.voicingKey.split("|").some((pos) => setA.has(pos));
-        if (overlap) {
-          expect(
-            group[i]!.paths.fill,
-            `${context}: "${group[i]!.voicingKey}" and "${group[j]!.voicingKey}" share a position but have identical paths`,
-          ).not.toBe(group[j]!.paths.fill);
+  it("no two conflicting (note-sharing) voicings share a palette index", () => {
+    const result = build(gMajor, ["G", "B", "D"]);
+    for (let i = 0; i < result.length; i++) {
+      for (let j = i + 1; j < result.length; j++) {
+        const setI = new Set(result[i]!.voicingKey.split("|"));
+        const sharesNote = result[j]!.voicingKey.split("|").some((p) => setI.has(p));
+        if (sharesNote) {
+          expect(result[i]!.paletteIndex).not.toBe(result[j]!.paletteIndex);
         }
       }
     }
-  };
-
-  it("low (frets 7-10) and high (19-22) regions both emit ≥3 voicings of equal count", () => {
-    const result = build(gMajorChordTones(), ["G", "B", "D"]);
-    const low = voicingsInFretRange(result, 7, 10);
-    const high = voicingsInFretRange(result, 19, 22);
-    expect(low.length).toBeGreaterThanOrEqual(3);
-    expect(high.length).toBeGreaterThanOrEqual(3);
-    expect(low.length).toBe(high.length);
   });
 
-  it.each<{ label: string; min: number; max: number; yBounds?: { minY: number; maxY: number } }>([
-    { label: "frets 7-10 unbounded", min: 7, max: 10 },
-    { label: "frets 19-22 unbounded", min: 19, max: 22 },
-    { label: "frets 19-22 with yBounds clamping", min: 19, max: 22, yBounds: { minY: 0, maxY: 100 } },
-  ])("$label: overlapping voicings have distinct paths", ({ label, min, max, yBounds }) => {
-    const result = build(gMajorChordTones(), ["G", "B", "D"], yBounds);
-    expectPositionSharingPairsDiffer(voicingsInFretRange(result, min, max), label);
-  });
-
-  it("non-overlapping voicings do not receive conflict-graph inflation (radius near base)", () => {
-    const result = build(gMajorChordTones(), ["G", "B", "D"]);
-    const base = STRING_ROW_PX * CHORD_CONNECTOR_BASE_RADIUS_FACTOR;
-    for (const v of voicingsInFretRange(result, 7, 10)) {
-      const rx = parseFloat(v.paths.fill.match(/A ([\d.]+)/)?.[1] ?? "0");
-      expect(rx).toBeLessThanOrEqual(base + 15);
-    }
+  it("determinism: identical inputs yield identical encodings", () => {
+    const a = build(gMajor, ["G", "B", "D"]);
+    const b = build(gMajor, ["G", "B", "D"]);
+    expect(a.map((v) => [v.voicingKey, v.paletteIndex, v.dashed]))
+      .toEqual(b.map((v) => [v.voicingKey, v.paletteIndex, v.dashed]));
   });
 });
 
@@ -999,5 +862,53 @@ describe("connector topology memo split", () => {
         STRING_ROW_PX,
       ),
     );
+  });
+});
+
+describe("assignConflictEncodings", () => {
+  const vc = (canonicalKey: string, coords: Array<[number, number]>) => ({
+    canonicalKey,
+    noteCoords: coords.map(([stringIndex, fretIndex]) => ({ stringIndex, fretIndex })),
+  });
+
+  it("a single voicing gets slot 0 → first rotation color, solid", () => {
+    const enc = assignConflictEncodings([vc("a", [[0, 0], [1, 2], [2, 4]])]);
+    expect(enc.get("a")).toEqual({ paletteIndex: CONNECTOR_PALETTE_ROTATION[0], dashed: false });
+  });
+
+  it("voicings that share a note get different palette indices", () => {
+    const enc = assignConflictEncodings([
+      vc("a", [[0, 0], [1, 2], [2, 4]]),
+      vc("b", [[1, 2], [2, 3], [3, 5]]),
+    ]);
+    expect(enc.get("a")!.paletteIndex).not.toBe(enc.get("b")!.paletteIndex);
+  });
+
+  it("dash follows color-slot parity (odd slot → dashed)", () => {
+    const enc = assignConflictEncodings([
+      vc("a", [[0, 0], [1, 2], [2, 4]]),
+      vc("b", [[1, 2], [2, 3], [3, 5]]),
+    ]);
+    expect(enc.get("a")!.dashed).toBe(false);
+    expect(enc.get("b")!.dashed).toBe(true);
+  });
+
+  it("non-conflicting voicings both get slot 0 (same color, solid)", () => {
+    const enc = assignConflictEncodings([
+      vc("a", [[0, 0], [1, 0], [2, 0]]),
+      vc("b", [[3, 12], [4, 12], [5, 12]]),
+    ]);
+    expect(enc.get("a")).toEqual(enc.get("b"));
+    expect(enc.get("a")).toEqual({ paletteIndex: CONNECTOR_PALETTE_ROTATION[0], dashed: false });
+  });
+
+  it("is deterministic and screen-independent (coords drive it, not pixels)", () => {
+    const input = [
+      vc("a", [[0, 0], [1, 2], [2, 4]]),
+      vc("b", [[1, 2], [2, 3], [3, 5]]),
+    ];
+    const first = assignConflictEncodings(input);
+    const second = assignConflictEncodings(input);
+    expect([...second.entries()]).toEqual([...first.entries()]);
   });
 });

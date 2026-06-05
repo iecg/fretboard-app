@@ -342,12 +342,12 @@
 }
 
 /* -----------------------------------------------------------------------
-   Chord-tone connector layer — the ribbon connector.
-   Halo layer: disabled (stroke: none) so both themes match.
-   Fill layer: low-opacity translucent band beneath the note bubbles.
-   Spine layer: a single solid center line through the voicing notes.
-   All layers render in the "below" pass so note markers occlude the spine.
-   Color driven by --chord-connector-color-N (see [data-layer] rule below).
+   Chord-tone connector layer — line-only connector.
+   Halo layer: a soft neutral underlay so the line reads over the wood.
+   Spine layer: the center line through the voicing notes; per-voicing color
+   comes from the [data-palette-index] rules below, and overlapping voicings
+   may be dashed via [data-dash].
+   Both layers render in the "below" pass so note markers occlude the line.
    ----------------------------------------------------------------------- */
 /* Halo underlay — a soft, slightly wider stroke beneath the accent line so the
    connector reads over busy wood grain and where lines cross. */
@@ -369,6 +369,12 @@
   stroke-linejoin: round;
 }
 
+/* Redundant second cue: dashed spine for voicings the conflict-graph assigned
+   an odd color slot. The solid halo underlay shows through the gaps. */
+.chord-connectors path[data-layer="spine"][data-dash="true"] {
+  stroke-dasharray: 7px 5px;
+}
+
 /* -----------------------------------------------------------------------
    Palette-index color rules — one rule per voicing slot (N = 1..8).
    Color property is set so the layers can pick it up via currentColor,
@@ -382,20 +388,6 @@
 .chord-connectors path[data-palette-index="6"] { color: var(--chord-connector-color-6); }
 .chord-connectors path[data-palette-index="7"] { color: var(--chord-connector-color-7); }
 .chord-connectors path[data-palette-index="8"] { color: var(--chord-connector-color-8); }
-
-.chord-connectors path[data-caged-shape="E"] { color: var(--caged-e); }
-.chord-connectors path[data-caged-shape="D"] { color: var(--caged-d); }
-.chord-connectors path[data-caged-shape="C"] { color: var(--caged-c); }
-.chord-connectors path[data-caged-shape="A"] { color: var(--caged-a); }
-.chord-connectors path[data-caged-shape="G"] { color: var(--caged-g); }
-
-/* The ribbon connector uses the higher-contrast close-voicing color instead of
-   the per-CAGED-shape colors, which reads better over CAGED region shading. The
-   [data-layer] attribute lifts specificity above the palette-index / caged-shape
-   rules above so this wins regardless of source order. */
-.chord-connectors path[data-layer] {
-  color: var(--fb-connector-accent);
-}
 
 /* -----------------------------------------------------------------------
    Active-voicing highlight ring.
