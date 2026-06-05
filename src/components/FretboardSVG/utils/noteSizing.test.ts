@@ -46,6 +46,7 @@ describe("taperAwareRadiusScale", () => {
 
   it("returns 1 for degenerate geometry (no-op for callers without layout)", () => {
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, neckWidthPx: 0 })).toBe(1);
+    expect(taperAwareRadiusScale({ x: 0, ...GEOM, neckHeight: 0 })).toBe(1);
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, numStrings: 1 })).toBe(1);
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, noteBubblePx: 0 })).toBe(1);
   });

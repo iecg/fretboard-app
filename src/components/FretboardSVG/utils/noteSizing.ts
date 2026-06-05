@@ -74,7 +74,7 @@ export function taperAwareRadiusScale({
   minScale?: number;
   gapFraction?: number;
 }): number {
-  if (neckWidthPx <= 0 || numStrings < 2 || noteBubblePx <= 0) return 1;
+  if (neckWidthPx <= 0 || neckHeight <= 0 || numStrings < 2 || noteBubblePx <= 0) return 1;
 
   const xFrac = Math.max(0, Math.min(1, x / neckWidthPx));
   const spacingRatio =
