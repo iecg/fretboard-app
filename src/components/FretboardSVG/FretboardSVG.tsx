@@ -8,7 +8,6 @@ import {
 } from "@fretflow/core";
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
-import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { leadInActiveAtom, leadInDurationMsAtom } from "../../store/practiceLensAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
@@ -326,7 +325,6 @@ export function FretboardSVG({
   // around it) but non-uniform spacing inside this component is derived from
   // neckWidthPx + scale math, so the value isn't read here.
   void effectiveZoom;
-  const degreeColorsEnabled = useAtomValue(scaleDegreeColorsEnabledAtom);
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
   const leadInActive = useAtomValue(leadInActiveAtom);
@@ -560,7 +558,6 @@ export function FretboardSVG({
     scaleName: scaleName || "",
     preferFlats,
     displayFormat,
-    degreeColorsEnabled,
     wrappedNotes,
     tuning,
     noteSemantics,
@@ -571,7 +568,6 @@ export function FretboardSVG({
     topology,
     hasChordOverlay,
     displayFormat,
-    degreeColorsEnabled,
     preferFlats,
     scaleName: scaleName || "",
     rootNote,
@@ -618,7 +614,6 @@ export function FretboardSVG({
       role="group"
       aria-label={ariaLabel}
       className={styles["fretboard-board"]}
-      data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       data-full-chord-mode={fullChordVoicings?.length ? "true" : undefined}
       data-transition-phase={leadInActive ? "lead-in" : undefined}
       data-testid="fretboard-svg"
@@ -710,7 +705,6 @@ export function FretboardSVG({
                     notes={renderedNotes}
                     noteBubblePx={noteBubblePx}
                     displayFormat={displayFormat}
-                    degreeColorsEnabled={degreeColorsEnabled}
                     animationMode={motionPolicy.noteMode}
                   />
                 </g>

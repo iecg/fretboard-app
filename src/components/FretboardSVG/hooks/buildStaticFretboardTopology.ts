@@ -4,8 +4,6 @@ import {
   getNoteDisplayInScale,
   INTERVAL_NAMES,
   SCALES,
-  DEGREE_COLORS,
-  getDegreesForScale,
   getFretNoteWithOctave,
   parseNote,
   type NoteSemantics,
@@ -50,7 +48,6 @@ export interface UseStaticFretboardTopologyProps {
   scaleName: string;
   preferFlats: boolean;
   displayFormat?: "notes" | "degrees" | "none";
-  degreeColorsEnabled?: boolean;
   wrappedNotes: Set<string>;
   tuning: string[];
   noteSemantics?: Map<string, NoteSemantics>;
@@ -82,7 +79,6 @@ export function buildStaticFretboardTopology({
   scaleName,
   preferFlats,
   displayFormat,
-  degreeColorsEnabled,
   wrappedNotes,
   tuning,
   noteSemantics,
@@ -109,7 +105,6 @@ export function buildStaticFretboardTopology({
   const highlightSet = new Set(highlightNotes);
   const chordToneSet = new Set(chordTones);
   const colorNoteSet = new Set(colorNotes);
-  const degreesMap = getDegreesForScale(scaleName);
   const hasFullChordPositionFilter = !!fullChordPositionKeys && fullChordPositionKeys.size > 0;
   const polygonCoverage = buildPolygonCoverage(shapePolygons, maxFret);
 
@@ -280,21 +275,6 @@ export function buildStaticFretboardTopology({
 
       const isHidden = finalNoteClass === "note-inactive";
 
-      let scaleDegree: string | undefined;
-      let degreeColor: string | undefined;
-      if (degreeColorsEnabled && rootIdx !== -1) {
-        const noteIdx = NOTES.indexOf(noteName);
-        if (noteIdx !== -1) {
-          const chromaticInterval = (noteIdx - rootIdx + 12) % 12;
-          scaleDegree = scale.includes(chromaticInterval)
-            ? degreesMap[chromaticInterval] ?? INTERVAL_NAMES[chromaticInterval]
-            : undefined;
-          if (scaleDegree) {
-            degreeColor = DEGREE_COLORS[scaleDegree];
-          }
-        }
-      }
-
       const openString = tuning[stringIndex];
       const noteWithOctave = openString
         ? getFretNoteWithOctave(openString, fretIndex)
@@ -317,8 +297,6 @@ export function buildStaticFretboardTopology({
         isHidden,
         isTension: effectiveSemantics?.isTension ?? false,
         isGuideTone: effectiveSemantics?.isGuideTone ?? false,
-        scaleDegree,
-        degreeColor,
         fullChordShape,
         isMatchedFullChordPosition,
         isInsideAnyPolygon,

@@ -12,11 +12,11 @@ import {
   NOTES,
   INTERVAL_NAMES,
   getScaleNotes,
-  getNoteDisplay, getNoteDisplayInScale,
+  getNoteDisplay,
   getDivergentNotes,
   formatAccidental,
 } from "@fretflow/core";
-import { DEGREE_COLORS, getDegreesForScale } from "@fretflow/core";
+import { getDegreesForScale } from "@fretflow/core";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT, withStorageErrorBoundary } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
 import { gatedAtom, EMPTY_SET, setsEqual } from "./atomUtils";
@@ -198,36 +198,6 @@ export const activeBrowseOptionAtom = atom((get) =>
 export const scaleLabelAtom = atom(
   (get) => `${formatAccidental(get(activeBrowseOptionAtom).label)}`,
 );
-
-export const degreeChipsAtom = atom((get) => {
-  const rootNote = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
-  const scaleNotes = get(scaleNotesAtom);
-  const preferFlats = get(preferFlatsAtom);
-  const intervals = SCALES[scaleName] || [];
-  const degreesMap = getDegreesForScale(scaleName);
-
-  const rootIdx = NOTES.indexOf(rootNote);
-  return scaleNotes.map((note) => {
-    const noteIdx = NOTES.indexOf(note);
-    const chromaticInterval =
-      rootIdx !== -1 && noteIdx !== -1 ? (noteIdx - rootIdx + 12) % 12 : 0;
-    const interval = INTERVAL_NAMES[chromaticInterval] ?? "1";
-    const scaleDegree = degreesMap[chromaticInterval] ?? interval;
-    const degreeColor = DEGREE_COLORS[scaleDegree] ?? undefined;
-    return {
-      internalNote: note,
-      note: formatAccidental(
-        getNoteDisplayInScale(note, rootNote, intervals, preferFlats),
-      ),
-      interval: formatAccidental(interval),
-      scaleDegree,
-      degreeColor,
-      inScale: true,
-      isTonic: note === rootNote,
-    };
-  });
-});
 
 // Transient: resets when root or scale changes.
 const internalHiddenNotesAtom = atom<{

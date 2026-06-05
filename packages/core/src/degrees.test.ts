@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  BLUE_NOTE_COLOR,
-  DEGREE_COLORS,
   getAdjacentDegree,
   getDegreesForScale,
   getDegreeSequence,
@@ -11,37 +9,6 @@ import {
 } from './degrees';
 import { SCALES } from './theoryCatalog';
 import * as RomanNumeral from '@tonaljs/roman-numeral';
-
-const BASE_DEGREE_COLOR_KEYS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
-
-function hexToRgb(color: string) {
-  return [1, 3, 5].map((start) => parseInt(color.slice(start, start + 2), 16) / 255);
-}
-
-function toLinearSrgb(value: number) {
-  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-}
-
-function toOklab(color: string) {
-  const [r, g, b] = hexToRgb(color).map(toLinearSrgb);
-  const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
-  const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
-  const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
-  const lRoot = Math.cbrt(l);
-  const mRoot = Math.cbrt(m);
-  const sRoot = Math.cbrt(s);
-  return [
-    0.2104542553 * lRoot + 0.793617785 * mRoot - 0.0040720468 * sRoot,
-    1.9779984951 * lRoot - 2.428592205 * mRoot + 0.4505937099 * sRoot,
-    0.0259040371 * lRoot + 0.7827717662 * mRoot - 0.808675766 * sRoot,
-  ];
-}
-
-function oklabDistance(a: string, b: string) {
-  const [aL, aA, aB] = toOklab(a);
-  const [bL, bA, bB] = toOklab(b);
-  return Math.hypot(aL - bL, aA - bA, aB - bB);
-}
 
 describe('getDegreesForScale', () => {
   describe('Major modes', () => {
@@ -257,87 +224,6 @@ describe('getDegreesForScale', () => {
       expect(getQualityForDegree("VII", "minor blues")).toBe("M");
       expect(getQualityForDegree("b5", "minor blues")).toBeUndefined();
     });
-  });
-});
-
-describe('DEGREE_COLORS', () => {
-  it('has color for tonic (I/i/i°)', () => {
-    expect(DEGREE_COLORS['I']).toBeDefined();
-    expect(DEGREE_COLORS['i']).toBeDefined();
-    expect(DEGREE_COLORS['i°']).toBeDefined();
-    expect(DEGREE_COLORS['I']).toBe(DEGREE_COLORS['i']);
-  });
-
-  it('has color for supertonic (II/ii/ii°)', () => {
-    expect(DEGREE_COLORS['II']).toBeDefined();
-    expect(DEGREE_COLORS['ii']).toBeDefined();
-    expect(DEGREE_COLORS['ii°']).toBeDefined();
-  });
-
-  it('has color for mediant (III/iii/iii°/III+)', () => {
-    expect(DEGREE_COLORS['III']).toBeDefined();
-    expect(DEGREE_COLORS['iii']).toBeDefined();
-    expect(DEGREE_COLORS['iii°']).toBeDefined();
-    expect(DEGREE_COLORS['III+']).toBeDefined();
-  });
-
-  it('has color for subdominant (IV/iv/iv°)', () => {
-    expect(DEGREE_COLORS['IV']).toBeDefined();
-    expect(DEGREE_COLORS['iv']).toBeDefined();
-    expect(DEGREE_COLORS['iv°']).toBeDefined();
-  });
-
-  it('has color for dominant (V/v/v°)', () => {
-    expect(DEGREE_COLORS['V']).toBeDefined();
-    expect(DEGREE_COLORS['v']).toBeDefined();
-    expect(DEGREE_COLORS['v°']).toBeDefined();
-  });
-
-  it('has color for submediant (VI/vi/vi°)', () => {
-    expect(DEGREE_COLORS['VI']).toBeDefined();
-    expect(DEGREE_COLORS['vi']).toBeDefined();
-    expect(DEGREE_COLORS['vi°']).toBeDefined();
-  });
-
-  it('has color for leading tone (VII/vii/vii°)', () => {
-    expect(DEGREE_COLORS['VII']).toBeDefined();
-    expect(DEGREE_COLORS['vii']).toBeDefined();
-    expect(DEGREE_COLORS['vii°']).toBeDefined();
-  });
-
-  it('all color values are valid hex colors', () => {
-    const hexRegex = /^#[0-9a-f]{6}$/i;
-    Object.values(DEGREE_COLORS).forEach((color) => {
-      expect(color).toMatch(hexRegex);
-    });
-  });
-
-  it('uses visually separated base degree colors', () => {
-    const baseColors = BASE_DEGREE_COLOR_KEYS.map((degree) => DEGREE_COLORS[degree]);
-
-    expect(new Set(baseColors)).toHaveLength(BASE_DEGREE_COLOR_KEYS.length);
-    for (let i = 0; i < baseColors.length; i++) {
-      for (let j = i + 1; j < baseColors.length; j++) {
-        expect(oklabDistance(baseColors[i], baseColors[j])).toBeGreaterThanOrEqual(0.14);
-      }
-    }
-  });
-
-  it("keeps dominant and leading-tone colors strongly separated", () => {
-    expect(oklabDistance(DEGREE_COLORS["V"], DEGREE_COLORS["VII"])).toBeGreaterThanOrEqual(0.3);
-  });
-
-  it("has a distinct blue-note color for blues-scale color tones", () => {
-    expect(DEGREE_COLORS["b3"]).toBe(BLUE_NOTE_COLOR);
-    expect(DEGREE_COLORS["b5"]).toBe(BLUE_NOTE_COLOR);
-    expect(BLUE_NOTE_COLOR).not.toBe(DEGREE_COLORS["II"]);
-    expect(BLUE_NOTE_COLOR).not.toBe(DEGREE_COLORS["VII"]);
-  });
-
-  it('has consistent coloring for same degree (upper/lower case variants)', () => {
-    // All I/i variants should be same color
-    expect(DEGREE_COLORS['I']).toBe(DEGREE_COLORS['i']);
-    expect(DEGREE_COLORS['i']).toBe(DEGREE_COLORS['i°']);
   });
 });
 

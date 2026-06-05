@@ -3,7 +3,6 @@ import { useAtom } from "jotai";
 import { StepperControl } from "../../StepperControl/StepperControl";
 import { FretRangeControl } from "../../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
-import { Switch } from "../../Switch/Switch";
 import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
 import { ZOOM_STEP, SETTING_FIELDS } from "../constants";
 import { OverlayFieldHeader } from "../shared";
@@ -11,7 +10,7 @@ import { useSettingsForm } from "../useSettingsForm";
 import { useTranslation } from "../../../hooks/useTranslation";
 import { accidentalModeAtom } from "../../../store/scaleAtoms";
 import { enharmonicDisplayAtom, audioQualityAtom } from "../../../store/audioAtoms";
-import { scaleDegreeColorsEnabledAtom, displayFormatAtom } from "../../../store/uiAtoms";
+import { displayFormatAtom } from "../../../store/uiAtoms";
 import styles from "../SettingsOverlay.module.css";
 
 export default function DisplaySettingsSection() {
@@ -23,7 +22,6 @@ export default function DisplaySettingsSection() {
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
   const [enharmonicDisplay, setEnharmonicDisplay] = useAtom(enharmonicDisplayAtom);
   const [audioQuality, setAudioQuality] = useAtom(audioQualityAtom);
-  const [scaleDegreeColors, setScaleDegreeColors] = useAtom(scaleDegreeColorsEnabledAtom);
 
   const NOTE_LABEL_OPTIONS = [
     { value: "notes", label: t("inspector.notes") },
@@ -110,7 +108,7 @@ export default function DisplaySettingsSection() {
           />
         </div>
       </div>
-      <div className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}>
+      <div className={styles["overlay-field"]}>
         <OverlayFieldHeader label={t(SETTING_FIELDS.fretRange.labelKey)} />
         <div className={styles["overlay-field-control"]}>
           <FretRangeControl
@@ -120,16 +118,6 @@ export default function DisplaySettingsSection() {
             onEndChange={setFretEnd}
             maxFret={MAX_FRET}
             layout="mobile"
-          />
-        </div>
-      </div>
-      <div className={styles["overlay-field"]}>
-        <OverlayFieldHeader label={t("inspector.degreeColors")} />
-        <div className={styles["overlay-field-control"]}>
-          <Switch
-            label={t("inspector.degreeColors")}
-            checked={scaleDegreeColors}
-            onChange={setScaleDegreeColors}
           />
         </div>
       </div>

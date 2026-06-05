@@ -7,7 +7,6 @@ import { Fretboard } from "../Fretboard/Fretboard";
 import { STANDARD_TUNING } from "@fretflow/core";
 import { fretEndAtom, fretStartAtom, fretZoomAtom } from "../../store/layoutAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
-import { scaleDegreeColorsEnabledAtom } from "../../store/uiAtoms";
 import { axe } from "../../test-utils/a11y";
 // Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
 import "../FretboardSVG/FretboardSVG";
@@ -206,24 +205,6 @@ describe("Fretboard/Fretboard", () => {
       render(<Fretboard {...defaultProps} displayFormat="none" />);
       await flushSuspense();
       expect(document.body).toBeTruthy();
-    });
-
-    it("keeps note labels visible when scale degree colors are enabled", async () => {
-      const store = createStore();
-      store.set(scaleDegreeColorsEnabledAtom, true);
-      const { container } = render(
-        <Provider store={store}>
-          <Fretboard
-            {...defaultProps}
-            displayFormat="notes"
-            rootNote="C"
-            scaleName="major"
-          />
-        </Provider>
-      );
-      await flushSuspense();
-
-      expect(container.querySelector('[data-degree-colors="true"] text')).toBeTruthy();
     });
 
     it("updates display when displayFormat changes", async () => {

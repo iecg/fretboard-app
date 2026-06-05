@@ -268,14 +268,13 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(store.get(settingsOverlayOpenAtom)).toBe(true);
   });
 
-  it("renders Display section with note-label / accidental / fret-range / degree-color controls", () => {
+  it("renders Display section with note-label / accidental / fret-range controls", () => {
     renderWithAtoms(<SettingsOverlay />, [[settingsOverlayOpenAtom, true]]);
     expect(screen.getByRole("region", { name: /display/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/note labels/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/accidentals/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/enharmonic/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/fret range/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/degree colors/i)).toBeInTheDocument();
   });
 
   it("does not render a Compact Controls group", async () => {

@@ -301,37 +301,6 @@ describe("useNoteData", () => {
     });
   });
 
-  it("assigns the blue-note color to blues-scale color notes", () => {
-    const { result } = renderHook(() =>
-      useNoteData({
-        numStrings: 1,
-        fretboardLayout: [["C", "C#", "D", "D#", "E", "F", "F#"]],
-        totalColumns: 6,
-        startFret: 0,
-        maxFret: 22,
-        hiddenNotes: new Set(),
-        highlightNotes: ["C", "D#", "F", "F#", "G", "A#"],
-        hasChordOverlay: false,
-        chordTones: [],
-        rootNote: "C",
-        colorNotes: ["F#"],
-        shapePolygons: [],
-
-        chordBoxBounds: null,
-        chordFretSpread: 0,
-        scaleName: "minor blues",
-        preferFlats: false,
-        degreeColorsEnabled: true,
-        wrappedNotes: new Set(),
-        tuning: ["E2"]
-      })
-    );
-
-    const blueNote = result.current.find((n) => n.noteName === "F#");
-    expect(blueNote?.scaleDegree).toBe("b5");
-    expect(blueNote?.degreeColor).toBe("#0047ff");
-  });
-
   describe("useNoteData — full-voicing preserves insideness classification", () => {
     it("classifies an outside-scale full-voicing vertex as chord-tone-outside-scale", () => {
       const layoutRow = ["E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "C#", "D", "D#", "E"];
