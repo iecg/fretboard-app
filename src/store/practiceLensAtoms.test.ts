@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction } from "./practiceLensAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -1006,6 +1006,63 @@ describe("leadInActiveAtom — fires once per chord (multi-bar)", () => {
     const store = makeMultiBarStore();
     const barMs = store.get(progressionBarDurationMsAtom);
     store.set(progressionStepDeadlineAtom, Date.now() + 0.5 * barMs);
+    expect(store.get(leadInActiveAtom)).toBe(true);
+  });
+});
+
+describe("planningWindowActiveAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makeDefaultStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    return store;
+  }
+
+  it("is false when not playing", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, false);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.3, localFraction: 0.3, paused: false });
+    expect(store.get(planningWindowActiveAtom)).toBe(false);
+  });
+
+  it("is false while paused", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.3, localFraction: 0.3, paused: true });
+    expect(store.get(planningWindowActiveAtom)).toBe(false);
+  });
+
+  it("is true in the planning runway and false once inside the landing window (mutually exclusive)", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    store.set(activeProgressionStepIndexAtom, 1);
+    store.set(displayedStepIndexPrimitiveAtom, 1);
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0, paused: false });
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const windowMs = computeLeadInWindowMs(stepMs, store.get(progressionBarDurationMsAtom));
+
+    // Just BEFORE the landing window opens -> planning active, lead-in inactive.
+    store.set(progressionStepDeadlineAtom, Date.now() + windowMs + 300);
+    expect(store.get(planningWindowActiveAtom)).toBe(true);
+    expect(store.get(leadInActiveAtom)).toBe(false);
+
+    // Just AFTER the landing window opens -> planning inactive, lead-in active.
+    store.set(progressionStepDeadlineAtom, Date.now() + windowMs - 300);
+    expect(store.get(planningWindowActiveAtom)).toBe(false);
+    expect(store.get(leadInActiveAtom)).toBe(true);
+  });
+
+  it("is false during the boundary gap (landing owns it, not planning)", () => {
+    const store = makeDefaultStore();
+    store.set(progressionPlayingStateAtom, true);
+    // Audio frame already crossed into step 1; displayed step still deferred at 0.
+    store.set(displayedStepIndexPrimitiveAtom, 0);
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0, paused: false });
+    expect(store.get(planningWindowActiveAtom)).toBe(false);
     expect(store.get(leadInActiveAtom)).toBe(true);
   });
 });

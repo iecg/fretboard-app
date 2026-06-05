@@ -616,6 +616,35 @@ export const leadInActiveAtom = atom((get): boolean => {
 });
 
 /**
+ * True when the playhead is in the PLANNING runway: the current chord is
+ * settled (active === displayed), the audio frame is on that same step, and the
+ * step fraction sits inside {@link isInPlanningWindow}. Distinct from
+ * {@link leadInActiveAtom}: it does NOT take the boundary-gap "hold" branch —
+ * during the deferred-render gap the LANDING ring owns the moment, so planning
+ * yields. The two atoms are mutually exclusive.
+ *
+ * Like leadInActiveAtom this reads the per-frame visual frame, but its VALUE
+ * only flips at the window thresholds, so subscribers re-render at most twice
+ * per step (planning open / planning close).
+ */
+export const planningWindowActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  const displayed = get(displayedProgressionStepIndexAtom);
+  // Boundary gap (audio ahead of displayed) belongs to the landing ring.
+  if (frame.stepIndex !== displayed) return false;
+  // Only trust the step fraction when the deadline's step (active) matches the
+  // displayed step — same guard as leadInActiveAtom.
+  if (get(activeProgressionStepIndexAtom) !== displayed) return false;
+  const deadline = get(progressionStepDeadlineAtom);
+  if (deadline == null) return false;
+  const stepMs = get(progressionStepDurationMsAtom);
+  const stepFraction = stepRelativeFraction(deadline, Date.now(), stepMs);
+  return isInPlanningWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
+});
+
+/**
  * Current beat position within the active progression step, derived from
  * the step deadline and tempo. Beat 0 = just started; `stepDurationBeats` = step ended.
  *
