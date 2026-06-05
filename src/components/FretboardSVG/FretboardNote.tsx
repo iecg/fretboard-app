@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { glowUnderlayRadiusPx, reduceCircleRadius } from "./utils/noteSizing";
+import { glowUnderlayRadiusPx, reduceCircleRadius, taperAwareRadiusScale } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -31,6 +31,10 @@ interface FretboardNoteProps {
   note: RenderedFretboardNote;
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
+  /** Layout geometry for taper-aware sizing. Omitted → no shrink (scale 1). */
+  neckWidthPx?: number;
+  neckHeight?: number;
+  numStrings?: number;
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
@@ -38,6 +42,9 @@ export const FretboardNote = memo(function FretboardNote({
   note,
   noteBubblePx,
   displayFormat,
+  neckWidthPx,
+  neckHeight,
+  numStrings,
   onNoteClick,
 }: FretboardNoteProps) {
   const {
@@ -64,7 +71,14 @@ export const FretboardNote = memo(function FretboardNote({
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
-  const rawRadius = baseRadius * radiusScale;
+  const taperScale = taperAwareRadiusScale({
+    x: cx,
+    neckWidthPx: neckWidthPx ?? 0,
+    neckHeight: neckHeight ?? 0,
+    numStrings: numStrings ?? 0,
+    noteBubblePx,
+  });
+  const rawRadius = baseRadius * radiusScale * taperScale;
   const r = reduceCircleRadius(rawRadius);
   const glowR = glowUnderlayRadiusPx(r);
 
