@@ -34,14 +34,6 @@ function voicingFrettedPositionCount(combo: NoteData[]): number {
   return frettedCount < 2 ? 0 : maxF - minF + 1;
 }
 
-/**
- * v2.0: every voicing renders with paletteIndex = 0 → --chord-connector-color-1.
- * The v1 inversion-by-bass-note palette assignment (INVERSION_SLOTS +
- * inversionPaletteIndex + bassIntervalSemitones) was retired along with the
- * drop2 / triad voicing modes.
- */
-const V2_PALETTE_INDEX = 0;
-
 interface ChordConnectorVertex {
   x: number;
   y: number;
@@ -69,6 +61,8 @@ export interface ChordConnectorVoicing {
    * yields same index. Used to index into --chord-connector-color-N CSS tokens.
    */
   paletteIndex: number;
+  /** Redundant dash cue — true when this voicing was assigned a dashed style. */
+  dashed: boolean;
   shape?: CagedShape;
   /**
    * Stable identity key derived from the canonical sorted "(stringIndex,fretIndex)"
@@ -91,7 +85,7 @@ interface PendingChordConnectorVoicing {
   noteCoords: NormalizedChordConnectorVertex[];
   sourceCombo: NoteData[];
   paletteIndex: number;
-  offsetPx: number;
+  dashed: boolean;
   shape?: CagedShape;
   isFallback?: boolean;
 }
@@ -129,20 +123,6 @@ const MAX_FRET_SPAN = 5;
  * Examples kept  (3 positions): frets [4,5,5,6] → positions 4,5,6   → count 3.
  */
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
-
-const CONNECTOR_CONFLICT_GAP_PX = 1.5;
-
-/**
- * Per-voicing pixel offset deltas added to the base radius.
- * Two-color palette: voicings whose envelopes overlap alternate between
- * default radius (0) and one step larger (3 px). Clusters of 3+ overlapping
- * voicings wrap with modulo — the third+ voicing reuses an offset already
- * taken by a neighbor, producing a visible collision. This is an explicit
- * UX trade-off: full-chord templates rarely produce ≥3-way overlaps, and
- * when they do (e.g. degraded shapes in high frets), the accepted minor
- * collision reads as more elegant than a 5-tier ladder of growing radii.
- */
-const OFFSET_BUCKET = [0, 3] as const;
 
 function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
   return combo.some((note) =>
@@ -312,85 +292,15 @@ export function assignConflictEncodings(
   return result;
 }
 
-/**
- * Assign radius offsets using a discrete vertex-share conflict graph.
- *
- * Two voicings conflict iff they share at least one `(stringIndex, fretIndex)`
- * coordinate — both polylines pass through that exact dot, so their stroke
- * bubbles overlap there regardless of render scale. This is screen-resolution
- * independent and needs no calibration constants.
- *
- * After building the graph, a deterministic greedy color pass (sorted by
- * `canonicalKey`) assigns each voicing the smallest `OFFSET_BUCKET` value
- * not already taken by any neighbor. Clusters of 3+ overlapping voicings
- * exhaust the 2-color bucket — the third+ voicing wraps modulo and shares
- * an offset with a neighbor (documented UX trade-off in `OFFSET_BUCKET`).
- */
-function assignConflictOffsets(
-  pendingVoicings: ReadonlyArray<{
-    sourceCombo: NoteData[];
-    canonicalKey: string;
-    shape?: CagedShape;
-  }>,
-): Map<string, number> {
-  const result = new Map<string, number>();
-  const vertexSets = pendingVoicings.map(
-    (pv) => new Set(pv.sourceCombo.map((n) => `${n.stringIndex}-${n.fretIndex}`)),
-  );
-  const conflicts = pendingVoicings.map(() => new Set<number>());
-
-  for (let i = 0; i < pendingVoicings.length; i++) {
-    for (let j = i + 1; j < pendingVoicings.length; j++) {
-      const a = vertexSets[i]!;
-      const b = vertexSets[j]!;
-      let shares = false;
-      // Iterate the smaller set for early termination.
-      const [small, large] = a.size <= b.size ? [a, b] : [b, a];
-      for (const key of small) {
-        if (large.has(key)) { shares = true; break; }
-      }
-      if (shares) {
-        conflicts[i]!.add(j);
-        conflicts[j]!.add(i);
-      }
-    }
-  }
-
-  const sortedIndices = Array.from({ length: pendingVoicings.length }, (_, i) => i)
-    .sort((a, b) =>
-      pendingVoicings[a]!.canonicalKey.localeCompare(
-        pendingVoicings[b]!.canonicalKey,
-      ),
-    );
-
-  const assignedOffsets = new Map<number, number>();
-  for (const idx of sortedIndices) {
-    const used = new Set<number>();
-    for (const neighbor of conflicts[idx]!) {
-      const assigned = assignedOffsets.get(neighbor);
-      if (assigned !== undefined) used.add(assigned);
-    }
-
-    const offset = OFFSET_BUCKET.find((candidate) => !used.has(candidate)) ??
-      OFFSET_BUCKET[sortedIndices.indexOf(idx) % OFFSET_BUCKET.length]!;
-    assignedOffsets.set(idx, offset);
-    result.set(pendingVoicings[idx]!.canonicalKey, offset);
-  }
-
-  return result;
-}
-
-// Shared finalize step for chord-connector voicings: resolves per-voicing radii
-// (with edge-safe clamps) using the `offsetPx` already assigned in the topology
-// stage, then runs a post-clamp collision fix so overlapping voicings stay
-// visually distinguishable when yBounds clamping collapses their radii.
+// Resolves per-voicing connector radii (with edge-safe clamps). Radius feeds
+// the (currently unrendered) fill/outline paths only; the visible spine is a
+// plain center line. No offset or cross-voicing collision adjustment — those
+// were for the retired ribbon fill; overlapping voicings are now distinguished
+// by color + dash, not by radius.
 function computeFinalConnectorRadii(
   pendingVoicings: ReadonlyArray<{
     rawVertices: ChordConnectorVertex[];
     sourceCombo: NoteData[];
-    canonicalKey: string;
-    offsetPx: number;
-    shape?: CagedShape;
   }>,
   stringRowPx: number,
   lowestStringIndex: number,
@@ -400,49 +310,14 @@ function computeFinalConnectorRadii(
     stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
     stringRowPx,
   );
-  const radii = pendingVoicings.map((pv) => {
-    return resolveConnectorRadiusPx({
+  return pendingVoicings.map((pv) =>
+    resolveConnectorRadiusPx({
       vertices: pv.rawVertices,
-      preferredRadius: baseRadius + Math.max(pv.offsetPx, 0),
+      preferredRadius: baseRadius,
       yBounds,
       edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
-    });
-  });
-
-  if (yBounds) {
-    for (let i = 0; i < pendingVoicings.length; i++) {
-      for (let j = i + 1; j < pendingVoicings.length; j++) {
-        const dist = polylineDistance(
-          pendingVoicings[i]!.rawVertices,
-          pendingVoicings[j]!.rawVertices,
-        );
-        if (dist > radii[i]! + radii[j]! + CONNECTOR_CONFLICT_GAP_PX) continue;
-        if (Math.abs(radii[i]! - radii[j]!) >= 1) continue;
-
-        const offI = pendingVoicings[i]!.offsetPx;
-        const offJ = pendingVoicings[j]!.offsetPx;
-        const prefI = baseRadius + Math.max(offI, 0);
-        const prefJ = baseRadius + Math.max(offJ, 0);
-        const clampedI = radii[i]! < prefI - 0.5;
-        const clampedJ = radii[j]! < prefJ - 0.5;
-
-        const step = OFFSET_BUCKET[1] ?? 3;
-        if (clampedI && !clampedJ) {
-          radii[j] = Math.max(0, radii[i]! - step);
-        } else if (clampedJ && !clampedI) {
-          radii[i] = Math.max(0, radii[j]! - step);
-        } else if (clampedI && clampedJ) {
-          if (prefI <= prefJ) {
-            radii[i] = Math.max(0, radii[i]! - step);
-          } else {
-            radii[j] = Math.max(0, radii[j]! - step);
-          }
-        }
-      }
-    }
-  }
-
-  return radii;
+    }),
+  );
 }
 
 /**
@@ -505,14 +380,13 @@ export const CHORD_TONE_CLASSES = new Set([
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
  *   5. Two-pass path generation:
- *      a. **Collect pass** — the main loop pushes `{rawVertices, paletteIndex,
- *         canonicalKey}` to a `pendingVoicings` list (no path strings yet).
- *      b. **Cluster + assign pass** — after the loop, `detectOverlapClusters`
- *         computes adjacency-aware voicing groups via inflated-AABB union-find;
- *         `assignClusterOffsets` maps each `canonicalKey` to a distinct
- *         `offsetPx` from OFFSET_BUCKET (3 px spacing). Voicings that do not
- *         overlap any other voicing receive offset 0. Finally the pending list
- *         is iterated once more to emit final paths via
+ *      a. **Collect pass** — the main loop pushes `{rawVertices, canonicalKey}`
+ *         to a `pendingVoicings` list (no path strings yet).
+ *      b. **Encode + assign pass** — after the loop, `assignConflictEncodings`
+ *         builds a conflict graph (crossing / shared-note / proximity) and
+ *         greedy-colors it, mapping each `canonicalKey` to a `{paletteIndex,
+ *         dashed}` encoding so overlapping spines stay distinguishable. Finally
+ *         the pending list is iterated once more to emit final paths via
  *         `offsetOpenPolylinePath(rawVertices, computeChordConnectorRadiusPx(...))`.
  *
  * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
@@ -560,16 +434,17 @@ function createExplicitSourceCombo(
 }
 
 /**
- * Pure topology stage — discovers playable voicings and assigns conflict offsets
- * without any pixel geometry.
+ * Pure topology stage — discovers playable voicings and assigns conflict
+ * encodings (color + dash) without any pixel geometry.
  *
  * For generated voicings: runs the window-scan / filtering / dedupe algorithm,
- * collects `noteCoords` (fret/string indices), then calls `assignConflictOffsets`
- * using a canonical pixel scale (TOPOLOGY_*_UNIT_PX) so the O(N²) conflict
- * graph only runs when musical data changes — not on every resize.
+ * collects `noteCoords` (fret/string indices), then calls `assignConflictEncodings`
+ * on the normalized (fret, string) coordinates so the O(N²) conflict graph only
+ * runs when musical data changes — not on every resize.
  *
  * For explicit voicings: builds sourceCombo, canonicalKey, voicingKey, noteCoords,
- * paletteIndex, shape, and offsetPx from the supplied voicing descriptors.
+ * shape from the supplied voicing descriptors, then layers on the
+ * `{paletteIndex, dashed}` encoding from `assignConflictEncodings`.
  *
  * Returns [] when chordToneNames has fewer than 2 entries, no active chord-tone
  * positions exist, or `voicingSourceActive` is true with no explicit voicings.
@@ -586,7 +461,7 @@ export function buildPendingChordConnectorVoicings({
   voicingSourceActive?: boolean;
 }): PendingChordConnectorVoicing[] {
   if (explicitVoicings && explicitVoicings.length > 0) {
-    const pending: PendingChordConnectorVoicing[] = explicitVoicings.map((voicing) => {
+    const base = explicitVoicings.map((voicing) => {
       const sourceCombo = createExplicitSourceCombo(voicing.notes)
         .sort((a, b) => a.stringIndex - b.stringIndex);
       const noteCoords: NormalizedChordConnectorVertex[] = sourceCombo.map(
@@ -601,15 +476,16 @@ export function buildPendingChordConnectorVoicings({
         voicingKey: voicing.voicingKey,
         noteCoords,
         sourceCombo,
-        paletteIndex: V2_PALETTE_INDEX,
-        offsetPx: 0,
         shape: voicing.shape,
         isFallback: voicing.isFallback,
       };
     });
 
-    const offsetMap = assignConflictOffsets(pending);
-    return pending.map((pv) => ({ ...pv, offsetPx: offsetMap.get(pv.canonicalKey) ?? 0 }));
+    const encodings = assignConflictEncodings(base);
+    return base.map((pv) => ({
+      ...pv,
+      ...(encodings.get(pv.canonicalKey) ?? { paletteIndex: 0, dashed: false }),
+    }));
   }
 
   if (voicingSourceActive) return [];
@@ -649,7 +525,7 @@ export function buildPendingChordConnectorVoicings({
   }
 
   const emitted = new Set<string>();
-  const collected: Omit<PendingChordConnectorVoicing, "offsetPx">[] = [];
+  const collected: Omit<PendingChordConnectorVoicing, "paletteIndex" | "dashed">[] = [];
 
   // Slide an N-string window across the neck.
   for (let s = minString; s + N - 1 <= maxString; s++) {
@@ -746,7 +622,6 @@ export function buildPendingChordConnectorVoicings({
         voicingKey: canonicalKey,
         noteCoords,
         sourceCombo: bestCombo,
-        paletteIndex: V2_PALETTE_INDEX,
         shape: undefined,
       });
     }
@@ -754,9 +629,11 @@ export function buildPendingChordConnectorVoicings({
 
   if (collected.length === 0) return [];
 
-  // Vertex-share conflict offsets — discrete, screen-independent.
-  const offsetMap = assignConflictOffsets(collected);
-  return collected.map((pv) => ({ ...pv, offsetPx: offsetMap.get(pv.canonicalKey) ?? 0 }));
+  const encodings = assignConflictEncodings(collected);
+  return collected.map((pv) => ({
+    ...pv,
+    ...(encodings.get(pv.canonicalKey) ?? { paletteIndex: 0, dashed: false }),
+  }));
 }
 
 function finalizeChordConnectorPolylines(
@@ -766,7 +643,7 @@ function finalizeChordConnectorPolylines(
     paletteIndex: number;
     canonicalKey: string;
     voicingKey: string;
-    offsetPx: number;
+    dashed: boolean;
     shape?: CagedShape;
     isFallback?: boolean;
   }>,
@@ -804,6 +681,7 @@ function finalizeChordConnectorPolylines(
       spinePath,
       vertices: pv.rawVertices,
       paletteIndex: pv.paletteIndex,
+      dashed: pv.dashed,
       shape: pv.shape,
       voicingKey: pv.voicingKey,
       isFallback: pv.isFallback,
