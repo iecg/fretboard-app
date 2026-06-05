@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { glowUnderlayRadiusPx, reduceCircleRadius, taperAwareRadiusScale } from "./utils/noteSizing";
+import { reduceCircleRadius, taperAwareRadiusScale } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -86,7 +86,6 @@ export const FretboardNote = memo(function FretboardNote({
   });
   const rawRadius = baseRadius * radiusScale * taperScale;
   const r = reduceCircleRadius(rawRadius);
-  const glowR = glowUnderlayRadiusPx(r);
 
   const shapeEl =
     noteShape === "diamond" ? (
@@ -153,15 +152,6 @@ export const FretboardNote = memo(function FretboardNote({
         opacity: finalOpacity !== 1 ? finalOpacity : undefined,
       } as React.CSSProperties}
     >
-      <circle
-        className={styles["note-glow-underlay"]}
-        cx={cx}
-        cy={cy}
-        r={glowR}
-        style={applyLensEmphasis.glowColor ? { fill: applyLensEmphasis.glowColor } : undefined}
-        data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
-        aria-hidden="true"
-      />
       {/* Guide-target countdown ring. CSS animates the scale CONTRACTION (the
           beat countdown, timed to --lead-in-duration); motion owns OPACITY so
           AnimatePresence fades it in on mount and OUT on removal — decoupling

@@ -112,7 +112,6 @@ function renderedNoteSignature(
     note.applyDimOpacity,
     emph.opacityBoost,
     emph.radiusBoost,
-    emph.glowColor ?? "",
     emph.transitionRole ?? "",
     emph.guideTargetLabel ?? "",
     note.isHidden,

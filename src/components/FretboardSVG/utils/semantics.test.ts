@@ -12,7 +12,6 @@ describe("semantics utils", () => {
 
     it("guide tones get no static glow in the base emphasis (teal hue carries identity)", () => {
       const e = getEmphasis("chord-tone-in-scale", /*isGuideTone*/ true);
-      expect(e.glowColor).toBeUndefined();
       expect(e.radiusBoost).toBe(1);
       expect(e.opacityBoost).toBe(1);
     });
@@ -31,7 +30,7 @@ describe("semantics utils", () => {
     });
 
     it("never adds a static glow for guide tones regardless of underlying noteClass", () => {
-      expect(getEmphasis("chord-tone-outside-scale", true).glowColor).toBeUndefined();
+      expect(getEmphasis("chord-tone-outside-scale", true)).toEqual({ radiusBoost: 1, opacityBoost: 1 });
     });
 
     it("renders non-guide chord tones at full intensity", () => {
@@ -408,7 +407,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     // scale-only rests at radius 0.85; the target keeps that size (no bloom),
     // is brought to full opacity, and gets the ring hue + role + label.
     expect(getEmphasis("scale-only", false, ctx)).toEqual({
-      glowColor: "var(--note-incoming)", radiusBoost: 0.85, opacityBoost: 1,
+      radiusBoost: 0.85, opacityBoost: 1,
       transitionRole: "guide-target", guideTargetLabel: "3",
     });
   });
@@ -440,7 +439,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       commonWithNext: new Set(["A"]), nextGuideTones: new Set(["B"]),
     };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
-      glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1,
+      radiusBoost: 1.15, opacityBoost: 1,
     });
   });
 
@@ -457,7 +456,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       ...baseLeadContext, notePc: "A", commonWithNext: new Set(["A"]), leadInActive: false,
     };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
-      glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1,
+      radiusBoost: 1.15, opacityBoost: 1,
     });
   });
 
@@ -481,7 +480,6 @@ describe("getEmphasis - voice-leading emphasis", () => {
     expect(e.guideTargetLabel).toBe("3");
     expect(e.opacityBoost).toBe(1);
     expect(e.radiusBoost).toBe(0.85);
-    expect(e.glowColor).toBeUndefined();
   });
 
   it("landing (guide-target) takes precedence over planning when both flags are set", () => {
