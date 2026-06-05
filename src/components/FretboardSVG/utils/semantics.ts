@@ -6,7 +6,7 @@ import {
 
 export type BoxBound = { minFret: number; maxFret: number };
 
-export type TransitionRole = "guide-target";
+export type TransitionRole = "guide-target" | "guide-preview";
 
 export type LensEmphasis = {
   glowColor?: `var(--${string})`;
@@ -39,8 +39,10 @@ export type LeadLensContext = {
   incomingTones: Set<string>;
   /** Pitch classes the active chord drops on the change (`current − next`). */
   departingTones: Set<string>;
-  /** True only during the lead-in preview window. */
+  /** True only during the lead-in (landing) preview window. */
   leadInActive: boolean;
+  /** True only during the earlier planning runway (mutually exclusive with leadInActive). */
+  planningActive: boolean;
 };
 
 /**
@@ -81,7 +83,7 @@ export function getEmphasis(
     return applyTonesBase(noteClass);
   }
 
-  const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive } = leadContext;
+  const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive, planningActive } = leadContext;
 
   // The note's resting emphasis when not actively targeted — held common tones
   // keep a gentle hold glow, everything else uses the base model. This is the
@@ -91,17 +93,23 @@ export function getEmphasis(
       ? { glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1 }
       : applyTonesBase(noteClass);
 
-  // Lead-in: ONLY the next chord's guide tones deviate from their resting
-  // emphasis. A target keeps its resting SIZE (no bloom), is brought to full
-  // opacity, and gets the ring hue + role + label. Every other note returns its
-  // resting emphasis untouched — nothing dims, so the board holds still and the
-  // ring's onset carries the attention by itself.
+  // Landing: the next chord's guide tones get the urgent contracting ring.
   if (leadInActive && nextGuideTones.has(notePc)) {
     return {
       glowColor: "var(--note-incoming)",
       radiusBoost: resting.radiusBoost,
       opacityBoost: 1,
       transitionRole: "guide-target",
+      guideTargetLabel: nextGuideToneLabels.get(notePc),
+    };
+  }
+  // Planning: the same guide tones get a calm static preview (no glow — the
+  // dashed ring carries it). Brought to full opacity so the target reads.
+  if (planningActive && nextGuideTones.has(notePc)) {
+    return {
+      radiusBoost: resting.radiusBoost,
+      opacityBoost: 1,
+      transitionRole: "guide-preview",
       guideTargetLabel: nextGuideToneLabels.get(notePc),
     };
   }
