@@ -68,6 +68,12 @@ export const FretboardNote = memo(function FretboardNote({
 
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
+  const guidePhase =
+    transitionRole === "guide-target"
+      ? "landing"
+      : transitionRole === "guide-preview"
+        ? "preview"
+        : undefined;
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -163,17 +169,18 @@ export const FretboardNote = memo(function FretboardNote({
           which is what caused the boundary flash. The ring lands bright on the
           beat, then fades as the chord arrives. */}
       <AnimatePresence>
-        {transitionRole === "guide-target" && (
+        {guidePhase && (
           <motion.circle
             key="guide-ring"
             className={styles["note-guide-ring"]}
             data-guide-ring="true"
+            data-guide-phase={guidePhase}
             cx={cx}
             cy={cy}
             r={r + 4}
             aria-hidden="true"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.95 }}
+            animate={{ opacity: guidePhase === "preview" ? 0.7 : 0.95 }}
             exit={{ opacity: 0 }}
             transition={guideFade}
           />

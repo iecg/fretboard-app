@@ -195,3 +195,31 @@ describe("FretboardNote — glow underlay sizing", () => {
   );
 });
 
+describe("FretboardNote — two-phase guide ring", () => {
+  it("renders the ring with data-guide-phase='preview' for a guide-preview note", () => {
+    const { container } = renderNote(
+      makeNote({
+        transitionRole: "guide-preview",
+        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, guideTargetLabel: "3" },
+      }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring).not.toBeNull();
+    expect(ring?.getAttribute("data-guide-phase")).toBe("preview");
+  });
+
+  it("renders the ring with data-guide-phase='landing' for a guide-target note", () => {
+    const { container } = renderNote(
+      makeNote({ transitionRole: "guide-target" }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring).not.toBeNull();
+    expect(ring?.getAttribute("data-guide-phase")).toBe("landing");
+  });
+
+  it("renders no guide ring when there is no transition role", () => {
+    const { container } = renderNote(makeNote({ transitionRole: undefined }));
+    expect(container.querySelector("[data-guide-ring]")).toBeNull();
+  });
+});
+
