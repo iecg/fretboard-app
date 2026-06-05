@@ -175,6 +175,22 @@ export const FretboardNote = memo(function FretboardNote({
         )}
       </AnimatePresence>
       {shapeEl}
+      {/* Inner accent ring — marks root/guide identity in degree-color mode. It
+          sits INSIDE the marker (on the always-dark degree fill, never the wood),
+          so a bright role hue is guaranteed to read on every degree color. Styled
+          (and shown light-mode-only) via CSS. */}
+      {degreeColorsEnabled &&
+        noteShape === "circle" &&
+        (noteClass === "key-tonic" || isGuideTone) && (
+          <circle
+            className={styles["note-degree-accent"]}
+            data-accent-role={noteClass === "key-tonic" ? "root" : "guide"}
+            cx={cx}
+            cy={cy}
+            r={r * 0.72}
+            aria-hidden="true"
+          />
+        )}
       <AnimatePresence>
         {applyLensEmphasis.guideTargetLabel && (
           <motion.text

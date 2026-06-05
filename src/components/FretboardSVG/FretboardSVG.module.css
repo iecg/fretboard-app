@@ -193,11 +193,11 @@
    to preserve the outer edge of the majority of note bubbles: baseline chosen as
    note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px.
    Hollow roles are excluded, so they keep full --note-r (no compensation needed). */
-:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) :is(circle, path, polygon) {
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) :is(circle, path, polygon):not(.note-degree-accent) {
   stroke-width: 3.6;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) circle {
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) circle:not(.note-degree-accent) {
   r: calc(var(--note-r) * 1px - 0.4px);
 }
 
@@ -287,7 +287,7 @@
 }
 
 /* Degree color mode — keep this after role/lens selectors so degree fills win while role/lens rings remain visible. */
-.fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, path, polygon) {
+.fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] :is(circle, path, polygon):not(.note-degree-accent) {
   fill: var(--note-degree-fill, var(--degree-color, #141e28));
 }
 
@@ -299,25 +299,37 @@
   stroke: rgb(0 0 0 / 0.4);
 }
 
-/* Light-mode degree lens: the global heavy 3.6 "definition on wood" outline
-   reads as too thick over the colored degree fills. Thin it back to the
-   dark-mode role weight and restore full radius (the -0.4px compensation only
-   existed to offset the heavy stroke), so light matches dark in this mode.
-   Scoped to degree mode only — the default board keeps its 3.6 treatment.
-   Root (key-tonic) is excluded here; it gets its own rule below. */
-:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree]:not(.scale-only):not(.color-tone):not(.note-inactive):not(.key-tonic) :is(circle, path, polygon) {
-  stroke-width: 1.7;
+/* Light-mode degree lens: the global heavy 3.6 "definition on wood" outline is
+   too heavy over the colored degree fills. Thin every degree marker's edge back
+   to the dark-mode role weight and restore full radius (the -0.4px compensation
+   only offset the heavy stroke). Role identity for root/guide is carried by the
+   inner accent ring below, so the edge only needs light marker definition.
+   Scoped to degree mode; the default board keeps its 3.6 treatment. */
+:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree]:not(.scale-only):not(.color-tone):not(.note-inactive) :is(circle, path, polygon):not(.note-degree-accent) {
+  stroke-width: 1.9;
 }
-:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree]:not(.scale-only):not(.color-tone):not(.note-inactive) circle {
+:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree]:not(.scale-only):not(.color-tone):not(.note-inactive) circle:not(.note-degree-accent):not(.note-glow-underlay) {
   r: calc(var(--note-r) * 1px);
 }
 
-/* Light-mode degree-lens root: the degree-1 red fill swallows the dark rust
-   home ring (--fb-home-stroke). Use the vivid dark-theme home orange so the
-   root still reads as "home", kept slightly heavier than the other markers. */
-:global([data-theme="modern-light"]) .fretboard-board[data-degree-colors="true"] .fretboard-note.key-tonic[data-scale-degree] :is(circle, path, polygon) {
-  stroke: oklch(0.7775 0.1512 55.4);
-  stroke-width: 2.4;
+/* Inner accent ring — root/guide identity that reads on ANY degree fill. Every
+   degree fill is dark (the white-label APCA invariant), so a bright role-hue
+   ring placed INSIDE the marker (never touching the light wood) is guaranteed
+   to contrast for all eight colors. Geometry (r) is set inline in FretboardNote;
+   colour is light-mode-only — dark mode keeps its bright edge ring. */
+.fretboard-board[data-degree-colors="true"] .fretboard-note[data-scale-degree] circle.note-degree-accent {
+  fill: none;
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+:global([data-theme="modern-light"]) .fretboard-note .note-degree-accent[data-accent-role="root"] {
+  stroke: oklch(0.7775 0.1512 55.4); /* bright orange — dark-theme home hue */
+}
+:global([data-theme="modern-light"]) .fretboard-note .note-degree-accent[data-accent-role="guide"] {
+  stroke: oklch(0.8837 0.1056 209.8); /* bright cyan — dark-theme guide hue */
+}
+:global([data-theme="modern-dark"]) .fretboard-note .note-degree-accent {
+  display: none;
 }
 
 /* Accessibility layer */
