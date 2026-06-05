@@ -8,6 +8,10 @@ interface FretboardNoteLayerProps {
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
   animationMode?: NoteAnimationMode;
+  /** Layout geometry for taper-aware bubble sizing. */
+  neckWidthPx?: number;
+  neckHeight?: number;
+  numStrings?: number;
 }
 
 // This visual layer is decorative (its <svg> is aria-hidden + pointer-events:none).
@@ -20,6 +24,9 @@ export const FretboardNoteLayer = memo(({
   noteBubblePx,
   displayFormat,
   animationMode = "css",
+  neckWidthPx,
+  neckHeight,
+  numStrings,
 }: FretboardNoteLayerProps) => (
   // NOTE: reading a new render-affecting field in FretboardNote? Also add it to
   // `renderedNoteSignature` in useAnimatedFretboardView.ts, or cached notes will
@@ -31,6 +38,9 @@ export const FretboardNoteLayer = memo(({
         note={note}
         noteBubblePx={noteBubblePx}
         displayFormat={displayFormat}
+        neckWidthPx={neckWidthPx}
+        neckHeight={neckHeight}
+        numStrings={numStrings}
       />
     ))}
   </g>

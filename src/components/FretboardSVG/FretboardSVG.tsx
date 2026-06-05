@@ -706,6 +706,9 @@ export function FretboardSVG({
                     noteBubblePx={noteBubblePx}
                     displayFormat={displayFormat}
                     animationMode={motionPolicy.noteMode}
+                    neckWidthPx={neckWidthPx}
+                    neckHeight={neckHeight}
+                    numStrings={numStrings}
                   />
                 </g>
                 <ChordConnectorEvaluator {...connectorProps} pass="above" />

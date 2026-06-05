@@ -389,6 +389,42 @@ describe("FretboardNoteLayer", () => {
     );
     expect(container.querySelector('[data-motion="css"]')).toBeTruthy();
   });
+
+  it("shrinks near-nut bubbles but leaves the far neck pixel-identical", () => {
+    const noteBubblePx = 40;
+    const layout = { neckWidthPx: 1000, neckHeight: 300, numStrings: 6 };
+    const fullRadius =
+      (noteBubblePx / 2) * getNoteVisuals("note-active").radiusScale -
+      CIRCLE_RADIUS_REDUCTION_PX;
+
+    const { container } = render(
+      <svg>
+        <FretboardNoteLayer
+          notes={[
+            makeNote("note-active", { stringIndex: 0, fretIndex: 0, cx: 0, cy: 30 }),
+            makeNote("note-active", { stringIndex: 1, fretIndex: 12, cx: 1000, cy: 60 }),
+          ]}
+          noteBubblePx={noteBubblePx}
+          displayFormat="notes"
+          {...layout}
+        />
+      </svg>,
+    );
+
+    const markers = [...container.querySelectorAll('circle:not([data-glow])')];
+    expect(markers).toHaveLength(2);
+    const [nutR, bridgeR] = markers.map((c) => Number(c.getAttribute("r")));
+
+    // Far end: unchanged (scale === 1).
+    expect(bridgeR).toBeCloseTo(fullRadius);
+    // Nut end: strictly smaller.
+    expect(nutR).toBeLessThan(bridgeR);
+    // Nut end: scale 0.8309 applied to rawRadius BEFORE the px reduction.
+    const expectedNut =
+      (noteBubblePx / 2) * getNoteVisuals("note-active").radiusScale * 0.8309 -
+      CIRCLE_RADIUS_REDUCTION_PX;
+    expect(nutR).toBeCloseTo(expectedNut, 1);
+  });
 });
 
 describe("FretboardNote a11y contract (issue #493)", () => {
