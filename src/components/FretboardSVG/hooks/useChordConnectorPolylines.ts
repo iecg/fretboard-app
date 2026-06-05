@@ -231,6 +231,88 @@ function polylineDistance(
 }
 
 /**
+ * Ordered palette slots used to color conflicting voicings, expressed as
+ * 0-based indices (the render layer adds 1 → 1-based --chord-connector-color-N).
+ * Order is chosen for contrast on the wood neck in both themes; slot 8 (yellow,
+ * index 7) and slot 3 (gray, index 2) are skipped as low-contrast on light wood.
+ * Resulting CSS slots in order: 1,6,4,7,2,5 → orange, blue, green, purple,
+ * vermillion, sky. Clusters needing more than 6 colors wrap modulo.
+ */
+export const CONNECTOR_PALETTE_ROTATION = [0, 5, 3, 6, 1, 4] as const;
+
+/**
+ * Maximum distance, in normalized (fret, string) units, at which two spines
+ * are treated as conflicting. 0 covers crossings and shared notes; the small
+ * positive slack also catches near-misses. Approximate in pixel terms (fret
+ * and string axes differ in px), but crossings are exact and the metric is
+ * screen-independent so assigned colors stay stable across resize.
+ */
+const CONFLICT_THRESHOLD_UNITS = 0.6;
+
+interface ConnectorEncoding {
+  /** 0-based palette index; render adds 1 for the 1-based CSS slot. */
+  paletteIndex: number;
+  /** Redundant second cue — dashed when the assigned color slot is odd. */
+  dashed: boolean;
+}
+
+/**
+ * Assign each voicing a distinct visual encoding (color + dash) so overlapping
+ * spines stay distinguishable. Builds a conflict graph — two voicings conflict
+ * when their spines cross, share a note, or pass within CONFLICT_THRESHOLD_UNITS
+ * — then greedy-colors it (deterministically, ordered by canonicalKey). The
+ * color slot maps through CONNECTOR_PALETTE_ROTATION; dash follows slot parity.
+ *
+ * Operates on normalized (fret, string) coordinates via the pure geometry
+ * helpers, so the result is screen-independent: it lives in the topology stage
+ * and does not change on resize.
+ */
+export function assignConflictEncodings(
+  voicings: ReadonlyArray<{
+    canonicalKey: string;
+    noteCoords: NormalizedChordConnectorVertex[];
+  }>,
+): Map<string, ConnectorEncoding> {
+  const result = new Map<string, ConnectorEncoding>();
+  const polylines = voicings.map((v) =>
+    v.noteCoords.map((c) => ({ x: c.fretIndex, y: c.stringIndex })),
+  );
+  const n = voicings.length;
+  const conflicts = voicings.map(() => new Set<number>());
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (polylineDistance(polylines[i]!, polylines[j]!) <= CONFLICT_THRESHOLD_UNITS) {
+        conflicts[i]!.add(j);
+        conflicts[j]!.add(i);
+      }
+    }
+  }
+
+  const order = Array.from({ length: n }, (_, i) => i).sort((a, b) =>
+    voicings[a]!.canonicalKey.localeCompare(voicings[b]!.canonicalKey),
+  );
+
+  const slotByIndex = new Map<number, number>();
+  for (const idx of order) {
+    const used = new Set<number>();
+    for (const neighbor of conflicts[idx]!) {
+      const slot = slotByIndex.get(neighbor);
+      if (slot !== undefined) used.add(slot);
+    }
+    let slot = 0;
+    while (used.has(slot)) slot++;
+    slotByIndex.set(idx, slot);
+    result.set(voicings[idx]!.canonicalKey, {
+      paletteIndex:
+        CONNECTOR_PALETTE_ROTATION[slot % CONNECTOR_PALETTE_ROTATION.length]!,
+      dashed: slot % 2 === 1,
+    });
+  }
+
+  return result;
+}
+
+/**
  * Assign radius offsets using a discrete vertex-share conflict graph.
  *
  * Two voicings conflict iff they share at least one `(stringIndex, fretIndex)`

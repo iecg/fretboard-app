@@ -8,6 +8,8 @@ import {
   MAX_PLAYABLE_FRET_POSITIONS,
   CHORD_TONE_CLASSES,
   useChordConnectorPolylines,
+  assignConflictEncodings,
+  CONNECTOR_PALETTE_ROTATION,
 } from "./useChordConnectorPolylines";
 import {
   clampConnectorRadiusToYBounds,
@@ -999,5 +1001,53 @@ describe("connector topology memo split", () => {
         STRING_ROW_PX,
       ),
     );
+  });
+});
+
+describe("assignConflictEncodings", () => {
+  const vc = (canonicalKey: string, coords: Array<[number, number]>) => ({
+    canonicalKey,
+    noteCoords: coords.map(([stringIndex, fretIndex]) => ({ stringIndex, fretIndex })),
+  });
+
+  it("a single voicing gets slot 0 → first rotation color, solid", () => {
+    const enc = assignConflictEncodings([vc("a", [[0, 0], [1, 2], [2, 4]])]);
+    expect(enc.get("a")).toEqual({ paletteIndex: CONNECTOR_PALETTE_ROTATION[0], dashed: false });
+  });
+
+  it("voicings that share a note get different palette indices", () => {
+    const enc = assignConflictEncodings([
+      vc("a", [[0, 0], [1, 2], [2, 4]]),
+      vc("b", [[1, 2], [2, 3], [3, 5]]),
+    ]);
+    expect(enc.get("a")!.paletteIndex).not.toBe(enc.get("b")!.paletteIndex);
+  });
+
+  it("dash follows color-slot parity (odd slot → dashed)", () => {
+    const enc = assignConflictEncodings([
+      vc("a", [[0, 0], [1, 2], [2, 4]]),
+      vc("b", [[1, 2], [2, 3], [3, 5]]),
+    ]);
+    expect(enc.get("a")!.dashed).toBe(false);
+    expect(enc.get("b")!.dashed).toBe(true);
+  });
+
+  it("non-conflicting voicings both get slot 0 (same color, solid)", () => {
+    const enc = assignConflictEncodings([
+      vc("a", [[0, 0], [1, 0], [2, 0]]),
+      vc("b", [[3, 12], [4, 12], [5, 12]]),
+    ]);
+    expect(enc.get("a")).toEqual(enc.get("b"));
+    expect(enc.get("a")).toEqual({ paletteIndex: CONNECTOR_PALETTE_ROTATION[0], dashed: false });
+  });
+
+  it("is deterministic and screen-independent (coords drive it, not pixels)", () => {
+    const input = [
+      vc("a", [[0, 0], [1, 2], [2, 4]]),
+      vc("b", [[1, 2], [2, 3], [3, 5]]),
+    ];
+    const first = assignConflictEncodings(input);
+    const second = assignConflictEncodings(input);
+    expect([...second.entries()]).toEqual([...first.entries()]);
   });
 });
