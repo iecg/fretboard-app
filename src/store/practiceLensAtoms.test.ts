@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction } from "./practiceLensAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -691,6 +691,45 @@ describe("isInLeadInWindow", () => {
     expect(isInLeadInWindow(0.76, 8000, 2000)).toBe(true);
     // Uncapped (no bar) the same step would already be in-window at 0.6.
     expect(isInLeadInWindow(0.6, 8000)).toBe(true);
+  });
+});
+
+describe("isInPlanningWindow", () => {
+  it("is active before the landing window for a single-bar step (runway starts at onset)", () => {
+    // step 2000, bar 2000: landing = 1000ms (50%); planning span = whole step.
+    // planning = [0, 0.5); landing = [0.5, 1].
+    expect(isInPlanningWindow(0.0, 2000, 2000)).toBe(true);
+    expect(isInPlanningWindow(0.3, 2000, 2000)).toBe(true);
+    expect(isInPlanningWindow(0.5, 2000, 2000)).toBe(false); // landing, not planning
+    expect(isInPlanningWindow(0.7, 2000, 2000)).toBe(false);
+  });
+
+  it("caps the runway at 2 bars on a long chord (no preview earlier than 2 bars out)", () => {
+    // step 8000, bar 2000: landing = 2000 (1-bar cap); planning span = 4000 (2 bars).
+    // planning = [0.5, 0.75); landing = [0.75, 1].
+    expect(isInPlanningWindow(0.4, 8000, 2000)).toBe(false); // >2 bars out
+    expect(isInPlanningWindow(0.5, 8000, 2000)).toBe(true);
+    expect(isInPlanningWindow(0.74, 8000, 2000)).toBe(true);
+    expect(isInPlanningWindow(0.75, 8000, 2000)).toBe(false); // landing
+  });
+
+  it("has no room when the landing floor eats the runway (very fast tempo)", () => {
+    // step 1000, bar 200: planning span = min(1000, 400) = 400; landing floor = 600.
+    // 400 <= 600 -> no planning room at all.
+    expect(isInPlanningWindow(0.1, 1000, 200)).toBe(false);
+    expect(isInPlanningWindow(0.5, 1000, 200)).toBe(false);
+  });
+
+  it("uses the proportional landing window when no bar length is given", () => {
+    // step 8000, no bar: landing = 4000 (50%); planning span = 8000.
+    // planning = [0, 0.5).
+    expect(isInPlanningWindow(0.3, 8000)).toBe(true);
+    expect(isInPlanningWindow(0.5, 8000)).toBe(false);
+  });
+
+  it("returns false for a non-positive step duration", () => {
+    expect(isInPlanningWindow(0.5, 0, 2000)).toBe(false);
+    expect(isInPlanningWindow(0.5, -100, 2000)).toBe(false);
   });
 });
 

@@ -146,6 +146,33 @@ export function isInLeadInWindow(
   return stepFraction >= startFraction;
 }
 
+/** Planning runway is capped at this many bars before the chord change. */
+const PLANNING_RUNWAY_BARS = 2;
+
+/**
+ * True when the playhead is in the PLANNING runway — before the landing
+ * window, within {@link PLANNING_RUNWAY_BARS} bars of the change. Mutually
+ * exclusive with {@link isInLeadInWindow} by construction. The runway spans
+ * `[end − min(step, 2·bar), end − landingWindow]`; it is empty when the landing
+ * floor leaves no room before it. Pure so it is unit-testable without atoms.
+ */
+export function isInPlanningWindow(
+  stepFraction: number,
+  stepDurationMs: number,
+  barDurationMs = Infinity,
+): boolean {
+  if (stepDurationMs <= 0) return false;
+  const landingMs = computeLeadInWindowMs(stepDurationMs, barDurationMs);
+  const planningSpanMs = Math.min(
+    stepDurationMs,
+    PLANNING_RUNWAY_BARS * barDurationMs,
+  );
+  if (planningSpanMs <= landingMs) return false; // landing floor leaves no room
+  const startFraction = 1 - planningSpanMs / stepDurationMs;
+  const endFraction = 1 - landingMs / stepDurationMs;
+  return stepFraction >= startFraction && stepFraction < endFraction;
+}
+
 /**
  * Fraction [0,1] of the active STEP elapsed, derived from the per-step deadline
  * (`Date.now() + stepDurationMs`, set on each step advance) rather than the
