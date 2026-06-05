@@ -95,41 +95,6 @@ const BLUES_DEGREES: Record<string, Record<number, string>> = {
   "minor blues": PENTATONIC_DEGREES["minor pentatonic"],
 };
 
-export const BLUE_NOTE_COLOR = "#0047ff";
-
-export const DEGREE_COLORS: Record<string, string> = {
-  "I": "#ff7f00",
-  "I+": "#ff7f00",
-  "i": "#ff7f00",
-  "i°": "#ff7f00",
-  "II": "#377eb8",
-  "II+": "#377eb8",
-  "ii": "#377eb8",
-  "ii°": "#377eb8",
-  "III": "#4daf4a",
-  "III+": "#4daf4a",
-  "iii": "#4daf4a",
-  "iii°": "#4daf4a",
-  "IV": "#e41a1c",
-  "IV+": "#e41a1c",
-  "iv": "#e41a1c",
-  "iv°": "#e41a1c",
-  "V": "#7e22ce",
-  "V+": "#7e22ce",
-  "v": "#7e22ce",
-  "v°": "#7e22ce",
-  "VI": "#fdd835",
-  "VI+": "#fdd835",
-  "vi": "#fdd835",
-  "vi°": "#fdd835",
-  "VII": "#f781bf",
-  "VII+": "#f781bf",
-  "vii": "#f781bf",
-  "vii°": "#f781bf",
-  "b3": BLUE_NOTE_COLOR,
-  "b5": BLUE_NOTE_COLOR,
-};
-
 // Diatonic triad quality for each scale degree (semitone offset → chord-name key).
 // Covers the 8 scales explicitly listed in MODE_DEGREES.
 const DEGREE_DIATONIC_QUALITY: Record<string, Record<number, string>> = {

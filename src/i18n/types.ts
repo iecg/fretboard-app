@@ -18,13 +18,11 @@ export interface Dictionary {
     fields: {
       zoom: string;
       fretRange: string;
-      scaleDegreeColors: string;
       tuning: string;
       accidentals: string;
       enharmonicDisplay: string;
       soundQuality: string;
       theme: string;
-      scaleDegreeColorsHint: string;
       accidentalsHint: string;
       enharmonicDisplayHint: string;
       themeHint: string;
@@ -41,7 +39,6 @@ export interface Dictionary {
     songTab: string;
     groupFingering: string;
     pattern: string;
-    degreeColors: string;
     fullChords: string;
     statusVisible: string;
     statusHidden: string;

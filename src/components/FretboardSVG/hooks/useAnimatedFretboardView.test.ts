@@ -33,7 +33,6 @@ const TOPOLOGY_PROPS = {
   scaleName: "major",
   preferFlats: false,
   displayFormat: "notes" as const,
-  degreeColorsEnabled: true,
   wrappedNotes: new Set<string>(),
   tuning: ["G3"],
 };
@@ -77,7 +76,6 @@ describe("useAnimatedFretboardView", () => {
           topology,
           hasChordOverlay: true,
           displayFormat: "notes",
-          degreeColorsEnabled: true,
           preferFlats: false,
           scaleName: "major",
           rootNote: "G",
@@ -132,7 +130,6 @@ describe("useAnimatedFretboardView", () => {
           topology,
           hasChordOverlay: true,
           displayFormat: "notes",
-          degreeColorsEnabled: true,
           preferFlats: false,
           scaleName: "major",
           rootNote: "G",

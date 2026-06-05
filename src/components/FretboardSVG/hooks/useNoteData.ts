@@ -38,8 +38,6 @@ export interface NoteData {
   isHidden: boolean;
   isTension: boolean;
   isGuideTone: boolean;
-  scaleDegree?: string;
-  degreeColor?: string;
   fullChordShape?: CagedShape;
 }
 
@@ -64,7 +62,6 @@ export interface UseNoteDataProps {
   scaleName: UseStaticFretboardTopologyProps["scaleName"];
   preferFlats: UseStaticFretboardTopologyProps["preferFlats"];
   displayFormat?: UseStaticFretboardTopologyProps["displayFormat"];
-  degreeColorsEnabled?: UseStaticFretboardTopologyProps["degreeColorsEnabled"];
   wrappedNotes: UseStaticFretboardTopologyProps["wrappedNotes"];
   tuning: UseStaticFretboardTopologyProps["tuning"];
   noteSemantics?: Map<string, NoteSemantics>;
@@ -99,7 +96,6 @@ export function useNoteData({
   scaleName,
   preferFlats,
   displayFormat,
-  degreeColorsEnabled,
   wrappedNotes,
   tuning,
   noteSemantics,
@@ -129,7 +125,6 @@ export function useNoteData({
     scaleName,
     preferFlats,
     displayFormat,
-    degreeColorsEnabled,
     wrappedNotes,
     tuning,
     noteSemantics,

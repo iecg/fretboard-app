@@ -22,7 +22,6 @@ const TOPOLOGY_PROPS = {
   scaleName: "major",
   preferFlats: false,
   displayFormat: "notes" as const,
-  degreeColorsEnabled: true,
   wrappedNotes: new Set<string>(),
   tuning: ["G3"],
 };

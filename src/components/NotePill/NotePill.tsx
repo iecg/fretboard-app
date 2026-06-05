@@ -23,9 +23,9 @@ export interface NotePillProps {
   noteClassName?: string;
   /** Class applied to the interval label span. */
   intervalClassName?: string;
-  /** Inline style for the `<li>` (e.g. `--degree-color`). */
+  /** Inline style for the `<li>` (e.g. a CSS custom property). */
   itemStyle?: CSSProperties;
-  /** Inline style for the pill `<button>` (e.g. `--degree-color`). */
+  /** Inline style for the pill `<button>` (e.g. a CSS custom property). */
   pillStyle?: CSSProperties;
   /** `data-*` attributes spread onto the `<li>`. */
   itemData?: Record<string, string | undefined>;

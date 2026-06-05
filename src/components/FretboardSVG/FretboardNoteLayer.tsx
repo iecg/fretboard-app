@@ -7,7 +7,6 @@ interface FretboardNoteLayerProps {
   notes: RenderedFretboardNote[];
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
-  degreeColorsEnabled?: boolean;
   animationMode?: NoteAnimationMode;
 }
 
@@ -20,7 +19,6 @@ export const FretboardNoteLayer = memo(({
   notes,
   noteBubblePx,
   displayFormat,
-  degreeColorsEnabled,
   animationMode = "css",
 }: FretboardNoteLayerProps) => (
   // NOTE: reading a new render-affecting field in FretboardNote? Also add it to
@@ -33,7 +31,6 @@ export const FretboardNoteLayer = memo(({
         note={note}
         noteBubblePx={noteBubblePx}
         displayFormat={displayFormat}
-        degreeColorsEnabled={degreeColorsEnabled}
       />
     ))}
   </g>

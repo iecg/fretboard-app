@@ -25,7 +25,6 @@ export interface UseAnimatedFretboardViewProps {
   topology: StaticFretboardTopologyNote[];
   hasChordOverlay: boolean;
   displayFormat?: "notes" | "degrees" | "none";
-  degreeColorsEnabled?: boolean;
   preferFlats?: boolean;
   scaleName?: string;
   rootNote?: string;
@@ -118,8 +117,6 @@ function renderedNoteSignature(
     note.isHidden,
     note.isTension,
     note.isGuideTone,
-    note.scaleDegree ?? "",
-    note.degreeColor ?? "",
     note.fullChordShape ?? "",
     note.isInRegion,
   ].join("|");
@@ -162,7 +159,6 @@ export function useAnimatedFretboardView({
   topology,
   hasChordOverlay,
   displayFormat,
-  degreeColorsEnabled,
   preferFlats,
   scaleName,
   rootNote,
@@ -170,7 +166,6 @@ export function useAnimatedFretboardView({
   stringYAt,
 }: UseAnimatedFretboardViewProps) {
   void displayFormat;
-  void degreeColorsEnabled;
   void preferFlats;
   void scaleName;
   void rootNote;

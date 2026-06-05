@@ -9,13 +9,6 @@ export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   GET_ON_INIT,
 );
 
-export const scaleDegreeColorsEnabledAtom = atomWithStorage<boolean>(
-  k("scaleDegreeColorsEnabled"),
-  false,
-  undefined,
-  GET_ON_INIT,
-);
-
 export const settingsOverlayOpenAtom = atom<boolean>(false);
 
 export type ThemePreference = "light" | "dark" | "system";

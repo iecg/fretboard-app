@@ -187,7 +187,6 @@
   --note-role-chord-fill: color-mix(in srgb, var(--role-chord-border) 10%, transparent);
   --note-role-tension-fill: color-mix(in srgb, var(--role-chord-border) 34%, transparent);
   --note-role-border: var(--role-chord-border);
-  --note-degree-fill: color-mix(in srgb, var(--degree-color, #4daf4a) 62%, #0f172a);
 
   /* Fretboard note fills — solid token-based fills for the dark theme.
      Alpha encoding is intentionally removed from these fills; visual dimming

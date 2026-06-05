@@ -31,7 +31,6 @@ interface FretboardNoteProps {
   note: RenderedFretboardNote;
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
-  degreeColorsEnabled?: boolean;
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
@@ -39,7 +38,6 @@ export const FretboardNote = memo(function FretboardNote({
   note,
   noteBubblePx,
   displayFormat,
-  degreeColorsEnabled,
   onNoteClick,
 }: FretboardNoteProps) {
   const {
@@ -57,8 +55,6 @@ export const FretboardNote = memo(function FretboardNote({
     isHidden,
     isTension,
     isGuideTone,
-    scaleDegree,
-    degreeColor,
     fullChordShape,
     transitionRole,
   } = note;
@@ -121,8 +117,6 @@ export const FretboardNote = memo(function FretboardNote({
       data-full-chord-mode={fullChordShape || undefined}
       data-transition-role={transitionRole ?? undefined}
       data-in-region={note.isInRegion ? "true" : undefined}
-      data-scale-degree={degreeColorsEnabled ? scaleDegree : undefined}
-      data-degree-colors={degreeColorsEnabled ? "true" : undefined}
       style={{
         "--note-r": r,
         "--emph-scale": applyLensEmphasis.radiusBoost,
@@ -137,9 +131,6 @@ export const FretboardNote = memo(function FretboardNote({
         transformOrigin: `${cx}px ${cy}px`,
         transform: "scale(var(--emph-scale, 1))",
         opacity: finalOpacity !== 1 ? finalOpacity : undefined,
-        ...(degreeColor && degreeColorsEnabled
-          ? { "--degree-color": degreeColor }
-          : undefined),
       } as React.CSSProperties}
     >
       <circle
