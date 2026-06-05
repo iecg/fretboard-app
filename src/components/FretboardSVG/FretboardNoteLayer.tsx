@@ -8,7 +8,7 @@ interface FretboardNoteLayerProps {
   noteBubblePx: number;
   displayFormat: "notes" | "degrees" | "none";
   animationMode?: NoteAnimationMode;
-  /** Layout geometry for taper-aware bubble sizing. */
+  /** Layout geometry for taper-aware sizing. Omitted → no shrink (scale 1). */
   neckWidthPx?: number;
   neckHeight?: number;
   numStrings?: number;

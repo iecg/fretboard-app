@@ -22,6 +22,7 @@ vi.mock("./FretboardNote", async (importOriginal) => {
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 import {
   CIRCLE_RADIUS_REDUCTION_PX,
+  taperAwareRadiusScale,
 } from "./utils/noteSizing";
 import { getNoteVisuals } from "./utils/semantics";
 import { formatAccidental } from "@fretflow/core";
@@ -419,11 +420,14 @@ describe("FretboardNoteLayer", () => {
     expect(bridgeR).toBeCloseTo(fullRadius);
     // Nut end: strictly smaller.
     expect(nutR).toBeLessThan(bridgeR);
-    // Nut end: scale 0.8309 applied to rawRadius BEFORE the px reduction.
+    // Nut end: the helper's scale applied to rawRadius BEFORE the px reduction.
+    // Deriving the scale from the helper (rather than a hardcoded constant) keeps
+    // this test stable if the taper tuning constants change.
+    const nutScale = taperAwareRadiusScale({ x: 0, ...layout, noteBubblePx });
     const expectedNut =
-      (noteBubblePx / 2) * getNoteVisuals("note-active").radiusScale * 0.8309 -
+      (noteBubblePx / 2) * getNoteVisuals("note-active").radiusScale * nutScale -
       CIRCLE_RADIUS_REDUCTION_PX;
-    expect(nutR).toBeCloseTo(expectedNut, 1);
+    expect(nutR).toBeCloseTo(expectedNut, 2);
   });
 });
 
