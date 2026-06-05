@@ -534,21 +534,17 @@ describe("paletteIndex + dashed encoding", () => {
 });
 
 // -------------------------------------------------------------------------
-// Per-voicing offset: determinism and paletteIndex independence
+// Determinism and paletteIndex independence across separate calls.
 //
-// Phase 3 (plan 02) uses adjacency-aware cluster assignment instead of a
-// static canonicalKeyHash. Each call to buildChordConnectorPolylines is
-// independent — when a call contains only one voicing, it forms a singleton
-// cluster and receives offset 0. Two separate calls with different note
-// positions produce different path strings because the vertex coordinates
-// themselves differ (different fret positions → different x values).
+// Each call to buildChordConnectorPolylines is independent. A call containing
+// a single voicing has no conflicts, so it gets the default slot
+// (paletteIndex 0, solid). Two separate single-voicing calls at different neck
+// positions therefore share the same paletteIndex (0) yet produce different
+// path strings, because the vertex coordinates differ.
 //
 // The key property tested here: same paletteIndex does NOT guarantee the same
 // path — different neck positions still produce different paths. Determinism:
 // the same inputs always produce the same output.
-//
-// Both voicings have G on the highest-stringIndex string (string 2) → same
-// paletteIndex (7) regardless of fret position.
 // -------------------------------------------------------------------------
 
 describe("per-voicing offset: determinism and paletteIndex independence", () => {

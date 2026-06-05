@@ -352,12 +352,12 @@
 }
 
 /* -----------------------------------------------------------------------
-   Chord-tone connector layer — the ribbon connector.
-   Halo layer: disabled (stroke: none) so both themes match.
-   Fill layer: low-opacity translucent band beneath the note bubbles.
-   Spine layer: a single solid center line through the voicing notes.
-   All layers render in the "below" pass so note markers occlude the spine.
-   Color driven by --chord-connector-color-N (see [data-layer] rule below).
+   Chord-tone connector layer — line-only connector.
+   Halo layer: a soft neutral underlay so the line reads over the wood.
+   Spine layer: the center line through the voicing notes; per-voicing color
+   comes from the [data-palette-index] rules below, and overlapping voicings
+   may be dashed via [data-dash].
+   Both layers render in the "below" pass so note markers occlude the line.
    ----------------------------------------------------------------------- */
 /* Halo underlay — a soft, slightly wider stroke beneath the accent line so the
    connector reads over busy wood grain and where lines cross. */
