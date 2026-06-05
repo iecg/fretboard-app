@@ -375,7 +375,7 @@ describe("FretboardNoteLayer", () => {
       </svg>,
     );
 
-    const markers = [...container.querySelectorAll('circle:not([data-glow])')];
+    const markers = [...container.querySelectorAll('circle')];
     expect(markers).toHaveLength(2);
     const [nutR, bridgeR] = markers.map((c) => Number(c.getAttribute("r")));
 
