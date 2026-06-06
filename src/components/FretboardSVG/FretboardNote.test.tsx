@@ -167,5 +167,24 @@ describe("FretboardNote — two-phase guide ring", () => {
     const { container } = renderNote(makeNote({ transitionRole: undefined }));
     expect(container.querySelector("[data-guide-ring]")).toBeNull();
   });
+
+  it("renders the ring as a halo + core pair (2-colour ring) for a target note", () => {
+    const { container } = renderNote(makeNote({ transitionRole: "guide-target" }));
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring?.querySelectorAll("circle")).toHaveLength(2);
+  });
+
+  it("renders the incoming-hue backing disc tagged with the phase for a target note", () => {
+    const { container } = renderNote(makeNote({ transitionRole: "guide-preview" }));
+    const backing = container.querySelector("[data-guide-phase]:not([data-guide-ring])");
+    expect(backing).not.toBeNull();
+    expect(backing?.tagName.toLowerCase()).toBe("circle");
+    expect(backing?.getAttribute("data-guide-phase")).toBe("preview");
+  });
+
+  it("renders no backing disc when there is no transition role", () => {
+    const { container } = renderNote(makeNote({ transitionRole: undefined }));
+    expect(container.querySelector("[data-guide-phase]")).toBeNull();
+  });
 });
 

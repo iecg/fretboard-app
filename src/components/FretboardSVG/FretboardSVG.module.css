@@ -209,34 +209,95 @@
   filter: var(--fretboard-svg-glow-orange-url);
 }
 
-/* Guide-target ring — a hollow ring on the next chord's guide tones during the
-   lead-in window. CSS animates ONLY the scale contraction (the beat countdown,
-   timed to --lead-in-duration); OPACITY is owned by motion/AnimatePresence in
-   FretboardNote, which fades the ring in on mount and OUT on removal. Splitting
-   the two (CSS=transform, JS=opacity) is deliberate: the fade-out is driven by
-   the animation system on unmount rather than racing React's startTransition-
-   jittered removal, which is what caused the boundary flash. The ring lands
-   bright on the beat (scale 1, held) and fades cleanly as the chord arrives.
-   transform/opacity only -> compositor-driven (no per-frame JS, no perf hit).
-   The ring reuses the incoming hue token, so no new colour is introduced. */
+/* Target backing disc — a translucent incoming-hue fill BEHIND the marker that
+   ground-lifts a recessed (hollow) target note so the ring has a body to frame.
+   Invisible under an opaque chord-note fill (it sits behind the shape), visible
+   through a hollow note. Slightly stronger at landing than planning. */
+/* The note-role rules (`.fretboard-note … :is(circle, path, polygon)`) are
+   descendant selectors that would otherwise paint these helper circles with the
+   note's role fill/stroke/width. They outrank any practical class specificity,
+   so `!important` is the robust, intent-correct exemption — the same escape the
+   former glow underlay used in this file. */
+.note-target-backing {
+  fill: var(--note-incoming) !important;
+  stroke: none !important;
+  pointer-events: none;
+}
+
+.note-target-backing[data-guide-phase="preview"] {
+  opacity: 0.42;
+}
+
+.note-target-backing[data-guide-phase="landing"] {
+  opacity: 0.52;
+}
+
+/* Two-phase target ring — a hollow ring on the next chord's guide tones. A dark
+   halo under a coloured core (a 2-colour "Oreo" ring) keeps it legible over any
+   fill and on light or dark wood. The PHASE rides stroke-weight + opacity, NOT
+   dash (the weakest channel — what made the old ring invisible): planning is
+   thin + dim + static; landing is thick + bright and CONTRACTS toward the beat.
+   CSS animates ONLY the contraction (scale); OPACITY is owned by
+   motion/AnimatePresence in FretboardNote (so the fade-out is driven by the
+   animation system on unmount rather than racing React's startTransition-
+   jittered removal — the boundary flash). The ring reuses the incoming hue
+   token, so no new colour is introduced. */
 .note-guide-ring {
-  fill: none;
-  stroke: var(--note-incoming);
-  stroke-width: 2;
   transform-box: fill-box;
   transform-origin: center;
 }
 
-/* Planning phase — calm, static, dashed. No motion: a static form raises no
-   sensory transient, so it sits in the periphery as a "plan toward this" cue
-   without competing with the single contracting landing ring. */
-.note-guide-ring[data-guide-phase="preview"] {
-  stroke-dasharray: 3 3;
+/* `!important` on stroke/fill/width: the note-role descendant rules
+   (`.fretboard-note … :is(circle, path, polygon)`) would otherwise repaint these
+   ring circles with the note's role colour and width (e.g. orange 3.6px on a
+   chord tone, thin neutral on a scale tone) — which is exactly what made the
+   ring blend into the marker. The exemption mirrors the former glow underlay. */
+.note-guide-ring-halo,
+.note-guide-ring-core {
+  fill: none !important;
 }
 
-/* Landing phase — the urgent contracting countdown. Starts near the preview's
-   resting size (NOT a big re-bloom) so the phase transition reads as "the calm
-   ring tightens and lands". OPACITY is motion-owned (see FretboardNote). */
+/* Dark contrast halo — sits ~1px proud of the core on each side so the coloured
+   ring reads crisply over light maple, dark rosewood, and any marker fill. */
+.note-guide-ring-halo {
+  stroke: rgb(0 0 0 / 0.55) !important;
+}
+
+.note-guide-ring-core {
+  stroke: var(--note-incoming) !important;
+}
+
+/* Planning — a calm, slow PULSE (breathing). Static was too weak to read on
+   chord tones (motion is the channel that survives a strong fill); a gentle
+   low-amplitude pulse stays peripheral yet visible, and its slow breathing is
+   clearly distinct from the landing ring's fast, one-way contraction. */
+.note-guide-ring[data-guide-phase="preview"] .note-guide-ring-core {
+  stroke-width: 2.25 !important;
+}
+
+.note-guide-ring[data-guide-phase="preview"] .note-guide-ring-halo {
+  stroke-width: 4.25 !important;
+}
+
+.note-guide-ring[data-guide-phase="preview"] {
+  animation: note-guide-ring-pulse 1.7s ease-in-out infinite;
+}
+
+@keyframes note-guide-ring-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+
+/* Landing — thick + bright + contracting. The thin→thick / dim→bright SNAP is
+   itself the onset cue, so the phase change still reads under reduced motion. */
+.note-guide-ring[data-guide-phase="landing"] .note-guide-ring-core {
+  stroke-width: 3.5 !important;
+}
+
+.note-guide-ring[data-guide-phase="landing"] .note-guide-ring-halo {
+  stroke-width: 5.5 !important;
+}
+
 .note-guide-ring[data-guide-phase="landing"] {
   animation: note-guide-ring-contract var(--lead-in-duration, 0.6s) ease-out both;
 }
@@ -248,9 +309,11 @@
 }
 
 /* Reduced motion: no contraction/countdown — the ring snaps to its landed size.
-   Opacity is motion-owned (its fade collapses to an instant change because
-   FretboardNote passes a 0s transition under prefers-reduced-motion). */
+   The thin→thick / dim→bright step still distinguishes the two phases without
+   motion. Opacity is motion-owned (its fade collapses to an instant change
+   because FretboardNote passes a 0s transition under prefers-reduced-motion). */
 @media (prefers-reduced-motion: reduce) {
+  .note-guide-ring[data-guide-phase="preview"],
   .note-guide-ring[data-guide-phase="landing"] {
     animation: none;
     transform: none;

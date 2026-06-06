@@ -87,6 +87,13 @@ export const FretboardNote = memo(function FretboardNote({
   const rawRadius = baseRadius * radiusScale * taperScale;
   const r = reduceCircleRadius(rawRadius);
 
+  // Target ring standoff: a clamped-proportional gap so the ring reads as a
+  // halo (not a second border) at every marker size. A fixed gap is a larger
+  // fraction of a small recessed note than a large chord note; scaling by
+  // markerR keeps the breathing-room ratio constant, floored/capped so it never
+  // sub-pixels or balloons.
+  const ringR = r + Math.min(6, Math.max(3, r * 0.22));
+
   const shapeEl =
     noteShape === "diamond" ? (
       <polygon
@@ -152,28 +159,45 @@ export const FretboardNote = memo(function FretboardNote({
         opacity: finalOpacity !== 1 ? finalOpacity : undefined,
       } as React.CSSProperties}
     >
-      {/* Guide-target countdown ring. CSS animates the scale CONTRACTION (the
-          beat countdown, timed to --lead-in-duration); motion owns OPACITY so
-          AnimatePresence fades it in on mount and OUT on removal — decoupling
-          the fade-out from React's (startTransition-jittered) unmount timing,
-          which is what caused the boundary flash. The ring lands bright on the
-          beat, then fades as the chord arrives. */}
+      {/* Target backing disc — ground-lifts a recessed (hollow) target note so
+          the ring frames a legible body instead of empty wood. Rendered BEHIND
+          the marker shape + label: on a filled chord note the opaque fill hides
+          it (graceful degrade), on a hollow note it shows through. Incoming hue
+          so it reads as the same "next target" signal as the ring. */}
+      {guidePhase && (
+        <circle
+          className={styles["note-target-backing"]}
+          data-guide-phase={guidePhase}
+          cx={cx}
+          cy={cy}
+          r={r}
+          aria-hidden="true"
+        />
+      )}
+      {/* Two-phase target ring. A dark halo under a coloured core (a 2-colour
+          "Oreo" ring) keeps it legible over any fill and on light or dark wood.
+          Phase rides stroke-weight + opacity (planning thin/dim → landing
+          thick/bright); CSS animates the landing CONTRACTION (scale), motion
+          owns OPACITY so AnimatePresence fades it in on mount and OUT on removal
+          — decoupling the fade-out from React's startTransition-jittered unmount
+          (the boundary flash). */}
       <AnimatePresence>
         {guidePhase && (
-          <motion.circle
+          <motion.g
             key="guide-ring"
             className={styles["note-guide-ring"]}
             data-guide-ring="true"
             data-guide-phase={guidePhase}
-            cx={cx}
-            cy={cy}
-            r={r + 4}
             aria-hidden="true"
             initial={{ opacity: 0 }}
-            animate={{ opacity: guidePhase === "preview" ? 0.7 : 0.95 }}
+            animate={{ opacity: guidePhase === "preview" ? 0.8 : 1 }}
             exit={{ opacity: 0 }}
             transition={guideFade}
-          />
+            style={{ transformBox: "fill-box", transformOrigin: "center" } as React.CSSProperties}
+          >
+            <circle className={styles["note-guide-ring-halo"]} cx={cx} cy={cy} r={ringR} />
+            <circle className={styles["note-guide-ring-core"]} cx={cx} cy={cy} r={ringR} />
+          </motion.g>
         )}
       </AnimatePresence>
       {shapeEl}
