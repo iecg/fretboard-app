@@ -24,6 +24,7 @@ import { FretboardShapeLayer } from "./FretboardShapeLayer";
 import { FretboardNoteLayer } from "./FretboardNoteLayer";
 import { FretboardHitTargetLayer } from "./FretboardHitTargetLayer";
 import { FretboardConnectorLayer } from "./FretboardConnectorLayer";
+import { connectorDashArray } from "./utils/noteSizing";
 import { FretNumbersRow } from "./FretNumbersRow";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
 import type { CagedShape, FullChordMatchNote, ShapePolygon } from "@fretflow/core";
@@ -629,6 +630,7 @@ export function FretboardSVG({
             width: `${neckWidthPx}px`,
             willChange: "transform",
             "--string-row-px": `${stringRowPx}px`,
+            "--fb-connector-dash": connectorDashArray(stringRowPx),
             "--fretboard-svg-glow-orange-url": glowFilterUrls.orange,
           } as CSSProperties
         }
