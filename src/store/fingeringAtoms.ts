@@ -54,17 +54,6 @@ export const cagedShapesAtom = atomWithStorage<Set<CagedShape>>(
   GET_ON_INIT,
 );
 
-export const toggleCagedShapeAtom = atom(null, (get, set, shape: CagedShape) => {
-  const prev = get(cagedShapesAtom);
-  const next = new Set(prev);
-  if (next.has(shape)) {
-    if (next.size > 1) next.delete(shape);
-  } else {
-    next.add(shape);
-  }
-  set(cagedShapesAtom, next);
-});
-
 export const selectSingleCagedShapeAtom = atom(
   null,
   (_get, set, shape: CagedShape) => {
