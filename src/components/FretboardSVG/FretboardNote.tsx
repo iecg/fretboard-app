@@ -201,9 +201,12 @@ export const FretboardNote = memo(function FretboardNote({
             data-guide-primary={note.isInRegion ? "true" : "false"}
             aria-hidden="true"
             initial={{ opacity: 0 }}
-            animate={{
-              opacity: note.isInRegion ? (guidePhase === "preview" ? 0.8 : 1) : 0.4,
-            }}
+            // Primary targets hold full group opacity in BOTH phases so the
+            // brightness matches at the breathe→drain handoff; the calmer
+            // "passive" feel comes from the core breathe's dips (whose peaks
+            // equal the landing brightness), not a dimmer group. Secondary
+            // (out-of-region) targets are quiet static markers.
+            animate={{ opacity: note.isInRegion ? 1 : 0.4 }}
             exit={{ opacity: 0 }}
             transition={guideFade}
             style={{ transformBox: "fill-box", transformOrigin: "center" } as React.CSSProperties}

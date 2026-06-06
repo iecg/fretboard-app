@@ -570,6 +570,22 @@ export const leadInDurationMsAtom = atom((get): number =>
 );
 
 /**
+ * Length of the active step's PLANNING window, in milliseconds — the runway
+ * before the lead-in/landing window. Written to the `--planning-duration` CSS
+ * custom property so the preview "breathe" runs exactly once over the planning
+ * phase and resolves to full brightness right as the landing drain begins (a
+ * seamless brightness handoff). Mirrors {@link isInPlanningWindow}'s span:
+ * `min(step, 2·bar) − landingWindow`, floored at 0.
+ */
+export const planningDurationMsAtom = atom((get): number => {
+  const step = get(progressionStepDurationMsAtom);
+  const bar = get(progressionBarDurationMsAtom);
+  const landing = computeLeadInWindowMs(step, bar);
+  const planningSpan = Math.min(step, PLANNING_RUNWAY_BARS * bar);
+  return Math.max(0, planningSpan - landing);
+});
+
+/**
  * Discrete lead-in phase. Reads the per-frame visual frame, but its VALUE only
  * flips at the window threshold (and the boundary gap below), so Jotai
  * subscribers re-render at most twice per step — never per animation frame.

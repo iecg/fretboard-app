@@ -281,13 +281,20 @@
 /* Planning — a calm presence: a full green ring that gently BREATHES on opacity
    only (no scale). Motion keeps it visible on chord tones, but breathing on
    opacity (not size) means there is nothing to 'jump' when landing begins. */
+/* Runs ONCE across the planning window (--planning-duration) and RESOLVES TO
+   FULL brightness at 100% — i.e. exactly as the landing drain begins — so the
+   handoff from breathing to draining has no brightness jump. Two gentle dips
+   give the "breathing" feel; the peaks (opacity 1) match the landing ring. */
 .note-guide-ring[data-guide-phase="preview"][data-guide-primary="true"] .note-guide-ring-core {
-  animation: note-guide-ring-breathe 1.8s ease-in-out infinite;
+  animation: note-guide-ring-breathe var(--planning-duration, 1.7s) ease-in-out both;
 }
 
 @keyframes note-guide-ring-breathe {
-  0%, 100% { opacity: 0.5; }
-  50%      { opacity: 1; }
+  0%   { opacity: 1; }
+  30%  { opacity: 0.55; }
+  55%  { opacity: 1; }
+  80%  { opacity: 0.55; }
+  100% { opacity: 1; }
 }
 
 /* Landing — the green core DRAINS clockwise around the dark halo track, like a
