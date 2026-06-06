@@ -186,5 +186,22 @@ describe("FretboardNote — two-phase guide ring", () => {
     const { container } = renderNote(makeNote({ transitionRole: undefined }));
     expect(container.querySelector("[data-guide-phase]")).toBeNull();
   });
+
+  it("paints the ring AFTER the marker shape so a filled note can't occlude it", () => {
+    const { container } = renderNote(makeNote({ transitionRole: "guide-target" }));
+    const noteG = container.querySelector("g[data-note-shape]");
+    const kids = [...noteG!.children];
+    const ringIdx = kids.findIndex((k) => k.getAttribute("data-guide-ring"));
+    // The marker is the shape element (circle/polygon) that is neither the
+    // backing disc (data-guide-phase) nor the ring group (data-guide-ring).
+    const markerIdx = kids.findIndex(
+      (k) =>
+        (k.tagName === "circle" || k.tagName === "polygon") &&
+        !k.getAttribute("data-guide-phase") &&
+        !k.getAttribute("data-guide-ring"),
+    );
+    expect(markerIdx).toBeGreaterThanOrEqual(0);
+    expect(ringIdx).toBeGreaterThan(markerIdx);
+  });
 });
 

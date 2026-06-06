@@ -174,8 +174,14 @@ export const FretboardNote = memo(function FretboardNote({
           aria-hidden="true"
         />
       )}
+      {shapeEl}
       {/* Two-phase target ring. A dark halo under a coloured core (a 2-colour
           "Oreo" ring) keeps it legible over any fill and on light or dark wood.
+          Drawn ON TOP of the marker (after shapeEl): a filled chord/root note is
+          opaque and — enlarged by the taper scale + the root's playback radius
+          boost — would otherwise occlude the ring's inner edge, leaving only a
+          sliver. The ring sits at a standoff OUTSIDE the marker, so painting it
+          last keeps the full halo + core visible on every note type.
           Phase rides stroke-weight + opacity (planning thin/dim → landing
           thick/bright); CSS animates the landing CONTRACTION (scale), motion
           owns OPACITY so AnimatePresence fades it in on mount and OUT on removal
@@ -200,7 +206,6 @@ export const FretboardNote = memo(function FretboardNote({
           </motion.g>
         )}
       </AnimatePresence>
-      {shapeEl}
       <AnimatePresence>
         {applyLensEmphasis.guideTargetLabel && (
           <motion.text
