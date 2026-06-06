@@ -70,48 +70,89 @@ Conclusions:
    redundant dash stay intact. Palette-first (wood-tuned colors) is unnecessary
    and would sacrifice colorblind-safety for no gain.
 
-## Mechanism: casing-first (APCA-validated)
+## Mechanism: casing-first (APCA-validated), applied where it helps
 
 A theme-appropriate **contrasting casing** carries legibility; the palette stays
-Okabe-Ito.
+Okabe-Ito. The casing is *translucent*, so legibility must be judged on the
+**composited** casing-over-wood color, not the raw casing hue. Doing that
+composited math (alpha-blend the casing over the wood mid stop, then APCA)
+reveals an **asymmetry**: the casing is the right fix for light wood, but is
+counter-productive on dark wood. So the fix is applied where it measurably helps —
+**light theme only.**
+
+Composited measurement (casing alpha-blended over wood mid, then |APCA Lc|):
+
+- **Light maple, dark casing `rgb(0 0 0 / 0.6)`:** composited casing-vs-wood ≈ 56.
+  Above the ≥45 "the outline is clearly visible" floor — every spine becomes a
+  dark-outlined colored stroke on tan wood. The colored core rides inside the
+  casing; you see the line via its dark outline regardless of the core's own
+  (low) contrast with the wood.
+- **Dark rosewood, light casing `rgb(255 255 255 / 0.35)`:** composited
+  casing-vs-wood ≈ 20 (too weak to carry), **and** a white rim washes out the
+  blue core (blue-vs-white ≈ 6). So a light casing neither carries the line nor
+  preserves color identity on rosewood. Rejected.
+
+Why this is the honest result, not a compromise: on **dark** wood the bright
+Okabe-Ito colors already carry directly (min = blue at 27; everything else 36–88),
+which is why #535 shipped dark as "passes WCAG 3:1 on rosewood." A casing there
+adds risk (muddier blue) for no contrast gain. On **light** wood the colors are
+too pale to carry, so the dark casing does the work. Different woods, different
+load-bearing element.
 
 ## Design
 
-### 1. Symmetric contrasting casing (core fix)
+### 1. Dark casing on light wood (core fix) — light theme only
 
-In `src/styles/themes.css`, flip `--fb-connector-halo` so each wood gets the
-casing that contrasts *it*:
+In `src/styles/themes.css`, flip the light-theme `--fb-connector-halo` from white
+to a **dark translucent** casing:
 
-- Light theme: white → **dark**, target `rgb(0 0 0 / 0.55)` (tune alpha to clear
-  the floor; solid-black upper bound is Lc 76 vs maple). Raises every spine from
-  invisible to clearly outlined.
-- Dark theme: black (currently a no-op, Lc ~0 on rosewood) → **light**, target
-  `rgb(255 255 255 / 0.35)` (solid-white upper bound is Lc 108 vs rosewood).
-  Lifts the one marginal color (blue) and crispens all.
+- `modern-light`: `rgb(255 255 255 / 0.7)` → **`rgb(0 0 0 / 0.6)`** (composited
+  casing-vs-wood ≈ 56, ≥ 45 floor with margin; solid-black upper bound is Lc 76).
+  Raises every spine from invisible to a clearly-outlined colored stroke.
+- `modern-dark`: **unchanged** (`rgb(0 0 0 / 0.5)`). Dark theme already reads via
+  the colors; a casing there is rejected (see Mechanism).
 
 The chord halo is already a fixed `4px` stroke driven by this token, so changing
-the token *values* is the entire mechanism — no width change, no new element.
+the one light-theme token *value* is the entire mechanism — no width change, no
+new element, no dark-theme change.
 
 ### 2. Palette unchanged
 
 Keep the 8 Okabe-Ito tokens (colorblind-safe) in both themes. Keep the current
-rotation `CONNECTOR_PALETTE_ROTATION = [0, 5, 3, 6, 1, 4]` (lead = orange, blue —
-maximally distinct hues, both now legible: orange via casing, blue directly). No
+rotation `CONNECTOR_PALETTE_ROTATION = [0, 5, 3, 6, 1, 4]` → CSS slots
+1,6,4,7,2,5 = orange, blue, green, purple, vermillion, sky. (Lead = orange, blue —
+maximally distinct hues; orange now reads via the casing, blue reads directly on
+both woods.) The rotation already **excludes** the two weakest-on-wood entries —
+slot 3 gray and slot 8 yellow — so they never render and need no guard. No
 wood-tuned palette replacement, no reorder.
 
 ### 3. Dash legibility + zoom-awareness
 
 The dash is the colorblind redundancy cue. It is currently fixed `7px 5px`, which
 collapses toward dots on small/mobile boards. Drive it from a CSS custom property
-scaled from `stringRowPx`:
+scaled from `stringRowPx`, using a **pure, unit-testable helper** and setting the
+property where `stringRowPx` is *already* in scope — no new prop, no change to
+`FretboardConnectorLayer`:
 
-- `FretboardConnectorLayer.tsx` sets `--fb-connector-dash` on the connector group
-  (or the spine paths) from the geometry already available to the layer
-  (`stringRowPx`), e.g. `dash = clamp(MIN, round(stringRowPx * K), MAX)` with a
-  matching gap, expressed as a single `dasharray` string.
-- `FretboardSVG.module.css` dash rule reads the property:
-  `stroke-dasharray: var(--fb-connector-dash, 7px 5px);` (fallback preserves
-  current behavior if the property is absent — e.g. in isolated tests).
+- New pure helper `connectorDashArray(stringRowPx): string` in
+  `src/components/FretboardSVG/utils/noteSizing.ts` (the existing sizing-utils
+  module — same home as `taperAwareRadiusScale`), returning a CSS `dasharray`
+  string. Definition: `dash = clamp(DASH_MIN_PX, round(stringRowPx * DASH_FACTOR),
+  DASH_MAX_PX)` and `gap = clamp(GAP_MIN_PX, round(stringRowPx * GAP_FACTOR),
+  GAP_MAX_PX)`, returned as `"${dash}px ${gap}px"`. Constants are chosen so the
+  default tablet row height (`STRING_ROW_PX_TABLET`) yields the current `7px 5px`
+  (`DASH_FACTOR ≈ 0.18`, `GAP_FACTOR ≈ 0.13`, `DASH_MIN_PX = 6`, `GAP_MIN_PX = 4`,
+  generous maxima) so the default board is visually unchanged and only smaller
+  boards shorten the dash toward the floor.
+- `FretboardSVG.tsx` sets `--fb-connector-dash` on the existing `.fretboard-neck`
+  inline style object (the same object that already sets `--string-row-px`, where
+  `stringRowPx` is in scope), via `connectorDashArray(stringRowPx)`. The property
+  inherits down through the SVG to the spine paths (CSS custom properties inherit
+  through SVG).
+- `FretboardSVG.module.css` dash rule reads it:
+  `stroke-dasharray: var(--fb-connector-dash, 7px 5px);` — the `7px 5px` fallback
+  preserves current behavior when the property is absent (e.g. isolated component
+  tests that render the layer without the neck wrapper).
 
 Spine width (`2px`) and halo width (`4px`) stay fixed — limits snapshot churn and
 keeps busyness down. Dash is the only geometry-scaled quantity.
@@ -124,17 +165,23 @@ There is no opacity/focus/hover layer (that was the dropped §4).
 
 ## Module boundary / files
 
-- `src/styles/themes.css` — `--fb-connector-halo` values for both themes (§1).
+- `src/styles/themes.css` — flip the `modern-light` `--fb-connector-halo` value
+  to `rgb(0 0 0 / 0.6)`; `modern-dark` unchanged (§1).
+- `src/components/FretboardSVG/utils/noteSizing.ts` — new pure
+  `connectorDashArray(stringRowPx)` helper + its constants (§3).
+- `src/components/FretboardSVG/FretboardSVG.tsx` — set `--fb-connector-dash` on
+  the existing `.fretboard-neck` style object via `connectorDashArray(stringRowPx)`
+  (§3). No change to `FretboardConnectorLayer`.
 - `src/components/FretboardSVG/FretboardSVG.module.css` — dash rule reads
   `var(--fb-connector-dash, 7px 5px)` (§3).
-- `src/components/FretboardSVG/FretboardConnectorLayer.tsx` — compute and set the
-  `--fb-connector-dash` custom property from `stringRowPx` (§3). If `stringRowPx`
-  is not already a prop on this component, thread it from `FretboardSVG.tsx`
-  (where it is in scope) — a single new prop, no new data flow.
-- New pure helper (§ testing) for the contrast floor:
-  `src/components/FretboardSVG/utils/connectorContrast.ts` — an APCA Lc function
-  plus the wood/casing/palette constants, so the acceptance floor is a unit test,
-  not a manual check.
+
+The contrast-floor test reuses the **existing** helpers in
+`src/styles/__tests__/cssTokens.ts` (`readThemeBlock`, `resolveVar`,
+`contrastAPCA`) — no new APCA helper is written. Note `readThemeBlock` reads
+`themes.css` only: the **light** wood mid (`--fretboard-wood-mid: #f1c38e`) lives
+in the `modern-light` block and is readable; the **dark** wood mid
+(`--fretboard-wood-mid: #0d0805`) lives in `tokens.css` `:root` and is referenced
+in the test as a documented constant with a source comment.
 
 ## Non-goals
 
@@ -150,45 +197,61 @@ There is no opacity/focus/hover layer (that was the dropped §4).
 
 ## Testing
 
-- **Unit — contrast floor** (`connectorContrast.test.ts`): a pure APCA Lc helper.
-  A cased line reads if it contrasts *either* the wood *or* its casing, and the
-  casing must itself outline against the wood. So assert, per theme, with a single
-  documented floor `FLOOR = 30`:
-  1. **Casing vs wood** `|Lc(casing, woodMid)| ≥ FLOOR` — the outline is visible
-     (dark casing on light maple ≈ 76; light casing on dark rosewood ≈ 108).
-  2. **Each palette color** `max(|Lc(color, woodMid)|, |Lc(color, casing)|) ≥ FLOOR`
-     — every color reads via the wood, the casing, or both. (Worked example, light
-     theme dark casing: blue = max(45, 27) = 45 ✓; orange = max(14, 58) = 58 ✓;
-     yellow = max(11, 88) = 88 ✓.)
-  Codifies "legible" as a regression guard rather than a manual check.
-- **Unit — dash scaling** (`FretboardConnectorLayer` or a small pure dash helper):
-  the dash string scales with `stringRowPx` and never drops below the minimum
-  floor; falls back to `7px 5px` semantics at the default row height.
-- **Component**: existing `FretboardConnectorLayer.test.tsx` — assert the dash
-  custom property is set on the group/paths and that the halo/spine structure is
-  unchanged.
+- **Unit — contrast floor** (new `src/styles/__tests__/connectorLegibility.test.ts`,
+  `// @vitest-environment node`): reuses `readThemeBlock`, `resolveVar`,
+  `contrastAPCA` from `./cssTokens`. Because the casing is translucent, the test
+  **composites** the casing over the wood mid (alpha-blend → effective casing
+  color) before measuring. The legibility model is **per-theme** (different
+  load-bearing element per wood):
+  - **Light theme — casing carries.** Read `modern-light` `--fb-connector-halo`
+    and `--fretboard-wood-mid`; composite casing over wood; assert
+    `|Lc(compositedCasing, lightWood)| ≥ 45` (the dark outline is clearly visible;
+    designed value ≈ 56).
+  - **Dark theme — colors carry.** Using the documented dark wood mid `#0d0805`
+    and the 6 **rotation** palette colors (slots 1,6,4,7,2,5 = orange, blue,
+    green, purple, vermillion, sky), assert each `|Lc(color, darkWood)| ≥ 25`
+    (current min = blue at 27; this guards against a future dark-palette swap
+    going too dark). Gray (slot 3) and yellow (slot 8) are excluded from the
+    rotation and not asserted.
+  Floors (`LIGHT_CASING_FLOOR = 45`, `DARK_COLOR_FLOOR = 25`) are documented
+  constants in the test with the rationale above.
+- **Unit — dash scaling** (`src/components/FretboardSVG/utils/noteSizing.test.ts`,
+  alongside the existing `taperAwareRadiusScale` tests): `connectorDashArray`
+  returns `"7px 5px"` at `STRING_ROW_PX_TABLET` (default unchanged); shrinks
+  monotonically as `stringRowPx` decreases; never drops below the
+  `DASH_MIN_PX`/`GAP_MIN_PX` floor at very small row heights; clamps to the maxima
+  at very large row heights.
+- **Component**: `src/components/FretboardSVG/FretboardSVG.test.tsx` — assert the
+  rendered `.fretboard-neck` element carries a `--fb-connector-dash` inline custom
+  property. `FretboardConnectorLayer.test.tsx` is unchanged (the layer's structure
+  did not change); its existing dashed-spine assertions still hold via the CSS
+  fallback.
 - **Visual regression**: refresh chord-connector snapshots for **both** themes
-  (`fretboard-connectors` light + dark; plus any `app-components` /
-  `fretboard-svg` frames showing connectors), darwin + linux. Light frames change
-  substantially (lines become visible); dark frames change subtly (faint light
-  casing).
+  (`e2e/fretboard-connectors.visual.spec.ts` — light + dark; plus any
+  `app-components` / `fretboard-svg` frames showing connectors), darwin + linux.
+  **Light** frames change substantially (lines become visible, dark casing);
+  **dark** frames change only if the dash geometry differs at the captured row
+  height (the dark *casing* is unchanged).
 
 ## Acceptance criteria
 
 - Every concurrently-rendered voicing is visually distinguishable on **both**
   woods (light maple and dark rosewood).
-- No palette entry falls below the APCA contrast floor on either wood with the
-  casing applied — i.e. `max(|Lc(color, wood)|, |Lc(color, casing)|) ≥ 30` for
-  every color, and `|Lc(casing, wood)| ≥ 30` for the casing itself (verified by
+- **Light theme:** the composited dark casing clears `|Lc| ≥ 45` against the light
+  wood mid, so every spine reads as a clearly-outlined colored stroke (verified by
   the unit test).
+- **Dark theme:** every rotation palette color clears `|Lc| ≥ 25` against the dark
+  wood mid — i.e. legibility is not regressed from the shipped #535 state
+  (verified by the unit test).
 - The dash pattern is legible at minimum supported zoom (does not collapse to
-  dots on the smallest board).
-- Dark-theme legibility is not regressed (it was already adequate; the light
-  casing only lifts the marginal blue and crispens edges).
+  dots on the smallest board) and is pixel-unchanged (`7px 5px`) at the default
+  tablet row height.
 
 ## Sequencing
 
-1. Casing token flip (§1) + contrast-floor unit test — the high-value core.
-2. Dash zoom-scaling (§3) + dash unit/component tests.
+1. Light-theme casing token flip (§1) + contrast-floor unit test — the high-value
+   core.
+2. Dash zoom-scaling helper (§3) + dash unit test + neck custom-property
+   component assertion.
 3. Visual-regression refresh (both themes, both platforms); confirm acceptance
    criteria against the real rendered board.
