@@ -305,10 +305,13 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           });
           // A sustained chord rings until the next hit in the bar, or to the bar
           // end when it is the last hit — a true whole note for ballad-whole,
-          // tempo- and meter-aware at any setting.
-          const nextHitBeat = hits[hitIndex + 1]?.beat ?? eventBeats;
+          // tempo- and meter-aware at any setting. (Hits are bar-local and in
+          // ascending beat order, so the next hit's beat is the ring boundary.)
           const sustainedDurationSec =
-            Math.max(0, nextHitBeat - hit.beat) * secondsPerBeat;
+            hit.style === "sustained"
+              ? Math.max(0, (hits[hitIndex + 1]?.beat ?? eventBeats) - hit.beat) *
+                secondsPerBeat
+              : 0;
           chordStrums.push({
             time: hitTime,
             value: {
