@@ -13,7 +13,6 @@ import { progressionStepsAtom, progressionTempoBpmAtom, progressionPlayingAtom, 
 import { rootNoteAtom, scaleNameAtom, accidentalModeAtom, preferFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
 import { displayFormatAtom } from "./uiAtoms";
 import { STANDARD_TUNING, TUNINGS } from "@fretflow/core";
-import { CAGED_SHAPES } from "@fretflow/core";
 
 function makeStore() {
   return createStore();
@@ -134,24 +133,24 @@ describe("atoms", () => {
       unsub();
     });
 
-    it("cagedShapes: round-trips a JSON array as a Set", () => {
+    it("cagedShapes: collapses a stored multi-shape array to a single shape", () => {
       localStorage.setItem(k("cagedShapes"), JSON.stringify(["C", "A"]));
       const store = makeStore();
       const unsub = mount(store, cagedShapesAtom);
       const shapes = store.get(cagedShapesAtom);
       expect(shapes).toBeInstanceOf(Set);
-      expect([...shapes]).toEqual(expect.arrayContaining(["C", "A"]));
-      store.set(cagedShapesAtom, new Set(["C", "G"] as const));
-      expect(JSON.parse(localStorage.getItem(k("cagedShapes"))!)).toEqual(["C", "G"]);
+      expect([...shapes]).toEqual(["C"]); // E absent → first stored entry
+      store.set(cagedShapesAtom, new Set(["G"] as const));
+      expect(JSON.parse(localStorage.getItem(k("cagedShapes"))!)).toEqual(["G"]);
       unsub();
     });
 
-    it("cagedShapes: invalid JSON falls back to the full default Set", () => {
+    it("cagedShapes: invalid JSON falls back to the single E default", () => {
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       localStorage.setItem(k("cagedShapes"), "not-valid-json{{{");
       const store = makeStore();
       const unsub = mount(store, cagedShapesAtom);
-      expect(store.get(cagedShapesAtom).size).toBe(CAGED_SHAPES.length);
+      expect([...store.get(cagedShapesAtom)]).toEqual(["E"]);
       warnSpy.mockRestore();
       unsub();
     });

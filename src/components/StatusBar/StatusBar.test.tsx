@@ -47,13 +47,13 @@ describe("StatusBar", () => {
     expect(screen.getByTestId("status-pattern")).toHaveTextContent("3NPS");
   });
 
-  it("appends the active shapes for the CAGED pattern", () => {
+  it("appends the active shape for the CAGED pattern", () => {
     renderWithAtoms(<StatusBar />, [
       [fingeringPatternAtom, "caged"],
-      [cagedShapesAtom, new Set(["G", "C", "A"])],
+      [cagedShapesAtom, new Set(["G"])],
     ]);
-    // Shapes render in CAGED_SHAPES order ("C","A","G","E","D"), not Set order.
-    expect(screen.getByTestId("status-pattern")).toHaveTextContent("CAGED · CAG");
+    // Single-shape mode: exactly one CAGED shape is ever active.
+    expect(screen.getByTestId("status-pattern")).toHaveTextContent("CAGED · G");
   });
 
   it("shows a dash for the chord when no chord overlay is active", () => {
