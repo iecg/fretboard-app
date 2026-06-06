@@ -8,7 +8,6 @@ import { k } from "./test-utils/storage";
 // cache synchronously, allowing Suspense to mount them without async delay.
 import "./components/Inspector/Inspector";
 import "./components/StatusBar/StatusBar";
-import "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import "./components/FretboardSVG/FretboardSVG";
 
 const lazyAudio = vi.hoisted(() => ({
