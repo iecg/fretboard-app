@@ -1,17 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
-  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
   CHORD_CONNECTOR_RADIUS_FACTORS,
   clampConnectorRadiusToYBounds,
   resolveConnectorRadiusPx,
   applyConnectorRadiusFloor,
-  computeChordConnectorRadiusPx,
 } from "./connectorRadius";
 
 describe("connectorRadius constants", () => {
-  it("exposes the base radius factor", () => {
-    expect(CHORD_CONNECTOR_BASE_RADIUS_FACTOR).toBe(0.42);
-  });
   it("exposes density-keyed radius factors in monotonic order", () => {
     expect(CHORD_CONNECTOR_RADIUS_FACTORS.compact).toBeLessThan(
       CHORD_CONNECTOR_RADIUS_FACTORS.medium,
@@ -95,23 +90,5 @@ describe("applyConnectorRadiusFloor", () => {
   });
   it("returns a finite value for plausible inputs", () => {
     expect(Number.isFinite(applyConnectorRadiusFloor(12, 40))).toBe(true);
-  });
-});
-
-describe("computeChordConnectorRadiusPx", () => {
-  it("returns a finite radius for representative inputs", () => {
-    const r = computeChordConnectorRadiusPx(40, 0);
-    expect(Number.isFinite(r)).toBe(true);
-    expect(r).toBeGreaterThan(0);
-  });
-  it("adds non-negative offsetPx on top of the base", () => {
-    const base = computeChordConnectorRadiusPx(40, 0);
-    const bumped = computeChordConnectorRadiusPx(40, 5);
-    expect(bumped).toBeCloseTo(base + 5, 6);
-  });
-  it("clamps negative offsetPx to 0", () => {
-    const base = computeChordConnectorRadiusPx(40, 0);
-    const negative = computeChordConnectorRadiusPx(40, -10);
-    expect(negative).toBe(base);
   });
 });

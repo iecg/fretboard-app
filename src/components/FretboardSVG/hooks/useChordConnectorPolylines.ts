@@ -1,13 +1,6 @@
 import { useMemo } from "react";
 import type { NoteData } from "./useNoteData";
-import { offsetOpenPolylinePath } from "../utils/pathGeometry";
 import { type CagedShape } from "@fretflow/core";
-import {
-  type ConnectorYBounds,
-  resolveConnectorRadiusPx,
-  applyConnectorRadiusFloor,
-  CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-} from "../utils/connectorRadius";
 
 /**
  * Count the number of distinct fret positions spanned by the **fretted** notes
@@ -44,18 +37,11 @@ interface ChordConnectorVertex {
  */
 export interface ChordConnectorVoicing {
   /**
-   * Pre-computed SVG path strings for the two render layers.
-   * For non-collinear voicings: fill === outline (same closed polygon from polarSort).
-   * For collinear voicings: both are inflatedCapsulePath strings (contain arc `A` commands).
-   */
-  paths: { fill: string; outline: string };
-  /**
-   * Solid center line through the voicing notes in string order — the ribbon
-   * connector's spine, drawn under the note markers.
+   * Solid center line through the voicing notes in string order — the
+   * connector's spine, drawn under the note markers. This is the only
+   * geometry the connector renders (spine-only).
    */
   spinePath: string;
-  /** Original chord-tone pixel positions in string-index order. */
-  vertices: ChordConnectorVertex[];
   /**
    * 0–7, deterministic per shape identity; same fingering at any neck position
    * yields same index. Used to index into --chord-connector-color-N CSS tokens.
@@ -123,12 +109,6 @@ const MAX_FRET_SPAN = 5;
  * Examples kept  (3 positions): frets [4,5,5,6] → positions 4,5,6   → count 3.
  */
 export const MAX_PLAYABLE_FRET_POSITIONS = 3;
-
-function touchesOuterString(combo: NoteData[], lowestStringIndex: number): boolean {
-  return combo.some((note) =>
-    note.stringIndex === 0 || note.stringIndex === lowestStringIndex,
-  );
-}
 
 function pointToSegmentDistance(
   p: ChordConnectorVertex,
@@ -292,34 +272,6 @@ export function assignConflictEncodings(
   return result;
 }
 
-// Resolves per-voicing connector radii (with edge-safe clamps). Radius feeds
-// the (currently unrendered) fill/outline paths only; the visible spine is a
-// plain center line. No offset or cross-voicing collision adjustment — those
-// were for the retired ribbon fill; overlapping voicings are now distinguished
-// by color + dash, not by radius.
-function computeFinalConnectorRadii(
-  pendingVoicings: ReadonlyArray<{
-    rawVertices: ChordConnectorVertex[];
-    sourceCombo: NoteData[];
-  }>,
-  stringRowPx: number,
-  lowestStringIndex: number,
-  yBounds: ConnectorYBounds | undefined,
-): number[] {
-  const baseRadius = applyConnectorRadiusFloor(
-    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-    stringRowPx,
-  );
-  return pendingVoicings.map((pv) =>
-    resolveConnectorRadiusPx({
-      vertices: pv.rawVertices,
-      preferredRadius: baseRadius,
-      yBounds,
-      edgeSafe: touchesOuterString(pv.sourceCombo, lowestStringIndex),
-    }),
-  );
-}
-
 /**
  * Note classes treated as chord-tone roles for the connector layer.
  * Mirrors the role set in useNoteData.ts (applyDimOpacity guard) so that
@@ -343,20 +295,10 @@ export const CHORD_TONE_CLASSES = new Set([
  * a time, so a valid voicing occupies exactly N consecutive strings where N is
  * the number of distinct chord tones (e.g. 3 for a triad, 4 for a 7th chord).
  *
- * **Return shape (per voicing):**
- * ```typescript
- * { paths: { fill: string; outline: string }; vertices: ChordConnectorVertex[] }
- * ```
- * - `paths.fill` / `paths.outline` — pre-computed SVG path strings for the two
- *   render layers. Both strings are byte-identical for every voicing — the
- *   path is built by `offsetOpenPolylinePath(rawVertices, r)` where
- *   `r = computeChordConnectorRadiusPx(...)`. This Minkowski-sums the OPEN
- *   polyline (vertices in string-index order) with a disk to produce a
- *   rounded tube tracing the voicing — round-arc joins on convex corners,
- *   bevels on concave corners — and falls back to a capsule for exactly
- *   collinear inputs.
- * - `vertices` — original (unmodified) chord-tone pixel positions in string-index
- *   order, retained for unit tests and future per-voicing color keying.
+ * **Return shape (per voicing):** each voicing carries a `spinePath` — the
+ * solid center line through the voicing notes in string order — plus its
+ * `{paletteIndex, dashed}` encoding, `shape`, `voicingKey`, and `isFallback`
+ * flag. The spine is the only rendered geometry; there is no fill/outline.
  *
  * Algorithm:
  *   1. Collect all active chord-tone positions (note-inactive excluded).
@@ -379,17 +321,16 @@ export const CHORD_TONE_CLASSES = new Set([
  *           index (highest string first).
  *   4. Deduplicate emitted voicings by their canonical "(stringIndex,fretIndex)"
  *      tuple set so that overlapping cluster anchors don't re-emit the same shape.
- *   5. Two-pass path generation:
- *      a. **Collect pass** — the main loop pushes `{rawVertices, canonicalKey}`
- *         to a `pendingVoicings` list (no path strings yet).
+ *   5. Two-pass generation:
+ *      a. **Collect pass** — the main loop pushes `{noteCoords, canonicalKey}`
+ *         to a `pendingVoicings` list (topology only, no pixels).
  *      b. **Encode + assign pass** — after the loop, `assignConflictEncodings`
  *         builds a conflict graph (crossing / shared-note / proximity) and
  *         greedy-colors it, mapping each `canonicalKey` to a `{paletteIndex,
- *         dashed}` encoding so overlapping spines stay distinguishable. Finally
- *         the pending list is iterated once more to emit final paths via
- *         `offsetOpenPolylinePath(rawVertices, computeChordConnectorRadiusPx(...))`.
+ *         dashed}` encoding so overlapping spines stay distinguishable. The
+ *         pixel stage then maps coords to SVG points and emits each spine.
  *
- * Returns an array of `{ d, vertices }` objects, one per distinct playable voicing.
+ * Returns an array of voicing objects, one per distinct playable voicing.
  * Returns [] when N < 2 or no valid voicing can be assembled.
  *
  * @param noteData        Shape-aware note data from useNoteData (note-inactive already
@@ -398,19 +339,15 @@ export const CHORD_TONE_CLASSES = new Set([
  *                        (e.g. ["C","E","G"] for C major). Order does not matter.
  * @param fretCenterX     Maps fretIndex → SVG x coordinate.
  * @param stringYAt       Maps (stringIndex, x) → SVG y coordinate.
- * @param stringRowPx     Row height in pixels; scales the base Minkowski-sum disk
- *                        radius (`computeChordConnectorRadiusPx(...)`).
  */
 export function buildChordConnectorPolylines(
   noteData: NoteData[],
   chordToneNames: string[],
   fretCenterX: (fretIndex: number) => number,
   stringYAt: (stringIndex: number, x: number) => number,
-  stringRowPx: number,
-  yBounds?: ConnectorYBounds,
 ): ChordConnectorVoicing[] {
   const pending = buildPendingChordConnectorVoicings({ noteData, chordToneNames });
-  return buildPixelChordConnectorVoicings({ pendingVoicings: pending, fretCenterX, stringYAt, stringRowPx, yBounds });
+  return buildPixelChordConnectorVoicings({ pendingVoicings: pending, fretCenterX, stringYAt });
 }
 
 function createExplicitSourceCombo(
@@ -639,47 +576,24 @@ export function buildPendingChordConnectorVoicings({
 function finalizeChordConnectorPolylines(
   pendingVoicings: Array<{
     rawVertices: ChordConnectorVertex[];
-    sourceCombo: NoteData[];
     paletteIndex: number;
-    canonicalKey: string;
-    voicingKey: string;
     dashed: boolean;
     shape?: CagedShape;
+    voicingKey: string;
     isFallback?: boolean;
   }>,
-  stringRowPx: number,
-  yBounds?: ConnectorYBounds,
 ): ChordConnectorVoicing[] {
   if (pendingVoicings.length === 0) return [];
 
-  let lowestStringIndex = 0;
-  for (const voicing of pendingVoicings) {
-    for (const note of voicing.sourceCombo) {
-      if (note.stringIndex > lowestStringIndex) lowestStringIndex = note.stringIndex;
-    }
-  }
-
-  const radii = computeFinalConnectorRadii(
-    pendingVoicings,
-    stringRowPx,
-    lowestStringIndex,
-    yBounds,
-  );
-
-  return pendingVoicings.map((pv, idx) => {
-    const r = radii[idx]!;
-    const pathStr = offsetOpenPolylinePath(pv.rawVertices, r);
-    const paths = { fill: pathStr, outline: pathStr };
-    // Ribbon spine: solid center line through the voicing notes in string order.
+  return pendingVoicings.map((pv) => {
+    // Spine: solid center line through the voicing notes in string order.
     const spinePath = pv.rawVertices.length === 0
       ? ""
       : "M " + pv.rawVertices
           .map((v) => `${Math.round(v.x * 100) / 100} ${Math.round(v.y * 100) / 100}`)
           .join(" L ");
     return {
-      paths,
       spinePath,
-      vertices: pv.rawVertices,
       paletteIndex: pv.paletteIndex,
       dashed: pv.dashed,
       shape: pv.shape,
@@ -691,22 +605,18 @@ function finalizeChordConnectorPolylines(
 
 /**
  * Pixel geometry stage — maps `noteCoords` to pixel vertices using the
- * supplied geometry helpers, then finalizes paths via `finalizeChordConnectorPolylines`.
- * Only re-runs when geometry helpers, stringRowPx, yBounds, or the pending
- * voicings themselves change.
+ * supplied geometry helpers, then emits each voicing's spine via
+ * `finalizeChordConnectorPolylines`. Only re-runs when geometry helpers or the
+ * pending voicings themselves change.
  */
 export function buildPixelChordConnectorVoicings({
   pendingVoicings,
   fretCenterX,
   stringYAt,
-  stringRowPx,
-  yBounds,
 }: {
   pendingVoicings: PendingChordConnectorVoicing[];
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
-  stringRowPx: number;
-  yBounds?: ConnectorYBounds;
 }): ChordConnectorVoicing[] {
   if (pendingVoicings.length === 0) return [];
 
@@ -719,7 +629,7 @@ export function buildPixelChordConnectorVoicings({
     }),
   }));
 
-  return finalizeChordConnectorPolylines(withPixelVerts, stringRowPx, yBounds);
+  return finalizeChordConnectorPolylines(withPixelVerts);
 }
 
 export interface UseChordConnectorPolylinesParams {
@@ -727,9 +637,6 @@ export interface UseChordConnectorPolylinesParams {
   chordToneNames: string[];
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
-  /** Row height in pixels; used as capsule perpOffset base for collinear voicings. */
-  stringRowPx: number;
-  yBounds?: ConnectorYBounds;
   explicitVoicings?: ExplicitChordConnectorVoicing[];
   /**
    * True when the voicing engine is the active connector source. When set,
@@ -748,10 +655,9 @@ export interface UseChordConnectorPolylinesParams {
  *    `explicitVoicings`, `voicingSourceActive`. Runs the O(N²) conflict-graph
  *    assignment once per musical change and caches `PendingChordConnectorVoicing[]`.
  *
- * 2. **Pixel memo** — depends on `pendingVoicings`, `fretCenterX`, `stringYAt`,
- *    `stringRowPx`, `yBounds`. Maps normalized fret/string coords to pixel
- *    positions and emits final SVG paths. Re-runs on resize without touching
- *    the conflict graph.
+ * 2. **Pixel memo** — depends on `pendingVoicings`, `fretCenterX`, `stringYAt`.
+ *    Maps normalized fret/string coords to pixel positions and emits each
+ *    voicing's spine. Re-runs on resize without touching the conflict graph.
  *
  * Returns `ChordConnectorVoicing[]` — one entry per distinct playable voicing.
  */
@@ -760,8 +666,6 @@ export function useChordConnectorPolylines({
   chordToneNames,
   fretCenterX,
   stringYAt,
-  stringRowPx,
-  yBounds,
   explicitVoicings,
   voicingSourceActive,
 }: UseChordConnectorPolylinesParams): ChordConnectorVoicing[] {
@@ -785,9 +689,7 @@ export function useChordConnectorPolylines({
         pendingVoicings,
         fretCenterX,
         stringYAt,
-        stringRowPx,
-        yBounds,
       }),
-    [pendingVoicings, fretCenterX, stringYAt, stringRowPx, yBounds],
+    [pendingVoicings, fretCenterX, stringYAt],
   );
 }
