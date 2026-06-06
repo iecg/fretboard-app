@@ -202,7 +202,13 @@ export const FretboardNote = memo(function FretboardNote({
             style={{ transformBox: "fill-box", transformOrigin: "center" } as React.CSSProperties}
           >
             <circle className={styles["note-guide-ring-halo"]} cx={cx} cy={cy} r={ringR} />
-            <circle className={styles["note-guide-ring-core"]} cx={cx} cy={cy} r={ringR} />
+            <circle
+              className={styles["note-guide-ring-core"]}
+              cx={cx}
+              cy={cy}
+              r={ringR}
+              pathLength={100}
+            />
           </motion.g>
         )}
       </AnimatePresence>

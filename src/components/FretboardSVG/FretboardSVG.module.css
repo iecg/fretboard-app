@@ -267,56 +267,51 @@
   stroke: var(--note-incoming) !important;
 }
 
-/* Planning — a calm, slow PULSE (breathing). Static was too weak to read on
-   chord tones (motion is the channel that survives a strong fill); a gentle
-   low-amplitude pulse stays peripheral yet visible, and its slow breathing is
-   clearly distinct from the landing ring's fast, one-way contraction. */
+/* Stroke weights are constant across phases (no scale animation, so the ring
+   never 'jumps' between phases). The dark halo stays a full static TRACK; the
+   green core is what the countdown drains. */
+.note-guide-ring-core {
+  stroke-width: 2.75 !important;
+}
+
+.note-guide-ring-halo {
+  stroke-width: 4.75 !important;
+}
+
+/* Planning — a calm presence: a full green ring that gently BREATHES on opacity
+   only (no scale). Motion keeps it visible on chord tones, but breathing on
+   opacity (not size) means there is nothing to 'jump' when landing begins. */
 .note-guide-ring[data-guide-phase="preview"] .note-guide-ring-core {
-  stroke-width: 2.25 !important;
+  animation: note-guide-ring-breathe 1.8s ease-in-out infinite;
 }
 
-.note-guide-ring[data-guide-phase="preview"] .note-guide-ring-halo {
-  stroke-width: 4.25 !important;
+@keyframes note-guide-ring-breathe {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
 }
 
-.note-guide-ring[data-guide-phase="preview"] {
-  animation: note-guide-ring-pulse 1.7s ease-in-out infinite;
-}
-
-@keyframes note-guide-ring-pulse {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.1); }
-}
-
-/* Landing — thick + bright + contracting. The thin→thick / dim→bright SNAP is
-   itself the onset cue, so the phase change still reads under reduced motion. */
+/* Landing — the green core DRAINS clockwise around the dark halo track, like a
+   clock hand, reaching empty exactly on the beat. This conveys the precise
+   moment of landing far better than a small scale contraction, reads at any
+   stroke weight, and — because nothing scales — continues seamlessly from the
+   planning ring with no jump. `pathLength=100` (set in FretboardNote) lets the
+   dash maths be radius-independent. */
 .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-core {
-  stroke-width: 3.5 !important;
+  stroke-dasharray: 100;
+  animation: note-guide-ring-drain var(--lead-in-duration, 0.6s) linear both;
 }
 
-.note-guide-ring[data-guide-phase="landing"] .note-guide-ring-halo {
-  stroke-width: 5.5 !important;
+@keyframes note-guide-ring-drain {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: 100; }
 }
 
-.note-guide-ring[data-guide-phase="landing"] {
-  animation: note-guide-ring-contract var(--lead-in-duration, 0.6s) ease-out both;
-}
-
-@keyframes note-guide-ring-contract {
-  0%   { transform: scale(1.18); }
-  60%  { transform: scale(1.06); }
-  100% { transform: scale(1); }
-}
-
-/* Reduced motion: no contraction/countdown — the ring snaps to its landed size.
-   The thin→thick / dim→bright step still distinguishes the two phases without
-   motion. Opacity is motion-owned (its fade collapses to an instant change
-   because FretboardNote passes a 0s transition under prefers-reduced-motion). */
+/* Reduced motion: no breathe, no drain — a static full ring still marks the
+   target; only the live countdown is dropped. */
 @media (prefers-reduced-motion: reduce) {
-  .note-guide-ring[data-guide-phase="preview"],
-  .note-guide-ring[data-guide-phase="landing"] {
+  .note-guide-ring[data-guide-phase="preview"] .note-guide-ring-core,
+  .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-core {
     animation: none;
-    transform: none;
   }
 }
 
