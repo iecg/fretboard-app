@@ -300,6 +300,32 @@ describe("buildAllLayers", () => {
       // accent never read as a strummed chord. Keep a real margin.
       expect(STAB_STRUM_DURATION_SEC).toBeGreaterThan(MUTED_STRUM_DURATION_SEC * 4);
     });
+
+    it("rings the ballad whole-note chord for the full bar (tempo-aware)", async () => {
+      // 60 bpm → 1 beat = 1s; 4/4 bar = 4s. ballad-whole = one sustained hit on beat 0.
+      const layers = await buildAllLayersAsync({
+        ...baseInput,
+        tempoBpm: 60,
+        beatsPerBar: 4,
+        chordPatternId: "ballad-whole",
+        steps: [step({ duration: { value: 1, unit: "bar" } })],
+      });
+      expect(layers.chordStrums).toHaveLength(1);
+      expect(layers.chordStrums[0]!.value.durationSec).toBeCloseTo(4, 6);
+    });
+
+    it("scales the ballad whole-note duration with tempo and meter", async () => {
+      // 120 bpm → 1 beat = 0.5s; 3/4 bar = 1.5s.
+      const layers = await buildAllLayersAsync({
+        ...baseInput,
+        tempoBpm: 120,
+        beatsPerBar: 3,
+        chordPatternId: "ballad-whole",
+        steps: [step({ duration: { value: 1, unit: "bar" } })],
+      });
+      expect(layers.chordStrums).toHaveLength(1);
+      expect(layers.chordStrums[0]!.value.durationSec).toBeCloseTo(1.5, 6);
+    });
   });
 
   it("emits cross-stick drum events for the bossa clave pattern", async () => {

@@ -291,7 +291,8 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
         const hits = isBarUnit && chordCellBars > 1
           ? sliceCellToBar(chordPattern.hits, absoluteBar % chordCellBars, input.beatsPerBar)
           : repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
-        for (const hit of hits) {
+        for (let hitIndex = 0; hitIndex < hits.length; hitIndex++) {
+          const hit = hits[hitIndex];
           const isLhBass =
             hit.voiceRole === "bass-root" || hit.voiceRole === "bass-fifth";
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
@@ -302,6 +303,12 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             // LH bass doubles the upright an octave up — lock it to the grid.
             ...(isLhBass ? { timeAmountSec: 0 } : {}),
           });
+          // A sustained chord rings until the next hit in the bar, or to the bar
+          // end when it is the last hit — a true whole note for ballad-whole,
+          // tempo- and meter-aware at any setting.
+          const nextHitBeat = hits[hitIndex + 1]?.beat ?? eventBeats;
+          const sustainedDurationSec =
+            Math.max(0, nextHitBeat - hit.beat) * secondsPerBeat;
           chordStrums.push({
             time: hitTime,
             value: {
@@ -325,7 +332,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
                     ? ROOT_STRUM_DURATION_SEC
                     : hit.articulation === "stab" || hit.articulation === "color-stab"
                       ? STAB_STRUM_DURATION_SEC
-                      : undefined,
+                      : hit.style === "sustained"
+                        ? sustainedDurationSec
+                        : undefined,
             },
           });
         }
