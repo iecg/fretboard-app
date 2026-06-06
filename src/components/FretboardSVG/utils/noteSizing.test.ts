@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   taperAwareRadiusScale,
   NOTE_TAPER_MIN_SCALE,
+  connectorDashArray,
 } from "./noteSizing";
 
 // Reference geometry used across cases: a wide neck so xFrac resolves cleanly.
@@ -49,5 +50,31 @@ describe("taperAwareRadiusScale", () => {
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, neckHeight: 0 })).toBe(1);
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, numStrings: 1 })).toBe(1);
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, noteBubblePx: 0 })).toBe(1);
+  });
+});
+
+describe("connectorDashArray", () => {
+  it("reproduces the legacy 7px 5px at the default tablet row height (36)", () => {
+    expect(connectorDashArray(36)).toBe("7px 5px");
+  });
+
+  it("scales up on a taller (desktop) row height", () => {
+    expect(connectorDashArray(42)).toBe("8px 6px");
+  });
+
+  it("never shrinks below the dash/gap floor on tiny boards", () => {
+    expect(connectorDashArray(10)).toBe("6px 4px");
+    expect(connectorDashArray(0)).toBe("6px 4px");
+  });
+
+  it("clamps to the maximum on very large row heights", () => {
+    expect(connectorDashArray(1000)).toBe("10px 7px");
+  });
+
+  it("is monotonically non-decreasing in stringRowPx", () => {
+    const dash = (s: number) => Number(connectorDashArray(s).split("px")[0]);
+    for (let s = 8; s < 80; s++) {
+      expect(dash(s + 1)).toBeGreaterThanOrEqual(dash(s));
+    }
   });
 });

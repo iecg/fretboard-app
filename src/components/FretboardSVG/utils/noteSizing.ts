@@ -86,3 +86,35 @@ export function taperAwareRadiusScale({
   const scale = localSpacing / referenceSpacing;
   return Math.max(minScale, Math.min(1, scale));
 }
+
+/**
+ * Dash geometry for the connector spine's redundant dash cue. Scales with the
+ * board's vertical row height so the dash never collapses to dots on small/zoomed
+ * boards. Tuned so the default tablet row height (STRING_ROW_PX_TABLET = 36)
+ * yields the legacy "7px 5px"; smaller boards floor at DASH/GAP minimums and
+ * larger boards grow to the maxima.
+ */
+// Factors derived against STRING_ROW_PX_TABLET (36) so the default board renders the legacy "7px 5px" — keep in sync if that row height changes.
+export const CONNECTOR_DASH_FACTOR = 7 / 36;
+export const CONNECTOR_GAP_FACTOR = 5 / 36;
+export const CONNECTOR_DASH_MIN_PX = 6;
+export const CONNECTOR_DASH_MAX_PX = 10;
+export const CONNECTOR_GAP_MIN_PX = 4;
+export const CONNECTOR_GAP_MAX_PX = 7;
+
+export function connectorDashArray(stringRowPx: number): string {
+  const clamp = (v: number, min: number, max: number) =>
+    Math.min(max, Math.max(min, v));
+  const safe = Number.isFinite(stringRowPx) && stringRowPx > 0 ? stringRowPx : 0;
+  const dash = clamp(
+    Math.round(safe * CONNECTOR_DASH_FACTOR),
+    CONNECTOR_DASH_MIN_PX,
+    CONNECTOR_DASH_MAX_PX,
+  );
+  const gap = clamp(
+    Math.round(safe * CONNECTOR_GAP_FACTOR),
+    CONNECTOR_GAP_MIN_PX,
+    CONNECTOR_GAP_MAX_PX,
+  );
+  return `${dash}px ${gap}px`;
+}

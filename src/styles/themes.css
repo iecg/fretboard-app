@@ -287,7 +287,7 @@
   --fb-neutral-stroke: oklch(0.4262 0.0246 74.3); /* was #574d40 */
   --fb-region-tint: oklch(0.4878 0.0283 67.1 / 0.20); /* was rgba(107, 93, 79, 0.20) */
   --fb-connector-accent: var(--chord-connector-color-2); /* vermillion */
-  --fb-connector-halo: rgb(255 255 255 / 0.7); /* light wood: pale halo lifts the line */
+  --fb-connector-halo: rgb(0 0 0 / 0.6); /* light wood: dark casing carves the line (APCA composited Lc ~57 vs maple) */
 
   /* Chord-tone connector palette — canonical Okabe-Ito 8-color palette.
      Identical across light and dark themes for consistent voicing identity.

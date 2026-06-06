@@ -372,7 +372,7 @@
 /* Redundant second cue: dashed spine for voicings the conflict-graph assigned
    an odd color slot. The solid halo underlay shows through the gaps. */
 .chord-connectors path[data-layer="spine"][data-dash="true"] {
-  stroke-dasharray: 7px 5px;
+  stroke-dasharray: var(--fb-connector-dash, 7px 5px);
 }
 
 /* -----------------------------------------------------------------------

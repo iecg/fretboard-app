@@ -92,6 +92,13 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
+  it("sets the --fb-connector-dash custom property on the neck", () => {
+    const { container } = renderCMajor();
+    const neck = container.querySelector('[style*="--fb-connector-dash"]');
+    expect(neck).not.toBeNull();
+    expect(neck!.getAttribute("style")).toMatch(/--fb-connector-dash:\s*\d+px \d+px/);
+  });
+
   it("renders note circles when highlightNotes are provided", () => {
     render(<FretboardSVG {...BASE_PROPS} />);
     const activeNotes = document.querySelectorAll(".note-active, .key-tonic");
