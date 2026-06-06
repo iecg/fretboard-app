@@ -111,6 +111,26 @@ describe("FretboardConnectorLayer", () => {
     ).not.toBeNull();
   });
 
+  it("paints dashed spines on top of solid spines where voicings overlap", () => {
+    // Dashed voicing is listed FIRST; without z-ordering it would render under
+    // the solid one. The renderer must reorder so the dashed spine paints last.
+    const { container } = renderInSvg(
+      <FretboardConnectorLayer
+        {...BASE_PROPS}
+        pass="below"
+        chordPolylines={[
+          makePolyline("0,0|1,2|2,4", undefined, true), // dashed
+          makePolyline("0,5|1,5|2,5", undefined, false), // solid
+        ]}
+      />,
+    );
+    const spines = [...container.querySelectorAll('path[data-layer="spine"]')];
+    const dashedIdx = spines.findIndex((p) => p.getAttribute("data-dash") === "true");
+    const solidIdx = spines.findIndex((p) => p.getAttribute("data-dash") === null);
+    // Later in document order = painted on top in SVG.
+    expect(dashedIdx).toBeGreaterThan(solidIdx);
+  });
+
   it("omits data-dash on a solid voicing", () => {
     const { container } = renderInSvg(
       <FretboardConnectorLayer

@@ -27,15 +27,24 @@ interface FretboardConnectorLayerProps {
 const renderChordLayers = (
   chordPolylines: ChordConnectorVoicing[],
   pass: "below" | "above",
-) => (
-  <>
-    {/* Line-only connector: a halo underlay (legibility over wood) + the accent
-        center line, both drawn BELOW the notes so the markers occlude them. No
-        soft band fill — it muddied over the wood texture. */}
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "halo"))}
-    {pass === "below" && chordPolylines.map((v) => renderChordPath(v, "spine"))}
-  </>
-);
+) => {
+  if (pass !== "below") return null;
+  // Dashed spines paint last so they sit on top of solid spines where voicings
+  // overlap — the dash pattern stays readable across a crossing solid line.
+  // Stable sort: false(0) before true(1), so non-dashed keep their relative order.
+  const spineOrder = [...chordPolylines].sort(
+    (a, b) => Number(a.dashed) - Number(b.dashed),
+  );
+  return (
+    <>
+      {/* Line-only connector: a halo underlay (legibility over wood) + the accent
+          center line, both drawn BELOW the notes so the markers occlude them. No
+          soft band fill — it muddied over the wood texture. */}
+      {chordPolylines.map((v) => renderChordPath(v, "halo"))}
+      {spineOrder.map((v) => renderChordPath(v, "spine"))}
+    </>
+  );
+};
 
 const renderStaticChordConnectorGroup = (
   chordPolylines: ChordConnectorVoicing[],
