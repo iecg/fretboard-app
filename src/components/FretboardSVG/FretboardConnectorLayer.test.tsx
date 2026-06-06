@@ -8,9 +8,7 @@ import type { CagedShape } from "@fretflow/core";
 // Stub polyline: just enough for the renderer to emit the ribbon <path> elements
 // (halo + fill + spine) per voicing.
 const makePolyline = (voicingKey: string, shape?: CagedShape, dashed = false): ChordConnectorVoicing => ({
-  paths: { fill: "M0,0 L10,0", outline: "M0,0 L10,0" },
   spinePath: "M 0 0 L 10 0",
-  vertices: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
   paletteIndex: 0,
   dashed,
   shape,

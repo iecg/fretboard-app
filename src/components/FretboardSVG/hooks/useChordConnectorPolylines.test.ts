@@ -14,11 +14,26 @@ import {
 import {
   clampConnectorRadiusToYBounds,
   CHORD_CONNECTOR_RADIUS_FACTORS,
-  computeChordConnectorRadiusPx,
   resolveConnectorRadiusPx,
 } from "../utils/connectorRadius";
 import type { NoteData } from "./useNoteData";
 import { chordRootVisualRadiusPx } from "../utils/noteSizing";
+
+/**
+ * Parse a connector spinePath (`"M x y L x y …"`) into its ordered pixel points.
+ * Returns [] for an empty path.
+ */
+const spinePoints = (spinePath: string): Array<{ x: number; y: number }> => {
+  if (!spinePath) return [];
+  return spinePath
+    .replace(/[ML]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .reduce<Array<{ x: number; y: number }>>((acc, _val, i, arr) => {
+      if (i % 2 === 0) acc.push({ x: Number(arr[i]), y: Number(arr[i + 1]) });
+      return acc;
+    }, []);
+};
 
 // Geometry stubs: identity-like helpers for predictable test assertions.
 // fretCenterX returns fret * 10 so we can spot-check x values.
@@ -64,23 +79,28 @@ const notes = (specs: NoteSpec[]): NoteData[] =>
 function build(
   noteData: NoteData[],
   chordToneNames: string[],
-  yBounds?: { minY: number; maxY: number },
 ) {
   return buildChordConnectorPolylines(
     noteData,
     chordToneNames,
     fretCenterX,
     stringYAt,
-    STRING_ROW_PX,
-    yBounds,
   );
 }
 
-// True iff any vertex sits at the (stringIndex, fretIndex) grid position.
-const hasVertex = (vertices: ReadonlyArray<{ x: number; y: number }>, si: number, fi: number) =>
-  vertices.some((p) => p.x === fretCenterX(fi) && p.y === stringYAt(si, fretCenterX(fi)));
+// The set of canonical "si,fi" coordinate pairs a voicing covers, parsed from
+// its voicingKey (e.g. "0,5|1,5|2,5").
+const voicingCoords = (voicingKey: string): Set<string> =>
+  new Set(voicingKey.split("|"));
 
-// Find a voicing with vertices at every (string, fret) pair (and exact length if given).
+// True iff the voicing covers the (stringIndex, fretIndex) grid position.
+const hasVertex = (voicingKey: string, si: number, fi: number) =>
+  voicingCoords(voicingKey).has(`${si},${fi}`);
+
+// Number of distinct notes (vertices) in a voicing, from its voicingKey.
+const vertexCount = (voicingKey: string) => voicingKey.split("|").length;
+
+// Find a voicing covering every (string, fret) pair (and exact note count if given).
 const findVoicing = (
   result: ReturnType<typeof buildChordConnectorPolylines>,
   positions: Array<[number, number]>,
@@ -88,8 +108,8 @@ const findVoicing = (
 ) =>
   result.find(
     (v) =>
-      (exactLen === undefined || v.vertices.length === exactLen) &&
-      positions.every(([si, fi]) => hasVertex(v.vertices, si, fi)),
+      (exactLen === undefined || vertexCount(v.voicingKey) === exactLen) &&
+      positions.every(([si, fi]) => hasVertex(v.voicingKey, si, fi)),
   );
 
 describe("buildChordConnectorPolylines", () => {
@@ -98,7 +118,7 @@ describe("buildChordConnectorPolylines", () => {
   // -------------------------------------------------------------------------
 
   it("returns [] for empty noteData", () => {
-    const result = buildChordConnectorPolylines([], ["C", "E", "G"], fretCenterX, stringYAt, STRING_ROW_PX);
+    const result = buildChordConnectorPolylines([], ["C", "E", "G"], fretCenterX, stringYAt);
     expect(result).toEqual([]);
   });
 
@@ -109,7 +129,7 @@ describe("buildChordConnectorPolylines", () => {
         useChordConnectorPolylines({
           noteData: [],
           chordToneNames: ["C", "E", "G"],
-          fretCenterX, stringYAt, stringRowPx: STRING_ROW_PX,
+          fretCenterX, stringYAt,
           explicitVoicings: [{ shape: "E" as CagedShape, voicingKey, notes }],
         }),
       ).result;
@@ -129,12 +149,12 @@ describe("buildChordConnectorPolylines", () => {
       expect(r.current).toHaveLength(1);
       expect(r.current[0]?.voicingKey).toBe("e-shape-c-major");
       expect(r.current[0]?.shape).toBe("E");
-      expect(r.current[0]?.vertices).toHaveLength(6);
+      expect(spinePoints(r.current[0]!.spinePath)).toHaveLength(6);
     });
 
     it("orders explicit voicing geometry by string index even when notes are passed out of order", () => {
       const r = renderExplicit(shuffled, "e-shape-c-major-shuffled");
-      expect(r.current[0]?.vertices.map((v) => v.y)).toEqual([0, 20, 40, 60, 80, 100]);
+      expect(spinePoints(r.current[0]!.spinePath).map((p) => p.y)).toEqual([0, 20, 40, 60, 80, 100]);
     });
   });
 
@@ -176,8 +196,8 @@ describe("buildChordConnectorPolylines", () => {
       ["C", "E", "G"],
     );
     expect(result).toHaveLength(1);
-    expect(result[0]!.vertices).toHaveLength(3);
-    const yValues = result[0]!.vertices.map((v) => v.y).sort((a, b) => a - b);
+    expect(spinePoints(result[0]!.spinePath)).toHaveLength(3);
+    const yValues = spinePoints(result[0]!.spinePath).map((p) => p.y).sort((a, b) => a - b);
     expect(yValues).toEqual([0, 20, 40]);
   });
 
@@ -188,8 +208,8 @@ describe("buildChordConnectorPolylines", () => {
       ["C", "E", "G"],
     );
     expect(result.length).toBeGreaterThanOrEqual(1);
-    result.forEach((v) => expect(v.vertices).toHaveLength(3));
-    const yValues = result[0]!.vertices.map((v) => v.y);
+    result.forEach((v) => expect(spinePoints(v.spinePath)).toHaveLength(3));
+    const yValues = spinePoints(result[0]!.spinePath).map((p) => p.y);
     expect(yValues).toContain(stringYAt(0, fretCenterX(3)));
     expect(yValues).toContain(stringYAt(2, fretCenterX(3)));
   });
@@ -210,7 +230,7 @@ describe("buildChordConnectorPolylines", () => {
       ["C", "E", "G"],
     );
     expect(result).toHaveLength(1);
-    expect(result[0]!.vertices.some((v) => v.x === fretCenterX(7))).toBe(false);
+    expect(spinePoints(result[0]!.spinePath).some((p) => p.x === fretCenterX(7))).toBe(false);
   });
 
   // -------------------------------------------------------------------------
@@ -298,7 +318,7 @@ describe("buildChordConnectorPolylines", () => {
   ])("$label", ({ specs, chord, count, verts }) => {
     const result = build(notes(specs), chord);
     expect(result).toHaveLength(count);
-    result.forEach((v) => expect(v.vertices).toHaveLength(verts));
+    result.forEach((v) => expect(spinePoints(v.spinePath)).toHaveLength(verts));
   });
 
   // -------------------------------------------------------------------------
@@ -330,7 +350,7 @@ describe("buildChordConnectorPolylines", () => {
       ["C", "E", "G"],
     );
     expect(result).toHaveLength(1);
-    expect(result[0]!.vertices).toHaveLength(3);
+    expect(spinePoints(result[0]!.spinePath)).toHaveLength(3);
   });
 
   it("CHORD_TONE_CLASSES contains chord-tone roles and excludes non-chord roles", () => {
@@ -352,7 +372,7 @@ describe("buildChordConnectorPolylines", () => {
   it("2-tone chord on consecutive strings emits 1 voicing", () => {
     const result = build(notes([[0, 2, "C", "chord-root"], [1, 4, "E"]]), ["C", "E"]);
     expect(result).toHaveLength(1);
-    expect(result[0]!.vertices).toHaveLength(2);
+    expect(spinePoints(result[0]!.spinePath)).toHaveLength(2);
   });
 
   // -------------------------------------------------------------------------
@@ -403,61 +423,6 @@ describe("buildChordConnectorPolylines", () => {
     expect(fret5).not.toBe(fret17);
   });
 
-  // -------------------------------------------------------------------------
-  // Contour smoke tests (fat polyline geometry)
-  // Every voicing path: starts with M, ends with Z, fill === outline.
-  // Non-collinear voicings dispatch to a rounded tube; collinear voicings
-  // dispatch to an inflated capsule. Both produce arc commands ('A').
-  // -------------------------------------------------------------------------
-
-  it.each<{ label: string; specs: NoteSpec[]; chord: string[]; arcs: number }>([
-    {
-      label: "non-collinear triad (3 vertices) → tube with 1 corner + 2 caps",
-      specs: [[0, 3, "C", "chord-root"], [1, 5, "E"], [2, 4, "G"]],
-      chord: ["C", "E", "G"], arcs: 3,
-    },
-    {
-      label: "non-collinear Cmaj7 (4 vertices) → tube with 2 corners + 2 caps",
-      specs: [[0, 3, "C", "chord-root"], [1, 4, "E"], [2, 4, "G"], [3, 5, "B"]],
-      chord: ["C", "E", "G", "B"], arcs: 4,
-    },
-    {
-      label: "collinear same-fret triad → capsule (arcs present)",
-      specs: [[0, 5, "C", "chord-root"], [1, 5, "E"], [2, 5, "G"]],
-      chord: ["C", "E", "G"], arcs: -1, // capsule path; just assert presence
-    },
-    {
-      label: "(regression) collinear diagonal G-E-C → capsule (arcs present)",
-      specs: [[4, 5, "G"], [5, 6, "E"], [6, 7, "C", "chord-root"]],
-      chord: ["C", "E", "G"], arcs: -1,
-    },
-  ])("contour: $label", ({ specs, chord, arcs }) => {
-    const result = build(notes(specs), chord);
-    expect(result).toHaveLength(1);
-    const { paths } = result[0]!;
-    expect(paths.fill.startsWith("M")).toBe(true);
-    expect(paths.fill.endsWith("Z")).toBe(true);
-    expect(paths.fill).toBe(paths.outline);
-    expect(paths.fill).toContain("A");
-    if (arcs >= 0) {
-      const aCount = (paths.fill.match(/\bA\b/g) ?? []).length;
-      expect(aCount).toBe(arcs);
-    }
-  });
-
-  it("(regression) open-string acute triad uses tube geometry, not a triangle hull", () => {
-    // Skinny acute voicing: tube has 1 outside arc + 2 end caps = 3 A;
-    // a convex-hull offset would emit 3 A but only 3 L (one per hull edge),
-    // so an L-count ≥ 4 distinguishes the tube path.
-    const result = build(
-      notes([[3, 0, "D", "chord-root"], [4, 1, "A#"], [5, 3, "G"]]),
-      ["D", "A#", "G"],
-    );
-    expect(result).toHaveLength(1);
-    const { fill } = result[0]!.paths;
-    expect((fill.match(/\bA\b/g) ?? []).length).toBe(3);
-    expect((fill.match(/\bL\b/g) ?? []).length).toBeGreaterThanOrEqual(4);
-  });
 });
 
 // -------------------------------------------------------------------------
@@ -504,7 +469,7 @@ describe("regression: 3NPS Position 2 bottom-string voicing", () => {
   it("emits the in-position bottom voicing and drops the fret-15 out-of-position voicing", () => {
     const result = build(position2Notes, ["C", "E", "G"]);
     expect(findVoicing(result, [[3, 10], [4, 10], [5, 12]], 3), "in-position bottom voicing not emitted").toBeDefined();
-    const outOfPosition = result.find((v) => hasVertex(v.vertices, 4, 15) || hasVertex(v.vertices, 5, 15));
+    const outOfPosition = result.find((v) => hasVertex(v.voicingKey, 4, 15) || hasVertex(v.voicingKey, 5, 15));
     expect(outOfPosition, "out-of-position voicing must not be emitted").toBeUndefined();
   });
 });
@@ -540,43 +505,33 @@ describe("paletteIndex + dashed encoding", () => {
 // a single voicing has no conflicts, so it gets the default slot
 // (paletteIndex 0, solid). Two separate single-voicing calls at different neck
 // positions therefore share the same paletteIndex (0) yet produce different
-// path strings, because the vertex coordinates differ.
+// spine strings, because the vertex coordinates differ.
 //
 // The key property tested here: same paletteIndex does NOT guarantee the same
-// path — different neck positions still produce different paths. Determinism:
+// spine — different neck positions still produce different spines. Determinism:
 // the same inputs always produce the same output.
 // -------------------------------------------------------------------------
 
-describe("per-voicing offset: determinism and paletteIndex independence", () => {
+describe("per-voicing spine: determinism and paletteIndex independence", () => {
   // Two C-major triads with G in bass — same paletteIndex, different fret positions.
   const voicingA = notes([[0, 1, "C", "chord-root"], [1, 2, "E"], [2, 3, "G"]]);
   const voicingB = notes([[0, 2, "C", "chord-root"], [1, 3, "E"], [2, 4, "G"]]);
 
-  it("(a) same paletteIndex but different canonicalKey → different paths.fill strings", () => {
+  it("(a) same paletteIndex but different canonicalKey → different spinePath strings", () => {
     const rA = build(voicingA, ["C", "E", "G"]);
     const rB = build(voicingB, ["C", "E", "G"]);
     expect(rA[0]!.paletteIndex).toBe(rB[0]!.paletteIndex);
-    expect(rA[0]!.paths.fill).not.toBe(rB[0]!.paths.fill);
+    expect(rA[0]!.spinePath).not.toBe(rB[0]!.spinePath);
   });
 
-  it("(b) same input always produces the same paths.fill string (deterministic)", () => {
+  it("(b) same input always produces the same spinePath string (deterministic)", () => {
     const r1 = build(voicingA, ["C", "E", "G"]);
     const r2 = build(voicingA, ["C", "E", "G"]);
-    expect(r1[0]!.paths.fill).toBe(r2[0]!.paths.fill);
+    expect(r1[0]!.spinePath).toBe(r2[0]!.spinePath);
   });
 
   it("(c) adaptive radius factors use compact, medium, and max widths", () => {
     expect(CHORD_CONNECTOR_RADIUS_FACTORS).toEqual({ compact: 0.34, medium: 0.38, max: 0.42 });
-  });
-
-  it("(c) uniform base radius regardless of fretted position count; offset adds linearly", () => {
-    // Uniform span base = 0.42 × 36 = 15.12 (above the chord-root squircle
-    // floor of ~14.5, so the base governs — a slim ribbon, not marker-width).
-    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 0)).toBeCloseTo(15.12);
-    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 0))
-      .toBeGreaterThan(chordRootVisualRadiusPx(STRING_ROW_PX));
-    const base = computeChordConnectorRadiusPx(STRING_ROW_PX, 0);
-    expect(computeChordConnectorRadiusPx(STRING_ROW_PX, 3)).toBeCloseTo(base + 3);
   });
 
   it("clamps connector radius to the available SVG y bounds", () => {
@@ -616,7 +571,7 @@ describe("per-voicing offset: determinism and paletteIndex independence", () => 
 });
 
 describe("useChordConnectorPolylines", () => {
-  it("recomputes paths when resize changes fret/string geometry", () => {
+  it("recomputes the spine when resize changes fret/string geometry", () => {
     type GeomProps = {
       fretCenterX: (fi: number) => number;
       stringYAt: (si: number, x: number) => number;
@@ -631,20 +586,19 @@ describe("useChordConnectorPolylines", () => {
           chordToneNames: ["C", "E", "G"],
           fretCenterX: g.fretCenterX,
           stringYAt: g.stringYAt,
-          stringRowPx: STRING_ROW_PX,
         }),
       { initialProps: wide },
     );
 
-    const initialPath = result.current[0]!.paths.fill;
-    expect(result.current[0]!.vertices.map((v) => v.x)).toEqual([20, 40, 60]);
-    expect(result.current[0]!.vertices.map((v) => v.y)).toEqual([0, 24, 48]);
+    const initialPath = result.current[0]!.spinePath;
+    expect(spinePoints(result.current[0]!.spinePath).map((p) => p.x)).toEqual([20, 40, 60]);
+    expect(spinePoints(result.current[0]!.spinePath).map((p) => p.y)).toEqual([0, 24, 48]);
 
     rerender(compact);
 
-    expect(result.current[0]!.paths.fill).not.toBe(initialPath);
-    expect(result.current[0]!.vertices.map((v) => v.x)).toEqual([10, 20, 30]);
-    expect(result.current[0]!.vertices.map((v) => v.y)).toEqual([0, 18, 36]);
+    expect(result.current[0]!.spinePath).not.toBe(initialPath);
+    expect(spinePoints(result.current[0]!.spinePath).map((p) => p.x)).toEqual([10, 20, 30]);
+    expect(spinePoints(result.current[0]!.spinePath).map((p) => p.y)).toEqual([0, 18, 36]);
   });
 });
 
@@ -746,7 +700,6 @@ describe("useChordConnectorPolylines — voicingSourceActive guard", () => {
         chordToneNames: ["C", "E", "G"],
         fretCenterX,
         stringYAt,
-        stringRowPx: STRING_ROW_PX,
         explicitVoicings: [],
         voicingSourceActive: active,
       }),
@@ -805,7 +758,6 @@ describe("connector topology memo split", () => {
           chordToneNames: ["C", "E", "G"],
           fretCenterX,
           stringYAt,
-          stringRowPx: STRING_ROW_PX,
         }),
       {
         initialProps: {
@@ -816,7 +768,7 @@ describe("connector topology memo split", () => {
     );
 
     expect(result.current[0]?.voicingKey).toBe("0,5|1,5|2,5");
-    expect(result.current[0]?.vertices).toEqual([
+    expect(spinePoints(result.current[0]!.spinePath)).toEqual([
       { x: 50, y: 0 },
       { x: 50, y: 20 },
       { x: 50, y: 40 },
@@ -828,7 +780,7 @@ describe("connector topology memo split", () => {
     });
 
     expect(result.current[0]?.voicingKey).toBe("0,5|1,5|2,5");
-    expect(result.current[0]?.vertices).toEqual([
+    expect(spinePoints(result.current[0]!.spinePath)).toEqual([
       { x: 100, y: 0 },
       { x: 100, y: 25 },
       { x: 100, y: 50 },
@@ -850,7 +802,6 @@ describe("connector topology memo split", () => {
       pendingVoicings: pending,
       fretCenterX,
       stringYAt,
-      stringRowPx: STRING_ROW_PX,
     });
 
     expect(pixel).toEqual(
@@ -859,7 +810,6 @@ describe("connector topology memo split", () => {
         ["C", "E", "G"],
         fretCenterX,
         stringYAt,
-        STRING_ROW_PX,
       ),
     );
   });

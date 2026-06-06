@@ -1,10 +1,4 @@
 /**
- * Uniform base radius factor for chord-connector outlines. All voicings
- * share this base; differentiation comes only from conflict offsets.
- */
-export const CHORD_CONNECTOR_BASE_RADIUS_FACTOR = 0.42;
-
-/**
  * Legacy per-span factors. Interval connectors still use `compact`.
  */
 export const CHORD_CONNECTOR_RADIUS_FACTORS = {
@@ -82,22 +76,4 @@ export function applyConnectorRadiusFloor(
   const squircleFloor =
     chordRootVisualRadiusPx(stringRowPx) + CHORD_CONNECTOR_MIN_HALO_PX;
   return Math.max(spanRadiusPx, squircleFloor);
-}
-
-/**
- * Compute the effective connector contour radius for one voicing.
- *
- * All voicings share a single uniform base radius so non-overlapping
- * connectors look identical. Conflict offsets are added on top only
- * when two voicings geometrically overlap.
- */
-export function computeChordConnectorRadiusPx(
-  stringRowPx: number,
-  offsetPx: number,
-): number {
-  const flooredRadius = applyConnectorRadiusFloor(
-    stringRowPx * CHORD_CONNECTOR_BASE_RADIUS_FACTOR,
-    stringRowPx,
-  );
-  return flooredRadius + Math.max(offsetPx, 0);
 }

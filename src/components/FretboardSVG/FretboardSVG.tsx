@@ -148,15 +148,12 @@ const areConnectorPropsEqual = (prev: any, next: any) => {
   if (prev.pass !== next.pass) return false;
   if (prev.fretCenterX !== next.fretCenterX) return false;
   if (prev.stringYAt !== next.stringYAt) return false;
-  if (prev.stringRowPx !== next.stringRowPx) return false;
   if (prev.voicingSourceActive !== next.voicingSourceActive) return false;
   if (prev.chordRoot !== next.chordRoot) return false;
   if (prev.showChordConnectors !== next.showChordConnectors) return false;
   if (prev.connectorMotionMode !== next.connectorMotionMode) return false;
   if (prev.clipPathUrl !== next.clipPathUrl) return false;
   if (prev.playbackActive !== next.playbackActive) return false;
-
-  if (prev.yBounds?.minY !== next.yBounds?.minY || prev.yBounds?.maxY !== next.yBounds?.maxY) return false;
 
   const strArrayEqual = (a: string[], b: string[]) => {
     if (a === b) return true;
@@ -223,8 +220,6 @@ interface ChordConnectorEvaluatorProps {
   chordToneNames: string[];
   fretCenterX: (fretIndex: number) => number;
   stringYAt: (stringIndex: number, x: number) => number;
-  stringRowPx: number;
-  yBounds: import("./utils/connectorRadius").ConnectorYBounds | undefined;
   explicitVoicings: Array<{
     voicingKey: string;
     notes: FullChordMatchNote[];
@@ -247,8 +242,6 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
   chordToneNames,
   fretCenterX,
   stringYAt,
-  stringRowPx,
-  yBounds,
   explicitVoicings,
   voicingSourceActive,
   intervalPolylines,
@@ -265,8 +258,6 @@ const ChordConnectorEvaluator = memo(function ChordConnectorEvaluator({
     chordToneNames,
     fretCenterX,
     stringYAt,
-    stringRowPx,
-    yBounds,
     explicitVoicings,
     voicingSourceActive,
   });
@@ -687,8 +678,6 @@ export function FretboardSVG({
                   : chordTones,
               fretCenterX,
               stringYAt,
-              stringRowPx,
-              yBounds: connectorYBounds,
               explicitVoicings: fullChordVoicings,
               voicingSourceActive: hasChordOverlay,
               intervalPolylines: intervalConnectorPolylines,
