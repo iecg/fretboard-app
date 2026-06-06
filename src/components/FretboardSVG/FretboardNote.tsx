@@ -194,9 +194,16 @@ export const FretboardNote = memo(function FretboardNote({
             className={styles["note-guide-ring"]}
             data-guide-ring="true"
             data-guide-phase={guidePhase}
+            // Only "primary" targets (inside the active shape region) get the
+            // animated countdown — humans can phase-track only ~4 simultaneous
+            // "clocks" (Gu et al. 2014), and a guide tone lights up at every
+            // fretboard position. Secondary targets stay as quiet static markers.
+            data-guide-primary={note.isInRegion ? "true" : "false"}
             aria-hidden="true"
             initial={{ opacity: 0 }}
-            animate={{ opacity: guidePhase === "preview" ? 0.8 : 1 }}
+            animate={{
+              opacity: note.isInRegion ? (guidePhase === "preview" ? 0.8 : 1) : 0.4,
+            }}
             exit={{ opacity: 0 }}
             transition={guideFade}
             style={{ transformBox: "fill-box", transformOrigin: "center" } as React.CSSProperties}
@@ -209,6 +216,11 @@ export const FretboardNote = memo(function FretboardNote({
               r={ringR}
               pathLength={100}
             />
+            {/* On-beat flash — a bright ring that blooms outward as the core
+                drains empty, giving a sharp coincidence landmark exactly on the
+                beat (the gradual drain alone has no crisp "now" instant). CSS
+                only animates it in the landing phase. */}
+            <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
           </motion.g>
         )}
       </AnimatePresence>

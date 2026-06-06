@@ -168,10 +168,27 @@ describe("FretboardNote — two-phase guide ring", () => {
     expect(container.querySelector("[data-guide-ring]")).toBeNull();
   });
 
-  it("renders the ring as a halo + core pair (2-colour ring) for a target note", () => {
+  it("renders the ring as halo + core + on-beat flash circles for a target note", () => {
     const { container } = renderNote(makeNote({ transitionRole: "guide-target" }));
     const ring = container.querySelector("[data-guide-ring]");
-    expect(ring?.querySelectorAll("circle")).toHaveLength(2);
+    // dark halo track, draining green core, and the on-beat flash ring
+    expect(ring?.querySelectorAll("circle")).toHaveLength(3);
+  });
+
+  it("marks a target as primary when it is inside the active shape region", () => {
+    const { container } = renderNote(
+      makeNote({ transitionRole: "guide-target", isInRegion: true }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring?.getAttribute("data-guide-primary")).toBe("true");
+  });
+
+  it("marks a target as non-primary (quiet static marker) when outside the region", () => {
+    const { container } = renderNote(
+      makeNote({ transitionRole: "guide-target", isInRegion: false }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring?.getAttribute("data-guide-primary")).toBe("false");
   });
 
   it("renders the incoming-hue backing disc tagged with the phase for a target note", () => {
