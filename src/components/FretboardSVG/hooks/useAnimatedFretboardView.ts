@@ -49,6 +49,7 @@ export function buildAnimatedFretboardNotes({
         incomingTones: emphasisContext.incomingTones,
         departingTones: emphasisContext.departingTones,
         leadInActive: emphasisContext.leadInActive,
+        planningActive: emphasisContext.planningActive,
       };
     }
 
@@ -111,7 +112,6 @@ function renderedNoteSignature(
     note.applyDimOpacity,
     emph.opacityBoost,
     emph.radiusBoost,
-    emph.glowColor ?? "",
     emph.transitionRole ?? "",
     emph.guideTargetLabel ?? "",
     note.isHidden,

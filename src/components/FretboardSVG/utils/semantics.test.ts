@@ -12,7 +12,6 @@ describe("semantics utils", () => {
 
     it("guide tones get no static glow in the base emphasis (teal hue carries identity)", () => {
       const e = getEmphasis("chord-tone-in-scale", /*isGuideTone*/ true);
-      expect(e.glowColor).toBeUndefined();
       expect(e.radiusBoost).toBe(1);
       expect(e.opacityBoost).toBe(1);
     });
@@ -31,7 +30,7 @@ describe("semantics utils", () => {
     });
 
     it("never adds a static glow for guide tones regardless of underlying noteClass", () => {
-      expect(getEmphasis("chord-tone-outside-scale", true).glowColor).toBeUndefined();
+      expect(getEmphasis("chord-tone-outside-scale", true)).toEqual({ radiusBoost: 1, opacityBoost: 1 });
     });
 
     it("renders non-guide chord tones at full intensity", () => {
@@ -387,6 +386,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     incomingTones: new Set<string>(),
     departingTones: new Set<string>(),
     leadInActive: true,
+    planningActive: false,
   };
 
   it("falls back to tones-base when leadContext is undefined", () => {
@@ -407,7 +407,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     // scale-only rests at radius 0.85; the target keeps that size (no bloom),
     // is brought to full opacity, and gets the ring hue + role + label.
     expect(getEmphasis("scale-only", false, ctx)).toEqual({
-      glowColor: "var(--note-incoming)", radiusBoost: 0.85, opacityBoost: 1,
+      radiusBoost: 0.85, opacityBoost: 1,
       transitionRole: "guide-target", guideTargetLabel: "3",
     });
   });
@@ -439,7 +439,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       commonWithNext: new Set(["A"]), nextGuideTones: new Set(["B"]),
     };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
-      glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1,
+      radiusBoost: 1.15, opacityBoost: 1,
     });
   });
 
@@ -456,13 +456,45 @@ describe("getEmphasis - voice-leading emphasis", () => {
       ...baseLeadContext, notePc: "A", commonWithNext: new Set(["A"]), leadInActive: false,
     };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
-      glowColor: "var(--note-glow-hold)", radiusBoost: 1.15, opacityBoost: 1,
+      radiusBoost: 1.15, opacityBoost: 1,
     });
   });
 
   it("outside the lead-in window, a guide tone produces no role", () => {
     const ctx: LeadLensContext = {
       ...baseLeadContext, notePc: "B", nextGuideTones: new Set(["B"]), leadInActive: false,
+    };
+    expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
+  });
+
+  it("marks a next-chord guide tone as 'guide-preview' during the planning window", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "B", leadInActive: false, planningActive: true,
+      nextGuideTones: new Set(["B"]),
+      nextGuideToneLabels: new Map([["B", "3"]]),
+    };
+    // Planning preview: resting size, full opacity, the preview role + label,
+    // and NO glow (the ring carries it).
+    const e = getEmphasis("scale-only", false, ctx);
+    expect(e.transitionRole).toBe("guide-preview");
+    expect(e.guideTargetLabel).toBe("3");
+    expect(e.opacityBoost).toBe(1);
+    expect(e.radiusBoost).toBe(0.85);
+  });
+
+  it("landing (guide-target) takes precedence over planning when both flags are set", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "B", leadInActive: true, planningActive: true,
+      nextGuideTones: new Set(["B"]),
+      nextGuideToneLabels: new Map([["B", "3"]]),
+    };
+    expect(getEmphasis("scale-only", false, ctx).transitionRole).toBe("guide-target");
+  });
+
+  it("produces no role when neither planning nor lead-in is active", () => {
+    const ctx: LeadLensContext = {
+      ...baseLeadContext, notePc: "B", leadInActive: false, planningActive: false,
+      nextGuideTones: new Set(["B"]),
     };
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
   });

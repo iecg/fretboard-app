@@ -209,68 +209,141 @@
   filter: var(--fretboard-svg-glow-orange-url);
 }
 
-/* Lead lens emphasis — radiusBoost/opacityBoost are applied inline by
-   FretboardNoteLayer.tsx via CSS transform scale. Glow is a dedicated underlay
-   element (.note-glow-underlay, keyed off data-glow) instead of an SVG filter. */
-
-/* Voice-leading glow underlay — fades/scales on the compositor (no SVG filter animation).
-   Selector is `.fretboard-note circle.note-glow-underlay` (specificity 0,2,1, placed after
-   the role stroke rules) so `stroke: none` and the opacity transition win over the inherited
-   role `:is(circle, …)` stroke + transition — the underlay must read as a pure soft glow,
-   not a crisp ring. */
-.fretboard-note circle.note-glow-underlay {
-  pointer-events: none;
-  /* The underlay must read as a pure soft glow. The role stroke rules
-     (the `:is(circle, path, polygon)` selectors) outrank any practical class
-     specificity here, so !important is the robust, intent-correct exemption
-     (the file already uses !important for the focus-visible stroke). */
+/* Target backing disc — a translucent incoming-hue fill BEHIND the marker that
+   ground-lifts a recessed (hollow) target note so the ring has a body to frame.
+   Invisible under an opaque chord-note fill (it sits behind the shape), visible
+   through a hollow note. Slightly stronger at landing than planning. */
+/* The note-role rules (`.fretboard-note … :is(circle, path, polygon)`) are
+   descendant selectors that would otherwise paint these helper circles with the
+   note's role fill/stroke/width. They outrank any practical class specificity,
+   so `!important` is the robust, intent-correct exemption — the same escape the
+   former glow underlay used in this file. */
+.note-target-backing {
+  fill: var(--note-incoming) !important;
   stroke: none !important;
-  opacity: 0;                 /* default invisible; raised by glow/transition rules */
-  transform-box: fill-box;
-  transform-origin: center;
-  filter: blur(3px);
-  transition: opacity var(--lead-in-duration, 0.3s) ease, fill 0.15s ease;
+  pointer-events: none;
 }
 
-.fretboard-note circle.note-glow-underlay[data-glow="on"] {
-  opacity: 0.55;
+.note-target-backing[data-guide-phase="preview"] {
+  opacity: 0.42;
 }
 
-/* Guide-target ring — a hollow ring on the next chord's guide tones during the
-   lead-in window. CSS animates ONLY the scale contraction (the beat countdown,
-   timed to --lead-in-duration); OPACITY is owned by motion/AnimatePresence in
-   FretboardNote, which fades the ring in on mount and OUT on removal. Splitting
-   the two (CSS=transform, JS=opacity) is deliberate: the fade-out is driven by
-   the animation system on unmount rather than racing React's startTransition-
-   jittered removal, which is what caused the boundary flash. The ring lands
-   bright on the beat (scale 1, held) and fades cleanly as the chord arrives.
-   transform/opacity only -> compositor-driven (no per-frame JS, no perf hit).
-   The ring reuses the incoming hue token, so no new colour is introduced. */
+.note-target-backing[data-guide-phase="landing"] {
+  opacity: 0.52;
+}
+
+/* Two-phase target ring — a hollow ring on the next chord's guide tones. A dark
+   halo under a coloured core (a 2-colour "Oreo" ring) keeps it legible over any
+   fill and on light or dark wood. The PHASE rides stroke-weight + opacity, NOT
+   dash (the weakest channel — what made the old ring invisible): planning is
+   thin + dim + static; landing is thick + bright and CONTRACTS toward the beat.
+   CSS animates ONLY the contraction (scale); OPACITY is owned by
+   motion/AnimatePresence in FretboardNote (so the fade-out is driven by the
+   animation system on unmount rather than racing React's startTransition-
+   jittered removal — the boundary flash). The ring reuses the incoming hue
+   token, so no new colour is introduced. */
 .note-guide-ring {
-  fill: none;
-  stroke: var(--note-incoming);
-  stroke-width: 2;
   transform-box: fill-box;
   transform-origin: center;
-  animation: note-guide-ring-contract var(--lead-in-duration, 0.6s) ease-out both;
 }
 
-@keyframes note-guide-ring-contract {
-  0%   { transform: scale(2.4); }
-  55%  { transform: scale(1.12); }
-  100% { transform: scale(1); }
+/* `!important` on stroke/fill/width: the note-role descendant rules
+   (`.fretboard-note … :is(circle, path, polygon)`) would otherwise repaint these
+   ring circles with the note's role colour and width (e.g. orange 3.6px on a
+   chord tone, thin neutral on a scale tone) — which is exactly what made the
+   ring blend into the marker. The exemption mirrors the former glow underlay. */
+.note-guide-ring-halo,
+.note-guide-ring-core {
+  fill: none !important;
 }
 
-/* Reduced motion: no contraction/countdown — the ring snaps to its landed size.
-   Opacity is motion-owned (its fade collapses to an instant change because
-   FretboardNote passes a 0s transition under prefers-reduced-motion). */
+/* Dark contrast halo — sits ~1px proud of the core on each side so the coloured
+   ring reads crisply over light maple, dark rosewood, and any marker fill. */
+.note-guide-ring-halo {
+  stroke: rgb(0 0 0 / 0.55) !important;
+}
+
+.note-guide-ring-core {
+  stroke: var(--note-incoming) !important;
+}
+
+/* Stroke weights are constant across phases (no scale animation, so the ring
+   never 'jumps' between phases). The dark halo stays a full static TRACK; the
+   green core is what the countdown drains. */
+.note-guide-ring-core {
+  stroke-width: 2.75 !important;
+}
+
+.note-guide-ring-halo {
+  stroke-width: 4.75 !important;
+}
+
+/* Planning — a calm presence: a full green ring that gently BREATHES on opacity
+   only (no scale). Motion keeps it visible on chord tones, but breathing on
+   opacity (not size) means there is nothing to 'jump' when landing begins. */
+/* Runs ONCE across the planning window (--planning-duration) and RESOLVES TO
+   FULL brightness at 100% — i.e. exactly as the landing drain begins — so the
+   handoff from breathing to draining has no brightness jump. Two gentle dips
+   give the "breathing" feel; the peaks (opacity 1) match the landing ring. */
+.note-guide-ring[data-guide-phase="preview"][data-guide-primary="true"] .note-guide-ring-core {
+  animation: note-guide-ring-breathe var(--planning-duration, 1.7s) ease-in-out both;
+}
+
+@keyframes note-guide-ring-breathe {
+  0%   { opacity: 1; }
+  30%  { opacity: 0.55; }
+  55%  { opacity: 1; }
+  80%  { opacity: 0.55; }
+  100% { opacity: 1; }
+}
+
+/* Landing — the green core DRAINS clockwise around the dark halo track, like a
+   clock hand, reaching empty exactly on the beat. This conveys the precise
+   moment of landing far better than a small scale contraction, reads at any
+   stroke weight, and — because nothing scales — continues seamlessly from the
+   planning ring with no jump. `pathLength=100` (set in FretboardNote) lets the
+   dash maths be radius-independent. */
+.note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"] .note-guide-ring-core {
+  stroke-dasharray: 100;
+  animation: note-guide-ring-drain var(--lead-in-duration, 0.6s) linear both;
+}
+
+@keyframes note-guide-ring-drain {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: 100; }
+}
+
+/* On-beat flash — a bright ring that blooms outward, peaking exactly as the
+   drain reaches empty on the beat. Research (sensorimotor synchronization +
+   rhythm-game prior art) shows a continuous countdown needs a sharp coincidence
+   event at the target instant; a gradual drain alone has no crisp "now". Hidden
+   until the final ~18% of the window so it reads as a distinct hit, not part of
+   the countdown. */
+.note-guide-ring-flash {
+  fill: none !important;
+  stroke: var(--note-incoming) !important;
+  stroke-width: 3 !important;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"] .note-guide-ring-flash {
+  animation: note-guide-ring-flash var(--lead-in-duration, 0.6s) ease-in both;
+}
+
+@keyframes note-guide-ring-flash {
+  0%, 82% { opacity: 0; transform: scale(1); }
+  100%    { opacity: 0.95; transform: scale(1.3); }
+}
+
+/* Reduced motion: no breathe, no drain — a static full ring still marks the
+   target; only the live countdown is dropped. */
 @media (prefers-reduced-motion: reduce) {
-  .note-guide-ring {
+  .note-guide-ring[data-guide-phase="preview"] .note-guide-ring-core,
+  .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-core,
+  .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-flash {
     animation: none;
-    transform: none;
-  }
-  .fretboard-note circle.note-glow-underlay {
-    transition: none;
   }
 }
 

@@ -8,7 +8,7 @@ import {
 } from "@fretflow/core";
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
-import { leadInActiveAtom, leadInDurationMsAtom } from "../../store/practiceLensAtoms";
+import { leadInActiveAtom, leadInDurationMsAtom, planningDurationMsAtom } from "../../store/practiceLensAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -330,6 +330,7 @@ export function FretboardSVG({
   const intervalPairs = useAtomValue(intervalPairsAtom);
   const leadInActive = useAtomValue(leadInActiveAtom);
   const leadInDurationMs = useAtomValue(leadInDurationMsAtom);
+  const planningDurationMs = useAtomValue(planningDurationMsAtom);
 
   // Playback snapshot is subscribed here (inside the lazy boundary) so that
   // frame ticks stay contained to FretboardSVG rather than re-rendering the
@@ -620,6 +621,7 @@ export function FretboardSVG({
       data-testid="fretboard-svg"
       style={{
         "--lead-in-duration": `${leadInDurationMs}ms`,
+        "--planning-duration": `${planningDurationMs}ms`,
       } as CSSProperties}
     >
       <div

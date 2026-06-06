@@ -138,11 +138,11 @@ describe("FretboardNoteLayer", () => {
     const g = container.querySelector('g[data-note-role="chord-root"]')!;
     expect(g.getAttribute("data-note-shape")).toBe("circle");
 
-    // Exactly one marker circle + the always-present glow underlay circle — no
-    // second halo-ring circle. The marker carries the reduced visual radius.
-    const markerCircle = g.querySelector("circle:not([data-glow])")!;
+    // Exactly one marker circle — no second halo-ring circle.
+    // The marker carries the reduced visual radius.
+    const markerCircle = g.querySelector("circle")!;
     expect(Number(markerCircle.getAttribute("r"))).toBeCloseTo(visualRadius);
-    expect(g.querySelectorAll("circle:not([data-glow])").length).toBe(1);
+    expect(g.querySelectorAll("circle").length).toBe(1);
     expect(container.querySelectorAll("path").length).toBe(0);
     expect(container.querySelectorAll("rect").length).toBe(0);
 
@@ -182,32 +182,21 @@ describe("FretboardNoteLayer", () => {
     );
     // Both are circle-shape markers now — no superellipse paths, no halo rings.
     expect(container.querySelectorAll("path").length).toBe(0);
-    expect(container.querySelectorAll("circle:not([data-glow])").length).toBe(2);
+    expect(container.querySelectorAll("circle").length).toBe(2);
     expect(container.querySelectorAll("rect").length).toBe(0);
     expect(container.querySelectorAll("text").length).toBe(2);
   });
 
   // Each role maps to a single SVG primitive — verify the others stay absent.
-  // The underlay <circle> (data-glow) is always rendered, so every note carries
-  // at least 1 circle regardless of its shape primitive. Polygon/path notes have
-  // 1 underlay circle + 0 other shapes; circle notes have 2 circles (underlay +
-  // shape). Only polygon and path are mutually exclusive.
-  it.each<{ role: NoteClass; primitive: "circle" | "polygon" | "path"; shapeCount: number; underlayCircles: number }>([
-    { role: "note-active", primitive: "circle", shapeCount: 1, underlayCircles: 1 },
-    { role: "chord-tone-outside-scale", primitive: "polygon", shapeCount: 1, underlayCircles: 1 },
-    { role: "note-blue", primitive: "polygon", shapeCount: 1, underlayCircles: 1 },
-  ])("$role renders exactly $shapeCount <$primitive> shape element and always-present underlay circle", ({ role, primitive, shapeCount, underlayCircles }) => {
+  it.each<{ role: NoteClass; primitive: "circle" | "polygon" | "path"; shapeCount: number }>([
+    { role: "note-active", primitive: "circle", shapeCount: 1 },
+    { role: "chord-tone-outside-scale", primitive: "polygon", shapeCount: 1 },
+    { role: "note-blue", primitive: "polygon", shapeCount: 1 },
+  ])("$role renders exactly $shapeCount <$primitive> shape element", ({ role, primitive, shapeCount }) => {
     const { container } = renderLayer([makeNote(role)]);
-    // Underlay circle is always present (data-glow="on"|"off")
-    expect(container.querySelectorAll("circle[data-glow]").length).toBe(underlayCircles);
     // No path or polygon where not expected
     const otherShapes = (["polygon", "path"] as const).filter((p) => p !== primitive);
-    if (primitive === "circle") {
-      // Shape circle + underlay circle = 2 total
-      expect(container.querySelectorAll("circle").length).toBe(shapeCount + underlayCircles);
-    } else {
-      expect(container.querySelectorAll(primitive).length).toBe(shapeCount);
-    }
+    expect(container.querySelectorAll(primitive).length).toBe(shapeCount);
     otherShapes.forEach((p) => expect(container.querySelectorAll(p).length).toBe(0));
   });
 
@@ -252,7 +241,7 @@ describe("FretboardNoteLayer", () => {
     const expectedRadius = (noteBubblePx / 2) * getNoteVisuals(role).radiusScale - CIRCLE_RADIUS_REDUCTION_PX;
     const { container } = renderLayer([makeNote(role)], { bubblePx: noteBubblePx });
     expect(container.querySelectorAll("path").length).toBe(0);
-    const markerCircle = container.querySelector("circle:not([data-glow])")!;
+    const markerCircle = container.querySelector("circle")!;
     expect(Number(markerCircle.getAttribute("r"))).toBeCloseTo(expectedRadius);
   });
 
@@ -351,32 +340,6 @@ describe("FretboardNoteLayer", () => {
     expect(container.querySelectorAll("text").length).toBe(3);
   });
 
-  it("renders glow underlay circle when glowColor is set", () => {
-    const glowColor = "var(--note-glow-hold)" as `var(--${string})`;
-    const { container } = renderLayer(
-      [makeNote("note-active", { applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor } })],
-    );
-    const underlay = container.querySelector(".note-glow-underlay");
-    expect(underlay).not.toBeNull();
-    expect(underlay?.getAttribute("aria-hidden")).toBe("true");
-    // Inline style fill is set to the glowColor token
-    expect(underlay?.getAttribute("style")).toContain("fill");
-  });
-
-  // Intentional change: the underlay is now always rendered so CSS can fade it
-  // in/out without mount/unmount. When glowColor is absent it carries data-glow="off"
-  // and has no inline fill (CSS keeps it at opacity 0).
-  it("always renders glow underlay even when glowColor is absent (data-glow='off')", () => {
-    const { container } = renderLayer([makeNote("note-active")]);
-    const underlay = container.querySelector(".note-glow-underlay");
-    expect(underlay).not.toBeNull();
-    expect(underlay?.getAttribute("data-glow")).toBe("off");
-    expect(underlay?.getAttribute("aria-hidden")).toBe("true");
-    // No inline fill when glowColor is absent
-    const style = underlay?.getAttribute("style");
-    expect(style ?? "").not.toContain("fill");
-  });
-
   it("marks note groups with CSS animation mode", () => {
     const { container } = render(
       <svg>
@@ -412,7 +375,7 @@ describe("FretboardNoteLayer", () => {
       </svg>,
     );
 
-    const markers = [...container.querySelectorAll('circle:not([data-glow])')];
+    const markers = [...container.querySelectorAll('circle')];
     expect(markers).toHaveLength(2);
     const [nutR, bridgeR] = markers.map((c) => Number(c.getAttribute("r")));
 

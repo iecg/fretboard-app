@@ -7,6 +7,7 @@ import {
   incomingTonesAtom,
   departingTonesAtom,
   leadInActiveAtom,
+  planningWindowActiveAtom,
 } from "../../../store/practiceLensAtoms";
 import { progressionPlayingAtom } from "../../../store/progressionAtoms";
 
@@ -18,6 +19,7 @@ export interface EmphasisContext {
   incomingTones: Set<string>;
   departingTones: Set<string>;
   leadInActive: boolean;
+  planningActive: boolean;
 }
 
 /**
@@ -28,6 +30,7 @@ export interface EmphasisContext {
 export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
   const playing = useAtomValue(progressionPlayingAtom);
   const leadInActive = useAtomValue(leadInActiveAtom);
+  const planningActive = useAtomValue(planningWindowActiveAtom);
   const commonWithNext = useAtomValue(commonTonesWithNextAtom);
   const nextGuideTones = useAtomValue(nextChordGuideTonesAtom);
   const nextGuideToneLabels = useAtomValue(nextChordGuideToneLabelsAtom);
@@ -43,5 +46,6 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
     incomingTones,
     departingTones,
     leadInActive,
+    planningActive,
   };
 }

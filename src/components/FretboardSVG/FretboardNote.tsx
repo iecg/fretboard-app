@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
-import { glowUnderlayRadiusPx, reduceCircleRadius, taperAwareRadiusScale } from "./utils/noteSizing";
+import { reduceCircleRadius, taperAwareRadiusScale } from "./utils/noteSizing";
 import styles from "./FretboardSVG.module.css";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -68,6 +68,12 @@ export const FretboardNote = memo(function FretboardNote({
 
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
+  const guidePhase =
+    transitionRole === "guide-target"
+      ? "landing"
+      : transitionRole === "guide-preview"
+        ? "preview"
+        : undefined;
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -80,7 +86,13 @@ export const FretboardNote = memo(function FretboardNote({
   });
   const rawRadius = baseRadius * radiusScale * taperScale;
   const r = reduceCircleRadius(rawRadius);
-  const glowR = glowUnderlayRadiusPx(r);
+
+  // Target ring standoff: a clamped-proportional gap so the ring reads as a
+  // halo (not a second border) at every marker size. A fixed gap is a larger
+  // fraction of a small recessed note than a large chord note; scaling by
+  // markerR keeps the breathing-room ratio constant, floored/capped so it never
+  // sub-pixels or balloons.
+  const ringR = r + Math.min(6, Math.max(3, r * 0.22));
 
   const shapeEl =
     noteShape === "diamond" ? (
@@ -147,39 +159,74 @@ export const FretboardNote = memo(function FretboardNote({
         opacity: finalOpacity !== 1 ? finalOpacity : undefined,
       } as React.CSSProperties}
     >
-      <circle
-        className={styles["note-glow-underlay"]}
-        cx={cx}
-        cy={cy}
-        r={glowR}
-        style={applyLensEmphasis.glowColor ? { fill: applyLensEmphasis.glowColor } : undefined}
-        data-glow={applyLensEmphasis.glowColor ? "on" : "off"}
-        aria-hidden="true"
-      />
-      {/* Guide-target countdown ring. CSS animates the scale CONTRACTION (the
-          beat countdown, timed to --lead-in-duration); motion owns OPACITY so
-          AnimatePresence fades it in on mount and OUT on removal — decoupling
-          the fade-out from React's (startTransition-jittered) unmount timing,
-          which is what caused the boundary flash. The ring lands bright on the
-          beat, then fades as the chord arrives. */}
+      {/* Target backing disc — ground-lifts a recessed (hollow) target note so
+          the ring frames a legible body instead of empty wood. Rendered BEHIND
+          the marker shape + label: on a filled chord note the opaque fill hides
+          it (graceful degrade), on a hollow note it shows through. Incoming hue
+          so it reads as the same "next target" signal as the ring. */}
+      {guidePhase && (
+        <circle
+          className={styles["note-target-backing"]}
+          data-guide-phase={guidePhase}
+          cx={cx}
+          cy={cy}
+          r={r}
+          aria-hidden="true"
+        />
+      )}
+      {shapeEl}
+      {/* Two-phase target ring. A dark halo under a coloured core (a 2-colour
+          "Oreo" ring) keeps it legible over any fill and on light or dark wood.
+          Drawn ON TOP of the marker (after shapeEl): a filled chord/root note is
+          opaque and — enlarged by the taper scale + the root's playback radius
+          boost — would otherwise occlude the ring's inner edge, leaving only a
+          sliver. The ring sits at a standoff OUTSIDE the marker, so painting it
+          last keeps the full halo + core visible on every note type.
+          Phase rides stroke-weight + opacity (planning thin/dim → landing
+          thick/bright); CSS animates the landing CONTRACTION (scale), motion
+          owns OPACITY so AnimatePresence fades it in on mount and OUT on removal
+          — decoupling the fade-out from React's startTransition-jittered unmount
+          (the boundary flash). */}
       <AnimatePresence>
-        {transitionRole === "guide-target" && (
-          <motion.circle
+        {guidePhase && (
+          <motion.g
             key="guide-ring"
             className={styles["note-guide-ring"]}
             data-guide-ring="true"
-            cx={cx}
-            cy={cy}
-            r={r + 4}
+            data-guide-phase={guidePhase}
+            // Only "primary" targets (inside the active shape region) get the
+            // animated countdown — humans can phase-track only ~4 simultaneous
+            // "clocks" (Gu et al. 2014), and a guide tone lights up at every
+            // fretboard position. Secondary targets stay as quiet static markers.
+            data-guide-primary={note.isInRegion ? "true" : "false"}
             aria-hidden="true"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.95 }}
+            // Primary targets hold full group opacity in BOTH phases so the
+            // brightness matches at the breathe→drain handoff; the calmer
+            // "passive" feel comes from the core breathe's dips (whose peaks
+            // equal the landing brightness), not a dimmer group. Secondary
+            // (out-of-region) targets are quiet static markers.
+            animate={{ opacity: note.isInRegion ? 1 : 0.4 }}
             exit={{ opacity: 0 }}
             transition={guideFade}
-          />
+            style={{ transformBox: "fill-box", transformOrigin: "center" } as React.CSSProperties}
+          >
+            <circle className={styles["note-guide-ring-halo"]} cx={cx} cy={cy} r={ringR} />
+            <circle
+              className={styles["note-guide-ring-core"]}
+              cx={cx}
+              cy={cy}
+              r={ringR}
+              pathLength={100}
+            />
+            {/* On-beat flash — a bright ring that blooms outward as the core
+                drains empty, giving a sharp coincidence landmark exactly on the
+                beat (the gradual drain alone has no crisp "now" instant). CSS
+                only animates it in the landing phase. */}
+            <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
+          </motion.g>
         )}
       </AnimatePresence>
-      {shapeEl}
       <AnimatePresence>
         {applyLensEmphasis.guideTargetLabel && (
           <motion.text

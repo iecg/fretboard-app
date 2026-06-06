@@ -146,6 +146,33 @@ export function isInLeadInWindow(
   return stepFraction >= startFraction;
 }
 
+/** Planning runway is capped at this many bars before the chord change. */
+const PLANNING_RUNWAY_BARS = 2;
+
+/**
+ * True when the playhead is in the PLANNING runway — before the landing
+ * window, within {@link PLANNING_RUNWAY_BARS} bars of the change. Mutually
+ * exclusive with {@link isInLeadInWindow} by construction. The runway spans
+ * `[end − min(step, 2·bar), end − landingWindow]`; it is empty when the landing
+ * floor leaves no room before it. Pure so it is unit-testable without atoms.
+ */
+export function isInPlanningWindow(
+  stepFraction: number,
+  stepDurationMs: number,
+  barDurationMs = Infinity,
+): boolean {
+  if (stepDurationMs <= 0) return false;
+  const landingMs = computeLeadInWindowMs(stepDurationMs, barDurationMs);
+  const planningSpanMs = Math.min(
+    stepDurationMs,
+    PLANNING_RUNWAY_BARS * barDurationMs,
+  );
+  if (planningSpanMs <= landingMs) return false; // landing floor leaves no room
+  const startFraction = 1 - planningSpanMs / stepDurationMs;
+  const endFraction = 1 - landingMs / stepDurationMs;
+  return stepFraction >= startFraction && stepFraction < endFraction;
+}
+
 /**
  * Fraction [0,1] of the active STEP elapsed, derived from the per-step deadline
  * (`Date.now() + stepDurationMs`, set on each step advance) rather than the
@@ -543,6 +570,22 @@ export const leadInDurationMsAtom = atom((get): number =>
 );
 
 /**
+ * Length of the active step's PLANNING window, in milliseconds — the runway
+ * before the lead-in/landing window. Written to the `--planning-duration` CSS
+ * custom property so the preview "breathe" runs exactly once over the planning
+ * phase and resolves to full brightness right as the landing drain begins (a
+ * seamless brightness handoff). Mirrors {@link isInPlanningWindow}'s span:
+ * `min(step, 2·bar) − landingWindow`, floored at 0.
+ */
+export const planningDurationMsAtom = atom((get): number => {
+  const step = get(progressionStepDurationMsAtom);
+  const bar = get(progressionBarDurationMsAtom);
+  const landing = computeLeadInWindowMs(step, bar);
+  const planningSpan = Math.min(step, PLANNING_RUNWAY_BARS * bar);
+  return Math.max(0, planningSpan - landing);
+});
+
+/**
  * Discrete lead-in phase. Reads the per-frame visual frame, but its VALUE only
  * flips at the window threshold (and the boundary gap below), so Jotai
  * subscribers re-render at most twice per step — never per animation frame.
@@ -586,6 +629,35 @@ export const leadInActiveAtom = atom((get): boolean => {
   const stepMs = get(progressionStepDurationMsAtom);
   const stepFraction = stepRelativeFraction(deadline, Date.now(), stepMs);
   return isInLeadInWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
+});
+
+/**
+ * True when the playhead is in the PLANNING runway: the current chord is
+ * settled (active === displayed), the audio frame is on that same step, and the
+ * step fraction sits inside {@link isInPlanningWindow}. Distinct from
+ * {@link leadInActiveAtom}: it does NOT take the boundary-gap "hold" branch —
+ * during the deferred-render gap the LANDING ring owns the moment, so planning
+ * yields. The two atoms are mutually exclusive.
+ *
+ * Like leadInActiveAtom this reads the per-frame visual frame, but its VALUE
+ * only flips at the window thresholds, so subscribers re-render at most twice
+ * per step (planning open / planning close).
+ */
+export const planningWindowActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  const displayed = get(displayedProgressionStepIndexAtom);
+  // Boundary gap (audio ahead of displayed) belongs to the landing ring.
+  if (frame.stepIndex !== displayed) return false;
+  // Only trust the step fraction when the deadline's step (active) matches the
+  // displayed step — same guard as leadInActiveAtom.
+  if (get(activeProgressionStepIndexAtom) !== displayed) return false;
+  const deadline = get(progressionStepDeadlineAtom);
+  if (deadline == null) return false;
+  const stepMs = get(progressionStepDurationMsAtom);
+  const stepFraction = stepRelativeFraction(deadline, Date.now(), stepMs);
+  return isInPlanningWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
 });
 
 /**

@@ -2,10 +2,6 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { FretboardNote } from "./FretboardNote";
-import { getNoteVisuals } from "./utils/semantics";
-import {
-  reduceCircleRadius,
-} from "./utils/noteSizing";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
 function makeNote(overrides: Partial<RenderedFretboardNote> = {}): RenderedFretboardNote {
@@ -43,11 +39,10 @@ function renderNote(note: RenderedFretboardNote) {
 
 describe("FretboardNote — transition-role data attribute", () => {
   it("renders data-transition-role='guide-target' on <g> when transitionRole is 'guide-target'", () => {
-    const glowColor = "var(--note-incoming)" as `var(--${string})`;
     const { container } = renderNote(
       makeNote({
         transitionRole: "guide-target",
-        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor },
+        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 },
       }),
     );
     const g = container.querySelector("g[data-note-shape]");
@@ -76,44 +71,12 @@ describe("FretboardNote — in-region data attribute", () => {
   });
 });
 
-describe("FretboardNote — always-rendered glow underlay", () => {
-  it("renders the underlay circle even when there is no glowColor (data-glow='off')", () => {
-    const { container } = renderNote(
-      makeNote({ applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1 } }),
-    );
-    // Use attribute selector since CSS-module class names may be hashed
-    const underlay = container.querySelector("[data-glow]");
-    expect(underlay).not.toBeNull();
-    expect(underlay?.getAttribute("data-glow")).toBe("off");
-    expect(underlay?.getAttribute("aria-hidden")).toBe("true");
-    // No inline fill style when there's no glow color
-    const style = underlay?.getAttribute("style");
-    expect(style ?? "").not.toContain("fill");
-  });
-
-  it("renders the underlay circle with data-glow='on' when glowColor is set", () => {
-    const glowColor = "var(--note-glow-hold)" as `var(--${string})`;
-    const { container } = renderNote(
-      makeNote({
-        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, glowColor },
-      }),
-    );
-    const underlay = container.querySelector("[data-glow]");
-    expect(underlay).not.toBeNull();
-    expect(underlay?.getAttribute("data-glow")).toBe("on");
-    expect(underlay?.getAttribute("aria-hidden")).toBe("true");
-    // Inline fill style is set to the glowColor token
-    const style = underlay?.getAttribute("style") ?? "";
-    expect(style).toContain("fill");
-  });
-});
 
 describe("FretboardNote — guide-target ring", () => {
   it("renders a guide-target ring when the note's transition role is guide-target", () => {
-    const glowColor = "var(--note-incoming)" as `var(--${string})`;
     const note = makeNote({
       transitionRole: "guide-target",
-      applyLensEmphasis: { glowColor, radiusBoost: 1.15, opacityBoost: 1, transitionRole: "guide-target" },
+      applyLensEmphasis: { radiusBoost: 1.15, opacityBoost: 1, transitionRole: "guide-target" },
     });
     const { container } = renderNote(note);
     expect(container.querySelector("[data-guide-ring]")).not.toBeNull();
@@ -131,7 +94,6 @@ describe("FretboardNote — guide-target interval label", () => {
     const note = makeNote({
       transitionRole: "guide-target",
       applyLensEmphasis: {
-        glowColor: "var(--note-incoming)" as `var(--${string})`,
         radiusBoost: 1.15,
         opacityBoost: 1,
         transitionRole: "guide-target",
@@ -178,20 +140,85 @@ describe("FretboardNote — chromatic diamond rendering", () => {
   });
 });
 
-describe("FretboardNote — glow underlay sizing", () => {
-  // noteBubblePx is 40 in renderNote → baseRadius (noteBubblePx/2) = 20.
-  const BASE_RADIUS = 20;
 
-  // With squircles retired, every shape is a circle or diamond and the underlay
-  // tracks the shape radius exactly — no enlargement needed.
-  it.each(["chord-tone-in-scale", "note-active", "note-blue"] as const)(
-    "keeps the underlay at the shape radius for %s",
-    (noteClass) => {
-      const { container } = renderNote(makeNote({ noteClass }));
-      const underlayR = parseFloat(container.querySelector("[data-glow]")!.getAttribute("r")!);
-      const shapeR = reduceCircleRadius(BASE_RADIUS * getNoteVisuals(noteClass).radiusScale);
-      expect(underlayR).toBeCloseTo(shapeR, 5);
-    },
-  );
+describe("FretboardNote — two-phase guide ring", () => {
+  it("renders the ring with data-guide-phase='preview' for a guide-preview note", () => {
+    const { container } = renderNote(
+      makeNote({
+        transitionRole: "guide-preview",
+        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, guideTargetLabel: "3" },
+      }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring).not.toBeNull();
+    expect(ring?.getAttribute("data-guide-phase")).toBe("preview");
+  });
+
+  it("renders the ring with data-guide-phase='landing' for a guide-target note", () => {
+    const { container } = renderNote(
+      makeNote({ transitionRole: "guide-target" }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring).not.toBeNull();
+    expect(ring?.getAttribute("data-guide-phase")).toBe("landing");
+  });
+
+  it("renders no guide ring when there is no transition role", () => {
+    const { container } = renderNote(makeNote({ transitionRole: undefined }));
+    expect(container.querySelector("[data-guide-ring]")).toBeNull();
+  });
+
+  it("renders the ring as halo + core + on-beat flash circles for a target note", () => {
+    const { container } = renderNote(makeNote({ transitionRole: "guide-target" }));
+    const ring = container.querySelector("[data-guide-ring]");
+    // dark halo track, draining green core, and the on-beat flash ring
+    expect(ring?.querySelectorAll("circle")).toHaveLength(3);
+  });
+
+  it("marks a target as primary when it is inside the active shape region", () => {
+    const { container } = renderNote(
+      makeNote({ transitionRole: "guide-target", isInRegion: true }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring?.getAttribute("data-guide-primary")).toBe("true");
+  });
+
+  it("marks a target as non-primary (quiet static marker) when outside the region", () => {
+    const { container } = renderNote(
+      makeNote({ transitionRole: "guide-target", isInRegion: false }),
+    );
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring?.getAttribute("data-guide-primary")).toBe("false");
+  });
+
+  it("renders the incoming-hue backing disc tagged with the phase for a target note", () => {
+    const { container } = renderNote(makeNote({ transitionRole: "guide-preview" }));
+    const backing = container.querySelector("[data-guide-phase]:not([data-guide-ring])");
+    expect(backing).not.toBeNull();
+    expect(backing?.tagName.toLowerCase()).toBe("circle");
+    expect(backing?.getAttribute("data-guide-phase")).toBe("preview");
+  });
+
+  it("renders no backing disc when there is no transition role", () => {
+    const { container } = renderNote(makeNote({ transitionRole: undefined }));
+    expect(container.querySelector("[data-guide-phase]")).toBeNull();
+  });
+
+  it("paints the ring AFTER the marker shape so a filled note can't occlude it", () => {
+    const { container } = renderNote(makeNote({ transitionRole: "guide-target" }));
+    const noteG = container.querySelector("g[data-note-shape]");
+    const kids = [...noteG!.children];
+    const ringIdx = kids.findIndex((k) => k.getAttribute("data-guide-ring"));
+    // The marker is the shape element (circle/polygon) that is neither the
+    // backing disc (data-guide-phase) nor the ring group (data-guide-ring).
+    const markerIdx = kids.findIndex(
+      (k) =>
+        (k.tagName === "circle" || k.tagName === "polygon") &&
+        !k.getAttribute("data-guide-phase") &&
+        !k.getAttribute("data-guide-ring"),
+    );
+    expect(markerIdx).toBeGreaterThanOrEqual(0);
+    expect(ringIdx).toBeGreaterThan(markerIdx);
+  });
 });
 
