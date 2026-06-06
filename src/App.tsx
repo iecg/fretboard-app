@@ -23,12 +23,13 @@ import { AppHeader } from "./components/AppHeader/AppHeader";
 import { HeaderTransportCluster } from "./components/HeaderTransportCluster/HeaderTransportCluster";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
+import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
-import { ControlsPanelSkeleton, TimelineSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
+import { ControlsPanelSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
 import "./styles/App.css";
@@ -43,9 +44,7 @@ const Inspector = lazy(() =>
 const StatusBar = lazy(() =>
   import("./components/StatusBar/StatusBar").then((m) => ({ default: m.StatusBar }))
 );
-const ProgressionSummarySlot = lazy(() =>
-  import("./components/ProgressionSummarySlot/ProgressionSummarySlot").then((m) => ({ default: m.ProgressionSummarySlot }))
-);
+
 
 function AppContent() {
   const { t } = useTranslation();
@@ -202,9 +201,7 @@ function AppContent() {
         />
       }
       summary={
-        <Suspense fallback={<TimelineSkeleton />}>
-          <ProgressionSummarySlot />
-        </Suspense>
+        <ProgressionSummarySlot />
       }
       statusBar={
         <Suspense fallback={null}>

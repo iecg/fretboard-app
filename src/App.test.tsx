@@ -93,6 +93,12 @@ describe("App", () => {
   });
   afterEach(() => localStorage.clear());
 
+  it("renders the progression track synchronously on first paint without waiting for Suspense", () => {
+    // No async, no waitFor — the track must be in the DOM immediately.
+    render(<App />);
+    expect(screen.getByRole("group", { name: "Progression track" })).toBeDefined();
+  });
+
   describe("initial mount", () => {
     it("renders with default state and a working fretboard", () => {
       render(<App />);
