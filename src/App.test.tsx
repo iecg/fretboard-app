@@ -70,6 +70,14 @@ vi.mock("./core/lazyGuitarAudio", () => ({
   prefetchAudioModule: vi.fn(),
 }));
 
+// Spy: did the idle callback trigger a progression engine import?
+const progressionEnginePrefetch = vi.hoisted(() => ({ called: false }));
+vi.mock("./progressions/audio/progressionAudioEngine", async (importOriginal) => {
+  progressionEnginePrefetch.called = true;
+  const actual = await importOriginal();
+  return actual as object;
+});
+
 const mockResumeGuitarAudio = vi.mocked(resumeGuitarAudio);
 
 const setViewport = (width: number, height: number) => {
@@ -97,6 +105,20 @@ describe("App", () => {
     // No async, no waitFor — the track must be in the DOM immediately.
     render(<App />);
     expect(screen.getByRole("group", { name: "Progression track" })).toBeDefined();
+  });
+
+  it("prefetches the progression audio engine during idle time on mount", async () => {
+    vi.useFakeTimers();
+    progressionEnginePrefetch.called = false;
+
+    render(<App />);
+
+    // jsdom does not implement requestIdleCallback; the fallback setTimeout
+    // fires after 1000 ms. Advance past it.
+    await vi.advanceTimersByTimeAsync(1100);
+
+    expect(progressionEnginePrefetch.called).toBe(true);
+    vi.useRealTimers();
   });
 
   describe("initial mount", () => {

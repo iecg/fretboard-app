@@ -79,10 +79,16 @@ function AppContent() {
   }, [setAudioError]);
 
   useEffect(() => {
+    const prefetchAll = () => {
+      prefetchAudioModule();
+      // Warm the Tone.js progression engine module cache so first play does
+      // not wait for the full dynamic-import cascade at click time.
+      void import("./progressions/audio/progressionAudioEngine");
+    };
     if ("requestIdleCallback" in window) {
-      window.requestIdleCallback(() => prefetchAudioModule());
+      window.requestIdleCallback(prefetchAll);
     } else {
-      setTimeout(() => prefetchAudioModule(), 1000);
+      setTimeout(prefetchAll, 1000);
     }
   }, []);
 
