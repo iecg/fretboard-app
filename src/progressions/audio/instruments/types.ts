@@ -9,8 +9,10 @@ export interface ChordVoiceOptions {
   style?: "staccato" | "sustained";
   /** Strum direction; up-strokes reverse the voicing order. Defaults to down. */
   direction?: "up" | "down";
-  /** Per-stroke note length override (seconds). Used by the strum voice for
-   *  muted chicken-scratch strokes; ignored by piano/organ voices. */
+  /** Per-stroke note length override (seconds). Honored by all chord voices
+   *  (strum, piano, organ); when omitted each voice uses its own default
+   *  (the strum's `noteDurationSec`, or the poly patch's
+   *  sustained/short duration). */
   durationSec?: number;
 }
 

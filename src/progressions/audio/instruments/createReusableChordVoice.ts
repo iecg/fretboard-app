@@ -13,7 +13,7 @@ const DEFAULT_SHARED_MAX_POLYPHONY = 32;
 export function createReusableChordVoice(spec: PolyChordSpec): ChordVoice {
   const synthPool = new WeakMap<AudioNode, PooledSynthEntry[]>();
   const durationFor = (o: ChordVoiceOptions) =>
-    o.style === "sustained" ? spec.sustainedDurationSec : spec.shortDurationSec;
+    o.durationSec ?? (o.style === "sustained" ? spec.sustainedDurationSec : spec.shortDurationSec);
 
   const removeEntry = (dest: AudioNode, entry: PooledSynthEntry) => {
     const entries = synthPool.get(dest);
