@@ -58,10 +58,11 @@ pnpm run preview               # preview build locally
 
 ### Components & Layout
 
-- **Orchestration:** `src/App.tsx` (~260 lines) wires atoms to `MainLayoutWrapper`.
-- **Rendering:** `components/Fretboard/Fretboard.tsx` wraps `components/FretboardSVG/FretboardSVG.tsx` (the primary SVG renderer — large, direct atom subscriptions). `components/CircleOfFifths/` handles root/degree selection.
+- **Orchestration:** `src/App.tsx` wires atoms to `MainLayoutWrapper`.
+- **Rendering:** `components/Fretboard/Fretboard.tsx` wraps `components/FretboardSVG/FretboardSVG.tsx` (the primary SVG renderer — large, direct atom subscriptions).
+- **Controls:** `components/Inspector/` is the control surface — a two-tab Inspector (`tabs.tsx`: `view` → "Overlay", `song` → "Song"). The **Overlay** tab (`ViewTab.tsx`) stacks two `InspectorCard`s: a Scale card hosting `FingeringPatternControls` (pattern / shape / position) and a Chord card hosting `ChordOverlayControls` (voicing + close-mode string set). The **Song** tab (`SongControls/SongControls.tsx`) owns key + scale (root/scale dropdowns), progression preset + sequence, time signature + tempo, and the backing track. On mobile the Inspector renders as a bottom tab bar; on larger screens as side-by-side cards.
 - **Layout:** `useLayoutMode` (in `src/hooks/`) measures viewport via `src/layout/responsive.ts` → returns `{ tier, variant, … }`. `MainLayoutWrapper` emits `data-layout-tier` (mobile/tablet/desktop) and `data-layout-variant` (mobile/landscape-mobile/tablet-split/tablet-stacked/desktop-split/desktop-stacked/desktop-3col) attributes. **Both gate responsive CSS — always consider both.**
-- **Primitives:** `NoteGrid`, `ToggleBar`, `StepperControl`, `LabeledSelect`, `Card`, `InspectorCard`.
+- **Primitives:** `ToggleBar`, `StepperControl` (+ `StepperSelect`, `StepperShell`), `LabeledSelect`, `NotePill`, `Switch`, `Tooltip` / `SettingsTooltip`, and `InspectorCard`.
 
 ## File Layout
 

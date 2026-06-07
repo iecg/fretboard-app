@@ -134,10 +134,123 @@ export const en: Dictionary = {
     rotateMessage: "Please rotate your device to portrait mode",
   },
   help: {
-    whatsNew: "What's new",
-    chordModeRemoved:
-      "Manual chord mode has been removed — edit the active progression step directly to customize the chord.",
-    gotIt: "Got it",
+    title: "Help",
+    close: "Close help",
+    tabs: {
+      start: "Start",
+      notes: "Notes",
+      shapes: "Scales & Shapes",
+      play: "Progressions & Songs",
+      settings: "Settings & Shortcuts",
+    },
+    whatsNew: {
+      label: "What's new",
+      body: "Progressions and songs are here — load a preset, play it back with a backing track, and watch the fretboard follow the chords. Single-shape CAGED is the new default too.",
+      dismiss: "Got it",
+    },
+    sections: {
+      gettingStarted: "Getting started",
+      layout: "Layout",
+      inspector: "The Inspector",
+      noteColors: "Note colors",
+      noteLabels: "Note labels",
+      hearNotes: "Hear the notes",
+      choosingKey: "Key & scale",
+      patterns: "Fingering patterns",
+      chordsVoicings: "Chord voicing",
+      chords: "Chords",
+      buildProgression: "Build a progression",
+      backingTrack: "Backing track",
+      playback: "Playback",
+      settings: "Settings",
+      shortcuts: "Keyboard shortcuts",
+    },
+    items: {
+      introBody:
+        "FretFlow is an interactive guitar fretboard and music-theory tool. Set a key and scale to light up the neck, add a chord or a whole progression, and play it back with a backing track.",
+      layoutMobileLabel: "Phones",
+      layoutMobileBody:
+        "The fretboard fills the screen, and a bottom tab bar switches the Inspector between the Overlay panel and the Song panel.",
+      layoutDesktopLabel: "Larger screens",
+      layoutDesktopBody:
+        "The Inspector sits beside the fretboard as cards, so every control is visible at once.",
+      inspectorOverlayLabel: "Overlay tab",
+      inspectorOverlayBody:
+        "What you see on the fretboard: the scale's fingering pattern and the chord's voicing.",
+      inspectorSongLabel: "Song tab",
+      inspectorSongBody:
+        "What you hear: the key and scale, the chord progression, tempo, and backing track.",
+      noteColorsBody:
+        "Every dot is colored by its musical role. The legend below matches the colors on the fretboard.",
+      noteLabelsLabel: "Note labels",
+      noteLabelsBody:
+        "In Settings (the gear icon) → Display, choose what shows inside each dot: note names, intervals, or nothing for a clean board.",
+      hearNotesBody:
+        "Tap any dot to hear it. The speaker icon in the header mutes or unmutes audio.",
+      keyLabel: "Key & scale",
+      keyBody:
+        "Set the root note and scale in the Song tab. Scales are grouped into major modes, pentatonics, blues, and harmonic / melodic minor.",
+      patternLabel: "Pattern",
+      patternBody:
+        "In the Overlay tab's Scale card, the Pattern control maps the scale to the neck: None, CAGED, 3NPS, 1-String, or 2-Strings.",
+      patternCagedLabel: "CAGED",
+      patternCagedBody:
+        "Shows position-based box shapes. Click a shape (C A G E D) to isolate it.",
+      patternNpsLabel: "3NPS",
+      patternNpsBody:
+        "Three notes per string. Use the position selector (1–7) to isolate one hand position.",
+      voicingLabel: "Voicing",
+      voicingBody:
+        "In the Overlay tab's Chord card, Voicing sets how the chord is drawn on the neck: Off, Full, or Close.",
+      stringSetLabel: "String set",
+      stringSetBody:
+        "With Close voicing and an active chord, pick which string window the voicing sits on.",
+      chordsBody:
+        "The chord highlighted on the neck is the active step of your progression in the Song tab. Edit a step's root and quality there; the Overlay tab's Chord card controls how it's voiced.",
+      presetLabel: "Preset",
+      presetBody:
+        "Start from a preset, grouped by genre — Pop / Rock, Blues, Jazz, Folk, Modal, or Minor.",
+      sequenceLabel: "Sequence",
+      sequenceBody:
+        "Add, remove, reorder, or duplicate steps. Each step is one chord the song plays through.",
+      timeLabel: "Time & tempo",
+      timeBody: "Set the time signature and tempo for the whole song.",
+      backingTrackBody:
+        "A generated backing track plays along with the progression. Toggle Chord, Bass, Drums, and the Metronome from the transport bar, and pick a pattern per instrument in the Song tab.",
+      transportLabel: "Transport",
+      transportBody:
+        "Play, pause, and stop from the header. Loop repeats the progression; when stopped, the arrow keys step between chords.",
+      voiceLeadingLabel: "Guide-tone preview",
+      voiceLeadingBody:
+        "Before each chord change, the next chord's guide tones (its 3rd and 7th) light up and a ring counts down to the change. Tones the two chords share stay lit, so you can see the line move.",
+      settingsBody:
+        "Open the gear icon for Tuning, Zoom, Fret Range, Accidentals, Enharmonic Display, Sound Quality, Theme, and Language. Use Reset to restore defaults.",
+      shortcutsBody: "These work whenever you're not typing in a field.",
+    },
+    roles: {
+      root: "Root",
+      guideTone: "Guide tone (3rd / 7th)",
+      chordTone: "Chord tone",
+      scaleNote: "Scale note",
+      resolution: "Next target",
+    },
+    voiceLeading: {
+      anticipation: "Next guide tone",
+      hold: "Held tone",
+    },
+    shortcuts: {
+      play: "Play / pause",
+      stop: "Stop",
+      loop: "Toggle loop",
+      mute: "Mute / unmute",
+      track1: "Toggle chord track",
+      track2: "Toggle bass track",
+      track3: "Toggle drums track",
+      track4: "Toggle metronome",
+      steps: "Previous / next step",
+      scale: "Show / hide scale",
+      chord: "Show / hide chord",
+    },
   },
   controls: {
     shape: "Shape",

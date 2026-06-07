@@ -1,0 +1,70 @@
+.legend {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.swatch {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.legendLabel {
+  font-size: 0.875rem;
+  color: var(--chrome-fg);
+}
+
+.shapeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.miniNeck {
+  height: 92px;
+  width: auto;
+}
+
+.miniNeckFret {
+  fill: var(--chrome-fg-muted);
+  font-size: 9px;
+}
+
+.miniNeckLabel {
+  fill: var(--chrome-fg);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.shortcutTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-2) 0 var(--space-3);
+  font-size: 0.875rem;
+}
+
+.shortcutTable td,
+.shortcutTable th {
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--surface-card-border);
+  color: var(--chrome-fg);
+  text-align: left;
+  font-weight: 400;
+}
+
+.keycap {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding: 2px 6px;
+  text-align: center;
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-float);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8125rem;
+}

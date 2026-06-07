@@ -1,17 +1,18 @@
-import { type RefObject } from "react";
+import { type RefObject, type KeyboardEvent as ReactKeyboardEvent, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useAtom } from "jotai";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
-import {
-  ANIMATION_DURATION_FAST,
-  ANIMATION_EASE,
-} from "@fretflow/core";
+import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import { useTranslation } from "../../hooks/useTranslation";
-import { seenChordModeRemovalNoticeAtom } from "../../store/uiAtoms";
+import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
+import { HELP_TABS, CURRENT_WHATS_NEW_ID, type HelpTab } from "./helpContent";
+import { HelpDiagram } from "./diagrams/HelpDiagram";
 import styles from "./HelpModal.module.css";
 import sharedStyles from "../shared/shared.module.css";
+
+const TAB_IDS = HELP_TABS.map((tab) => tab.id);
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -19,11 +20,55 @@ interface HelpModalProps {
   triggerRef?: RefObject<HTMLButtonElement | null>;
 }
 
+function HelpTabPanel({ tab }: { tab: HelpTab }) {
+  const { t } = useTranslation();
+  return (
+    <div role="tabpanel" id={`help-panel-${tab.id}`} aria-labelledby={`help-tab-${tab.id}`}>
+      {tab.sections.map((section) => (
+        <section key={section.titleKey}>
+          <h3>{t(section.titleKey)}</h3>
+          {section.diagram ? <HelpDiagram id={section.diagram} /> : null}
+          {section.items.map((item) => (
+            <p key={item.bodyKey}>
+              {item.labelKey ? (
+                <>
+                  <strong className={styles["help-modal-item-label"]}>
+                    {t(item.labelKey)}
+                  </strong>{" "}
+                </>
+              ) : null}
+              {t(item.bodyKey)}
+            </p>
+          ))}
+        </section>
+      ))}
+    </div>
+  );
+}
+
 export function HelpModal({ isOpen, onClose }: HelpModalProps) {
   const { t } = useTranslation();
-  const [seenChordModeRemovalNotice, setSeenChordModeRemovalNotice] = useAtom(
-    seenChordModeRemovalNoticeAtom,
-  );
+  const [whatsNewSeen, setWhatsNewSeen] = useAtom(helpWhatsNewSeenAtom);
+  const [activeTabId, setActiveTabId] = useState<HelpTab["id"]>("start");
+
+  const activeTab = HELP_TABS.find((tab) => tab.id === activeTabId) ?? HELP_TABS[0];
+  const showWhatsNew = whatsNewSeen !== CURRENT_WHATS_NEW_ID;
+
+  function handleTabsKeyDown(e: ReactKeyboardEvent<HTMLDivElement>) {
+    const current = TAB_IDS.indexOf(activeTabId);
+    let nextIndex = -1;
+    if (e.key === "ArrowRight") nextIndex = (current + 1) % TAB_IDS.length;
+    else if (e.key === "ArrowLeft") nextIndex = (current - 1 + TAB_IDS.length) % TAB_IDS.length;
+    else if (e.key === "Home") nextIndex = 0;
+    else if (e.key === "End") nextIndex = TAB_IDS.length - 1;
+    if (nextIndex === -1) return;
+    e.preventDefault();
+    const nextId = TAB_IDS[nextIndex];
+    setActiveTabId(nextId);
+    e.currentTarget
+      .querySelector<HTMLButtonElement>(`#help-tab-${nextId}`)
+      ?.focus();
+  }
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -50,194 +95,64 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
               >
                 <div className={styles["help-modal-header"]}>
                   <Dialog.Title className={styles["help-modal-title"]}>
-                    FretFlow Help
+                    {t("help.title")}
                   </Dialog.Title>
                   <Dialog.Close asChild>
                     <button
                       type="button"
-                      className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"], styles["help-modal-close"])}
-                      aria-label="Close help"
+                      className={clsx(
+                        sharedStyles["icon-button"],
+                        sharedStyles["icon-button--sm"],
+                        styles["help-modal-close"],
+                      )}
+                      aria-label={t("help.close")}
                     >
                       <X className="icon" />
                     </button>
                   </Dialog.Close>
                 </div>
+
+                {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus -- tablist uses roving tabindex; individual tabs are focusable */}
+                <div className={styles["help-modal-tabs"]} role="tablist" aria-label={t("help.title")} onKeyDown={handleTabsKeyDown}>
+                  {HELP_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      id={`help-tab-${tab.id}`}
+                      aria-selected={tab.id === activeTabId}
+                      aria-controls={`help-panel-${tab.id}`}
+                      className={styles["help-modal-tab"]}
+                      tabIndex={tab.id === activeTabId ? 0 : -1}
+                      onClick={() => setActiveTabId(tab.id)}
+                    >
+                      {t(tab.labelKey)}
+                    </button>
+                  ))}
+                </div>
+
                 <div className={styles["help-modal-content"]} data-testid="help-modal-content">
-                  {!seenChordModeRemovalNotice ? (
+                  {showWhatsNew && activeTabId === "start" ? (
                     <aside
                       className={styles["help-modal-notice"]}
                       data-testid="help-modal-whats-new"
-                      aria-label={t("help.whatsNew")}
+                      aria-label={t("help.whatsNew.label")}
                     >
                       <h3 className={styles["help-modal-notice-title"]}>
-                        {t("help.whatsNew")}
+                        {t("help.whatsNew.label")}
                       </h3>
-                      <p>{t("help.chordModeRemoved")}</p>
+                      <p>{t("help.whatsNew.body")}</p>
                       <button
                         type="button"
                         className={styles["help-modal-notice-dismiss"]}
-                        onClick={() => setSeenChordModeRemovalNotice(true)}
+                        onClick={() => setWhatsNewSeen(CURRENT_WHATS_NEW_ID)}
                       >
-                        {t("help.gotIt")}
+                        {t("help.whatsNew.dismiss")}
                       </button>
                     </aside>
                   ) : null}
 
-                  <h3>Getting Started</h3>
-
-                  <p>
-                    FretFlow is an interactive guitar fretboard and music theory
-                    tool. Choose a root note, scale, and optional chord overlay to
-                    visualize notes and intervals across a 6-string guitar neck.
-                  </p>
-
-                  <h3>Layout</h3>
-                  <ul>
-                    <li>
-                      <strong>Mobile:</strong> The fretboard fills the center of the
-                      screen. A tab bar below switches between the <em>Theory</em>{" "}
-                      panel (scale, chord, Circle of Fifths) and the <em>View</em>{" "}
-                      panel (fingering patterns, note labels).
-                    </li>
-                    <li>
-                      <strong>Tablet &amp; desktop:</strong> Controls appear
-                      alongside the fretboard in three cards — Music Theory,
-                      Configuration, and Key Explorer.
-                    </li>
-                  </ul>
-
-                  <h3>Choosing a Scale</h3>
-                  <ul>
-                    <li>
-                      <strong>Root:</strong> Tap a note in the note grid to set the
-                      tonic.
-                    </li>
-                    <li>
-                      <strong>Scale Family:</strong> Choose a broad family
-                      (Pentatonic, Diatonic, etc.) from the dropdown.
-                    </li>
-                    <li>
-                      <strong>Mode / Scale browser:</strong> Use the arrows or
-                      dropdown to step through the modes or keys within that family.
-                      The <em>Parallel</em> / <em>Relative</em> toggle controls
-                      whether browsing stays on the same root or cycles through
-                      relative keys.
-                    </li>
-                  </ul>
-
-                  <h3>Chords</h3>
-                  <ul>
-                    <li>
-                      Expand <strong>Chords</strong>, choose a diatonic chord by
-                      Roman numeral, then watch the matching chord tones highlight
-                      on the fretboard in a distinct color. To customize root or
-                      quality, edit the active progression step.
-                    </li>
-                    <li>
-                      <strong>Link chord root to scale</strong> keeps the chord root
-                      in sync with the scale root automatically.
-                    </li>
-                  </ul>
-
-                  <h3>Practice Bar</h3>
-                  <p>
-                    When a chord overlay is active, the practice bar at the bottom
-                    of the screen shows coaching cues — it does not hide fretboard
-                    notes. Cues include <em>Land on</em> (all chord tones) and{" "}
-                    <em>Tension</em> (chord tones outside the scale with nearest
-                    in-scale resolution targets). The fretboard uses voice-leading
-                    emphasis: anticipation (next chord's guide tones glow before the
-                    change), hold (common tones between chords), and departing
-                    (chord tones that resolve away on the change).
-                  </p>
-
-                  <h3>Fingering Patterns</h3>
-                  <ul>
-                    <li>
-                      <strong>All:</strong> Highlights every scale note with no
-                      positional shapes.
-                    </li>
-                    <li>
-                      <strong>CAGED:</strong> Shows overlapping position shapes
-                      across the neck. Click a shape (C / A / G / E / D) to isolate
-                      it; Shift-click to toggle multiple shapes. Enable{" "}
-                      <em>Shape Labels</em> to letter each polygon. "CAGED" names
-                      both the scale-position system (Overlay tab, Pattern control)
-                      and the chord-voicing system (Overlay tab, Chord section) —
-                      they are the same five-shape idea applied to scales vs.
-                      chords.
-                    </li>
-                    <li>
-                      <strong>3NPS:</strong> Shows 3-notes-per-string positions. Use
-                      the position selector (1–7 or All) to isolate a single hand
-                      position.
-                    </li>
-                  </ul>
-
-                  <h3>Note Labels &amp; Degree Strip</h3>
-                  <ul>
-                    <li>
-                      The <strong>Note Labels</strong> toggle (Notes / Intervals /
-                      None) controls what appears inside each fretboard dot.
-                    </li>
-                    <li>
-                      The <strong>degree strip</strong> between the header and the
-                      fretboard lists the scale's notes with their interval name
-                      below each one. Chord tones are highlighted when a chord is
-                      active.
-                    </li>
-                  </ul>
-
-                  <h3>Circle of Fifths</h3>
-                  <p>
-                    Tap any key segment to change the root note. Degree markers
-                    around the circle show how the current scale's intervals relate
-                    to each key. On mobile, expand it from the <em>Theory</em> tab
-                    under <em>Circle of Fifths</em>.
-                  </p>
-
-                  <h3>Header Controls</h3>
-                  <ul>
-                    <li>
-                      <strong>Settings (gear icon):</strong> Opens a drawer for
-                      Tuning, Zoom, Fret Range, Accidentals, and Enharmonic
-                      Display. Chord Spread lives in the Overlay tab's Chord
-                      section. Use Settings → Reset to restore all defaults.
-                    </li>
-                    <li>
-                      <strong>Speaker icon:</strong> Toggles audio playback. Tap any
-                      fretboard dot to hear the note when unmuted.
-                    </li>
-                  </ul>
-
-                  <h3>Keyboard Shortcuts</h3>
-                  <ul>
-                    <li>
-                      <strong>S</strong> — Show/hide the scale layer
-                    </li>
-                    <li>
-                      <strong>C</strong> — Show/hide the chord layer
-                    </li>
-                  </ul>
-
-                  <h3>Tips</h3>
-                  <ul>
-                    <li>
-                      Drag or scroll the fretboard horizontally when zoomed in.
-                    </li>
-                    <li>
-                      The fret range control (in Settings or the Configuration card)
-                      lets you focus on a specific section of the neck.
-                    </li>
-                    <li>
-                      Use CAGED or 3NPS shapes to see how the same scale maps to
-                      different hand positions.
-                    </li>
-                    <li>
-                      Switch between Parallel and Relative browsing to explore
-                      related modes without leaving the current key.
-                    </li>
-                  </ul>
+                  <HelpTabPanel tab={activeTab} />
                 </div>
               </motion.div>
             </Dialog.Content>
