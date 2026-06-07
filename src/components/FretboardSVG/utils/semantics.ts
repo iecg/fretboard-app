@@ -36,10 +36,8 @@ export type LeadLensContext = {
   incomingTones: Set<string>;
   /** Pitch classes the active chord drops on the change (`current − next`). */
   departingTones: Set<string>;
-  /** True only during the lead-in (landing) preview window. */
-  leadInActive: boolean;
-  /** True only during the earlier planning runway (mutually exclusive with leadInActive). */
-  planningActive: boolean;
+  /** True while the single continuous countdown window is open. */
+  guideCountdownActive: boolean;
 };
 
 /**
@@ -68,28 +66,17 @@ export function getEmphasis(
     return applyTonesBase(noteClass);
   }
 
-  const { notePc, nextGuideTones, nextGuideToneLabels, leadInActive, planningActive } = leadContext;
+  const { notePc, nextGuideTones, nextGuideToneLabels, guideCountdownActive } = leadContext;
 
   // The note's resting emphasis when not actively targeted — the base model.
-  // This is the size/shape a note shows OUTSIDE the lead-in window.
   const resting: LensEmphasis = applyTonesBase(noteClass);
 
-  // Landing: the next chord's guide tones get the urgent contracting ring.
-  if (leadInActive && nextGuideTones.has(notePc)) {
+  // Countdown: the next chord's guide tones get the single continuous ring.
+  if (guideCountdownActive && nextGuideTones.has(notePc)) {
     return {
       radiusBoost: resting.radiusBoost,
       opacityBoost: 1,
       transitionRole: "guide-target",
-      guideTargetLabel: nextGuideToneLabels.get(notePc),
-    };
-  }
-  // Planning: the same guide tones get a calm static preview (no glow — the
-  // dashed ring carries it). Brought to full opacity so the target reads.
-  if (planningActive && nextGuideTones.has(notePc)) {
-    return {
-      radiusBoost: resting.radiusBoost,
-      opacityBoost: 1,
-      transitionRole: "guide-preview",
       guideTargetLabel: nextGuideToneLabels.get(notePc),
     };
   }

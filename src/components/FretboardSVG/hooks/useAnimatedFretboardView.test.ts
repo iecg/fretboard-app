@@ -64,8 +64,10 @@ function makeWrapper(store: ReturnType<typeof createStore>) {
 }
 
 describe("useAnimatedFretboardView", () => {
-  it("updates rendered notes when emphasis context crosses the lead-in threshold", () => {
-    // localFraction=0.25 → below the lead-in window threshold (0.5)
+  it("applies guide-target emphasis to the next chord's guide tone while the countdown window is open", () => {
+    // With a 1-bar step and the 2-bar countdown window, the countdown spans the
+    // full step, so guideCountdownActive is true from the moment playback starts.
+    // B is the 3rd of V (G major) — a guide tone for the next chord (step 1).
     const store = makePlayingStore(0.25);
     const wrapper = makeWrapper(store);
 
@@ -87,11 +89,16 @@ describe("useAnimatedFretboardView", () => {
       { wrapper },
     );
 
-    const initialTopology = result.current.topology;
-    const initialView = result.current.view;
-    const initialBNote = initialView.renderedNotes.find((note) => note.noteName === "B");
+    const bNote = result.current.view.renderedNotes.find((note) => note.noteName === "B");
 
-    // Advance to localFraction=0.75 → crosses into the lead-in window
+    // B is a guide tone of the next chord and the countdown window covers the
+    // full 1-bar step — it must receive the guide-target ring immediately.
+    expect(bNote?.applyLensEmphasis.transitionRole).toBe("guide-target");
+    // Topology must be stable across renders
+    const initialTopology = result.current.topology;
+
+    // A frame advance within the same step must not change topology or notes
+    // that are already at their correct emphasis.
     act(() => {
       store.set(progressionVisualFrameAtom, {
         stepIndex: 0,
@@ -99,23 +106,15 @@ describe("useAnimatedFretboardView", () => {
         localFraction: 0.75,
         paused: false,
       });
-      store.set(progressionStepDeadlineAtom, Date.now() + 100);
     });
 
-    const updatedView = result.current.view;
-    const updatedBNote = result.current.view.renderedNotes.find((note) => note.noteName === "B");
-
-    // Topology must be stable — only emphasis changed
     expect(result.current.topology).toBe(initialTopology);
-    // noteData and renderedNotes must be new references (emphasis changed)
-    expect(updatedView.noteData).not.toBe(initialView.noteData);
-    expect(updatedView.renderedNotes).not.toBe(initialView.renderedNotes);
-    // B is the 3rd of V (G major) — an incoming tone the next chord introduces,
-    // so its emphasis must change once the lead-in window opens.
-    expect(updatedBNote?.applyLensEmphasis).not.toEqual(initialBNote?.applyLensEmphasis);
+    // B's guide-target emphasis stays the same — countdown is still open.
+    const updatedBNote = result.current.view.renderedNotes.find((note) => note.noteName === "B");
+    expect(updatedBNote?.applyLensEmphasis.transitionRole).toBe("guide-target");
     // Geometry must be unchanged
-    expect(updatedBNote?.cx).toBe(initialBNote?.cx);
-    expect(updatedBNote?.cy).toBe(initialBNote?.cy);
+    expect(updatedBNote?.cx).toBe(bNote?.cx);
+    expect(updatedBNote?.cy).toBe(bNote?.cy);
   });
 
   it("keeps noteData reference-stable when the frame advances within a step (below lead-in threshold)", () => {
