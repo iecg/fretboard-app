@@ -224,10 +224,6 @@
   pointer-events: none;
 }
 
-.note-target-backing[data-guide-phase="preview"] {
-  opacity: 0.42;
-}
-
 .note-target-backing[data-guide-phase="landing"] {
   opacity: 0.52;
 }
@@ -278,39 +274,40 @@
   stroke-width: 4.75 !important;
 }
 
-/* Planning — a calm presence: a full green ring that gently BREATHES on opacity
-   only (no scale). Motion keeps it visible on chord tones, but breathing on
-   opacity (not size) means there is nothing to 'jump' when landing begins. */
-/* Runs ONCE across the planning window (--planning-duration) and RESOLVES TO
-   FULL brightness at 100% — i.e. exactly as the landing drain begins — so the
-   handoff from breathing to draining has no brightness jump. Two gentle dips
-   give the "breathing" feel; the peaks (opacity 1) match the landing ring. */
-.note-guide-ring[data-guide-phase="preview"][data-guide-primary="true"] .note-guide-ring-core {
-  animation: note-guide-ring-breathe var(--planning-duration, 1.7s) ease-in-out both;
-}
-
-@keyframes note-guide-ring-breathe {
-  0%   { opacity: 1; }
-  30%  { opacity: 0.55; }
-  55%  { opacity: 1; }
-  80%  { opacity: 0.55; }
-  100% { opacity: 1; }
-}
-
-/* Landing — the green core DRAINS clockwise around the dark halo track, like a
-   clock hand, reaching empty exactly on the beat. This conveys the precise
-   moment of landing far better than a small scale contraction, reads at any
-   stroke weight, and — because nothing scales — continues seamlessly from the
-   planning ring with no jump. `pathLength=100` (set in FretboardNote) lets the
+/* Countdown — the green core DRAINS clockwise around the dark halo track, like
+   a clock hand, over the WHOLE countdown window, reaching empty exactly on the
+   beat. A brightness (opacity) ramp escalates salience as the beat nears; the
+   stroke weight stays constant (its `!important` lock can't be animated). The
+   on-beat flash is the climax. `pathLength=100` (set in FretboardNote) lets the
    dash maths be radius-independent. */
 .note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"] .note-guide-ring-core {
   stroke-dasharray: 100;
-  animation: note-guide-ring-drain var(--lead-in-duration, 0.6s) linear both;
+  animation:
+    note-guide-ring-drain var(--guide-duration, 4s) linear both,
+    note-guide-ring-ramp var(--guide-duration, 4s) ease-in both;
 }
 
 @keyframes note-guide-ring-drain {
   from { stroke-dashoffset: 0; }
   to   { stroke-dashoffset: 100; }
+}
+
+@keyframes note-guide-ring-ramp {
+  0%   { opacity: 0.72; }
+  70%  { opacity: 0.88; }
+  100% { opacity: 1; }
+}
+
+/* Looming — the whole countdown ring scales up very slightly across the window
+   so the target reads as "approaching" (increasing-salience cue). Transform is
+   GPU-composited, so this adds no per-frame paint. */
+.note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"] {
+  animation: note-guide-ring-loom var(--guide-duration, 4s) ease-in both;
+}
+
+@keyframes note-guide-ring-loom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
 }
 
 /* On-beat flash — a bright ring that blooms outward, peaking exactly as the
@@ -329,7 +326,7 @@
 }
 
 .note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"] .note-guide-ring-flash {
-  animation: note-guide-ring-flash var(--lead-in-duration, 0.6s) ease-in both;
+  animation: note-guide-ring-flash var(--guide-duration, 4s) ease-in both;
 }
 
 @keyframes note-guide-ring-flash {
@@ -337,10 +334,22 @@
   100%    { opacity: 0.95; transform: scale(1.3); }
 }
 
-/* Reduced motion: no breathe, no drain — a static full ring still marks the
-   target; only the live countdown is dropped. */
+/* Beat-tick notches — short dark pips on the halo track at beat/bar
+   boundaries. Drawn over the halo + core so they read as gauge marks the green
+   hand sweeps past. Static (no animation) → zero per-frame paint. Stroke wider
+   than the halo so each pip visibly crosses the whole track. */
+.note-guide-ring-tick {
+  fill: none !important;
+  stroke: rgb(0 0 0 / 0.7) !important;
+  stroke-width: 5.5 !important;
+  pointer-events: none;
+}
+
+/* Reduced motion: no drain, no ramp, no loom, no flash — a static full ring
+   plus static tick notches still marks the target and conveys the beat grid;
+   only the live countdown motion is dropped. */
 @media (prefers-reduced-motion: reduce) {
-  .note-guide-ring[data-guide-phase="preview"] .note-guide-ring-core,
+  .note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"],
   .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-core,
   .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-flash {
     animation: none;
