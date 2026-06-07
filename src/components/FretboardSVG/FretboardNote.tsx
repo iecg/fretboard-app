@@ -30,6 +30,13 @@ const formatRole = (noteClass: string): string =>
 // Arc length (in pathLength=100 units) of a single tick notch on the ring.
 const TICK_ARC_LEN = 1.2;
 
+// Angular offset (degrees) applied to BOTH the drain origin and the ticks so
+// they rotate together (alignment preserved). It moves the ticks off the
+// 3-o'clock / 9-o'clock cardinal points — where the horizontal string crosses
+// the ring — onto the diagonals (1:30 / 4:30 / 7:30 / 10:30). Without it a tick
+// lands on the string wire and the two white marks merge into a stray streak.
+const RING_ANGLE_OFFSET_DEG = 45;
+
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
   noteBubblePx: number;
@@ -218,19 +225,21 @@ export const FretboardNote = memo(function FretboardNote({
               cy={cy}
               r={ringR}
               pathLength={100}
+              transform={`rotate(${RING_ANGLE_OFFSET_DEG} ${cx} ${cy})`}
             />
             {/* On-beat flash — a bright ring that blooms outward as the core
                 drains empty, giving a sharp coincidence landmark exactly on the
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
-            {/* Static beat-tick notches — dark pips on the halo track that the
+            {/* Static beat-tick notches — bright pips on the halo track that the
                 green core sweeps past, giving a countable "segment done" read.
                 Only on PRIMARY (in-region) targets, and only when the step has
                 enough beats to warrant ticks (countdownTicks empty otherwise).
-                Drawn with the SAME pathLength=100 circle parametrization as the
-                drain so each notch sits exactly where the hand is at that
-                window-fraction — no trig, no origin/direction mismatch.
+                Drawn with the SAME pathLength=100 circle parametrization AND the
+                same rotate() offset as the drain core, so each notch sits exactly
+                where the hand is at that window-fraction (alignment preserved)
+                while clearing the horizontal string at 3/9 o'clock.
                 NOTE: if a snapshot shows the notches mirrored relative to the
                 drain hand, flip the sign of strokeDashoffset (use `100 * f`). */}
             {note.isInRegion &&
@@ -245,6 +254,7 @@ export const FretboardNote = memo(function FretboardNote({
                   pathLength={100}
                   strokeDasharray={`${TICK_ARC_LEN} ${100 - TICK_ARC_LEN}`}
                   strokeDashoffset={-100 * f}
+                  transform={`rotate(${RING_ANGLE_OFFSET_DEG} ${cx} ${cy})`}
                   aria-hidden="true"
                 />
               ))}
@@ -257,8 +267,8 @@ export const FretboardNote = memo(function FretboardNote({
             key="guide-label"
             className={styles["note-guide-label"]}
             data-guide-label="true"
-            x={cx + r + 2}
-            y={cy - r - 2}
+            x={cx + ringR + 3}
+            y={cy - ringR - 1}
             aria-hidden="true"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
