@@ -6,7 +6,7 @@ import {
 
 export type BoxBound = { minFret: number; maxFret: number };
 
-export type TransitionRole = "guide-target" | "guide-preview";
+export type TransitionRole = "guide-target";
 
 export type LensEmphasis = {
   radiusBoost: number;

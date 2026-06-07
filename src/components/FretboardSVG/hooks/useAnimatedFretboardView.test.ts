@@ -239,10 +239,10 @@ describe("useAnimatedFretboardView — no per-frame recompute", () => {
   it("does not re-run when the visual frame advances within the same step", () => {
     const store = makePlayingStore(0.6);
     // Seed a deadline 30% into the step's remaining time so the step fraction
-    // (~0.7) is genuinely inside the lead-in window and leadInActiveAtom is
-    // TRUE — the invariant under test ("a frame advance within the step does
-    // not re-run the hook") matters most while the lead-in is on. Without a
-    // deadline leadInActive would be false and the test would pass vacuously.
+    // (~0.7) is genuinely inside the countdown window and guideCountdownActiveAtom
+    // is TRUE — the invariant under test ("a frame advance within the step does
+    // not re-run the hook") matters most while the countdown is on. Without a
+    // deadline guideCountdownActive would be false and the test would pass vacuously.
     store.set(progressionStepDeadlineAtom, Date.now() + store.get(progressionStepDurationMsAtom) * 0.3);
     const wrapper = makeWrapper(store);
     let renders = 0;
@@ -268,6 +268,6 @@ describe("useAnimatedFretboardView — no per-frame recompute", () => {
         paused: false,
       });
     });
-    expect(renders).toBe(before); // leadInActive unchanged -> no React re-render
+    expect(renders).toBe(before); // guideCountdownActive unchanged -> no React re-render
   });
 });
