@@ -174,6 +174,61 @@ export function isInPlanningWindow(
 }
 
 /**
+ * True when the playhead is inside the single continuous countdown window — the
+ * union of the old planning + landing windows. The window spans the final
+ * `min(step, PLANNING_RUNWAY_BARS · bar)` of the step and ends exactly on the
+ * beat. Pure so it is unit-testable without atom plumbing.
+ */
+export function isInCountdownWindow(
+  stepFraction: number,
+  stepDurationMs: number,
+  barDurationMs = Infinity,
+): boolean {
+  if (stepDurationMs <= 0) return false;
+  const windowMs = Math.min(stepDurationMs, PLANNING_RUNWAY_BARS * barDurationMs);
+  if (windowMs <= 0) return false;
+  const startFraction = 1 - windowMs / stepDurationMs;
+  return stepFraction >= startFraction;
+}
+
+/** Lowest beat count that shows interior ticks (a lone tick is noise). */
+const MIN_TICK_BEATS = 2;
+/** Subitizing cap — at most this many segments (≤ 3 interior ticks). */
+const MAX_TICK_SEGMENTS = 4;
+
+/**
+ * Window-fractions in (0,1) at which to draw static beat/bar boundary notches.
+ *
+ * - ≤ 4 beats → one segment per beat (subitizable at a glance).
+ * - > 4 beats → collapse to bar lines when there are 2–4 bars, else 4 even
+ *   segments (caps interior ticks at 3 — the ~4-object subitizing limit).
+ * - < 2 beats → no ticks.
+ *
+ * Pure so it is unit-testable. `windowMs`/`beatMs`/`barMs` are all in ms.
+ */
+export function computeCountdownTickFractions(
+  windowMs: number,
+  beatMs: number,
+  barMs: number,
+): number[] {
+  if (windowMs <= 0 || beatMs <= 0) return [];
+  const beats = Math.round(windowMs / beatMs);
+  if (beats < MIN_TICK_BEATS) return [];
+
+  let segments: number;
+  if (beats <= MAX_TICK_SEGMENTS) {
+    segments = beats;
+  } else {
+    const bars = barMs > 0 ? Math.round(windowMs / barMs) : 0;
+    segments = bars >= 2 && bars <= MAX_TICK_SEGMENTS ? bars : MAX_TICK_SEGMENTS;
+  }
+
+  const ticks: number[] = [];
+  for (let i = 1; i < segments; i++) ticks.push(i / segments);
+  return ticks;
+}
+
+/**
  * Fraction [0,1] of the active STEP elapsed, derived from the per-step deadline
  * (`Date.now() + stepDurationMs`, set on each step advance) rather than the
  * visual frame's `localFraction` — which the timeline resets every BAR, so a

@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom } from "./practiceLensAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom, isInCountdownWindow, computeCountdownTickFractions } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -730,6 +730,65 @@ describe("isInPlanningWindow", () => {
   it("returns false for a non-positive step duration", () => {
     expect(isInPlanningWindow(0.5, 0, 2000)).toBe(false);
     expect(isInPlanningWindow(0.5, -100, 2000)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isInCountdownWindow — single continuous countdown window
+// ---------------------------------------------------------------------------
+
+describe("isInCountdownWindow", () => {
+  it("is active across the whole step when step <= 2 bars", () => {
+    // step 2000, bar 2000: window = min(2000, 4000) = 2000 -> start fraction 0
+    expect(isInCountdownWindow(0, 2000, 2000)).toBe(true);
+    expect(isInCountdownWindow(0.99, 2000, 2000)).toBe(true);
+  });
+
+  it("caps the window at 2 bars for long chords", () => {
+    // step 8000, bar 2000: window = min(8000, 4000) = 4000 -> start fraction 0.5
+    expect(isInCountdownWindow(0.49, 8000, 2000)).toBe(false);
+    expect(isInCountdownWindow(0.5, 8000, 2000)).toBe(true);
+  });
+
+  it("returns false for a non-positive step duration", () => {
+    expect(isInCountdownWindow(0.5, 0, 2000)).toBe(false);
+    expect(isInCountdownWindow(0.5, -100, 2000)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeCountdownTickFractions — beat/bar boundary notches, capped at 4
+// ---------------------------------------------------------------------------
+
+describe("computeCountdownTickFractions", () => {
+  it("one tick per beat boundary when <= 4 beats", () => {
+    // 4 beats -> 4 segments -> interior ticks at 1/4, 2/4, 3/4
+    expect(computeCountdownTickFractions(4000, 1000, 4000)).toEqual([0.25, 0.5, 0.75]);
+  });
+
+  it("two beats yields a single midpoint tick", () => {
+    expect(computeCountdownTickFractions(2000, 1000, 4000)).toEqual([0.5]);
+  });
+
+  it("suppresses ticks below 2 beats", () => {
+    expect(computeCountdownTickFractions(1000, 1000, 4000)).toEqual([]);
+  });
+
+  it("collapses to bar boundaries when > 4 beats and bars in 2..4", () => {
+    // 8 beats, 2 bars -> segment by bar -> one tick at 0.5
+    expect(computeCountdownTickFractions(8000, 1000, 4000)).toEqual([0.5]);
+    // 12 beats, 3 bars -> ticks at 1/3, 2/3
+    expect(computeCountdownTickFractions(12000, 1000, 4000)).toEqual([1 / 3, 2 / 3]);
+  });
+
+  it("falls back to 4 even segments when bars also exceed 4", () => {
+    // 20 beats, 5 bars -> 4 even segments -> 0.25, 0.5, 0.75
+    expect(computeCountdownTickFractions(20000, 1000, 4000)).toEqual([0.25, 0.5, 0.75]);
+  });
+
+  it("returns [] for non-positive window or beat length", () => {
+    expect(computeCountdownTickFractions(0, 1000, 4000)).toEqual([]);
+    expect(computeCountdownTickFractions(4000, 0, 4000)).toEqual([]);
   });
 });
 
