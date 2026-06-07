@@ -22,9 +22,9 @@ export function ShortcutTableDiagram() {
       <tbody>
         {SHORTCUTS.map((s) => (
           <tr key={s.labelKey}>
-            <td>
+            <th scope="row">
               <span className={styles.keycap}>{s.keys}</span>
-            </td>
+            </th>
             <td>{t(s.labelKey)}</td>
           </tr>
         ))}

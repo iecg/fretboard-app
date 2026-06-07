@@ -5,7 +5,7 @@ import { userEvent } from "@testing-library/user-event";
 import { HelpModal } from "./HelpModal";
 import styles from "./HelpModal.module.css";
 import { en } from "../../i18n/en";
-import { CURRENT_WHATS_NEW_ID } from "./helpContent";
+import { CURRENT_WHATS_NEW_ID, HELP_TABS } from "./helpContent";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
 
@@ -35,7 +35,7 @@ describe("HelpModal/HelpModal", () => {
   it("renders a tab for every help tab and starts on Start", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     const tabs = screen.getAllByRole("tab");
-    expect(tabs).toHaveLength(5);
+    expect(tabs).toHaveLength(HELP_TABS.length);
     expect(screen.getByRole("tab", { name: en.help.tabs.start })).toHaveAttribute(
       "aria-selected",
       "true",

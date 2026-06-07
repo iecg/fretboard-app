@@ -32,10 +32,13 @@
   font-size: 0.875rem;
 }
 
-.shortcutTable td {
+.shortcutTable td,
+.shortcutTable th {
   padding: var(--space-1) var(--space-2);
   border-bottom: 1px solid var(--surface-card-border);
   color: var(--chrome-fg);
+  text-align: left;
+  font-weight: 400;
 }
 
 .keycap {

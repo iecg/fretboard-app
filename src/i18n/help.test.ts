@@ -19,13 +19,22 @@ describe("i18n/help", () => {
     expect(esPaths).toEqual(enPaths);
   });
 
-  it("no help string is empty", () => {
-    const enPaths = leafPaths(en.help as unknown as Record<string, unknown>);
-    for (const value of Object.values(flatten(en.help))) {
-      expect(typeof value).toBe("string");
-      expect((value as string).length).toBeGreaterThan(0);
+  it("no help string is empty in en or es", () => {
+    const resolve = (dict: typeof en, path: string): unknown =>
+      path.split(".").reduce<unknown>(
+        (acc, k) => (acc as Record<string, unknown> | undefined)?.[k],
+        dict,
+      );
+
+    for (const [lang, dict] of Object.entries({ en, es }) as ["en" | "es", typeof en][]) {
+      const paths = leafPaths(dict.help as unknown as Record<string, unknown>, "help");
+      expect(paths.length).toBeGreaterThan(0);
+      for (const path of paths) {
+        const value = resolve(dict, path);
+        expect(typeof value, `${lang}:${path}`).toBe("string");
+        expect((value as string).trim().length, `${lang}:${path}`).toBeGreaterThan(0);
+      }
     }
-    expect(enPaths.length).toBeGreaterThan(0);
   });
 
   it("every diagram-only i18n key resolves in en and es", () => {
@@ -93,16 +102,3 @@ describe("i18n/help", () => {
     }
   });
 });
-
-// Flattens nested string objects into a single-level record of leaf values.
-function flatten(obj: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === "object" && value !== null) {
-      Object.assign(out, flatten(value as Record<string, unknown>));
-    } else {
-      out[key] = value;
-    }
-  }
-  return out;
-}
