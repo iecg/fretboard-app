@@ -27,17 +27,21 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
-// Arc length (in pathLength=100 units) of a single beat-tick notch. Each tick is
-// a dashed <circle> drawn with the SAME geometry as the green core (cx, cy,
-// r=ringR) and the SAME stroke-width — so it is CO-RADIAL with the core and
-// occupies exactly the core band on every note type (scale tone or chord tone),
-// without hardcoding the band's radii (an explicit <line> did, and protruded on
-// chord-tone notes whose effective ring band differs).
-// MUST be a whole number so TICK_ARC_LEN + (100 - TICK_ARC_LEN) sums to exactly
-// the pathLength (100): a fractional value (e.g. 1.2) is not exact in binary
-// float, so the dash pattern leaves a sliver of a second dash at the seam
-// (offset 0), making the anchor (first) tick render visibly thicker.
-const TICK_ARC_LEN = 2;
+// Half-length (user units) of a beat-tick mark measured ALONG the ring
+// (tangentially). Each tick is a straight <line> tangent to the ring at its beat
+// angle — NOT a dash on a circle and NOT a radial spoke:
+//   - Tangent (along the ring) → at the common 4-beat positions the ticks are a
+//     clean HORIZONTAL mark at top/bottom and a VERTICAL mark at left/right.
+//   - A straight independent segment has no sub-pixel dash seam, so every tick
+//     (including the anchor at fraction 0) renders identically — fixing the
+//     thicker-first-tick artifact of the old dashed-circle notch.
+//   - Centered on ringR with the core's stroke-width (2.75, via CSS) it stays
+//     CO-RADIAL with the green core: it occupies the core band on every note
+//     type and never spurs outside the ring (the old radial <line> reached past
+//     ringR and read as a nub outside big chord-tone bubbles).
+// Kept short so the tangent's tiny outward bulge (√(ringR²+L²) − ringR ≈ 0.3px)
+// stays well inside the core half-width (~1.375).
+const TICK_HALF_LEN = 2.5;
 
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
@@ -233,33 +237,43 @@ export const FretboardNote = memo(function FretboardNote({
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
-            {/* Static beat-tick notches — short BRIGHT marks the green core sweeps
-                past, giving a countable "segment done" read. Only on PRIMARY
-                (in-region) targets, and only when the step has enough beats to
-                warrant ticks (countdownTicks empty otherwise). Drawn as a dashed
-                <circle> with the SAME cx/cy/r=ringR (and same stroke-width via
-                CSS) as the green core, so each notch is CO-RADIAL with the core
-                and stays within the ring band on every note type — no hardcoded
-                radii to drift on chord-tone notes. `pathLength=100` makes the
-                dash maths radius-independent; offset -100*f places the notch
-                where the drain hand is at that window-fraction.
-                NOTE: if a snapshot shows the notches mirrored relative to the
-                drain hand, flip the sign of strokeDashoffset (use `100 * f`). */}
+            {/* Static beat-tick marks — short BRIGHT segments the green core
+                sweeps past, giving a countable "segment done" read. Only on
+                PRIMARY (in-region) targets, and only when the step has enough
+                beats to warrant ticks (countdownTicks empty otherwise). Each is a
+                straight <line> TANGENT to the ring at its beat angle
+                (θ = 2π·f, drain origin at 3 o'clock, sweeping clockwise): at the
+                common 4-beat positions the marks are horizontal (top/bottom) and
+                vertical (left/right). Centered on ringR with the core's
+                stroke-width (CSS), each mark is co-radial with the green core —
+                contained in the ring band on every note type (scale tone or
+                chord tone), with no dash seam and no radial spur. */}
             {note.isInRegion &&
-              countdownTicks?.map((f, i) => (
-                <circle
-                  key={`tick-${i}`}
-                  className={styles["note-guide-ring-tick"]}
-                  data-guide-tick="true"
-                  cx={cx}
-                  cy={cy}
-                  r={ringR}
-                  pathLength={100}
-                  strokeDasharray={`${TICK_ARC_LEN} ${100 - TICK_ARC_LEN}`}
-                  strokeDashoffset={-100 * f}
-                  aria-hidden="true"
-                />
-              ))}
+              countdownTicks?.map((f, i) => {
+                const theta = 2 * Math.PI * f;
+                const cos = Math.cos(theta);
+                const sin = Math.sin(theta);
+                // Point on the ring at this beat fraction.
+                const px = cx + ringR * cos;
+                const py = cy + ringR * sin;
+                // Tangent unit vector (perpendicular to the radius) — the mark
+                // lies ALONG the ring, so it is axis-aligned at the cardinal
+                // beat positions.
+                const tx = -sin;
+                const ty = cos;
+                return (
+                  <line
+                    key={`tick-${i}`}
+                    className={styles["note-guide-ring-tick"]}
+                    data-guide-tick="true"
+                    x1={px - TICK_HALF_LEN * tx}
+                    y1={py - TICK_HALF_LEN * ty}
+                    x2={px + TICK_HALF_LEN * tx}
+                    y2={py + TICK_HALF_LEN * ty}
+                    aria-hidden="true"
+                  />
+                );
+              })}
           </motion.g>
         )}
       </AnimatePresence>
