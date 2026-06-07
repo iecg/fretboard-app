@@ -27,18 +27,17 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
-// Beat-tick geometry. Each tick is an explicit <line> via trig (not a dash on a
-// circle), so every tick is identical geometry rotated to its own angle: crisp
-// and consistent, with no sub-pixel dash seam (the old arc-dash made the anchor
-// tick render thicker).
-// TICK_LEN is the radial length; TICK_OUTWARD is how far it reaches PAST the ring
-// centerline (ringR) toward the wood. Both are kept small so the whole mark sits
-// inside the green core band (half-width ~1.375) — the mark is biased inward and
-// never spurs outside the visible ring, even on big chord-tone bubbles. Two
-// ticks always fall on the horizontal string (3/9 o'clock); containing them this
-// way keeps them from reading as nubs poking out along the string.
-const TICK_LEN = 2;
-const TICK_OUTWARD = 0.8;
+// Arc length (in pathLength=100 units) of a single beat-tick notch. Each tick is
+// a dashed <circle> drawn with the SAME geometry as the green core (cx, cy,
+// r=ringR) and the SAME stroke-width — so it is CO-RADIAL with the core and
+// occupies exactly the core band on every note type (scale tone or chord tone),
+// without hardcoding the band's radii (an explicit <line> did, and protruded on
+// chord-tone notes whose effective ring band differs).
+// MUST be a whole number so TICK_ARC_LEN + (100 - TICK_ARC_LEN) sums to exactly
+// the pathLength (100): a fractional value (e.g. 1.2) is not exact in binary
+// float, so the dash pattern leaves a sliver of a second dash at the seam
+// (offset 0), making the anchor (first) tick render visibly thicker.
+const TICK_ARC_LEN = 2;
 
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
@@ -234,35 +233,33 @@ export const FretboardNote = memo(function FretboardNote({
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
-            {/* Static beat-tick marks — short BRIGHT radial lines crossing the
-                ring at each beat boundary, giving a countable "segment done"
-                read. Only on PRIMARY (in-region) targets, and only when the step
-                has enough beats to warrant ticks (countdownTicks empty otherwise).
-                Each is an explicit <line> at angle 2π·f (matching the drain's
-                origin at 3 o'clock, sweeping clockwise), so all ticks are
-                identical geometry — crisp and consistent, no dash-seam artifact.
-                At the 4-beat cardinal positions the lines are vertical (12/6) and
-                horizontal (3/9). */}
+            {/* Static beat-tick notches — short BRIGHT marks the green core sweeps
+                past, giving a countable "segment done" read. Only on PRIMARY
+                (in-region) targets, and only when the step has enough beats to
+                warrant ticks (countdownTicks empty otherwise). Drawn as a dashed
+                <circle> with the SAME cx/cy/r=ringR (and same stroke-width via
+                CSS) as the green core, so each notch is CO-RADIAL with the core
+                and stays within the ring band on every note type — no hardcoded
+                radii to drift on chord-tone notes. `pathLength=100` makes the
+                dash maths radius-independent; offset -100*f places the notch
+                where the drain hand is at that window-fraction.
+                NOTE: if a snapshot shows the notches mirrored relative to the
+                drain hand, flip the sign of strokeDashoffset (use `100 * f`). */}
             {note.isInRegion &&
-              countdownTicks?.map((f, i) => {
-                const a = 2 * Math.PI * f;
-                const cos = Math.cos(a);
-                const sin = Math.sin(a);
-                const outer = ringR + TICK_OUTWARD;
-                const inner = outer - TICK_LEN;
-                return (
-                  <line
-                    key={`tick-${i}`}
-                    className={styles["note-guide-ring-tick"]}
-                    data-guide-tick="true"
-                    x1={cx + inner * cos}
-                    y1={cy + inner * sin}
-                    x2={cx + outer * cos}
-                    y2={cy + outer * sin}
-                    aria-hidden="true"
-                  />
-                );
-              })}
+              countdownTicks?.map((f, i) => (
+                <circle
+                  key={`tick-${i}`}
+                  className={styles["note-guide-ring-tick"]}
+                  data-guide-tick="true"
+                  cx={cx}
+                  cy={cy}
+                  r={ringR}
+                  pathLength={100}
+                  strokeDasharray={`${TICK_ARC_LEN} ${100 - TICK_ARC_LEN}`}
+                  strokeDashoffset={-100 * f}
+                  aria-hidden="true"
+                />
+              ))}
           </motion.g>
         )}
       </AnimatePresence>

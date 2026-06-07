@@ -334,18 +334,19 @@
   100%    { opacity: 0.95; transform: scale(1.3); }
 }
 
-/* Beat-tick marks — short BRIGHT radial <line>s crossing the ring at beat/bar
-   boundaries (plus an anchor at the start/beat line). A light mark reads in both
-   light and dark modes — unlike a dark one, which vanished on dark wood and
-   merged with the strings' dark drop shadows. Bright + hard-edged ≠ soft
-   achromatic shadow. `stroke-width` here is the mark's THICKNESS (the line's
-   width); its radial LENGTH is TICK_LEN in FretboardNote. Kept thin so the mark
-   reads as a crisp tick, not a block. Static (no animation) → zero per-frame
+/* Beat-tick notches — short BRIGHT marks on the ring at beat/bar boundaries
+   (plus an anchor at the start/beat line). A light mark reads in both light and
+   dark modes — unlike a dark one, which vanished on dark wood and merged with
+   the strings' dark drop shadows. Bright + hard-edged ≠ soft achromatic shadow.
+   The notch is a dashed <circle> sharing the core's geometry, so this
+   `stroke-width` MUST match the core's (2.75): that makes the notch CO-RADIAL
+   with the green core — it occupies exactly the core band and never spurs
+   outside the ring on any note type. Static (no animation) → zero per-frame
    paint. */
 .note-guide-ring-tick {
   fill: none !important;
   stroke: rgb(255 255 255 / 0.92) !important;
-  stroke-width: 1.6 !important;
+  stroke-width: 2.75 !important;
   pointer-events: none;
 }
 
