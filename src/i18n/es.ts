@@ -243,9 +243,9 @@ export const es: Dictionary = {
     },
     roles: {
       root: "Tónica",
+      guideTone: "Nota guía (3.ª / 7.ª)",
       chordTone: "Nota del acorde",
       scaleNote: "Nota de la escala",
-      colorTone: "Nota de color",
       resolution: "Objetivo de resolución",
     },
     voiceLeading: {

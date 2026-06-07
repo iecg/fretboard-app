@@ -7,11 +7,9 @@
 }
 
 .swatch {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  background: currentColor;
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 .legendLabel {
@@ -23,6 +21,30 @@
   margin: var(--space-2) 0 var(--space-3);
   width: 100%;
   height: auto;
+}
+
+.shapeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.miniNeck {
+  height: 92px;
+  width: auto;
+}
+
+.miniNeckFret {
+  fill: var(--chrome-fg-muted);
+  font-size: 9px;
+}
+
+.miniNeckLabel {
+  fill: var(--chrome-fg);
+  font-size: 9px;
+  font-weight: 600;
 }
 
 .shortcutTable {

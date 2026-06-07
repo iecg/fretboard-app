@@ -212,9 +212,9 @@ export interface Dictionary {
     };
     roles: {
       root: string;
+      guideTone: string;
       chordTone: string;
       scaleNote: string;
-      colorTone: string;
       resolution: string;
     };
     voiceLeading: { anticipation: string; hold: string; departing: string };

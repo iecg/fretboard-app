@@ -1,10 +1,13 @@
 import { useTranslation } from "../../../hooks/useTranslation";
 import styles from "./diagrams.module.css";
 
-const STATES: { key: string; color: string }[] = [
-  { key: "help.voiceLeading.anticipation", color: "var(--note-incoming)" },
-  { key: "help.voiceLeading.hold", color: "var(--neon-cyan)" },
-  { key: "help.voiceLeading.departing", color: "var(--neon-orange)" },
+// Mirrors the fretboard's emphasis hues: anticipation lights the next chord's
+// guide tones in the green "go here next" incoming color; held common tones keep
+// the teal guide hue; departing tones recede to the neutral stroke.
+const STATES: { key: string; fill: string; stroke: string }[] = [
+  { key: "help.voiceLeading.anticipation", fill: "none", stroke: "var(--note-incoming)" },
+  { key: "help.voiceLeading.hold", fill: "var(--fb-guide-fill)", stroke: "var(--fb-guide-stroke)" },
+  { key: "help.voiceLeading.departing", fill: "none", stroke: "var(--fb-neutral-stroke)" },
 ];
 
 export function VoiceLeadingDiagram() {
@@ -13,7 +16,11 @@ export function VoiceLeadingDiagram() {
     <dl className={styles.legend} aria-label={t("help.items.voiceLeadingLabel")}>
       {STATES.map((state) => (
         <div key={state.key} style={{ display: "contents" }}>
-          <dt className={styles.swatch} style={{ color: state.color }} aria-hidden="true" />
+          <dt aria-hidden="true">
+            <svg className={styles.swatch} viewBox="0 0 24 24" width="20" height="20">
+              <circle cx="12" cy="12" r="8" fill={state.fill} stroke={state.stroke} strokeWidth="2.5" />
+            </svg>
+          </dt>
           <dd className={styles.legendLabel} style={{ margin: 0 }}>
             {t(state.key)}
           </dd>

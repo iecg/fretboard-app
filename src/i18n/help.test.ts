@@ -41,9 +41,9 @@ describe("i18n/help", () => {
     const diagramKeys = [
       "help.sections.noteColors",
       "help.roles.root",
+      "help.roles.guideTone",
       "help.roles.chordTone",
       "help.roles.scaleNote",
-      "help.roles.colorTone",
       "help.roles.resolution",
       "help.voiceLeading.anticipation",
       "help.voiceLeading.hold",

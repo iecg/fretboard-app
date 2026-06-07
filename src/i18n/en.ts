@@ -243,9 +243,9 @@ export const en: Dictionary = {
     },
     roles: {
       root: "Root",
+      guideTone: "Guide tone (3rd / 7th)",
       chordTone: "Chord tone",
       scaleNote: "Scale note",
-      colorTone: "Color tone",
       resolution: "Resolution target",
     },
     voiceLeading: {
