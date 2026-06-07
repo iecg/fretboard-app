@@ -27,6 +27,9 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
+// Arc length (in pathLength=100 units) of a single tick notch on the ring.
+const TICK_ARC_LEN = 1.2;
+
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
   noteBubblePx: number;
@@ -35,6 +38,8 @@ interface FretboardNoteProps {
   neckWidthPx?: number;
   neckHeight?: number;
   numStrings?: number;
+  /** Window-fractions (0,1) for static beat-tick notches on the countdown ring. */
+  countdownTicks?: number[];
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
@@ -45,6 +50,7 @@ export const FretboardNote = memo(function FretboardNote({
   neckWidthPx,
   neckHeight,
   numStrings,
+  countdownTicks,
   onNoteClick,
 }: FretboardNoteProps) {
   const {
@@ -68,12 +74,7 @@ export const FretboardNote = memo(function FretboardNote({
 
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
-  const guidePhase =
-    transitionRole === "guide-target"
-      ? "landing"
-      : transitionRole === "guide-preview"
-        ? "preview"
-        : undefined;
+  const guidePhase = transitionRole === "guide-target" ? "landing" : undefined;
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -224,6 +225,30 @@ export const FretboardNote = memo(function FretboardNote({
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
+            {/* Static beat-tick notches — dark pips on the halo track that the
+                green core sweeps past, giving a countable "segment done" read.
+                Only on PRIMARY (in-region) targets, and only when the step has
+                enough beats to warrant ticks (countdownTicks empty otherwise).
+                Drawn with the SAME pathLength=100 circle parametrization as the
+                drain so each notch sits exactly where the hand is at that
+                window-fraction — no trig, no origin/direction mismatch.
+                NOTE: if a snapshot shows the notches mirrored relative to the
+                drain hand, flip the sign of strokeDashoffset (use `100 * f`). */}
+            {note.isInRegion &&
+              countdownTicks?.map((f, i) => (
+                <circle
+                  key={`tick-${i}`}
+                  className={styles["note-guide-ring-tick"]}
+                  data-guide-tick="true"
+                  cx={cx}
+                  cy={cy}
+                  r={ringR}
+                  pathLength={100}
+                  strokeDasharray={`${TICK_ARC_LEN} ${100 - TICK_ARC_LEN}`}
+                  strokeDashoffset={-100 * f}
+                  aria-hidden="true"
+                />
+              ))}
           </motion.g>
         )}
       </AnimatePresence>

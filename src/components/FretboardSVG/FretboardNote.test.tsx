@@ -25,13 +25,17 @@ function makeNote(overrides: Partial<RenderedFretboardNote> = {}): RenderedFretb
   };
 }
 
-function renderNote(note: RenderedFretboardNote) {
+function renderNote(
+  note: RenderedFretboardNote,
+  extra?: { countdownTicks?: number[] },
+) {
   return render(
     <svg>
       <FretboardNote
         note={note}
         noteBubblePx={40}
         displayFormat="notes"
+        countdownTicks={extra?.countdownTicks}
       />
     </svg>,
   );
@@ -142,16 +146,25 @@ describe("FretboardNote — chromatic diamond rendering", () => {
 
 
 describe("FretboardNote — two-phase guide ring", () => {
-  it("renders the ring with data-guide-phase='preview' for a guide-preview note", () => {
+  it("renders no ring for a note without a transition role", () => {
+    const { container } = renderNote(makeNote({ transitionRole: undefined }));
+    expect(container.querySelector("[data-guide-ring]")).toBeNull();
+  });
+
+  it("renders beat-tick notches for a primary guide-target note when ticks are provided", () => {
     const { container } = renderNote(
-      makeNote({
-        transitionRole: "guide-preview",
-        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, guideTargetLabel: "3" },
-      }),
+      makeNote({ transitionRole: "guide-target", isInRegion: true }),
+      { countdownTicks: [0.25, 0.5, 0.75] },
     );
-    const ring = container.querySelector("[data-guide-ring]");
-    expect(ring).not.toBeNull();
-    expect(ring?.getAttribute("data-guide-phase")).toBe("preview");
+    expect(container.querySelectorAll("[data-guide-tick]")).toHaveLength(3);
+  });
+
+  it("renders no notches for a secondary (out-of-region) guide-target note", () => {
+    const { container } = renderNote(
+      makeNote({ transitionRole: "guide-target", isInRegion: false }),
+      { countdownTicks: [0.25, 0.5, 0.75] },
+    );
+    expect(container.querySelectorAll("[data-guide-tick]")).toHaveLength(0);
   });
 
   it("renders the ring with data-guide-phase='landing' for a guide-target note", () => {
@@ -192,11 +205,11 @@ describe("FretboardNote — two-phase guide ring", () => {
   });
 
   it("renders the incoming-hue backing disc tagged with the phase for a target note", () => {
-    const { container } = renderNote(makeNote({ transitionRole: "guide-preview" }));
+    const { container } = renderNote(makeNote({ transitionRole: "guide-target" }));
     const backing = container.querySelector("[data-guide-phase]:not([data-guide-ring])");
     expect(backing).not.toBeNull();
     expect(backing?.tagName.toLowerCase()).toBe("circle");
-    expect(backing?.getAttribute("data-guide-phase")).toBe("preview");
+    expect(backing?.getAttribute("data-guide-phase")).toBe("landing");
   });
 
   it("renders no backing disc when there is no transition role", () => {
