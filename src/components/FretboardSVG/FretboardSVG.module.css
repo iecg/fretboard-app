@@ -254,12 +254,9 @@
 }
 
 /* Dark contrast halo — sits ~1px proud of the core on each side so the coloured
-   ring reads crisply over light maple, dark rosewood, and any marker fill.
-   Near-opaque so it fully masks whatever passes under the ring (notably the
-   bright string wire), giving the green core and the white beat-tick pips a
-   consistent dark backing instead of a brightened patch where a string crosses. */
+   ring reads crisply over light maple, dark rosewood, and any marker fill. */
 .note-guide-ring-halo {
-  stroke: rgb(0 0 0 / 0.9) !important;
+  stroke: rgb(0 0 0 / 0.55) !important;
 }
 
 .note-guide-ring-core {
