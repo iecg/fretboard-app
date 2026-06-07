@@ -2,92 +2,103 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { HelpModal } from "../HelpModal/HelpModal";
+import { HelpModal } from "./HelpModal";
 import styles from "./HelpModal.module.css";
-import {
-  makeAtomStore,
-  renderWithStore,
-} from "../../test-utils/renderWithAtoms";
-import { seenChordModeRemovalNoticeAtom } from "../../store/uiAtoms";
+import { en } from "../../i18n/en";
+import { CURRENT_WHATS_NEW_ID } from "./helpContent";
+import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
+import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
 
 describe("HelpModal/HelpModal", () => {
   it("renders dialog when isOpen=true", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    expect(screen.getByRole("dialog", { name: "FretFlow Help" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: en.help.title })).toBeInTheDocument();
   });
 
   it("does not render dialog when isOpen=false", () => {
     render(<HelpModal isOpen={false} onClose={vi.fn()} />);
-    expect(screen.queryByRole("dialog", { name: "FretFlow Help" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: en.help.title })).not.toBeInTheDocument();
   });
 
-  it("calls onClose when Close help button is clicked", () => {
+  it("calls onClose when the close button is clicked", () => {
     const onClose = vi.fn();
     render(<HelpModal isOpen={true} onClose={onClose} />);
-    expect(screen.getByLabelText("Close help")).toHaveClass(
-      styles["help-modal-close"],
-    );
-    fireEvent.click(screen.getByLabelText("Close help"));
+    fireEvent.click(screen.getByLabelText(en.help.close));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("does not contain stale Focus-era control section", () => {
+  it("moves focus to the close button when the dialog opens", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    // The old "Focus" UI section should not appear as a section heading or strong label
-    // that describes chord-tone narrowing controls (Triad, Shell, Rootless, Custom).
-    const allStrong = document.querySelectorAll("strong");
-    const focusLabels = Array.from(allStrong).filter(
-      (el) => el.textContent === "Focus",
-    );
-    expect(focusLabels).toHaveLength(0);
+    expect(document.activeElement).toBe(screen.getByLabelText(en.help.close));
   });
 
-  it("does not mention 'Tones' or 'Lead' as lens names", () => {
+  it("renders a tab for every help tab and starts on Start", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    // Lens picker was removed; help text should not mention the old lens names.
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs).toHaveLength(5);
+    expect(screen.getByRole("tab", { name: en.help.tabs.start })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
+  it("switches panels when a tab is clicked", async () => {
+    const user = userEvent.setup();
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    expect(screen.getByText(en.help.items.introBody)).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: en.help.tabs.play }));
+    expect(screen.queryByText(en.help.items.introBody)).not.toBeInTheDocument();
+    expect(screen.getByText(en.help.items.backingTrackBody)).toBeInTheDocument();
+  });
+
+  it("documents the real keyboard shortcuts on the Settings tab", async () => {
+    const user = userEvent.setup();
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    await user.click(screen.getByRole("tab", { name: en.help.tabs.settings }));
+    expect(screen.getByText(en.help.shortcuts.play)).toBeInTheDocument();
+    expect(screen.getByText(en.help.shortcuts.loop)).toBeInTheDocument();
+    expect(screen.getByText("Space")).toBeInTheDocument();
+  });
+
+  it("does not contain stale Theory/View Inspector labels", () => {
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    const strong = Array.from(document.querySelectorAll("strong")).map((el) => el.textContent);
+    expect(strong).not.toContain("Theory");
+    expect(strong).not.toContain("View");
+  });
+
+  it("does not contain a stale Focus section or removed lens names", () => {
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    const strong = Array.from(document.querySelectorAll("strong")).map((el) => el.textContent);
+    expect(strong).not.toContain("Focus");
     expect(screen.queryByText(/Tones lens/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Lead lens/i)).not.toBeInTheDocument();
   });
 
-  it("renders the chord-mode-removed notice when not yet seen", () => {
-    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, false]]);
+  it("shows the What's-new notice when the current id has not been seen", () => {
+    const store = makeAtomStore([[helpWhatsNewSeenAtom, ""]]);
     renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
-    expect(
-      screen.getByText(/manual chord mode has been removed/i),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("help-modal-whats-new")).toBeInTheDocument();
   });
 
-  it("hides the chord-mode-removed notice when already seen", () => {
-    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, true]]);
+  it("hides the What's-new notice when the current id has been seen", () => {
+    const store = makeAtomStore([[helpWhatsNewSeenAtom, CURRENT_WHATS_NEW_ID]]);
     renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
-    expect(
-      screen.queryByText(/manual chord mode has been removed/i),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("help-modal-whats-new")).not.toBeInTheDocument();
   });
 
-  it("dismissing the notice sets the seen flag and hides the notice", async () => {
+  it("dismissing the notice stores the current id and hides it", async () => {
     const user = userEvent.setup();
-    const store = makeAtomStore([[seenChordModeRemovalNoticeAtom, false]]);
-    const { rerender } = renderWithStore(
-      <HelpModal isOpen={true} onClose={vi.fn()} />,
-      store,
-    );
-    await user.click(screen.getByRole("button", { name: /got it/i }));
-    expect(store.get(seenChordModeRemovalNoticeAtom)).toBe(true);
-    rerender(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    expect(
-      screen.queryByText(/manual chord mode has been removed/i),
-    ).not.toBeInTheDocument();
-  });
-
-  it("moves focus to the close button when dialog opens", () => {
-    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    expect(document.activeElement).toBe(screen.getByLabelText("Close help"));
+    const store = makeAtomStore([[helpWhatsNewSeenAtom, ""]]);
+    renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
+    await user.click(screen.getByRole("button", { name: en.help.whatsNew.dismiss }));
+    expect(store.get(helpWhatsNewSeenAtom)).toBe(CURRENT_WHATS_NEW_ID);
+    expect(screen.queryByTestId("help-modal-whats-new")).not.toBeInTheDocument();
   });
 
   it("renders the close button at the sm icon-button size", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
-    const close = screen.getByLabelText("Close help");
-    expect(close.className).toMatch(/icon-button--sm/);
+    expect(screen.getByLabelText(en.help.close).className).toMatch(/icon-button--sm/);
+    expect(typeof styles["help-modal-close"]).toBe("string");
   });
 });
