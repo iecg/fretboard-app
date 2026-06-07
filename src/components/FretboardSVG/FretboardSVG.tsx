@@ -8,7 +8,7 @@ import {
 } from "@fretflow/core";
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
-import { leadInActiveAtom, leadInDurationMsAtom, planningDurationMsAtom } from "../../store/practiceLensAtoms";
+import { guideCountdownActiveAtom, guideCountdownWindowMsAtom, guideCountdownTickFractionsAtom } from "../../store/practiceLensAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -319,9 +319,9 @@ export function FretboardSVG({
   void effectiveZoom;
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
-  const leadInActive = useAtomValue(leadInActiveAtom);
-  const leadInDurationMs = useAtomValue(leadInDurationMsAtom);
-  const planningDurationMs = useAtomValue(planningDurationMsAtom);
+  const guideCountdownActive = useAtomValue(guideCountdownActiveAtom);
+  const guideCountdownWindowMs = useAtomValue(guideCountdownWindowMsAtom);
+  const countdownTicks = useAtomValue(guideCountdownTickFractionsAtom);
 
   // Playback snapshot is subscribed here (inside the lazy boundary) so that
   // frame ticks stay contained to FretboardSVG rather than re-rendering the
@@ -608,11 +608,10 @@ export function FretboardSVG({
       aria-label={ariaLabel}
       className={styles["fretboard-board"]}
       data-full-chord-mode={fullChordVoicings?.length ? "true" : undefined}
-      data-transition-phase={leadInActive ? "lead-in" : undefined}
+      data-transition-phase={guideCountdownActive ? "countdown" : undefined}
       data-testid="fretboard-svg"
       style={{
-        "--lead-in-duration": `${leadInDurationMs}ms`,
-        "--planning-duration": `${planningDurationMs}ms`,
+        "--guide-duration": `${guideCountdownWindowMs}ms`,
       } as CSSProperties}
     >
       <div
@@ -702,6 +701,7 @@ export function FretboardSVG({
                     neckWidthPx={neckWidthPx}
                     neckHeight={neckHeight}
                     numStrings={numStrings}
+                    countdownTicks={countdownTicks}
                   />
                 </g>
                 <ChordConnectorEvaluator {...connectorProps} pass="above" />
