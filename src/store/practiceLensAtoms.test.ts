@@ -761,13 +761,13 @@ describe("isInCountdownWindow", () => {
 // ---------------------------------------------------------------------------
 
 describe("computeCountdownTickFractions", () => {
-  it("one tick per beat boundary when <= 4 beats", () => {
-    // 4 beats -> 4 segments -> interior ticks at 1/4, 2/4, 3/4
-    expect(computeCountdownTickFractions(4000, 1000, 4000)).toEqual([0.25, 0.5, 0.75]);
+  it("anchor tick at 0 plus one per beat boundary when <= 4 beats", () => {
+    // 4 beats -> 4 segments -> anchor 0 + interior ticks at 1/4, 2/4, 3/4
+    expect(computeCountdownTickFractions(4000, 1000, 4000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
-  it("two beats yields a single midpoint tick", () => {
-    expect(computeCountdownTickFractions(2000, 1000, 4000)).toEqual([0.5]);
+  it("two beats yields the anchor plus a single midpoint tick", () => {
+    expect(computeCountdownTickFractions(2000, 1000, 4000)).toEqual([0, 0.5]);
   });
 
   it("suppresses ticks below 2 beats", () => {
@@ -775,15 +775,15 @@ describe("computeCountdownTickFractions", () => {
   });
 
   it("collapses to bar boundaries when > 4 beats and bars in 2..4", () => {
-    // 8 beats, 2 bars -> segment by bar -> one tick at 0.5
-    expect(computeCountdownTickFractions(8000, 1000, 4000)).toEqual([0.5]);
-    // 12 beats, 3 bars -> ticks at 1/3, 2/3
-    expect(computeCountdownTickFractions(12000, 1000, 4000)).toEqual([1 / 3, 2 / 3]);
+    // 8 beats, 2 bars -> segment by bar -> anchor 0 + tick at 0.5
+    expect(computeCountdownTickFractions(8000, 1000, 4000)).toEqual([0, 0.5]);
+    // 12 beats, 3 bars -> anchor 0 + ticks at 1/3, 2/3
+    expect(computeCountdownTickFractions(12000, 1000, 4000)).toEqual([0, 1 / 3, 2 / 3]);
   });
 
   it("falls back to 4 even segments when bars also exceed 4", () => {
-    // 20 beats, 5 bars -> 4 even segments -> 0.25, 0.5, 0.75
-    expect(computeCountdownTickFractions(20000, 1000, 4000)).toEqual([0.25, 0.5, 0.75]);
+    // 20 beats, 5 bars -> 4 even segments -> anchor 0 + 0.25, 0.5, 0.75
+    expect(computeCountdownTickFractions(20000, 1000, 4000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
   it("returns [] for non-positive window or beat length", () => {

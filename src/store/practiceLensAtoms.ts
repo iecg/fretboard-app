@@ -197,11 +197,15 @@ const MIN_TICK_BEATS = 2;
 const MAX_TICK_SEGMENTS = 4;
 
 /**
- * Window-fractions in (0,1) at which to draw static beat/bar boundary notches.
+ * Window-fractions in [0,1) at which to draw static beat/bar boundary notches.
+ * Includes an anchor tick at fraction 0 — the start/beat line (the full-circle
+ * drain's start and end coincide, so this single mark anchors both the launch
+ * and the landing point) — followed by one tick per interior segment boundary.
  *
  * - ≤ 4 beats → one segment per beat (subitizable at a glance).
  * - > 4 beats → collapse to bar lines when there are 2–4 bars, else 4 even
- *   segments (caps interior ticks at 3 — the ~4-object subitizing limit).
+ *   segments (caps interior ticks at 3 + the anchor → ≤ 4 marks, the ~4-object
+ *   subitizing limit).
  * - < 2 beats → no ticks.
  *
  * Pure so it is unit-testable. `windowMs`/`beatMs`/`barMs` are all in ms.
@@ -223,7 +227,7 @@ export function computeCountdownTickFractions(
     segments = bars >= 2 && bars <= MAX_TICK_SEGMENTS ? bars : MAX_TICK_SEGMENTS;
   }
 
-  const ticks: number[] = [];
+  const ticks: number[] = [0];
   for (let i = 1; i < segments; i++) ticks.push(i / segments);
   return ticks;
 }

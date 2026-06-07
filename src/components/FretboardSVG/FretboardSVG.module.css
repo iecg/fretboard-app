@@ -334,14 +334,18 @@
   100%    { opacity: 0.95; transform: scale(1.3); }
 }
 
-/* Beat-tick notches — short dark pips on the halo track at beat/bar
-   boundaries. Drawn over the halo + core so they read as gauge marks the green
-   hand sweeps past. Static (no animation) → zero per-frame paint. Stroke wider
-   than the halo so each pip visibly crosses the whole track. */
+/* Beat-tick notches — short BRIGHT pips on the halo track at beat/bar
+   boundaries (plus an anchor at the start/beat line). Drawn over the halo +
+   core so they read as gauge marks the green hand sweeps past. A light pip sits
+   on the always-dark halo, so it reads in both light and dark modes — unlike a
+   dark pip, which vanished on dark wood and merged with the strings' dark drop
+   shadows. Bright + hard-edged ≠ soft achromatic shadow. Width matches the halo
+   so each pip fills the track exactly without overhanging onto the wood. Static
+   (no animation) → zero per-frame paint. */
 .note-guide-ring-tick {
   fill: none !important;
-  stroke: rgb(0 0 0 / 0.7) !important;
-  stroke-width: 5.5 !important;
+  stroke: rgb(255 255 255 / 0.92) !important;
+  stroke-width: 4.75 !important;
   pointer-events: none;
 }
 
