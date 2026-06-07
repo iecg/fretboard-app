@@ -1,7 +1,6 @@
-import { useCallback, useId, useRef, useState } from "react";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { CAGED_SHAPES, type CagedShape, ANIMATION_DURATION_FAST } from "@fretflow/core";
+import { CAGED_SHAPES, ANIMATION_DURATION_FAST } from "@fretflow/core";
 import { useShapeState } from "../../hooks/useShapeState";
 import type { FingeringPattern } from "../../store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -11,13 +10,6 @@ import { StringSetPicker } from "../shared/StringSetPicker";
 import { GroupHeader, Prop } from "../Inspector/InspectorGrid";
 import shared from "../shared/shared.module.css";
 import styles from "./FingeringPatternControls.module.css";
-
-const LONG_PRESS_MS = 500;
-const MOVE_CANCEL_PX = 8;
-
-const isTouchPrimary =
-  typeof window !== "undefined" &&
-  window.matchMedia("(pointer: coarse)").matches;
 
 export interface FingeringPatternControlsProps {
   /** When true, suppresses the internal "Fingering" GroupHeader. Use when the
@@ -38,8 +30,6 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
     fingeringPattern,
     setFingeringPattern,
     cagedShapes,
-    setCagedShapes,
-    toggleCagedShape,
     selectSingleCagedShape,
     npsPosition,
     setNpsPosition,
@@ -56,22 +46,6 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
     twoStringsInterval,
     setTwoStringsInterval,
   } = useShapeState();
-
-  const shapeHelpId = useId();
-
-  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pressStartRef = useRef<{ x: number; y: number } | null>(null);
-  const longPressedShapeRef = useRef<CagedShape | null>(null);
-  const [pressingShape, setPressingShape] = useState<CagedShape | null>(null);
-
-  const cancelPress = useCallback(() => {
-    if (pressTimerRef.current !== null) {
-      clearTimeout(pressTimerRef.current);
-      pressTimerRef.current = null;
-    }
-    pressStartRef.current = null;
-    setPressingShape(null);
-  }, []);
 
   return (
     <>
@@ -105,39 +79,12 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
       </Prop>
 
       {fingeringPattern === "caged" && (
-        <Prop
-          label={t("controls.shape")}
-          span={9}
-          labelAccessory={
-            isTouchPrimary ? t("controls.longPressToAdd") : t("controls.shiftClickToAdd")
-          }
-        >
-          <span id={shapeHelpId} className={shared["sr-only"]}>
-            {isTouchPrimary ? t("controls.shapeHintTouch") : t("controls.shapeHintPointer")}
-          </span>
+        <Prop label={t("controls.shape")} span={9}>
           <div
             className={styles.shapeToggleBar}
             role="group"
             aria-label={t("controls.shape")}
-            aria-describedby={shapeHelpId}
           >
-            <motion.button
-              type="button"
-              className={clsx(
-                shared["toggle-btn"],
-                styles.shapeToggleButton,
-                cagedShapes.size === CAGED_SHAPES.length && shared.active,
-              )}
-              aria-pressed={cagedShapes.size === CAGED_SHAPES.length}
-              onClick={() => setCagedShapes(new Set(CAGED_SHAPES))}
-              whileTap={{ scale: 0.96 }}
-              animate={
-                cagedShapes.size === CAGED_SHAPES.length ? { scale: [1, 1.04, 1] } : { scale: 1 }
-              }
-              transition={{ duration: ANIMATION_DURATION_FAST }}
-            >
-              All
-            </motion.button>
             {CAGED_SHAPES.map((s) => {
               const isActive = cagedShapes.has(s);
               return (
@@ -149,52 +96,11 @@ export function FingeringPatternControls({ hideHeader = false }: FingeringPatter
                     styles.shapeToggleButton,
                     isActive && shared.active,
                   )}
-                  data-pressing={pressingShape === s || undefined}
                   aria-pressed={isActive}
-                  title={
-                    isTouchPrimary
-                      ? "Tap to select; long press to add/remove"
-                      : "Click to select; Shift+click to toggle multiple"
-                  }
-                  onPointerDown={(e) => {
-                    if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
-                    cancelPress();
-                    longPressedShapeRef.current = null;
-                    pressStartRef.current = { x: e.clientX, y: e.clientY };
-                    setPressingShape(s);
-                    pressTimerRef.current = setTimeout(() => {
-                      longPressedShapeRef.current = s;
-                      pressTimerRef.current = null;
-                      pressStartRef.current = null;
-                      setPressingShape(null);
-                      toggleCagedShape(s);
-                      navigator.vibrate?.(30);
-                    }, LONG_PRESS_MS);
-                  }}
-                  onPointerMove={(e) => {
-                    if (!pressStartRef.current) return;
-                    const dx = e.clientX - pressStartRef.current.x;
-                    const dy = e.clientY - pressStartRef.current.y;
-                    if (Math.hypot(dx, dy) > MOVE_CANCEL_PX) cancelPress();
-                  }}
-                  onPointerUp={cancelPress}
-                  onPointerCancel={cancelPress}
-                  onPointerLeave={cancelPress}
-                  onContextMenu={(e) => {
-                    if (longPressedShapeRef.current !== null) e.preventDefault();
-                  }}
-                  onClick={(e) => {
-                    if (longPressedShapeRef.current !== null) {
-                      longPressedShapeRef.current = null;
-                      return;
-                    }
+                  onClick={() => {
                     onShapeClick?.(s);
                     onRecenter?.();
-                    if (e.shiftKey) {
-                      toggleCagedShape(s);
-                    } else {
-                      selectSingleCagedShape(s);
-                    }
+                    selectSingleCagedShape(s);
                   }}
                   whileTap={{ scale: 0.96 }}
                   animate={isActive ? { scale: [1, 1.04, 1] } : { scale: 1 }}

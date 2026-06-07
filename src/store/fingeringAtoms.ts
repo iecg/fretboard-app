@@ -1,9 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import {
-  CAGED_SHAPES,
-  type CagedShape,
-} from "@fretflow/core";
+import { type CagedShape } from "@fretflow/core";
 import {
   k,
   createStorage,
@@ -18,9 +15,19 @@ export type FingeringPattern =
   | "one-string"
   | "two-strings";
 
+/**
+ * Collapse a persisted (possibly multi-shape) CAGED selection to a single shape.
+ * Prefers E (the default), else the first stored entry, else E. Enforces the
+ * one-shape invariant for legacy storage written before single-shape mode.
+ */
+export function collapseToSingleShape(shapes: CagedShape[]): CagedShape {
+  if (shapes.includes("E")) return "E";
+  return shapes[0] ?? "E";
+}
+
 const cagedShapesStorage = createStorage<Set<CagedShape>>({
   serialize: (s) => JSON.stringify(Array.from(s)),
-  deserialize: (v) => new Set(JSON.parse(v) as CagedShape[]),
+  deserialize: (v) => new Set<CagedShape>([collapseToSingleShape(JSON.parse(v) as CagedShape[])]),
 });
 
 const npsPositionStorage = constrainedNumberStorage({ min: 1, max: 7, integer: true });
@@ -42,21 +49,10 @@ export const fingeringPatternAtom = atomWithStorage<FingeringPattern>(
 
 export const cagedShapesAtom = atomWithStorage<Set<CagedShape>>(
   k("cagedShapes"),
-  new Set(CAGED_SHAPES),
+  new Set<CagedShape>(["E"]),
   cagedShapesStorage,
   GET_ON_INIT,
 );
-
-export const toggleCagedShapeAtom = atom(null, (get, set, shape: CagedShape) => {
-  const prev = get(cagedShapesAtom);
-  const next = new Set(prev);
-  if (next.has(shape)) {
-    if (next.size > 1) next.delete(shape);
-  } else {
-    next.add(shape);
-  }
-  set(cagedShapesAtom, next);
-});
 
 export const selectSingleCagedShapeAtom = atom(
   null,
