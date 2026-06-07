@@ -1,100 +1,132 @@
 # Improvisation Lenses — Design
 
 **Date:** 2026-06-07
-**Status:** Draft for review
+**Status:** Draft for review (rev. 2 — arpeggio lens cut; grounded in pedagogy)
 **Area:** Fretboard practice emphasis (`practiceLensAtoms`, `FretboardSVG/utils/semantics`, `FretboardNote`, `ChordOverlayControls`)
 
 ## Problem
 
 The fretboard has exactly one voice-leading cue: the **two-phase guide-tone
-preview** (#537). On the *next* chord's 3rd/7th it draws a calm dashed
-**planning** ring (from chord onset, capped 2 bars out) that morphs into the
-urgent contracting **landing** ring for the final lead-in window. It is
-grounded in the canonical improvisation pedagogy (Galper's *Forward Motion*,
-Aebersold, Levine) and "the hint is now in a really good spot."
+preview** (#537) — a calm dashed *planning* ring → urgent contracting *landing*
+ring on the **next** chord's 3rd/7th. It is grounded in the standard
+improvisation pedagogy (Galper's *Forward Motion*, Levine, Coker, Aebersold) and
+"the hint is now in a really good spot."
 
-But guide tones are a single rung on a much taller ladder. The 3rd/7th target
-is **L2** improvisation practice; a beginner is not ready for it and an
-advanced player wants more. The tool can only teach the one rung:
-
-- A beginner needs to first learn to **track the changes** — land on each
-  chord's **root** — before the 3rd/7th has any meaning.
-- A player learning to **outline the harmony** ("play the changes") wants to
-  see each chord's **full arpeggio** light up as the progression moves.
-- A player working on **voice leading** wants to know which notes **survive
-  the change** (common/pivot tones) so they can hold or pivot on them.
+But guide tones are one rung on a ladder that the literature lays out explicitly,
+and the tool can only teach that one rung. A beginner is not ready for 3rds/7ths;
+an advanced player wants more.
 
 FretFlow used to have a `practiceLensAtom` mode selector (retired in the v2
-"Lens Consolidation" — `src/store/v2RedesignMigration.ts:19`). This brings the
-lens concept back, but pointed at **improvisation targeting** rather than the
-old (also-removed) scale-degree *coloring* lens (#534).
+"Lens Consolidation" — `v2RedesignMigration.ts:19`). This brings the lens
+concept back, pointed at **improvisation targeting**, not the (also-removed)
+scale-degree *coloring* lens (#534).
+
+## What a lens must earn (and what got cut)
+
+A lens only justifies itself if it shows something the **static chord overlay
+cannot**. The overlay's blind spot is **time**: it only ever renders the
+*current* chord.
+
+This rules out a previously-proposed **"arpeggio / play the changes" lens**.
+During playback the overlay *already* tracks the active progression step
+(`chordRootAtom`/`chordTypeAtom` resolve to the active step,
+`chordOverlayAtoms.ts:93-100`), spotlighting each chord's tones (large/colored)
+against the dimmed scale and jumping on every change. And interval/degree labels
+already exist as the **Note Labels → Intervals** setting (`displayFormat:
+"degrees"`). "Spotlight the active chord's R-3-5-7 with interval labels" is
+therefore *overlay + an existing setting* — no new capability. It is cut.
+
+Mapping the pedagogy ladder (Aebersold's progressive method — roots → scale →
+triad → chord tones → guide tones/voice-leading → chromatic approach) onto the
+tool:
+
+- The **"outline the chord / arpeggio"** rungs (triad, chord tones) are already
+  served by the **static overlay** (it isolates chord tones, follows the
+  progression, and can label them by interval). No lens needed.
+- The rungs the overlay **cannot** serve are the **temporal / voice-leading**
+  ones: aim at the *next* target before it lands, hold what's *common* across
+  the change, approach the next target chromatically. **That is the lens
+  territory.**
 
 ## Goal
 
-Add a **lens selector** that swaps which notes the fretboard emphasizes during
-progression playback, so one tool teaches the whole improvisation ladder —
-roots → guide tones → arpeggios — plus a voice-leading (common-tone) view. The
-existing guide-tone behavior becomes one lens (the default) and is unchanged
-when selected.
+Add a **lens selector** that swaps which *predictive / voice-leading* notes the
+fretboard emphasizes during progression playback — climbing the pedagogy ladder
+from root-targeting to guide tones to common-tone voice leading (and, later,
+chromatic approach). The existing guide-tone behavior becomes one lens (the
+default) and is unchanged when selected.
 
-## Non-Goals
+## Pedagogical grounding
 
-- **No new colors or marker shapes.** The vocabulary stays circle/diamond +
-  the existing target-ring hue (`--note-incoming`). Lenses ride the existing
-  emphasis channels (ring, size, opacity, label).
-- **No change to static identity coloring.** The always-on teal 3rd/7th hue
-  (`data-note-guide-tone`, `FretboardNote.tsx:142`) is chord-tone *identity*,
-  not a lens — it stays on regardless of the active lens. Scale and chord color
-  domains stay independent (per `CLAUDE.md`).
-- **Playback only.** A lens only changes the view while a progression is
-  *playing*. With nothing playing, the fretboard renders exactly as today,
-  whatever the selected lens. (Confirmed scope decision.)
-- No per-lens configurability (runway length, etc.) — fixed sensible constants,
-  matching the guide-tone preview's approach.
-- No leveled/auto-advancing curriculum — just a manual selector. (The ladder is
-  the pedagogy; sequencing through it is a future concern.)
+The lens set is not arbitrary — it tracks the canonical sequence for learning to
+"play the changes." Citations in **References**.
+
+- **Roots first.** Aebersold's *Volume 1* method starts every student on the
+  roots: "play the root of each chord," then the first five scale notes, then
+  the triad (1-3-5), then full chord tones. Playing roots with the changes is
+  the first step to *hearing* the progression go by. → **Root lens (L1).**
+
+- **Then guide tones (3rd & 7th).** The 3rd and 7th are the quality-defining
+  "money notes": the 3rd carries major vs. minor, the 7th carries dominant vs.
+  major-7th. They voice-lead by the smallest interval (the 7th of one chord
+  resolves a half/whole step to the 3rd of the next), with many common tones —
+  the backbone of Levine's, Coker's, and Galper's approach to navigating
+  changes. The **root and 5th are deliberately excluded**: they are
+  harmonically inert — they do not distinguish chord quality — which is exactly
+  why guide-tone lines are built from 3rds and 7ths only. (This is also why a
+  standalone "5ths" lens is *not* proposed; altered 5ths, b5/#5, are quality
+  tones and live inside the chord-tone overlay, not a lens.) → **Guide-tone
+  lens (L2, today's default).**
+
+- **Then common / pivot tones.** Voice-leading pedagogy: retain as many common
+  tones as possible across a change, and let a held note **re-function** — e.g.
+  in ii→V, Dm7 and G7 share D and F, and the held note's role changes (the b3
+  of the ii becomes the b7 of the V). Knowing what *survives* the change tells a
+  soloist what they can lean on or pivot through. The overlay shows one chord
+  and so can never show this intersection. → **Common/pivot lens (L3).**
+
+- **Then chromatic approach / enclosure** *(future, not in first cut).* Galper's
+  *Forward Motion* reframes improvisation as lines that point **toward** a future
+  target landing on a strong beat (1 or 3), with the downbeats carrying the
+  working chord tones — embellished with chromaticism. Bebop pedagogy (Coker's
+  *Elements of the Jazz Language*; approach-note/enclosure method) approaches a
+  target note by half-step from above and/or below. A lens that previews the
+  chromatic neighbors *into* the next guide tone is the natural top rung. →
+  **Approach-note lens (L4, deferred — see Future Work.)**
 
 ## Two lens paradigms
 
 The guide-tone ring is an **"aim"** cue: a planning→landing ring on the *next*
-chord's targets. It works **because there are only 1–2 targets** — a contracting
-"land on this" ring is legible. That generalizes cleanly to any *small* target
-set, but not to a whole arpeggio (R-3-5-7 is up to ~16 lit positions; ringing
-them all is noise). So lenses split into two families:
+chord's targets. It is legible **only because there are 1–2 targets** — a
+contracting "land on this on the beat" ring (Galper's downbeat target). That
+generalizes to any *small* next-chord target set, but not to a whole chord.
+So lenses split into:
 
 | Family | Acts on | Mechanism | Lenses |
 |--------|---------|-----------|--------|
-| **Target** (aim) | the **next** chord | the existing planning→landing **ring** + runway, verbatim — only the *target member set* changes | **Root**, **Guide tones** |
-| **Field** (reshape) | the **active** chord | recede/anchor via **size + opacity + interval labels**; no contracting ring | **Arpeggio**, **Common/pivot** |
+| **Target** (aim ahead) | the **next** chord | the existing planning→landing **ring** + runway, verbatim — only the *target member set* changes | **Root**, **Guide tones** |
+| **Field** (voice-leading) | **across** the change | size/opacity **hold** emphasis, no contracting ring | **Common/pivot** |
 
-## The lenses
+## The lenses (first cut)
 
-| Lens | Family | Target members | What you see during playback | Pedagogy |
-|------|--------|----------------|------------------------------|----------|
-| **Root** | Target | `{1}` | Planning→landing ring on the **next chord's root** (one target). Label `R`. | **L1** — track the changes; the beginner rung below guide tones. |
-| **Guide tones** *(default, today)* | Target | `{b3, 3, b7, 7}` | Unchanged: ring on the next chord's 3rd/7th, labels `3`/`b7`. | **L2** — voice-leading "money notes." |
-| **Arpeggio** ("play the changes") | Field | active chord's R-3-5-7 | The **active** chord's chord-tones brighten across the neck with `1`/`3`/`5`/`7` labels; scale-only notes recede hard. Spotlight jumps each chord change. | **L3** — outline the harmony; see the changes as shapes. |
-| **Common / pivot** | Field | `active ∩ next` | Notes shared with the next chord get a steady **hold** emphasis during the lead-in (size hold + static ring), so you know what survives the change. | Voice leading — hold/pivot across changes. |
-
-Why **not** a standalone "5ths" lens (an explicitly raised option): the perfect
-5th is harmonically inert — it does not define chord quality, which is exactly
-why it is never a guide tone (`practiceLensAtoms.ts:506` rationale). Aiming at
-5ths teaches the one tone that carries no quality information. Altered fifths
-(b5/#5) *do* matter — and they surface naturally inside the **Arpeggio** lens,
-which is the right home for them.
+| Lens | Family | Targets | What you see during playback | Pedagogy |
+|------|--------|---------|------------------------------|----------|
+| **Root** | Target | `{1}` of next chord | Planning→landing ring on the **next chord's root** (one target). Label `R`. | **L1** — Aebersold: play the roots; hear the changes before they land. |
+| **Guide tones** *(default, today)* | Target | `{b3, 3, b7, 7}` of next chord | Unchanged: ring on next 3rd/7th, labels `3`/`b7`. | **L2** — Levine/Coker/Galper: quality-defining, smooth voice leading. |
+| **Common / pivot** | Field | `active ∩ next` | Notes shared with the next chord get a steady **hold** emphasis (size hold + static ring) through the lead-in, so you see what survives the change. | **L3** — voice leading: retain/re-function common tones. |
 
 ## Architecture / Data Flow
 
 The pipeline is already generic: `useEmphasisContext` →
 `buildAnimatedFretboardNotes` → `getEmphasis` → `FretboardNote` ring/size. It
-consumes target Sets/Maps and does not care *why* a note is a target. The lens
-work is mostly **(a)** a new mode atom, **(b)** making the target set
-lens-aware, and **(c)** two new emphasis branches for the field lenses.
+consumes target Sets/Maps and does not care *why* a note is a target. The work
+is **(a)** a mode atom, **(b)** lens-aware target selection (Root), **(c)** one
+new emphasis branch (Common hold).
 
 ### 1. Mode atom (`src/store/practiceLensAtoms.ts`)
 
 ```ts
-export type PracticeLens = "guide" | "root" | "arpeggio" | "common";
+export type PracticeLens = "guide" | "root" | "common";
 
 // Reintroduces the retired `practiceLens` storage key. Defaults to "guide"
 // so existing behavior is preserved on first load.
@@ -104,10 +136,10 @@ export const practiceLensAtom = atomWithStorage<PracticeLens>(
 );
 ```
 
-(`k` from `src/utils/storage.ts`, mirroring `voicingAtom` in
+(`k` from `src/utils/storage.ts`, mirroring `voicingAtom`,
 `chordOverlayAtoms.ts:177`.)
 
-### 2. Lens-aware targets (Target family)
+### 2. Lens-aware targets (Target family — Root & Guide)
 
 Generalize the hardcoded `GUIDE_TONE_RAW` (`:195`) selection into a per-lens
 member set, consumed by the existing next-chord target atom:
@@ -120,144 +152,173 @@ const TARGET_MEMBERS_BY_LENS: Record<"guide" | "root", Set<string>> = {
 ```
 
 Rename `nextChordGuideToneLabelsAtom` → **`nextTargetToneLabelsAtom`** (keep a
-thin `nextChordGuideToneLabelsAtom` alias for any external callers / tests). It
-reads `practiceLensAtom`; for a **Field** lens (`arpeggio`/`common`) it returns
-an **empty Map** (no aim ring), so the existing ring path naturally goes quiet
-and the field branch takes over. `nextChordGuideTonesAtom` → derived keys, as
-today.
+thin `nextChordGuideToneLabelsAtom` alias for external callers/tests). It reads
+`practiceLensAtom`; for the **`common`** lens it returns an **empty Map** (no aim
+ring), so the ring path goes quiet and the field branch takes over.
+`nextChordGuideTonesAtom` → derived keys, as today.
 
 The whole ring path (`leadInActiveAtom`, `planningWindowActiveAtom`,
-`getEmphasis` guide branches, `FretboardNote` two-phase ring, CSS) needs **no
-change** for Root — it is the same code with a one-element target set.
+`getEmphasis` guide branches, the two-phase ring, CSS) needs **no change** for
+Root — same code, one-element target set. Root always exists (unlike guide tones
+for power chords), so Root always has exactly one target.
 
-### 3. Field lenses (`getEmphasis` + context)
+### 3. Common/pivot lens (`getEmphasis` + context)
 
-Extend the emphasis layer (`semantics.ts`):
-
-- `TransitionRole` (`:9`) gains `"arpeggio-tone" | "hold-common"`.
-- `LeadLensContext` (`:26`) gains:
-  - `lens: PracticeLens`
-  - `activeChordTones: Set<string>` (for Arpeggio; from `activeChordTonesAtom:443`)
-  - `activeMemberLabels: Map<string,string>` (pc → `1`/`3`/`5`/`7` for the active chord)
-  - `commonTones: Set<string>` (for Common; from `commonTonesWithNextAtom:473`)
-- New branches in `getEmphasis` (`:59`), ordered after the existing guide branches:
-  - **Arpeggio:** if `lens==="arpeggio"`:
-    - `activeChordTones.has(notePc)` → full opacity, resting size,
-      `transitionRole:"arpeggio-tone"`, `guideTargetLabel = activeMemberLabels.get(pc)`.
-    - else (scale-only / color-tone) → stronger recede (e.g. `opacityBoost ≈ 0.4`).
-  - **Common:** if `lens==="common" && (leadInActive || planningActive) && commonTones.has(notePc)`
+- `TransitionRole` (`semantics.ts:9`) gains `"hold-common"`.
+- `LeadLensContext` (`:26`) gains `lens: PracticeLens` and
+  `commonTones: Set<string>` (from `commonTonesWithNextAtom:473` — currently
+  unused, kept *explicitly* "as the natural input for a future held-tone cue";
+  this is that cue).
+- New branch in `getEmphasis` (`:59`), after the guide branches:
+  - if `lens==="common" && (leadInActive || planningActive) && commonTones.has(notePc)`
     → `transitionRole:"hold-common"`, gentle `radiusBoost` hold, full opacity.
 
-`useEmphasisContext` (`useEmphasisContext.ts`) threads the new atoms;
+`useEmphasisContext` threads `lens` + `commonTonesWithNextAtom`;
 `buildAnimatedFretboardNotes` (`useAnimatedFretboardView.ts:35`) copies them into
-`LeadLensContext`. Remember the **stale-render guard**: add any new
-output-affecting field to `renderedNoteSignature` (`useAnimatedFretboardView.ts:97`).
+`LeadLensContext`. **Stale-render guard:** any new output-affecting field must be
+added to `renderedNoteSignature` (`useAnimatedFretboardView.ts:97`).
 
 ### 4. Rendering (`FretboardNote.tsx`)
 
 - **Root**: no change — `transitionRole` is still `guide-target`/`guide-preview`;
-  only the underlying target set differs. Label shows `R`/`1` via `guideTargetLabel`.
-- **Arpeggio**: `transitionRole==="arpeggio-tone"` → render the interval label
-  (reuse the `guideTargetLabel` text element) but **no ring** (a ring per chord
-  tone is the noise we are avoiding). Recede handled by the emphasis opacity.
+  only the target set differs. Label shows `R` via `guideTargetLabel`.
 - **Common**: `transitionRole==="hold-common"` → a **static** (non-contracting)
-  ring, `data-guide-phase="hold"`, reusing the planning-ring dashed style so no
-  new CSS color/shape is introduced; the size hold comes from `radiusBoost`.
+  ring, `data-guide-phase="hold"`, reusing the planning-ring dashed style (no new
+  color/shape); size hold via `radiusBoost`.
 - New `data-guide-phase="hold"` branch in `FretboardSVG.module.css` (static,
   reuses `--note-incoming` hue).
 
 ### 5. UI selector (`ChordOverlayControls.tsx`)
 
-Add a `Prop label={t("inspector.lensLabel")}` hosting a `ToggleBar` (4 options)
-bound to `practiceLensAtom`, alongside the existing Voicing control. This is
-where the retired lens control lived (`ViewTab.tsx:16` references the Chord
-inspector hosting "voicing, lens, string set, lock-to-scale"). New i18n strings
-in `src/i18n/{en,es}.ts` + `types.ts` (`inspector.lensLabel`,
-`inspector.lens.{guide,root,arpeggio,common}`).
+Add a `Prop label={t("inspector.lensLabel")}` hosting a `ToggleBar` (3 options)
+bound to `practiceLensAtom`, alongside Voicing — where the retired lens control
+lived (`ViewTab.tsx:16`). New i18n strings in `src/i18n/{en,es}.ts` + `types.ts`
+(`inspector.lensLabel`, `inspector.lens.{root,guide,common}`).
+
+## Non-Goals
+
+- **No new colors or marker shapes.** Lenses ride existing channels (ring, size,
+  opacity, label); the only ring hue stays `--note-incoming`.
+- **No change to static identity coloring.** The always-on teal 3rd/7th hue
+  (`FretboardNote.tsx:142`) is chord-tone *identity*, not a lens — it stays on
+  regardless of lens. Scale/chord color domains stay independent (`CLAUDE.md`).
+- **Playback only.** A lens changes the view only while a progression is
+  *playing* (`useEmphasisContext.ts:37` already returns `null` when not playing);
+  static fretboard renders exactly as today.
+- **No arpeggio/chord-outline lens** — already covered by the overlay + the
+  Intervals label setting (see above).
+- No per-lens configurability; fixed constants (matching the guide-tone preview).
 
 ## Constants
 
 - `LEAD_IN_PROPORTION = 0.5`, `LEAD_IN_FLOOR_MS = 600`, `PLANNING_RUNWAY_BARS = 2`
-  — all unchanged; Target lenses reuse them.
-- `ARPEGGIO_RECEDE_OPACITY ≈ 0.4` (new) — how hard non-chord-tones fade in the
-  arpeggio spotlight. (Resting recede today is `0.7`.)
+  — unchanged; Target lenses reuse them.
 - `COMMON_HOLD_RADIUS_BOOST ≈ 1.15` (new) — gentle size hold for pivot tones.
 
 ## Edge Cases
 
-- **Root lens, power chord:** root always exists → always exactly one target
-  (cleaner than guide tones, which return empty for power chords).
-- **Arpeggio lens, scale = None:** chord tones still resolve from the active
-  chord; with no scale there are simply no scale-only notes to recede.
-- **Common lens, no common tones** (fully chromatic change): empty set → no hold
-  emphasis that step. Acceptable (truthfully: nothing survives).
-- **Last step, loop disabled:** Target/Common lenses already return empty next
-  sets (`nextChordTonesAtom:426`); Arpeggio still spotlights the final chord.
-- **Not playing:** every lens is inert (playback-only scope) — `useEmphasisContext`
-  already returns `null` when `!playing` (`useEmphasisContext.ts:37`).
-- **Lens switch mid-playback:** atoms recompute on the next frame-stable
-  boundary; the ring/spotlight swaps at the next step (no mid-step flschange needed).
+- **Root, power chord:** root always exists → exactly one target (cleaner than
+  guide tones, which return empty for power chords).
+- **Common, no common tones** (fully chromatic change): empty set → no hold that
+  step. Truthful — nothing survives.
+- **Common, ii→V example:** Dm7→G7 share D and F → both light up as holds in the
+  lead-in, demonstrating the re-functioning pivot the pedagogy describes.
+- **Last step, loop disabled:** Target/Common already see empty next sets
+  (`nextChordTonesAtom:426`).
+- **Not playing:** every lens inert (playback-only scope).
+- **Lens switch mid-playback:** atoms recompute at the next frame-stable
+  boundary; the cue swaps at the next step.
 
 ## Testing
 
-- **Pure / atom:** `practiceLensAtom` default + persistence;
-  `nextTargetToneLabelsAtom` returns `{1}`-based targets for `root`, `{b3,3,b7,7}`
-  for `guide`, empty for field lenses; alias parity for
-  `nextChordGuideToneLabelsAtom`.
-- **Emphasis (`semantics.test.ts`):** `getEmphasis` returns `guide-*` for
-  root/guide; `arpeggio-tone` + label for active chord tones and hard recede for
-  scale-only under `arpeggio`; `hold-common` only in lead-in/planning under
-  `common`; resting otherwise.
-- **Component (`FretboardNote.test.tsx`):** Root shows ring + `R` label;
-  Arpeggio shows interval labels and **no** ring; Common shows static hold ring;
-  guide unchanged.
-- **Signature guard:** assert new fields are in `renderedNoteSignature` (a stale
-  note would otherwise render the wrong lens).
-- **Visual regression:** new `fretboard-svg` / `app-overlays` scenarios per lens
-  (darwin + linux). The default `guide` scenarios must be **byte-identical**
-  (proves no regression to today's behavior).
-- **a11y:** rings/labels stay `aria-hidden`; the new ToggleBar is keyboard- and
+- **Pure/atom:** `practiceLensAtom` default + persistence;
+  `nextTargetToneLabelsAtom` → `{1}` for `root`, `{b3,3,b7,7}` for `guide`, empty
+  for `common`; alias parity for `nextChordGuideToneLabelsAtom`.
+- **Emphasis (`semantics.test.ts`):** `getEmphasis` → `guide-*` for root/guide;
+  `hold-common` only in lead-in/planning under `common`; resting otherwise.
+- **Component (`FretboardNote.test.tsx`):** Root shows ring + `R` label; Common
+  shows static hold ring; guide unchanged.
+- **Signature guard:** assert new fields in `renderedNoteSignature`.
+- **Visual regression:** new `fretboard-svg`/`app-overlays` scenarios per lens
+  (darwin + linux). Default `guide` scenarios must be **byte-identical** (proves
+  no regression to today).
+- **a11y:** rings/labels stay `aria-hidden`; the ToggleBar is keyboard- and
   screen-reader-labeled.
 
 ## Rollout / Verification
 
 Mandatory before PR: `pnpm run lint`, `pnpm run test`, `pnpm run build`. Manually
-verify each lens at a moderate BPM: Root rings the next root; Guide is unchanged;
-Arpeggio spotlights each chord's R-3-5-7 with labels and recedes the scale;
-Common holds the pivot tones into the change. Refresh visual snapshots via
-`pnpm run test:visual:update` and regenerate linux baselines.
+verify each lens at moderate BPM: Root rings the next root; Guide unchanged;
+Common holds the shared tones into a ii→V change. Refresh visual snapshots via
+`pnpm run test:visual:update` + linux baselines.
+
+## Future Work
+
+- **Approach-note / enclosure lens (L4).** Preview the chromatic neighbor(s)
+  leading into the next guide tone (half-step from below/above), per Galper's
+  forward-motion target-note framing and bebop enclosure pedagogy. Needs a new
+  emphasis treatment for the *approach* note (it is outside the chord, often
+  outside the scale) and is the natural extension once the first three lenses
+  ship.
+- **Leveled auto-advance.** The lenses form a curriculum (L1→L4); a future "level
+  up" flow could sequence a learner through them. Out of scope here.
 
 ## Open Questions
 
-1. **Selector home & shape** — `ToggleBar` in `ChordOverlayControls` (4 chips)
-   vs. a `LabeledSelect` (more room for names). Lean: ToggleBar with short
-   labels (Root / Guide / Arp / Common), full names via tooltip/i18n.
-2. **Default lens** — keep `guide` (preserves current behavior; recommended) vs.
-   `root` (gentlest on-ramp for new users).
-3. **Common-tone timing** — show the hold across the whole active chord, or only
-   in the planning/lead-in window (spec assumes lead-in/planning, mirroring the
-   "as the change approaches" framing).
-4. **Arpeggio + ring combo** — pure spotlight (spec's choice) vs. also keeping a
-   single ring on the next root for change-tracking. Spec keeps it pure to avoid
-   mixing paradigms; revisit if testing shows users lose the pulse.
+1. **Selector shape** — `ToggleBar` (3 chips: Root / Guide / Common) vs.
+   `LabeledSelect`. Lean: ToggleBar, full names via i18n tooltip.
+2. **Default lens** — keep `guide` (zero behavior change; recommended) vs. `root`
+   (gentlest on-ramp).
+3. **Common-tone timing** — hold across the whole active chord, or only in the
+   planning/lead-in window (spec assumes lead-in/planning, mirroring "as the
+   change approaches").
 
 ## Files Touched
 
 - `src/store/practiceLensAtoms.ts` — `PracticeLens`, `practiceLensAtom`,
-  `TARGET_MEMBERS_BY_LENS`, lens-aware `nextTargetToneLabelsAtom` (+ alias),
-  active-member-labels atom, wire `commonTonesWithNextAtom` into context inputs.
+  `TARGET_MEMBERS_BY_LENS`, lens-aware `nextTargetToneLabelsAtom` (+ alias), wire
+  `commonTonesWithNextAtom` into context inputs.
 - `src/components/FretboardSVG/utils/semantics.ts` — `TransitionRole`,
-  `LeadLensContext` fields, `getEmphasis` field-lens branches, recede/hold consts.
+  `LeadLensContext` fields, `getEmphasis` common-hold branch, hold const.
 - `src/components/FretboardSVG/hooks/useEmphasisContext.ts` — thread lens +
-  active/common atoms.
+  common atom.
 - `src/components/FretboardSVG/hooks/useAnimatedFretboardView.ts` — copy new
   context fields; extend `renderedNoteSignature`.
-- `src/components/FretboardSVG/FretboardNote.tsx` — arpeggio label (no ring),
-  common hold ring (`data-guide-phase="hold"`).
-- `src/components/FretboardSVG/FretboardSVG.module.css` — `[data-guide-phase="hold"]`
-  static ring (reuses incoming hue).
+- `src/components/FretboardSVG/FretboardNote.tsx` — common hold ring
+  (`data-guide-phase="hold"`).
+- `src/components/FretboardSVG/FretboardSVG.module.css` —
+  `[data-guide-phase="hold"]` static ring.
 - `src/components/ChordOverlayControls/ChordOverlayControls.tsx` — lens ToggleBar.
 - `src/i18n/{en,es}.ts` + `types.ts` — lens labels.
 - Co-located tests + `e2e/` snapshots.
+
+## References
+
+Pedagogy grounding for the lens ladder (roots → guide tones → common/pivot →
+chromatic approach):
+
+- Hal Galper, *Forward Motion: From Bach to Bebop* — target notes resolving to
+  chord tones on downbeats; lines pointing toward future targets.
+  <https://halgalper.com/articles/understandingforwardmotion/> ·
+  <https://www.goodreads.com/book/show/1372844.Forward_Motion>
+- Mark Levine, *The Jazz Theory Book* (Sher Music, 1995) — guide tones (3rds &
+  7ths) and voice leading through changes.
+- Jerry Coker, *Patterns for Jazz*, *Improvising Jazz*, and *Elements of the
+  Jazz Language for the Developing Improvisor* — guide-tone lines; approach
+  notes / enclosures.
+- Jamey Aebersold, *Volume 1: How To Play Jazz & Improvise* — the progressive
+  ladder (roots → scale → triad → chord tones).
+  <https://www.alfred.com/jamey-aebersold-jazz-volume-1-how-to-play-jazz-and-improvise/p/24-V01DS/>
+  · <https://www.midwestclinic.org/user_files_1/pdfs/clinicianmaterials/2008/jamey_aebersold.pdf>
+- LearnJazzStandards, "Use Guide-Tones to Navigate Chord Changes" —
+  <https://www.learnjazzstandards.com/blog/learning-jazz/jazz-theory/use-guide-tones-navigate-chord-changes/>
+- Fundamental Changes, "Using Guide Tones in the Blues (3rds and 7ths)" —
+  <https://www.fundamental-changes.com/using-guide-tones-blues-3rds-7ths/>
+- The Jazz Piano Site, "Voice Leading" (common tones / re-functioning; Dm7↔G7
+  example) — <https://www.thejazzpianosite.com/jazz-piano-lessons/jazz-chord-progressions/voice-leading/>
+- Anton Schwartz, "Approaches & Enclosures" —
+  <https://antonjazz.com/2019/07/approaches-enclosures/>
+- Jazz Lesson Videos, "15 Approach Note and Enclosure Exercises Every Jazz
+  Musician Should Know" —
+  <https://www.jazzlessonvideos.com/post/15-approach-note-and-enclosure-exercises-that-every-jazz-musician-should-know>
 </content>
-</invoke>
