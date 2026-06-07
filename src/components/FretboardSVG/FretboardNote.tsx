@@ -27,15 +27,13 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
-// Arc length (in pathLength=100 units) of a single tick notch on the ring.
-const TICK_ARC_LEN = 1.2;
-
-// Angular offset (degrees) applied to BOTH the drain origin and the ticks so
-// they rotate together (alignment preserved). It moves the ticks off the
-// 3-o'clock / 9-o'clock cardinal points — where the horizontal string crosses
-// the ring — onto the diagonals (1:30 / 4:30 / 7:30 / 10:30). Without it a tick
-// lands on the string wire and the two white marks merge into a stray streak.
-const RING_ANGLE_OFFSET_DEG = 45;
+// Radial LENGTH (user units) of a beat-tick mark — how far it spans across the
+// ring band. Each tick is drawn as an explicit <line> via trig (not a dash on a
+// circle), so every tick is identical geometry rotated to its own angle: crisp
+// and consistent, with no sub-pixel dash seam (the old arc-dash made the anchor
+// tick render thicker). ~2.4 stays inside the green core (2.75) so the mark is
+// contained within the ring band and never reads as a spoke sticking into wood.
+const TICK_LEN = 2.4;
 
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
@@ -225,39 +223,41 @@ export const FretboardNote = memo(function FretboardNote({
               cy={cy}
               r={ringR}
               pathLength={100}
-              transform={`rotate(${RING_ANGLE_OFFSET_DEG} ${cx} ${cy})`}
             />
             {/* On-beat flash — a bright ring that blooms outward as the core
                 drains empty, giving a sharp coincidence landmark exactly on the
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
-            {/* Static beat-tick notches — bright pips on the halo track that the
-                green core sweeps past, giving a countable "segment done" read.
-                Only on PRIMARY (in-region) targets, and only when the step has
-                enough beats to warrant ticks (countdownTicks empty otherwise).
-                Drawn with the SAME pathLength=100 circle parametrization AND the
-                same rotate() offset as the drain core, so each notch sits exactly
-                where the hand is at that window-fraction (alignment preserved)
-                while clearing the horizontal string at 3/9 o'clock.
-                NOTE: if a snapshot shows the notches mirrored relative to the
-                drain hand, flip the sign of strokeDashoffset (use `100 * f`). */}
+            {/* Static beat-tick marks — short BRIGHT radial lines crossing the
+                ring at each beat boundary, giving a countable "segment done"
+                read. Only on PRIMARY (in-region) targets, and only when the step
+                has enough beats to warrant ticks (countdownTicks empty otherwise).
+                Each is an explicit <line> at angle 2π·f (matching the drain's
+                origin at 3 o'clock, sweeping clockwise), so all ticks are
+                identical geometry — crisp and consistent, no dash-seam artifact.
+                At the 4-beat cardinal positions the lines are vertical (12/6) and
+                horizontal (3/9). */}
             {note.isInRegion &&
-              countdownTicks?.map((f, i) => (
-                <circle
-                  key={`tick-${i}`}
-                  className={styles["note-guide-ring-tick"]}
-                  data-guide-tick="true"
-                  cx={cx}
-                  cy={cy}
-                  r={ringR}
-                  pathLength={100}
-                  strokeDasharray={`${TICK_ARC_LEN} ${100 - TICK_ARC_LEN}`}
-                  strokeDashoffset={-100 * f}
-                  transform={`rotate(${RING_ANGLE_OFFSET_DEG} ${cx} ${cy})`}
-                  aria-hidden="true"
-                />
-              ))}
+              countdownTicks?.map((f, i) => {
+                const a = 2 * Math.PI * f;
+                const cos = Math.cos(a);
+                const sin = Math.sin(a);
+                const inner = ringR - TICK_LEN / 2;
+                const outer = ringR + TICK_LEN / 2;
+                return (
+                  <line
+                    key={`tick-${i}`}
+                    className={styles["note-guide-ring-tick"]}
+                    data-guide-tick="true"
+                    x1={cx + inner * cos}
+                    y1={cy + inner * sin}
+                    x2={cx + outer * cos}
+                    y2={cy + outer * sin}
+                    aria-hidden="true"
+                  />
+                );
+              })}
           </motion.g>
         )}
       </AnimatePresence>
