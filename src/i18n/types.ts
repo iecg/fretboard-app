@@ -146,8 +146,6 @@ export interface Dictionary {
     interval: string;
     lockedAnnouncement: string;
     noteLabels: string;
-    longPressToAdd: string;
-    shiftClickToAdd: string;
     showConsecutiveSteps: string;
     pairMembersConnected: string;
     quality: string;
@@ -159,8 +157,6 @@ export interface Dictionary {
     disabled: string;
     off: string;
     on: string;
-    shapeHintTouch: string;
-    shapeHintPointer: string;
     customChordHint: string;
     diatonicDefaultHint: string;
     manualQualityHint: string;

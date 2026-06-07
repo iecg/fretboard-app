@@ -125,7 +125,7 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     expect(screen.getByRole("combobox", { name: /pattern/i })).toHaveTextContent("CAGED");
   });
 
-  it("handles shift-click multi-select for CAGED shapes", () => {
+  it("selects a single CAGED shape on click (no multi-select)", () => {
     const store = createStore();
     act(() => {
       store.set(fingeringPatternAtom, "caged");
@@ -139,11 +139,66 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
     );
 
     const aButton = screen.getByText("A");
+    // shiftKey is ignored now — selection always replaces.
     fireEvent.click(aButton, { shiftKey: true });
 
     const result = store.get(cagedShapesAtom);
-    expect(result.has("C")).toBe(true);
     expect(result.has("A")).toBe(true);
+    expect(result.has("C")).toBe(false);
+    expect(result.size).toBe(1);
+  });
+
+  it("does not render an 'All' shape button", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+    });
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+    expect(screen.queryByRole("button", { name: "All" })).toBeNull();
+  });
+
+  it("selects a shape on plain click", () => {
+    const store = createStore();
+    act(() => {
+      store.set(fingeringPatternAtom, "caged");
+      store.set(cagedShapesAtom, new Set<CagedShape>(["C"]));
+    });
+
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+
+    fireEvent.click(screen.getByText("G"));
+
+    const result = store.get(cagedShapesAtom);
+    expect([...result]).toEqual(["G"]);
+  });
+
+  it("shows exactly one active shape by default (E)", () => {
+    const store = createStore();
+    act(() => {
+      localStorage.clear();
+      store.set(fingeringPatternAtom, "caged");
+      // no cagedShapes set → atom default {"E"}
+    });
+
+    render(
+      <Provider store={store}>
+        <FingeringPatternControls />
+      </Provider>
+    );
+
+    const pressed = screen
+      .getAllByRole("button", { pressed: true })
+      .filter((b) => ["C", "A", "G", "E", "D"].includes(b.textContent?.trim() ?? ""));
+    expect(pressed).toHaveLength(1);
+    expect(pressed[0]).toHaveTextContent("E");
   });
 
   describe("fingering patterns", () => {
@@ -497,20 +552,12 @@ describe("FingeringPatternControls/FingeringPatternControls", () => {
   });
 
   describe("reference design shape controls", () => {
-    it("renders the Shift+click help text in the Shape label row", () => {
-      renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
-      const shapeHelp = screen.getByText("Shift+click to add shapes");
-      const shapeCell = shapeHelp.closest("[data-span='9']");
-      expect(shapeCell).toBeInTheDocument();
-      expect(shapeCell?.querySelector("p")).toBeNull();
-    });
-
     it("renders CAGED shape controls composed from the shared chip toggle chrome", () => {
       renderWithAtoms(<FingeringPatternControls hideHeader />, [[fingeringPatternAtom, "caged"]]);
       const group = screen.getByRole("group", { name: "Shape" });
-      // Preserves its local class for the multi-select interaction hooks,
-      // and now composes the shared chip-variant chrome so the visual
-      // treatment stays in sync with ChordStringSetToggleBar.
+      // Keeps its local shapeToggleBar class while composing the shared
+      // chip-variant chrome so the single-select shape picker stays in
+      // visual sync with ChordStringSetToggleBar.
       expect(group.className).toMatch(/shapeToggleBar/);
       expect(group.className).toMatch(/toggle-group/);
       expect(group.className).toMatch(/toggle-group--chip/);

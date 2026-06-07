@@ -1,9 +1,7 @@
 /* FingeringPatternControls component styles */
 
-/* Visual chrome shared with the chord string-set toggle bar. The shape toggle
-   keeps its own JSX (long-press / shift-click multi-select), but the styling
-   composes from shared.module.css's chip variant so both surfaces stay in
-   visual sync without duplication. */
+/* Single-select shape picker. Composes shared.module.css's chip variant so it
+   stays in visual sync with the chord string-set toggle bar without duplication. */
 .shapeToggleBar {
   composes: toggle-group from '../shared/shared.module.css';
   composes: toggle-group--chip from '../shared/shared.module.css';
@@ -14,10 +12,3 @@
   composes: toggle-btn--chip from '../shared/shared.module.css';
 }
 
-/* Visual "charging" feedback while a long press is building up */
-[data-pressing] {
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--neon-cyan) 55%, transparent),
-    0 0 10px color-mix(in srgb, var(--neon-cyan) 22%, transparent) !important;
-  transition: box-shadow 0.45s ease !important;
-}
