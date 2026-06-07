@@ -5,7 +5,6 @@ import { HelpDiagram } from "./HelpDiagram";
 import type { DiagramId } from "../helpContent";
 
 const IDS: DiagramId[] = [
-  "layoutMap",
   "noteRoleLegend",
   "shapes",
   "voiceLeading",
@@ -18,9 +17,10 @@ describe("HelpModal/diagrams/HelpDiagram", () => {
     expect(container.firstChild).not.toBeNull();
   });
 
-  it("renders SVG diagrams with an img role", () => {
-    render(<HelpDiagram id="layoutMap" />);
-    expect(screen.getByRole("img")).toBeInTheDocument();
+  it("renders the shapes diagram as labelled mini-neck images", () => {
+    render(<HelpDiagram id="shapes" />);
+    // One <svg role="img"> per mini-neck (CAGED box + 3NPS).
+    expect(screen.getAllByRole("img").length).toBeGreaterThanOrEqual(2);
   });
 
   it("renders the shortcut table with one row per shortcut", () => {

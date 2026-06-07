@@ -1,5 +1,4 @@
 import type { DiagramId } from "../helpContent";
-import { LayoutMapDiagram } from "./LayoutMapDiagram";
 import { NoteRoleLegendDiagram } from "./NoteRoleLegendDiagram";
 import { ShapeDiagram } from "./ShapeDiagram";
 import { VoiceLeadingDiagram } from "./VoiceLeadingDiagram";
@@ -7,8 +6,6 @@ import { ShortcutTableDiagram } from "./ShortcutTableDiagram";
 
 export function HelpDiagram({ id }: { id: DiagramId }) {
   switch (id) {
-    case "layoutMap":
-      return <LayoutMapDiagram />;
     case "noteRoleLegend":
       return <NoteRoleLegendDiagram />;
     case "shapes":

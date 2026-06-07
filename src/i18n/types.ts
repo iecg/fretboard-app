@@ -148,13 +148,11 @@ export interface Dictionary {
       inspector: string;
       noteColors: string;
       noteLabels: string;
-      degreeStrip: string;
       hearNotes: string;
-      choosingScale: string;
+      choosingKey: string;
       patterns: string;
       chordsVoicings: string;
-      circle: string;
-      diatonic: string;
+      chords: string;
       buildProgression: string;
       backingTrack: string;
       playback: string;
@@ -174,26 +172,20 @@ export interface Dictionary {
       noteColorsBody: string;
       noteLabelsLabel: string;
       noteLabelsBody: string;
-      degreeStripBody: string;
       hearNotesBody: string;
-      rootLabel: string;
-      rootBody: string;
-      scaleLabel: string;
-      scaleBody: string;
-      parRelLabel: string;
-      parRelBody: string;
-      patternAllLabel: string;
-      patternAllBody: string;
+      keyLabel: string;
+      keyBody: string;
+      patternLabel: string;
+      patternBody: string;
       patternCagedLabel: string;
       patternCagedBody: string;
       patternNpsLabel: string;
       patternNpsBody: string;
-      fullChordsLabel: string;
-      fullChordsBody: string;
       voicingLabel: string;
       voicingBody: string;
-      circleBody: string;
-      diatonicBody: string;
+      stringSetLabel: string;
+      stringSetBody: string;
+      chordsBody: string;
       presetLabel: string;
       presetBody: string;
       sequenceLabel: string;
@@ -205,8 +197,6 @@ export interface Dictionary {
       transportBody: string;
       voiceLeadingLabel: string;
       voiceLeadingBody: string;
-      practiceLabel: string;
-      practiceBody: string;
       settingsBody: string;
       shortcutsBody: string;
     };
@@ -217,7 +207,7 @@ export interface Dictionary {
       scaleNote: string;
       resolution: string;
     };
-    voiceLeading: { anticipation: string; hold: string; departing: string };
+    voiceLeading: { anticipation: string; hold: string };
     shortcuts: {
       play: string;
       stop: string;
@@ -231,7 +221,6 @@ export interface Dictionary {
       scale: string;
       chord: string;
     };
-    layoutDiagram: { mobile: string; desktop: string };
   };
   controls: {
     shape: string;

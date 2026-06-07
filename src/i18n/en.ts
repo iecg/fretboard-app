@@ -154,13 +154,11 @@ export const en: Dictionary = {
       inspector: "The Inspector",
       noteColors: "Note colors",
       noteLabels: "Note labels",
-      degreeStrip: "Degree strip",
       hearNotes: "Hear the notes",
-      choosingScale: "Choosing a scale",
+      choosingKey: "Key & scale",
       patterns: "Fingering patterns",
-      chordsVoicings: "Chords & voicings",
-      circle: "Circle of Fifths",
-      diatonic: "Diatonic chords",
+      chordsVoicings: "Chord voicing",
+      chords: "Chords",
       buildProgression: "Build a progression",
       backingTrack: "Backing track",
       playback: "Playback",
@@ -169,74 +167,62 @@ export const en: Dictionary = {
     },
     items: {
       introBody:
-        "FretFlow is an interactive guitar fretboard and music-theory tool. Pick a root note, a scale, and an optional chord overlay to see notes and intervals light up across the neck.",
-      layoutMobileLabel: "Mobile",
+        "FretFlow is an interactive guitar fretboard and music-theory tool. Set a key and scale to light up the neck, add a chord or a whole progression, and play it back with a backing track.",
+      layoutMobileLabel: "Phones",
       layoutMobileBody:
-        "The fretboard fills the screen. A tab bar switches the Inspector between the Overlay panel (scale, chord, shapes, labels) and the Song panel (progression and backing track).",
-      layoutDesktopLabel: "Tablet & desktop",
+        "The fretboard fills the screen, and a bottom tab bar switches the Inspector between the Overlay panel and the Song panel.",
+      layoutDesktopLabel: "Larger screens",
       layoutDesktopBody:
         "The Inspector sits beside the fretboard as cards, so every control is visible at once.",
       inspectorOverlayLabel: "Overlay tab",
       inspectorOverlayBody:
-        "Builds what you see on the fretboard: scale, chord, fingering shapes, voicings, and note labels.",
+        "What you see on the fretboard: the scale's fingering pattern and the chord's voicing.",
       inspectorSongLabel: "Song tab",
       inspectorSongBody:
-        "Builds what you hear: key, progression preset, sequence, tempo, and backing track.",
+        "What you hear: the key and scale, the chord progression, tempo, and backing track.",
       noteColorsBody:
-        "Every dot is colored by its musical role. The legend below matches the colors on your fretboard.",
-      noteLabelsLabel: "Notes / Intervals / None",
+        "Every dot is colored by its musical role. The legend below matches the colors on the fretboard.",
+      noteLabelsLabel: "Note labels",
       noteLabelsBody:
-        "Choose what shows inside each dot — note names, interval numbers, or nothing for a clean board.",
-      degreeStripBody:
-        "The strip above the fretboard lists the scale's notes with their interval below each one. Chord tones highlight when a chord is active.",
+        "In Settings (the gear icon) → Display, choose what shows inside each dot: note names, intervals, or nothing for a clean board.",
       hearNotesBody:
-        "Tap any dot to hear it. Use the speaker icon in the header to mute or unmute.",
-      rootLabel: "Root",
-      rootBody:
-        "Tap a note in the grid, or a wedge in the Circle of Fifths, to set the tonic.",
-      scaleLabel: "Scale",
-      scaleBody:
-        "Pick a family and mode, then step through modes or keys with the arrows.",
-      parRelLabel: "Parallel / Relative",
-      parRelBody:
-        "Parallel keeps the same root while you browse modes; Relative cycles through related keys.",
-      patternAllLabel: "All",
-      patternAllBody: "Lights up every scale note, with no position boxes.",
+        "Tap any dot to hear it. The speaker icon in the header mutes or unmutes audio.",
+      keyLabel: "Key & scale",
+      keyBody:
+        "Set the root note and scale in the Song tab. Scales are grouped into major modes, pentatonics, blues, and harmonic / melodic minor.",
+      patternLabel: "Pattern",
+      patternBody:
+        "In the Overlay tab's Scale card, the Pattern control maps the scale to the neck: None, CAGED, 3NPS, 1-String, or 2-Strings.",
       patternCagedLabel: "CAGED",
       patternCagedBody:
-        "Overlapping position shapes across the neck. Click a shape (C A G E D) to isolate it; Shift-click to combine. Turn on Shape Labels to letter each box.",
+        "Shows position-based box shapes. Click a shape (C A G E D) to isolate it.",
       patternNpsLabel: "3NPS",
       patternNpsBody:
-        "Three notes per string. Use the position selector (1–7 or All) to isolate one hand position.",
-      fullChordsLabel: "Full Chords",
-      fullChordsBody:
-        "Shows canonical CAGED chord voicings instead of scattered chord tones.",
+        "Three notes per string. Use the position selector (1–7) to isolate one hand position.",
       voicingLabel: "Voicing",
       voicingBody:
-        "Off, Full, or Close — plus a string set (Bass to Treble) to focus the voicing on part of the neck.",
-      circleBody:
-        "Tap a key to change the root. Degree markers show how the scale's intervals map onto each key. On mobile, open it from the Overlay tab.",
-      diatonicBody:
-        "Open Chords in the Overlay tab and pick a chord by Roman numeral; its tones highlight in a distinct color. To change the root or quality, edit the active step in the Song tab.",
+        "In the Overlay tab's Chord card, Voicing sets how the chord is drawn on the neck: Off, Full, or Close.",
+      stringSetLabel: "String set",
+      stringSetBody:
+        "With Close voicing and an active chord, pick which string window the voicing sits on.",
+      chordsBody:
+        "The chord highlighted on the neck is the active step of your progression in the Song tab. Edit a step's root and quality there; the Overlay tab's Chord card controls how it's voiced.",
       presetLabel: "Preset",
       presetBody:
-        "Start from a preset grouped by genre — Pop / Rock, Blues, Jazz, Folk, Modal, or Minor.",
+        "Start from a preset, grouped by genre — Pop / Rock, Blues, Jazz, Folk, Modal, or Minor.",
       sequenceLabel: "Sequence",
       sequenceBody:
-        "Add, remove, and reorder steps. Each step is one chord the song loops through.",
+        "Add, remove, reorder, or duplicate steps. Each step is one chord the song plays through.",
       timeLabel: "Time & tempo",
       timeBody: "Set the time signature and tempo for the whole song.",
       backingTrackBody:
-        "Generated accompaniment plays along with the progression. Toggle Chord, Bass, Drums, and the Metronome independently, and pick a pattern per instrument.",
+        "A generated backing track plays along with the progression. Toggle Chord, Bass, Drums, and the Metronome from the transport bar, and pick a pattern per instrument in the Song tab.",
       transportLabel: "Transport",
       transportBody:
-        "Play, pause, and stop from the header. Loop repeats the progression. When stopped, step through chords with the arrow keys.",
-      voiceLeadingLabel: "Voice leading",
+        "Play, pause, and stop from the header. Loop repeats the progression; when stopped, the arrow keys step between chords.",
+      voiceLeadingLabel: "Guide-tone preview",
       voiceLeadingBody:
-        "As chords change, the fretboard glows: anticipation (the next chord's guide tones before the change), hold (common tones), and departing (tones that resolve away).",
-      practiceLabel: "Practice cues",
-      practiceBody:
-        "The practice bar shows coaching cues — Land on (all chord tones) and Tension (chord tones outside the scale, with the nearest in-scale target). It never hides fretboard notes.",
+        "Before each chord change, the next chord's guide tones (its 3rd and 7th) light up and a ring counts down to the change. Tones the two chords share stay lit, so you can see the line move.",
       settingsBody:
         "Open the gear icon for Tuning, Zoom, Fret Range, Accidentals, Enharmonic Display, Sound Quality, Theme, and Language. Use Reset to restore defaults.",
       shortcutsBody: "These work whenever you're not typing in a field.",
@@ -246,12 +232,11 @@ export const en: Dictionary = {
       guideTone: "Guide tone (3rd / 7th)",
       chordTone: "Chord tone",
       scaleNote: "Scale note",
-      resolution: "Resolution target",
+      resolution: "Next target",
     },
     voiceLeading: {
-      anticipation: "Anticipation",
-      hold: "Hold",
-      departing: "Departing",
+      anticipation: "Next guide tone",
+      hold: "Held tone",
     },
     shortcuts: {
       play: "Play / pause",
@@ -265,10 +250,6 @@ export const en: Dictionary = {
       steps: "Previous / next step",
       scale: "Show / hide scale",
       chord: "Show / hide chord",
-    },
-    layoutDiagram: {
-      mobile: "Mobile",
-      desktop: "Desktop",
     },
   },
   controls: {

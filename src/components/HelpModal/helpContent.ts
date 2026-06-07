@@ -1,6 +1,5 @@
 // Drives the help modal: tabs → sections → items, each referencing i18n keys.
 export type DiagramId =
-  | "layoutMap"
   | "noteRoleLegend"
   | "shapes"
   | "voiceLeading"
@@ -41,7 +40,6 @@ export const HELP_TABS: HelpTab[] = [
       },
       {
         titleKey: "help.sections.layout",
-        diagram: "layoutMap",
         items: [
           { labelKey: "help.items.layoutMobileLabel", bodyKey: "help.items.layoutMobileBody" },
           { labelKey: "help.items.layoutDesktopLabel", bodyKey: "help.items.layoutDesktopBody" },
@@ -70,10 +68,6 @@ export const HELP_TABS: HelpTab[] = [
         items: [{ labelKey: "help.items.noteLabelsLabel", bodyKey: "help.items.noteLabelsBody" }],
       },
       {
-        titleKey: "help.sections.degreeStrip",
-        items: [{ bodyKey: "help.items.degreeStripBody" }],
-      },
-      {
         titleKey: "help.sections.hearNotes",
         items: [{ bodyKey: "help.items.hearNotesBody" }],
       },
@@ -84,18 +78,14 @@ export const HELP_TABS: HelpTab[] = [
     labelKey: "help.tabs.shapes",
     sections: [
       {
-        titleKey: "help.sections.choosingScale",
-        items: [
-          { labelKey: "help.items.rootLabel", bodyKey: "help.items.rootBody" },
-          { labelKey: "help.items.scaleLabel", bodyKey: "help.items.scaleBody" },
-          { labelKey: "help.items.parRelLabel", bodyKey: "help.items.parRelBody" },
-        ],
+        titleKey: "help.sections.choosingKey",
+        items: [{ labelKey: "help.items.keyLabel", bodyKey: "help.items.keyBody" }],
       },
       {
         titleKey: "help.sections.patterns",
         diagram: "shapes",
         items: [
-          { labelKey: "help.items.patternAllLabel", bodyKey: "help.items.patternAllBody" },
+          { labelKey: "help.items.patternLabel", bodyKey: "help.items.patternBody" },
           { labelKey: "help.items.patternCagedLabel", bodyKey: "help.items.patternCagedBody" },
           { labelKey: "help.items.patternNpsLabel", bodyKey: "help.items.patternNpsBody" },
         ],
@@ -103,13 +93,9 @@ export const HELP_TABS: HelpTab[] = [
       {
         titleKey: "help.sections.chordsVoicings",
         items: [
-          { labelKey: "help.items.fullChordsLabel", bodyKey: "help.items.fullChordsBody" },
           { labelKey: "help.items.voicingLabel", bodyKey: "help.items.voicingBody" },
+          { labelKey: "help.items.stringSetLabel", bodyKey: "help.items.stringSetBody" },
         ],
-      },
-      {
-        titleKey: "help.sections.circle",
-        items: [{ bodyKey: "help.items.circleBody" }],
       },
     ],
   },
@@ -118,8 +104,8 @@ export const HELP_TABS: HelpTab[] = [
     labelKey: "help.tabs.play",
     sections: [
       {
-        titleKey: "help.sections.diatonic",
-        items: [{ bodyKey: "help.items.diatonicBody" }],
+        titleKey: "help.sections.chords",
+        items: [{ bodyKey: "help.items.chordsBody" }],
       },
       {
         titleKey: "help.sections.buildProgression",
@@ -139,7 +125,6 @@ export const HELP_TABS: HelpTab[] = [
         items: [
           { labelKey: "help.items.transportLabel", bodyKey: "help.items.transportBody" },
           { labelKey: "help.items.voiceLeadingLabel", bodyKey: "help.items.voiceLeadingBody" },
-          { labelKey: "help.items.practiceLabel", bodyKey: "help.items.practiceBody" },
         ],
       },
     ],

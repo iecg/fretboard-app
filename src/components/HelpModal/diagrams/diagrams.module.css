@@ -17,12 +17,6 @@
   color: var(--chrome-fg);
 }
 
-.diagram {
-  margin: var(--space-2) 0 var(--space-3);
-  width: 100%;
-  height: auto;
-}
-
 .shapeRow {
   display: flex;
   flex-wrap: wrap;

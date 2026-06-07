@@ -75,6 +75,36 @@ describe("HelpModal/HelpModal", () => {
     expect(screen.queryByText(/Lead lens/i)).not.toBeInTheDocument();
   });
 
+  it("does not reference features that no longer exist in the app", async () => {
+    const user = userEvent.setup();
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    // Ghosts found in the code-grounding audit — none of these UIs exist anymore.
+    const forbidden = [
+      /circle of fifths/i,
+      /parallel/i,
+      /degree strip/i,
+      /full chords/i,
+      /shape labels/i,
+      /practice bar/i,
+      /land on/i,
+      /note grid/i,
+    ];
+    const tabNames = [
+      en.help.tabs.start,
+      en.help.tabs.notes,
+      en.help.tabs.shapes,
+      en.help.tabs.play,
+      en.help.tabs.settings,
+    ];
+    for (const tabName of tabNames) {
+      await user.click(screen.getByRole("tab", { name: tabName }));
+      const text = screen.getByTestId("help-modal-content").textContent ?? "";
+      for (const re of forbidden) {
+        expect(text, `${tabName}: ${re}`).not.toMatch(re);
+      }
+    }
+  });
+
   it("shows the What's-new notice when the current id has not been seen", () => {
     const store = makeAtomStore([[helpWhatsNewSeenAtom, ""]]);
     renderWithStore(<HelpModal isOpen={true} onClose={vi.fn()} />, store);
