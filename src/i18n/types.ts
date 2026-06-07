@@ -231,7 +231,7 @@ export interface Dictionary {
       scale: string;
       chord: string;
     };
-    layoutDiagram: { mobile: string; desktop: string; overlay: string; song: string };
+    layoutDiagram: { mobile: string; desktop: string };
   };
   controls: {
     shape: string;

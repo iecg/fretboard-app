@@ -1,4 +1,4 @@
-import { type RefObject, useState } from "react";
+import { type RefObject, type KeyboardEvent as ReactKeyboardEvent, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useAtom } from "jotai";
 import { X } from "lucide-react";
@@ -11,6 +11,8 @@ import { HELP_TABS, CURRENT_WHATS_NEW_ID, type HelpTab } from "./helpContent";
 import { HelpDiagram } from "./diagrams/HelpDiagram";
 import styles from "./HelpModal.module.css";
 import sharedStyles from "../shared/shared.module.css";
+
+const TAB_IDS = HELP_TABS.map((tab) => tab.id);
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -51,6 +53,22 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
 
   const activeTab = HELP_TABS.find((tab) => tab.id === activeTabId) ?? HELP_TABS[0];
   const showWhatsNew = whatsNewSeen !== CURRENT_WHATS_NEW_ID;
+
+  function handleTabsKeyDown(e: ReactKeyboardEvent<HTMLDivElement>) {
+    const current = TAB_IDS.indexOf(activeTabId);
+    let nextIndex = -1;
+    if (e.key === "ArrowRight") nextIndex = (current + 1) % TAB_IDS.length;
+    else if (e.key === "ArrowLeft") nextIndex = (current - 1 + TAB_IDS.length) % TAB_IDS.length;
+    else if (e.key === "Home") nextIndex = 0;
+    else if (e.key === "End") nextIndex = TAB_IDS.length - 1;
+    if (nextIndex === -1) return;
+    e.preventDefault();
+    const nextId = TAB_IDS[nextIndex];
+    setActiveTabId(nextId);
+    e.currentTarget
+      .querySelector<HTMLButtonElement>(`#help-tab-${nextId}`)
+      ?.focus();
+  }
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -94,7 +112,8 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                   </Dialog.Close>
                 </div>
 
-                <div className={styles["help-modal-tabs"]} role="tablist" aria-label={t("help.title")}>
+                {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus -- tablist uses roving tabindex; individual tabs are focusable */}
+                <div className={styles["help-modal-tabs"]} role="tablist" aria-label={t("help.title")} onKeyDown={handleTabsKeyDown}>
                   {HELP_TABS.map((tab) => (
                     <button
                       key={tab.id}
@@ -104,6 +123,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                       aria-selected={tab.id === activeTabId}
                       aria-controls={`help-panel-${tab.id}`}
                       className={styles["help-modal-tab"]}
+                      tabIndex={tab.id === activeTabId ? 0 : -1}
                       onClick={() => setActiveTabId(tab.id)}
                     >
                       {t(tab.labelKey)}

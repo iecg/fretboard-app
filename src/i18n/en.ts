@@ -269,8 +269,6 @@ export const en: Dictionary = {
     layoutDiagram: {
       mobile: "Mobile",
       desktop: "Desktop",
-      overlay: "Overlay",
-      song: "Song",
     },
   },
   controls: {

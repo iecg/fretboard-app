@@ -28,6 +28,46 @@ describe("i18n/help", () => {
     expect(enPaths.length).toBeGreaterThan(0);
   });
 
+  it("every diagram-only i18n key resolves in en and es", () => {
+    const diagramKeys = [
+      "help.sections.noteColors",
+      "help.roles.root",
+      "help.roles.chordTone",
+      "help.roles.scaleNote",
+      "help.roles.colorTone",
+      "help.roles.resolution",
+      "help.voiceLeading.anticipation",
+      "help.voiceLeading.hold",
+      "help.voiceLeading.departing",
+      "help.items.voiceLeadingLabel",
+      "help.items.patternCagedLabel",
+      "help.items.patternNpsLabel",
+      "help.layoutDiagram.mobile",
+      "help.layoutDiagram.desktop",
+      "help.shortcuts.play",
+      "help.shortcuts.stop",
+      "help.shortcuts.loop",
+      "help.shortcuts.mute",
+      "help.shortcuts.track1",
+      "help.shortcuts.track2",
+      "help.shortcuts.track3",
+      "help.shortcuts.track4",
+      "help.shortcuts.steps",
+      "help.shortcuts.scale",
+      "help.shortcuts.chord",
+    ];
+    const resolve = (dict: typeof en, path: string): unknown =>
+      path.split(".").reduce<unknown>(
+        (acc, k) => (acc as Record<string, unknown> | undefined)?.[k],
+        dict,
+      );
+    for (const dict of [en, es] as const) {
+      for (const key of diagramKeys) {
+        expect(typeof resolve(dict, key), key).toBe("string");
+      }
+    }
+  });
+
   it("every key referenced by HELP_TABS resolves in en and es", async () => {
     const { HELP_TABS } = await import("../components/HelpModal/helpContent");
     const dicts = { en, es } as const;
