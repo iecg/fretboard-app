@@ -1,0 +1,51 @@
+.legend {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  margin: var(--space-2) 0 var(--space-3);
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: currentColor;
+}
+
+.legendLabel {
+  font-size: 0.875rem;
+  color: var(--chrome-fg);
+}
+
+.diagram {
+  margin: var(--space-2) 0 var(--space-3);
+  width: 100%;
+  height: auto;
+}
+
+.shortcutTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-2) 0 var(--space-3);
+  font-size: 0.875rem;
+}
+
+.shortcutTable td {
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--surface-card-border);
+  color: var(--chrome-fg);
+}
+
+.keycap {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding: 2px 6px;
+  text-align: center;
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-float);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8125rem;
+}
