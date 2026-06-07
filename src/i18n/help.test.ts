@@ -27,6 +27,31 @@ describe("i18n/help", () => {
     }
     expect(enPaths.length).toBeGreaterThan(0);
   });
+
+  it("every key referenced by HELP_TABS resolves in en and es", async () => {
+    const { HELP_TABS } = await import("../components/HelpModal/helpContent");
+    const dicts = { en, es } as const;
+
+    const resolve = (dict: typeof en, path: string): unknown =>
+      path.split(".").reduce<unknown>(
+        (acc, k) => (acc as Record<string, unknown> | undefined)?.[k],
+        dict,
+      );
+
+    const keys = HELP_TABS.flatMap((tab) => [
+      tab.labelKey,
+      ...tab.sections.flatMap((s) => [
+        s.titleKey,
+        ...s.items.flatMap((i) => [i.labelKey, i.bodyKey].filter(Boolean) as string[]),
+      ]),
+    ]);
+
+    for (const lang of ["en", "es"] as const) {
+      for (const key of keys) {
+        expect(typeof resolve(dicts[lang], key), `${lang}:${key}`).toBe("string");
+      }
+    }
+  });
 });
 
 // Flattens nested string objects into a single-level record of leaf values.
