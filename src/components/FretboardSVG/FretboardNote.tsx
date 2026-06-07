@@ -27,13 +27,18 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
-// Radial LENGTH (user units) of a beat-tick mark — how far it spans across the
-// ring band. Each tick is drawn as an explicit <line> via trig (not a dash on a
+// Beat-tick geometry. Each tick is an explicit <line> via trig (not a dash on a
 // circle), so every tick is identical geometry rotated to its own angle: crisp
 // and consistent, with no sub-pixel dash seam (the old arc-dash made the anchor
-// tick render thicker). ~2.4 stays inside the green core (2.75) so the mark is
-// contained within the ring band and never reads as a spoke sticking into wood.
-const TICK_LEN = 2.4;
+// tick render thicker).
+// TICK_LEN is the radial length; TICK_OUTWARD is how far it reaches PAST the ring
+// centerline (ringR) toward the wood. Both are kept small so the whole mark sits
+// inside the green core band (half-width ~1.375) — the mark is biased inward and
+// never spurs outside the visible ring, even on big chord-tone bubbles. Two
+// ticks always fall on the horizontal string (3/9 o'clock); containing them this
+// way keeps them from reading as nubs poking out along the string.
+const TICK_LEN = 2;
+const TICK_OUTWARD = 0.8;
 
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
@@ -243,8 +248,8 @@ export const FretboardNote = memo(function FretboardNote({
                 const a = 2 * Math.PI * f;
                 const cos = Math.cos(a);
                 const sin = Math.sin(a);
-                const inner = ringR - TICK_LEN / 2;
-                const outer = ringR + TICK_LEN / 2;
+                const outer = ringR + TICK_OUTWARD;
+                const inner = outer - TICK_LEN;
                 return (
                   <line
                     key={`tick-${i}`}
