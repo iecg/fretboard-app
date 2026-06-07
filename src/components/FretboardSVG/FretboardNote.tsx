@@ -176,18 +176,18 @@ export const FretboardNote = memo(function FretboardNote({
         />
       )}
       {shapeEl}
-      {/* Two-phase target ring. A dark halo under a coloured core (a 2-colour
+      {/* Countdown target ring. A dark halo under a coloured core (a 2-colour
           "Oreo" ring) keeps it legible over any fill and on light or dark wood.
           Drawn ON TOP of the marker (after shapeEl): a filled chord/root note is
           opaque and — enlarged by the taper scale + the root's playback radius
           boost — would otherwise occlude the ring's inner edge, leaving only a
           sliver. The ring sits at a standoff OUTSIDE the marker, so painting it
           last keeps the full halo + core visible on every note type.
-          Phase rides stroke-weight + opacity (planning thin/dim → landing
-          thick/bright); CSS animates the landing CONTRACTION (scale), motion
-          owns OPACITY so AnimatePresence fades it in on mount and OUT on removal
-          — decoupling the fade-out from React's startTransition-jittered unmount
-          (the boundary flash). */}
+          The core DRAINS clockwise over the whole countdown window (CSS), with a
+          brightness ramp + gentle looming scale escalating toward the beat;
+          motion owns the group OPACITY so AnimatePresence fades it in on mount
+          and OUT on removal — decoupling the fade-out from React's
+          startTransition-jittered unmount (the boundary flash). */}
       <AnimatePresence>
         {guidePhase && (
           <motion.g
@@ -202,11 +202,10 @@ export const FretboardNote = memo(function FretboardNote({
             data-guide-primary={note.isInRegion ? "true" : "false"}
             aria-hidden="true"
             initial={{ opacity: 0 }}
-            // Primary targets hold full group opacity in BOTH phases so the
-            // brightness matches at the breathe→drain handoff; the calmer
-            // "passive" feel comes from the core breathe's dips (whose peaks
-            // equal the landing brightness), not a dimmer group. Secondary
-            // (out-of-region) targets are quiet static markers.
+            // Primary targets hold full group opacity; the escalating salience
+            // comes from the core's brightness ramp + looming scale over the
+            // countdown window, not a dimmer group. Secondary (out-of-region)
+            // targets are quiet static markers at reduced opacity.
             animate={{ opacity: note.isInRegion ? 1 : 0.4 }}
             exit={{ opacity: 0 }}
             transition={guideFade}

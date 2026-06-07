@@ -617,9 +617,11 @@ export const activeStepDurationBeatsAtom = atom((get): number => {
 });
 
 /**
- * Length of the active step's lead-in preview window, in milliseconds. Written
- * to the `--lead-in-duration` CSS custom property so the ghost ramp animation
- * lasts exactly the window. Changes only when the active step / tempo changes.
+ * Length of the active step's lead-in window, in milliseconds. Retained as a
+ * derived selector — it has no current production consumer (the countdown ring
+ * now drives its CSS from {@link guideCountdownWindowMsAtom}), but it keeps its
+ * own tests and is the natural input for any future lead-in-only cue. Changes
+ * only when the active step / tempo changes.
  */
 export const leadInDurationMsAtom = atom((get): number =>
   computeLeadInWindowMs(
@@ -630,11 +632,11 @@ export const leadInDurationMsAtom = atom((get): number =>
 
 /**
  * Length of the active step's PLANNING window, in milliseconds — the runway
- * before the lead-in/landing window. Written to the `--planning-duration` CSS
- * custom property so the preview "breathe" runs exactly once over the planning
- * phase and resolves to full brightness right as the landing drain begins (a
- * seamless brightness handoff). Mirrors {@link isInPlanningWindow}'s span:
- * `min(step, 2·bar) − landingWindow`, floored at 0.
+ * before the lead-in window. Retained as a derived selector with no current
+ * production consumer (the single continuous countdown ring replaced the
+ * separate planning "breathe" phase); kept with its own tests. Mirrors
+ * {@link isInPlanningWindow}'s span: `min(step, 2·bar) − landingWindow`,
+ * floored at 0.
  */
 export const planningDurationMsAtom = atom((get): number => {
   const step = get(progressionStepDurationMsAtom);
