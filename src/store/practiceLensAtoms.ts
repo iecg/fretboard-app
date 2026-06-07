@@ -465,6 +465,10 @@ export const activeChordTonesAtom = atom((get): Set<string> => {
  * Both sets use the same sharps convention so the intersection is reliable.
  * Returns an empty set when the progression is empty or the active step is
  * unresolvable.
+ *
+ * NOTE: retained as a reusable derived selector — it currently has no
+ * production consumer (the common-tone size boost that read it was removed),
+ * but is kept as the natural input for a future held-tone cue. Not dead code.
  */
 export const commonTonesWithNextAtom = atom((get): Set<string> => {
   const activeTones = get(activeChordTonesAtom);

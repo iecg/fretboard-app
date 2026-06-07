@@ -26,8 +26,6 @@ export type LensEmphasis = {
 export type LeadLensContext = {
   /** Pitch class of the note being classified. */
   notePc: string;
-  /** Notes shared between the active chord and the next chord (common tones). */
-  commonWithNext: Set<string>;
   /** Guide tones (3rd/7th) of the next chord. */
   nextGuideTones: Set<string>;
   /** Interval labels for the next chord's guide tones (pitch class → name, e.g. "B" → "3"). */
@@ -43,18 +41,6 @@ export type LeadLensContext = {
   /** True only during the earlier planning runway (mutually exclusive with leadInActive). */
   planningActive: boolean;
 };
-
-/**
- * Chord-tone noteClass values — a note with one of these classes is considered
- * a "current chord tone" for the Lead lens hold/departing logic.
- */
-const CHORD_TONE_CLASSES = new Set([
-  "chord-root",
-  "chord-root-outside",
-  "chord-tone-in-scale",
-  "chord-tone-outside-scale",
-  "note-diatonic-chord",
-]);
 
 /**
  * Fallback emphasis when no progression is active or no voice-leading
@@ -82,15 +68,11 @@ export function getEmphasis(
     return applyTonesBase(noteClass);
   }
 
-  const { notePc, nextGuideTones, nextGuideToneLabels, commonWithNext, leadInActive, planningActive } = leadContext;
+  const { notePc, nextGuideTones, nextGuideToneLabels, leadInActive, planningActive } = leadContext;
 
-  // The note's resting emphasis when not actively targeted — held common tones
-  // keep a gentle hold glow, everything else uses the base model. This is the
-  // size/shape a note shows OUTSIDE the lead-in window.
-  const resting: LensEmphasis =
-    CHORD_TONE_CLASSES.has(noteClass) && commonWithNext.has(notePc)
-      ? { radiusBoost: 1.15, opacityBoost: 1 }
-      : applyTonesBase(noteClass);
+  // The note's resting emphasis when not actively targeted — the base model.
+  // This is the size/shape a note shows OUTSIDE the lead-in window.
+  const resting: LensEmphasis = applyTonesBase(noteClass);
 
   // Landing: the next chord's guide tones get the urgent contracting ring.
   if (leadInActive && nextGuideTones.has(notePc)) {

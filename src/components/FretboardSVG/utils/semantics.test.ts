@@ -379,7 +379,6 @@ describe("semantics utils", () => {
 describe("getEmphasis - voice-leading emphasis", () => {
   const baseLeadContext: LeadLensContext = {
     notePc: "A",
-    commonWithNext: new Set<string>(),
     nextGuideTones: new Set<string>(),
     nextGuideToneLabels: new Map<string, string>(),
     nextChordTones: new Set<string>(),
@@ -433,13 +432,12 @@ describe("getEmphasis - voice-leading emphasis", () => {
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({ radiusBoost: 1, opacityBoost: 1 });
   });
 
-  it("a held common tone keeps its hold glow DURING the lead-in (no flicker)", () => {
+  it("a held common tone is NOT enlarged DURING the lead-in", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "A",
-      commonWithNext: new Set(["A"]), nextGuideTones: new Set(["B"]),
+      ...baseLeadContext, notePc: "A", nextGuideTones: new Set(["B"]),
     };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
-      radiusBoost: 1.15, opacityBoost: 1,
+      radiusBoost: 1, opacityBoost: 1,
     });
   });
 
@@ -451,12 +449,12 @@ describe("getEmphasis - voice-leading emphasis", () => {
     expect(getEmphasis("scale-only", false, ctx)).toEqual({ radiusBoost: 0.85, opacityBoost: 0.7 });
   });
 
-  it("outside the lead-in window, a held common tone keeps a static hold glow (no role)", () => {
+  it("outside the lead-in window, a held common tone is NOT enlarged (no role)", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "A", commonWithNext: new Set(["A"]), leadInActive: false,
+      ...baseLeadContext, notePc: "A", leadInActive: false,
     };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
-      radiusBoost: 1.15, opacityBoost: 1,
+      radiusBoost: 1, opacityBoost: 1,
     });
   });
 

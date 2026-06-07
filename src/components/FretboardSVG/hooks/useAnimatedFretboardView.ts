@@ -42,7 +42,6 @@ export function buildAnimatedFretboardNotes({
     if (hasChordOverlay && emphasisContext) {
       leadContext = {
         notePc: note.noteName,
-        commonWithNext: emphasisContext.commonWithNext,
         nextGuideTones: emphasisContext.nextGuideTones,
         nextGuideToneLabels: emphasisContext.nextGuideToneLabels,
         nextChordTones: emphasisContext.nextChordTones,
