@@ -134,10 +134,144 @@ export const es: Dictionary = {
     rotateMessage: "Por favor, gira tu dispositivo a modo vertical",
   },
   help: {
-    whatsNew: "Novedades",
-    chordModeRemoved:
-      "Se eliminó el modo de acorde manual — edita el paso activo de la progresión para personalizar el acorde.",
-    gotIt: "Entendido",
+    title: "Ayuda",
+    close: "Cerrar ayuda",
+    tabs: {
+      start: "Inicio",
+      notes: "Notas",
+      shapes: "Escalas y formas",
+      play: "Progresiones y canciones",
+      settings: "Ajustes y atajos",
+    },
+    whatsNew: {
+      label: "Novedades",
+      body: "Ya están las progresiones y canciones: carga un preset, reprodúcelo con pista de acompañamiento y mira cómo el diapasón sigue los acordes. El modo CAGED de una sola forma también es el nuevo valor por defecto.",
+      dismiss: "Entendido",
+    },
+    sections: {
+      gettingStarted: "Primeros pasos",
+      layout: "Disposición",
+      inspector: "El Inspector",
+      noteColors: "Colores de las notas",
+      noteLabels: "Etiquetas de notas",
+      degreeStrip: "Tira de grados",
+      hearNotes: "Escuchar las notas",
+      choosingScale: "Elegir una escala",
+      patterns: "Patrones de digitación",
+      chordsVoicings: "Acordes y voicings",
+      circle: "Círculo de Quintas",
+      diatonic: "Acordes diatónicos",
+      buildProgression: "Crear una progresión",
+      backingTrack: "Pista de acompañamiento",
+      playback: "Reproducción",
+      settings: "Ajustes",
+      shortcuts: "Atajos de teclado",
+    },
+    items: {
+      introBody:
+        "FretFlow es una herramienta interactiva de diapasón y teoría musical para guitarra. Elige una tónica, una escala y un acorde opcional para ver las notas e intervalos iluminarse a lo largo del mástil.",
+      layoutMobileLabel: "Móvil",
+      layoutMobileBody:
+        "El diapasón ocupa la pantalla. Una barra de pestañas alterna el Inspector entre el panel Overlay (escala, acorde, formas, etiquetas) y el panel Song (progresión y acompañamiento).",
+      layoutDesktopLabel: "Tableta y escritorio",
+      layoutDesktopBody:
+        "El Inspector se sitúa junto al diapasón como tarjetas, así todos los controles están visibles a la vez.",
+      inspectorOverlayLabel: "Pestaña Overlay",
+      inspectorOverlayBody:
+        "Construye lo que ves en el diapasón: escala, acorde, formas de digitación, voicings y etiquetas de notas.",
+      inspectorSongLabel: "Pestaña Song",
+      inspectorSongBody:
+        "Construye lo que oyes: tonalidad, preset de progresión, secuencia, tempo y acompañamiento.",
+      noteColorsBody:
+        "Cada punto se colorea según su función musical. La leyenda de abajo coincide con los colores de tu diapasón.",
+      noteLabelsLabel: "Notas / Intervalos / Ninguno",
+      noteLabelsBody:
+        "Elige qué se muestra dentro de cada punto: nombres de notas, números de intervalo o nada para un diapasón limpio.",
+      degreeStripBody:
+        "La tira sobre el diapasón lista las notas de la escala con su intervalo debajo de cada una. Las notas del acorde se resaltan cuando hay un acorde activo.",
+      hearNotesBody:
+        "Toca cualquier punto para oírlo. Usa el icono del altavoz en la cabecera para silenciar o activar el sonido.",
+      rootLabel: "Tónica",
+      rootBody:
+        "Toca una nota en la cuadrícula, o un sector del Círculo de quintas, para fijar la tónica.",
+      scaleLabel: "Escala",
+      scaleBody:
+        "Elige una familia y un modo, y recorre los modos o tonalidades con las flechas.",
+      parRelLabel: "Paralela / Relativa",
+      parRelBody:
+        "Paralela mantiene la misma tónica mientras exploras modos; Relativa recorre tonalidades relacionadas.",
+      patternAllLabel: "Todas",
+      patternAllBody: "Ilumina todas las notas de la escala, sin cajas de posición.",
+      patternCagedLabel: "CAGED",
+      patternCagedBody:
+        "Formas de posición superpuestas a lo largo del mástil. Haz clic en una forma (C A G E D) para aislarla; Mayús+clic para combinar. Activa Etiquetas de forma para nombrar cada caja.",
+      patternNpsLabel: "3NPS",
+      patternNpsBody:
+        "Tres notas por cuerda. Usa el selector de posición (1–7 o Todas) para aislar una posición de la mano.",
+      fullChordsLabel: "Acordes completos",
+      fullChordsBody:
+        "Muestra los voicings de acorde CAGED canónicos en lugar de notas de acorde dispersas.",
+      voicingLabel: "Voicing",
+      voicingBody:
+        "Apagado, Completo o Cerrado, más un conjunto de cuerdas (de Graves a Agudas) para centrar el voicing en una parte del mástil.",
+      circleBody:
+        "Toca una tonalidad para cambiar la tónica. Los marcadores de grado muestran cómo se asignan los intervalos de la escala a cada tonalidad. En móvil, ábrelo desde la pestaña Overlay.",
+      diatonicBody:
+        "Abre Acordes en la pestaña Overlay y elige un acorde por su numeral romano; sus notas se resaltan en un color distinto. Para cambiar la tónica o la cualidad, edita el paso activo en la pestaña Song.",
+      presetLabel: "Preset",
+      presetBody:
+        "Empieza desde un preset agrupado por género: Pop / Rock, Blues, Jazz, Folk, Modal o Menor.",
+      sequenceLabel: "Secuencia",
+      sequenceBody:
+        "Añade, quita y reordena pasos. Cada paso es un acorde por el que la canción pasa en bucle.",
+      timeLabel: "Compás y tempo",
+      timeBody: "Define el compás y el tempo de toda la canción.",
+      backingTrackBody:
+        "El acompañamiento generado suena junto con la progresión. Activa Acorde, Bajo, Batería y el Metrónomo de forma independiente, y elige un patrón por instrumento.",
+      transportLabel: "Transporte",
+      transportBody:
+        "Reproduce, pausa y detén desde la cabecera. El bucle repite la progresión. Con la reproducción detenida, avanza entre acordes con las flechas.",
+      voiceLeadingLabel: "Conducción de voces",
+      voiceLeadingBody:
+        "Al cambiar los acordes, el diapasón brilla: anticipación (las notas guía del siguiente acorde antes del cambio), retención (notas comunes) y salida (notas que resuelven hacia otra).",
+      practiceLabel: "Pistas de práctica",
+      practiceBody:
+        "La barra de práctica muestra pistas de apoyo: Aterriza en (todas las notas del acorde) y Tensión (notas del acorde fuera de la escala, con el objetivo dentro de la escala más cercano). Nunca oculta notas del diapasón.",
+      settingsBody:
+        "Abre el icono de engranaje para Afinación, Zoom, Rango de trastes, Alteraciones, Visualización enarmónica, Calidad de sonido, Tema e Idioma. Usa Restablecer para volver a los valores por defecto.",
+      shortcutsBody: "Funcionan siempre que no estés escribiendo en un campo.",
+    },
+    roles: {
+      root: "Tónica",
+      chordTone: "Nota del acorde",
+      scaleNote: "Nota de la escala",
+      colorTone: "Nota de color",
+      resolution: "Objetivo de resolución",
+    },
+    voiceLeading: {
+      anticipation: "Anticipación",
+      hold: "Retención",
+      departing: "Salida",
+    },
+    shortcuts: {
+      play: "Reproducir / pausar",
+      stop: "Detener",
+      loop: "Alternar bucle",
+      mute: "Silenciar / activar",
+      track1: "Alternar pista de acorde",
+      track2: "Alternar pista de bajo",
+      track3: "Alternar pista de batería",
+      track4: "Alternar metrónomo",
+      steps: "Paso anterior / siguiente",
+      scale: "Mostrar / ocultar escala",
+      chord: "Mostrar / ocultar acorde",
+    },
+    layoutDiagram: {
+      mobile: "Móvil",
+      desktop: "Escritorio",
+      overlay: "Overlay",
+      song: "Song",
+    },
   },
   controls: {
     shape: "Forma",

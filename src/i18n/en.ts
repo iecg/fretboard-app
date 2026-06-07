@@ -134,10 +134,144 @@ export const en: Dictionary = {
     rotateMessage: "Please rotate your device to portrait mode",
   },
   help: {
-    whatsNew: "What's new",
-    chordModeRemoved:
-      "Manual chord mode has been removed — edit the active progression step directly to customize the chord.",
-    gotIt: "Got it",
+    title: "Help",
+    close: "Close help",
+    tabs: {
+      start: "Start",
+      notes: "Notes",
+      shapes: "Scales & Shapes",
+      play: "Progressions & Songs",
+      settings: "Settings & Shortcuts",
+    },
+    whatsNew: {
+      label: "What's new",
+      body: "Progressions and songs are here — load a preset, play it back with a backing track, and watch the fretboard follow the chords. Single-shape CAGED is the new default too.",
+      dismiss: "Got it",
+    },
+    sections: {
+      gettingStarted: "Getting started",
+      layout: "Layout",
+      inspector: "The Inspector",
+      noteColors: "Note colors",
+      noteLabels: "Note labels",
+      degreeStrip: "Degree strip",
+      hearNotes: "Hear the notes",
+      choosingScale: "Choosing a scale",
+      patterns: "Fingering patterns",
+      chordsVoicings: "Chords & voicings",
+      circle: "Circle of Fifths",
+      diatonic: "Diatonic chords",
+      buildProgression: "Build a progression",
+      backingTrack: "Backing track",
+      playback: "Playback",
+      settings: "Settings",
+      shortcuts: "Keyboard shortcuts",
+    },
+    items: {
+      introBody:
+        "FretFlow is an interactive guitar fretboard and music-theory tool. Pick a root note, a scale, and an optional chord overlay to see notes and intervals light up across the neck.",
+      layoutMobileLabel: "Mobile",
+      layoutMobileBody:
+        "The fretboard fills the screen. A tab bar switches the Inspector between the Overlay panel (scale, chord, shapes, labels) and the Song panel (progression and backing track).",
+      layoutDesktopLabel: "Tablet & desktop",
+      layoutDesktopBody:
+        "The Inspector sits beside the fretboard as cards, so every control is visible at once.",
+      inspectorOverlayLabel: "Overlay tab",
+      inspectorOverlayBody:
+        "Builds what you see on the fretboard: scale, chord, fingering shapes, voicings, and note labels.",
+      inspectorSongLabel: "Song tab",
+      inspectorSongBody:
+        "Builds what you hear: key, progression preset, sequence, tempo, and backing track.",
+      noteColorsBody:
+        "Every dot is colored by its musical role. The legend below matches the colors on your fretboard.",
+      noteLabelsLabel: "Notes / Intervals / None",
+      noteLabelsBody:
+        "Choose what shows inside each dot — note names, interval numbers, or nothing for a clean board.",
+      degreeStripBody:
+        "The strip above the fretboard lists the scale's notes with their interval below each one. Chord tones highlight when a chord is active.",
+      hearNotesBody:
+        "Tap any dot to hear it. Use the speaker icon in the header to mute or unmute.",
+      rootLabel: "Root",
+      rootBody:
+        "Tap a note in the grid, or a wedge in the Circle of Fifths, to set the tonic.",
+      scaleLabel: "Scale",
+      scaleBody:
+        "Pick a family and mode, then step through modes or keys with the arrows.",
+      parRelLabel: "Parallel / Relative",
+      parRelBody:
+        "Parallel keeps the same root while you browse modes; Relative cycles through related keys.",
+      patternAllLabel: "All",
+      patternAllBody: "Lights up every scale note, with no position boxes.",
+      patternCagedLabel: "CAGED",
+      patternCagedBody:
+        "Overlapping position shapes across the neck. Click a shape (C A G E D) to isolate it; Shift-click to combine. Turn on Shape Labels to letter each box.",
+      patternNpsLabel: "3NPS",
+      patternNpsBody:
+        "Three notes per string. Use the position selector (1–7 or All) to isolate one hand position.",
+      fullChordsLabel: "Full Chords",
+      fullChordsBody:
+        "Shows canonical CAGED chord voicings instead of scattered chord tones.",
+      voicingLabel: "Voicing",
+      voicingBody:
+        "Off, Full, or Close — plus a string set (Bass to Treble) to focus the voicing on part of the neck.",
+      circleBody:
+        "Tap a key to change the root. Degree markers show how the scale's intervals map onto each key. On mobile, open it from the Overlay tab.",
+      diatonicBody:
+        "Open Chords in the Overlay tab and pick a chord by Roman numeral; its tones highlight in a distinct color. To change the root or quality, edit the active step in the Song tab.",
+      presetLabel: "Preset",
+      presetBody:
+        "Start from a preset grouped by genre — Pop / Rock, Blues, Jazz, Folk, Modal, or Minor.",
+      sequenceLabel: "Sequence",
+      sequenceBody:
+        "Add, remove, and reorder steps. Each step is one chord the song loops through.",
+      timeLabel: "Time & tempo",
+      timeBody: "Set the time signature and tempo for the whole song.",
+      backingTrackBody:
+        "Generated accompaniment plays along with the progression. Toggle Chord, Bass, Drums, and the Metronome independently, and pick a pattern per instrument.",
+      transportLabel: "Transport",
+      transportBody:
+        "Play, pause, and stop from the header. Loop repeats the progression. When stopped, step through chords with the arrow keys.",
+      voiceLeadingLabel: "Voice leading",
+      voiceLeadingBody:
+        "As chords change, the fretboard glows: anticipation (the next chord's guide tones before the change), hold (common tones), and departing (tones that resolve away).",
+      practiceLabel: "Practice cues",
+      practiceBody:
+        "The practice bar shows coaching cues — Land on (all chord tones) and Tension (chord tones outside the scale, with the nearest in-scale target). It never hides fretboard notes.",
+      settingsBody:
+        "Open the gear icon for Tuning, Zoom, Fret Range, Accidentals, Enharmonic Display, Sound Quality, Theme, and Language. Use Reset to restore defaults.",
+      shortcutsBody: "These work whenever you're not typing in a field.",
+    },
+    roles: {
+      root: "Root",
+      chordTone: "Chord tone",
+      scaleNote: "Scale note",
+      colorTone: "Color tone",
+      resolution: "Resolution target",
+    },
+    voiceLeading: {
+      anticipation: "Anticipation",
+      hold: "Hold",
+      departing: "Departing",
+    },
+    shortcuts: {
+      play: "Play / pause",
+      stop: "Stop",
+      loop: "Toggle loop",
+      mute: "Mute / unmute",
+      track1: "Toggle chord track",
+      track2: "Toggle bass track",
+      track3: "Toggle drums track",
+      track4: "Toggle metronome",
+      steps: "Previous / next step",
+      scale: "Show / hide scale",
+      chord: "Show / hide chord",
+    },
+    layoutDiagram: {
+      mobile: "Mobile",
+      desktop: "Desktop",
+      overlay: "Overlay",
+      song: "Song",
+    },
   },
   controls: {
     shape: "Shape",
