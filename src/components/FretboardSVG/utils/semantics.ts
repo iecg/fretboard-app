@@ -44,7 +44,6 @@ export type LeadLensContext = {
   planningActive: boolean;
 };
 
-
 /**
  * Fallback emphasis when no progression is active or no voice-leading
  * context applies. Dims scale-only / color-tone notes. Guide tones (3rd/7th)
