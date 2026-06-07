@@ -720,6 +720,61 @@ export const planningWindowActiveAtom = atom((get): boolean => {
 });
 
 /**
+ * Length of the single continuous countdown window, in ms — `min(step, 2·bar)`.
+ * Written to the `--guide-duration` CSS custom property so the drain lasts
+ * exactly the window. Changes only when the active step / tempo changes.
+ */
+export const guideCountdownWindowMsAtom = atom((get): number => {
+  const step = get(progressionStepDurationMsAtom);
+  const bar = get(progressionBarDurationMsAtom);
+  return Math.min(step, PLANNING_RUNWAY_BARS * bar);
+});
+
+/**
+ * Window-fractions for the static beat-tick notches on the countdown ring.
+ * Derived from the countdown window and meter via
+ * {@link computeCountdownTickFractions}. Recomputes only on step/tempo/meter
+ * change — never per frame.
+ */
+export const guideCountdownTickFractionsAtom = atom((get): number[] => {
+  const windowMs = get(guideCountdownWindowMsAtom);
+  const bar = get(progressionBarDurationMsAtom);
+  const beatsPerBar = get(beatsPerBarAtom);
+  const beatMs = beatsPerBar > 0 ? bar / beatsPerBar : 0;
+  return computeCountdownTickFractions(windowMs, beatMs, bar);
+});
+
+/**
+ * Single continuous countdown phase — the union of the old planning + landing
+ * windows. True whenever the playhead is inside {@link isInCountdownWindow} for
+ * the active step, AND (like {@link leadInActiveAtom}) held true across the
+ * boundary-gap where the audio frame leads the displayed step. Reads the
+ * per-frame visual frame, but its VALUE only flips at the window threshold, so
+ * subscribers re-render at most twice per step.
+ */
+export const guideCountdownActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  const displayed = get(displayedProgressionStepIndexAtom);
+  // Boundary gap: audio has crossed into a later step than the fretboard shows —
+  // hold the ring on until the displayed shape catches up (same as lead-in).
+  if (frame.stepIndex !== displayed) return true;
+  // Only trust the step fraction when the deadline's step matches displayed.
+  if (get(activeProgressionStepIndexAtom) !== displayed) return false;
+  const deadline = get(progressionStepDeadlineAtom);
+  if (deadline == null) return false;
+  const stepMs = get(progressionStepDurationMsAtom);
+  const now = Date.now();
+  // Guard: step must have actually started (deadline within one step from now).
+  // Prevents the ring from firing when the countdown window spans the full step
+  // (short chords) and the deadline is still in the future beyond the step start.
+  if (deadline - now > stepMs) return false;
+  const stepFraction = stepRelativeFraction(deadline, now, stepMs);
+  return isInCountdownWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
+});
+
+/**
  * Current beat position within the active progression step, derived from
  * the step deadline and tempo. Beat 0 = just started; `stepDurationBeats` = step ended.
  *

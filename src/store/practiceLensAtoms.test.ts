@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom, isInCountdownWindow, computeCountdownTickFractions } from "./practiceLensAtoms";
+import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom, isInCountdownWindow, computeCountdownTickFractions, guideCountdownWindowMsAtom, guideCountdownActiveAtom, guideCountdownTickFractionsAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -1123,5 +1123,62 @@ describe("planningWindowActiveAtom", () => {
     store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0, localFraction: 0, paused: false });
     expect(store.get(planningWindowActiveAtom)).toBe(false);
     expect(store.get(leadInActiveAtom)).toBe(true);
+  });
+});
+
+describe("guide countdown atoms", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  function makePlayingStore() {
+    const store = createStore();
+    const unsub = store.sub(progressionStepsAtom, () => {});
+    unsub();
+    store.set(progressionPlayingStateAtom, true);
+    return store;
+  }
+
+  it("guideCountdownWindowMsAtom = min(step, 2·bar)", () => {
+    const store = makePlayingStore();
+    const step = store.get(progressionStepDurationMsAtom);
+    const bar = store.get(progressionBarDurationMsAtom);
+    expect(store.get(guideCountdownWindowMsAtom)).toBe(Math.min(step, 2 * bar));
+  });
+
+  it("guideCountdownTickFractionsAtom matches the pure helper for the active step", () => {
+    const store = makePlayingStore();
+    const windowMs = store.get(guideCountdownWindowMsAtom);
+    const bar = store.get(progressionBarDurationMsAtom);
+    const beatsPerBar = store.get(beatsPerBarAtom);
+    const beatMs = beatsPerBar > 0 ? bar / beatsPerBar : 0;
+    expect(store.get(guideCountdownTickFractionsAtom)).toEqual(
+      computeCountdownTickFractions(windowMs, beatMs, bar),
+    );
+  });
+
+  it("guideCountdownActiveAtom is false outside the window and true inside", () => {
+    const store = makePlayingStore();
+    store.set(displayedStepIndexPrimitiveAtom, 0);
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const bar = store.get(progressionBarDurationMsAtom);
+    const windowMs = Math.min(stepMs, 2 * bar);
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.1, localFraction: 0.1, paused: false });
+
+    // Deadline far in the future → step barely started → outside the window.
+    store.set(progressionStepDeadlineAtom, Date.now() + windowMs + 1000);
+    expect(store.get(guideCountdownActiveAtom)).toBe(false);
+
+    // Deadline inside the window → active.
+    store.set(progressionStepDeadlineAtom, Date.now() + windowMs - 50);
+    expect(store.get(guideCountdownActiveAtom)).toBe(true);
+  });
+
+  it("guideCountdownActiveAtom holds across the boundary gap (audio ahead of displayed)", () => {
+    const store = makePlayingStore();
+    store.set(displayedStepIndexPrimitiveAtom, 0);
+    // Audio frame already on the next step while the fretboard still shows step 0.
+    store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0.0, localFraction: 0.0, paused: false });
+    expect(store.get(guideCountdownActiveAtom)).toBe(true);
   });
 });
