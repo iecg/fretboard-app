@@ -244,6 +244,9 @@ overlay off — guide tones exist only in chord context. See §10 for the spec t
 - Don't recompute emphasis per animation frame; ≤2 discrete recomputes per chord step.
   **[internal]**
 - Don't let motion mean anything but voice leading. **[internal]**
+- Don't de-emphasize chord tones not in the active voicing; the connector polyline already
+  groups the voicing via Gestalt connectedness, and a second encoding would over-encode.
+  **[internal]**
 
 ---
 
@@ -269,11 +272,7 @@ overlay off — guide tones exist only in chord context. See §10 for the spec t
   neutral tint. A future option: a small, *restrained* ladder of neutral shades for active
   region(s) vs. inactive, staying within the no-rainbow discipline (§2). *(Deferred;
   migrated from the exploration draft.)*
-- **Non-voicing chord tones** — whether to slightly de-emphasize chord tones not in the
-  active voicing (a salience/opacity tweak, not a shape change). *(Likely YAGNI; connector
-  already groups the voicing.)*
-- **"Show all CAGED positions" overview** — the only place the 5-hue palette would survive,
-  behind a toggle. *(Deferred feature.)*
+
 
 ---
 
@@ -385,6 +384,13 @@ with `git show <sha>:<path>` (SHA = last commit before deletion):
 - `2026-06-04-fretboard-followups-exploration-draft.md` (`432e2651`) — the deferred
   exploration ideas now captured in §6 (modal characteristic-tone accent channel, new
   pattern overlays / diagonal boxes, neutral region-shade ladder).
+
+**Cleaned up in the 2026-06-08 open-questions triage.**
+- `2026-06-08-visual-language-open-questions-cleanup.md` — closed the non-voicing chord
+  tones item as YAGNI (connector already groups the voicing); dropped the "show all CAGED
+  positions" overview (no use case; single-shape invariant enforced in storage); §6 reduced
+  from five items to three. The modal characteristic-tone accent channel remains the top
+  candidate for the next design-resolution pass.
 
 **Pruned from `main`, recovered from history (chord-transition motion):**
 - `2026-05-27-connector-transition-playback-research.md` (from `490b46b2^`) — root-cause

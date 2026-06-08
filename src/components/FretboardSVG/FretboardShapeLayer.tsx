@@ -44,7 +44,7 @@ export const FretboardShapeLayer = memo(({ svgPolygons, animationMode = "group" 
   // All active-shape region shading uses a single neutral tint so it never
   // competes with the role-based note colors (amber home / teal guide / rest).
   // The per-CAGED `color` is intentionally ignored here; the per-shape tokens
-  // stay defined for a future opt-in "show all positions" overview.
+  // stay defined in case a future feature restores per-shape coloring.
   const polygons = svgPolygons.map(({ points, key }) => (
     <polygon
       key={key}
