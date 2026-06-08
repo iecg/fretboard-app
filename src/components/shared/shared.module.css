@@ -340,7 +340,13 @@
 }
 
 /* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
-   so these buttons are touch-reachable and need a full-size hit area. */
+   so these buttons are touch-reachable and need a full-size hit area. The
+   toggle-group also switches to min-height so the container grows to fit the
+   larger buttons instead of clipping them. */
+:global(.app-container[data-layout-tier="mobile"]) .toggle-group {
+  height: auto;
+  min-height: var(--control-height);
+}
 :global(.app-container[data-layout-tier="mobile"]) .toggle-btn {
   min-height: var(--size-touch-target);
 }
