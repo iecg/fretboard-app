@@ -27,21 +27,23 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
-// Half-length (user units) of a beat-tick mark measured ALONG the ring
-// (tangentially). Each tick is a straight <line> tangent to the ring at its beat
-// angle — NOT a dash on a circle and NOT a radial spoke:
-//   - Tangent (along the ring) → at the common 4-beat positions the ticks are a
-//     clean HORIZONTAL mark at top/bottom and a VERTICAL mark at left/right.
-//   - A straight independent segment has no sub-pixel dash seam, so every tick
-//     (including the anchor at fraction 0) renders identically — fixing the
-//     thicker-first-tick artifact of the old dashed-circle notch.
-//   - Centered on ringR with the core's stroke-width (2.75, via CSS) it stays
-//     CO-RADIAL with the green core: it occupies the core band on every note
-//     type and never spurs outside the ring (the old radial <line> reached past
-//     ringR and read as a nub outside big chord-tone bubbles).
-// Kept short so the tangent's tiny outward bulge (√(ringR²+L²) − ringR ≈ 0.3px)
-// stays well inside the core half-width (~1.375).
-const TICK_HALF_LEN = 2.5;
+// Beat-tick geometry. Each tick is a short radial <line> drawn just INSIDE the
+// marker rim (NOT on the outer drain ring) at its beat angle — clock-style.
+// Root cause of the long "ticks outside the circle" saga: the drain ring sits at
+// ringR = r + standoff (standoff ≥ 3px), so ringR > r for EVERY note. Anything
+// drawn on the ring is therefore outside the marker circle by construction — most
+// obvious on big, filled chord-tone bubbles. Putting the ticks inside the marker
+// rim (radius < r) is the only placement that reads as "inside the circle" on
+// every note type.
+//   - TICK_RIM_GAP: gap from the marker edge (r) to the tick's OUTER end, so the
+//     mark sits clearly inside the rim, not on it.
+//   - TICK_LEN: radial length, pointing inward toward the center. At the common
+//     4-beat positions the marks are axis-aligned (horizontal at 3/9, vertical at
+//     12/6) — clock ticks.
+// The ticks render in their own group OUTSIDE the looming ring group, so the
+// ring's ~6% loom never drifts a tick back across the rim.
+const TICK_RIM_GAP = 0.6;
+const TICK_LEN = 2.8;
 
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
@@ -237,43 +239,47 @@ export const FretboardNote = memo(function FretboardNote({
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
-            {/* Static beat-tick marks — short BRIGHT segments the green core
-                sweeps past, giving a countable "segment done" read. Only on
-                PRIMARY (in-region) targets, and only when the step has enough
-                beats to warrant ticks (countdownTicks empty otherwise). Each is a
-                straight <line> TANGENT to the ring at its beat angle
-                (θ = 2π·f, drain origin at 3 o'clock, sweeping clockwise): at the
-                common 4-beat positions the marks are horizontal (top/bottom) and
-                vertical (left/right). Centered on ringR with the core's
-                stroke-width (CSS), each mark is co-radial with the green core —
-                contained in the ring band on every note type (scale tone or
-                chord tone), with no dash seam and no radial spur. */}
-            {note.isInRegion &&
-              countdownTicks?.map((f, i) => {
-                const theta = 2 * Math.PI * f;
-                const cos = Math.cos(theta);
-                const sin = Math.sin(theta);
-                // Point on the ring at this beat fraction.
-                const px = cx + ringR * cos;
-                const py = cy + ringR * sin;
-                // Tangent unit vector (perpendicular to the radius) — the mark
-                // lies ALONG the ring, so it is axis-aligned at the cardinal
-                // beat positions.
-                const tx = -sin;
-                const ty = cos;
-                return (
-                  <line
-                    key={`tick-${i}`}
-                    className={styles["note-guide-ring-tick"]}
-                    data-guide-tick="true"
-                    x1={px - TICK_HALF_LEN * tx}
-                    y1={py - TICK_HALF_LEN * ty}
-                    x2={px + TICK_HALF_LEN * tx}
-                    y2={py + TICK_HALF_LEN * ty}
-                    aria-hidden="true"
-                  />
-                );
-              })}
+          </motion.g>
+        )}
+      </AnimatePresence>
+      {/* Static beat-tick marks — short BRIGHT radial ticks just INSIDE the
+          marker rim at each beat boundary, giving a countable "segment done"
+          read. Only on PRIMARY (in-region) targets, and only when the step has
+          enough beats to warrant ticks (countdownTicks empty otherwise). Each is
+          a <line> at angle θ = 2π·f (drain origin at 3 o'clock, sweeping
+          clockwise) drawn from just inside the rim (r − TICK_RIM_GAP) inward by
+          TICK_LEN — clock ticks: axis-aligned at the 4-beat cardinal positions.
+          Rendered in THIS group rather than the ring group above so the ring's
+          loom never scales a tick back across the rim. */}
+      <AnimatePresence>
+        {guidePhase && note.isInRegion && (
+          <motion.g
+            key="guide-ticks"
+            data-guide-ticks="true"
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={guideFade}
+          >
+            {countdownTicks?.map((f, i) => {
+              const theta = 2 * Math.PI * f;
+              const cos = Math.cos(theta);
+              const sin = Math.sin(theta);
+              const outer = r - TICK_RIM_GAP;
+              const inner = outer - TICK_LEN;
+              return (
+                <line
+                  key={`tick-${i}`}
+                  className={styles["note-guide-ring-tick"]}
+                  data-guide-tick="true"
+                  x1={cx + cos * inner}
+                  y1={cy + sin * inner}
+                  x2={cx + cos * outer}
+                  y2={cy + sin * outer}
+                />
+              );
+            })}
           </motion.g>
         )}
       </AnimatePresence>

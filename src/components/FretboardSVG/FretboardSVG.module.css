@@ -334,19 +334,20 @@
   100%    { opacity: 0.95; transform: scale(1.3); }
 }
 
-/* Beat-tick marks — short BRIGHT segments on the ring at beat/bar boundaries
-   (plus an anchor at the start/beat line). A light mark reads in both light and
-   dark modes — unlike a dark one, which vanished on dark wood and merged with
-   the strings' dark drop shadows. Bright + hard-edged ≠ soft achromatic shadow.
-   Each mark is a straight <line> tangent to the ring (horizontal/vertical at the
-   4-beat cardinal positions); this `stroke-width` MUST match the core's (2.75)
-   so the mark spans exactly the core band — CO-RADIAL with the green core,
-   contained on every note type and never spurring outside the ring. Round caps
-   keep the short segment crisp. Static (no animation) → zero per-frame paint. */
+/* Beat-tick marks — short BRIGHT radial ticks just INSIDE the marker rim at
+   beat/bar boundaries (plus an anchor at the start/beat line). A light mark reads
+   in both light and dark modes — unlike a dark one, which vanished on dark wood
+   and merged with the strings' dark drop shadows. Bright + hard-edged ≠ soft
+   achromatic shadow. Each mark is a short radial <line> pointing inward from the
+   rim (clock ticks; axis-aligned at the 4-beat cardinal positions), drawn at
+   radius < r so it sits inside the circle on every note type — the outer drain
+   ring (at ringR > r) is a halo OUTSIDE the marker, so ticks could never read as
+   "inside the circle" there. A thin stroke + round caps keep the short mark
+   crisp. Static (no animation) → zero per-frame paint. */
 .note-guide-ring-tick {
   fill: none !important;
-  stroke: rgb(255 255 255 / 0.92) !important;
-  stroke-width: 2.75 !important;
+  stroke: rgb(255 255 255 / 0.95) !important;
+  stroke-width: 1.6 !important;
   stroke-linecap: round;
   pointer-events: none;
 }
