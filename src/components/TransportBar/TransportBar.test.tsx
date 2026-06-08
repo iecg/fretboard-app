@@ -20,6 +20,7 @@ import {
 import { languageAtom } from "../../store/languageAtom";
 import { TooltipProvider } from "../Tooltip/Tooltip";
 import { TransportBar } from "./TransportBar";
+import css from "./TransportBar.module.css?raw";
 
 const fourStepProgression = [
   { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -38,6 +39,10 @@ describe("TransportBar", () => {
   // values rather than another test's persisted state.
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it("sizes transport buttons to the mobile control-height token", () => {
+    expect(css).toMatch(/data-layout-tier="mobile"[\s\S]*min-height:\s*var\(--control-height\)/);
   });
 
   it("renders the transport and instrument buttons", () => {
