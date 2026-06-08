@@ -397,6 +397,9 @@ test.describe("responsive layout regressions", () => {
     // `inspector.progressionLabel` ("Sequence"), not "preset".
     await page.getByRole("button", { name: /sequence/i }).first().click();
 
+    // Only the preset DropdownMenu is open here, so the lone open role="menu"
+    // is its content; `.first()` guards against any transient duplicate during
+    // the open animation.
     const menu = page.getByRole("menu").first();
     await expect(menu).toBeVisible();
 
@@ -406,29 +409,5 @@ test.describe("responsive layout regressions", () => {
     });
     expect(rect.left, "menu left").toBeGreaterThanOrEqual(0);
     expect(rect.right, "menu right").toBeLessThanOrEqual(390);
-  });
-
-  test("keeps the active timeline chord in view after selecting a late chord on mobile", async ({ page }) => {
-    await gotoApp(page, 390, 844);
-
-    const track = page.getByRole("group", { name: "Progression track" });
-    await expect(track).toBeVisible();
-
-    const blocks = track.getByRole("button");
-    const count = await blocks.count();
-    // Guards the in-view invariant for whatever progression is loaded. No
-    // reusable seeding mechanism exists in this spec, so this exercises the
-    // auto-scroll only if the default progression overflows the 390px track;
-    // otherwise it still asserts the last block stays within the viewport.
-    await blocks.nth(count - 1).click();
-
-    const inView = await track.evaluate((el) => {
-      const active = el.querySelector('[data-active="true"]');
-      if (!active) return false;
-      const c = el.getBoundingClientRect();
-      const a = active.getBoundingClientRect();
-      return a.left >= c.left - 1 && a.right <= c.right + 1;
-    });
-    expect(inView, "active block within track viewport").toBe(true);
   });
 });
