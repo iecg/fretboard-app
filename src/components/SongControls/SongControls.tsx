@@ -13,6 +13,7 @@ import { generateCommonProgressions, type SuggestionFeel } from "../../progressi
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
+import useLayoutMode from "../../hooks/useLayoutMode";
 import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
@@ -76,6 +77,7 @@ const SUGGESTION_FEEL_LABEL_KEYS: Record<SuggestionFeel, string> = {
 
 export function SongControls() {
   const { t } = useTranslation();
+  const { tier } = useLayoutMode();
   const {
     scaleName,
     rootNote,
@@ -247,6 +249,7 @@ export function SongControls() {
                   currentId={currentProgressionPresetId}
                   categories={categories}
                   suggestionGroups={suggestionGroups}
+                  compact={tier === "mobile"}
                   width="fill"
                   onSelect={handlePresetChange}
                 />

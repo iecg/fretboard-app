@@ -53,6 +53,9 @@ export interface PresetMenuProps {
   categories: PresetMenuCategory[];
   suggestionGroups: PresetMenuSuggestionGroup[];
   disabled?: boolean;
+  /** When true (mobile), render categories as flat in-menu groups instead of
+   *  sideways fly-out submenus, which can overflow narrow viewports. */
+  compact?: boolean;
   /** Sizing for the trigger. "auto" (default) is intrinsic; "fill" stretches
    * to the parent width, matching `LabeledSelect width="fill"`. */
   width?: "fill" | "auto";
@@ -99,6 +102,37 @@ function MenuOption({
   );
 }
 
+function CategoryGroup({
+  category,
+  currentId,
+  onSelect,
+  withSeparator,
+}: {
+  category: PresetMenuCategory;
+  currentId: string;
+  onSelect: (id: string) => void;
+  withSeparator: boolean;
+}) {
+  return (
+    <DropdownMenu.Group>
+      {withSeparator && (
+        <DropdownMenu.Separator className={styles["preset-menu-separator"]} />
+      )}
+      <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
+        {category.label}
+      </DropdownMenu.Label>
+      {category.options.map((option) => (
+        <MenuOption
+          key={option.id}
+          option={option}
+          currentId={currentId}
+          onSelect={onSelect}
+        />
+      ))}
+    </DropdownMenu.Group>
+  );
+}
+
 export function PresetMenu({
   triggerLabel,
   customLabel,
@@ -107,6 +141,7 @@ export function PresetMenu({
   categories,
   suggestionGroups,
   disabled,
+  compact = false,
   width = "auto",
   onSelect,
 }: PresetMenuProps) {
@@ -140,70 +175,110 @@ export function PresetMenu({
           sideOffset={4}
           align="start"
         >
-          {categories.map((category) => (
-            <DropdownMenu.Sub key={category.label}>
-              <DropdownMenu.SubTrigger className={styles["preset-menu-subtrigger"]}>
-                <span>{category.label}</span>
-                <ChevronRight size={14} aria-hidden="true" />
-              </DropdownMenu.SubTrigger>
-              <DropdownMenu.Portal>
-                <PresetMenuSubContent
-                  className={styles["preset-menu-content"]}
-                  sideOffset={2}
-                  alignOffset={-4}
-                >
-                  {category.options.map((option) => (
-                    <MenuOption
-                      key={option.id}
-                      option={option}
-                      currentId={currentId}
-                      onSelect={onSelect}
-                    />
-                  ))}
-                </PresetMenuSubContent>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Sub>
-          ))}
+          {compact
+            ? categories.map((category, index) => (
+                <CategoryGroup
+                  key={category.label}
+                  category={category}
+                  currentId={currentId}
+                  onSelect={onSelect}
+                  withSeparator={index > 0}
+                />
+              ))
+            : categories.map((category) => (
+                <DropdownMenu.Sub key={category.label}>
+                  <DropdownMenu.SubTrigger className={styles["preset-menu-subtrigger"]}>
+                    <span>{category.label}</span>
+                    <ChevronRight size={14} aria-hidden="true" />
+                  </DropdownMenu.SubTrigger>
+                  <DropdownMenu.Portal>
+                    <PresetMenuSubContent
+                      className={styles["preset-menu-content"]}
+                      sideOffset={2}
+                      alignOffset={-4}
+                    >
+                      {category.options.map((option) => (
+                        <MenuOption
+                          key={option.id}
+                          option={option}
+                          currentId={currentId}
+                          onSelect={onSelect}
+                        />
+                      ))}
+                    </PresetMenuSubContent>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Sub>
+              ))}
 
-          {suggestionGroups.length > 0 && (
-            <>
-              <DropdownMenu.Separator className={styles["preset-menu-separator"]} />
-              <DropdownMenu.Sub>
-                <DropdownMenu.SubTrigger className={styles["preset-menu-subtrigger"]}>
-                  <span>{`Suggested for ${scaleLabel}`}</span>
-                  <ChevronRight size={14} aria-hidden="true" />
-                </DropdownMenu.SubTrigger>
-                <DropdownMenu.Portal>
-                  <PresetMenuSubContent
-                    className={styles["preset-menu-content"]}
-                    sideOffset={2}
-                    alignOffset={-4}
-                  >
-                    {suggestionGroups.map((group, index) => (
-                      <DropdownMenu.Group key={group.feel}>
-                        {index > 0 && (
-                          <DropdownMenu.Separator
-                            className={styles["preset-menu-separator"]}
-                          />
-                        )}
-                        <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
-                          {group.label}
-                        </DropdownMenu.Label>
-                        {group.options.map((option) => (
-                          <MenuOption
-                            key={option.id}
-                            option={option}
-                            currentId={currentId}
-                            onSelect={onSelect}
-                          />
-                        ))}
-                      </DropdownMenu.Group>
+          {suggestionGroups.length > 0 &&
+            (compact ? (
+              <>
+                <DropdownMenu.Separator
+                  className={styles["preset-menu-separator"]}
+                />
+                <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
+                  {`Suggested for ${scaleLabel}`}
+                </DropdownMenu.Label>
+                {suggestionGroups.map((group, index) => (
+                  <DropdownMenu.Group key={group.feel}>
+                    {index > 0 && (
+                      <DropdownMenu.Separator
+                        className={styles["preset-menu-separator"]}
+                      />
+                    )}
+                    <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
+                      {group.label}
+                    </DropdownMenu.Label>
+                    {group.options.map((option) => (
+                      <MenuOption
+                        key={option.id}
+                        option={option}
+                        currentId={currentId}
+                        onSelect={onSelect}
+                      />
                     ))}
-                  </PresetMenuSubContent>
-                </DropdownMenu.Portal>
-              </DropdownMenu.Sub>
-            </>
-          )}
+                  </DropdownMenu.Group>
+                ))}
+              </>
+            ) : (
+              <>
+                <DropdownMenu.Separator className={styles["preset-menu-separator"]} />
+                <DropdownMenu.Sub>
+                  <DropdownMenu.SubTrigger className={styles["preset-menu-subtrigger"]}>
+                    <span>{`Suggested for ${scaleLabel}`}</span>
+                    <ChevronRight size={14} aria-hidden="true" />
+                  </DropdownMenu.SubTrigger>
+                  <DropdownMenu.Portal>
+                    <PresetMenuSubContent
+                      className={styles["preset-menu-content"]}
+                      sideOffset={2}
+                      alignOffset={-4}
+                    >
+                      {suggestionGroups.map((group, index) => (
+                        <DropdownMenu.Group key={group.feel}>
+                          {index > 0 && (
+                            <DropdownMenu.Separator
+                              className={styles["preset-menu-separator"]}
+                            />
+                          )}
+                          <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
+                            {group.label}
+                          </DropdownMenu.Label>
+                          {group.options.map((option) => (
+                            <MenuOption
+                              key={option.id}
+                              option={option}
+                              currentId={currentId}
+                              onSelect={onSelect}
+                            />
+                          ))}
+                        </DropdownMenu.Group>
+                      ))}
+                    </PresetMenuSubContent>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Sub>
+              </>
+            ))}
         </PresetMenuContent>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
