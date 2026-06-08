@@ -384,8 +384,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     nextChordTones: new Set<string>(),
     incomingTones: new Set<string>(),
     departingTones: new Set<string>(),
-    leadInActive: true,
-    planningActive: false,
+    guideCountdownActive: true,
   };
 
   it("falls back to tones-base when leadContext is undefined", () => {
@@ -451,7 +450,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
 
   it("outside the lead-in window, a held common tone is NOT enlarged (no role)", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "A", leadInActive: false,
+      ...baseLeadContext, notePc: "A", guideCountdownActive: false,
     };
     expect(getEmphasis("chord-tone-in-scale", false, ctx)).toEqual({
       radiusBoost: 1, opacityBoost: 1,
@@ -460,38 +459,41 @@ describe("getEmphasis - voice-leading emphasis", () => {
 
   it("outside the lead-in window, a guide tone produces no role", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "B", nextGuideTones: new Set(["B"]), leadInActive: false,
+      ...baseLeadContext, notePc: "B", nextGuideTones: new Set(["B"]), guideCountdownActive: false,
     };
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
   });
 
-  it("marks a next-chord guide tone as 'guide-preview' during the planning window", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "B", leadInActive: false, planningActive: true,
+  it("marks a next-chord guide tone as 'guide-target' during the countdown window", () => {
+    const e = getEmphasis("chord-tone-in-scale", true, {
+      notePc: "B",
       nextGuideTones: new Set(["B"]),
       nextGuideToneLabels: new Map([["B", "3"]]),
-    };
-    // Planning preview: resting size, full opacity, the preview role + label,
-    // and NO glow (the ring carries it).
-    const e = getEmphasis("scale-only", false, ctx);
-    expect(e.transitionRole).toBe("guide-preview");
+      nextChordTones: new Set(["B", "D", "G"]),
+      incomingTones: new Set(["B"]),
+      departingTones: new Set(),
+      guideCountdownActive: true,
+    });
+    expect(e.transitionRole).toBe("guide-target");
     expect(e.guideTargetLabel).toBe("3");
-    expect(e.opacityBoost).toBe(1);
-    expect(e.radiusBoost).toBe(0.85);
   });
 
-  it("landing (guide-target) takes precedence over planning when both flags are set", () => {
-    const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "B", leadInActive: true, planningActive: true,
+  it("returns the resting emphasis when the countdown window is inactive", () => {
+    const e = getEmphasis("chord-tone-in-scale", true, {
+      notePc: "B",
       nextGuideTones: new Set(["B"]),
       nextGuideToneLabels: new Map([["B", "3"]]),
-    };
-    expect(getEmphasis("scale-only", false, ctx).transitionRole).toBe("guide-target");
+      nextChordTones: new Set(["B", "D", "G"]),
+      incomingTones: new Set(["B"]),
+      departingTones: new Set(),
+      guideCountdownActive: false,
+    });
+    expect(e.transitionRole).toBeUndefined();
   });
 
-  it("produces no role when neither planning nor lead-in is active", () => {
+  it("produces no role when the countdown is inactive", () => {
     const ctx: LeadLensContext = {
-      ...baseLeadContext, notePc: "B", leadInActive: false, planningActive: false,
+      ...baseLeadContext, notePc: "B", guideCountdownActive: false,
       nextGuideTones: new Set(["B"]),
     };
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();

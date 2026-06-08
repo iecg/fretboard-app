@@ -174,6 +174,65 @@ export function isInPlanningWindow(
 }
 
 /**
+ * True when the playhead is inside the single continuous countdown window — the
+ * union of the old planning + landing windows. The window spans the final
+ * `min(step, PLANNING_RUNWAY_BARS · bar)` of the step and ends exactly on the
+ * beat. Pure so it is unit-testable without atom plumbing.
+ */
+export function isInCountdownWindow(
+  stepFraction: number,
+  stepDurationMs: number,
+  barDurationMs = Infinity,
+): boolean {
+  if (stepDurationMs <= 0) return false;
+  const windowMs = Math.min(stepDurationMs, PLANNING_RUNWAY_BARS * barDurationMs);
+  if (windowMs <= 0) return false;
+  const startFraction = 1 - windowMs / stepDurationMs;
+  return stepFraction >= startFraction;
+}
+
+/** Lowest beat count that shows interior ticks (a lone tick is noise). */
+const MIN_TICK_BEATS = 2;
+/** Subitizing cap — at most this many segments (≤ 3 interior ticks). */
+const MAX_TICK_SEGMENTS = 4;
+
+/**
+ * Window-fractions in [0,1) at which to draw static beat/bar boundary notches.
+ * Includes an anchor tick at fraction 0 — the start/beat line (the full-circle
+ * drain's start and end coincide, so this single mark anchors both the launch
+ * and the landing point) — followed by one tick per interior segment boundary.
+ *
+ * - ≤ 4 beats → one segment per beat (subitizable at a glance).
+ * - > 4 beats → collapse to bar lines when there are 2–4 bars, else 4 even
+ *   segments (caps interior ticks at 3 + the anchor → ≤ 4 marks, the ~4-object
+ *   subitizing limit).
+ * - < 2 beats → no ticks.
+ *
+ * Pure so it is unit-testable. `windowMs`/`beatMs`/`barMs` are all in ms.
+ */
+export function computeCountdownTickFractions(
+  windowMs: number,
+  beatMs: number,
+  barMs: number,
+): number[] {
+  if (windowMs <= 0 || beatMs <= 0) return [];
+  const beats = Math.round(windowMs / beatMs);
+  if (beats < MIN_TICK_BEATS) return [];
+
+  let segments: number;
+  if (beats <= MAX_TICK_SEGMENTS) {
+    segments = beats;
+  } else {
+    const bars = barMs > 0 ? Math.round(windowMs / barMs) : 0;
+    segments = bars >= 2 && bars <= MAX_TICK_SEGMENTS ? bars : MAX_TICK_SEGMENTS;
+  }
+
+  const ticks: number[] = [0];
+  for (let i = 1; i < segments; i++) ticks.push(i / segments);
+  return ticks;
+}
+
+/**
  * Fraction [0,1] of the active STEP elapsed, derived from the per-step deadline
  * (`Date.now() + stepDurationMs`, set on each step advance) rather than the
  * visual frame's `localFraction` — which the timeline resets every BAR, so a
@@ -562,9 +621,11 @@ export const activeStepDurationBeatsAtom = atom((get): number => {
 });
 
 /**
- * Length of the active step's lead-in preview window, in milliseconds. Written
- * to the `--lead-in-duration` CSS custom property so the ghost ramp animation
- * lasts exactly the window. Changes only when the active step / tempo changes.
+ * Length of the active step's lead-in window, in milliseconds. Retained as a
+ * derived selector — it has no current production consumer (the countdown ring
+ * now drives its CSS from {@link guideCountdownWindowMsAtom}), but it keeps its
+ * own tests and is the natural input for any future lead-in-only cue. Changes
+ * only when the active step / tempo changes.
  */
 export const leadInDurationMsAtom = atom((get): number =>
   computeLeadInWindowMs(
@@ -575,11 +636,11 @@ export const leadInDurationMsAtom = atom((get): number =>
 
 /**
  * Length of the active step's PLANNING window, in milliseconds — the runway
- * before the lead-in/landing window. Written to the `--planning-duration` CSS
- * custom property so the preview "breathe" runs exactly once over the planning
- * phase and resolves to full brightness right as the landing drain begins (a
- * seamless brightness handoff). Mirrors {@link isInPlanningWindow}'s span:
- * `min(step, 2·bar) − landingWindow`, floored at 0.
+ * before the lead-in window. Retained as a derived selector with no current
+ * production consumer (the single continuous countdown ring replaced the
+ * separate planning "breathe" phase); kept with its own tests. Mirrors
+ * {@link isInPlanningWindow}'s span: `min(step, 2·bar) − landingWindow`,
+ * floored at 0.
  */
 export const planningDurationMsAtom = atom((get): number => {
   const step = get(progressionStepDurationMsAtom);
@@ -662,6 +723,61 @@ export const planningWindowActiveAtom = atom((get): boolean => {
   const stepMs = get(progressionStepDurationMsAtom);
   const stepFraction = stepRelativeFraction(deadline, Date.now(), stepMs);
   return isInPlanningWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
+});
+
+/**
+ * Length of the single continuous countdown window, in ms — `min(step, 2·bar)`.
+ * Written to the `--guide-duration` CSS custom property so the drain lasts
+ * exactly the window. Changes only when the active step / tempo changes.
+ */
+export const guideCountdownWindowMsAtom = atom((get): number => {
+  const step = get(progressionStepDurationMsAtom);
+  const bar = get(progressionBarDurationMsAtom);
+  return Math.min(step, PLANNING_RUNWAY_BARS * bar);
+});
+
+/**
+ * Window-fractions for the static beat-tick notches on the countdown ring.
+ * Derived from the countdown window and meter via
+ * {@link computeCountdownTickFractions}. Recomputes only on step/tempo/meter
+ * change — never per frame.
+ */
+export const guideCountdownTickFractionsAtom = atom((get): number[] => {
+  const windowMs = get(guideCountdownWindowMsAtom);
+  const bar = get(progressionBarDurationMsAtom);
+  const beatsPerBar = get(beatsPerBarAtom);
+  const beatMs = beatsPerBar > 0 ? bar / beatsPerBar : 0;
+  return computeCountdownTickFractions(windowMs, beatMs, bar);
+});
+
+/**
+ * Single continuous countdown phase — the union of the old planning + landing
+ * windows. True whenever the playhead is inside {@link isInCountdownWindow} for
+ * the active step, AND (like {@link leadInActiveAtom}) held true across the
+ * boundary-gap where the audio frame leads the displayed step. Reads the
+ * per-frame visual frame, but its VALUE only flips at the window threshold, so
+ * subscribers re-render at most twice per step.
+ */
+export const guideCountdownActiveAtom = atom((get): boolean => {
+  if (!get(progressionPlayingAtom)) return false;
+  const frame = get(progressionVisualFrameAtom);
+  if (!frame || frame.paused) return false;
+  const displayed = get(displayedProgressionStepIndexAtom);
+  // Boundary gap: audio has crossed into a later step than the fretboard shows —
+  // hold the ring on until the displayed shape catches up (same as lead-in).
+  if (frame.stepIndex !== displayed) return true;
+  // Only trust the step fraction when the deadline's step matches displayed.
+  if (get(activeProgressionStepIndexAtom) !== displayed) return false;
+  const deadline = get(progressionStepDeadlineAtom);
+  if (deadline == null) return false;
+  const stepMs = get(progressionStepDurationMsAtom);
+  const now = Date.now();
+  // Guard: step must have actually started (deadline within one step from now).
+  // Prevents the ring from firing when the countdown window spans the full step
+  // (short chords) and the deadline is still in the future beyond the step start.
+  if (deadline - now > stepMs) return false;
+  const stepFraction = stepRelativeFraction(deadline, now, stepMs);
+  return isInCountdownWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
 });
 
 /**

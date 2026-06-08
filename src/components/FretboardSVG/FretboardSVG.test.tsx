@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, fireEvent } from "@testing-library/react";
+import { render, fireEvent, screen } from "@testing-library/react";
 import "../../styles/index.css";
 import "../../styles/themes.css";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
@@ -16,6 +16,7 @@ import {
   progressionStepsAtom,
   beatsPerBarAtom,
   progressionStepDeadlineAtom,
+  progressionStepDurationMsAtom,
 } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 
@@ -848,7 +849,7 @@ describe("FretboardSVG/FretboardSVG", () => {
   });
 
   describe("lead-in board signals", () => {
-    it("exposes --lead-in-duration and data-transition-phase during the lead-in window", () => {
+    it("exposes --guide-duration and data-transition-phase='countdown' during the countdown window", () => {
       const store = createStore();
       store.set(progressionStepsAtom, [
         { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -859,16 +860,16 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
       store.set(progressionStepDeadlineAtom, Date.now() + 100);
 
-      const { container } = renderWithStore(
+      renderWithStore(
         <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
         store,
       );
-      const board = container.querySelector('[data-testid="fretboard-svg"]') as HTMLElement;
-      expect(board.getAttribute("data-transition-phase")).toBe("lead-in");
-      expect(board.style.getPropertyValue("--lead-in-duration")).not.toBe("");
+      const board = screen.getByTestId("fretboard-svg");
+      expect(board.style.getPropertyValue("--guide-duration")).toMatch(/\d+ms/);
+      expect(board.getAttribute("data-transition-phase")).toBe("countdown");
     });
 
-    it("data-transition-phase is absent when the frame is outside the lead-in window", () => {
+    it("data-transition-phase is absent when the frame is outside the countdown window", () => {
       const store = createStore();
       store.set(progressionStepsAtom, [
         { id: "i", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -878,12 +879,18 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(setProgressionPlayingAtom, true);
       // localFraction 0.0 is well before the lead-in window starts (~0.5)
       store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.0, localFraction: 0.0, paused: false });
+      // Deadline more than one step ahead — the "step has started" guard
+      // (deadline - now > stepMs) prevents guideCountdownActiveAtom from firing.
+      // Derive from the active step duration so this stays correct if the tempo
+      // or defaults change; 3× is safely outside the window.
+      const stepMs = store.get(progressionStepDurationMsAtom);
+      store.set(progressionStepDeadlineAtom, Date.now() + stepMs * 3);
 
-      const { container } = renderWithStore(
+      renderWithStore(
         <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
         store,
       );
-      const board = container.querySelector('[data-testid="fretboard-svg"]') as HTMLElement;
+      const board = screen.getByTestId("fretboard-svg");
       expect(board.getAttribute("data-transition-phase")).toBeNull();
     });
 

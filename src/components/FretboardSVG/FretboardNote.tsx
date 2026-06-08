@@ -27,6 +27,16 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
+// Radial half-length (user units) of a beat-tick mark, centered on the drain
+// track (ringR). Each tick is a short radial <line> spanning ringR ± this, so it
+// crosses the track band (core stroke-width 2.75 → half-width ~1.375) and reads
+// as a clock tick ON the track. Anchoring to ringR — each note's OWN track radius
+// (ringR = r + standoff) — places the tick precisely on the track for both chord
+// tones and in-scale tones despite their different marker sizes, with no per-type
+// parameters. Kept ≤ the halo half-width (~2.375) so the tick stays within the
+// ring's footprint and never spurs into bare wood.
+const TICK_HALF_LEN = 2;
+
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
   noteBubblePx: number;
@@ -35,6 +45,8 @@ interface FretboardNoteProps {
   neckWidthPx?: number;
   neckHeight?: number;
   numStrings?: number;
+  /** Window-fractions (0,1) for static beat-tick notches on the countdown ring. */
+  countdownTicks?: number[];
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
@@ -45,6 +57,7 @@ export const FretboardNote = memo(function FretboardNote({
   neckWidthPx,
   neckHeight,
   numStrings,
+  countdownTicks,
   onNoteClick,
 }: FretboardNoteProps) {
   const {
@@ -68,12 +81,7 @@ export const FretboardNote = memo(function FretboardNote({
 
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
-  const guidePhase =
-    transitionRole === "guide-target"
-      ? "landing"
-      : transitionRole === "guide-preview"
-        ? "preview"
-        : undefined;
+  const guidePhase = transitionRole === "guide-target" ? "landing" : undefined;
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -175,18 +183,18 @@ export const FretboardNote = memo(function FretboardNote({
         />
       )}
       {shapeEl}
-      {/* Two-phase target ring. A dark halo under a coloured core (a 2-colour
+      {/* Countdown target ring. A dark halo under a coloured core (a 2-colour
           "Oreo" ring) keeps it legible over any fill and on light or dark wood.
           Drawn ON TOP of the marker (after shapeEl): a filled chord/root note is
           opaque and — enlarged by the taper scale + the root's playback radius
           boost — would otherwise occlude the ring's inner edge, leaving only a
           sliver. The ring sits at a standoff OUTSIDE the marker, so painting it
           last keeps the full halo + core visible on every note type.
-          Phase rides stroke-weight + opacity (planning thin/dim → landing
-          thick/bright); CSS animates the landing CONTRACTION (scale), motion
-          owns OPACITY so AnimatePresence fades it in on mount and OUT on removal
-          — decoupling the fade-out from React's startTransition-jittered unmount
-          (the boundary flash). */}
+          The core DRAINS clockwise over the whole countdown window (CSS), with a
+          brightness ramp + gentle looming scale escalating toward the beat;
+          motion owns the group OPACITY so AnimatePresence fades it in on mount
+          and OUT on removal — decoupling the fade-out from React's
+          startTransition-jittered unmount (the boundary flash). */}
       <AnimatePresence>
         {guidePhase && (
           <motion.g
@@ -201,11 +209,10 @@ export const FretboardNote = memo(function FretboardNote({
             data-guide-primary={note.isInRegion ? "true" : "false"}
             aria-hidden="true"
             initial={{ opacity: 0 }}
-            // Primary targets hold full group opacity in BOTH phases so the
-            // brightness matches at the breathe→drain handoff; the calmer
-            // "passive" feel comes from the core breathe's dips (whose peaks
-            // equal the landing brightness), not a dimmer group. Secondary
-            // (out-of-region) targets are quiet static markers.
+            // Primary targets hold full group opacity; the escalating salience
+            // comes from the core's brightness ramp + looming scale over the
+            // countdown window, not a dimmer group. Secondary (out-of-region)
+            // targets are quiet static markers at reduced opacity.
             animate={{ opacity: note.isInRegion ? 1 : 0.4 }}
             exit={{ opacity: 0 }}
             transition={guideFade}
@@ -224,6 +231,39 @@ export const FretboardNote = memo(function FretboardNote({
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
+            {/* Static beat-tick marks — short BRIGHT radial ticks centered on the
+                drain track (ringR) at each beat boundary, giving a countable
+                "segment done" read as the green core drains past them. Only on
+                PRIMARY (in-region) targets, and only when the step has enough
+                beats to warrant ticks (countdownTicks empty otherwise). Each is a
+                <line> at angle θ = 2π·f (drain origin at 3 o'clock, sweeping
+                clockwise), spanning ringR ± TICK_HALF_LEN so it crosses the track
+                band — clock ticks: axis-aligned at the 4-beat cardinal positions.
+                Anchored to ringR (each note's OWN track radius), so chord tones
+                and in-scale tones — different marker sizes, hence different ringR
+                — both get ticks precisely on their track without per-type tuning.
+                Rendered INSIDE the ring group so the ring's loom scales the ticks
+                WITH the track, keeping them locked on it through the countdown. */}
+            {note.isInRegion &&
+              countdownTicks?.map((f, i) => {
+                const theta = 2 * Math.PI * f;
+                const cos = Math.cos(theta);
+                const sin = Math.sin(theta);
+                const inner = ringR - TICK_HALF_LEN;
+                const outer = ringR + TICK_HALF_LEN;
+                return (
+                  <line
+                    key={`tick-${i}`}
+                    className={styles["note-guide-ring-tick"]}
+                    data-guide-tick="true"
+                    x1={cx + cos * inner}
+                    y1={cy + sin * inner}
+                    x2={cx + cos * outer}
+                    y2={cy + sin * outer}
+                    aria-hidden="true"
+                  />
+                );
+              })}
           </motion.g>
         )}
       </AnimatePresence>
@@ -233,8 +273,8 @@ export const FretboardNote = memo(function FretboardNote({
             key="guide-label"
             className={styles["note-guide-label"]}
             data-guide-label="true"
-            x={cx + r + 2}
-            y={cy - r - 2}
+            x={cx + ringR + 3}
+            y={cy - ringR - 1}
             aria-hidden="true"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

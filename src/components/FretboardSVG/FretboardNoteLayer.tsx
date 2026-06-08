@@ -12,6 +12,8 @@ interface FretboardNoteLayerProps {
   neckWidthPx?: number;
   neckHeight?: number;
   numStrings?: number;
+  /** Window-fractions for the countdown ring's beat-tick notches. */
+  countdownTicks?: number[];
 }
 
 // This visual layer is decorative (its <svg> is aria-hidden + pointer-events:none).
@@ -27,6 +29,7 @@ export const FretboardNoteLayer = memo(({
   neckWidthPx,
   neckHeight,
   numStrings,
+  countdownTicks,
 }: FretboardNoteLayerProps) => (
   // NOTE: reading a new render-affecting field in FretboardNote? Also add it to
   // `renderedNoteSignature` in useAnimatedFretboardView.ts, or cached notes will
@@ -41,6 +44,7 @@ export const FretboardNoteLayer = memo(({
         neckWidthPx={neckWidthPx}
         neckHeight={neckHeight}
         numStrings={numStrings}
+        countdownTicks={countdownTicks}
       />
     ))}
   </g>
