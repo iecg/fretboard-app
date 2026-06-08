@@ -106,6 +106,22 @@ Append a short note to this plan file under this task:
 **Investigation result:** Record the exact selector and CSS property that produce the right-edge artifact. The fix in Task 3 must target that selector only.
 ```
 
+**Investigation result (2026-06-07, branch `claude/recursing-euclid-4c94c5`):** No right-edge artifact was reproducible at 390x844 or 375x667 on the current branch.
+
+Real identifiers verified against source:
+- Scroll wrapper class: `.fretboard-wrapper` (`src/components/Fretboard/Fretboard.module.css`) — guess confirmed.
+- Outer container: `data-testid="fretboard-outer"` present on `.fretboard-outer` (`Fretboard.tsx:298-299`) — confirmed.
+- SVG root class is `.fretboard-main-svg` (`FretboardSVG.tsx:632`), **not** the plan's guessed `.fretboard-svg`. It carries `overflow: visible` (`FretboardSVG.module.css:21-24`).
+- Mobile portrait visual test: `app-mobile-portrait-390x844` — confirmed.
+
+Why no artifact: the prior **Phase 3c** work already neutralizes the bleed. `.fretboard-wrapper` carries a base rule `overflow: clip; contain: layout` (`Fretboard.module.css:27-28`) that rectangularly clips sub-pixel paint bleed (string-shadow filter regions, taper edge strokes) to the wrapper box. The mobile tier override (`Fretboard.module.css:54-58`) sets `overflow-x: auto; overflow-y: visible` for horizontal scroll, but the only paint sources that would bleed past the right edge are SVG string-shadow filter regions, which `overflow-x` still clips horizontally; the right edge therefore stays clean.
+
+Evidence:
+- Task 1 guard `keeps mobile fretboard paint inside the viewport width` **passes** at both viewports: `documentElement.scrollWidth <= innerWidth`, and both `fretboard-outer` and `fretboard-wrapper` right edges are `<= viewport width`.
+- Visual `app-mobile-portrait-390x844` (plus the other four mobile snapshots) **pass** against committed darwin baselines with no diff — the rendered fretboard already matches the clean expected appearance.
+
+Decision: **SKIP Task 3.** No CSS change is warranted — applying the planned `overflow-y: clip` / `overflow-clip-margin` / SVG `overflow: clip` would be dead/redundant CSS and risks clipping connectors that the Phase 3c comment intentionally leaves visible. Task 1's guard is retained as regression protection; Task 4 confirms visuals stay clean.
+
 - [ ] **Step 4: Commit the investigation note**
 
 ```bash
