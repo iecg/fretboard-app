@@ -197,7 +197,13 @@
   stroke-width: 3.6;
 }
 
-:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) circle {
+/* Compensate ONLY the marker circle's radius for the heavier light-mode stroke.
+   The guide-ring circles carry their own geometric radius (ringR) via the SVG `r`
+   attribute and must be EXEMPT: a bare `circle` selector also matched them and
+   pulled the drain track in to the marker radius (collapse = standoff + 0.4px,
+   larger on bigger notes), which made the beat ticks — positioned at ringR — read
+   as poking out past the track into the wood on big chord-tone bubbles. */
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) circle:not(.note-guide-ring-halo):not(.note-guide-ring-core):not(.note-guide-ring-flash) {
   r: calc(var(--note-r) * 1px - 0.4px);
 }
 
