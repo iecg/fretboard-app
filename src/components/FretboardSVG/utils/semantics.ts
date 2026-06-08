@@ -3,10 +3,14 @@ import {
   RADIUS_SCALE_KEY_TONIC,
   RADIUS_SCALE_DEFAULT,
 } from "@fretflow/core";
+import type { PracticeLens } from "../../../store/practiceLensAtoms";
 
 export type BoxBound = { minFret: number; maxFret: number };
 
-export type TransitionRole = "guide-target";
+/** Gentle size hold for pivot/common tones under the Field lens. */
+const COMMON_HOLD_RADIUS_BOOST = 1.15;
+
+export type TransitionRole = "guide-target" | "hold-common";
 
 export type LensEmphasis = {
   radiusBoost: number;
@@ -38,6 +42,10 @@ export type LeadLensContext = {
   departingTones: Set<string>;
   /** True while the single continuous countdown window is open. */
   guideCountdownActive: boolean;
+  /** Active improvisation lens — selects the emphasis mode. */
+  lens: PracticeLens;
+  /** Pitch classes shared between the active chord and the next (`active ∩ next`). */
+  commonTones: Set<string>;
 };
 
 /**
@@ -66,7 +74,7 @@ export function getEmphasis(
     return applyTonesBase(noteClass);
   }
 
-  const { notePc, nextGuideTones, nextGuideToneLabels, guideCountdownActive } = leadContext;
+  const { notePc, nextGuideTones, nextGuideToneLabels, guideCountdownActive, lens, commonTones } = leadContext;
 
   // The note's resting emphasis when not actively targeted — the base model.
   const resting: LensEmphasis = applyTonesBase(noteClass);
@@ -78,6 +86,18 @@ export function getEmphasis(
       opacityBoost: 1,
       transitionRole: "guide-target",
       guideTargetLabel: nextGuideToneLabels.get(notePc),
+    };
+  }
+
+  // Field lens: notes shared with the next chord get a steady hold (size +
+  // full opacity, static ring) through the guide countdown window, showing
+  // what survives the change. No drain/ticks — the ring path is quiet because
+  // the common lens returns an empty target set; this branch supplies the cue.
+  if (lens === "common" && guideCountdownActive && commonTones.has(notePc)) {
+    return {
+      radiusBoost: COMMON_HOLD_RADIUS_BOOST,
+      opacityBoost: 1,
+      transitionRole: "hold-common",
     };
   }
   return resting;
