@@ -251,3 +251,22 @@
   color: var(--dc-fg-muted);
   font-style: italic;
 }
+
+/* ---------------------------------------------------------------------------
+ * Mobile: collapse the master-detail into a single natural-flow column. The
+ * bounded inner scroll (max-height + overflow) plus edge fades create a
+ * cramped nested-scroll region inside the already-scrolling inspector, which
+ * reads as the editor overlapping the list. On mobile the full list flows and
+ * the editor sits cleanly below it; the inspector page scroll absorbs height.
+ * ------------------------------------------------------------------------- */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="mobile"]) .list {
+  max-height: none;
+  overflow-y: visible;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .scroll::before,
+:global(.app-container[data-layout-tier="mobile"]) .scroll::after {
+  display: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
