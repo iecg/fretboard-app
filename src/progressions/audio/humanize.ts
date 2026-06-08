@@ -58,3 +58,16 @@ export function shouldDropHit(velocity: number, seed: number): boolean {
   if (velocity >= GHOST_VELOCITY_THRESHOLD) return false;
   return seededRandom(seed + DROP_SEED_OFFSET) < GHOST_DROP_CHANCE;
 }
+
+/** Fraction of full timing jitter applied to anchor (integer) beats. */
+const ANCHOR_JITTER_FACTOR = 0.4;
+
+/**
+ * Groove lock: integer beats (the structural pulse) get reduced timing jitter;
+ * off-beat subdivisions keep the full amount. Meter-agnostic — keys off the
+ * bar-local beat value. Returns the `timeAmountSec` to feed `applyJitter`.
+ * (Velocity jitter is unaffected — only timing.)
+ */
+export function grooveLockTimeAmount(beat: number, fullAmountSec: number): number {
+  return Number.isInteger(beat) ? fullAmountSec * ANCHOR_JITTER_FACTOR : fullAmountSec;
+}

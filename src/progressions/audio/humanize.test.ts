@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyJitter, shouldDropHit } from "./humanize";
+import { applyJitter, shouldDropHit, grooveLockTimeAmount } from "./humanize";
 
 describe("applyJitter", () => {
   it("returns a new object with jittered time and velocity", () => {
@@ -67,5 +67,24 @@ describe("shouldDropHit", () => {
   it("is deterministic for a fixed velocity + seed", () => {
     expect(shouldDropHit(0.2, 42)).toBe(shouldDropHit(0.2, 42));
     expect(shouldDropHit(0.2, 42)).not.toBe(undefined);
+  });
+});
+
+describe("grooveLockTimeAmount", () => {
+  it("reduces jitter on integer (anchor) beats to ~40%", () => {
+    expect(grooveLockTimeAmount(0, 0.015)).toBeCloseTo(0.006);
+    expect(grooveLockTimeAmount(2, 0.015)).toBeCloseTo(0.006);
+    expect(grooveLockTimeAmount(0, 0.005)).toBeCloseTo(0.002);
+  });
+
+  it("leaves off-beats at full jitter", () => {
+    expect(grooveLockTimeAmount(0.5, 0.015)).toBe(0.015);
+    expect(grooveLockTimeAmount(1.75, 0.015)).toBe(0.015);
+    expect(grooveLockTimeAmount(2.5, 0.005)).toBe(0.005);
+  });
+
+  it("is meter-agnostic (works for any integer beat)", () => {
+    expect(grooveLockTimeAmount(5, 0.015)).toBeCloseTo(0.006);
+    expect(grooveLockTimeAmount(6, 0.015)).toBeCloseTo(0.006);
   });
 });
