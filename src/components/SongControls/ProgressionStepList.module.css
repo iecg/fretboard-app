@@ -36,37 +36,15 @@
   opacity: 0.8;
 }
 
-/* Scroll region: a positioned shell holding the edge-fade overlays above the
-   list. The fades are driven entirely by a CSS scroll-driven animation (the
-   list's own `scroll-timeline`) — no JS scroll listener, no React state. They
-   overlay the content (visible on any theme, unlike a background shadow on a
-   near-black faceplate) and only appear when there is overflow in that
-   direction. Browsers without scroll-driven animations fall back to no fade
-   (the `@supports` block below never applies), which degrades gracefully. */
+/* Scroll region: a positioned shell that holds the `timeline-scope` for the
+   list's scroll-driven animations. The edge fades are applied directly to the
+   list via `mask-image` (driven by CSS custom properties that the scroll-
+   timeline interpolates), so they don't need to know the parent background
+   color — no color-matching bug. Browsers without scroll-driven animations
+   fall back to no fade (the `@supports` block below never applies), which
+   degrades gracefully. */
 .scroll {
   position: relative;
-}
-
-.scroll::before,
-.scroll::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: var(--scrollbar-width);
-  height: 1.4rem;
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0;
-}
-
-.scroll::before {
-  top: 0;
-  background: linear-gradient(180deg, var(--faceplate-bg), transparent);
-}
-
-.scroll::after {
-  bottom: 0;
-  background: linear-gradient(0deg, var(--faceplate-bg), transparent);
 }
 
 .list {
@@ -87,46 +65,62 @@
 }
 
 /* Reveal the top fade once scrolled away from the top, and hide the bottom fade
-   on reaching the end — purely from the scroll position. */
+   on reaching the end — purely from the scroll position. The mask gradient fades
+   the list content itself at the edges, driven by `@property`-registered custom
+   properties that the scroll-timeline interpolates smoothly. No overlay pseudo-
+   elements, no hardcoded background colors, no backdrop-filter — pure mask. */
 @supports (animation-timeline: scroll()) {
+  @property --chord-list-mask-top {
+    syntax: "<number>";
+    initial-value: 0;
+    inherits: false;
+  }
+
+  @property --chord-list-mask-bottom {
+    syntax: "<number>";
+    initial-value: 1;
+    inherits: false;
+  }
+
   .scroll {
     timeline-scope: --chord-list-scroll;
   }
 
   .list {
     scroll-timeline: --chord-list-scroll block;
-  }
-
-  .scroll::before {
-    animation: chord-list-fade-in linear both;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black calc(var(--chord-list-mask-top) * 1.4rem),
+      black calc(100% - var(--chord-list-mask-bottom) * 1.4rem),
+      transparent 100%
+    );
+    mask-size: 100% 100%;
+    animation-name: chord-list-mask-top, chord-list-mask-bottom;
     animation-timeline: --chord-list-scroll;
-    animation-range: 0 1.5rem;
-  }
-
-  .scroll::after {
-    animation: chord-list-fade-out linear both;
-    animation-timeline: --chord-list-scroll;
-    animation-range: calc(100% - 1.5rem) 100%;
+    animation-fill-mode: forwards;
+    animation-range-start: 0, calc(100% - 1.5rem);
+    animation-range-end: 1.5rem, 100%;
   }
 }
 
-@keyframes chord-list-fade-in {
+@keyframes chord-list-mask-top {
   from {
-    opacity: 0;
+    --chord-list-mask-top: 0;
   }
 
   to {
-    opacity: 1;
+    --chord-list-mask-top: 1;
   }
 }
 
-@keyframes chord-list-fade-out {
+@keyframes chord-list-mask-bottom {
   from {
-    opacity: 1;
+    --chord-list-mask-bottom: 1;
   }
 
   to {
-    opacity: 0;
+    --chord-list-mask-bottom: 0;
   }
 }
 
@@ -260,8 +254,8 @@
  * its box and collided with the `.editor-panel` that flex laid out immediately
  * after the 13rem allocation. Reset `.col`/`.scroll` to size to their content
  * height so the full list flows and the editor sits cleanly below it (the
- * inspector page scroll absorbs the height). Also drop the bounded inner scroll
- * and edge fades, which only made sense for the capped desktop list.
+ * inspector page scroll absorbs the height). Drop the mask edge fades since
+ * there's no bounded scrollport to fade into.
  * ------------------------------------------------------------------------- */
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="mobile"]) .col {
@@ -279,8 +273,7 @@
   overflow-y: visible;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .scroll::before,
-:global(.app-container[data-layout-tier="mobile"]) .scroll::after {
-  display: none;
+:global(.app-container[data-layout-tier="mobile"]) .list {
+  mask-image: none;
+  animation: none;
 }
-/* stylelint-enable selector-pseudo-class-no-unknown */

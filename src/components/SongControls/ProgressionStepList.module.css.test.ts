@@ -23,9 +23,9 @@ describe("ProgressionStepList.module.css mobile rules", () => {
     );
   });
 
-  it("hides the scroll edge fades on mobile", () => {
+  it("masks the scroll edge mask on mobile (no internal scrollport)", () => {
     expect(css).toMatch(
-      /data-layout-tier="mobile"[\s\S]*\.scroll::before[\s\S]*display:\s*none/,
+      /data-layout-tier="mobile"[\s\S]*\.list[\s\S]*mask-image:\s*none/,
     );
   });
 });
