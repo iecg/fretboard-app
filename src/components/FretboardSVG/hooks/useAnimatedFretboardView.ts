@@ -48,6 +48,8 @@ export function buildAnimatedFretboardNotes({
         incomingTones: emphasisContext.incomingTones,
         departingTones: emphasisContext.departingTones,
         guideCountdownActive: emphasisContext.guideCountdownActive,
+        lens: emphasisContext.lens,
+        commonTones: emphasisContext.commonTones,
       };
     }
 
