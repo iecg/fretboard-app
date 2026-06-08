@@ -5,11 +5,18 @@ so it survives the periodic pruning of specs and plans. Specs and plans are ephe
 (they describe a unit of work and get deleted once shipped); this document is where the
 *why* lives permanently.
 
-**Purpose.** A single home for the research, guitar conventions, music pedagogy, and
-engineering principles behind FretFlow's fretboard visual language — markers, color,
+**Purpose.** A single home for the research, guitar conventions, and engineering
+principles behind FretFlow's fretboard *rendering* visual language — markers, color,
 and chord-transition motion. When a future spec makes a visual/interaction decision, it
 should **cite this document** rather than re-deriving the grounding, and add any new
 sources here.
+
+> **Companion docs.** This doc owns *rendering* rationale (how notes are drawn). The
+> *theory* grounding (chord qualities, guide tones, improvisation lenses, modal
+> characteristic tones) lives in [`music-theory-pedagogy.md`](./music-theory-pedagogy.md);
+> the *voicing/strum/audio* engine rationale lives in
+> [`audio-voicing-engine.md`](./audio-voicing-engine.md). The two domains stay separate —
+> theory decides which notes mean what; this doc decides how they look.
 
 **How to use.**
 - Decisions are organized by domain (§3). Each entry states the decision, the rationale,
@@ -97,12 +104,17 @@ Three meta-principles govern the model:
 - **Connector accent = one Okabe-Ito color** (orange dark / vermillion light). Lines
   tolerate hue far better than dots, and Okabe-Ito is colorblind-safe. **[spec]**
   (Okabe & Ito colorblind-safe palette.)
-- **Degree-color lens → Hooktheory mapping.** The opt-in degree lens (which *deliberately
-  overrides* the amber-home palette while active) adopts Hookpad's familiar mapping:
-  1=red, 2=orange, 3=yellow, 4=green, 5=blue, 6=purple, 7=pink, cycled by interval so
-  relationships hold across keys/modes. Rationale: maximal cross-tool familiarity for the
-  millions of learners who use Hookpad; the lens is a distinct mode so red-tonic does not
-  conflict with the default board's amber-home. **[web]** Hooktheory scale-degree colors.
+- **Scale-degree *color* lens — tried, then removed.** An opt-in degree-color lens
+  (overriding amber-home with Hookpad's 1=red…7=pink mapping) shipped briefly and was
+  **removed (#534)**: a full rainbow on small dots fights the rationed-hue discipline (§2),
+  and the cross-tool-familiarity benefit didn't justify a second palette mode. It was
+  superseded by the **improvisation lenses** (Root / Guide / Common practice, #550), which
+  re-emphasize *salience* within the existing two-anchor palette instead of recoloring by
+  pitch class. The lens *pedagogy* (what Root/Guide/Common each emphasize, and the
+  Hooktheory degree-color reference) now lives in
+  [`music-theory-pedagogy.md`](./music-theory-pedagogy.md) §3; this doc keeps only the
+  rendering principle: **don't spend a whole rainbow on dots.** **[web]** Hooktheory
+  scale-degree colors (retained as a reference, not an active mapping).
 
 ### B. Marker shape & size
 
@@ -237,18 +249,31 @@ overlay off — guide tones exist only in chord context. See §10 for the spec t
 
 ## 6. Open questions / deliberately deferred
 
-- **Modal characteristic-tone accent channel** — which subtle cue (thin ring / notch /
-  halo) and how to detect the characteristic degree. *(Open sub-design.)*
+- **Modal characteristic-tone accent channel** — the note that defines a mode (Dorian ♮6,
+  Lydian ♯4, Mixolydian ♭7, Phrygian ♭2) is diatonic, so it can't be a diamond and shape is
+  committed to insideness (§D). It needs its own *non-shape* sub-channel. Candidate cues:
+  a thin accent **ring**, a small **notch/pip** on the marker, a subtle **salience
+  elevation** (slightly larger/brighter within the neutral economy), or a faint **halo** —
+  each must avoid re-overloading shape and must not break the amber/teal/neutral color
+  economy. Open: which cue, and how to *detect* the characteristic degree (mode-relative,
+  not key-relative). The *theory* home for which tones these are is
+  [`music-theory-pedagogy.md`](./music-theory-pedagogy.md) §4. *(Open sub-design; migrated
+  from the 2026-06-04 fretboard-followups exploration draft.)*
+- **New pattern overlays** — beyond CAGED/3NPS, a future exploration may add traversal
+  overlays such as **diagonal boxes** (and possibly pentatonic boxes, single-string /
+  horizontal scales, or scale-sequence overlays) plugging into `SHAPE_CONFIGS` / polygon
+  generation. Has both a rendering facet (this doc) and a pedagogy facet
+  (`music-theory-pedagogy.md`). *(Future exploration; not in current scope. Migrated from
+  the exploration draft.)*
+- **Neutral region-shade ladder** — the CAGED region shading was simplified to a single
+  neutral tint. A future option: a small, *restrained* ladder of neutral shades for active
+  region(s) vs. inactive, staying within the no-rainbow discipline (§2). *(Deferred;
+  migrated from the exploration draft.)*
 - **Non-voicing chord tones** — whether to slightly de-emphasize chord tones not in the
   active voicing (a salience/opacity tweak, not a shape change). *(Likely YAGNI; connector
   already groups the voicing.)*
-- **Pattern-shading exploration** — the CAGED region shading was simplified to a single
-  neutral tint. A future draft may explore: adding a defined neutral shade, shading other
-  pattern systems, and new overlays such as **diagonal boxes**. *(Explicitly a future
-  exploration; not in current scope.)*
 - **"Show all CAGED positions" overview** — the only place the 5-hue palette would survive,
   behind a toggle. *(Deferred feature.)*
-- **Degree lens → Hooktheory** chromatic/blue-note degree hue and dark-mode muting values.
 
 ---
 
@@ -344,17 +369,22 @@ This document consolidates the grounding from the following specs. Several are a
 **pruned from `main`** and were recovered from git history (read with
 `git show <sha>:<path>`); SHAs are the last commit before deletion.
 
-**Present on `main` (visual language / color):**
-- `docs/superpowers/specs/2026-06-03-chord-overlay-grouping-markers-design.md` — marker
+**Pruned in the 2026-06-08 docs cleanup, recovered from history (visual language / color).**
+These four specs seeded this document; they were deleted once consolidated here. Recover
+with `git show <sha>:<path>` (SHA = last commit before deletion):
+- `2026-06-03-chord-overlay-grouping-markers-design.md` (`5ce84af8`) — marker
   shape/size/fill system; the §2 research grounding (Szafir, Ware, Levine/Coker/Larsen,
   D'Addario/Marshall, JustinGuitar, amber=home).
-- `docs/superpowers/specs/2026-06-03-chord-overlay-color-consistency-design.md` — the
+- `2026-06-03-chord-overlay-color-consistency-design.md` (`5ce84af8`) — the
   two-anchor color principle, OKLCH tokens, Okabe-Ito connector, degree-lens framing.
-- `docs/superpowers/specs/2026-06-03-fb-marker-apca-audit.md` — APCA glyph-on-fill gate;
+- `2026-06-03-fb-marker-apca-audit.md` (`c973b674`) — APCA glyph-on-fill gate;
   why fill-vs-wood is not gated.
-- `docs/superpowers/specs/2026-06-03-marker-color-followups-design.md` — diamonds in all
+- `2026-06-03-marker-color-followups-design.md` (`432e2651`) — diamonds in all
   voicings, blue-note classification, glow-filter cleanup, degree-lens Hooktheory pass,
-  and (the in-progress v2) marker-vocabulary simplification.
+  and the v2 marker-vocabulary simplification.
+- `2026-06-04-fretboard-followups-exploration-draft.md` (`432e2651`) — the deferred
+  exploration ideas now captured in §6 (modal characteristic-tone accent channel, new
+  pattern overlays / diagonal boxes, neutral region-shade ladder).
 
 **Pruned from `main`, recovered from history (chord-transition motion):**
 - `2026-05-27-connector-transition-playback-research.md` (from `490b46b2^`) — root-cause
