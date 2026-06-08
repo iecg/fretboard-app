@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceLensAtom, practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom, isInCountdownWindow, computeCountdownTickFractions, guideCountdownWindowMsAtom, guideCountdownActiveAtom, guideCountdownTickFractionsAtom } from "./practiceLensAtoms";
+import { practiceLensAtom, practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, nextTargetToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom, isInCountdownWindow, computeCountdownTickFractions, guideCountdownWindowMsAtom, guideCountdownActiveAtom, guideCountdownTickFractionsAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -1209,5 +1209,54 @@ describe("practiceLensAtom", () => {
     localStorage.setItem("fretflow:practiceLens", JSON.stringify("tones"));
     const store = createStore();
     expect(store.get(practiceLensAtom)).toBe("guide");
+  });
+});
+
+describe("nextTargetToneLabelsAtom — lens-aware targets", () => {
+  // Seed: active step Dm7 (degree ii in C major), next step G7 (degree V).
+  // G7 = G B D F → guide tones B(3) F(b7); root G.
+  function makeIIVStore() {
+    const store = createStore();
+    store.set(scaleNameAtom, "major");
+    store.set(rootNoteAtom, "C");
+    store.set(progressionStepsAtom, [
+      { id: "s1", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "s2", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7", manualRoot: null },
+    ] as ProgressionStep[]);
+    store.set(activeProgressionStepIndexAtom, 0); // active = Dm7, next = G7
+    return store;
+  }
+
+  it("guide lens → next chord's 3rd & 7th with interval labels", () => {
+    const store = makeIIVStore();
+    store.set(practiceLensAtom, "guide");
+    const labels = store.get(nextTargetToneLabelsAtom);
+    expect(new Set(labels.keys())).toEqual(new Set(["B", "F"])); // G7 3rd + b7
+    expect(labels.get("B")).toBe("3");
+    expect(labels.get("F")).toBe("b7");
+  });
+
+  it("root lens → next chord's root labeled 'R'", () => {
+    const store = makeIIVStore();
+    store.set(practiceLensAtom, "root");
+    const labels = store.get(nextTargetToneLabelsAtom);
+    expect(new Set(labels.keys())).toEqual(new Set(["G"]));
+    expect(labels.get("G")).toBe("R");
+  });
+
+  it("common lens → empty map (no aim ring)", () => {
+    const store = makeIIVStore();
+    store.set(practiceLensAtom, "common");
+    expect(store.get(nextTargetToneLabelsAtom).size).toBe(0);
+  });
+
+  it("nextChordGuideToneLabelsAtom is an alias of nextTargetToneLabelsAtom", () => {
+    expect(nextChordGuideToneLabelsAtom).toBe(nextTargetToneLabelsAtom);
+  });
+
+  it("nextChordGuideTonesAtom tracks the active lens's target set", () => {
+    const store = makeIIVStore();
+    store.set(practiceLensAtom, "root");
+    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set(["G"]));
   });
 });

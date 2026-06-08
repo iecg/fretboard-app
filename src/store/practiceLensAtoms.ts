@@ -261,6 +261,16 @@ export function stepRelativeFraction(
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
 
 /**
+ * Per-lens "aim" target member set, keyed by ChordDefinition member name. The
+ * `common` lens has no aim ring, so it is absent here (handled in the atom).
+ * Root's member is named "root" (not "1") in CHORD_DEFINITIONS.
+ */
+const TARGET_MEMBERS_BY_LENS: Record<"guide" | "root", Set<string>> = {
+  guide: GUIDE_TONE_RAW, // 3rd & 7th — quality-defining "money notes"
+  root: new Set(["root"]), // L1 — aim at the next chord's root
+};
+
+/**
  * Finds nearest in-scale resolution (≤2 semitones, step-up preferred).
  * Logic shared between practiceCuesAtom and practiceBarLandOnGroupBaseAtom.
  */
@@ -587,24 +597,24 @@ export const departingTonesAtom = atom((get): Set<string> => {
 });
 
 /**
- * Map of pitch-class → interval name for the guide tones of the chord at the
- * *next* progression step. This is the canonical source for guide-tone logic —
- * {@link nextChordGuideTonesAtom} derives its Set directly from this Map's keys.
+ * Map of pitch-class → label for the chord at the *next* progression step,
+ * filtered by the active improvisation lens ({@link practiceLensAtom}):
  *
- * Guide tones are strictly the 3rd and 7th — the "money notes" that define
- * chord quality (the root and 5th are harmonically inert, so they are never
- * targets):
- * - Includes the 3rd (b3 or 3) when present.
- * - Includes the 7th (b7 or 7) when present.
- * - A triad (3rd, no 7th) yields a single target: the 3rd. dim7's bb7 is not a
- *   GUIDE_TONE_RAW entry, so dim7 likewise yields just its b3.
- * - Power chords (no 3rd) return an empty Map — there is no quality-defining
- *   tone to aim for.
+ *  - "guide": the 3rd & 7th, labeled by interval ("3"/"b3", "b7"/"7"). Triads
+ *    yield a single target (the 3rd); power chords yield an empty Map.
+ *  - "root":  the root only, labeled "R". Always exactly one target.
+ *  - "common": an empty Map — the Field lens has no aim ring; the common-hold
+ *    branch in `getEmphasis` takes over.
  *
  * Also returns an empty Map when the progression is empty, the next step is
- * unavailable, or root/quality is missing.
+ * unavailable, or root/quality is missing. This is the canonical source for the
+ * ring's target set; {@link nextChordGuideTonesAtom} derives its keys.
  */
-export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
+export const nextTargetToneLabelsAtom = atom((get): Map<string, string> => {
+  const lens = get(practiceLensAtom);
+  if (lens === "common") return new Map(); // Field lens: no aim ring.
+  const members = TARGET_MEMBERS_BY_LENS[lens];
+
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Map();
   const active = get(displayedProgressionStepIndexAtom);
@@ -622,22 +632,29 @@ export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
   if (rootIndex === -1) return new Map();
   const labels = new Map<string, string>();
   for (const member of def.members) {
-    if (GUIDE_TONE_RAW.has(member.name)) {
-      labels.set(NOTES[(rootIndex + member.semitone) % 12], member.name);
+    if (members.has(member.name)) {
+      // Root lens shows "R"; guide lens shows the interval name ("3"/"b7").
+      const label = lens === "root" ? "R" : member.name;
+      labels.set(NOTES[(rootIndex + member.semitone) % 12], label);
     }
   }
   return labels;
 });
 
 /**
- * Pitch-class set of guide tones for the chord at the *next* progression step.
- * Derived from {@link nextChordGuideToneLabelsAtom} (which carries the same
- * tones plus their interval labels and is the canonical home of the triad-5th
- * fallback / bb7 / power-chord logic). Returns an empty set for all the same
- * cases that the labels atom returns an empty Map.
+ * Back-compat alias. The previous name was guide-only; the emphasis pipeline
+ * and external tests still reference it. It now resolves to the lens-aware
+ * target map. Kept as a `const` alias (same atom reference).
+ */
+export const nextChordGuideToneLabelsAtom = nextTargetToneLabelsAtom;
+
+/**
+ * Pitch-class set of the active lens's aim targets for the *next* progression
+ * step. Derived from {@link nextTargetToneLabelsAtom}'s keys. Empty for the
+ * common lens (and every case the labels atom returns an empty Map).
  */
 export const nextChordGuideTonesAtom = atom((get): Set<string> =>
-  new Set(get(nextChordGuideToneLabelsAtom).keys()),
+  new Set(get(nextTargetToneLabelsAtom).keys()),
 );
 
 /**
