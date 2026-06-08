@@ -8,9 +8,13 @@ import {
   BASS_PATTERNS,
   DRUM_PATTERNS,
   DRUM_VARIATIONS,
+  CHORD_VARIATIONS,
+  BASS_VARIATIONS,
   getChordPattern,
   getBassPattern,
   getDrumPattern,
+  getChordVariation,
+  getBassVariation,
   variationFiresOnBar,
   type DrumVariation,
 } from "./patterns";
@@ -522,6 +526,48 @@ describe("BASS_PATTERNS turnaround opt-in", () => {
     for (const id of ["walking", "pedal", "funk-syncopated"]) {
       expect(byId(id).turnaround).toBeUndefined();
     }
+  });
+});
+
+describe("chord & bass variation catalogs", () => {
+  it("exposes chord and bass variation catalogs with unique IDs", () => {
+    const chordIds = CHORD_VARIATIONS.map((v) => v.id);
+    expect(new Set(chordIds).size).toBe(chordIds.length);
+    const bassIds = BASS_VARIATIONS.map((v) => v.id);
+    expect(new Set(bassIds).size).toBe(bassIds.length);
+  });
+
+  it("gates chord/bass variations through the shared variationFiresOnBar", () => {
+    const funkChord = getChordVariation("funk-turnaround-chord")!;
+    expect(funkChord.barInterval).toBe(4);
+    expect(funkChord.barPhase).toBe(3);
+    expect(variationFiresOnBar(funkChord, 3)).toBe(true);
+    expect(variationFiresOnBar(funkChord, 0)).toBe(false);
+
+    const funkBass = getBassVariation("funk-turnaround-bass")!;
+    expect(variationFiresOnBar(funkBass, 3)).toBe(true);
+    expect(variationFiresOnBar(funkBass, 7)).toBe(true);
+  });
+
+  it("keeps every variation's hits in bar-local range [0, 4)", () => {
+    for (const v of CHORD_VARIATIONS) {
+      for (const h of v.hits) {
+        expect(h.beat).toBeGreaterThanOrEqual(0);
+        expect(h.beat).toBeLessThan(4);
+      }
+    }
+    for (const v of BASS_VARIATIONS) {
+      for (const h of v.hits) {
+        expect(h.beat).toBeGreaterThanOrEqual(0);
+        expect(h.beat).toBeLessThan(4);
+      }
+    }
+  });
+
+  it("lookups return correct variations and undefined for misses", () => {
+    expect(getChordVariation("funk-turnaround-chord")).toBeDefined();
+    expect(getBassVariation("funk-turnaround-bass")).toBeDefined();
+    expect(getChordVariation("nope")).toBeUndefined();
   });
 });
 

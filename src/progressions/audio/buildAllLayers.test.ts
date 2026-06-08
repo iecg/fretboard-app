@@ -12,7 +12,9 @@ import { buildVoicing, STRUM_PRESET } from "../voicingEngine";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
-  applyJitter: (params: { time: number; velocity: number }) => ({ time: params.time, velocity: params.velocity })
+  applyJitter: (params: { time: number; velocity: number }) => ({ time: params.time, velocity: params.velocity }),
+  shouldDropHit: () => false,
+  grooveLockTimeAmount: (_beat: number, full: number) => full,
 }));
 
 const step = (over: Partial<ResolvedProgressionStep> = {}): ResolvedProgressionStep => ({
@@ -44,6 +46,8 @@ describe("buildAllLayers", () => {
     bassPatternId: "root-fifth",
     drumPatternId: "rock",
     drumVariations: [] as string[],
+    chordVariations: [] as string[],
+    bassVariations: [] as string[],
     loop: true,
   };
 
@@ -272,7 +276,7 @@ describe("buildAllLayers", () => {
         steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
         tempoBpm: 120, beatsPerBar: 4, swing: 0,
         chordPatternId: "pop-8ths", bassPatternId: "root-fifth",
-        drumPatternId: "pop", drumVariations: [], loop: false,
+        drumPatternId: "pop", drumVariations: [], chordVariations: [], bassVariations: [], loop: false,
       });
       expect(layers.chordStrums.length).toBeGreaterThan(0);
       for (const s of layers.chordStrums) {
@@ -611,6 +615,96 @@ describe("buildAllLayers", () => {
       expect(pitchClass(bassAt(out, 3)!.value.note)).toBe("F#");
       // G bar ([8,12)s): loop-wraps to C → B approach at 11s.
       expect(pitchClass(bassAt(out, 11)!.value.note)).toBe("B");
+    });
+  });
+
+  describe("chord variation substitution", () => {
+    it("replaces the base chord hits on a firing turnaround bar", async () => {
+      const steps = Array.from({ length: 8 }, (_, i) =>
+        step({ id: `s${i}`, index: i, root: i % 2 === 0 ? "C" : "G" }),
+      );
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        chordPatternId: "pop-8ths",
+        chordVariations: ["funk-turnaround-chord"],
+        bassPatternId: "root-fifth",
+        steps,
+      });
+      const bar3 = out.chordStrums.filter((s) => s.time >= 12 && s.time < 16);
+      const bar0 = out.chordStrums.filter((s) => s.time >= 0 && s.time < 4);
+      expect(bar0).toHaveLength(6); // base pop-8ths
+      expect(bar3).toHaveLength(4); // funk-turnaround-chord
+    });
+
+    it("leaves non-firing bars on the base pattern", async () => {
+      const steps = Array.from({ length: 8 }, (_, i) => step({ id: `s${i}`, index: i }));
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        chordPatternId: "pop-8ths",
+        chordVariations: ["funk-turnaround-chord"],
+        steps,
+      });
+      const bar1 = out.chordStrums.filter((s) => s.time >= 4 && s.time < 8);
+      expect(bar1).toHaveLength(6); // base pop-8ths, untouched
+    });
+  });
+
+  describe("bass variation substitution", () => {
+    it("replaces the base bass hits on a firing turnaround bar", async () => {
+      // funk-syncopated has 5 hits/bar; funk-turnaround-bass has 4. Bar 3 fires.
+      const steps = Array.from({ length: 8 }, (_, i) =>
+        step({ id: `s${i}`, index: i, root: i % 2 === 0 ? "C" : "G" }),
+      );
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        bassPatternId: "funk-syncopated",
+        bassVariations: ["funk-turnaround-bass"],
+        chordPatternId: "ballad-whole",
+        steps,
+      });
+      const bar3 = out.bass.filter((b) => b.time >= 12 && b.time < 16);
+      const bar0 = out.bass.filter((b) => b.time >= 0 && b.time < 4);
+      expect(bar0).toHaveLength(5); // base funk-syncopated
+      expect(bar3).toHaveLength(4); // funk-turnaround-bass
+    });
+
+    it("leaves non-firing bass bars on the base pattern", async () => {
+      const steps = Array.from({ length: 8 }, (_, i) => step({ id: `s${i}`, index: i }));
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        bassPatternId: "funk-syncopated",
+        bassVariations: ["funk-turnaround-bass"],
+        chordPatternId: "ballad-whole",
+        steps,
+      });
+      const bar1 = out.bass.filter((b) => b.time >= 4 && b.time < 8);
+      expect(bar1).toHaveLength(5); // base funk-syncopated untouched
+    });
+
+    it("variation + base-turnaround: no double fill (variation replaces base, §3.4 swap operates on variation hits only)", async () => {
+      // root-fifth has turnaround:true (2 hits/bar normally). funk-turnaround-bass fires on
+      // absolute bar 3 (barInterval=4, barPhase=3). With loop:true over [C,G,C,G], bar 3
+      // is G with turnaround target C (loop-wrap) — so BOTH the variation fires AND the §3.4
+      // turnaround is active simultaneously.
+      //
+      // Correct behavior: variation substitutes base first (patternHits = 4 variation hits),
+      // then §3.4 tail-swaps: keeps beats < 3 (beats 0, 1.5, 2.5 = 3 hits) + adds one approach
+      // note on beat 3 = 4 total. No double fill.
+      // Bug indicator: if we saw 2 (base only) + 4 (variation) = 6, the base wasn't replaced.
+      const steps = Array.from({ length: 4 }, (_, i) =>
+        step({ id: `s${i}`, index: i, root: i % 2 === 0 ? "C" : "G" }),
+      );
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        bassPatternId: "root-fifth",
+        bassVariations: ["funk-turnaround-bass"],
+        chordPatternId: "ballad-whole",
+        steps,
+        loop: true,
+      });
+      const bar3 = out.bass.filter((b) => b.time >= 12 && b.time < 16);
+      // §3.4 tail-swaps the variation's beat-3 hit for one approach note: 3 pre-tail hits + 1 = 4.
+      expect(bar3).toHaveLength(4); // clean substitution — variation replaced base, no double fill
     });
   });
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GENRE_STYLES, getGenreStyle } from "./genres";
-import { getChordPattern, getBassPattern, getDrumPattern, getDrumVariation } from "./patterns";
+import { getChordPattern, getBassPattern, getDrumPattern, getDrumVariation, getChordVariation, getBassVariation } from "./patterns";
 
 describe("genre styles", () => {
   it("has 7 genre presets", () => {
@@ -98,5 +98,32 @@ describe("genre drum variations", () => {
         expect(getDrumVariation(id), `genre ${g.id} variation ${id}`).toBeDefined();
       }
     }
+  });
+});
+
+describe("genre chord/bass variation coupling", () => {
+  it("every genre declares chord and bass variation arrays", () => {
+    for (const g of GENRE_STYLES) {
+      expect(Array.isArray(g.chordVariations)).toBe(true);
+      expect(Array.isArray(g.bassVariations)).toBe(true);
+    }
+  });
+
+  it("keeps every referenced chord/bass variation id resolvable", () => {
+    for (const g of GENRE_STYLES) {
+      for (const id of g.chordVariations) expect(getChordVariation(id), `${g.id}:${id}`).toBeDefined();
+      for (const id of g.bassVariations) expect(getBassVariation(id), `${g.id}:${id}`).toBeDefined();
+    }
+  });
+
+  it("funk couples chord/bass/drum turnarounds on the same bar (interval 4, phase 3)", () => {
+    const funk = getGenreStyle("funk")!;
+    const chord = getChordVariation(funk.chordVariations[0])!;
+    const bass = getBassVariation(funk.bassVariations[0])!;
+    expect(chord.barInterval).toBe(4);
+    expect(chord.barPhase).toBe(3);
+    expect(bass.barInterval).toBe(4);
+    expect(bass.barPhase).toBe(3);
+    expect(funk.drumVariations).toContain("funk-fill-4");
   });
 });

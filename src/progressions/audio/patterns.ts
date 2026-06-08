@@ -30,7 +30,7 @@ export type BassNoteRole =
 
 export type BassArticulation = "staccato" | "legato" | "normal";
 
-interface ChordHit {
+export interface ChordHit {
   beat: number;
   velocity: number;
   style?: "staccato" | "sustained";
@@ -59,7 +59,7 @@ export interface ChordPattern {
   voicing?: "rootless-jazz";
 }
 
-interface CatalogBassHit {
+export interface CatalogBassHit {
   beat: number;
   velocity: number;
   note: BassNoteRole;
@@ -94,6 +94,26 @@ export interface CatalogDrumPattern {
   crossStick?: readonly DrumHit[];
   /** Cell length in bars (default 1). See ChordPattern.bars. */
   bars?: number;
+}
+
+/** A single-bar harmonic variation that *replaces* (not layers) the base
+ *  chord pattern's hits when it fires. Mirrors DrumVariation's gating fields. */
+export interface ChordVariation {
+  id: string;
+  label: string;
+  barInterval: number;
+  barPhase?: number;
+  hits: readonly ChordHit[];
+}
+
+/** A single-bar bass variation that *replaces* the base bass pattern's hits
+ *  when it fires (applied before the §3.4 turnaround tail-swap). */
+export interface BassVariation {
+  id: string;
+  label: string;
+  barInterval: number;
+  barPhase?: number;
+  hits: readonly CatalogBassHit[];
 }
 
 export interface DrumVariation {
@@ -616,12 +636,54 @@ export function getDrumVariation(id: string): DrumVariation | undefined {
   return DRUM_VARIATIONS.find((v) => v.id === id);
 }
 
+export const CHORD_VARIATIONS: readonly ChordVariation[] = [
+  {
+    id: "funk-turnaround-chord",
+    label: "Funk Turnaround Comp",
+    barInterval: 4,
+    barPhase: 3,
+    // Pushed turnaround bar: a strong stab on the one, anticipated color stabs
+    // driving into the next chord.
+    hits: [
+      { beat: 0, velocity: 0.92, direction: "down", articulation: "stab" },
+      { beat: 1.5, velocity: 0.6, direction: "up", articulation: "muted" },
+      { beat: 2.5, velocity: 0.7, direction: "down", articulation: "color-stab" },
+      { beat: 3.5, velocity: 0.75, direction: "down", articulation: "color-stab" },
+    ],
+  },
+];
+
+export const BASS_VARIATIONS: readonly BassVariation[] = [
+  {
+    id: "funk-turnaround-bass",
+    label: "Funk Turnaround Walk",
+    barInterval: 4,
+    barPhase: 3,
+    // Walk-up turnaround: root anchor, octave pop, then a chromatic approach
+    // into the next chord on the last beat.
+    hits: [
+      { beat: 0, velocity: 1, note: "root", articulation: "staccato" },
+      { beat: 1.5, velocity: 0.7, note: "octave", articulation: "staccato" },
+      { beat: 2.5, velocity: 0.6, note: "fifth", articulation: "staccato" },
+      { beat: 3, velocity: 0.8, note: "chromatic-approach", articulation: "legato" },
+    ],
+  },
+];
+
+export function getChordVariation(id: string): ChordVariation | undefined {
+  return CHORD_VARIATIONS.find((v) => v.id === id);
+}
+
+export function getBassVariation(id: string): BassVariation | undefined {
+  return BASS_VARIATIONS.find((v) => v.id === id);
+}
+
 /**
  * Pure gating predicate: does `variation` fire on the given absolute bar index?
  * Total — a non-positive `barInterval` never fires (no divide-by-zero / nonsense).
  */
 export function variationFiresOnBar(
-  variation: DrumVariation,
+  variation: { barInterval: number; barPhase?: number },
   absoluteBar: number,
 ): boolean {
   if (variation.barInterval <= 0) return false;

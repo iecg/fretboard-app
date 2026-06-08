@@ -40,3 +40,34 @@ export function applyJitter({
 
   return { time: newTime, velocity: newVelocity };
 }
+
+/** Threshold below which a hit is a droppable "ghost". */
+const GHOST_VELOCITY_THRESHOLD = 0.4;
+/** Drop probability applied to sub-threshold ghosts. */
+const GHOST_DROP_CHANCE = 0.12;
+/** Seed offset so the drop roll is independent of the time/velocity rolls. */
+const DROP_SEED_OFFSET = 54321;
+
+/**
+ * Deterministic, seeded decision: should this hit be dropped entirely to
+ * simulate a player occasionally skipping a ghost stroke? Uses the hit's
+ * *authored* (pre-jitter) velocity so a ±10% velocity jitter can never flip a
+ * borderline ghost across the threshold. Structural hits (>= 0.4) never drop.
+ */
+export function shouldDropHit(velocity: number, seed: number): boolean {
+  if (velocity >= GHOST_VELOCITY_THRESHOLD) return false;
+  return seededRandom(seed + DROP_SEED_OFFSET) < GHOST_DROP_CHANCE;
+}
+
+/** Fraction of full timing jitter applied to anchor (integer) beats. */
+const ANCHOR_JITTER_FACTOR = 0.4;
+
+/**
+ * Groove lock: integer beats (the structural pulse) get reduced timing jitter;
+ * off-beat subdivisions keep the full amount. Meter-agnostic — keys off the
+ * bar-local beat value. Returns the `timeAmountSec` to feed `applyJitter`.
+ * (Velocity jitter is unaffected — only timing.)
+ */
+export function grooveLockTimeAmount(beat: number, fullAmountSec: number): number {
+  return Number.isInteger(beat) ? fullAmountSec * ANCHOR_JITTER_FACTOR : fullAmountSec;
+}

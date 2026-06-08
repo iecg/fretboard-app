@@ -12,15 +12,19 @@ import {
   getChordPattern,
   getDrumPattern,
   getDrumVariation,
+  getChordVariation,
+  getBassVariation,
   variationFiresOnBar,
   repeatPatternToBeats,
   sliceCellToBar,
   type CatalogDrumPattern,
   type DrumHit,
   type DrumVariation,
+  type ChordVariation,
+  type BassVariation,
   type BassArticulation,
 } from "./patterns";
-import { applyJitter } from "./humanize";
+import { applyJitter, shouldDropHit, grooveLockTimeAmount } from "./humanize";
 
 type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride" | "crossStick";
 type StrumStyle = "staccato" | "sustained";
@@ -69,6 +73,8 @@ export interface BuildAllLayersInput {
   bassPatternId: string;
   drumPatternId: string;
   drumVariations: readonly string[];
+  chordVariations: readonly string[];
+  bassVariations: readonly string[];
   loop: boolean;
 }
 
@@ -185,6 +191,12 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   const variations: DrumVariation[] = input.drumVariations
     .map((id) => getDrumVariation(id))
     .filter((v): v is DrumVariation => Boolean(v));
+  const chordVariationDefs: ChordVariation[] = input.chordVariations
+    .map((id) => getChordVariation(id))
+    .filter((v): v is ChordVariation => Boolean(v));
+  const bassVariationDefs: BassVariation[] = input.bassVariations
+    .map((id) => getBassVariation(id))
+    .filter((v): v is BassVariation => Boolean(v));
 
   const chordOnsets: Array<{ time: number; value: ChordOnsetEvent }> = [];
   const chordStrums: Array<{ time: number; value: ChordStrumEvent }> = [];
@@ -235,6 +247,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     // Split the funk voicing intents: the "root" anchor needs the plain triad's
     // root note; the "color-stab" needs a voice-led rootless funk grip in the
     // current chord's register. Computed only when the pattern uses each hit.
+    // NOTE: these flags derive from the BASE pattern only. A chord variation that
+    // introduces a "root"/"color-stab" articulation the base lacks will fall back to
+    // the default voicing. Keep variation articulations a subset of their genre's base comp.
     const needsRootAnchor = !!chordPattern?.hits.some((h) => h.articulation === "root");
     const needsColor = !!chordPattern?.hits.some((h) => h.articulation === "color-stab");
     const plainVoicing = needsRootAnchor ? resolveChordVoicing(root, quality) : voicing;
@@ -288,20 +303,30 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
 
       if (chordPattern && voicing.length > 0) {
         const chordCellBars = chordPattern.bars ?? 1;
-        const hits = isBarUnit && chordCellBars > 1
-          ? sliceCellToBar(chordPattern.hits, absoluteBar % chordCellBars, input.beatsPerBar)
-          : repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
+        const firingChordVariation = chordVariationDefs.find((v) =>
+          variationFiresOnBar(v, absoluteBar),
+        );
+        const sourceHits = firingChordVariation
+          ? firingChordVariation.hits
+          : chordPattern.hits;
+        const hits = !firingChordVariation && isBarUnit && chordCellBars > 1
+          ? sliceCellToBar(sourceHits, absoluteBar % chordCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(sourceHits, eventBeats, input.beatsPerBar);
         for (let hitIndex = 0; hitIndex < hits.length; hitIndex++) {
           const hit = hits[hitIndex];
           const isLhBass =
             hit.voiceRole === "bass-root" || hit.voiceRole === "bass-fifth";
+          const chordSeed = stepIndex * 10000 + bar * 100 + hit.beat;
+          // Sustained chords aren't ghost strokes — never drop them (also keeps
+          // the sustain ring boundary, which reads hits[hitIndex + 1], intact).
+          if (!isLhBass && hit.style !== "sustained" && shouldDropHit(hit.velocity, chordSeed)) continue;
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
-            seed: stepIndex * 10000 + bar * 100 + hit.beat,
+            seed: chordSeed,
             // LH bass doubles the upright an octave up — lock it to the grid.
-            ...(isLhBass ? { timeAmountSec: 0 } : {}),
+            timeAmountSec: isLhBass ? 0 : grooveLockTimeAmount(hit.beat, 0.015),
           });
           // A sustained chord rings until the next hit in the bar, or to the bar
           // end when it is the last hit — a true whole note for ballad-whole,
@@ -345,9 +370,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
 
       if (bassPattern && bassLineNotes.length > 0) {
         const bassCellBars = bassPattern.bars ?? 1;
-        const patternHits = isBarUnit && bassCellBars > 1
-          ? sliceCellToBar(bassPattern.hits, absoluteBar % bassCellBars, input.beatsPerBar)
-          : repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
+        const firingBassVariation = bassVariationDefs.find((v) =>
+          variationFiresOnBar(v, absoluteBar),
+        );
+        const baseBassHits = firingBassVariation
+          ? firingBassVariation.hits
+          : bassPattern.hits;
+        const patternHits = !firingBassVariation && isBarUnit && bassCellBars > 1
+          ? sliceCellToBar(baseBassHits, absoluteBar % bassCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(baseBassHits, eventBeats, input.beatsPerBar);
         // §3.4 end-of-phrase walk: on a step's last bar that precedes a real
         // chord change, opted-in patterns drop their tail (any hit on/after the
         // bar's last beat) and lead into the next root with one chromatic
@@ -371,6 +402,8 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             ]
           : patternHits;
         for (const hit of hits) {
+          const bassSeed = stepIndex * 10000 + bar * 100 + hit.beat + 1;
+          if (!lockBassToGrid && shouldDropHit(hit.velocity, bassSeed)) continue;
           // The synthetic approach note targets the next chord (loop-aware);
           // every other hit keeps today's behavior exactly.
           const approachTarget =
@@ -392,10 +425,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
-            seed: stepIndex * 10000 + bar * 100 + hit.beat + 1, // slight offset for bass
+            seed: bassSeed,
             // Lock to the grid when the comp doubles this line (bossa LH), so
             // the two voices attack in perfect unison instead of flamming.
-            ...(lockBassToGrid ? { timeAmountSec: 0 } : {}),
+            timeAmountSec: lockBassToGrid ? 0 : grooveLockTimeAmount(hit.beat, 0.015),
           });
           bass.push({
             time: hitTime,
@@ -419,12 +452,14 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       if (drumHitsForBar.length > 0) {
         const hits = repeatPatternToBeats(drumHitsForBar, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
+          const drumSeed = stepIndex * 10000 + bar * 100 + hit.beat + 2;
+          if (shouldDropHit(hit.velocity, drumSeed)) continue;
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
-            seed: stepIndex * 10000 + bar * 100 + hit.beat + 2, // offset for drums
-            timeAmountSec: 0.005, // tighter timing jitter for drums
+            seed: drumSeed,
+            timeAmountSec: grooveLockTimeAmount(hit.beat, 0.005),
             velocityAmount: 0.05,
           });
           drums.push({

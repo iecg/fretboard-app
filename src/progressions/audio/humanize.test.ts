@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyJitter } from "./humanize";
+import { applyJitter, shouldDropHit, grooveLockTimeAmount } from "./humanize";
 
 describe("applyJitter", () => {
   it("returns a new object with jittered time and velocity", () => {
@@ -41,5 +41,50 @@ describe("applyJitter", () => {
       const result0 = applyJitter({ time: 0, velocity: 0, seed: i });
       expect(result0.velocity).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+describe("shouldDropHit", () => {
+  it("never drops hits with velocity >= 0.4", () => {
+    for (let seed = 0; seed < 200; seed++) {
+      expect(shouldDropHit(0.4, seed)).toBe(false);
+      expect(shouldDropHit(0.7, seed)).toBe(false);
+      expect(shouldDropHit(1, seed)).toBe(false);
+    }
+  });
+
+  it("drops a small fraction of sub-0.4 ghost hits (~12%)", () => {
+    let dropped = 0;
+    const N = 2000;
+    for (let seed = 0; seed < N; seed++) {
+      if (shouldDropHit(0.2, seed)) dropped++;
+    }
+    const rate = dropped / N;
+    expect(rate).toBeGreaterThan(0.07);
+    expect(rate).toBeLessThan(0.17);
+  });
+
+  it("is deterministic for a fixed velocity + seed", () => {
+    expect(shouldDropHit(0.2, 42)).toBe(shouldDropHit(0.2, 42));
+    expect(shouldDropHit(0.2, 42)).not.toBe(undefined);
+  });
+});
+
+describe("grooveLockTimeAmount", () => {
+  it("reduces jitter on integer (anchor) beats to ~40%", () => {
+    expect(grooveLockTimeAmount(0, 0.015)).toBeCloseTo(0.006);
+    expect(grooveLockTimeAmount(2, 0.015)).toBeCloseTo(0.006);
+    expect(grooveLockTimeAmount(0, 0.005)).toBeCloseTo(0.002);
+  });
+
+  it("leaves off-beats at full jitter", () => {
+    expect(grooveLockTimeAmount(0.5, 0.015)).toBe(0.015);
+    expect(grooveLockTimeAmount(1.75, 0.015)).toBe(0.015);
+    expect(grooveLockTimeAmount(2.5, 0.005)).toBe(0.005);
+  });
+
+  it("is meter-agnostic (works for any integer beat)", () => {
+    expect(grooveLockTimeAmount(5, 0.015)).toBeCloseTo(0.006);
+    expect(grooveLockTimeAmount(6, 0.015)).toBeCloseTo(0.006);
   });
 });

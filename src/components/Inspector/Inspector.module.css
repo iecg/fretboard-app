@@ -83,6 +83,14 @@
   padding: var(--space-3, 0.75rem) 0;
 }
 
+/* Keep-alive: visited tab panels are kept mounted via Radix `forceMount` so
+ * re-selecting a tab never remounts a heavy subtree (which would block the main
+ * thread and disturb playback). Radix does NOT auto-apply `hidden` to
+ * forceMounted inactive content, so hide it explicitly here. */
+.tabPanel[data-state="inactive"] {
+  display: none;
+}
+
 .tabBody {
   display: flex;
   flex-direction: column;
