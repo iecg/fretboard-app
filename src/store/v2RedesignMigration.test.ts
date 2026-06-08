@@ -92,10 +92,12 @@ describe("runV2RedesignMigration", () => {
     spy.mockRestore();
   });
 
-  it("retires the practiceLens key", () => {
-    localStorage.setItem("fretflow:practiceLens", JSON.stringify("tones"));
+  it("preserves the practiceLens key (reintroduced as the improvisation lens)", () => {
+    localStorage.setItem("fretflow:practiceLens", JSON.stringify("guide"));
     runV2RedesignMigration();
-    expect(localStorage.getItem("fretflow:practiceLens")).toBeNull();
+    expect(localStorage.getItem("fretflow:practiceLens")).toBe(
+      JSON.stringify("guide"),
+    );
   });
 
   it("does not modify existing progressionSteps storage", () => {
