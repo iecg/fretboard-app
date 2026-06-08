@@ -171,6 +171,9 @@
    divider since they no longer follow the transport readouts. */
 :global(.app-container[data-layout-tier="mobile"]) .app-header-actions {
   order: 1;
+  flex: 0 0 auto;
+  gap: 0.3rem;
+  max-width: 44vw;
   padding-inline-start: 0;
   border-inline-start: none;
 }
@@ -198,10 +201,23 @@
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 :global(.app-container[data-layout-tier="mobile"]) .app-header {
-  padding-inline: 0.75rem;
-  /* Mobile app-container uses 0.65rem padding (see App.css @media rules). */
+  /* Mobile app-container uses 0.65rem padding (see App.css @media rules).
+     Tighter inline padding + a denser row gap let the brand + actions pack
+     into the first row without the actions wrapping or clipping. */
+  padding-inline: 0.65rem;
   margin-top: -0.65rem;
   margin-inline: -0.65rem;
+  gap: 0.45rem 0.5rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .app-header-brand {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .app-header-brand-wordmark {
+  min-width: 0;
+  max-width: min(13rem, 52vw);
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .app-header-brand-title {

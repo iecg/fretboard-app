@@ -13,6 +13,7 @@ import { generateCommonProgressions, type SuggestionFeel } from "../../progressi
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useScaleState } from "../../hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
+import useLayoutMode from "../../hooks/useLayoutMode";
 import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
@@ -76,6 +77,7 @@ const SUGGESTION_FEEL_LABEL_KEYS: Record<SuggestionFeel, string> = {
 
 export function SongControls() {
   const { t } = useTranslation();
+  const { tier } = useLayoutMode();
   const {
     scaleName,
     rootNote,
@@ -247,6 +249,7 @@ export function SongControls() {
                   currentId={currentProgressionPresetId}
                   categories={categories}
                   suggestionGroups={suggestionGroups}
+                  compact={tier === "mobile"}
                   width="fill"
                   onSelect={handlePresetChange}
                 />
@@ -261,7 +264,7 @@ export function SongControls() {
             labelledById="song-key-heading"
             locked={editsLocked}
           >
-            <PropGrid columns={4}>
+            <PropGrid columns={4} className={styles["mobile-paired-grid"]}>
               <Prop label={t("controls.root")} span={1}>
                 <LabeledSelect
                   label={t("controls.root")}
@@ -293,7 +296,7 @@ export function SongControls() {
             description={t("inspector.groupTimeDesc")}
             labelledById="song-time-heading"
           >
-            <PropGrid columns={5}>
+            <PropGrid columns={5} className={styles["mobile-paired-grid"]}>
               <Prop label={t("inspector.timeSignature")} span={2}>
                 <TimeSignaturePicker />
               </Prop>

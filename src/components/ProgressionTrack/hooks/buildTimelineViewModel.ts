@@ -14,6 +14,7 @@ export type TimelineStaticViewModel = {
   totalDurationBars: number;
   totalBarsForDisplay: number;
   subdivisionsPerBar: number;
+  shortestDurationBars: number;
 };
 
 function durationToBars(duration: DurationInput, beatsPerBar: number): number {
@@ -45,6 +46,21 @@ export function buildTimelineViewModel(
       return layout;
     });
 
-    return { blockLayouts, totalDurationBars, totalBarsForDisplay, subdivisionsPerBar };
+    const shortestDurationBars = blockLayouts.reduce(
+      (min, layout) =>
+        layout.durationBars > 0 ? Math.min(min, layout.durationBars) : min,
+      Number.POSITIVE_INFINITY,
+    );
+    const safeShortest = Number.isFinite(shortestDurationBars)
+      ? shortestDurationBars
+      : 1;
+
+    return {
+      blockLayouts,
+      totalDurationBars,
+      totalBarsForDisplay,
+      subdivisionsPerBar,
+      shortestDurationBars: safeShortest,
+    };
   });
 }

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { loadVisualState } from "./visual-helpers";
 
 async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
@@ -11,6 +12,62 @@ async function gotoApp(page: Page, width: number, height: number) {
   ).toBeVisible();
 }
 
+async function expectNoVerticalOverlap(
+  page: Page,
+  firstSelector: string,
+  secondSelector: string,
+  label: string,
+) {
+  const rects = await page.evaluate(
+    ({ firstSelector, secondSelector }) => {
+      const getRect = (selector: string) => {
+        const el = document.querySelector(selector);
+        if (!(el instanceof HTMLElement)) return null;
+        const rect = el.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom };
+      };
+      return {
+        first: getRect(firstSelector),
+        second: getRect(secondSelector),
+      };
+    },
+    { firstSelector, secondSelector },
+  );
+
+  expect(rects.first, `${label}: first element (${firstSelector})`).not.toBeNull();
+  expect(rects.second, `${label}: second element (${secondSelector})`).not.toBeNull();
+  expect(
+    rects.first!.bottom,
+    `${label}: first.bottom should sit above second.top`,
+  ).toBeLessThanOrEqual(rects.second!.top + 1);
+}
+
+async function expectOpenMenuAboveBottomTabs(page: Page, viewportName: string) {
+  const metrics = await page.evaluate(() => {
+    const menu = document.querySelector('[role="listbox"], [role="menu"]');
+    const tabList = document.querySelector('[role="tablist"][aria-label="Inspector"]');
+    const getRect = (element: Element | null) => {
+      if (!(element instanceof HTMLElement)) return null;
+      const rect = element.getBoundingClientRect();
+      return {
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+        height: Math.round(rect.height),
+      };
+    };
+    return {
+      menu: getRect(menu),
+      tabList: getRect(tabList),
+      innerHeight: window.innerHeight,
+    };
+  });
+
+  expect(metrics.menu, viewportName).not.toBeNull();
+  expect(metrics.tabList, viewportName).not.toBeNull();
+  expect(metrics.menu!.height, viewportName).toBeGreaterThan(44);
+  expect(metrics.menu!.bottom, viewportName).toBeLessThanOrEqual(metrics.tabList!.top - 4);
+}
+
 async function getMetrics(page: Page) {
   return page.evaluate(() => {
     const app = document.querySelector('[data-testid="app-container"]');
@@ -19,6 +76,9 @@ async function getMetrics(page: Page) {
     const toolbar = document.querySelector('[data-testid="fretboard-outer"]');
     const title = document.querySelector('[data-testid="app-header-brand"]');
     const actions = document.querySelector('[data-testid="app-header-actions"]');
+    const header = document.querySelector('[data-testid="app-header"]');
+    const transport = document.querySelector('[data-testid="app-header-transport"]');
+    const transportCluster = document.querySelector('[data-testid="header-transport-cluster"]');
     const settingsDrawer = document.querySelector('[data-testid="settings-drawer"]');
     const helpModal = document.querySelector('[data-testid="help-modal"]');
     const helpContent = document.querySelector('[data-testid="help-modal-content"]');
@@ -65,6 +125,9 @@ async function getMetrics(page: Page) {
       toolbarDisplay: toolbar ? getComputedStyle(toolbar).display : null,
       titleRect: getRect(title),
       actionsRect: getRect(actions),
+      headerRect: getRect(header),
+      transportRect: getRect(transport),
+      transportClusterRect: getRect(transportCluster),
       settingsDrawerRect: getRect(settingsDrawer),
       helpModalRect: getRect(helpModal),
       controlsColumnRect: getRect(controlsColumn),
@@ -111,6 +174,31 @@ test.describe("responsive layout regressions", () => {
         after.titleRect!.bottom > after.actionsRect!.top &&
         after.actionsRect!.bottom > after.titleRect!.top;
       expect(headerSharesRow, viewport.name).toBe(true);
+    }
+  });
+
+  test("keeps mobile header actions and transport within the viewport", async ({
+    page,
+  }) => {
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 375, height: 667 },
+    ]) {
+      const name = `${viewport.width}x${viewport.height}`;
+      await gotoApp(page, viewport.width, viewport.height);
+
+      const metrics = await getMetrics(page);
+      expect(metrics.headerRect, name).not.toBeNull();
+      expect(metrics.titleRect, name).not.toBeNull();
+      expect(metrics.actionsRect, name).not.toBeNull();
+      expect(metrics.transportRect, name).not.toBeNull();
+      expect(metrics.transportClusterRect, name).not.toBeNull();
+
+      expect(metrics.actionsRect!.right, name).toBeLessThanOrEqual(viewport.width);
+      expect(metrics.transportClusterRect!.right, name).toBeLessThanOrEqual(
+        viewport.width,
+      );
+      expect(metrics.headerRect!.height, name).toBeLessThanOrEqual(176);
     }
   });
 
@@ -216,5 +304,156 @@ test.describe("responsive layout regressions", () => {
     expect(metrics.settingsDrawerRect).not.toBeNull();
     expect(metrics.settingsDrawerRect!.width).toBeGreaterThanOrEqual(388);
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
+  });
+
+  test("keeps Overlay voicing dropdown above bottom tabs on mobile", async ({ page }) => {
+    for (const viewport of [
+      { width: 390, height: 844, name: "390x844" },
+      { width: 375, height: 667, name: "375x667" },
+    ]) {
+      await gotoApp(page, viewport.width, viewport.height);
+      await page.getByRole("tab", { name: "Overlay" }).click();
+
+      const voicing = page.getByRole("combobox", { name: "Voicing" });
+      await expect(voicing, viewport.name).toBeVisible();
+      await voicing.click();
+
+      await expectOpenMenuAboveBottomTabs(page, viewport.name);
+    }
+  });
+
+  test("keeps mobile fretboard paint inside the viewport width", async ({ page }) => {
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 375, height: 667 },
+    ]) {
+      const name = `${viewport.width}x${viewport.height}`;
+      await gotoApp(page, viewport.width, viewport.height);
+
+      const metrics = await page.evaluate(() => {
+        const getRect = (selector: string) => {
+          const el = document.querySelector(selector);
+          if (!(el instanceof HTMLElement || el instanceof SVGElement)) return null;
+          const rect = el.getBoundingClientRect();
+          return { left: rect.left, right: rect.right };
+        };
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          innerWidth: window.innerWidth,
+          outer: getRect('[data-testid="fretboard-outer"]'),
+          wrapper: getRect('[class*="fretboard-wrapper"]'),
+        };
+      });
+
+      expect(metrics.scrollWidth, name).toBeLessThanOrEqual(metrics.innerWidth);
+      expect(metrics.outer, name).not.toBeNull();
+      expect(metrics.wrapper, name).not.toBeNull();
+      expect(metrics.outer!.right, name).toBeLessThanOrEqual(viewport.width);
+      expect(metrics.wrapper!.right, name).toBeLessThanOrEqual(viewport.width);
+    }
+  });
+
+  test("keeps mobile progression chord list and editor from overlapping", async ({ page }) => {
+    // Seed an 8-chord progression. The overlap only manifests when the chord
+    // list is taller than the list column's flex-basis, so the default 4-chord
+    // progression passes this guard vacuously — a long list is required to
+    // actually exercise the stacked master-detail layout.
+    await loadVisualState(
+      page,
+      {
+        progressionSteps: [
+          { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s3", degree: "iii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s5", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s6", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ],
+      },
+      { width: 390, height: 844 },
+    );
+
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
+    await page.getByRole("tab", { name: "Song" }).click();
+
+    // The chord list <ul> carries the "Progression navigation" accessible name;
+    // it only renders once a step is active (the seeded progression has steps).
+    const chordList = page.getByRole("list", { name: "Progression navigation" });
+    await expect(chordList).toBeVisible();
+
+    const editorPanel = page.locator('[class*="editor-panel"]').first();
+    await expect(editorPanel).toBeVisible();
+
+    await expectNoVerticalOverlap(
+      page,
+      '[aria-label="Progression navigation"]',
+      '[class*="editor-panel"]',
+      "mobile progression editor (long progression)",
+    );
+  });
+
+  test("shows the full mobile chord list without an inner scroll", async ({ page }) => {
+    // Seed a long (8-chord) progression so the list is taller than the column —
+    // the default progression fits and would let this guard pass vacuously.
+    await loadVisualState(
+      page,
+      {
+        progressionSteps: [
+          { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s3", degree: "iii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s5", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s6", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ],
+      },
+      { width: 390, height: 844 },
+    );
+
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
+    await page.getByRole("tab", { name: "Song" }).click();
+
+    const list = page.locator('[aria-label="Progression navigation"]');
+    await expect(list).toBeVisible();
+
+    const overflow = await list.evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+    }));
+    expect(overflow.scrollHeight, "list inner scroll").toBeLessThanOrEqual(
+      overflow.clientHeight + 1,
+    );
+  });
+
+  test("keeps the mobile preset menu within the viewport width", async ({ page }) => {
+    // Overflow risk is higher on the narrower 375px phone, so cover both.
+    for (const viewport of [
+      { width: 390, height: 844, name: "390x844" },
+      { width: 375, height: 667, name: "375x667" },
+    ]) {
+      await gotoApp(page, viewport.width, viewport.height);
+      await page.getByRole("tab", { name: "Song" }).click();
+
+      // The PresetMenu trigger's accessible name is the translated
+      // `inspector.progressionLabel` ("Sequence"), not "preset".
+      await page.getByRole("button", { name: /sequence/i }).first().click();
+
+      // Only the preset DropdownMenu is open here, so the lone open role="menu"
+      // is its content; `.first()` guards against any transient duplicate during
+      // the open animation.
+      const menu = page.getByRole("menu").first();
+      await expect(menu).toBeVisible();
+
+      const rect = await menu.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { left: Math.round(r.left), right: Math.round(r.right) };
+      });
+      expect(rect.left, `${viewport.name} menu left`).toBeGreaterThanOrEqual(0);
+      expect(rect.right, `${viewport.name} menu right`).toBeLessThanOrEqual(viewport.width);
+    }
   });
 });

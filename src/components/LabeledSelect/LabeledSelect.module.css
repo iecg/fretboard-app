@@ -117,7 +117,12 @@
   width: max-content;
   min-width: var(--radix-select-trigger-width);
   max-width: min(90vw, 30rem);
-  max-height: min(60vh, 480px);
+  max-height: min(
+    var(--radix-select-content-available-height, 60vh),
+    /* keep above the mobile bottom nav bar (see --mobile-bottom-nav-safe-zone in tokens.css) */
+    calc(100dvh - var(--mobile-bottom-nav-safe-zone, 0px) - 1rem),
+    480px
+  );
   background:
     radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
     linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));

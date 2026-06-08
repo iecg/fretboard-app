@@ -65,6 +65,15 @@ describe("SongControls", () => {
     expect(screen.getByRole("combobox", { name: "Quality" })).toBeInTheDocument();
   });
 
+  it("pairs the Key and Time cards into the mobile two-column grid", () => {
+    const { container } = renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+
+    // Both the Key (Root + Scale) and Time (Signature + Tempo) PropGrids opt
+    // into the mobile pairing grid so the mobile tier can pair their fields.
+    const paired = container.querySelectorAll('[class*="mobile-paired-grid"]');
+    expect(paired.length).toBeGreaterThanOrEqual(2);
+  });
+
   it("loads a preset into the editable list", async () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<SongControls />, store);

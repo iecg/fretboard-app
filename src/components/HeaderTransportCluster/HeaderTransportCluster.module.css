@@ -246,14 +246,33 @@
   row-gap: 0.35rem;
 }
 
+/* The transport buttons fill the first wrapped row; the position readout and
+   the tempo/scale readouts then SHARE the second row (rather than each taking
+   a full-width row of their own). Keeping the cluster to two rows is what holds
+   the mobile header under its height budget — see the responsive.spec.ts guard
+   "keeps mobile header actions and transport within the viewport". */
 :global(.app-container[data-layout-tier="mobile"]) .positionReadout {
-  flex: 1 1 100%;
+  flex: 0 1 auto;
   min-width: 0;
   margin-inline-start: 0;
+  padding-block: 0.18rem;
+  padding-inline: 0.38rem;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .contextReadouts {
-  flex: 1 1 100%;
-  grid-template-columns: minmax(3.4rem, 0.7fr) minmax(6rem, 1.3fr);
+  flex: 1 1 auto;
+  grid-template-columns: minmax(4.25rem, 0.7fr) minmax(0, 1.3fr);
+  min-width: 0;
+  /* Trail to the right edge of the shared readout row. */
+  margin-inline-start: auto;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .contextBox {
+  padding-block: 0.18rem;
+  padding-inline: 0.38rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .scalePrimary {
+  max-width: 100%;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */

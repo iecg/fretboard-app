@@ -100,4 +100,28 @@ describe("PresetMenu", () => {
     const { container } = render(<PresetMenu {...baseProps} />);
     expect(await axe(container)).toHaveNoViolations();
   });
+
+  it("renders categories as a flat list (no submenu triggers) in compact mode", async () => {
+    const user = userEvent.setup();
+    render(<PresetMenu {...baseProps} compact />);
+
+    await user.click(screen.getByRole("button", { name: /Preset/i }));
+
+    expect(
+      screen.queryByRole("menuitem", { name: "Pop / Rock" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /vi-IV-I-V/ })).toBeInTheDocument();
+  });
+
+  it("keeps category submenus in the default (non-compact) mode", async () => {
+    const user = userEvent.setup();
+    render(<PresetMenu {...baseProps} />);
+
+    await user.click(screen.getByRole("button", { name: /Preset/i }));
+
+    expect(
+      screen.getByRole("menuitem", { name: /Pop \/ Rock/ }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: /vi-IV-I-V/ })).not.toBeInTheDocument();
+  });
 });
