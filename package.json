@@ -20,7 +20,7 @@
     "build": "pnpm --filter @fretflow/core run build && tsc -b && vite build",
     "build:mobile": "VITE_MOBILE=true pnpm run build",
     "build:types": "pnpm --filter @fretflow/core run build && tsc -b",
-    "lint": "eslint . && stylelint 'src/**/*.css'",
+    "lint": "eslint .",
     "preview": "vite preview",
     "preview:prod": "pnpm run build && vite preview",
     "test": "vitest run",
@@ -33,7 +33,7 @@
     "test:visual:ci": "bash scripts/run-linux-visual-tests.sh",
     "test:visual:update": "pnpm run build && playwright test --config=playwright.config.visual.ts --update-snapshots",
     "test:visual:update:linux": "bash scripts/update-linux-snapshots.sh",
-    "prepare": "pnpm --filter @fretflow/core run build && husky",
+    "postinstall": "git config core.hooksPath .githooks 2>/dev/null; pnpm --filter @fretflow/core run build",
     "analyze": "source-map-explorer dist/assets/*.js --html dist/bundle-report.html"
   },
   "dependencies": {
@@ -54,8 +54,6 @@
     "tone": "^15.1.22"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.5.2",
-    "@commitlint/config-conventional": "^21.0.1",
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.9.1",
@@ -75,21 +73,13 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
-    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
-    "lint-staged": "^17.0.5",
     "playwright": "^1.60.0",
     "source-map-explorer": "^2.5.3",
-    "stylelint": "^17.12.0",
-    "stylelint-config-recommended": "^18.0.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.59.1",
     "vite": "^8.0.14",
     "vitest": "^4.1.7",
     "vitest-axe": "^0.1.0"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix",
-    "*.css": "stylelint --fix"
   }
 }

@@ -1,0 +1,19 @@
+#!/bin/sh
+branch=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+
+if [ "$branch" = "main" ]; then
+  echo "Error: Direct commits to 'main' are not allowed."
+  echo "Start feature work in a worktree (see AGENTS.md -> Worktrees, or the"
+  echo "superpowers:using-git-worktrees skill) or switch to a feature branch."
+  exit 1
+fi
+
+# Non-blocking nudge: feature work committed in the PRIMARY checkout while other
+# worktrees exist suggests this stream should have been isolated too.
+git_dir=$(git rev-parse --git-dir 2>/dev/null || true)
+common_dir=$(git rev-parse --git-common-dir 2>/dev/null || true)
+if [ "$git_dir" = "$common_dir" ] && [ "$(git worktree list 2>/dev/null | wc -l)" -gt 1 ]; then
+  echo "Hint: committing on '$branch' in the primary checkout while other worktrees"
+  echo "exist. Consider isolating this stream in its own worktree (AGENTS.md ->"
+  echo "Worktrees). Reminder only — the commit proceeds."
+fi
