@@ -53,6 +53,12 @@ describe("shared.module.css responsive selectors", () => {
       ':global(.app-container[data-layout-tier="tablet"]) .note-btn',
     );
   });
+
+  it("defines 44px mobile override for .icon-button--sm", () => {
+    expect(sharedCSS).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.icon-button--sm\s*\{[^}]*width:\s*var\(--size-touch-target\)/s,
+    );
+  });
 });
 
 // ─── Rendered DOM: class membership at each layout tier ─────────────────────
