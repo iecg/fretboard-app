@@ -46,6 +46,8 @@ describe("buildAllLayers", () => {
     bassPatternId: "root-fifth",
     drumPatternId: "rock",
     drumVariations: [] as string[],
+    chordVariations: [] as string[],
+    bassVariations: [] as string[],
     loop: true,
   };
 
@@ -274,7 +276,7 @@ describe("buildAllLayers", () => {
         steps: [step({ id: "a", duration: { value: 1, unit: "bar" } })],
         tempoBpm: 120, beatsPerBar: 4, swing: 0,
         chordPatternId: "pop-8ths", bassPatternId: "root-fifth",
-        drumPatternId: "pop", drumVariations: [], loop: false,
+        drumPatternId: "pop", drumVariations: [], chordVariations: [], bassVariations: [], loop: false,
       });
       expect(layers.chordStrums.length).toBeGreaterThan(0);
       for (const s of layers.chordStrums) {
@@ -613,6 +615,37 @@ describe("buildAllLayers", () => {
       expect(pitchClass(bassAt(out, 3)!.value.note)).toBe("F#");
       // G bar ([8,12)s): loop-wraps to C → B approach at 11s.
       expect(pitchClass(bassAt(out, 11)!.value.note)).toBe("B");
+    });
+  });
+
+  describe("chord variation substitution", () => {
+    it("replaces the base chord hits on a firing turnaround bar", async () => {
+      const steps = Array.from({ length: 8 }, (_, i) =>
+        step({ id: `s${i}`, index: i, root: i % 2 === 0 ? "C" : "G" }),
+      );
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        chordPatternId: "pop-8ths",
+        chordVariations: ["funk-turnaround-chord"],
+        bassPatternId: "root-fifth",
+        steps,
+      });
+      const bar3 = out.chordStrums.filter((s) => s.time >= 12 && s.time < 16);
+      const bar0 = out.chordStrums.filter((s) => s.time >= 0 && s.time < 4);
+      expect(bar0).toHaveLength(6); // base pop-8ths
+      expect(bar3).toHaveLength(4); // funk-turnaround-chord
+    });
+
+    it("leaves non-firing bars on the base pattern", async () => {
+      const steps = Array.from({ length: 8 }, (_, i) => step({ id: `s${i}`, index: i }));
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        chordPatternId: "pop-8ths",
+        chordVariations: ["funk-turnaround-chord"],
+        steps,
+      });
+      const bar1 = out.chordStrums.filter((s) => s.time >= 4 && s.time < 8);
+      expect(bar1).toHaveLength(6); // base pop-8ths, untouched
     });
   });
 

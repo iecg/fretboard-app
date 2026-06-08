@@ -13,7 +13,7 @@ const step = (over: Partial<ResolvedProgressionStep> = {}): ResolvedProgressionS
 const baseInput = {
   tempoBpm: 60, beatsPerBar: 4, swing: 0,
   chordPatternId: "ballad-whole", bassPatternId: "root-fifth",
-  drumPatternId: "rock", drumVariations: [] as string[], loop: true,
+  drumPatternId: "rock", drumVariations: [] as string[], chordVariations: [] as string[], bassVariations: [] as string[], loop: true,
 };
 
 describe("buildAllLayers humanizer integration (real humanize)", () => {

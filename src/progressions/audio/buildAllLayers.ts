@@ -12,12 +12,14 @@ import {
   getChordPattern,
   getDrumPattern,
   getDrumVariation,
+  getChordVariation,
   variationFiresOnBar,
   repeatPatternToBeats,
   sliceCellToBar,
   type CatalogDrumPattern,
   type DrumHit,
   type DrumVariation,
+  type ChordVariation,
   type BassArticulation,
 } from "./patterns";
 import { applyJitter, shouldDropHit, grooveLockTimeAmount } from "./humanize";
@@ -69,6 +71,8 @@ export interface BuildAllLayersInput {
   bassPatternId: string;
   drumPatternId: string;
   drumVariations: readonly string[];
+  chordVariations?: readonly string[];
+  bassVariations?: readonly string[];
   loop: boolean;
 }
 
@@ -185,6 +189,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   const variations: DrumVariation[] = input.drumVariations
     .map((id) => getDrumVariation(id))
     .filter((v): v is DrumVariation => Boolean(v));
+  const chordVariationDefs: ChordVariation[] = (input.chordVariations ?? [])
+    .map((id) => getChordVariation(id))
+    .filter((v): v is ChordVariation => Boolean(v));
 
   const chordOnsets: Array<{ time: number; value: ChordOnsetEvent }> = [];
   const chordStrums: Array<{ time: number; value: ChordStrumEvent }> = [];
@@ -288,9 +295,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
 
       if (chordPattern && voicing.length > 0) {
         const chordCellBars = chordPattern.bars ?? 1;
-        const hits = isBarUnit && chordCellBars > 1
-          ? sliceCellToBar(chordPattern.hits, absoluteBar % chordCellBars, input.beatsPerBar)
-          : repeatPatternToBeats(chordPattern.hits, eventBeats, input.beatsPerBar);
+        const firingChordVariation = chordVariationDefs.find((v) =>
+          variationFiresOnBar(v, absoluteBar),
+        );
+        const sourceHits = firingChordVariation
+          ? firingChordVariation.hits
+          : chordPattern.hits;
+        const hits = !firingChordVariation && isBarUnit && chordCellBars > 1
+          ? sliceCellToBar(sourceHits, absoluteBar % chordCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(sourceHits, eventBeats, input.beatsPerBar);
         for (let hitIndex = 0; hitIndex < hits.length; hitIndex++) {
           const hit = hits[hitIndex];
           const isLhBass =
