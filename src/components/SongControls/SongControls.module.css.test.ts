@@ -25,5 +25,17 @@ describe("SongControls button chrome", () => {
       /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.grouped-button\s*\{[^}]*height:\s*var\(--control-height\)/s,
     );
   });
+
+  it("defines mobile root-quality flex row, lock-label sr-only, and lock-toggle size overrides", () => {
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.root-quality-row\s*\{[^}]*display:\s*flex/s,
+    );
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.lock-label\s*\{[^}]*clip-path:\s*inset\(50%\)/s,
+    );
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.lock-toggle\s*\{[^}]*width:\s*var\(--control-height\)/s,
+    );
+  });
 });
 
