@@ -45,8 +45,6 @@
    (the `@supports` block below never applies), which degrades gracefully. */
 .scroll {
   position: relative;
-  flex: 1 1 0;
-  min-height: 0;
 }
 
 .scroll::before,
