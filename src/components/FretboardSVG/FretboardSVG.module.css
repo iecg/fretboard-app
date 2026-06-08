@@ -361,9 +361,13 @@
    plus static tick notches still marks the target and conveys the beat grid;
    only the live countdown motion is dropped. */
 @media (prefers-reduced-motion: reduce) {
+  /* Match the animation rules' specificity (0,4,0) by including
+     [data-guide-primary="true"] — without it these descendant selectors are
+     (0,3,0) and LOSE to the drain/ramp/flash rules, leaving motion on for users
+     who asked for reduced motion. */
   .note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"],
-  .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-core,
-  .note-guide-ring[data-guide-phase="landing"] .note-guide-ring-flash {
+  .note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"] .note-guide-ring-core,
+  .note-guide-ring[data-guide-phase="landing"][data-guide-primary="true"] .note-guide-ring-flash {
     animation: none;
   }
 }

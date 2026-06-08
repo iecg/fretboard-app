@@ -16,6 +16,7 @@ import {
   progressionStepsAtom,
   beatsPerBarAtom,
   progressionStepDeadlineAtom,
+  progressionStepDurationMsAtom,
 } from "../../store/progressionAtoms";
 import { progressionVisualFrameAtom } from "../../store/progressionVisualAtoms";
 
@@ -880,8 +881,10 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.0, localFraction: 0.0, paused: false });
       // Deadline more than one step ahead — the "step has started" guard
       // (deadline - now > stepMs) prevents guideCountdownActiveAtom from firing.
-      // At 120 BPM / 4 beats per bar: stepMs ≈ 2000 ms; 3× that is safely outside.
-      store.set(progressionStepDeadlineAtom, Date.now() + 6000);
+      // Derive from the active step duration so this stays correct if the tempo
+      // or defaults change; 3× is safely outside the window.
+      const stepMs = store.get(progressionStepDurationMsAtom);
+      store.set(progressionStepDeadlineAtom, Date.now() + stepMs * 3);
 
       renderWithStore(
         <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
