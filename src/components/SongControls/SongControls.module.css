@@ -469,3 +469,30 @@
   grid-column: auto !important;
   min-width: 0;
 }
+
+/* Compact the progression card header toolbar: no wrap, tighter gaps, pushed
+   to the right edge of the (wrapped) head row. */
+:global(.app-container[data-layout-tier="mobile"]) .progression-toolbar {
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+  margin-left: auto;
+}
+
+/* Drop the "Add" text label to an icon-only button — visually hidden, still
+   announced (the button also carries an aria-label). */
+:global(.app-container[data-layout-tier="mobile"]) .toolbar-button > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* The dividers add width the compact row can't spare. */
+:global(.app-container[data-layout-tier="mobile"]) .toolbar-divider {
+  display: none;
+}
