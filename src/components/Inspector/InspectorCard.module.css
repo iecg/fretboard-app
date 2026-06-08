@@ -94,10 +94,9 @@
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .cardHeadActions {
-  /* When the head wraps, let the actions take the full second row and stay
-     right-aligned so the compacted toolbar never spills past the card edge. */
-  margin-left: auto;
-  max-width: 100%;
+  order: 3;
+  flex: 1 1 100%;
+  justify-content: flex-end;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .cardDesc {

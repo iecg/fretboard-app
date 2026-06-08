@@ -10,4 +10,15 @@ describe("Inspector.module.css", () => {
     );
     expect(css).not.toMatch(/composes:\s*faceplate/);
   });
+
+  it("defines mobile cardHeadActions order and flex behavior", () => {
+    const css = readFileSync(
+      join(__dirname, "InspectorCard.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.cardHeadActions\s*\{[^}]*order:\s*3/s,
+    );
+  });
 });
+
