@@ -323,7 +323,7 @@ describe("atoms", () => {
       expect(store.get(scaleNameAtom)).toBe("major");
       expect(store.get(isMutedAtom)).toBe(false);
       expect(store.get(fretZoomAtom)).toBe(100);
-      expect(store.get(displayFormatAtom)).toBe("notes");
+      expect(store.get(displayFormatAtom)).toBe("degrees");
       expect(store.get(chordTypeAtom)).toBeNull();
       expect(store.get(chordRootAtom)).toBe("C");
       expect(store.get(linkChordRootAtom)).toBe(true);

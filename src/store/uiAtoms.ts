@@ -4,7 +4,7 @@ import { k, rawStringStorage, GET_ON_INIT } from "../utils/storage";
 
 export const displayFormatAtom = atomWithStorage<"notes" | "degrees" | "none">(
   k("displayFormat"),
-  "notes",
+  "degrees",
   rawStringStorage<"notes" | "degrees" | "none">(),
   GET_ON_INIT,
 );
