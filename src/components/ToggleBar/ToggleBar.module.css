@@ -13,7 +13,7 @@
 
 .mobile-tab-bar .mobile-tab {
   flex: 1;
-  min-height: 2.85rem;
+  min-height: var(--control-height);
   padding: 0.45rem 0.6rem;
   background: none;
   border: none;
