@@ -590,6 +590,14 @@ describe("resolveProgressionStep — quality pin", () => {
     const r = resolveProgressionStep(step("VII", "7"), "major pentatonic", "C");
     expect(r.unavailable).toBe(true);
   });
+
+  it("pins the override root to the harmony parent, not the blues overlay", () => {
+    // Regression: a "minor blues" overlay (C Eb F Gb G Bb) must not pin IV to
+    // its own ordinal-3 note (Gb/F#). IV:7 over C minor blues is F7, V:7 is G7,
+    // resolved against the minor harmony parent (C D Eb F G Ab Bb).
+    expect(resolveProgressionStep(step("IV", "7"), "minor blues", "C").root).toBe("F");
+    expect(resolveProgressionStep(step("V", "7"), "minor blues", "C").root).toBe("G");
+  });
 });
 
 const PRESET_HOME_SCALE: Record<string, string> = {
