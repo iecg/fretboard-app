@@ -496,3 +496,35 @@
 :global(.app-container[data-layout-tier="mobile"]) .toolbar-divider {
   display: none;
 }
+
+/* Force the chord list + editor into a single stacked column so the editor
+   panel always sits below the list instead of wrapping beside it (which, at
+   narrow widths, let the two overlap). */
+:global(.app-container[data-layout-tier="mobile"]) .progression-master-detail {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .editor-panel {
+  flex: 0 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Editor controls go one-per-row so Root / Quality / Duration each get the
+   full width rather than fighting over a wrapping flex row. */
+:global(.app-container[data-layout-tier="mobile"]) .editor-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .duration-row,
+:global(.app-container[data-layout-tier="mobile"]) .quality-row {
+  flex-wrap: wrap;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .duration-unit {
+  flex: 1 1 8rem;
+}
