@@ -16,7 +16,7 @@ export { setLayerGain } from "./layerBuses";
 export { scheduleBassNote } from "./bass";
 export { scheduleCrossStick, scheduleHiHat, scheduleKick, scheduleRide, scheduleSnare } from "./drumKit";
 export { scheduleClick } from "./metronome";
-export { clearTimeline, pauseTimeline, setActiveStep } from "./timeline";
+export { clearTimeline, pauseTimeline, setActiveStep, setTimelineScale } from "./timeline";
 export { getDraw, getTransport };
 export type { ProgressionPartHandle };
 

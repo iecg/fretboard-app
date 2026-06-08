@@ -7,6 +7,7 @@ import {
   pauseTimeline,
   resumeTimelineAtCurrentTime,
   setActiveStep,
+  setTimelineScale,
 } from "./timeline";
 import { _resetProgressionAudioForTests } from "./bus";
 
@@ -183,6 +184,29 @@ describe("timeline", () => {
     mockNow = 11.0;
     // 1s elapsed since resume
     expect(getTimelinePosition()?.globalFraction).toBeCloseTo(0.3, 5); // (2+1)/10
+  });
+
+  it("scales reported durations by the live tempo factor", () => {
+    // Built at the original tempo: cumulativeStart 4s, total 16s, step 4s.
+    setActiveStep(1, 0, 4, 4, 16);
+    // Tempo halved during playback → real wall-clock durations double.
+    setTimelineScale(2);
+    mockNow = 2; // 2 real seconds elapsed into the step
+
+    const pos = getTimelinePosition();
+    // Real cumulative start = 8s, real total = 32s, real step duration = 8s.
+    expect(pos?.localFraction).toBeCloseTo(2 / 8, 5); // 0.25
+    expect(pos?.globalFraction).toBeCloseTo((8 + 2) / 32, 5); // 0.3125
+    expect(pos?.totalDurationSec).toBeCloseTo(32, 5);
+  });
+
+  it("resets the tempo scale to 1 when the timeline is cleared", () => {
+    setActiveStep(0, 0, 4, 0, 16);
+    setTimelineScale(2);
+    clearTimeline();
+    // A fresh step after clear should report unscaled durations.
+    setActiveStep(0, 0, 4, 0, 16);
+    expect(getTimelinePosition()?.totalDurationSec).toBe(16);
   });
 
   it("clearTimeline wipes the active step", () => {

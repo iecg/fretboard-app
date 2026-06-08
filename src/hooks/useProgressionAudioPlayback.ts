@@ -205,6 +205,11 @@ export function useProgressionAudioPlayback() {
   );
   const instrumentRef = useRef(chordInstrument);
   const genRef = useRef(0);
+  // Tempo the currently-live Tone Parts were baked at. The layer event timings
+  // are seconds-at-build-tempo; a live tempo change rescales the Transport but
+  // not those baked seconds, so the visual timeline needs this reference to
+  // mirror the rescale (see the tempo effect below + timeline.setTimelineScale).
+  const builtTempoRef = useRef(tempo);
 
   const buildInputsRef = useRef({
     steps,
@@ -421,6 +426,10 @@ export function useProgressionAudioPlayback() {
       eng.setPlaybackTempo(inputs.tempo);
       eng.setPlaybackSwing(inputs.swing);
       eng.setPlaybackTimeSignature(inputs.beatsPerBar);
+      // These Parts are baked at inputs.tempo. Record it so a later live tempo
+      // change can scale the visual timeline. clearTimeline() (fired up front in
+      // the restart-tier reset) already reset the scale to 1 for this build.
+      builtTempoRef.current = inputs.tempo;
 
       let built;
       const currentCacheKey = JSON.stringify({
@@ -612,6 +621,11 @@ export function useProgressionAudioPlayback() {
   useEffect(() => {
     if (!engine) return;
     engine.setPlaybackTempo(tempo);
+    // The Transport now runs at the new BPM, rescaling every scheduled event's
+    // wall-clock position. The baked timeline seconds don't change, so mirror
+    // the rescale into the visual timeline: scale = builtTempo / currentTempo.
+    // Without this the playhead snaps to the stale baked offset at every bar.
+    engine.setTimelineScale(builtTempoRef.current / Math.max(1, tempo));
   }, [tempo]);
 
   useEffect(() => {
