@@ -10,7 +10,9 @@ const SHORTCUTS: { keys: string; labelKey: string }[] = [
   { keys: "2", labelKey: "help.shortcuts.track2" },
   { keys: "3", labelKey: "help.shortcuts.track3" },
   { keys: "4", labelKey: "help.shortcuts.track4" },
+  { keys: "↑ ↓", labelKey: "help.shortcuts.tempo" },
   { keys: "← →", labelKey: "help.shortcuts.steps" },
+  { keys: "T", labelKey: "help.shortcuts.tab" },
   { keys: "S", labelKey: "help.shortcuts.scale" },
   { keys: "C", labelKey: "help.shortcuts.chord" },
 ];
