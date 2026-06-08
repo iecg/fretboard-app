@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
+import { axe } from "vitest-axe";
 import { FretboardNote } from "./FretboardNote";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -232,6 +233,90 @@ describe("FretboardNote — two-phase guide ring", () => {
     );
     expect(markerIdx).toBeGreaterThanOrEqual(0);
     expect(ringIdx).toBeGreaterThan(markerIdx);
+  });
+});
+
+function renderNoteWithTicks(note: RenderedFretboardNote, countdownTicks: number[]) {
+  return render(
+    <svg>
+      <FretboardNote
+        note={note}
+        noteBubblePx={40}
+        displayFormat="notes"
+        countdownTicks={countdownTicks}
+      />
+    </svg>,
+  );
+}
+
+describe("FretboardNote — common-hold ring", () => {
+  it("has no accessibility violations for the hold-common render path", async () => {
+    const { container } = renderNoteWithTicks(
+      makeNote({
+        transitionRole: "hold-common",
+        isInRegion: true,
+        applyLensEmphasis: { radiusBoost: 1.15, opacityBoost: 1 },
+      }),
+      [0.25, 0.5, 0.75],
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("maps transitionRole 'hold-common' to data-guide-phase='hold' on the ring", () => {
+    const { container } = renderNote(
+      makeNote({
+        transitionRole: "hold-common",
+        applyLensEmphasis: { radiusBoost: 1.15, opacityBoost: 1 },
+      }),
+    );
+    const ring = container.querySelector('g[data-guide-ring="true"]');
+    expect(ring).not.toBeNull();
+    expect(ring?.getAttribute("data-guide-phase")).toBe("hold");
+  });
+
+  it("renders no interval label for a common-hold note (no guideTargetLabel)", () => {
+    const { container } = renderNote(
+      makeNote({
+        transitionRole: "hold-common",
+        applyLensEmphasis: { radiusBoost: 1.15, opacityBoost: 1 },
+      }),
+    );
+    expect(container.querySelector('[data-guide-label="true"]')).toBeNull();
+  });
+
+  it("renders NO beat-tick notches on a hold ring (ticks belong to the guide countdown)", () => {
+    const { container } = renderNoteWithTicks(
+      makeNote({
+        transitionRole: "hold-common",
+        isInRegion: true,
+        applyLensEmphasis: { radiusBoost: 1.15, opacityBoost: 1 },
+      }),
+      [0.25, 0.5, 0.75],
+    );
+    expect(container.querySelector('[data-guide-tick="true"]')).toBeNull();
+  });
+
+  it("still renders beat-tick notches on a guide-target (landing) ring", () => {
+    const { container } = renderNoteWithTicks(
+      makeNote({
+        transitionRole: "guide-target",
+        isInRegion: true,
+        applyLensEmphasis: { radiusBoost: 1, opacityBoost: 1, guideTargetLabel: "3" },
+      }),
+      [0.25, 0.5, 0.75],
+    );
+    expect(container.querySelector('[data-guide-tick="true"]')).not.toBeNull();
+  });
+
+  it("applies the size hold via --emph-scale", () => {
+    const { container } = renderNote(
+      makeNote({
+        transitionRole: "hold-common",
+        applyLensEmphasis: { radiusBoost: 1.15, opacityBoost: 1 },
+      }),
+    );
+    const g = container.querySelector("g[data-note-shape]") as SVGGElement;
+    expect(g.style.getPropertyValue("--emph-scale")).toBe("1.15");
   });
 });
 

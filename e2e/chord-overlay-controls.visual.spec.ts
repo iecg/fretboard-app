@@ -1,9 +1,10 @@
 /**
  * Visual regression tests for the ChordOverlayControls panel.
  *
- * After lens consolidation (commit e5d2f2ea), ChordOverlayControls renders only
- * the Voicing group (dropdown + optional ChordStringSetPicker).
- * The Practice lens toggle row and the former Chord Type toggle bar were removed.
+ * ChordOverlayControls renders the Voicing group (dropdown + optional
+ * ChordStringSetPicker) and the improvisation Lens selector (a 3-chip ToggleBar:
+ * Root / Guide / Common, bound to practiceLensAtom — reintroduced for the
+ * improvisation lenses feature). The former Chord Type toggle bar remains removed.
  *
  * Covers:
  *   1. Desktop dark  — 1280x900, manual mode, Major Triad active
@@ -32,7 +33,7 @@ test.describe("Chord Overlay Controls Visual", () => {
     await page.getByRole("tab", { name: "Overlay" }).click();
 
     // Wait for the Voicing dropdown — confirms ChordOverlayControls is fully
-    // mounted. (Practice lens row was removed in lens consolidation e5d2f2ea.)
+    // mounted. (The Lens selector row sits below Voicing.)
     await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
@@ -79,7 +80,7 @@ test.describe("Chord Overlay Controls Visual", () => {
     await page.getByRole("tab", { name: "Overlay" }).click();
 
     // Wait for the Voicing dropdown to confirm the panel is mounted.
-    // (Practice lens row was removed in lens consolidation e5d2f2ea.)
+    // (The Lens selector row sits below Voicing.)
     await expect(page.getByRole("combobox", { name: "Voicing" })).toBeVisible();
 
     await expectFullPageVisual(
