@@ -321,6 +321,37 @@ test.describe("responsive layout regressions", () => {
     }
   });
 
+  test("keeps mobile fretboard paint inside the viewport width", async ({ page }) => {
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 375, height: 667 },
+    ]) {
+      const name = `${viewport.width}x${viewport.height}`;
+      await gotoApp(page, viewport.width, viewport.height);
+
+      const metrics = await page.evaluate(() => {
+        const getRect = (selector: string) => {
+          const el = document.querySelector(selector);
+          if (!(el instanceof HTMLElement || el instanceof SVGElement)) return null;
+          const rect = el.getBoundingClientRect();
+          return { left: rect.left, right: rect.right };
+        };
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          innerWidth: window.innerWidth,
+          outer: getRect('[data-testid="fretboard-outer"]'),
+          wrapper: getRect('[class*="fretboard-wrapper"]'),
+        };
+      });
+
+      expect(metrics.scrollWidth, name).toBeLessThanOrEqual(metrics.innerWidth);
+      expect(metrics.outer, name).not.toBeNull();
+      expect(metrics.wrapper, name).not.toBeNull();
+      expect(metrics.outer!.right, name).toBeLessThanOrEqual(viewport.width);
+      expect(metrics.wrapper!.right, name).toBeLessThanOrEqual(viewport.width);
+    }
+  });
+
   test("keeps mobile progression chord list and editor from overlapping", async ({ page }) => {
     await gotoApp(page, 390, 844);
     await page.getByRole("tab", { name: "Song" }).click();
