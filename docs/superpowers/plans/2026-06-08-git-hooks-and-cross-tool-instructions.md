@@ -31,21 +31,36 @@ The working tree already has the husky removal applied (deleted `.husky/*`, edit
 Run: `git status --short && git config --get core.hooksPath`
 Expected: shows deleted `.husky/*`, modified `package.json`, untracked `.githooks/`; `core.hooksPath` prints `.husky/_` (stale).
 
-- [ ] **Step 2: Verify the pre-commit hook content is exactly this**
+- [ ] **Step 2: Write the smarter pre-commit hook**
 
-Run: `cat .githooks/pre-commit`
-Expected:
+The current `.githooks/pre-commit` is the simple branch-guard. Replace its full contents with this version (hard block on `main` + non-blocking worktree nudge):
 
 ```sh
 #!/bin/sh
 branch=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+
 if [ "$branch" = "main" ]; then
-  echo "Error: Direct commits to 'main' are not allowed. Please use a feature branch."
+  echo "Error: Direct commits to 'main' are not allowed."
+  echo "Start feature work in a worktree (see AGENTS.md -> Worktrees, or the"
+  echo "superpowers:using-git-worktrees skill) or switch to a feature branch."
   exit 1
+fi
+
+# Non-blocking nudge: feature work committed in the PRIMARY checkout while other
+# worktrees exist suggests this stream should have been isolated too.
+git_dir=$(git rev-parse --git-dir 2>/dev/null || true)
+common_dir=$(git rev-parse --git-common-dir 2>/dev/null || true)
+if [ "$git_dir" = "$common_dir" ] && [ "$(git worktree list 2>/dev/null | wc -l)" -gt 1 ]; then
+  echo "Hint: committing on '$branch' in the primary checkout while other worktrees"
+  echo "exist. Consider isolating this stream in its own worktree (AGENTS.md ->"
+  echo "Worktrees). Reminder only — the commit proceeds."
 fi
 ```
 
-If it differs, write that exact content. Ensure it is executable: `chmod +x .githooks/pre-commit`.
+Ensure it is executable: `chmod +x .githooks/pre-commit`
+
+Run: `sh -n .githooks/pre-commit && echo "syntax OK"`
+Expected: `syntax OK` (POSIX sh parses cleanly).
 
 - [ ] **Step 3: Reconcile the lockfile and register the hooks path**
 
@@ -76,8 +91,10 @@ git add -A
 git commit -m "chore(hooks): replace husky with shell-only .githooks pre-commit guard
 
 Remove husky, lint-staged, and the prepare script. Add .githooks/pre-commit
-(plain POSIX sh) that blocks direct commits to main, registered via
-core.hooksPath in postinstall. Reconcile the lockfile."
+(plain POSIX sh) that hard-blocks direct commits to main and prints a
+non-blocking worktree nudge when committing in the primary checkout while
+other worktrees exist. Registered via core.hooksPath in postinstall.
+Reconcile the lockfile."
 ```
 
 - [ ] **Step 7: Verify the commit is clean**
@@ -237,7 +254,8 @@ In `AGENTS.md`, find this bullet under `## Development Workflow`:
 Immediately after it, add:
 
 ```
-- **Git hooks:** `.githooks/pre-commit` (plain POSIX shell) blocks direct commits to `main`. Registered via `git config core.hooksPath .githooks` in the `postinstall` script. No husky and no Node-based tooling in hooks — they stay near-zero CPU so concurrent AI agents never thrash or stall on a hung hook.
+- **Worktrees (preferred isolation):** Before starting multi-step feature work or executing an implementation plan, create a git worktree first — invoke `superpowers:using-git-worktrees`. Run each concurrent/subagent stream that touches files in its own worktree so parallel agents never clobber a shared working tree. Quick single-file doc/config edits on a short-lived branch may skip the worktree. The `.githooks/pre-commit` nudge is only a last-resort reminder when this was missed.
+- **Git hooks:** `.githooks/pre-commit` (plain POSIX shell) hard-blocks direct commits to `main` and prints a non-blocking nudge to use a worktree when committing in the primary checkout while other worktrees exist. Registered via `git config core.hooksPath .githooks` in the `postinstall` script. No husky and no Node-based tooling in hooks — they stay near-zero CPU so concurrent AI agents never thrash or stall on a hung hook.
 - **Instruction files:** `AGENTS.md` is the canonical project guide. `CLAUDE.md` and `GEMINI.md` are `@AGENTS.md` import stubs so Claude Code, Gemini CLI, opencode, Codex, Copilot, and Antigravity all read the same content. Edit `AGENTS.md` only.
 ```
 
@@ -358,8 +376,8 @@ Expected: PR opens; CI runs the full suite as the universal gate.
 
 ## Spec coverage check
 
-- Spec A (minimal hook, no pre-push, no Node tooling, `postinstall` registration) → Task 1.
+- Spec A (minimal hook: `main` hard-block + non-blocking worktree nudge, no pre-push, no Node tooling, `postinstall` registration) → Task 1.
 - Spec B (remove husky/lint-staged) → Task 1; (remove commitlint) → Task 2; (drop stylelint) → Task 3.
 - Spec C (`lint` = `eslint .`) → Task 3 Step 1.
-- Spec D (AGENTS.md canonical, `@AGENTS.md` stubs, import-stub mechanism, three content edits) → Task 4.
+- Spec D (AGENTS.md canonical, `@AGENTS.md` stubs, import-stub mechanism, content edits incl. Git hooks note + Worktrees policy) → Task 4.
 - Spec verification list → Task 5.

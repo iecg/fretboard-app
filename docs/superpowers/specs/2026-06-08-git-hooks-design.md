@@ -44,16 +44,33 @@ Pre-push hooks running `tsc`/`eslint`/`vitest` were considered and rejected for 
 
 ### Specification
 
-- **`.githooks/pre-commit`** — plain POSIX shell. Single responsibility: block direct commits to `main`. No Node tooling.
+- **`.githooks/pre-commit`** — plain POSIX shell. Two responsibilities, both git-only (no Node tooling):
+  1. **Block direct commits to `main`** (hard, `exit 1`). The message points at the worktree workflow as the preferred way to start feature work.
+  2. **Non-blocking worktree nudge** (`exit 0`). When the commit is happening in the **primary** working tree (not a linked worktree) **and** at least one other worktree already exists, print a one-line reminder to isolate the stream in its own worktree. This fires only when the repo is actively in multi-worktree mode, so it stays silent during solo single-checkout work.
 
   ```sh
   #!/bin/sh
   branch=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+
   if [ "$branch" = "main" ]; then
-    echo "Error: Direct commits to 'main' are not allowed. Please use a feature branch."
+    echo "Error: Direct commits to 'main' are not allowed."
+    echo "Start feature work in a worktree (see AGENTS.md -> Worktrees, or the"
+    echo "superpowers:using-git-worktrees skill) or switch to a feature branch."
     exit 1
   fi
+
+  # Non-blocking nudge: feature work committed in the PRIMARY checkout while other
+  # worktrees exist suggests this stream should have been isolated too.
+  git_dir=$(git rev-parse --git-dir 2>/dev/null || true)
+  common_dir=$(git rev-parse --git-common-dir 2>/dev/null || true)
+  if [ "$git_dir" = "$common_dir" ] && [ "$(git worktree list 2>/dev/null | wc -l)" -gt 1 ]; then
+    echo "Hint: committing on '$branch' in the primary checkout while other worktrees"
+    echo "exist. Consider isolating this stream in its own worktree (AGENTS.md ->"
+    echo "Worktrees). Reminder only — the commit proceeds."
+  fi
   ```
+
+  **The hook is a last-resort backstop.** The actual "when to use a worktree" policy lives in `AGENTS.md` (see Section C) so agents act on it proactively; the hook only catches the lapse.
 
 - **No pre-push hook.** No `commit-msg` hook.
 - **`postinstall`** registers the hooks directory:
@@ -117,6 +134,7 @@ When moving content into `AGENTS.md`:
 1. **Fix the stale `lint-staged` reference** (current `CLAUDE.md:105`): "Stylelint wired into `pnpm run lint` and `lint-staged`." — `lint-staged` is gone and stylelint is dropped. Remove the line / update the CSS conventions bullet accordingly.
 2. **Strengthen the pre-PR discipline line** (current `CLAUDE.md:21`): "MANDATORY: Run `lint`, `test`, and `build` locally before PR." This is now the load-bearing safety net (no husky enforces it). Make explicit that hooks no longer run these checks, so the agent must.
 3. **Add a "Git hooks" note**: `.githooks/pre-commit` guards `main`, registered via `core.hooksPath` in `postinstall`; no husky and no Node tooling in hooks; CI is the real gate.
+4. **Add a "Worktrees" policy** (this repo leans heavily on obra/superpowers): before starting multi-step feature work or executing an implementation plan, create a worktree first via `superpowers:using-git-worktrees`; run each concurrent/subagent stream that touches files in its own worktree so parallel agents never clobber a shared working tree; quick single-file doc/config edits on a short-lived branch may skip the worktree. State that the `.githooks/pre-commit` nudge is only a last-resort reminder when this was missed.
 
 ## Out of scope
 
