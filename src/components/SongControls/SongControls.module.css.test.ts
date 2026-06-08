@@ -37,5 +37,12 @@ describe("SongControls button chrome", () => {
       /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.lock-toggle\s*\{[^}]*width:\s*var\(--control-height\)/s,
     );
   });
+
+  it("defines mobile editor pager button size", () => {
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.pager-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
+    );
+  });
 });
+
 

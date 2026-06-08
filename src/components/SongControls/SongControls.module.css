@@ -571,4 +571,10 @@
   flex-shrink: 0;
 }
 
+:global(.app-container[data-layout-tier="mobile"]) .pager-button {
+  width: var(--control-height);
+  height: var(--control-height);
+}
+
+
 
