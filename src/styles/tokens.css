@@ -198,7 +198,9 @@
   :root {
     --size-touch-target: 2.75rem; /* 44px */
     --control-height: 44px;
-    /* 3.5rem = empirical height of .placementBottom .tabList — keep in sync with Inspector.module.css */
+    /* 3.5rem = empirical height of .placementBottom .tabList — keep in sync with Inspector.module.css.
+       Static fallback only: getCollisionPadding() in src/utils/collision.ts measures the tablist
+       height at runtime for precision, so update both places if the tablist height changes. */
     --mobile-bottom-nav-safe-zone: calc(3.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

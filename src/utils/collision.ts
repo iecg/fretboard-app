@@ -1,12 +1,13 @@
+/** Base gap (px) reserved between a popper and the bottom tab bar. */
+const DEFAULT_COLLISION_PADDING = 8;
+
 /**
  * Returns dynamic collision padding to ensure popper dropdowns/selects
  * do not overlap with the bottom navigation tabs when they are docked.
  */
 export function getCollisionPadding(): number {
-  const defaultPadding = 8;
-
   if (typeof document === "undefined" || typeof window === "undefined") {
-    return defaultPadding;
+    return DEFAULT_COLLISION_PADDING;
   }
 
   const tabList = document.querySelector('[role="tablist"][aria-label="Inspector"]');
@@ -14,9 +15,9 @@ export function getCollisionPadding(): number {
     const rect = tabList.getBoundingClientRect();
     const isDockedAtBottom = Math.abs(rect.bottom - window.innerHeight) < 5;
     if (isDockedAtBottom) {
-      return Math.round(rect.height) + 8;
+      return Math.round(rect.height) + DEFAULT_COLLISION_PADDING;
     }
   }
 
-  return defaultPadding;
+  return DEFAULT_COLLISION_PADDING;
 }
