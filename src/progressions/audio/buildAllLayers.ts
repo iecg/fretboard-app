@@ -191,10 +191,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   const variations: DrumVariation[] = input.drumVariations
     .map((id) => getDrumVariation(id))
     .filter((v): v is DrumVariation => Boolean(v));
-  const chordVariationDefs: ChordVariation[] = (input.chordVariations ?? [])
+  const chordVariationDefs: ChordVariation[] = input.chordVariations
     .map((id) => getChordVariation(id))
     .filter((v): v is ChordVariation => Boolean(v));
-  const bassVariationDefs: BassVariation[] = (input.bassVariations ?? [])
+  const bassVariationDefs: BassVariation[] = input.bassVariations
     .map((id) => getBassVariation(id))
     .filter((v): v is BassVariation => Boolean(v));
 
@@ -247,6 +247,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
     // Split the funk voicing intents: the "root" anchor needs the plain triad's
     // root note; the "color-stab" needs a voice-led rootless funk grip in the
     // current chord's register. Computed only when the pattern uses each hit.
+    // NOTE: these flags derive from the BASE pattern only. A chord variation that
+    // introduces a "root"/"color-stab" articulation the base lacks will fall back to
+    // the default voicing. Keep variation articulations a subset of their genre's base comp.
     const needsRootAnchor = !!chordPattern?.hits.some((h) => h.articulation === "root");
     const needsColor = !!chordPattern?.hits.some((h) => h.articulation === "color-stab");
     const plainVoicing = needsRootAnchor ? resolveChordVoicing(root, quality) : voicing;

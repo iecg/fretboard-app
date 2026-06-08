@@ -680,6 +680,32 @@ describe("buildAllLayers", () => {
       const bar1 = out.bass.filter((b) => b.time >= 4 && b.time < 8);
       expect(bar1).toHaveLength(5); // base funk-syncopated untouched
     });
+
+    it("variation + base-turnaround: no double fill (variation replaces base, §3.4 swap operates on variation hits only)", async () => {
+      // root-fifth has turnaround:true (2 hits/bar normally). funk-turnaround-bass fires on
+      // absolute bar 3 (barInterval=4, barPhase=3). With loop:true over [C,G,C,G], bar 3
+      // is G with turnaround target C (loop-wrap) — so BOTH the variation fires AND the §3.4
+      // turnaround is active simultaneously.
+      //
+      // Correct behavior: variation substitutes base first (patternHits = 4 variation hits),
+      // then §3.4 tail-swaps: keeps beats < 3 (beats 0, 1.5, 2.5 = 3 hits) + adds one approach
+      // note on beat 3 = 4 total. No double fill.
+      // Bug indicator: if we saw 2 (base only) + 4 (variation) = 6, the base wasn't replaced.
+      const steps = Array.from({ length: 4 }, (_, i) =>
+        step({ id: `s${i}`, index: i, root: i % 2 === 0 ? "C" : "G" }),
+      );
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        bassPatternId: "root-fifth",
+        bassVariations: ["funk-turnaround-bass"],
+        chordPatternId: "ballad-whole",
+        steps,
+        loop: true,
+      });
+      const bar3 = out.bass.filter((b) => b.time >= 12 && b.time < 16);
+      // §3.4 tail-swaps the variation's beat-3 hit for one approach note: 3 pre-tail hits + 1 = 4.
+      expect(bar3).toHaveLength(4); // clean substitution — variation replaced base, no double fill
+    });
   });
 
   describe("nextResolvableRoot", () => {
