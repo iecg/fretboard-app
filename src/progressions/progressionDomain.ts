@@ -470,14 +470,18 @@ export function resolveProgressionStep(
 
   // Quality pin: a valid override resolves a non-diatonic degree on its
   // scale-position root (e.g. a dominant V in natural minor). Relative to the
-  // scale degree, so it transposes with the root. Resolved against the active
-  // scale (not the harmony parent) so a degree whose ordinal exceeds the
-  // scale length (e.g. VII in a 5-note pentatonic) stays unavailable.
+  // scale degree, so it transposes with the root. The root note is taken from
+  // the harmony parent scale (consistent with remapDegreeByOrdinal) so blues /
+  // pentatonic overlays pin to the same roots as their parent — e.g. IV over a
+  // C "minor blues" overlay is F (minor parent ordinal 3), not Gb (the overlay's
+  // own ordinal 3). Availability is still gated by the active overlay scale's
+  // length, so a degree whose ordinal exceeds it (e.g. VII in a 5-note
+  // pentatonic) stays unavailable.
   let pinnedRoot: string | null = null;
   if (!diatonic && !usingManualRoot && overrideValid) {
     const ordinal = getDegreeOrdinal(step.degree);
-    if (ordinal !== null) {
-      pinnedRoot = getScaleNotes(rootNote, scaleName)[ordinal] ?? null;
+    if (ordinal !== null && ordinal < getScaleNotes(rootNote, scaleName).length) {
+      pinnedRoot = getScaleNotes(rootNote, harmonyScale)[ordinal] ?? null;
     }
   }
 
