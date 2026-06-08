@@ -40,3 +40,21 @@ export function applyJitter({
 
   return { time: newTime, velocity: newVelocity };
 }
+
+/** Threshold below which a hit is a droppable "ghost". */
+const GHOST_VELOCITY_THRESHOLD = 0.4;
+/** Drop probability applied to sub-threshold ghosts. */
+const GHOST_DROP_CHANCE = 0.12;
+/** Seed offset so the drop roll is independent of the time/velocity rolls. */
+const DROP_SEED_OFFSET = 54321;
+
+/**
+ * Deterministic, seeded decision: should this hit be dropped entirely to
+ * simulate a player occasionally skipping a ghost stroke? Uses the hit's
+ * *authored* (pre-jitter) velocity so a ±10% velocity jitter can never flip a
+ * borderline ghost across the threshold. Structural hits (>= 0.4) never drop.
+ */
+export function shouldDropHit(velocity: number, seed: number): boolean {
+  if (velocity >= GHOST_VELOCITY_THRESHOLD) return false;
+  return seededRandom(seed + DROP_SEED_OFFSET) < GHOST_DROP_CHANCE;
+}
