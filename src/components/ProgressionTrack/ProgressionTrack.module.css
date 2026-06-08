@@ -493,6 +493,7 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="mobile"]) .track {
+  border-top: none;
   padding: 0.5rem 0.55rem 0.45rem;
 
   /* Progressions longer than four chords would crush block labels on a phone.
