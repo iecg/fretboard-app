@@ -85,6 +85,10 @@ export interface Dictionary {
     voicingOff: string;
     voicingFull: string;
     voicingClose: string;
+    lensLabel: string;
+    lensRoot: string;
+    lensGuide: string;
+    lensCommon: string;
     chordStringSetLabel: string;
     chordStringSetAll: string;
     stringSetAll: string;
