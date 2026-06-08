@@ -1,10 +1,3 @@
-export interface CollisionPadding {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
-
 /**
  * Returns dynamic collision padding to ensure popper dropdowns/selects
  * do not overlap with the bottom navigation tabs when they are docked.
