@@ -133,6 +133,41 @@ function CategoryGroup({
   );
 }
 
+function SuggestionGroupList({
+  suggestionGroups,
+  currentId,
+  onSelect,
+}: {
+  suggestionGroups: PresetMenuSuggestionGroup[];
+  currentId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <>
+      {suggestionGroups.map((group, index) => (
+        <DropdownMenu.Group key={group.feel}>
+          {index > 0 && (
+            <DropdownMenu.Separator
+              className={styles["preset-menu-separator"]}
+            />
+          )}
+          <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
+            {group.label}
+          </DropdownMenu.Label>
+          {group.options.map((option) => (
+            <MenuOption
+              key={option.id}
+              option={option}
+              currentId={currentId}
+              onSelect={onSelect}
+            />
+          ))}
+        </DropdownMenu.Group>
+      ))}
+    </>
+  );
+}
+
 export function PresetMenu({
   triggerLabel,
   customLabel,
@@ -219,26 +254,11 @@ export function PresetMenu({
                 <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
                   {`Suggested for ${scaleLabel}`}
                 </DropdownMenu.Label>
-                {suggestionGroups.map((group, index) => (
-                  <DropdownMenu.Group key={group.feel}>
-                    {index > 0 && (
-                      <DropdownMenu.Separator
-                        className={styles["preset-menu-separator"]}
-                      />
-                    )}
-                    <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
-                      {group.label}
-                    </DropdownMenu.Label>
-                    {group.options.map((option) => (
-                      <MenuOption
-                        key={option.id}
-                        option={option}
-                        currentId={currentId}
-                        onSelect={onSelect}
-                      />
-                    ))}
-                  </DropdownMenu.Group>
-                ))}
+                <SuggestionGroupList
+                  suggestionGroups={suggestionGroups}
+                  currentId={currentId}
+                  onSelect={onSelect}
+                />
               </>
             ) : (
               <>
@@ -254,26 +274,11 @@ export function PresetMenu({
                       sideOffset={2}
                       alignOffset={-4}
                     >
-                      {suggestionGroups.map((group, index) => (
-                        <DropdownMenu.Group key={group.feel}>
-                          {index > 0 && (
-                            <DropdownMenu.Separator
-                              className={styles["preset-menu-separator"]}
-                            />
-                          )}
-                          <DropdownMenu.Label className={styles["preset-menu-group-label"]}>
-                            {group.label}
-                          </DropdownMenu.Label>
-                          {group.options.map((option) => (
-                            <MenuOption
-                              key={option.id}
-                              option={option}
-                              currentId={currentId}
-                              onSelect={onSelect}
-                            />
-                          ))}
-                        </DropdownMenu.Group>
-                      ))}
+                      <SuggestionGroupList
+                        suggestionGroups={suggestionGroups}
+                        currentId={currentId}
+                        onSelect={onSelect}
+                      />
                     </PresetMenuSubContent>
                   </DropdownMenu.Portal>
                 </DropdownMenu.Sub>
