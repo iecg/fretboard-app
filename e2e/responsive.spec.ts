@@ -11,6 +11,36 @@ async function gotoApp(page: Page, width: number, height: number) {
   ).toBeVisible();
 }
 
+async function expectNoVerticalOverlap(
+  page: Page,
+  firstSelector: string,
+  secondSelector: string,
+  label: string,
+) {
+  const rects = await page.evaluate(
+    ({ firstSelector, secondSelector }) => {
+      const getRect = (selector: string) => {
+        const el = document.querySelector(selector);
+        if (!(el instanceof HTMLElement)) return null;
+        const rect = el.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom };
+      };
+      return {
+        first: getRect(firstSelector),
+        second: getRect(secondSelector),
+      };
+    },
+    { firstSelector, secondSelector },
+  );
+
+  expect(rects.first, `${label}: first element (${firstSelector})`).not.toBeNull();
+  expect(rects.second, `${label}: second element (${secondSelector})`).not.toBeNull();
+  expect(
+    rects.first!.bottom,
+    `${label}: first.bottom should sit above second.top`,
+  ).toBeLessThanOrEqual(rects.second!.top + 1);
+}
+
 async function expectOpenMenuAboveBottomTabs(page: Page, viewportName: string) {
   const metrics = await page.evaluate(() => {
     const menu = document.querySelector('[role="listbox"], [role="menu"]');
@@ -289,5 +319,26 @@ test.describe("responsive layout regressions", () => {
 
       await expectOpenMenuAboveBottomTabs(page, viewport.name);
     }
+  });
+
+  test("keeps mobile progression chord list and editor from overlapping", async ({ page }) => {
+    await gotoApp(page, 390, 844);
+    await page.getByRole("tab", { name: "Song" }).click();
+
+    // The chord list <ul> carries the "Progression navigation" accessible name;
+    // it only renders once a step is active (the default progression has steps).
+    const chordList = page.getByRole("list", { name: "Progression navigation" });
+    await expect(chordList).toBeVisible();
+
+    const editorPanel = page.locator('[class*="editor-panel"]').first();
+    await editorPanel.scrollIntoViewIfNeeded();
+    await expect(editorPanel).toBeVisible();
+
+    await expectNoVerticalOverlap(
+      page,
+      '[aria-label="Progression navigation"]',
+      '[class*="editor-panel"]',
+      "mobile progression editor",
+    );
   });
 });
