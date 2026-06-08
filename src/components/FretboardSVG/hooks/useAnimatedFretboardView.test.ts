@@ -2,9 +2,15 @@ import React from "react";
 import { describe, expect, it } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
-import { useAnimatedFretboardView, buildRenderedFretboardNotes } from "./useAnimatedFretboardView";
+import {
+  useAnimatedFretboardView,
+  buildRenderedFretboardNotes,
+  buildAnimatedFretboardNotes,
+} from "./useAnimatedFretboardView";
 import type { NoteData } from "./useNoteData";
 import { useStaticFretboardTopology } from "./useStaticFretboardTopology";
+import type { EmphasisContext } from "./useEmphasisContext";
+import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
 import {
   setProgressionPlayingAtom,
   progressionStepsAtom,
@@ -269,5 +275,87 @@ describe("useAnimatedFretboardView — no per-frame recompute", () => {
       });
     });
     expect(renders).toBe(before); // guideCountdownActive unchanged -> no React re-render
+  });
+});
+
+function makeLensTopologyNote(
+  overrides: Partial<StaticFretboardTopologyNote> = {},
+): StaticFretboardTopologyNote {
+  return {
+    stringIndex: 0,
+    fretIndex: 5,
+    noteName: "D",
+    octave: 4,
+    noteClass: "chord-tone-in-scale",
+    displayName: "D",
+    displayValue: "D",
+    applyDimOpacity: false,
+    isInRegion: true,
+    isHidden: false,
+    isTension: false,
+    isGuideTone: false,
+    ...overrides,
+  } as StaticFretboardTopologyNote;
+}
+
+function makeLensEmphasisContext(
+  overrides: Partial<EmphasisContext> = {},
+): EmphasisContext {
+  return {
+    nextGuideTones: new Set(),
+    nextGuideToneLabels: new Map(),
+    nextChordTones: new Set(),
+    incomingTones: new Set(),
+    departingTones: new Set(),
+    guideCountdownActive: false,
+    countdownTicks: [],
+    lens: "guide",
+    commonTones: new Set(),
+    ...overrides,
+  };
+}
+
+describe("buildAnimatedFretboardNotes — Field lens wiring", () => {
+  it("emits hold-common on a common tone under the common lens during the countdown", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({ noteName: "D" })],
+      hasChordOverlay: true,
+      emphasisContext: makeLensEmphasisContext({
+        lens: "common",
+        commonTones: new Set(["D"]),
+        guideCountdownActive: true,
+      }),
+    });
+    expect(notes[0].transitionRole).toBe("hold-common");
+    expect(notes[0].applyLensEmphasis.radiusBoost).toBeGreaterThan(1);
+  });
+});
+
+describe("renderedNoteSignature — hold-common is not stale", () => {
+  const fretCenterX = (i: number) => i * 10;
+  const stringYAt = () => 20;
+
+  it("rebuilds the note object when emphasis flips to hold-common", () => {
+    const restingNotes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({ noteName: "D" })],
+      hasChordOverlay: true,
+      emphasisContext: makeLensEmphasisContext({ lens: "common", commonTones: new Set(["D"]) }),
+    });
+    const before = buildRenderedFretboardNotes({ noteData: restingNotes, fretCenterX, stringYAt })[0];
+
+    const holdNotes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({ noteName: "D" })],
+      hasChordOverlay: true,
+      emphasisContext: makeLensEmphasisContext({
+        lens: "common",
+        commonTones: new Set(["D"]),
+        guideCountdownActive: true,
+      }),
+    });
+    const after = buildRenderedFretboardNotes({ noteData: holdNotes, fretCenterX, stringYAt })[0];
+
+    // Different transitionRole ⇒ different signature ⇒ NOT the same cached object.
+    expect(after).not.toBe(before);
+    expect(after.transitionRole).toBe("hold-common");
   });
 });

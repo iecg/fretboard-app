@@ -1,10 +1,12 @@
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import {
   chordTypeAtom,
   voicingAtom,
 } from "../../store/chordOverlayAtoms";
+import { practiceLensAtom, type PracticeLens } from "../../store/practiceLensAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
+import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { VoicingControl } from "./VoicingControl";
 import { ChordStringSetToggleBar } from "./ChordStringSetToggleBar";
 import panelStyles from "./ChordOverlayControls.module.css";
@@ -14,8 +16,15 @@ export function ChordOverlayControls() {
 
   const chordType = useAtomValue(chordTypeAtom);
   const voicing = useAtomValue(voicingAtom);
+  const [lens, setLens] = useAtom(practiceLensAtom);
 
   const hasActiveChord = Boolean(chordType);
+
+  const lensOptions: ReadonlyArray<{ value: PracticeLens; label: string }> = [
+    { value: "root", label: t("inspector.lensRoot") },
+    { value: "guide", label: t("inspector.lensGuide") },
+    { value: "common", label: t("inspector.lensCommon") },
+  ];
 
   return (
     <div className={panelStyles.root}>
@@ -23,8 +32,17 @@ export function ChordOverlayControls() {
         <Prop label={t("inspector.voicingLabel")} span={3}>
           <VoicingControl />
         </Prop>
+        <Prop label={t("inspector.lensLabel")} span={9}>
+          <ToggleBar
+            variant="chip"
+            options={lensOptions}
+            value={lens}
+            onChange={setLens}
+            label={t("inspector.lensLabel")}
+          />
+        </Prop>
         {voicing === "close" && hasActiveChord ? (
-          <Prop label={t("inspector.chordStringSetLabel")} span={9}>
+          <Prop label={t("inspector.chordStringSetLabel")} span={12}>
             <ChordStringSetToggleBar />
           </Prop>
         ) : null}

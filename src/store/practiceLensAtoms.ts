@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import {
   NOTES,
   ENHARMONICS,
@@ -9,6 +10,12 @@ import {
   getDiatonicChord,
   getChordNotes,
 } from "@fretflow/core";
+import {
+  k,
+  createStorage,
+  enumValidator,
+  GET_ON_INIT,
+} from "../utils/storage";
 import type {
   ChordMemberName,
   NoteSemantics,
@@ -174,21 +181,17 @@ export function isInPlanningWindow(
 }
 
 /**
- * True when the playhead is inside the single continuous countdown window — the
- * union of the old planning + landing windows. The window spans the final
- * `min(step, PLANNING_RUNWAY_BARS · bar)` of the step and ends exactly on the
- * beat. Pure so it is unit-testable without atom plumbing.
+ * True when the playhead is inside the single continuous countdown window. The
+ * window spans the FULL chord (the entire step), so the countdown ring and its
+ * adaptive bar-boundary ticks are visible from the first bar of a long chord —
+ * not just the final two. Pure so it is unit-testable without atom plumbing.
  */
 export function isInCountdownWindow(
   stepFraction: number,
   stepDurationMs: number,
-  barDurationMs = Infinity,
 ): boolean {
   if (stepDurationMs <= 0) return false;
-  const windowMs = Math.min(stepDurationMs, PLANNING_RUNWAY_BARS * barDurationMs);
-  if (windowMs <= 0) return false;
-  const startFraction = 1 - windowMs / stepDurationMs;
-  return stepFraction >= startFraction;
+  return stepFraction >= 0;
 }
 
 /** Lowest beat count that shows interior ticks (a lone tick is noise). */
@@ -252,6 +255,16 @@ export function stepRelativeFraction(
 
 // Guide tone members: 3rd and 7th
 const GUIDE_TONE_RAW = new Set(["b3", "3", "b7", "7"]);
+
+/**
+ * Per-lens "aim" target member set, keyed by ChordDefinition member name. The
+ * `common` lens has no aim ring, so it is absent here (handled in the atom).
+ * Root's member is named "root" (not "1") in CHORD_DEFINITIONS.
+ */
+const TARGET_MEMBERS_BY_LENS: Record<"guide" | "root", Set<string>> = {
+  guide: GUIDE_TONE_RAW, // 3rd & 7th — quality-defining "money notes"
+  root: new Set(["root"]), // L1 — aim at the next chord's root
+};
 
 /**
  * Finds nearest in-scale resolution (≤2 semitones, step-up preferred).
@@ -525,15 +538,39 @@ export const activeChordTonesAtom = atom((get): Set<string> => {
  * Returns an empty set when the progression is empty or the active step is
  * unresolvable.
  *
- * NOTE: retained as a reusable derived selector — it currently has no
- * production consumer (the common-tone size boost that read it was removed),
- * but is kept as the natural input for a future held-tone cue. Not dead code.
+ * Consumed by the Common/pivot improvisation lens: `useEmphasisContext` threads
+ * this set into `getEmphasis`, where notes shared with the next chord get the
+ * `hold-common` size/opacity hold through the guide countdown window.
  */
 export const commonTonesWithNextAtom = atom((get): Set<string> => {
   const activeTones = get(activeChordTonesAtom);
   const next = get(nextChordTonesAtom);
   return new Set([...activeTones].filter((n) => next.has(n)));
 });
+
+/**
+ * Improvisation lens — selects which predictive notes the fretboard emphasizes
+ * during progression playback. Reintroduces the retired `practiceLens` storage
+ * key, now pointed at voice-leading targeting (not the removed coloring lens).
+ *
+ *  - "guide"  (default): the next chord's 3rd/7th get the countdown ring.
+ *  - "root":  the next chord's root gets the same ring (one target, label "R").
+ *  - "common": notes shared with the next chord get a steady hold (no ring).
+ */
+export type PracticeLens = "guide" | "root" | "common";
+
+const PRACTICE_LENS_VALUES = ["guide", "root", "common"] as const satisfies readonly PracticeLens[];
+
+const practiceLensStorage = createStorage<PracticeLens>({
+  validate: enumValidator(PRACTICE_LENS_VALUES),
+});
+
+export const practiceLensAtom = atomWithStorage<PracticeLens>(
+  k("practiceLens"),
+  "guide",
+  practiceLensStorage,
+  GET_ON_INIT,
+);
 
 /**
  * Pitch classes the next chord introduces that the active chord lacks
@@ -556,24 +593,24 @@ export const departingTonesAtom = atom((get): Set<string> => {
 });
 
 /**
- * Map of pitch-class → interval name for the guide tones of the chord at the
- * *next* progression step. This is the canonical source for guide-tone logic —
- * {@link nextChordGuideTonesAtom} derives its Set directly from this Map's keys.
+ * Map of pitch-class → label for the chord at the *next* progression step,
+ * filtered by the active improvisation lens ({@link practiceLensAtom}):
  *
- * Guide tones are strictly the 3rd and 7th — the "money notes" that define
- * chord quality (the root and 5th are harmonically inert, so they are never
- * targets):
- * - Includes the 3rd (b3 or 3) when present.
- * - Includes the 7th (b7 or 7) when present.
- * - A triad (3rd, no 7th) yields a single target: the 3rd. dim7's bb7 is not a
- *   GUIDE_TONE_RAW entry, so dim7 likewise yields just its b3.
- * - Power chords (no 3rd) return an empty Map — there is no quality-defining
- *   tone to aim for.
+ *  - "guide": the 3rd & 7th, labeled by interval ("3"/"b3", "b7"/"7"). Triads
+ *    yield a single target (the 3rd); power chords yield an empty Map.
+ *  - "root":  the root only, labeled "R". Always exactly one target.
+ *  - "common": an empty Map — the Field lens has no aim ring; the common-hold
+ *    branch in `getEmphasis` takes over.
  *
  * Also returns an empty Map when the progression is empty, the next step is
- * unavailable, or root/quality is missing.
+ * unavailable, or root/quality is missing. This is the canonical source for the
+ * ring's target set; {@link nextChordGuideTonesAtom} derives its keys.
  */
-export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
+export const nextTargetToneLabelsAtom = atom((get): Map<string, string> => {
+  const lens = get(practiceLensAtom);
+  if (lens === "common") return new Map(); // Field lens: no aim ring.
+  const members = TARGET_MEMBERS_BY_LENS[lens];
+
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Map();
   const active = get(displayedProgressionStepIndexAtom);
@@ -591,22 +628,29 @@ export const nextChordGuideToneLabelsAtom = atom((get): Map<string, string> => {
   if (rootIndex === -1) return new Map();
   const labels = new Map<string, string>();
   for (const member of def.members) {
-    if (GUIDE_TONE_RAW.has(member.name)) {
-      labels.set(NOTES[(rootIndex + member.semitone) % 12], member.name);
+    if (members.has(member.name)) {
+      // Root lens shows "R"; guide lens shows the interval name ("3"/"b7").
+      const label = lens === "root" ? "R" : member.name;
+      labels.set(NOTES[(rootIndex + member.semitone) % 12], label);
     }
   }
   return labels;
 });
 
 /**
- * Pitch-class set of guide tones for the chord at the *next* progression step.
- * Derived from {@link nextChordGuideToneLabelsAtom} (which carries the same
- * tones plus their interval labels and is the canonical home of the triad-5th
- * fallback / bb7 / power-chord logic). Returns an empty set for all the same
- * cases that the labels atom returns an empty Map.
+ * Back-compat alias. The previous name was guide-only; the emphasis pipeline
+ * and external tests still reference it. It now resolves to the lens-aware
+ * target map. Kept as a `const` alias (same atom reference).
+ */
+export const nextChordGuideToneLabelsAtom = nextTargetToneLabelsAtom;
+
+/**
+ * Pitch-class set of the active lens's aim targets for the *next* progression
+ * step. Derived from {@link nextTargetToneLabelsAtom}'s keys. Empty for the
+ * common lens (and every case the labels atom returns an empty Map).
  */
 export const nextChordGuideTonesAtom = atom((get): Set<string> =>
-  new Set(get(nextChordGuideToneLabelsAtom).keys()),
+  new Set(get(nextTargetToneLabelsAtom).keys()),
 );
 
 /**
@@ -726,14 +770,14 @@ export const planningWindowActiveAtom = atom((get): boolean => {
 });
 
 /**
- * Length of the single continuous countdown window, in ms — `min(step, 2·bar)`.
- * Written to the `--guide-duration` CSS custom property so the drain lasts
- * exactly the window. Changes only when the active step / tempo changes.
+ * Length of the single continuous countdown window, in ms — the FULL step, so
+ * the drain ring spans the whole chord and its ticks subdivide adaptively (one
+ * per bar for multi-bar chords). Written to the `--guide-duration` CSS custom
+ * property so the drain lasts exactly the chord. Changes only when the active
+ * step / tempo changes.
  */
 export const guideCountdownWindowMsAtom = atom((get): number => {
-  const step = get(progressionStepDurationMsAtom);
-  const bar = get(progressionBarDurationMsAtom);
-  return Math.min(step, PLANNING_RUNWAY_BARS * bar);
+  return get(progressionStepDurationMsAtom);
 });
 
 /**
@@ -777,7 +821,7 @@ export const guideCountdownActiveAtom = atom((get): boolean => {
   // (short chords) and the deadline is still in the future beyond the step start.
   if (deadline - now > stepMs) return false;
   const stepFraction = stepRelativeFraction(deadline, now, stepMs);
-  return isInCountdownWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
+  return isInCountdownWindow(stepFraction, stepMs);
 });
 
 /**

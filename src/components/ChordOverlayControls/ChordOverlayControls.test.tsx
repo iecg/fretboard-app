@@ -10,11 +10,13 @@ import { voicingAtom } from "../../store/chordOverlayAtoms";
 import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
 import { progressionStepsAtom } from "../../store/progressionAtoms";
 import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
+import { practiceLensAtom } from "../../store/practiceLensAtoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
 /**
- * ChordOverlayControls now owns only the VOICING sub-group (VoicingControl +
- * optional ChordStringSetToggleBar). The Lens picker has been removed.
+ * ChordOverlayControls owns the VOICING sub-group (VoicingControl + optional
+ * ChordStringSetToggleBar) plus the improvisation Lens selector (a 3-chip
+ * ToggleBar bound to practiceLensAtom).
  *
  * Default seeds: C Major, one progression step at degree I (= Major Triad).
  * `fingeringPatternAtom = "caged"` keeps the overlay enabled.
@@ -83,12 +85,32 @@ describe("ChordOverlayControls/ChordOverlayControls", () => {
     });
   });
 
-  describe("Lens removal", () => {
-    it("does not render a Lens control", () => {
+  describe("lens selector", () => {
+    it("renders the three lens chips", () => {
       renderDegree();
-      expect(screen.queryByRole("group", { name: /lens/i })).not.toBeInTheDocument();
-      expect(screen.queryByText(/Tones/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/Lead/i)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Root" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Guide" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Common" })).toBeInTheDocument();
+    });
+
+    it("defaults to the guide chip pressed", () => {
+      renderDegree();
+      expect(screen.getByRole("button", { name: "Guide" })).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("writes practiceLensAtom when a chip is clicked", async () => {
+      const store = createStore();
+      for (const [atom, value] of DEGREE_SEEDS) {
+        store.set(atom as Parameters<typeof store.set>[0], value);
+      }
+      renderWithStore(<ChordOverlayControls />, store);
+      await userEvent.click(screen.getByRole("button", { name: "Root" }));
+      expect(store.get(practiceLensAtom)).toBe("root");
+    });
+
+    it("has no a11y violations with the lens bar present", async () => {
+      const { container } = renderDegree();
+      expect(await axe(container)).toHaveNoViolations();
     });
   });
 

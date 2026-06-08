@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { getEmphasis, classifyNote, classifyNoteFromSemantics, getNoteVisuals } from "./semantics";
 import type { LeadLensContext } from "./semantics";
 import type { NoteSemantics } from "@fretflow/core";
+import type { PracticeLens } from "../../../store/practiceLensAtoms";
 
 describe("semantics utils", () => {
   describe("getEmphasis — tones-base fallback (no leadContext)", () => {
@@ -385,6 +386,8 @@ describe("getEmphasis - voice-leading emphasis", () => {
     incomingTones: new Set<string>(),
     departingTones: new Set<string>(),
     guideCountdownActive: true,
+    lens: "guide",
+    commonTones: new Set<string>(),
   };
 
   it("falls back to tones-base when leadContext is undefined", () => {
@@ -473,6 +476,8 @@ describe("getEmphasis - voice-leading emphasis", () => {
       incomingTones: new Set(["B"]),
       departingTones: new Set(),
       guideCountdownActive: true,
+      lens: "guide",
+      commonTones: new Set<string>(),
     });
     expect(e.transitionRole).toBe("guide-target");
     expect(e.guideTargetLabel).toBe("3");
@@ -487,6 +492,8 @@ describe("getEmphasis - voice-leading emphasis", () => {
       incomingTones: new Set(["B"]),
       departingTones: new Set(),
       guideCountdownActive: false,
+      lens: "guide",
+      commonTones: new Set<string>(),
     });
     expect(e.transitionRole).toBeUndefined();
   });
@@ -499,4 +506,81 @@ describe("getEmphasis - voice-leading emphasis", () => {
     expect(getEmphasis("note-inactive", false, ctx).transitionRole).toBeUndefined();
   });
 
+});
+
+function makeLeadContext(overrides: Partial<LeadLensContext> = {}): LeadLensContext {
+  return {
+    notePc: "C",
+    nextGuideTones: new Set(),
+    nextGuideToneLabels: new Map(),
+    nextChordTones: new Set(),
+    incomingTones: new Set(),
+    departingTones: new Set(),
+    guideCountdownActive: false,
+    lens: "guide" as PracticeLens,
+    commonTones: new Set(),
+    ...overrides,
+  };
+}
+
+describe("getEmphasis — common-hold (Field lens)", () => {
+  it("holds a common tone while the countdown window is open under the common lens", () => {
+    const res = getEmphasis(
+      "chord-tone-in-scale",
+      false,
+      makeLeadContext({
+        notePc: "D",
+        lens: "common",
+        commonTones: new Set(["D", "F"]),
+        guideCountdownActive: true,
+      }),
+    );
+    expect(res.transitionRole).toBe("hold-common");
+    expect(res.opacityBoost).toBe(1);
+    expect(res.radiusBoost).toBeGreaterThan(1); // gentle size hold
+  });
+
+  it("does not hold a non-common note under the common lens", () => {
+    const res = getEmphasis(
+      "chord-tone-in-scale",
+      false,
+      makeLeadContext({
+        notePc: "E",
+        lens: "common",
+        commonTones: new Set(["D", "F"]),
+        guideCountdownActive: true,
+      }),
+    );
+    expect(res.transitionRole).toBeUndefined();
+  });
+
+  it("does not hold when the countdown window is closed", () => {
+    const res = getEmphasis(
+      "chord-tone-in-scale",
+      false,
+      makeLeadContext({
+        notePc: "D",
+        lens: "common",
+        commonTones: new Set(["D"]),
+        guideCountdownActive: false,
+      }),
+    );
+    expect(res.transitionRole).toBeUndefined();
+  });
+
+  it("does not hold common tones under the guide or root lens", () => {
+    for (const lens of ["guide", "root"] as const) {
+      const res = getEmphasis(
+        "chord-tone-in-scale",
+        false,
+        makeLeadContext({
+          notePc: "D",
+          lens,
+          commonTones: new Set(["D"]),
+          guideCountdownActive: true,
+        }),
+      );
+      expect(res.transitionRole).not.toBe("hold-common");
+    }
+  });
 });

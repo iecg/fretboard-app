@@ -81,7 +81,12 @@ export const FretboardNote = memo(function FretboardNote({
 
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
-  const guidePhase = transitionRole === "guide-target" ? "landing" : undefined;
+  const guidePhase =
+    transitionRole === "guide-target"
+      ? "landing"
+      : transitionRole === "hold-common"
+        ? "hold"
+        : undefined;
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -244,7 +249,8 @@ export const FretboardNote = memo(function FretboardNote({
                 — both get ticks precisely on their track without per-type tuning.
                 Rendered INSIDE the ring group so the ring's loom scales the ticks
                 WITH the track, keeping them locked on it through the countdown. */}
-            {note.isInRegion &&
+            {guidePhase === "landing" &&
+              note.isInRegion &&
               countdownTicks?.map((f, i) => {
                 const theta = 2 * Math.PI * f;
                 const cos = Math.cos(theta);
