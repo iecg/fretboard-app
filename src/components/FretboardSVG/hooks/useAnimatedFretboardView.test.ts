@@ -311,6 +311,7 @@ function makeLensEmphasisContext(
     countdownTicks: [],
     lens: "guide",
     commonTones: new Set(),
+    heldTargetTones: new Set(),
     ...overrides,
   };
 }
@@ -328,6 +329,21 @@ describe("buildAnimatedFretboardNotes — Field lens wiring", () => {
     });
     expect(notes[0].transitionRole).toBe("hold-common");
     expect(notes[0].applyLensEmphasis.radiusBoost).toBeGreaterThan(1);
+  });
+
+  it("emits hold-guide on a held guide tone under the guide lens during the countdown", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({ noteName: "D" })],
+      hasChordOverlay: true,
+      emphasisContext: makeLensEmphasisContext({
+        lens: "guide",
+        nextGuideTones: new Set(["D"]),
+        nextGuideToneLabels: new Map([["D", "b3"]]),
+        heldTargetTones: new Set(["D"]),
+        guideCountdownActive: true,
+      }),
+    });
+    expect(notes[0].transitionRole).toBe("hold-guide");
   });
 });
 

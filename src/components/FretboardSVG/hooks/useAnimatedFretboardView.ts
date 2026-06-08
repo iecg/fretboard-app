@@ -50,6 +50,7 @@ export function buildAnimatedFretboardNotes({
         guideCountdownActive: emphasisContext.guideCountdownActive,
         lens: emphasisContext.lens,
         commonTones: emphasisContext.commonTones,
+        heldTargetTones: emphasisContext.heldTargetTones,
       };
     }
 

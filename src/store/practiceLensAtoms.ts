@@ -196,42 +196,36 @@ export function isInCountdownWindow(
 
 /** Lowest beat count that shows interior ticks (a lone tick is noise). */
 const MIN_TICK_BEATS = 2;
-/** Subitizing cap — at most this many segments (≤ 3 interior ticks). */
-const MAX_TICK_SEGMENTS = 4;
+/**
+ * Fixed segment count for the drain track. The countdown window always divides
+ * into exactly this many even segments (anchor + 3 interior ticks = 4 marks,
+ * the ~4-object subitizing limit), independent of the chord's bar/beat count —
+ * a multi-bar chord no longer collapses to a sparse per-bar reading.
+ */
+const TICK_SEGMENTS = 4;
 
 /**
- * Window-fractions in [0,1) at which to draw static beat/bar boundary notches.
- * Includes an anchor tick at fraction 0 — the start/beat line (the full-circle
- * drain's start and end coincide, so this single mark anchors both the launch
- * and the landing point) — followed by one tick per interior segment boundary.
+ * Window-fractions in [0,1) at which to draw static drain-track notches.
+ * Always {@link TICK_SEGMENTS} even segments whenever the window is long enough
+ * to warrant ticks: an anchor tick at fraction 0 — the start/landing line (the
+ * full-circle drain's start and end coincide, so this single mark anchors both)
+ * — followed by one tick per interior segment boundary.
  *
- * - ≤ 4 beats → one segment per beat (subitizable at a glance).
- * - > 4 beats → collapse to bar lines when there are 2–4 bars, else 4 even
- *   segments (caps interior ticks at 3 + the anchor → ≤ 4 marks, the ~4-object
- *   subitizing limit).
- * - < 2 beats → no ticks.
+ * - ≥ 2 beats → 4 even segments ([0, ¼, ½, ¾]), regardless of bar count.
+ * - < 2 beats → no ticks (a lone tick is noise).
  *
- * Pure so it is unit-testable. `windowMs`/`beatMs`/`barMs` are all in ms.
+ * Pure so it is unit-testable. `windowMs`/`beatMs` are both in ms.
  */
 export function computeCountdownTickFractions(
   windowMs: number,
   beatMs: number,
-  barMs: number,
 ): number[] {
   if (windowMs <= 0 || beatMs <= 0) return [];
   const beats = Math.round(windowMs / beatMs);
   if (beats < MIN_TICK_BEATS) return [];
 
-  let segments: number;
-  if (beats <= MAX_TICK_SEGMENTS) {
-    segments = beats;
-  } else {
-    const bars = barMs > 0 ? Math.round(windowMs / barMs) : 0;
-    segments = bars >= 2 && bars <= MAX_TICK_SEGMENTS ? bars : MAX_TICK_SEGMENTS;
-  }
-
   const ticks: number[] = [0];
-  for (let i = 1; i < segments; i++) ticks.push(i / segments);
+  for (let i = 1; i < TICK_SEGMENTS; i++) ticks.push(i / TICK_SEGMENTS);
   return ticks;
 }
 
@@ -654,6 +648,49 @@ export const nextChordGuideTonesAtom = atom((get): Set<string> =>
 );
 
 /**
+ * Pitch-class set of the active lens's aim targets for the *current* (active)
+ * progression step — the same member selection as {@link nextTargetToneLabelsAtom}
+ * but evaluated against the chord the playhead is on. Used to detect *held*
+ * targets: a guide tone (or root) that is shared by the active and next chord
+ * survives the change unchanged, so it is a held voice — not a tone the player
+ * must move to. Empty for the common lens and whenever the active step is
+ * unavailable / missing root or quality.
+ */
+export const activeTargetTonesAtom = atom((get): Set<string> => {
+  const lens = get(practiceLensAtom);
+  if (lens === "common") return new Set();
+  const members = TARGET_MEMBERS_BY_LENS[lens];
+  const step = get(activeResolvedProgressionStepAtom);
+  if (!step || step.unavailable || step.root === null || step.quality === null) {
+    return new Set();
+  }
+  const def = CHORD_DEFINITIONS[step.quality];
+  if (!def) return new Set();
+  const rootIndex = NOTES.indexOf(step.root);
+  if (rootIndex === -1) return new Set();
+  const tones = new Set<string>();
+  for (const member of def.members) {
+    if (members.has(member.name)) {
+      tones.add(NOTES[(rootIndex + member.semitone) % 12]);
+    }
+  }
+  return tones;
+});
+
+/**
+ * Aim targets that are *held* across the upcoming change — the active chord's
+ * targets that the next chord also carries (`active ∩ next`). A held guide tone
+ * renders as a quiet static ring (no drain, no ticks): there is nothing to
+ * count down to because the voice does not move. Derived, so it recomputes only
+ * when the active or next target set changes.
+ */
+export const heldTargetTonesAtom = atom((get): Set<string> => {
+  const active = get(activeTargetTonesAtom);
+  const next = get(nextChordGuideTonesAtom);
+  return new Set([...active].filter((n) => next.has(n)));
+});
+
+/**
  * Duration of the active progression step in beats. Derived from the active
  * step's `duration` and the current meter (`beatsPerBar`).
  */
@@ -791,7 +828,7 @@ export const guideCountdownTickFractionsAtom = atom((get): number[] => {
   const bar = get(progressionBarDurationMsAtom);
   const beatsPerBar = get(beatsPerBarAtom);
   const beatMs = beatsPerBar > 0 ? bar / beatsPerBar : 0;
-  return computeCountdownTickFractions(windowMs, beatMs, bar);
+  return computeCountdownTickFractions(windowMs, beatMs);
 });
 
 /**

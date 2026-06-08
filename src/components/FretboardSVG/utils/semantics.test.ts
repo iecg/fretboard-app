@@ -388,6 +388,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
     guideCountdownActive: true,
     lens: "guide",
     commonTones: new Set<string>(),
+    heldTargetTones: new Set<string>(),
   };
 
   it("falls back to tones-base when leadContext is undefined", () => {
@@ -478,6 +479,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       guideCountdownActive: true,
       lens: "guide",
       commonTones: new Set<string>(),
+      heldTargetTones: new Set<string>(),
     });
     expect(e.transitionRole).toBe("guide-target");
     expect(e.guideTargetLabel).toBe("3");
@@ -494,6 +496,7 @@ describe("getEmphasis - voice-leading emphasis", () => {
       guideCountdownActive: false,
       lens: "guide",
       commonTones: new Set<string>(),
+      heldTargetTones: new Set<string>(),
     });
     expect(e.transitionRole).toBeUndefined();
   });
@@ -519,6 +522,7 @@ function makeLeadContext(overrides: Partial<LeadLensContext> = {}): LeadLensCont
     guideCountdownActive: false,
     lens: "guide" as PracticeLens,
     commonTones: new Set(),
+    heldTargetTones: new Set(),
     ...overrides,
   };
 }
@@ -582,5 +586,42 @@ describe("getEmphasis — common-hold (Field lens)", () => {
       );
       expect(res.transitionRole).not.toBe("hold-common");
     }
+  });
+});
+
+describe("getEmphasis — held guide tone (hold-guide)", () => {
+  it("renders a held next-chord guide tone as 'hold-guide' (static ring), not a drain", () => {
+    const res = getEmphasis(
+      "chord-tone-in-scale",
+      true,
+      makeLeadContext({
+        notePc: "D",
+        lens: "guide",
+        nextGuideTones: new Set(["D"]),
+        nextGuideToneLabels: new Map([["D", "b3"]]),
+        heldTargetTones: new Set(["D"]),
+        guideCountdownActive: true,
+      }),
+    );
+    expect(res.transitionRole).toBe("hold-guide");
+    // Label is retained; only the drain/ticks are suppressed by the hold phase.
+    expect(res.guideTargetLabel).toBe("b3");
+    expect(res.opacityBoost).toBe(1);
+  });
+
+  it("still drains a next-chord guide tone that is NOT held (moves into the chord)", () => {
+    const res = getEmphasis(
+      "chord-tone-in-scale",
+      true,
+      makeLeadContext({
+        notePc: "B",
+        lens: "guide",
+        nextGuideTones: new Set(["B"]),
+        nextGuideToneLabels: new Map([["B", "3"]]),
+        heldTargetTones: new Set<string>(),
+        guideCountdownActive: true,
+      }),
+    );
+    expect(res.transitionRole).toBe("guide-target");
   });
 });

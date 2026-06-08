@@ -81,10 +81,13 @@ export const FretboardNote = memo(function FretboardNote({
 
   const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
+  // "hold-guide" and "hold-common" both render the calm static "hold" ring:
+  // drain/loom/flash/tick keyframes are gated to the "landing" phase, so a held
+  // guide tone shows a steady ring with no countdown animation or ticks.
   const guidePhase =
     transitionRole === "guide-target"
       ? "landing"
-      : transitionRole === "hold-common"
+      : transitionRole === "hold-common" || transitionRole === "hold-guide"
         ? "hold"
         : undefined;
 
