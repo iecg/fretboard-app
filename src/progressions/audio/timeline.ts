@@ -45,6 +45,23 @@ interface TimelineState {
 
 let state: TimelineState = { active: null, paused: false };
 
+/**
+ * Wall-clock scale factor applied to the baked step durations. The layer events
+ * (`durationSec`, `cumulativeStartSec`, `totalDurationSec`) are baked in seconds
+ * at the tempo present when `buildAllLayers` ran. When the user changes tempo
+ * during playback we deliberately do NOT rebuild the Tone Parts (see
+ * `useProgressionAudioPlayback`); instead the Tone Transport's BPM is updated,
+ * which rescales every scheduled event's real-time position uniformly. This
+ * scalar mirrors that rescale into the visual timeline so the playhead and
+ * position readout track the audio instead of snapping to the stale baked
+ * offsets at every bar boundary.
+ *
+ * `scale = buildTempoBpm / currentTempoBpm` — i.e. baked seconds × scale = real
+ * seconds. Reset to 1 on `clearTimeline()` (which fires on every Part rebuild),
+ * so a fresh build always starts unscaled.
+ */
+let scale = 1;
+
 export interface TimelinePosition {
   stepIndex: number;
   /** Position across total duration, 0..1. */
@@ -103,9 +120,20 @@ export function resumeTimelineAtCurrentTime(): void {
   };
 }
 
+/**
+ * Set the live wall-clock scale factor (`buildTempoBpm / currentTempoBpm`).
+ * Called from the playback hook's tempo effect so the visual timeline matches
+ * the Tone Transport's rescaled audio after a live tempo change. Ignores
+ * non-finite or non-positive values, falling back to 1 (unscaled).
+ */
+export function setTimelineScale(nextScale: number): void {
+  scale = Number.isFinite(nextScale) && nextScale > 0 ? nextScale : 1;
+}
+
 /** Forget the active step. Use on stop / blocked / progression-disabled. */
 export function clearTimeline(): void {
   state = { active: null, paused: false };
+  scale = 1;
 }
 
 /**
@@ -117,22 +145,26 @@ export function clearTimeline(): void {
  */
 export function getTimelinePosition(): TimelinePosition | null {
   if (!state.active) return null;
+  // Baked seconds (build tempo) → real wall-clock seconds (current tempo).
+  const durationSec = state.active.durationSec * scale;
+  const cumulativeStartSec = state.active.cumulativeStartSec * scale;
+  const totalDurationSec = state.active.totalDurationSec * scale;
   if (state.paused) {
     const localFraction = 0;
-    const globalFraction = state.active.cumulativeStartSec / Math.max(0.001, state.active.totalDurationSec);
-    return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: true, totalDurationSec: state.active.totalDurationSec };
+    const globalFraction = cumulativeStartSec / Math.max(0.001, totalDurationSec);
+    return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: true, totalDurationSec };
   }
   const audio = ensureProgressionAudio();
   if (!audio) {
-    const globalFraction = state.active.cumulativeStartSec / Math.max(0.001, state.active.totalDurationSec);
-    return { stepIndex: state.active.stepIndex, globalFraction, localFraction: 0, paused: false, totalDurationSec: state.active.totalDurationSec };
+    const globalFraction = cumulativeStartSec / Math.max(0.001, totalDurationSec);
+    return { stepIndex: state.active.stepIndex, globalFraction, localFraction: 0, paused: false, totalDurationSec };
   }
   const elapsed = audio.ctx.currentTime - state.active.audioStartTime;
-  const localFraction = elapsed / Math.max(0.001, state.active.durationSec);
-  const cumulativeElapsed = state.active.cumulativeStartSec + elapsed;
-  const globalFraction = cumulativeElapsed / Math.max(0.001, state.active.totalDurationSec);
-  
-  return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: false, totalDurationSec: state.active.totalDurationSec };
+  const localFraction = elapsed / Math.max(0.001, durationSec);
+  const cumulativeElapsed = cumulativeStartSec + elapsed;
+  const globalFraction = cumulativeElapsed / Math.max(0.001, totalDurationSec);
+
+  return { stepIndex: state.active.stepIndex, globalFraction, localFraction, paused: false, totalDurationSec };
 }
 
 /**
@@ -146,7 +178,7 @@ export function isCurrentStepFinished(): boolean {
   if (!audio) return false;
   return (
     audio.ctx.currentTime
-      >= state.active.audioStartTime + state.active.durationSec
+      >= state.active.audioStartTime + state.active.durationSec * scale
   );
 }
 
@@ -160,12 +192,13 @@ export function getTimeUntilCurrentStepEndMs(): number | null {
   if (!audio) return null;
   return Math.max(
     0,
-    (state.active.audioStartTime + state.active.durationSec - audio.ctx.currentTime) * 1000,
+    (state.active.audioStartTime + state.active.durationSec * scale - audio.ctx.currentTime) * 1000,
   );
 }
 
 /** Test-only reset; vitest modules persist across tests in the same file. */
 export function _resetTimelineForTests(): void {
   state = { active: null, paused: false };
+  scale = 1;
 }
 
