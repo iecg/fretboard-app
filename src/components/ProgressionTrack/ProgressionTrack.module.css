@@ -43,6 +43,15 @@
   padding: 0.34rem 0.7rem 0.32rem;
   color: var(--track-text-dim);
   font-family: var(--font-sans);
+
+  /* Progressions longer than a few chords would crush block labels. Let the
+     track scroll horizontally; the timeline below claims a duration-driven
+     minimum width so each block stays readable/tappable. The percent-based
+     block & playhead math is unchanged — it's all relative to the timeline's
+     own width, scrolled or not. */
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* =========================================================================
@@ -157,6 +166,12 @@
   flex-direction: column;
   gap: 0.1rem;
   min-width: 0;
+
+  /* Width is driven by the shortest block's duration (computed in
+     ProgressionTrack.tsx) so even 1-bar blocks beside 2-bar blocks stay
+     readable. Only the total width scales — block percents and the playhead
+     stay aligned. */
+  min-width: max(100%, var(--mobile-timeline-min-width, 100%));
 }
 
 .ruler {
@@ -494,24 +509,69 @@
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="mobile"]) .track {
   padding: 0.5rem 0.55rem 0.45rem;
-
-  /* Progressions longer than four chords would crush block labels on a phone.
-     Let the track scroll horizontally; the timeline below claims a duration-
-     driven minimum width so each block stays readable/tappable. The percent-
-     based block & playhead math is unchanged — it's all relative to the
-     timeline's own width, scrolled or not. */
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
   padding-inline: 0.5rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .timeline {
-  /* Width is driven by the shortest block's duration (computed in
-     ProgressionTrack.tsx) so even 1-bar blocks beside 2-bar blocks stay
-     readable. Only the total width scales — block percents and the playhead
-     stay aligned. */
-  min-width: max(100%, var(--mobile-timeline-min-width, 100%));
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+/* ----------------------------------------------------------------------------
+ * Horizontal scroll edge fade — same mask-image technique as the chord list.
+ *
+ * Two @property-registered numbers driven by an inline scroll-timeline fade
+ * the left/right edges so content entry/exit is smooth, without hardcoded
+ * background-color overlays or backdrop-filter blur. On tiers/views where the
+ * timeline fits within the track (no overflow), the scroll-timeline has zero
+ * range and the mask stays at initial values — the left fade (0) is invisible
+ * but the right fade (1) dims the last 1.4rem. That's an acceptable trade-off
+ * for keeping the implementation across all layout tiers.
+ * ------------------------------------------------------------------------- */
+@supports (animation-timeline: scroll()) {
+  @property --progression-track-mask-left {
+    syntax: "<number>";
+    initial-value: 0;
+    inherits: false;
+  }
+
+  @property --progression-track-mask-right {
+    syntax: "<number>";
+    initial-value: 1;
+    inherits: false;
+  }
+
+  .track {
+    scroll-timeline: --progression-track-scroll inline;
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black calc(var(--progression-track-mask-left) * 1.4rem),
+      black calc(100% - var(--progression-track-mask-right) * 1.4rem),
+      transparent 100%
+    );
+    mask-size: 100% 100%;
+    animation-name: progression-track-mask-left, progression-track-mask-right;
+    animation-timeline: --progression-track-scroll;
+    animation-fill-mode: forwards;
+    animation-range-start: 0, calc(100% - 1.5rem);
+    animation-range-end: 1.5rem, 100%;
+  }
 }
 
-/* stylelint-enable selector-pseudo-class-no-unknown */
+@keyframes progression-track-mask-left {
+  from {
+    --progression-track-mask-left: 0;
+  }
+
+  to {
+    --progression-track-mask-left: 1;
+  }
+}
+
+@keyframes progression-track-mask-right {
+  from {
+    --progression-track-mask-right: 1;
+  }
+
+  to {
+    --progression-track-mask-right: 0;
+  }
+}

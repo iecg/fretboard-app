@@ -12,13 +12,13 @@ describe("ProgressionTrack.module.css", () => {
     expect(css).not.toMatch(/composes:\s*faceplate/);
   });
 
-  it("gives mobile progression timelines a duration-driven minimum width", () => {
+  it("gives the timeline a duration-driven minimum width on all tiers", () => {
     const css = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "ProgressionTrack.module.css"),
       "utf8",
     );
     expect(css).toMatch(
-      /data-layout-tier="mobile"[\s\S]*\.timeline[\s\S]*--mobile-timeline-min-width/,
+      /\.timeline[\s\S]*min-width:\s*max\(100%,\s*var\(--mobile-timeline-min-width/,
     );
   });
 });
