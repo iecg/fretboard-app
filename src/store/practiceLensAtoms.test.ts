@@ -8,7 +8,7 @@ import {
 } from "./chordOverlayAtoms";
 import { fingeringPatternAtom } from "./fingeringAtoms";
 import { makeAtomStore } from "../test-utils/renderWithAtoms";
-import { practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom, isInCountdownWindow, computeCountdownTickFractions, guideCountdownWindowMsAtom, guideCountdownActiveAtom, guideCountdownTickFractionsAtom } from "./practiceLensAtoms";
+import { practiceLensAtom, practiceCuesAtom, noteSemanticMapAtom, nextChordTonesAtom, commonTonesWithNextAtom, nextChordGuideTonesAtom, nextChordGuideToneLabelsAtom, beatPositionAtom, activeStepDurationBeatsAtom, computeLeadInWindowMs, isInLeadInWindow, isInPlanningWindow, activeChordTonesAtom, incomingTonesAtom, departingTonesAtom, leadInActiveAtom, leadInDurationMsAtom, stepRelativeFraction, planningWindowActiveAtom, isInCountdownWindow, computeCountdownTickFractions, guideCountdownWindowMsAtom, guideCountdownActiveAtom, guideCountdownTickFractionsAtom } from "./practiceLensAtoms";
 import { progressionStepsAtom, activeProgressionStepIndexAtom, progressionTempoBpmAtom, progressionStepDeadlineAtom, beatsPerBarAtom, activeResolvedProgressionStepAtom, displayedStepIndexPrimitiveAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, progressionLoopEnabledAtom, progressionPlayingStateAtom, progressionStepDurationMsAtom, progressionBarDurationMsAtom } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import { rootNoteAtom, scaleNameAtom, scaleVisibleAtom, colorNotesAtom, effectiveColorNotesAtom, toggleScaleVisibleAtom } from "./scaleAtoms";
@@ -1180,5 +1180,34 @@ describe("guide countdown atoms", () => {
     // Audio frame already on the next step while the fretboard still shows step 0.
     store.set(progressionVisualFrameAtom, { stepIndex: 1, globalFraction: 0.0, localFraction: 0.0, paused: false });
     expect(store.get(guideCountdownActiveAtom)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// practiceLensAtom
+// ---------------------------------------------------------------------------
+
+describe("practiceLensAtom", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("defaults to 'guide'", () => {
+    const store = createStore();
+    expect(store.get(practiceLensAtom)).toBe("guide");
+  });
+
+  it("accepts 'root' and 'common'", () => {
+    const store = createStore();
+    store.set(practiceLensAtom, "root");
+    expect(store.get(practiceLensAtom)).toBe("root");
+    store.set(practiceLensAtom, "common");
+    expect(store.get(practiceLensAtom)).toBe("common");
+  });
+
+  it("discards a legacy invalid stored value, healing to 'guide'", () => {
+    localStorage.setItem("fretflow:practiceLens", JSON.stringify("tones"));
+    const store = createStore();
+    expect(store.get(practiceLensAtom)).toBe("guide");
   });
 });

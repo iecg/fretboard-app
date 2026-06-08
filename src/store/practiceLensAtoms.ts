@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import {
   NOTES,
   ENHARMONICS,
@@ -9,6 +10,12 @@ import {
   getDiatonicChord,
   getChordNotes,
 } from "@fretflow/core";
+import {
+  k,
+  createStorage,
+  enumValidator,
+  GET_ON_INIT,
+} from "../utils/storage";
 import type {
   ChordMemberName,
   NoteSemantics,
@@ -534,6 +541,30 @@ export const commonTonesWithNextAtom = atom((get): Set<string> => {
   const next = get(nextChordTonesAtom);
   return new Set([...activeTones].filter((n) => next.has(n)));
 });
+
+/**
+ * Improvisation lens — selects which predictive notes the fretboard emphasizes
+ * during progression playback. Reintroduces the retired `practiceLens` storage
+ * key, now pointed at voice-leading targeting (not the removed coloring lens).
+ *
+ *  - "guide"  (default): the next chord's 3rd/7th get the countdown ring.
+ *  - "root":  the next chord's root gets the same ring (one target, label "R").
+ *  - "common": notes shared with the next chord get a steady hold (no ring).
+ */
+export type PracticeLens = "guide" | "root" | "common";
+
+const PRACTICE_LENS_VALUES = ["guide", "root", "common"] as const satisfies readonly PracticeLens[];
+
+const practiceLensStorage = createStorage<PracticeLens>({
+  validate: enumValidator(PRACTICE_LENS_VALUES),
+});
+
+export const practiceLensAtom = atomWithStorage<PracticeLens>(
+  k("practiceLens"),
+  "guide",
+  practiceLensStorage,
+  GET_ON_INIT,
+);
 
 /**
  * Pitch classes the next chord introduces that the active chord lacks
