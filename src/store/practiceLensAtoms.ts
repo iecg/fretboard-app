@@ -542,9 +542,9 @@ export const activeChordTonesAtom = atom((get): Set<string> => {
  * Returns an empty set when the progression is empty or the active step is
  * unresolvable.
  *
- * NOTE: retained as a reusable derived selector — it currently has no
- * production consumer (the common-tone size boost that read it was removed),
- * but is kept as the natural input for a future held-tone cue. Not dead code.
+ * Consumed by the Common/pivot improvisation lens: `useEmphasisContext` threads
+ * this set into `getEmphasis`, where notes shared with the next chord get the
+ * `hold-common` size/opacity hold through the guide countdown window.
  */
 export const commonTonesWithNextAtom = atom((get): Set<string> => {
   const activeTones = get(activeChordTonesAtom);
