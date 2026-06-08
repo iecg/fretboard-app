@@ -171,6 +171,9 @@
    divider since they no longer follow the transport readouts. */
 :global(.app-container[data-layout-tier="mobile"]) .app-header-actions {
   order: 1;
+  flex: 0 0 auto;
+  gap: 0.3rem;
+  max-width: 44vw;
   padding-inline-start: 0;
   border-inline-start: none;
 }
@@ -215,12 +218,6 @@
 :global(.app-container[data-layout-tier="mobile"]) .app-header-brand-wordmark {
   min-width: 0;
   max-width: min(13rem, 52vw);
-}
-
-:global(.app-container[data-layout-tier="mobile"]) .app-header-actions {
-  flex: 0 0 auto;
-  gap: 0.3rem;
-  max-width: 44vw;
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .app-header-brand-title {
