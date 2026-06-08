@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
+import { axe } from "vitest-axe";
 import { FretboardNote } from "./FretboardNote";
 import type { RenderedFretboardNote } from "./hooks/useAnimatedFretboardView";
 
@@ -249,6 +250,18 @@ function renderNoteWithTicks(note: RenderedFretboardNote, countdownTicks: number
 }
 
 describe("FretboardNote — common-hold ring", () => {
+  it("has no accessibility violations for the hold-common render path", async () => {
+    const { container } = renderNoteWithTicks(
+      makeNote({
+        transitionRole: "hold-common",
+        isInRegion: true,
+        applyLensEmphasis: { radiusBoost: 1.15, opacityBoost: 1 },
+      }),
+      [0.25, 0.5, 0.75],
+    );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
   it("maps transitionRole 'hold-common' to data-guide-phase='hold' on the ring", () => {
     const { container } = renderNote(
       makeNote({
