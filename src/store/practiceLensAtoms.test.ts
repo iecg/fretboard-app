@@ -759,44 +759,45 @@ describe("isInCountdownWindow", () => {
 });
 
 // ---------------------------------------------------------------------------
-// computeCountdownTickFractions — beat/bar boundary notches, capped at 4
+// computeCountdownTickFractions — always 4 even segments above the threshold
 // ---------------------------------------------------------------------------
 
 describe("computeCountdownTickFractions", () => {
-  it("anchor tick at 0 plus one per beat boundary when <= 4 beats", () => {
-    // 4 beats -> 4 segments -> anchor 0 + interior ticks at 1/4, 2/4, 3/4
-    expect(computeCountdownTickFractions(4000, 1000, 4000)).toEqual([0, 0.25, 0.5, 0.75]);
+  it("gives 4 even segments for a 4-beat chord", () => {
+    // 4 beats -> anchor 0 + interior ticks at 1/4, 2/4, 3/4
+    expect(computeCountdownTickFractions(4000, 1000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
-  it("two beats yields the anchor plus a single midpoint tick", () => {
-    expect(computeCountdownTickFractions(2000, 1000, 4000)).toEqual([0, 0.5]);
+  it("gives 4 even segments at the 2-beat threshold (no longer a single midpoint)", () => {
+    expect(computeCountdownTickFractions(2000, 1000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
   it("suppresses ticks below 2 beats", () => {
-    expect(computeCountdownTickFractions(1000, 1000, 4000)).toEqual([]);
+    expect(computeCountdownTickFractions(1000, 1000)).toEqual([]);
   });
 
-  it("collapses to bar boundaries when > 4 beats and bars in 2..4", () => {
-    // 8 beats, 2 bars -> segment by bar -> anchor 0 + tick at 0.5
-    expect(computeCountdownTickFractions(8000, 1000, 4000)).toEqual([0, 0.5]);
-    // 12 beats, 3 bars -> anchor 0 + ticks at 1/3, 2/3
-    expect(computeCountdownTickFractions(12000, 1000, 4000)).toEqual([0, 1 / 3, 2 / 3]);
+  it("keeps 4 even segments for a 2-bar chord (regression: was only 2 ticks)", () => {
+    // 8 beats / 2 bars -> always 4 even segments, not collapsed to bar lines.
+    expect(computeCountdownTickFractions(8000, 1000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
-  it("gives one tick per bar for a full 4-bar chord window (regression)", () => {
-    // 16 beats / 4 bars -> segment by bar -> anchor + a tick at each bar
-    // boundary. Guards the adaptive-ticks fix: a 4-bar chord shows 4 marks.
-    expect(computeCountdownTickFractions(16000, 1000, 4000)).toEqual([0, 0.25, 0.5, 0.75]);
+  it("keeps 4 even segments for a 3-bar chord", () => {
+    // 12 beats / 3 bars -> still 4 even segments.
+    expect(computeCountdownTickFractions(12000, 1000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
-  it("falls back to 4 even segments when bars also exceed 4", () => {
-    // 20 beats, 5 bars -> 4 even segments -> anchor 0 + 0.25, 0.5, 0.75
-    expect(computeCountdownTickFractions(20000, 1000, 4000)).toEqual([0, 0.25, 0.5, 0.75]);
+  it("keeps 4 even segments for a full 4-bar chord window", () => {
+    expect(computeCountdownTickFractions(16000, 1000)).toEqual([0, 0.25, 0.5, 0.75]);
+  });
+
+  it("keeps 4 even segments when the chord spans more than 4 bars", () => {
+    // 20 beats / 5 bars -> still capped at 4 even segments.
+    expect(computeCountdownTickFractions(20000, 1000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
   it("returns [] for non-positive window or beat length", () => {
-    expect(computeCountdownTickFractions(0, 1000, 4000)).toEqual([]);
-    expect(computeCountdownTickFractions(4000, 0, 4000)).toEqual([]);
+    expect(computeCountdownTickFractions(0, 1000)).toEqual([]);
+    expect(computeCountdownTickFractions(4000, 0)).toEqual([]);
   });
 });
 
@@ -1169,7 +1170,7 @@ describe("guide countdown atoms", () => {
     // Window spans the full 4 bars, not a capped 2-bar runway.
     expect(store.get(guideCountdownWindowMsAtom)).toBe(stepMs);
 
-    // One tick per bar boundary: anchor + 3 interior ticks.
+    // Always 4 even segments: anchor + 3 interior ticks.
     expect(store.get(guideCountdownTickFractionsAtom)).toEqual([0, 0.25, 0.5, 0.75]);
 
     // Active from the FIRST bar (deep in the chord, far from the change).
@@ -1185,7 +1186,7 @@ describe("guide countdown atoms", () => {
     const beatsPerBar = store.get(beatsPerBarAtom);
     const beatMs = beatsPerBar > 0 ? bar / beatsPerBar : 0;
     expect(store.get(guideCountdownTickFractionsAtom)).toEqual(
-      computeCountdownTickFractions(windowMs, beatMs, bar),
+      computeCountdownTickFractions(windowMs, beatMs),
     );
   });
 

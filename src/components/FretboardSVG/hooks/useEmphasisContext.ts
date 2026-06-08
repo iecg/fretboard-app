@@ -8,6 +8,7 @@ import {
   guideCountdownActiveAtom,
   guideCountdownTickFractionsAtom,
   commonTonesWithNextAtom,
+  heldTargetTonesAtom,
   practiceLensAtom,
   type PracticeLens,
 } from "../../../store/practiceLensAtoms";
@@ -23,6 +24,7 @@ export interface EmphasisContext {
   countdownTicks: number[];
   lens: PracticeLens;
   commonTones: Set<string>;
+  heldTargetTones: Set<string>;
 }
 
 /**
@@ -41,6 +43,7 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
   const departingTones = useAtomValue(departingTonesAtom);
   const lens = useAtomValue(practiceLensAtom);
   const commonTones = useAtomValue(commonTonesWithNextAtom);
+  const heldTargetTones = useAtomValue(heldTargetTonesAtom);
   if (!enabled || !playing) return null;
   return {
     nextGuideTones,
@@ -52,5 +55,6 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
     countdownTicks,
     lens,
     commonTones,
+    heldTargetTones,
   };
 }

@@ -10,7 +10,7 @@ export type BoxBound = { minFret: number; maxFret: number };
 /** Gentle size hold for pivot/common tones under the Field lens. */
 const COMMON_HOLD_RADIUS_BOOST = 1.15;
 
-export type TransitionRole = "guide-target" | "hold-common";
+export type TransitionRole = "guide-target" | "hold-common" | "hold-guide";
 
 export type LensEmphasis = {
   radiusBoost: number;
@@ -46,6 +46,12 @@ export type LeadLensContext = {
   lens: PracticeLens;
   /** Pitch classes shared between the active chord and the next (`active ∩ next`). */
   commonTones: Set<string>;
+  /**
+   * Aim-target pitch classes held across the change (`active targets ∩ next
+   * targets`). A guide tone (or root) in this set survives the change unchanged,
+   * so it renders as a quiet static ring rather than a draining countdown.
+   */
+  heldTargetTones: Set<string>;
 };
 
 /**
@@ -74,17 +80,22 @@ export function getEmphasis(
     return applyTonesBase(noteClass);
   }
 
-  const { notePc, nextGuideTones, nextGuideToneLabels, guideCountdownActive, lens, commonTones } = leadContext;
+  const { notePc, nextGuideTones, nextGuideToneLabels, guideCountdownActive, lens, commonTones, heldTargetTones } = leadContext;
 
   // The note's resting emphasis when not actively targeted — the base model.
   const resting: LensEmphasis = applyTonesBase(noteClass);
 
   // Countdown: the next chord's guide tones get the single continuous ring.
   if (guideCountdownActive && nextGuideTones.has(notePc)) {
+    // Held target: this guide tone (or root) is shared with the active chord, so
+    // the voice does not move into the next chord — there is nothing to count
+    // down toward. Render a quiet STATIC ring (the "hold" phase suppresses the
+    // drain, loom, flash, and ticks) instead of the draining countdown.
+    const isHeld = heldTargetTones.has(notePc);
     return {
       radiusBoost: resting.radiusBoost,
       opacityBoost: 1,
-      transitionRole: "guide-target",
+      transitionRole: isHeld ? "hold-guide" : "guide-target",
       guideTargetLabel: nextGuideToneLabels.get(notePc),
     };
   }
