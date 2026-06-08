@@ -52,6 +52,7 @@ export function ProgressionTrack() {
         style={{
           "--bar-count": totalBarsForDisplay,
           "--beats-per-bar": subdivisionsPerBar,
+          "--mobile-min-chord-count": Math.max(stepAtoms.length, 1),
         } as CSSProperties}
         aria-label="Progression timeline"
       >

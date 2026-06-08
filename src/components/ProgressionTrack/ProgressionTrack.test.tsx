@@ -25,6 +25,17 @@ const twoBarLeadingProgression = [
   { id: "four", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
 ] as const;
 
+const eightStepProgression = [
+  { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "s3", degree: "iii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "s4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "s5", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "s6", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+  { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+] as const;
+
 describe("ProgressionTrack", () => {
   beforeEach(() => {
     vi.stubGlobal('ResizeObserver', class ResizeObserver {
@@ -267,6 +278,19 @@ describe("ProgressionTrack", () => {
     expect(container.querySelector("[data-testid='transport-bar']")).toBeNull();
     expect(container.querySelector("[aria-label='Progression timeline']")).toBeTruthy();
     expect(screen.queryByText("Position")).toBeNull();
+  });
+
+  it("exposes the chord count as a minimum timeline width variable", () => {
+    const { container } = renderWithAtoms(<ProgressionTrack />, [
+      [progressionStepsAtom, eightStepProgression],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    expect(
+      container
+        .querySelector<HTMLElement>("[aria-label='Progression timeline']")
+        ?.style.getPropertyValue("--mobile-min-chord-count"),
+    ).toBe("8");
   });
 
   it("does not move the stopped playhead when selecting a different chord on the timeline", () => {
