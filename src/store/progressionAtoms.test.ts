@@ -39,6 +39,9 @@ import {
   progressionPlaybackLoadingAtom,
   progressionPlayingStateAtom,
   progressionStepDeadlineAtom,
+  progressionChordVariationsAtom,
+  progressionBassVariationsAtom,
+  applyGenreStyleAtom,
 } from "./progressionAtoms";
 import { DEFAULT_BEATS_PER_BAR } from "../progressions/progressionDomain";
 import { rootNoteAtom, scaleNameAtom } from "./scaleAtoms";
@@ -746,5 +749,31 @@ describe("setProgressionActiveStepIndexAtom — deadline refresh during playback
 
     // Deadline must remain at the sentinel value.
     expect(store.get(progressionStepDeadlineAtom)).toBe(123456);
+  });
+});
+
+describe("chord/bass variation atoms", () => {
+  it("applyGenreStyle populates chord and bass variations from the genre bundle", () => {
+    const store = createStore();
+    store.set(applyGenreStyleAtom, "funk");
+    expect(store.get(progressionChordVariationsAtom)).toContain("funk-turnaround-chord");
+    expect(store.get(progressionBassVariationsAtom)).toContain("funk-turnaround-bass");
+  });
+
+  it("applyGenreStyle clears chord/bass variations for a genre with none", () => {
+    const store = createStore();
+    store.set(progressionChordVariationsAtom, ["funk-turnaround-chord"]);
+    store.set(applyGenreStyleAtom, "pop");
+    expect(store.get(progressionChordVariationsAtom)).toEqual([]);
+    expect(store.get(progressionBassVariationsAtom)).toEqual([]);
+  });
+
+  it("reset returns chord/bass variations to empty defaults", () => {
+    const store = createStore();
+    store.set(progressionChordVariationsAtom, ["funk-turnaround-chord"]);
+    store.set(progressionBassVariationsAtom, ["funk-turnaround-bass"]);
+    store.set(resetProgressionAtomsAtom);
+    expect(store.get(progressionChordVariationsAtom)).toEqual([]);
+    expect(store.get(progressionBassVariationsAtom)).toEqual([]);
   });
 });

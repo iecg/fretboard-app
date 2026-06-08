@@ -266,6 +266,20 @@ export const progressionDrumVariationsAtom = atomWithStorage<string[]>(
   GET_ON_INIT,
 );
 
+export const progressionChordVariationsAtom = atomWithStorage<string[]>(
+  k("progressionChordVariations"),
+  [],
+  stringArrayStorage,
+  GET_ON_INIT,
+);
+
+export const progressionBassVariationsAtom = atomWithStorage<string[]>(
+  k("progressionBassVariations"),
+  [],
+  stringArrayStorage,
+  GET_ON_INIT,
+);
+
 export const progressionSwingAtom = atomWithStorage<number>(
   k("progressionSwing"),
   0,
@@ -282,6 +296,8 @@ export const applyGenreStyleAtom = atom(null, (_get, set, genreId: string) => {
   set(progressionBassPatternAtom, genre.bassPattern);
   set(progressionDrumPatternAtom, genre.drumPattern);
   set(progressionDrumVariationsAtom, genre.drumVariations);
+  set(progressionChordVariationsAtom, genre.chordVariations);
+  set(progressionBassVariationsAtom, genre.bassVariations);
   set(progressionSwingAtom, genre.swing);
   set(progressionTempoBpmAtom, genre.suggestedTempo);
 });
@@ -736,6 +752,8 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(progressionBassPatternAtom, RESET);
   set(progressionDrumPatternAtom, RESET);
   set(progressionDrumVariationsAtom, RESET);
+  set(progressionChordVariationsAtom, RESET);
+  set(progressionBassVariationsAtom, RESET);
   set(progressionSwingAtom, RESET);
   set(loadedPresetIdAtom, RESET);
   set(activeProgressionStepIndexAtom, 0);
