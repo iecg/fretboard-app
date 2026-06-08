@@ -576,5 +576,19 @@
   height: var(--control-height);
 }
 
+:global(.app-container[data-layout-tier="mobile"]) .editor-panel-header {
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+  align-items: flex-start;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .editor-pager {
+  order: 3;
+  flex: 1 1 100%;
+  justify-content: center;
+  margin-left: 0;
+}
+
+
 
 

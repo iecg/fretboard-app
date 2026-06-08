@@ -43,6 +43,16 @@ describe("SongControls button chrome", () => {
       /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.pager-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
     );
   });
+
+  it("defines mobile editor panel header wrapping and pager order", () => {
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.editor-panel-header\s*\{[^}]*flex-wrap:\s*wrap/s,
+    );
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.editor-pager\s*\{[^}]*order:\s*3/s,
+    );
+  });
 });
+
 
 
