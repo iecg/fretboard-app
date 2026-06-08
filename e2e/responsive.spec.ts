@@ -395,7 +395,26 @@ test.describe("responsive layout regressions", () => {
   });
 
   test("shows the full mobile chord list without an inner scroll", async ({ page }) => {
-    await gotoApp(page, 390, 844);
+    // Seed a long (8-chord) progression so the list is taller than the column —
+    // the default progression fits and would let this guard pass vacuously.
+    await loadVisualState(
+      page,
+      {
+        progressionSteps: [
+          { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s3", degree: "iii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s5", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s6", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ],
+      },
+      { width: 390, height: 844 },
+    );
+
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
     await page.getByRole("tab", { name: "Song" }).click();
 
     const list = page.locator('[aria-label="Progression navigation"]');
@@ -411,24 +430,30 @@ test.describe("responsive layout regressions", () => {
   });
 
   test("keeps the mobile preset menu within the viewport width", async ({ page }) => {
-    await gotoApp(page, 390, 844);
-    await page.getByRole("tab", { name: "Song" }).click();
+    // Overflow risk is higher on the narrower 375px phone, so cover both.
+    for (const viewport of [
+      { width: 390, height: 844, name: "390x844" },
+      { width: 375, height: 667, name: "375x667" },
+    ]) {
+      await gotoApp(page, viewport.width, viewport.height);
+      await page.getByRole("tab", { name: "Song" }).click();
 
-    // The PresetMenu trigger's accessible name is the translated
-    // `inspector.progressionLabel` ("Sequence"), not "preset".
-    await page.getByRole("button", { name: /sequence/i }).first().click();
+      // The PresetMenu trigger's accessible name is the translated
+      // `inspector.progressionLabel` ("Sequence"), not "preset".
+      await page.getByRole("button", { name: /sequence/i }).first().click();
 
-    // Only the preset DropdownMenu is open here, so the lone open role="menu"
-    // is its content; `.first()` guards against any transient duplicate during
-    // the open animation.
-    const menu = page.getByRole("menu").first();
-    await expect(menu).toBeVisible();
+      // Only the preset DropdownMenu is open here, so the lone open role="menu"
+      // is its content; `.first()` guards against any transient duplicate during
+      // the open animation.
+      const menu = page.getByRole("menu").first();
+      await expect(menu).toBeVisible();
 
-    const rect = await menu.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      return { left: Math.round(r.left), right: Math.round(r.right) };
-    });
-    expect(rect.left, "menu left").toBeGreaterThanOrEqual(0);
-    expect(rect.right, "menu right").toBeLessThanOrEqual(390);
+      const rect = await menu.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { left: Math.round(r.left), right: Math.round(r.right) };
+      });
+      expect(rect.left, `${viewport.name} menu left`).toBeGreaterThanOrEqual(0);
+      expect(rect.right, `${viewport.name} menu right`).toBeLessThanOrEqual(viewport.width);
+    }
   });
 });
