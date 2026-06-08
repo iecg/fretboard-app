@@ -372,4 +372,63 @@ test.describe("responsive layout regressions", () => {
       "mobile progression editor",
     );
   });
+
+  test("shows the full mobile chord list without an inner scroll", async ({ page }) => {
+    await gotoApp(page, 390, 844);
+    await page.getByRole("tab", { name: "Song" }).click();
+
+    const list = page.locator('[aria-label="Progression navigation"]');
+    await expect(list).toBeVisible();
+
+    const overflow = await list.evaluate((el) => ({
+      scrollHeight: el.scrollHeight,
+      clientHeight: el.clientHeight,
+    }));
+    expect(overflow.scrollHeight, "list inner scroll").toBeLessThanOrEqual(
+      overflow.clientHeight + 1,
+    );
+  });
+
+  test("keeps the mobile preset menu within the viewport width", async ({ page }) => {
+    await gotoApp(page, 390, 844);
+    await page.getByRole("tab", { name: "Song" }).click();
+
+    // The PresetMenu trigger's accessible name is the translated
+    // `inspector.progressionLabel` ("Sequence"), not "preset".
+    await page.getByRole("button", { name: /sequence/i }).first().click();
+
+    const menu = page.getByRole("menu").first();
+    await expect(menu).toBeVisible();
+
+    const rect = await menu.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { left: Math.round(r.left), right: Math.round(r.right) };
+    });
+    expect(rect.left, "menu left").toBeGreaterThanOrEqual(0);
+    expect(rect.right, "menu right").toBeLessThanOrEqual(390);
+  });
+
+  test("keeps the active timeline chord in view after selecting a late chord on mobile", async ({ page }) => {
+    await gotoApp(page, 390, 844);
+
+    const track = page.getByRole("group", { name: "Progression track" });
+    await expect(track).toBeVisible();
+
+    const blocks = track.getByRole("button");
+    const count = await blocks.count();
+    // Guards the in-view invariant for whatever progression is loaded. No
+    // reusable seeding mechanism exists in this spec, so this exercises the
+    // auto-scroll only if the default progression overflows the 390px track;
+    // otherwise it still asserts the last block stays within the viewport.
+    await blocks.nth(count - 1).click();
+
+    const inView = await track.evaluate((el) => {
+      const active = el.querySelector('[data-active="true"]');
+      if (!active) return false;
+      const c = el.getBoundingClientRect();
+      const a = active.getBoundingClientRect();
+      return a.left >= c.left - 1 && a.right <= c.right + 1;
+    });
+    expect(inView, "active block within track viewport").toBe(true);
+  });
 });
