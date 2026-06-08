@@ -531,3 +531,19 @@
 :global(.app-container[data-layout-tier="mobile"]) .duration-unit {
   flex: 1 1 8rem;
 }
+
+:global(.app-container[data-layout-tier="mobile"]) .toolbar-button {
+  width: var(--control-height);
+  padding: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .delete-button {
+  width: var(--control-height);
+  padding: 0;
+  margin-left: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .grouped-button {
+  height: var(--control-height);
+}
+

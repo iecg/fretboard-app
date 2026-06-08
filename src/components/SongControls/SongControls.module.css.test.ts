@@ -14,4 +14,16 @@ describe("SongControls button chrome", () => {
     // …revealing the destructive tone only on hover.
     expect(css).toMatch(/\.delete-button:hover:not\(:disabled\)\s*\{[^}]*var\(--destructive-control-fg\)/s);
   });
+  it("defines mobile progression toolbar button size overrides", () => {
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.toolbar-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
+    );
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.delete-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
+    );
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.grouped-button\s*\{[^}]*height:\s*var\(--control-height\)/s,
+    );
+  });
 });
+
