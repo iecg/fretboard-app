@@ -48,6 +48,33 @@ test.describe("Progression Visual", () => {
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });
 
+  test("progression-mobile-long-390x844", async ({ page }) => {
+    // A progression longer than four chords must stay readable on a phone via
+    // the horizontal-scroll timeline (min-width driven by chord count).
+    await loadVisualState(
+      page,
+      {
+        progressionSteps: [
+          { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s3", degree: "iii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s5", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "7" },
+          { id: "s6", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ],
+      },
+      { width: 390, height: 844 },
+    );
+
+    // Navigate to the Song tab in the Inspector bottom tab bar.
+    await page.getByRole("tab", { name: "Song" }).click();
+
+    await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
+    await expectFullPageVisual(page, "progression-mobile-long-390x844", linuxTolerance);
+  });
+
   test("progression-string-study-pattern-1280x900", async ({ page }) => {
     // After the controls overhaul, the one-string / two-strings patterns no
     // longer disable the chord overlay — they only change how the scale is
