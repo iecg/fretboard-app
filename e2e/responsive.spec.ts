@@ -45,6 +45,9 @@ async function getMetrics(page: Page) {
     const toolbar = document.querySelector('[data-testid="fretboard-outer"]');
     const title = document.querySelector('[data-testid="app-header-brand"]');
     const actions = document.querySelector('[data-testid="app-header-actions"]');
+    const header = document.querySelector('[data-testid="app-header"]');
+    const transport = document.querySelector('[data-testid="app-header-transport"]');
+    const transportCluster = document.querySelector('[data-testid="header-transport-cluster"]');
     const settingsDrawer = document.querySelector('[data-testid="settings-drawer"]');
     const helpModal = document.querySelector('[data-testid="help-modal"]');
     const helpContent = document.querySelector('[data-testid="help-modal-content"]');
@@ -91,6 +94,9 @@ async function getMetrics(page: Page) {
       toolbarDisplay: toolbar ? getComputedStyle(toolbar).display : null,
       titleRect: getRect(title),
       actionsRect: getRect(actions),
+      headerRect: getRect(header),
+      transportRect: getRect(transport),
+      transportClusterRect: getRect(transportCluster),
       settingsDrawerRect: getRect(settingsDrawer),
       helpModalRect: getRect(helpModal),
       controlsColumnRect: getRect(controlsColumn),
@@ -137,6 +143,31 @@ test.describe("responsive layout regressions", () => {
         after.titleRect!.bottom > after.actionsRect!.top &&
         after.actionsRect!.bottom > after.titleRect!.top;
       expect(headerSharesRow, viewport.name).toBe(true);
+    }
+  });
+
+  test("keeps mobile header actions and transport within the viewport", async ({
+    page,
+  }) => {
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 375, height: 667 },
+    ]) {
+      const name = `${viewport.width}x${viewport.height}`;
+      await gotoApp(page, viewport.width, viewport.height);
+
+      const metrics = await getMetrics(page);
+      expect(metrics.headerRect, name).not.toBeNull();
+      expect(metrics.titleRect, name).not.toBeNull();
+      expect(metrics.actionsRect, name).not.toBeNull();
+      expect(metrics.transportRect, name).not.toBeNull();
+      expect(metrics.transportClusterRect, name).not.toBeNull();
+
+      expect(metrics.actionsRect!.right, name).toBeLessThanOrEqual(viewport.width);
+      expect(metrics.transportClusterRect!.right, name).toBeLessThanOrEqual(
+        viewport.width,
+      );
+      expect(metrics.headerRect!.height, name).toBeLessThanOrEqual(176);
     }
   });
 
