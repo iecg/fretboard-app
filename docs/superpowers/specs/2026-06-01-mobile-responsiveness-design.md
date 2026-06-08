@@ -313,6 +313,8 @@ Tasks should include likely files, implementation notes, user-visible acceptance
 - Manual visual review on primary and compact mobile targets.
 - Update tests only if a tab split is actually implemented.
 
+**Decision record:** After implementing the Song card pairing, compact progression actions, and stacked progression editor, review the Song tab at `390x844` and `375x667`. If the tab is still too dense, create a separate implementation plan for a new mobile tab. If the tab is usable, keep the existing two-tab Inspector.
+
 ## Recommended Order
 
 1. Shared dropdown safe zone.
