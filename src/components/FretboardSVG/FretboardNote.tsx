@@ -27,23 +27,15 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const formatRole = (noteClass: string): string =>
   ROLE_DESCRIPTIONS[noteClass] ?? noteClass.replace(/-/g, " ");
 
-// Beat-tick geometry. Each tick is a short radial <line> drawn just INSIDE the
-// marker rim (NOT on the outer drain ring) at its beat angle — clock-style.
-// Root cause of the long "ticks outside the circle" saga: the drain ring sits at
-// ringR = r + standoff (standoff ≥ 3px), so ringR > r for EVERY note. Anything
-// drawn on the ring is therefore outside the marker circle by construction — most
-// obvious on big, filled chord-tone bubbles. Putting the ticks inside the marker
-// rim (radius < r) is the only placement that reads as "inside the circle" on
-// every note type.
-//   - TICK_RIM_GAP: gap from the marker edge (r) to the tick's OUTER end, so the
-//     mark sits clearly inside the rim, not on it.
-//   - TICK_LEN: radial length, pointing inward toward the center. At the common
-//     4-beat positions the marks are axis-aligned (horizontal at 3/9, vertical at
-//     12/6) — clock ticks.
-// The ticks render in their own group OUTSIDE the looming ring group, so the
-// ring's ~6% loom never drifts a tick back across the rim.
-const TICK_RIM_GAP = 0.6;
-const TICK_LEN = 2.8;
+// Radial half-length (user units) of a beat-tick mark, centered on the drain
+// track (ringR). Each tick is a short radial <line> spanning ringR ± this, so it
+// crosses the track band (core stroke-width 2.75 → half-width ~1.375) and reads
+// as a clock tick ON the track. Anchoring to ringR — each note's OWN track radius
+// (ringR = r + standoff) — places the tick precisely on the track for both chord
+// tones and in-scale tones despite their different marker sizes, with no per-type
+// parameters. Kept ≤ the halo half-width (~2.375) so the tick stays within the
+// ring's footprint and never spurs into bare wood.
+const TICK_HALF_LEN = 2;
 
 interface FretboardNoteProps {
   note: RenderedFretboardNote;
@@ -239,47 +231,39 @@ export const FretboardNote = memo(function FretboardNote({
                 beat (the gradual drain alone has no crisp "now" instant). CSS
                 only animates it in the landing phase. */}
             <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
-          </motion.g>
-        )}
-      </AnimatePresence>
-      {/* Static beat-tick marks — short BRIGHT radial ticks just INSIDE the
-          marker rim at each beat boundary, giving a countable "segment done"
-          read. Only on PRIMARY (in-region) targets, and only when the step has
-          enough beats to warrant ticks (countdownTicks empty otherwise). Each is
-          a <line> at angle θ = 2π·f (drain origin at 3 o'clock, sweeping
-          clockwise) drawn from just inside the rim (r − TICK_RIM_GAP) inward by
-          TICK_LEN — clock ticks: axis-aligned at the 4-beat cardinal positions.
-          Rendered in THIS group rather than the ring group above so the ring's
-          loom never scales a tick back across the rim. */}
-      <AnimatePresence>
-        {guidePhase && note.isInRegion && (
-          <motion.g
-            key="guide-ticks"
-            data-guide-ticks="true"
-            aria-hidden="true"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={guideFade}
-          >
-            {countdownTicks?.map((f, i) => {
-              const theta = 2 * Math.PI * f;
-              const cos = Math.cos(theta);
-              const sin = Math.sin(theta);
-              const outer = r - TICK_RIM_GAP;
-              const inner = outer - TICK_LEN;
-              return (
-                <line
-                  key={`tick-${i}`}
-                  className={styles["note-guide-ring-tick"]}
-                  data-guide-tick="true"
-                  x1={cx + cos * inner}
-                  y1={cy + sin * inner}
-                  x2={cx + cos * outer}
-                  y2={cy + sin * outer}
-                />
-              );
-            })}
+            {/* Static beat-tick marks — short BRIGHT radial ticks centered on the
+                drain track (ringR) at each beat boundary, giving a countable
+                "segment done" read as the green core drains past them. Only on
+                PRIMARY (in-region) targets, and only when the step has enough
+                beats to warrant ticks (countdownTicks empty otherwise). Each is a
+                <line> at angle θ = 2π·f (drain origin at 3 o'clock, sweeping
+                clockwise), spanning ringR ± TICK_HALF_LEN so it crosses the track
+                band — clock ticks: axis-aligned at the 4-beat cardinal positions.
+                Anchored to ringR (each note's OWN track radius), so chord tones
+                and in-scale tones — different marker sizes, hence different ringR
+                — both get ticks precisely on their track without per-type tuning.
+                Rendered INSIDE the ring group so the ring's loom scales the ticks
+                WITH the track, keeping them locked on it through the countdown. */}
+            {note.isInRegion &&
+              countdownTicks?.map((f, i) => {
+                const theta = 2 * Math.PI * f;
+                const cos = Math.cos(theta);
+                const sin = Math.sin(theta);
+                const inner = ringR - TICK_HALF_LEN;
+                const outer = ringR + TICK_HALF_LEN;
+                return (
+                  <line
+                    key={`tick-${i}`}
+                    className={styles["note-guide-ring-tick"]}
+                    data-guide-tick="true"
+                    x1={cx + cos * inner}
+                    y1={cy + sin * inner}
+                    x2={cx + cos * outer}
+                    y2={cy + sin * outer}
+                    aria-hidden="true"
+                  />
+                );
+              })}
           </motion.g>
         )}
       </AnimatePresence>

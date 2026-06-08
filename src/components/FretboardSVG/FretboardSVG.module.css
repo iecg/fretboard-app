@@ -334,16 +334,15 @@
   100%    { opacity: 0.95; transform: scale(1.3); }
 }
 
-/* Beat-tick marks — short BRIGHT radial ticks just INSIDE the marker rim at
+/* Beat-tick marks — short BRIGHT radial ticks centered on the drain track at
    beat/bar boundaries (plus an anchor at the start/beat line). A light mark reads
    in both light and dark modes — unlike a dark one, which vanished on dark wood
    and merged with the strings' dark drop shadows. Bright + hard-edged ≠ soft
-   achromatic shadow. Each mark is a short radial <line> pointing inward from the
-   rim (clock ticks; axis-aligned at the 4-beat cardinal positions), drawn at
-   radius < r so it sits inside the circle on every note type — the outer drain
-   ring (at ringR > r) is a halo OUTSIDE the marker, so ticks could never read as
-   "inside the circle" there. A thin stroke + round caps keep the short mark
-   crisp. Static (no animation) → zero per-frame paint. */
+   achromatic shadow. Each mark is a short radial <line> spanning the track band
+   at its beat angle (clock ticks; axis-aligned at the 4-beat cardinal positions),
+   anchored to each note's own track radius (ringR) so it lands precisely on the
+   track for both chord tones and in-scale tones. A thin stroke + round caps keep
+   the short mark crisp. Static (no animation) → zero per-frame paint. */
 .note-guide-ring-tick {
   fill: none !important;
   stroke: rgb(255 255 255 / 0.95) !important;
