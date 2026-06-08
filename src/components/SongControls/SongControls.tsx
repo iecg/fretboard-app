@@ -261,7 +261,7 @@ export function SongControls() {
             labelledById="song-key-heading"
             locked={editsLocked}
           >
-            <PropGrid columns={4}>
+            <PropGrid columns={4} className={styles["mobile-paired-grid"]}>
               <Prop label={t("controls.root")} span={1}>
                 <LabeledSelect
                   label={t("controls.root")}
@@ -293,7 +293,7 @@ export function SongControls() {
             description={t("inspector.groupTimeDesc")}
             labelledById="song-time-heading"
           >
-            <PropGrid columns={5}>
+            <PropGrid columns={5} className={styles["mobile-paired-grid"]}>
               <Prop label={t("inspector.timeSignature")} span={2}>
                 <TimeSignaturePicker />
               </Prop>

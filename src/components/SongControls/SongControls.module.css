@@ -453,3 +453,19 @@
 .linkButton:hover {
   color: color-mix(in srgb, var(--faceplate-accent) 80%, white);
 }
+
+/* ===== Mobile tier: Song tab density ===== */
+
+/* Pair the Key (Root + Scale) and Time (Signature + Tempo) cards into a tidy
+   two-column grid so each field sits beside its partner instead of stacking
+   into a tall single column. The PropGrid's own data-columns template is
+   overridden here; Prop cells lose their multi-column span and fill one track. */
+:global(.app-container[data-layout-tier="mobile"]) .mobile-paired-grid {
+  grid-template-columns: minmax(5.5rem, 0.8fr) minmax(0, 1.2fr);
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .mobile-paired-grid > * {
+  /* stylelint-disable-next-line declaration-no-important */
+  grid-column: auto !important;
+  min-width: 0;
+}
