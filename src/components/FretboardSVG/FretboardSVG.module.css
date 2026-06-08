@@ -234,6 +234,14 @@
   opacity: 0.52;
 }
 
+/* Common-hold (Field lens) — a calm, STATIC anchor: same incoming-hue backing,
+   no contraction. The ring core/halo inherit the base static stroke; the
+   drain/loom/flash/tick keyframes are gated to [data-guide-phase="landing"],
+   so "hold" shows a steady ring with no animation. No new colour or shape. */
+.note-target-backing[data-guide-phase="hold"] {
+  opacity: 0.42;
+}
+
 /* Two-phase target ring — a hollow ring on the next chord's guide tones. A dark
    halo under a coloured core (a 2-colour "Oreo" ring) keeps it legible over any
    fill and on light or dark wood. The PHASE rides stroke-weight + opacity, NOT
