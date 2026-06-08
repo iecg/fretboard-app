@@ -33,7 +33,7 @@
     "test:visual:ci": "bash scripts/run-linux-visual-tests.sh",
     "test:visual:update": "pnpm run build && playwright test --config=playwright.config.visual.ts --update-snapshots",
     "test:visual:update:linux": "bash scripts/update-linux-snapshots.sh",
-    "prepare": "pnpm --filter @fretflow/core run build && husky",
+    "postinstall": "git config core.hooksPath .githooks 2>/dev/null; pnpm --filter @fretflow/core run build",
     "analyze": "source-map-explorer dist/assets/*.js --html dist/bundle-report.html"
   },
   "dependencies": {
@@ -75,9 +75,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
-    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
-    "lint-staged": "^17.0.5",
     "playwright": "^1.60.0",
     "source-map-explorer": "^2.5.3",
     "stylelint": "^17.12.0",
@@ -87,9 +85,5 @@
     "vite": "^8.0.14",
     "vitest": "^4.1.7",
     "vitest-axe": "^0.1.0"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": "eslint --fix",
-    "*.css": "stylelint --fix"
   }
 }
