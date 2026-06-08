@@ -181,21 +181,17 @@ export function isInPlanningWindow(
 }
 
 /**
- * True when the playhead is inside the single continuous countdown window — the
- * union of the old planning + landing windows. The window spans the final
- * `min(step, PLANNING_RUNWAY_BARS · bar)` of the step and ends exactly on the
- * beat. Pure so it is unit-testable without atom plumbing.
+ * True when the playhead is inside the single continuous countdown window. The
+ * window spans the FULL chord (the entire step), so the countdown ring and its
+ * adaptive bar-boundary ticks are visible from the first bar of a long chord —
+ * not just the final two. Pure so it is unit-testable without atom plumbing.
  */
 export function isInCountdownWindow(
   stepFraction: number,
   stepDurationMs: number,
-  barDurationMs = Infinity,
 ): boolean {
   if (stepDurationMs <= 0) return false;
-  const windowMs = Math.min(stepDurationMs, PLANNING_RUNWAY_BARS * barDurationMs);
-  if (windowMs <= 0) return false;
-  const startFraction = 1 - windowMs / stepDurationMs;
-  return stepFraction >= startFraction;
+  return stepFraction >= 0;
 }
 
 /** Lowest beat count that shows interior ticks (a lone tick is noise). */
@@ -774,14 +770,14 @@ export const planningWindowActiveAtom = atom((get): boolean => {
 });
 
 /**
- * Length of the single continuous countdown window, in ms — `min(step, 2·bar)`.
- * Written to the `--guide-duration` CSS custom property so the drain lasts
- * exactly the window. Changes only when the active step / tempo changes.
+ * Length of the single continuous countdown window, in ms — the FULL step, so
+ * the drain ring spans the whole chord and its ticks subdivide adaptively (one
+ * per bar for multi-bar chords). Written to the `--guide-duration` CSS custom
+ * property so the drain lasts exactly the chord. Changes only when the active
+ * step / tempo changes.
  */
 export const guideCountdownWindowMsAtom = atom((get): number => {
-  const step = get(progressionStepDurationMsAtom);
-  const bar = get(progressionBarDurationMsAtom);
-  return Math.min(step, PLANNING_RUNWAY_BARS * bar);
+  return get(progressionStepDurationMsAtom);
 });
 
 /**
@@ -825,7 +821,7 @@ export const guideCountdownActiveAtom = atom((get): boolean => {
   // (short chords) and the deadline is still in the future beyond the step start.
   if (deadline - now > stepMs) return false;
   const stepFraction = stepRelativeFraction(deadline, now, stepMs);
-  return isInCountdownWindow(stepFraction, stepMs, get(progressionBarDurationMsAtom));
+  return isInCountdownWindow(stepFraction, stepMs);
 });
 
 /**

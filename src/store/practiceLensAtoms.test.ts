@@ -738,21 +738,23 @@ describe("isInPlanningWindow", () => {
 // ---------------------------------------------------------------------------
 
 describe("isInCountdownWindow", () => {
-  it("is active across the whole step when step <= 2 bars", () => {
-    // step 2000, bar 2000: window = min(2000, 4000) = 2000 -> start fraction 0
-    expect(isInCountdownWindow(0, 2000, 2000)).toBe(true);
-    expect(isInCountdownWindow(0.99, 2000, 2000)).toBe(true);
+  it("is active across the whole step for a short chord", () => {
+    expect(isInCountdownWindow(0, 2000)).toBe(true);
+    expect(isInCountdownWindow(0.99, 2000)).toBe(true);
   });
 
-  it("caps the window at 2 bars for long chords", () => {
-    // step 8000, bar 2000: window = min(8000, 4000) = 4000 -> start fraction 0.5
-    expect(isInCountdownWindow(0.49, 8000, 2000)).toBe(false);
-    expect(isInCountdownWindow(0.5, 8000, 2000)).toBe(true);
+  it("spans the FULL chord — active from the first bar of a long chord", () => {
+    // 4-bar chord (step 8000, bar 2000): the countdown now spans the whole
+    // chord, so it is active from the very first bar — not just the last 2.
+    expect(isInCountdownWindow(0, 8000)).toBe(true);
+    expect(isInCountdownWindow(0.1, 8000)).toBe(true);
+    expect(isInCountdownWindow(0.49, 8000)).toBe(true);
+    expect(isInCountdownWindow(0.99, 8000)).toBe(true);
   });
 
   it("returns false for a non-positive step duration", () => {
-    expect(isInCountdownWindow(0.5, 0, 2000)).toBe(false);
-    expect(isInCountdownWindow(0.5, -100, 2000)).toBe(false);
+    expect(isInCountdownWindow(0.5, 0)).toBe(false);
+    expect(isInCountdownWindow(0.5, -100)).toBe(false);
   });
 });
 
@@ -779,6 +781,12 @@ describe("computeCountdownTickFractions", () => {
     expect(computeCountdownTickFractions(8000, 1000, 4000)).toEqual([0, 0.5]);
     // 12 beats, 3 bars -> anchor 0 + ticks at 1/3, 2/3
     expect(computeCountdownTickFractions(12000, 1000, 4000)).toEqual([0, 1 / 3, 2 / 3]);
+  });
+
+  it("gives one tick per bar for a full 4-bar chord window (regression)", () => {
+    // 16 beats / 4 bars -> segment by bar -> anchor + a tick at each bar
+    // boundary. Guards the adaptive-ticks fix: a 4-bar chord shows 4 marks.
+    expect(computeCountdownTickFractions(16000, 1000, 4000)).toEqual([0, 0.25, 0.5, 0.75]);
   });
 
   it("falls back to 4 even segments when bars also exceed 4", () => {
@@ -1139,11 +1147,35 @@ describe("guide countdown atoms", () => {
     return store;
   }
 
-  it("guideCountdownWindowMsAtom = min(step, 2·bar)", () => {
+  it("guideCountdownWindowMsAtom = full step (spans the whole chord)", () => {
     const store = makePlayingStore();
     const step = store.get(progressionStepDurationMsAtom);
-    const bar = store.get(progressionBarDurationMsAtom);
-    expect(store.get(guideCountdownWindowMsAtom)).toBe(Math.min(step, 2 * bar));
+    expect(store.get(guideCountdownWindowMsAtom)).toBe(step);
+  });
+
+  it("a 4-bar chord spans the full window with one tick per bar (regression)", () => {
+    const store = makePlayingStore();
+    store.set(progressionStepsAtom, [
+      { id: "long", degree: "I", duration: { value: 4, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(activeProgressionStepIndexAtom, 0);
+    store.set(displayedStepIndexPrimitiveAtom, 0);
+    const stepMs = store.get(progressionStepDurationMsAtom);
+    const barMs = store.get(progressionBarDurationMsAtom);
+    // A 4-bar chord is well beyond the old 2-bar runway cap.
+    expect(stepMs).toBeGreaterThan(2 * barMs);
+
+    // Window spans the full 4 bars, not a capped 2-bar runway.
+    expect(store.get(guideCountdownWindowMsAtom)).toBe(stepMs);
+
+    // One tick per bar boundary: anchor + 3 interior ticks.
+    expect(store.get(guideCountdownTickFractionsAtom)).toEqual([0, 0.25, 0.5, 0.75]);
+
+    // Active from the FIRST bar (deep in the chord, far from the change).
+    store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.05, localFraction: 0.05, paused: false });
+    store.set(progressionStepDeadlineAtom, Date.now() + stepMs - 50);
+    expect(store.get(guideCountdownActiveAtom)).toBe(true);
   });
 
   it("guideCountdownTickFractionsAtom matches the pure helper for the active step", () => {
@@ -1157,20 +1189,18 @@ describe("guide countdown atoms", () => {
     );
   });
 
-  it("guideCountdownActiveAtom is false outside the window and true inside", () => {
+  it("guideCountdownActiveAtom is false before the step starts and true once inside", () => {
     const store = makePlayingStore();
     store.set(displayedStepIndexPrimitiveAtom, 0);
     const stepMs = store.get(progressionStepDurationMsAtom);
-    const bar = store.get(progressionBarDurationMsAtom);
-    const windowMs = Math.min(stepMs, 2 * bar);
     store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.1, localFraction: 0.1, paused: false });
 
-    // Deadline far in the future → step barely started → outside the window.
-    store.set(progressionStepDeadlineAtom, Date.now() + windowMs + 1000);
+    // Deadline beyond a full step → step hasn't started yet → inactive.
+    store.set(progressionStepDeadlineAtom, Date.now() + stepMs + 1000);
     expect(store.get(guideCountdownActiveAtom)).toBe(false);
 
-    // Deadline inside the window → active.
-    store.set(progressionStepDeadlineAtom, Date.now() + windowMs - 50);
+    // Deadline within the step → active (window spans the full chord).
+    store.set(progressionStepDeadlineAtom, Date.now() + stepMs - 50);
     expect(store.get(guideCountdownActiveAtom)).toBe(true);
   });
 
