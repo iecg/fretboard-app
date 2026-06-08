@@ -2,13 +2,16 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
 }
 
 /* Keep the Beat/Bar unit toggle compact so it sits balanced beside the
    stepper rather than stretching across the editor cell. */
 .duration-unit {
-  flex: 0 0 9rem;
-  min-width: 0;
+  flex: 1 0 auto;
+  min-width: 5rem;
+  max-width: 9rem;
 }
 
 .step-actions {
