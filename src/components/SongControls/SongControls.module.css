@@ -172,8 +172,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: var(--control-height);
-  width: var(--control-height);
+  height: calc(var(--control-height) - 4px);
+  width: calc(var(--control-height) - 4px);
   background: transparent;
   border: none;
   border-radius: calc(var(--dc-radius) - 2px);
