@@ -129,3 +129,13 @@ Notes carry a semantic role (`root-active`, `chord-tone`, `note-blue`, `note-act
 - `deploy.yml`: GitHub Pages.
 - `auto-release.yml`: manual trigger, semver from Conventional Commits.
 - Dependabot weekly for npm + github-actions.
+
+## Design Rationale (read on demand — do not preload)
+
+Durable "why" docs live in `docs/design/` (index: `docs/design/README.md`). They are **not** preloaded — pull the relevant one only when making a decision in its domain, cite it, and add new sources back:
+
+- markers / color / marker shape / connectors / voice-leading motion → `docs/design/fretboard-visual-language.md`
+- voicing / strum / close-voicing fallback / audio playback → `docs/design/audio-voicing-engine.md`
+- chord qualities / scales / guide tones / improvisation lenses / modes → `docs/design/music-theory-pedagogy.md`
+
+Provenance: each doc lists the source specs it consolidates with the git SHA before deletion (`git show <sha>:<path>` recovers the original).
