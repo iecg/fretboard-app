@@ -373,6 +373,16 @@
   min-height: 1.25rem;
 }
 
+/* Root + Quality form one group inside the editor row. At desktop/tablet
+   tiers they sit side-by-side; the mobile tier re-tightens the gap. Without
+   this base rule the div defaults to display:block and Quality stacks under
+   Root even when all three fields fit on one line (#557 regression). */
+.root-quality-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2.25rem;
+}
+
 /* Quality + its inline lock toggle form one unit on the editor row. */
 .quality-row {
   display: flex;

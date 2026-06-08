@@ -25,6 +25,13 @@ describe("SongControls button chrome", () => {
       /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.grouped-button\s*\{[^}]*height:\s*var\(--control-height\)/s,
     );
   });
+  it("lays Root and Quality side-by-side at base (non-mobile) tier", () => {
+    // Regression guard (#557): the base .root-quality-row rule must set
+    // display:flex so Root and Quality sit on one row at desktop/tablet
+    // tiers. Without it the div defaults to display:block and Quality
+    // stacks under Root even when all three fields fit on one line.
+    expect(css).toMatch(/^\.root-quality-row\s*\{[^}]*display:\s*flex/m);
+  });
   it("defines mobile root-quality flex row, lock-label sr-only, and lock-toggle size overrides", () => {
     expect(css).toMatch(
       /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.root-quality-row\s*\{[^}]*display:\s*flex/s,
