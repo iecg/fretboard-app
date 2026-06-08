@@ -296,7 +296,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           const isLhBass =
             hit.voiceRole === "bass-root" || hit.voiceRole === "bass-fifth";
           const chordSeed = stepIndex * 10000 + bar * 100 + hit.beat;
-          if (!isLhBass && shouldDropHit(hit.velocity, chordSeed)) continue;
+          // Sustained chords aren't ghost strokes — never drop them (also keeps
+          // the sustain ring boundary, which reads hits[hitIndex + 1], intact).
+          if (!isLhBass && hit.style !== "sustained" && shouldDropHit(hit.velocity, chordSeed)) continue;
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
