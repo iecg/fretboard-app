@@ -11,12 +11,18 @@ import { ProgressionBlock } from "./ProgressionBlock";
 import { ProgressionPlayhead } from "./ProgressionPlayhead";
 import { ProgressionRuler } from "./ProgressionRuler";
 
+// Readable floor (in rem) for the shortest-duration block on mobile. The whole
+// timeline is scaled so the shortest block reaches this width; longer blocks
+// grow proportionally, preserving ruler/playhead alignment.
+const MIN_BLOCK_REM = 5.25;
+
 export function ProgressionTrack() {
   const {
     blockLayouts,
     totalDurationBars,
     totalBarsForDisplay,
     subdivisionsPerBar,
+    shortestDurationBars,
     stepAtoms,
     displayedStepIndex,
     canPlay,
@@ -39,6 +45,9 @@ export function ProgressionTrack() {
     [setActiveStep, playing],
   );
 
+  const mobileTimelineMinWidthRem =
+    (totalBarsForDisplay / shortestDurationBars) * MIN_BLOCK_REM;
+
   return (
     <section
       role="group"
@@ -52,7 +61,7 @@ export function ProgressionTrack() {
         style={{
           "--bar-count": totalBarsForDisplay,
           "--beats-per-bar": subdivisionsPerBar,
-          "--mobile-min-chord-count": Math.max(stepAtoms.length, 1),
+          "--mobile-timeline-min-width": `${mobileTimelineMinWidthRem}rem`,
         } as CSSProperties}
         aria-label="Progression timeline"
       >

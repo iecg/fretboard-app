@@ -281,16 +281,33 @@ describe("ProgressionTrack", () => {
   });
 
   it("exposes the chord count as a minimum timeline width variable", () => {
-    const { container } = renderWithAtoms(<ProgressionTrack />, [
+    renderWithAtoms(<ProgressionTrack />, [
       [progressionStepsAtom, eightStepProgression],
       [beatsPerBarAtom, 4],
     ]);
 
-    expect(
-      container
-        .querySelector<HTMLElement>("[aria-label='Progression timeline']")
-        ?.style.getPropertyValue("--mobile-min-chord-count"),
-    ).toBe("8");
+    expect(screen.getByLabelText("Progression timeline")).toHaveStyle({
+      "--mobile-timeline-min-width": "42rem",
+    });
+  });
+
+  it("scales the mobile timeline so the shortest block stays readable with mixed durations", () => {
+    renderWithAtoms(<ProgressionTrack />, [
+      [
+        progressionStepsAtom,
+        [
+          { id: "a", degree: "I", duration: { value: 2, unit: "bar" }, qualityOverride: null },
+          { id: "b", degree: "IV", duration: { value: 2, unit: "bar" }, qualityOverride: null },
+          { id: "c", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "d", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ],
+      ],
+      [beatsPerBarAtom, 4],
+    ]);
+
+    expect(screen.getByLabelText("Progression timeline")).toHaveStyle({
+      "--mobile-timeline-min-width": "31.5rem",
+    });
   });
 
   it("does not move the stopped playhead when selecting a different chord on the timeline", () => {

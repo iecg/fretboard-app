@@ -496,7 +496,7 @@
   padding: 0.5rem 0.55rem 0.45rem;
 
   /* Progressions longer than four chords would crush block labels on a phone.
-     Let the track scroll horizontally; the timeline below claims a chord-count
+     Let the track scroll horizontally; the timeline below claims a duration-
      driven minimum width so each block stays readable/tappable. The percent-
      based block & playhead math is unchanged — it's all relative to the
      timeline's own width, scrolled or not. */
@@ -507,7 +507,11 @@
 }
 
 :global(.app-container[data-layout-tier="mobile"]) .timeline {
-  min-width: max(100%, calc(var(--mobile-min-chord-count, 1) * 5.25rem));
+  /* Width is driven by the shortest block's duration (computed in
+     ProgressionTrack.tsx) so even 1-bar blocks beside 2-bar blocks stay
+     readable. Only the total width scales — block percents and the playhead
+     stay aligned. */
+  min-width: max(100%, var(--mobile-timeline-min-width, 100%));
 }
 
 /* stylelint-enable selector-pseudo-class-no-unknown */
