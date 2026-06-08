@@ -253,13 +253,29 @@
 }
 
 /* ---------------------------------------------------------------------------
- * Mobile: collapse the master-detail into a single natural-flow column. The
- * bounded inner scroll (max-height + overflow) plus edge fades create a
- * cramped nested-scroll region inside the already-scrolling inspector, which
- * reads as the editor overlapping the list. On mobile the full list flows and
- * the editor sits cleanly below it; the inspector page scroll absorbs height.
+ * Mobile: collapse the master-detail into a single natural-flow column.
+ *
+ * `.progression-master-detail` switches to `flex-direction: column` on mobile,
+ * which reinterprets `.col`'s `flex: 5 1 13rem` shorthand: the `13rem` basis —
+ * a *width* in the desktop horizontal row — becomes a *height*. That capped the
+ * list column at ~13rem tall, so a progression longer than ~4 chords overflowed
+ * its box and collided with the `.editor-panel` that flex laid out immediately
+ * after the 13rem allocation. Reset `.col`/`.scroll` to size to their content
+ * height so the full list flows and the editor sits cleanly below it (the
+ * inspector page scroll absorbs the height). Also drop the bounded inner scroll
+ * and edge fades, which only made sense for the capped desktop list.
  * ------------------------------------------------------------------------- */
 /* stylelint-disable selector-pseudo-class-no-unknown */
+:global(.app-container[data-layout-tier="mobile"]) .col {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .scroll {
+  flex: 0 0 auto;
+}
+
 :global(.app-container[data-layout-tier="mobile"]) .list {
   max-height: none;
   overflow-y: visible;

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { loadVisualState } from "./visual-helpers";
 
 async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
@@ -353,23 +354,43 @@ test.describe("responsive layout regressions", () => {
   });
 
   test("keeps mobile progression chord list and editor from overlapping", async ({ page }) => {
-    await gotoApp(page, 390, 844);
+    // Seed an 8-chord progression. The overlap only manifests when the chord
+    // list is taller than the list column's flex-basis, so the default 4-chord
+    // progression passes this guard vacuously — a long list is required to
+    // actually exercise the stacked master-detail layout.
+    await loadVisualState(
+      page,
+      {
+        progressionSteps: [
+          { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s3", degree: "iii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s4", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s5", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s6", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+          { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
+        ],
+      },
+      { width: 390, height: 844 },
+    );
+
+    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
     await page.getByRole("tab", { name: "Song" }).click();
 
     // The chord list <ul> carries the "Progression navigation" accessible name;
-    // it only renders once a step is active (the default progression has steps).
+    // it only renders once a step is active (the seeded progression has steps).
     const chordList = page.getByRole("list", { name: "Progression navigation" });
     await expect(chordList).toBeVisible();
 
     const editorPanel = page.locator('[class*="editor-panel"]').first();
-    await editorPanel.scrollIntoViewIfNeeded();
     await expect(editorPanel).toBeVisible();
 
     await expectNoVerticalOverlap(
       page,
       '[aria-label="Progression navigation"]',
       '[class*="editor-panel"]',
-      "mobile progression editor",
+      "mobile progression editor (long progression)",
     );
   });
 
