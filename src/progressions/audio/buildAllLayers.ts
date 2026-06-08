@@ -20,7 +20,7 @@ import {
   type DrumVariation,
   type BassArticulation,
 } from "./patterns";
-import { applyJitter } from "./humanize";
+import { applyJitter, shouldDropHit, grooveLockTimeAmount } from "./humanize";
 
 type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride" | "crossStick";
 type StrumStyle = "staccato" | "sustained";
@@ -295,13 +295,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           const hit = hits[hitIndex];
           const isLhBass =
             hit.voiceRole === "bass-root" || hit.voiceRole === "bass-fifth";
+          const chordSeed = stepIndex * 10000 + bar * 100 + hit.beat;
+          if (!isLhBass && shouldDropHit(hit.velocity, chordSeed)) continue;
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
-            seed: stepIndex * 10000 + bar * 100 + hit.beat,
+            seed: chordSeed,
             // LH bass doubles the upright an octave up — lock it to the grid.
-            ...(isLhBass ? { timeAmountSec: 0 } : {}),
+            timeAmountSec: isLhBass ? 0 : grooveLockTimeAmount(hit.beat, 0.015),
           });
           // A sustained chord rings until the next hit in the bar, or to the bar
           // end when it is the last hit — a true whole note for ballad-whole,
@@ -371,6 +373,8 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
             ]
           : patternHits;
         for (const hit of hits) {
+          const bassSeed = stepIndex * 10000 + bar * 100 + hit.beat + 1;
+          if (!lockBassToGrid && shouldDropHit(hit.velocity, bassSeed)) continue;
           // The synthetic approach note targets the next chord (loop-aware);
           // every other hit keeps today's behavior exactly.
           const approachTarget =
@@ -392,10 +396,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
-            seed: stepIndex * 10000 + bar * 100 + hit.beat + 1, // slight offset for bass
+            seed: bassSeed,
             // Lock to the grid when the comp doubles this line (bossa LH), so
             // the two voices attack in perfect unison instead of flamming.
-            ...(lockBassToGrid ? { timeAmountSec: 0 } : {}),
+            timeAmountSec: lockBassToGrid ? 0 : grooveLockTimeAmount(hit.beat, 0.015),
           });
           bass.push({
             time: hitTime,
@@ -419,12 +423,14 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       if (drumHitsForBar.length > 0) {
         const hits = repeatPatternToBeats(drumHitsForBar, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
+          const drumSeed = stepIndex * 10000 + bar * 100 + hit.beat + 2;
+          if (shouldDropHit(hit.velocity, drumSeed)) continue;
           const baseTime = barStart + swingBeat(hit.beat, input.swing) * secondsPerBeat;
           const { time: hitTime, velocity } = applyJitter({
             time: baseTime,
             velocity: hit.velocity,
-            seed: stepIndex * 10000 + bar * 100 + hit.beat + 2, // offset for drums
-            timeAmountSec: 0.005, // tighter timing jitter for drums
+            seed: drumSeed,
+            timeAmountSec: grooveLockTimeAmount(hit.beat, 0.005),
             velocityAmount: 0.05,
           });
           drums.push({

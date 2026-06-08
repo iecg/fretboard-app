@@ -12,7 +12,9 @@ import { buildVoicing, STRUM_PRESET } from "../voicingEngine";
 import type { ResolvedProgressionStep } from "../progressionDomain";
 
 vi.mock("./humanize", () => ({
-  applyJitter: (params: { time: number; velocity: number }) => ({ time: params.time, velocity: params.velocity })
+  applyJitter: (params: { time: number; velocity: number }) => ({ time: params.time, velocity: params.velocity }),
+  shouldDropHit: () => false,
+  grooveLockTimeAmount: (_beat: number, full: number) => full,
 }));
 
 const step = (over: Partial<ResolvedProgressionStep> = {}): ResolvedProgressionStep => ({
