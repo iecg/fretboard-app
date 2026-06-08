@@ -594,9 +594,9 @@ describe("resolveProgressionStep — quality pin", () => {
 
 const PRESET_HOME_SCALE: Record<string, string> = {
   "one-five-six-four": "major", "two-five-one": "major", "one-six-four-five": "major",
-  "one-four-five": "major", "twelve-bar-blues": "major", "vi-iv-i-v": "major",
-  "i-iv-vi-v": "major", "canon": "major", "eight-bar-blues": "major",
-  "minor-blues": "minor", "one-six-two-five": "major", "three-six-two-five": "major",
+  "one-four-five": "major", "twelve-bar-blues": "minor blues", "vi-iv-i-v": "major",
+  "i-iv-vi-v": "major", "canon": "major", "eight-bar-blues": "minor blues",
+  "minor-blues": "minor blues", "one-six-two-five": "major", "three-six-two-five": "major",
   "two-five-one-six": "major", "one-four-two-five": "major", "one-four-one-five": "major",
   "one-five-one-four-one-five-one": "major", "dorian-i-iv": "dorian", "dorian-i-vii-iv": "dorian",
   "mixolydian-i-vii-iv": "mixolydian", "phrygian-i-ii": "phrygian", "lydian-i-ii": "lydian",
