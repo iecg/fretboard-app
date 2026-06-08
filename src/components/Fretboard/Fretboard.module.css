@@ -38,8 +38,11 @@
   display: none;
 }
 
-/* Tablet: enable native touch scroll on the fretboard (same as mobile). */
-:global(.app-container[data-layout-tier="tablet"]) .fretboard-wrapper {
+/* Tablet and desktop: enable native scroll on the fretboard (same as mobile)
+   so an overflowing board scrolls horizontally instead of being clipped by the
+   base `overflow: clip` rule. */
+:global(.app-container[data-layout-tier="tablet"]) .fretboard-wrapper,
+:global(.app-container[data-layout-tier="desktop"]) .fretboard-wrapper {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
