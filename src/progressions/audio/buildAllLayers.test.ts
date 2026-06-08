@@ -649,6 +649,39 @@ describe("buildAllLayers", () => {
     });
   });
 
+  describe("bass variation substitution", () => {
+    it("replaces the base bass hits on a firing turnaround bar", async () => {
+      // funk-syncopated has 5 hits/bar; funk-turnaround-bass has 4. Bar 3 fires.
+      const steps = Array.from({ length: 8 }, (_, i) =>
+        step({ id: `s${i}`, index: i, root: i % 2 === 0 ? "C" : "G" }),
+      );
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        bassPatternId: "funk-syncopated",
+        bassVariations: ["funk-turnaround-bass"],
+        chordPatternId: "ballad-whole",
+        steps,
+      });
+      const bar3 = out.bass.filter((b) => b.time >= 12 && b.time < 16);
+      const bar0 = out.bass.filter((b) => b.time >= 0 && b.time < 4);
+      expect(bar0).toHaveLength(5); // base funk-syncopated
+      expect(bar3).toHaveLength(4); // funk-turnaround-bass
+    });
+
+    it("leaves non-firing bass bars on the base pattern", async () => {
+      const steps = Array.from({ length: 8 }, (_, i) => step({ id: `s${i}`, index: i }));
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        bassPatternId: "funk-syncopated",
+        bassVariations: ["funk-turnaround-bass"],
+        chordPatternId: "ballad-whole",
+        steps,
+      });
+      const bar1 = out.bass.filter((b) => b.time >= 4 && b.time < 8);
+      expect(bar1).toHaveLength(5); // base funk-syncopated untouched
+    });
+  });
+
   describe("nextResolvableRoot", () => {
     it("returns the immediate next root", () => {
       const steps = [step({ root: "C" }), step({ id: "g", index: 1, root: "G" })];

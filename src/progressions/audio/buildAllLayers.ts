@@ -13,6 +13,7 @@ import {
   getDrumPattern,
   getDrumVariation,
   getChordVariation,
+  getBassVariation,
   variationFiresOnBar,
   repeatPatternToBeats,
   sliceCellToBar,
@@ -20,6 +21,7 @@ import {
   type DrumHit,
   type DrumVariation,
   type ChordVariation,
+  type BassVariation,
   type BassArticulation,
 } from "./patterns";
 import { applyJitter, shouldDropHit, grooveLockTimeAmount } from "./humanize";
@@ -192,6 +194,9 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
   const chordVariationDefs: ChordVariation[] = (input.chordVariations ?? [])
     .map((id) => getChordVariation(id))
     .filter((v): v is ChordVariation => Boolean(v));
+  const bassVariationDefs: BassVariation[] = (input.bassVariations ?? [])
+    .map((id) => getBassVariation(id))
+    .filter((v): v is BassVariation => Boolean(v));
 
   const chordOnsets: Array<{ time: number; value: ChordOnsetEvent }> = [];
   const chordStrums: Array<{ time: number; value: ChordStrumEvent }> = [];
@@ -362,9 +367,15 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
 
       if (bassPattern && bassLineNotes.length > 0) {
         const bassCellBars = bassPattern.bars ?? 1;
-        const patternHits = isBarUnit && bassCellBars > 1
-          ? sliceCellToBar(bassPattern.hits, absoluteBar % bassCellBars, input.beatsPerBar)
-          : repeatPatternToBeats(bassPattern.hits, eventBeats, input.beatsPerBar);
+        const firingBassVariation = bassVariationDefs.find((v) =>
+          variationFiresOnBar(v, absoluteBar),
+        );
+        const baseBassHits = firingBassVariation
+          ? firingBassVariation.hits
+          : bassPattern.hits;
+        const patternHits = !firingBassVariation && isBarUnit && bassCellBars > 1
+          ? sliceCellToBar(baseBassHits, absoluteBar % bassCellBars, input.beatsPerBar)
+          : repeatPatternToBeats(baseBassHits, eventBeats, input.beatsPerBar);
         // §3.4 end-of-phrase walk: on a step's last bar that precedes a real
         // chord change, opted-in patterns drop their tail (any hit on/after the
         // bar's last beat) and lead into the next root with one chromatic
