@@ -12,6 +12,8 @@ import {
   progressionDrumPatternAtom,
   progressionDrumsEnabledAtom,
   progressionDrumVariationsAtom,
+  progressionChordVariationsAtom,
+  progressionBassVariationsAtom,
   progressionGenreStyleAtom,
   progressionLoopEnabledAtom,
   progressionMetronomeEnabledAtom,
@@ -131,6 +133,8 @@ export function useProgressionAudioPlayback() {
   const bassPatternId = useAtomValue(progressionBassPatternAtom);
   const drumPatternId = useAtomValue(progressionDrumPatternAtom);
   const drumVariations = useAtomValue(progressionDrumVariationsAtom);
+  const chordVariations = useAtomValue(progressionChordVariationsAtom);
+  const bassVariations = useAtomValue(progressionBassVariationsAtom);
 
   const chordOn = useAtomValue(progressionChordEnabledAtom);
   const bassOn = useAtomValue(progressionBassEnabledAtom);
@@ -159,8 +163,10 @@ export function useProgressionAudioPlayback() {
         bassPatternId,
         drumPatternId,
         drumVariations,
+        chordVariations,
+        bassVariations,
       }),
-    [beatsPerBar, steps, chordPatternId, bassPatternId, drumPatternId, drumVariations],
+    [beatsPerBar, steps, chordPatternId, bassPatternId, drumPatternId, drumVariations, chordVariations, bassVariations],
   );
   const cacheRef = useRef<{ key: string; value: BuiltLayers } | null>(null);
   const fullCacheKey = useMemo(
@@ -177,6 +183,8 @@ export function useProgressionAudioPlayback() {
         bassPatternId,
         drumPatternId,
         drumVariations,
+        chordVariations,
+        bassVariations,
         tempo,
         swing,
         loopEnabled,
@@ -188,6 +196,8 @@ export function useProgressionAudioPlayback() {
       bassPatternId,
       drumPatternId,
       drumVariations,
+      chordVariations,
+      bassVariations,
       tempo,
       swing,
       loopEnabled,
@@ -202,6 +212,8 @@ export function useProgressionAudioPlayback() {
     bassPatternId,
     drumPatternId,
     drumVariations,
+    chordVariations,
+    bassVariations,
     tempo,
     beatsPerBar,
     swing,
@@ -220,6 +232,8 @@ export function useProgressionAudioPlayback() {
       bassPatternId,
       drumPatternId,
       drumVariations,
+      chordVariations,
+      bassVariations,
       tempo,
       beatsPerBar,
       swing,
@@ -254,6 +268,8 @@ export function useProgressionAudioPlayback() {
             bassPatternId,
             drumPatternId,
             drumVariations,
+            chordVariations,
+            bassVariations,
             loop: loopEnabled,
           });
 
@@ -292,6 +308,8 @@ export function useProgressionAudioPlayback() {
     bassPatternId,
     drumPatternId,
     drumVariations,
+    chordVariations,
+    bassVariations,
     loopEnabled,
     store,
   ]);
@@ -417,6 +435,8 @@ export function useProgressionAudioPlayback() {
         bassPatternId: inputs.bassPatternId,
         drumPatternId: inputs.drumPatternId,
         drumVariations: inputs.drumVariations,
+        chordVariations: inputs.chordVariations,
+        bassVariations: inputs.bassVariations,
         tempo: inputs.tempo,
         swing: inputs.swing,
         loopEnabled: inputs.loopEnabled,
@@ -435,6 +455,8 @@ export function useProgressionAudioPlayback() {
             bassPatternId: inputs.bassPatternId,
             drumPatternId: inputs.drumPatternId,
             drumVariations: inputs.drumVariations,
+            chordVariations: inputs.chordVariations,
+            bassVariations: inputs.bassVariations,
             loop: inputs.loopEnabled,
           });
           cacheRef.current = {

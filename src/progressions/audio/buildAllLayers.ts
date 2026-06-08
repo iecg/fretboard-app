@@ -73,8 +73,8 @@ export interface BuildAllLayersInput {
   bassPatternId: string;
   drumPatternId: string;
   drumVariations: readonly string[];
-  chordVariations?: readonly string[];
-  bassVariations?: readonly string[];
+  chordVariations: readonly string[];
+  bassVariations: readonly string[];
   loop: boolean;
 }
 
