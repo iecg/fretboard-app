@@ -531,3 +531,64 @@
 :global(.app-container[data-layout-tier="mobile"]) .duration-unit {
   flex: 1 1 8rem;
 }
+
+:global(.app-container[data-layout-tier="mobile"]) .toolbar-button {
+  width: var(--control-height);
+  padding: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .delete-button {
+  width: var(--control-height);
+  padding: 0;
+  margin-left: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .grouped-button {
+  height: var(--control-height);
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .root-quality-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .lock-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .lock-toggle {
+  width: var(--control-height);
+  padding: 0;
+  flex-shrink: 0;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .pager-button {
+  width: var(--control-height);
+  height: var(--control-height);
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .editor-panel-header {
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+  align-items: flex-start;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .editor-pager {
+  order: 3;
+  flex: 1 1 100%;
+  justify-content: center;
+  margin-left: 0;
+}
+
+
+
+

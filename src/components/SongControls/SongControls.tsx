@@ -443,72 +443,74 @@ export function SongControls() {
                     />
                   ) : null}
                   <div className={styles["editor-grid"]}>
-                    <div className={shared["control-section"]}>
-                      <div className={styles["field-label-row"]}>
-                        <span className={styles["field-label"]}>{t("controls.chordRootLabel")}</span>
-                      </div>
-                      <LabeledSelect
-                        label={t("controls.chordRootLabel")}
-                        hideLabel
-                        width="fixed"
-                        widthValue="9rem"
-                        value={activeResolvedProgressionStep?.root ?? rootNote}
-                        groups={chordRootGroups}
-                        onChange={(note) => {
-                          const { inScale, numeral } = classifyRoot(scaleName, rootNote, note, preferFlats);
-                          selectProgressionStepRoot({ id: activeStep.id, root: note, numeral, inScale });
-                        }}
-                        data-testid="chord-root-select"
-                      />
-                    </div>
-                    <div className={shared["control-section"]}>
-                      <div className={styles["field-label-row"]}>
-                        <span className={styles["field-label"]}>{t("controls.quality")}</span>
-                      </div>
-                      <div className={styles["quality-row"]}>
+                    <div className={styles["root-quality-row"]}>
+                      <div className={shared["control-section"]}>
+                        <div className={styles["field-label-row"]}>
+                          <span className={styles["field-label"]}>{t("controls.chordRootLabel")}</span>
+                        </div>
                         <LabeledSelect
-                          label={t("controls.quality")}
+                          label={t("controls.chordRootLabel")}
                           hideLabel
                           width="fixed"
-                          widthValue="7rem"
-                          accentValue={qualityLock}
-                          data-testid="quality-select"
-                          value={
-                            activeStep?.qualityOverride
-                            ?? activeResolvedProgressionStep?.quality
-                            ?? activeResolvedProgressionStep?.diatonicQuality
-                            ?? ""
-                          }
-                          onChange={(quality) =>
-                            updateProgressionStepQuality({
-                              id: activeStep.id,
-                              qualityOverride: quality,
-                            })
-                          }
-                          groups={qualityGroups}
+                          widthValue="9rem"
+                          value={activeResolvedProgressionStep?.root ?? rootNote}
+                          groups={chordRootGroups}
+                          onChange={(note) => {
+                            const { inScale, numeral } = classifyRoot(scaleName, rootNote, note, preferFlats);
+                            selectProgressionStepRoot({ id: activeStep.id, root: note, numeral, inScale });
+                          }}
+                          data-testid="chord-root-select"
                         />
-                        <button
-                          type="button"
-                          className={clsx(
-                            shared["surface--control"],
-                            styles["lock-toggle"],
-                            { [styles["lock-toggle--on"]]: qualityLock },
-                          )}
-                          aria-pressed={qualityLock}
-                          aria-label={t("controls.lockQuality")}
-                          title={t("controls.lockQualityHint")}
-                          onClick={() => setQualityLock(!qualityLock)}
-                          data-testid="quality-lock-toggle"
-                        >
-                          {qualityLock
-                            ? <Lock size={13} aria-hidden="true" />
-                            : <LockOpen size={13} aria-hidden="true" />}
-                          <span className={styles["lock-label"]}>
-                            {qualityLock ? t("controls.lockLocked") : t("controls.lockAdapts")}
-                          </span>
-                        </button>
                       </div>
-                      <p className={styles["lock-hint"]}>{lockHint}</p>
+                      <div className={shared["control-section"]}>
+                        <div className={styles["field-label-row"]}>
+                          <span className={styles["field-label"]}>{t("controls.quality")}</span>
+                        </div>
+                        <div className={styles["quality-row"]}>
+                          <LabeledSelect
+                            label={t("controls.quality")}
+                            hideLabel
+                            width="fixed"
+                            widthValue="7rem"
+                            accentValue={qualityLock}
+                            data-testid="quality-select"
+                            value={
+                              activeStep?.qualityOverride
+                              ?? activeResolvedProgressionStep?.quality
+                              ?? activeResolvedProgressionStep?.diatonicQuality
+                              ?? ""
+                            }
+                            onChange={(quality) =>
+                              updateProgressionStepQuality({
+                                id: activeStep.id,
+                                qualityOverride: quality,
+                              })
+                            }
+                            groups={qualityGroups}
+                          />
+                          <button
+                            type="button"
+                            className={clsx(
+                              shared["surface--control"],
+                              styles["lock-toggle"],
+                              { [styles["lock-toggle--on"]]: qualityLock },
+                            )}
+                            aria-pressed={qualityLock}
+                            aria-label={t("controls.lockQuality")}
+                            title={t("controls.lockQualityHint")}
+                            onClick={() => setQualityLock(!qualityLock)}
+                            data-testid="quality-lock-toggle"
+                          >
+                            {qualityLock
+                              ? <Lock size={13} aria-hidden="true" />
+                              : <LockOpen size={13} aria-hidden="true" />}
+                            <span className={styles["lock-label"]}>
+                              {qualityLock ? t("controls.lockLocked") : t("controls.lockAdapts")}
+                            </span>
+                          </button>
+                        </div>
+                        <p className={styles["lock-hint"]}>{lockHint}</p>
+                      </div>
                     </div>
                     <div className={shared["control-section"]}>
                       <div className={styles["field-label-row"]}>

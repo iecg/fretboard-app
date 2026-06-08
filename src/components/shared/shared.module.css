@@ -577,6 +577,11 @@
 .icon-button--sm :global(.icon) { width: 1rem;    height: 1rem;    }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
+:global(.app-container[data-layout-tier="mobile"]) .icon-button--sm {
+  width: var(--size-touch-target);   /* 2.75rem = 44px */
+  height: var(--size-touch-target);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

@@ -21,4 +21,14 @@ describe("ProgressionTrack.module.css", () => {
       /\.timeline[\s\S]*min-width:\s*max\(100%,\s*var\(--mobile-timeline-min-width/,
     );
   });
+
+  it("removes top border on mobile track", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "ProgressionTrack.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.track\s*\{[^}]*border-top:\s*none/s,
+    );
+  });
 });
