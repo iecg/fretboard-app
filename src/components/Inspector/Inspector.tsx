@@ -1,8 +1,10 @@
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import * as RadixTabs from "@radix-ui/react-tabs";
+import { useAtom } from "jotai";
 import clsx from "clsx";
 import { useTranslation } from "../../hooks/useTranslation";
 import { INSPECTOR_TABS, type InspectorTabId } from "./tabs";
+import { inspectorActiveTabAtom } from "../../store/inspectorAtoms";
 import { ViewTab } from "./ViewTab";
 import { SongControls } from "../SongControls/SongControls";
 import styles from "./Inspector.module.css";
@@ -22,7 +24,7 @@ export interface InspectorProps {
 
 export function Inspector({ placement = "top" }: InspectorProps) {
   const { t } = useTranslation();
-  const [active, setActive] = useState<InspectorTabId>("view");
+  const [active, setActive] = useAtom(inspectorActiveTabAtom);
 
   const tabList = (
     <RadixTabs.List className={styles.tabList} aria-label="Inspector">

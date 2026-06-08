@@ -13,8 +13,14 @@ import {
   progressionMetronomeEnabledAtom,
   previousProgressionStepAtom,
   advanceProgressionPlaybackAtom,
+  progressionTempoBpmAtom,
 } from "../store/progressionAtoms";
+import { inspectorActiveTabAtom } from "../store/inspectorAtoms";
 import { toggleMuteAtom } from "../store/audioAtoms";
+import {
+  MIN_PROGRESSION_TEMPO_BPM,
+  MAX_PROGRESSION_TEMPO_BPM,
+} from "../progressions/progressionDomain";
 
 export function useKeyboardShortcuts() {
   const store = useStore();
@@ -87,6 +93,34 @@ export function useKeyboardShortcuts() {
           if (store.get(progressionPlayingAtom)) return;
           e.preventDefault();
           store.set(advanceProgressionPlaybackAtom);
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          store.set(
+            progressionTempoBpmAtom,
+            Math.min(
+              MAX_PROGRESSION_TEMPO_BPM,
+              store.get(progressionTempoBpmAtom) + 5,
+            ),
+          );
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          store.set(
+            progressionTempoBpmAtom,
+            Math.max(
+              MIN_PROGRESSION_TEMPO_BPM,
+              store.get(progressionTempoBpmAtom) - 5,
+            ),
+          );
+          break;
+        case "t":
+        case "T":
+          e.preventDefault();
+          store.set(
+            inspectorActiveTabAtom,
+            store.get(inspectorActiveTabAtom) === "view" ? "song" : "view",
+          );
           break;
         case "s":
         case "S":

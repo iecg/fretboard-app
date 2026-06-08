@@ -221,7 +221,9 @@ export interface Dictionary {
       track2: string;
       track3: string;
       track4: string;
+      tempo: string;
       steps: string;
+      tab: string;
       scale: string;
       chord: string;
     };
