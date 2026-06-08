@@ -494,6 +494,20 @@
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global(.app-container[data-layout-tier="mobile"]) .track {
   padding: 0.5rem 0.55rem 0.45rem;
+
+  /* Progressions longer than four chords would crush block labels on a phone.
+     Let the track scroll horizontally; the timeline below claims a chord-count
+     driven minimum width so each block stays readable/tappable. The percent-
+     based block & playhead math is unchanged — it's all relative to the
+     timeline's own width, scrolled or not. */
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  padding-inline: 0.5rem;
+}
+
+:global(.app-container[data-layout-tier="mobile"]) .timeline {
+  min-width: max(100%, calc(var(--mobile-min-chord-count, 1) * 5.25rem));
 }
 
 /* stylelint-enable selector-pseudo-class-no-unknown */
