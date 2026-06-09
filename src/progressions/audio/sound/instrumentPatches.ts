@@ -104,6 +104,12 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
       oscillator: { type: "custom", partials: [1, 0.8, 0.45, 0.22, 0.12, 0.05] },
       envelope: { attack: 0.01, decay: 1.1, sustain: 0.05, release: 0.4 },
       noteDurationSec: 1.8, releaseTailSec: 2.35,
+      // Per-voice attenuation: 4-6 simultaneous voices at 0 dBFS sum to ~+14 dBFS
+      // before the channel, overloading the compressor by 22+ dB and making rock
+      // 5-6 dB louder post-compression than poly-patch genres. -18 dB per voice
+      // brings the 6-voice peak to ~-10 dBFS pre-compressor at typical velocity,
+      // matching grand-piano / e-piano poly levels and normalizing perceived loudness.
+      voiceVolumeDb: -18,
     },
     insert: { eq3: { low: 0, mid: 0, high: 2 } },
   },
@@ -187,7 +193,7 @@ export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [
     id: "kit-blues-shuffle", label: "Blues Shuffle",
     voices: {
       kick: { pitchDecay: 0.045, octaves: 6, envelope: { decay: 0.35 } },
-      ride: { decay: 1.1 },
+      ride: { decay: 0.4 },
     },
   },
   {

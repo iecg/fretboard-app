@@ -45,7 +45,14 @@ function createSynthVoice(spec?: StrumSpec): StrumPlayableVoice {
   const envelope = spec?.envelope ?? {
     attack: DEFAULT_ATTACK, decay: DEFAULT_DECAY, sustain: DEFAULT_SUSTAIN, release: DEFAULT_RELEASE,
   };
-  return new Tone.Synth({ oscillator, envelope });
+  // voiceVolumeDb attenuates each individual voice BEFORE the multi-voice sum
+  // reaches the channel. Without this, 4-6 simultaneous strum voices at 0 dBFS
+  // each can sum to +14 dBFS, forcing the compressor into 22+ dB of gain
+  // reduction and leaving the chord channel 5-6 dB louder than poly-patch
+  // genres after compression. A value of -18 dB on a 6-voice strum yields
+  // ~-10 dBFS pre-compressor at typical velocity, matching poly-patch levels.
+  const volume = spec?.voiceVolumeDb ?? 0;
+  return new Tone.Synth({ oscillator, envelope, volume });
 }
 
 type StrumPool = ReturnType<typeof createReusableVoicePool<StrumPlayableVoice>>;

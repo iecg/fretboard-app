@@ -40,10 +40,10 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     perInstrument: {
       chord: { volumeDb: -2, pan: -0.12, reverbSend: 0.18 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.04 },
-      drums: { volumeDb: -1, pan: 0.05, reverbSend: 0.1 },
+      drums: { volumeDb: -1, pan: 0.05, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
-    master: { compressor: { threshold: -18, ratio: 3, attack: 0.01, release: 0.18 }, reverb: { decay: 1.4, wet: 0.16 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
+    master: { compressor: { threshold: -18, ratio: 3, attack: 0.01, release: 0.18 }, reverb: { decay: 1.1, wet: 0.16 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
   },
   {
     genre: "rock",
@@ -57,7 +57,7 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
       // bass already give it the highest sustained energy of any genre. Staging
       // the kit at 0 too made rock the loudest overall — pull it to the pop
       // reference so the ceiling normalization isn't fighting a hot arrangement.
-      drums: { volumeDb: -1, pan: 0.05, reverbSend: 0.08 },
+      drums: { volumeDb: -1, pan: 0.05, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
     master: { compressor: { threshold: -16, ratio: 4, attack: 0.006, release: 0.14 }, reverb: { decay: 1.1, wet: 0.1 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
@@ -68,10 +68,10 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     perInstrument: {
       chord: { volumeDb: -3, pan: -0.15, reverbSend: 0.2 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.05 },
-      drums: { volumeDb: -2, pan: 0.06, reverbSend: 0.14 },
+      drums: { volumeDb: -2, pan: 0.06, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
-    master: { compressor: { threshold: -18, ratio: 3, attack: 0.012, release: 0.2 }, reverb: { decay: 1.6, wet: 0.2 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
+    master: { compressor: { threshold: -18, ratio: 3, attack: 0.012, release: 0.2 }, reverb: { decay: 1.1, wet: 0.2 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
   },
   {
     genre: "jazz",
@@ -81,10 +81,10 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.06 },
       // -3 (was -5): the brush/ride voices are already individually soft, so
       // the extra bus cut buried the whole kit. Sits just under the front line.
-      drums: { volumeDb: -3, pan: 0.1, reverbSend: 0.18 },
+      drums: { volumeDb: -3, pan: 0.1, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
-    master: { compressor: { threshold: -20, ratio: 2.5, attack: 0.015, release: 0.22 }, reverb: { decay: 1.8, wet: 0.22 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
+    master: { compressor: { threshold: -20, ratio: 2.5, attack: 0.015, release: 0.22 }, reverb: { decay: 1.3, wet: 0.22 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
   },
   {
     genre: "ballad",
@@ -92,10 +92,10 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     perInstrument: {
       chord: { volumeDb: -2, pan: -0.1, reverbSend: 0.28 },
       bass: { volumeDb: -1, pan: 0, reverbSend: 0.08 },
-      drums: { volumeDb: -4, pan: 0.04, reverbSend: 0.2 },
+      drums: { volumeDb: -4, pan: 0.04, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
-    master: { compressor: { threshold: -22, ratio: 2, attack: 0.02, release: 0.25 }, reverb: { decay: 2.2, wet: 0.28 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
+    master: { compressor: { threshold: -22, ratio: 2, attack: 0.02, release: 0.25 }, reverb: { decay: 1.3, wet: 0.28 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
   },
   {
     genre: "funk",
@@ -114,10 +114,10 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     perInstrument: {
       chord: { volumeDb: -3, pan: -0.14, reverbSend: 0.18 },
       bass: { volumeDb: -1, pan: 0, reverbSend: 0.05 },
-      drums: { volumeDb: -3, pan: 0.08, reverbSend: 0.14 },
+      drums: { volumeDb: -3, pan: 0.08, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
-    master: { compressor: { threshold: -18, ratio: 3, attack: 0.012, release: 0.2 }, reverb: { decay: 1.5, wet: 0.18 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
+    master: { compressor: { threshold: -18, ratio: 3, attack: 0.012, release: 0.2 }, reverb: { decay: 1.1, wet: 0.18 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
   },
 ];
 
