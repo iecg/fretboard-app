@@ -1,0 +1,35 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm, 0.5rem);
+  padding: var(--space-xs, 0.25rem) var(--space-md, 1rem);
+  background: var(--color-accent-subtle, rgba(134, 59, 255, 0.15));
+  color: var(--color-text-primary, #fff);
+  font-size: var(--font-size-xs, 0.75rem);
+  text-align: center;
+  width: 100%;
+}
+
+.banner-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banner-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--radius-sm, 4px);
+  flex-shrink: 0;
+}
+
+.banner-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

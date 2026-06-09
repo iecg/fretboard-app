@@ -30,6 +30,7 @@ import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrap
 
 import { ShareButton } from "./components/ShareButton/ShareButton";
 import { useShareLinkHandler } from "./hooks/useShareLinkHandler";
+import { SharedLinkBanner } from "./components/SharedLinkBanner/SharedLinkBanner";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -169,6 +170,7 @@ function AppContent() {
         <p className="rotate-overlay-message">{t("common.rotateMessage")}</p>
       </div>
     </div>
+    <SharedLinkBanner />
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
