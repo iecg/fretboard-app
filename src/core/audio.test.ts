@@ -1,212 +1,195 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// jsdom has no real AudioContext, so mock the slice of `tone` we touch.
-// PolySynth/Filter/Volume are exposed as constructor spies whose instances
-// we can inspect after each call.
-const mocks = vi.hoisted(() => {
-  const ensureStartedMock = vi.fn(async () => {});
-
-  // Mirror the toneInit test's getContext stub so we can flip the
-  // AudioContext state from tests and exercise the suspended-vs-unlocked
-  // gate in setMute(false).
-  const contextState = {
-    value: "running" as "suspended" | "running" | "interrupted" | "closed",
-  };
-  const getContextMock = vi.fn(() => ({
-    get state() {
-      return contextState.value;
-    },
-    // `playNote` registers rawContext for idle-suspend and schedules notes
-    // at immediate() (== currentTime, no lookAhead) for zero-latency taps.
-    rawContext: {
-      get state() {
-        return contextState.value;
-      },
-    },
-    immediate: () => 0,
-  }));
-
-  const triggerAttackRelease = vi.fn();
-  const polySynthInstances: any[] = [];
-  // Use `function` (not arrow) so the mock is constructable via `new`.
-  const PolySynth = vi.fn(function PolySynthMock() {
-    const instance = {
-      triggerAttackRelease,
-      // Notes schedule at the synth's own context time (no lookAhead, correct
-      // timeline after Tone.setContext). Mock returns a fixed 0.
-      immediate: vi.fn(() => 0),
-      connect: vi.fn().mockReturnThis(),
-      toDestination: vi.fn().mockReturnThis(),
-      dispose: vi.fn(),
-    };
-    polySynthInstances.push(instance);
-    return instance;
-  });
-
-  const filterInstances: any[] = [];
-  const Filter = vi.fn(function FilterMock() {
-    const instance = {
-      connect: vi.fn().mockReturnThis(),
-      toDestination: vi.fn().mockReturnThis(),
-      dispose: vi.fn(),
-    };
-    filterInstances.push(instance);
-    return instance;
-  });
-
-  const volumeInstances: any[] = [];
-  const Volume = vi.fn(function VolumeMock(initialDb: number) {
-    const volumeParam = {
-      value: initialDb,
-      rampTo: vi.fn(),
-    };
-    const instance = {
-      volume: volumeParam,
-      connect: vi.fn().mockReturnThis(),
-      toDestination: vi.fn().mockReturnThis(),
-      dispose: vi.fn(),
-    };
-    volumeInstances.push(instance);
-    return instance;
-  });
-
-  // Synth is just a class token passed to PolySynth — no behavior needed.
-  const Synth = vi.fn(function SynthMock() {});
-
-  return {
-    ensureStartedMock,
-    PolySynth,
-    Filter,
-    Volume,
-    Synth,
-    polySynthInstances,
-    filterInstances,
-    volumeInstances,
-    triggerAttackRelease,
-    contextState,
-    getContextMock,
-  };
-});
-
-vi.mock("tone", () => ({
-  PolySynth: mocks.PolySynth,
-  Synth: mocks.Synth,
-  Filter: mocks.Filter,
-  Volume: mocks.Volume,
-  getContext: mocks.getContextMock,
+// audio.ts no longer uses Tone — it owns a raw AudioContext. Mock the two side
+// modules so unit tests stay synchronous and timer-free, and install a fake
+// Web Audio API on window (jsdom has none).
+vi.mock("./audioIdleSuspend", () => ({
+  registerAudioContext: vi.fn(),
+  markAudioActivity: vi.fn(),
+}));
+vi.mock("./audioOutputHealth", () => ({
+  probeOutputHealth: vi.fn().mockResolvedValue("healthy"),
 }));
 
-vi.mock("./toneInit", () => ({
-  ensureToneStarted: mocks.ensureStartedMock,
-}));
+class FakeAudioParam {
+  value = 0;
+  setValueAtTime = vi.fn((v: number) => {
+    this.value = v;
+    return this;
+  });
+  linearRampToValueAtTime = vi.fn((v: number) => {
+    this.value = v;
+    return this;
+  });
+  exponentialRampToValueAtTime = vi.fn((v: number) => {
+    this.value = v;
+    return this;
+  });
+  cancelScheduledValues = vi.fn(() => this);
+}
+
+const created: { gains: any[]; filters: any[]; oscillators: any[] } = {
+  gains: [],
+  filters: [],
+  oscillators: [],
+};
+let lastPeriodicWave: { real: Float32Array; imag: Float32Array } | null = null;
+
+class FakeGain {
+  gain = new FakeAudioParam();
+  connect = vi.fn();
+  disconnect = vi.fn();
+}
+class FakeFilter {
+  type = "";
+  frequency = new FakeAudioParam();
+  Q = new FakeAudioParam();
+  connect = vi.fn();
+  disconnect = vi.fn();
+}
+class FakeOscillator {
+  frequency = new FakeAudioParam();
+  setPeriodicWave = vi.fn();
+  connect = vi.fn();
+  disconnect = vi.fn();
+  start = vi.fn();
+  stop = vi.fn();
+  onended: (() => void) | null = null;
+}
+class FakeAudioContext {
+  state: AudioContextState = "running";
+  currentTime = 0;
+  destination = {};
+  resume = vi.fn(async () => {
+    this.state = "running";
+  });
+  createGain = vi.fn(() => {
+    const g = new FakeGain();
+    created.gains.push(g);
+    return g;
+  });
+  createBiquadFilter = vi.fn(() => {
+    const f = new FakeFilter();
+    created.filters.push(f);
+    return f;
+  });
+  createOscillator = vi.fn(() => {
+    const o = new FakeOscillator();
+    created.oscillators.push(o);
+    return o;
+  });
+  createPeriodicWave = vi.fn((real: Float32Array, imag: Float32Array) => {
+    lastPeriodicWave = { real, imag };
+    return { real, imag } as unknown as PeriodicWave;
+  });
+}
+
+let ctorState: AudioContextState = "running";
+let resumeRejects = false;
 
 import { __resetSynthForTests, synth } from "./audio";
 
 beforeEach(() => {
-  mocks.PolySynth.mockClear();
-  mocks.Filter.mockClear();
-  mocks.Volume.mockClear();
-  mocks.triggerAttackRelease.mockClear();
-  mocks.ensureStartedMock.mockClear();
-  mocks.getContextMock.mockClear();
-  mocks.polySynthInstances.length = 0;
-  mocks.filterInstances.length = 0;
-  mocks.volumeInstances.length = 0;
-  // Default to "running" so existing tests that don't care about the
-  // gesture gate keep the previous behavior; the regression test below
-  // flips this to "suspended" explicitly.
-  mocks.contextState.value = "running";
+  created.gains.length = 0;
+  created.filters.length = 0;
+  created.oscillators.length = 0;
+  lastPeriodicWave = null;
+  ctorState = "running";
+  resumeRejects = false;
+
+  (window as any).AudioContext = vi.fn(function FakeCtor() {
+    const ctx = new FakeAudioContext();
+    ctx.state = ctorState;
+    if (resumeRejects) {
+      ctx.resume = vi.fn(async () => {
+        throw new Error("blocked");
+      });
+    }
+    return ctx;
+  });
+  (window as any).webkitAudioContext = undefined;
+
   __resetSynthForTests();
 });
 
-describe("GuitarSynth (Tone-backed)", () => {
+describe("GuitarSynth (raw Web Audio)", () => {
   describe("init", () => {
-    it("constructs a PolySynth, Filter, and Volume on first call", () => {
+    it("builds master gain, lowpass filter, and the partials periodic wave", () => {
       synth.init();
-      expect(mocks.PolySynth).toHaveBeenCalledTimes(1);
-      expect(mocks.Filter).toHaveBeenCalledTimes(1);
-      expect(mocks.Volume).toHaveBeenCalledTimes(1);
+      expect(created.gains.length).toBe(1);
+      expect(created.filters.length).toBe(1);
+      const filter = created.filters[0];
+      expect(filter.type).toBe("lowpass");
+      expect(filter.frequency.value).toBe(10000);
+      expect(filter.Q.value).toBeCloseTo(0.1);
+      expect(lastPeriodicWave).not.toBeNull();
+      expect(Array.from(lastPeriodicWave!.imag)).toEqual([0, 1, 0.8, 0.45, 0.22, 0.12, 0.05]);
+      expect(Array.from(lastPeriodicWave!.real)).toEqual([0, 0, 0, 0, 0, 0, 0]);
     });
 
     it("is idempotent on subsequent calls", () => {
       synth.init();
       synth.init();
       synth.init();
-      expect(mocks.PolySynth).toHaveBeenCalledTimes(1);
-      expect(mocks.Filter).toHaveBeenCalledTimes(1);
-      expect(mocks.Volume).toHaveBeenCalledTimes(1);
+      expect(created.filters.length).toBe(1);
     });
 
-    it("routes PolySynth -> Filter -> Volume -> destination", () => {
+    it("initializes master gain at 0.5 when unmuted", () => {
       synth.init();
-      const polySynth = mocks.polySynthInstances[0];
-      const filter = mocks.filterInstances[0];
-      const volume = mocks.volumeInstances[0];
-
-      // Volume is connected straight to destination.
-      expect(volume.toDestination).toHaveBeenCalledTimes(1);
-      // Filter routes into Volume; PolySynth routes into Filter.
-      expect(filter.connect).toHaveBeenCalledWith(volume);
-      expect(polySynth.connect).toHaveBeenCalledWith(filter);
-    });
-
-    it("locks the PolySynth timbre contract (partials + envelope + polyphony)", () => {
-      synth.init();
-      const opts = (mocks.PolySynth.mock.calls[0] as unknown as [
-        {
-          maxPolyphony: number;
-          options: {
-            oscillator: { type: string; partials: number[] };
-            envelope: { attack: number; decay: number; sustain: number; release: number };
-          };
-        },
-      ])[0];
-      expect(opts.maxPolyphony).toBe(12);
-      expect(opts.options.oscillator.type).toBe("custom");
-      expect(opts.options.oscillator.partials).toEqual([1, 0.8, 0.45, 0.22, 0.12, 0.05]);
-      expect(opts.options.envelope.attack).toBeCloseTo(0.006);
-      expect(opts.options.envelope.decay).toBeCloseTo(0.55);
-      expect(opts.options.envelope.sustain).toBeCloseTo(0.02);
-      expect(opts.options.envelope.release).toBeCloseTo(0.3);
-    });
-
-    it("initializes Volume at the master-gain dB (≈ -6.02 dB for 0.5 gain)", () => {
-      synth.init();
-      const initialDb = (mocks.Volume.mock.calls[0] as unknown as [number])[0];
-      // gainToDb(0.5) === 20 * log10(0.5) ≈ -6.0206
-      expect(initialDb).toBeCloseTo(-6.0206, 2);
+      expect(created.gains[0].gain.value).toBeCloseTo(0.5);
     });
   });
 
   describe("playNote", () => {
-    it("triggers the PolySynth with the requested frequency", async () => {
+    it("creates an oscillator with the periodic wave at the requested frequency", async () => {
       await synth.playNote(440);
-      expect(mocks.triggerAttackRelease).toHaveBeenCalledTimes(1);
-      expect(mocks.triggerAttackRelease.mock.calls[0][0]).toBe(440);
+      expect(created.oscillators.length).toBe(1);
+      const osc = created.oscillators[0];
+      expect(osc.setPeriodicWave).toHaveBeenCalledTimes(1);
+      expect(osc.frequency.setValueAtTime).toHaveBeenCalledWith(440, expect.any(Number));
+      expect(osc.start).toHaveBeenCalledTimes(1);
+      expect(osc.stop).toHaveBeenCalledTimes(1);
     });
 
-    it("schedules the note at the context's immediate() time, not the lookahead-delayed now()", async () => {
-      // Regression guard: triggering with no explicit time uses Tone.now()
-      // (== currentTime + lookAhead, ~100ms), an audible per-tap delay. The
-      // 3rd arg must be the immediate() time (mock returns 0).
+    it("schedules the attack ramp to full amplitude (no lookahead — uses currentTime)", async () => {
       await synth.playNote(440);
-      expect(mocks.triggerAttackRelease.mock.calls[0][2]).toBe(0);
-    });
-
-    it("ensures Tone has started before triggering", async () => {
-      await synth.playNote(220);
-      expect(mocks.ensureStartedMock).toHaveBeenCalled();
+      const env = created.gains[created.gains.length - 1];
+      expect(env.gain.linearRampToValueAtTime).toHaveBeenCalledWith(1, expect.any(Number));
     });
 
     it("auto-initializes if init() was not called first", async () => {
       await synth.playNote(110);
-      expect(mocks.PolySynth).toHaveBeenCalledTimes(1);
-      expect(mocks.triggerAttackRelease).toHaveBeenCalledTimes(1);
+      expect(created.filters.length).toBe(1);
+      expect(created.oscillators.length).toBe(1);
     });
 
-    it("invokes onError when ensureToneStarted rejects", async () => {
-      mocks.ensureStartedMock.mockRejectedValueOnce(new Error("blocked"));
+    it("caps concurrent voices at 12 (skips beyond the cap)", async () => {
+      for (let i = 0; i < 12; i++) await synth.playNote(220);
+      expect(created.oscillators.length).toBe(12);
+      await synth.playNote(220);
+      expect(created.oscillators.length).toBe(12);
+    });
+
+    it("frees a voice when its oscillator ends, allowing new notes", async () => {
+      for (let i = 0; i < 12; i++) await synth.playNote(220);
+      created.oscillators[0].onended?.();
+      await synth.playNote(220);
+      expect(created.oscillators.length).toBe(13);
+    });
+
+    it("resumes its own context before playing when not running", async () => {
+      ctorState = "suspended";
+      synth.init();
+      const ctx = (synth as any).ctx as FakeAudioContext;
+      await synth.playNote(440);
+      expect(ctx.resume).toHaveBeenCalled();
+      expect(created.oscillators.length).toBe(1);
+    });
+
+    it("invokes onError and plays nothing when resume rejects", async () => {
+      ctorState = "suspended";
+      resumeRejects = true;
       const onError = vi.fn();
       synth.onError = onError;
 
@@ -214,129 +197,75 @@ describe("GuitarSynth (Tone-backed)", () => {
 
       expect(onError).toHaveBeenCalledTimes(1);
       expect(onError.mock.calls[0][0]).toMatch(/audio could not be started/i);
-      expect(mocks.triggerAttackRelease).not.toHaveBeenCalled();
-
+      expect(created.oscillators.length).toBe(0);
       synth.onError = undefined;
     });
   });
 
   describe("setMute", () => {
-    it("ramps master volume down on mute", () => {
+    it("ramps master gain to 0 on mute", () => {
       synth.init();
-      const volume = mocks.volumeInstances[0];
-      volume.volume.rampTo.mockClear();
-
+      const master = created.gains[0];
+      master.gain.linearRampToValueAtTime.mockClear();
       synth.setMute(true);
-
-      expect(volume.volume.rampTo).toHaveBeenCalledTimes(1);
-      const [target] = volume.volume.rampTo.mock.calls[0];
-      expect(target).toBe(-Infinity);
+      expect(master.gain.linearRampToValueAtTime).toHaveBeenCalledWith(0, expect.any(Number));
     });
 
-    it("ramps master volume back up on unmute", () => {
+    it("ramps master gain back to 0.5 on unmute", () => {
       synth.init();
-      const volume = mocks.volumeInstances[0];
+      const master = created.gains[0];
       synth.setMute(true);
-      volume.volume.rampTo.mockClear();
-
+      master.gain.linearRampToValueAtTime.mockClear();
       synth.setMute(false);
-
-      expect(volume.volume.rampTo).toHaveBeenCalledTimes(1);
-      const [target] = volume.volume.rampTo.mock.calls[0];
-      // gainToDb(0.5) ≈ -6.0206 dB
-      expect(target).toBeCloseTo(-6.0206, 2);
+      expect(master.gain.linearRampToValueAtTime).toHaveBeenCalledWith(0.5, expect.any(Number));
     });
 
-    it("suppresses subsequent playNote calls while muted", async () => {
+    it("suppresses playNote while muted", async () => {
       synth.init();
       synth.setMute(true);
-      mocks.triggerAttackRelease.mockClear();
-
       await synth.playNote(440);
-
-      expect(mocks.triggerAttackRelease).not.toHaveBeenCalled();
+      expect(created.oscillators.length).toBe(0);
     });
 
-    it("allows playback after unmute", async () => {
+    it("does NOT resume when unmuting before a user gesture (context suspended)", () => {
+      ctorState = "suspended";
       synth.init();
-      synth.setMute(true);
+      const ctx = (synth as any).ctx as FakeAudioContext;
       synth.setMute(false);
-      mocks.triggerAttackRelease.mockClear();
-
-      await synth.playNote(440);
-
-      expect(mocks.triggerAttackRelease).toHaveBeenCalledTimes(1);
-    });
-
-    // Regression: App.tsx runs `synth.setMute(isMuted)` in a mount effect
-    // and `isMutedAtom` defaults to `false`. Before this gate, the unmute
-    // branch unconditionally invoked `resume()` -> `ensureToneStarted()` ->
-    // `Tone.start()`, which rejects on Safari/iOS when no user gesture
-    // has occurred and surfaces the "audio blocked" toast on every fresh
-    // page load. setMute(false) must be a no-op for Tone.start while the
-    // AudioContext is still suspended.
-    it("does NOT call Tone.start when unmuting before a user gesture (context suspended)", () => {
-      mocks.contextState.value = "suspended";
-      synth.init();
-      const volume = mocks.volumeInstances[0];
-      volume.volume.rampTo.mockClear();
-      mocks.ensureStartedMock.mockClear();
-
-      synth.setMute(false);
-
-      expect(mocks.ensureStartedMock).not.toHaveBeenCalled();
-      // The volume ramp still happens — only the gesture-dependent
-      // resume is suppressed.
-      expect(volume.volume.rampTo).toHaveBeenCalledTimes(1);
+      expect(ctx.resume).not.toHaveBeenCalled();
+      expect(created.gains[0].gain.linearRampToValueAtTime).toHaveBeenCalled();
     });
   });
 
   describe("resume", () => {
-    it("delegates to ensureToneStarted", async () => {
+    it("initializes lazily and resumes its own context", async () => {
+      ctorState = "suspended";
       await synth.resume();
-      expect(mocks.ensureStartedMock).toHaveBeenCalled();
+      const ctx = (synth as any).ctx as FakeAudioContext;
+      expect(created.filters.length).toBe(1);
+      expect(ctx.resume).toHaveBeenCalled();
     });
 
-    it("initializes lazily before starting Tone", async () => {
-      await synth.resume();
-      expect(mocks.PolySynth).toHaveBeenCalledTimes(1);
-    });
-
-    it("forwards failures via onError", async () => {
-      mocks.ensureStartedMock.mockRejectedValueOnce(new Error("blocked"));
+    it("forwards a resume failure via onError", async () => {
+      ctorState = "suspended";
+      resumeRejects = true;
       const onError = vi.fn();
       synth.onError = onError;
-
       await synth.resume();
-
       expect(onError).toHaveBeenCalledTimes(1);
       synth.onError = undefined;
     });
   });
 
   describe("graceful degradation", () => {
-    it("marks itself unsupported if Tone construction throws", () => {
-      mocks.PolySynth.mockImplementationOnce(() => {
-        throw new Error("no audio");
-      });
+    it("marks itself unsupported when no AudioContext constructor exists", async () => {
+      (window as any).AudioContext = undefined;
+      (window as any).webkitAudioContext = undefined;
+      __resetSynthForTests();
 
       synth.init();
-
-      // No further init attempts after marking unsupported.
-      synth.init();
-      expect(mocks.PolySynth).toHaveBeenCalledTimes(1);
-    });
-
-    it("playNote becomes a no-op when unsupported", async () => {
-      mocks.PolySynth.mockImplementationOnce(() => {
-        throw new Error("no audio");
-      });
-      synth.init();
-      mocks.ensureStartedMock.mockClear();
-
       await synth.playNote(440);
-
-      expect(mocks.triggerAttackRelease).not.toHaveBeenCalled();
+      expect(created.oscillators.length).toBe(0);
     });
   });
 });
