@@ -261,6 +261,36 @@ Durable principles that outlive any single spec:
 
 ---
 
+## 4. Backing-track variation & humanizer
+
+Shipped in **#562 (backing-track variation)**. Two independent tiers; either can be tuned without touching the other.
+
+### 4.1 Structural variation (macro-phrasing)
+
+`ChordVariation` / `BassVariation` mirror the existing `DrumVariation` model: each specifies a `barInterval` and optional `barPhase`, gated by the shared `variationFiresOnBar` predicate.
+
+**Substitution semantics — drums additive, chords/bass substitutive:**
+- **Drums** — additive: a fill *layers on top* of the base groove (unchanged from pre-variation behavior).
+- **Chords and bass** — substitutive: a firing variation *replaces* the base bar's hits for that bar. When no variation fires, the base plays unchanged. When two substitutive variations target the same `absoluteBar`, catalog order wins (first entry fires). **[spec]**
+
+**Genre coupling via `GenreStyle` authoring.** Sync fills are guaranteed by data, not runtime wiring — a genre bundles chord/bass/drum variations with matching `barInterval` / `barPhase` so they fire on the same bar. Consistent with how `drumVariations` already worked; no cross-instrument coupling primitive was added. **[internal]**
+
+**Density selection — deferred.** Sparse/Normal/Busy tiers and intro/end-of-progression section detection are a separate subsystem with no data model in the catalog. **[internal]**
+
+### 4.2 The safe humanizer
+
+Extends `applyJitter` in `src/progressions/audio/humanize.ts` (Mulberry32-seeded, deterministic). The existing velocity jitter (±10% chord/bass, ±5% drums) and micro-timing jitter (±15ms chord/bass, ±5ms drums) are unchanged. Two additions: **[spec]**
+
+**Groove lock.** Integer beats (`beat % 1 === 0`, meter-agnostic) receive **reduced** timing jitter (~40% of full, ≈6ms when full is 15ms); off-beats receive full jitter. Not zero on integers — zero reads as machine-quantized. Reduced holds the structural pulse while keeping the track alive, and composes with the existing swing offset. Velocity jitter is unaffected by beat position.
+
+**Probabilistic ghost dropping.** A hit may be dropped entirely via a separate `shouldDropHit(velocity, seed)` predicate (not bundled into `applyJitter`'s return type, to keep the drop logic independently testable):
+- Computed from the **authored (pre-jitter) velocity** so a ±10% jitter can never push a borderline ghost across the threshold.
+- Hard threshold: velocity **< 0.4** → flat **~12%** drop chance; velocity **≥ 0.4** → **never** dropped. No interpolation — this skips ghost strokes only, not real notes.
+
+**Exclusions (hard rule).** `metronome` and `chordOnsets` events are **never** dropped or jittered. Metronome events are the click reference; `chordOnsets` drive React state writes and bass lead-in gating. Only `chordStrums`, `bass`, and `drums` are humanized. **[spec]**
+
+---
+
 ## 6. Open questions / deferred
 
 This section preserves forward-looking proposals whose source specs are **drafts that
@@ -371,6 +401,9 @@ This document consolidates the grounding from the following specs, all under
 - `2026-06-03-full-voicing-fallback-design.md` — SHA `759634c3` — the scored close-voicing
   fallback (shipped #524): `scoreCloseVoicing`, per-position best grip, neck-spread for
   position-less patterns, and power chords as 2-note dyads.
+- `2026-06-08-backing-track-variation-design.md` — the variation & humanizer design (shipped
+  #562): structural variation semantics (additive drums / substitutive chord+bass), groove
+  lock, ghost dropping, genre-coupling via `GenreStyle`, and humanizer exclusions (§4).
 
 **Draft (never shipped — content preserved in §6):**
 - `2026-06-03-funk-bossa-voicing-migration-design.md` — SHA `ef93f7c1` — see §6.2.
