@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
 import { getNoteFrequency } from "@fretflow/core";
-import { audioQualityAtom, isMutedAtom } from "../store/audioAtoms";
+import { audioOutputWedgedAtom, audioQualityAtom, isMutedAtom } from "../store/audioAtoms";
 import {
   beatsPerBarAtom,
   progressionBassEnabledAtom,
@@ -38,6 +38,8 @@ import type {
 import type { BuiltLayers } from "../progressions/audio/buildAllLayers";
 import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 import { ensureToneStarted } from "../core/toneInit";
+import { holdAudioActive, isContextSuspended, releaseAudioActive } from "../core/audioIdleSuspend";
+import { probeOutputHealth } from "../core/audioOutputHealth";
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
@@ -147,6 +149,7 @@ export function useProgressionAudioPlayback() {
   const setActiveStepIndex = useSetAtom(setProgressionActiveStepIndexAtom);
   const setPlaying = useSetAtom(setProgressionPlayingAtom);
   const setLoading = useSetAtom(progressionPlaybackLoadingAtom);
+  const setOutputWedged = useSetAtom(audioOutputWedgedAtom);
   const store = useStore();
 
   const primsRef = useRef<PlaybackPrimitives | null>(null);
@@ -325,6 +328,7 @@ export function useProgressionAudioPlayback() {
   useEffect(() => {
     return () => {
       stopVisualClock();
+      releaseAudioActive();
       if (engine) engine.getDraw().cancel?.();
       engine?.disposeAll(primsRef.current);
       primsRef.current = null;
@@ -333,9 +337,29 @@ export function useProgressionAudioPlayback() {
     };
   }, [setLoading]);
 
+  // While the progression is playing, periodically verify audio actually
+  // reaches the hardware. On Safari the context can report "running" while
+  // output is silently dead after idle / a device change (see
+  // core/audioOutputHealth); flag it so the recovery banner shows. Once per
+  // second — cheap, and only while playing.
+  useEffect(() => {
+    if (!playing || blocked || muted) return;
+    let cancelled = false;
+    const id = window.setInterval(() => {
+      void probeOutputHealth().then((health) => {
+        if (!cancelled && health === "wedged") setOutputWedged(true);
+      });
+    }, 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [playing, blocked, muted, setOutputWedged]);
+
   useEffect(() => {
     const tearDownAndStop = () => {
       stopVisualClock();
+      releaseAudioActive();
       engine?.disposeAll(primsRef.current);
       primsRef.current = null;
       if (engine) engine.silenceProgressionBus();
@@ -345,6 +369,7 @@ export function useProgressionAudioPlayback() {
 
     if (blocked || muted) { tearDownAndStop(); return; }
     if (!playing) { tearDownAndStop(); engine?.pauseTimeline(); return; }
+    holdAudioActive();
     startVisualClock(store);
 
     const gen = ++genRef.current;
@@ -378,10 +403,12 @@ export function useProgressionAudioPlayback() {
       engine.getTransport().stop();
     }
 
-    // Defer the loading spinner to prevent rapid UI flashing for fast rebuilds
-    // In test mode, we make it synchronous to satisfy strict test assertions.
+    // Show loading immediately when resuming from idle-suspended AudioContext
+    // (the ctx.resume() + Tone.start() round-trip is perceptible). Otherwise
+    // defer the spinner by 150ms to prevent rapid UI flashing on fast rebuilds.
     let loadingTimer: ReturnType<typeof setTimeout> | undefined;
-    if (import.meta.env.MODE === "test") {
+    const needsResume = isContextSuspended("progression");
+    if (import.meta.env.MODE === "test" || needsResume) {
       setLoading(true);
     } else {
       loadingTimer = setTimeout(() => {

@@ -134,6 +134,7 @@ export interface Dictionary {
     themeToDark: string;
     dismiss: string;
     rotateMessage: string;
+    audioOutputWedged: string;
   };
   help: {
     title: string;

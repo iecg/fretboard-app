@@ -7,10 +7,12 @@ import { HelpCircle, Moon, Settings2, Sun, Volume2, VolumeX } from "lucide-react
 import {
   resumeGuitarAudio,
   setGuitarAudioErrorHandler,
+  setGuitarOutputWedgedHandler,
   setGuitarMutePreference,
   prefetchAudioModule,
 } from "./core/lazyGuitarAudio";
-import { isMutedAtom, toggleMuteAtom, audioErrorAtom } from "./store/audioAtoms";
+import { probeOutputHealth } from "./core/audioOutputHealth";
+import { isMutedAtom, toggleMuteAtom, audioErrorAtom, audioOutputWedgedAtom } from "./store/audioAtoms";
 import { chordTypeAtom } from "./store/chordOverlayAtoms";
 import { settingsOverlayOpenAtom, themeAtom } from "./store/uiAtoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
@@ -54,6 +56,7 @@ function AppContent() {
   const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
   const toggleMute = useSetAtom(toggleMuteAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
+  const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
   const setTheme = useSetAtom(themeAtom);
 
   const [showHelp, setShowHelp] = useState(false);
@@ -77,6 +80,40 @@ function AppContent() {
       setGuitarAudioErrorHandler(undefined);
     };
   }, [setAudioError]);
+
+  // Safari "dead Web Audio output" wedge: a played note can reveal that the
+  // context is running but no sound reaches the speakers (see
+  // core/audioOutputHealth). It survives reload — only a full browser restart
+  // recovers it — so we surface a guidance banner rather than fail silently.
+  useEffect(() => {
+    setGuitarOutputWedgedHandler(() => setAudioOutputWedged(true));
+    return () => {
+      setGuitarOutputWedgedHandler(undefined);
+    };
+  }, [setAudioOutputWedged]);
+
+  // An output-device change (e.g. AirPods handing off phone → Mac) is a prime
+  // trigger for the wedge. Probe after a settle delay; flag it if output is dead.
+  useEffect(() => {
+    const md = navigator.mediaDevices;
+    if (!md?.addEventListener) return;
+    let settleTimer: ReturnType<typeof setTimeout> | undefined;
+    const onDeviceChange = () => {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => {
+        void probeOutputHealth()
+          .then((health) => {
+            if (health === "wedged") setAudioOutputWedged(true);
+          })
+          .catch(() => {});
+      }, 600);
+    };
+    md.addEventListener("devicechange", onDeviceChange);
+    return () => {
+      clearTimeout(settleTimer);
+      md.removeEventListener("devicechange", onDeviceChange);
+    };
+  }, [setAudioOutputWedged]);
 
   useEffect(() => {
     const prefetchAll = () => {
@@ -250,6 +287,19 @@ function AppContent() {
           type="button"
           className={audioErrorStyles.dismiss}
           onClick={() => setAudioError(null)}
+          aria-label={t("common.dismiss")}
+        >
+          {t("common.dismiss")}
+        </button>
+      </div>
+    )}
+    {audioOutputWedged && (
+      <div role="alert" className={audioErrorStyles.banner}>
+        <span className={audioErrorStyles.message}>{t("common.audioOutputWedged")}</span>
+        <button
+          type="button"
+          className={audioErrorStyles.dismiss}
+          onClick={() => setAudioOutputWedged(false)}
           aria-label={t("common.dismiss")}
         >
           {t("common.dismiss")}

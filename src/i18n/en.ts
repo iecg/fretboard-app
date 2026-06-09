@@ -136,6 +136,8 @@ export const en: Dictionary = {
     themeToDark: "Switch to dark theme",
     dismiss: "Dismiss",
     rotateMessage: "Please rotate your device to portrait mode",
+    audioOutputWedged:
+      "Audio output stopped — a Safari issue after the tab idles or the audio device changes. Fully quit and reopen Safari (⌘Q on Mac) to restore sound.",
   },
   help: {
     title: "Help",

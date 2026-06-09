@@ -136,6 +136,8 @@ export const es: Dictionary = {
     themeToDark: "Cambiar a tema oscuro",
     dismiss: "Cerrar",
     rotateMessage: "Por favor, gira tu dispositivo a modo vertical",
+    audioOutputWedged:
+      "El audio se detuvo — un problema de Safari tras dejar la pestaña inactiva o cambiar el dispositivo de audio. Cierra Safari por completo y vuelve a abrirlo (⌘Q en Mac) para restaurar el sonido.",
   },
   help: {
     title: "Ayuda",

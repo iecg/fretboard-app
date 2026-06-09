@@ -1,24 +1,34 @@
 /**
- * GuitarSynth: Tone.js-backed polyphonic synth for guitar-like plucks.
+ * GuitarSynth: a small raw-Web-Audio plucked-string voice on its OWN
+ * AudioContext.
  *
- * Replaces the previous hand-rolled Web Audio implementation. Tone.PolySynth
- * handles voice allocation, while custom partials + envelope + a lowpass
- * Filter approximate the old plucked-string flavor.
+ * The guitar is a fire-and-forget, tap-to-play instrument. It deliberately does
+ * NOT use Tone.js: Tone is a sequencing/transport framework whose single global
+ * context the progression engine rebinds via Tone.setContext(), which would
+ * orphan a Tone-based guitar on a stale context. Owning a private AudioContext
+ * keeps the guitar completely decoupled from the progression — there is no
+ * shared global to fight over.
  *
- * Public API (preserved verbatim from the prior implementation so callers
- * — App.tsx, Fretboard.tsx, useResetConfirmation.ts — keep working):
+ * Signal graph:
+ *   [per-note] OscillatorNode(periodicWave) -> GainNode(ADSR envelope)
+ *                                                 |
+ *   [shared]   ------------------------------------+--> BiquadFilter(lowpass)
+ *                                                        -> GainNode(master) -> destination
+ *
+ * Public API (preserved verbatim so callers — lazyGuitarAudio.ts, App.tsx —
+ * keep working):
  *   - init(): void
  *   - resume(): Promise<void>
  *   - setMute(mute: boolean): void
  *   - playNote(frequency: number): Promise<void>
  *   - onError?: (message: string) => void
+ *   - onOutputWedged?: () => void
  */
-import * as Tone from "tone";
-
-import { ensureToneStarted } from "./toneInit";
+import { markAudioActivity, registerAudioContext } from "./audioIdleSuspend";
+import { probeOutputHealth } from "./audioOutputHealth";
 
 const AUDIO_CONFIG = {
-  /** Master volume in linear gain (matches prior MASTER_GAIN = 0.5). */
+  /** Master volume in linear gain. */
   MASTER_GAIN: 0.5,
 
   /** Quick attack, fast decay for percussive picked-note feel. */
@@ -27,157 +37,228 @@ const AUDIO_CONFIG = {
   SUSTAIN: 0.02,
   RELEASE_TIME: 0.3,
 
-  /** Single-note duration handed to triggerAttackRelease (seconds). */
+  /** Single-note duration before the release stage begins (seconds). */
   NOTE_DURATION: 0.5,
 
-  /** Filter set high enough to be transparent — strum voice has none. */
+  /** Lowpass filter — high enough to stay transparent. */
   FILTER_FREQ: 10000,
   FILTER_Q: 0.1,
 
   /** Glide time when ramping master volume to/from mute (seconds). */
   MUTE_TRANSITION_TIME: 0.02,
 
-  /**
-   * Hard cap on concurrent voices. The prior hand-rolled impl ran a
-   * pool of 8 with up to 4 temp voices only when the pool was exhausted;
-   * PolySynth treats this as a flat ceiling above which it throws.
-   */
+  /** Hard cap on concurrent voices. */
   MAX_POLYPHONY: 12,
 } as const;
+
+/**
+ * Sine-harmonic amplitudes of the plucked-string timbre. Index i is the
+ * (i+1)th harmonic; element 0 of the periodic-wave imag array is the DC term
+ * and stays 0. Matches the prior Tone "custom" oscillator partials exactly.
+ */
+const PARTIALS = [1, 0.8, 0.45, 0.22, 0.12, 0.05] as const;
+
+/** Smallest gain value usable as an exponential-ramp target (0 is illegal). */
+const NEAR_ZERO = 0.0001;
 
 /** Single source of truth for the "audio blocked" toast copy. */
 const AUDIO_BLOCKED_MESSAGE =
   "Audio could not be started. Try tapping the screen or interacting with the page.";
 
-/** Linear gain -> decibels; -Infinity for fully muted. */
-function gainToDb(gain: number): number {
-  if (gain <= 0) return -Infinity;
-  return 20 * Math.log10(gain);
-}
-
-/**
- * True once the underlying AudioContext has advanced past "suspended" —
- * i.e. a real user gesture has unlocked audio. Calling Tone.start() before
- * that point rejects on Safari/iOS (which surfaces an "audio blocked"
- * toast on plain page load), so callers like setMute(false) that fire on
- * mount must defer their resume until this returns true.
- *
- * The dedicated gesture handler in App.tsx still calls resume() directly
- * from a real `click` / `touchstart` and bypasses this gate, so first
- * audio still arrives the moment the user interacts.
- */
-function audioContextUnlocked(): boolean {
-  try {
-    return Tone.getContext().state !== "suspended";
-  } catch {
-    // jsdom / no-AudioContext environments — treat as not unlocked so
-    // we never accidentally fire Tone.start() in tests.
-    return false;
-  }
+function getAudioContextConstructor(): (new () => AudioContext) | undefined {
+  if (typeof window === "undefined") return undefined;
+  const w = window as Window & {
+    AudioContext?: new () => AudioContext;
+    webkitAudioContext?: new () => AudioContext;
+  };
+  return w.AudioContext ?? w.webkitAudioContext;
 }
 
 class GuitarSynth {
-  private polySynth: Tone.PolySynth<Tone.Synth> | null = null;
-  private filter: Tone.Filter | null = null;
-  private volume: Tone.Volume | null = null;
+  private ctx: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
+  private filter: BiquadFilterNode | null = null;
+  private wave: PeriodicWave | null = null;
+  private activeVoices = 0;
   private isMuted = false;
   private unsupported = false;
+  private wedgeProbeInFlight = false;
   onError?: (message: string) => void;
+  /** Called when a played note reveals the Safari dead-output wedge. */
+  onOutputWedged?: () => void;
 
   init(): void {
-    if (this.unsupported || this.polySynth) return;
+    if (this.unsupported || this.ctx) return;
+
+    const Ctor = getAudioContextConstructor();
+    if (!Ctor) {
+      this.unsupported = true;
+      return;
+    }
 
     try {
-      // Master volume node — ramped to mute/unmute.
-      this.volume = new Tone.Volume(gainToDb(AUDIO_CONFIG.MASTER_GAIN)).toDestination();
+      this.ctx = new Ctor();
 
-      // Lowpass filter approximates the prior dynamic filter-sweep color.
-      // A fixed cutoff is a deliberate simplification: the old impl swept
-      // the filter per-note for damping, but PolySynth voices are shared,
-      // so we trade that motion for predictability.
-      this.filter = new Tone.Filter({
-        type: "lowpass",
-        frequency: AUDIO_CONFIG.FILTER_FREQ,
-        Q: AUDIO_CONFIG.FILTER_Q,
-      }).connect(this.volume);
+      // Master volume — ramped to mute/unmute — straight to destination.
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = this.isMuted ? 0 : AUDIO_CONFIG.MASTER_GAIN;
+      this.masterGain.connect(this.ctx.destination);
 
-      // Custom partials match the strum voice for a warmer guitar-like
-      // timbre. Tone's "custom" partials omit the DC (index 0).
-      this.polySynth = new Tone.PolySynth({
-        voice: Tone.Synth,
-        maxPolyphony: AUDIO_CONFIG.MAX_POLYPHONY,
-        options: {
-          oscillator: {
-            type: "custom",
-            partials: [1, 0.8, 0.45, 0.22, 0.12, 0.05],
-          },
-          envelope: {
-            attack: AUDIO_CONFIG.ATTACK_TIME,
-            decay: AUDIO_CONFIG.DECAY_TIME,
-            sustain: AUDIO_CONFIG.SUSTAIN,
-            release: AUDIO_CONFIG.RELEASE_TIME,
-          },
-        },
-      }).connect(this.filter);
+      // Fixed lowpass; a deliberate simplification of the old per-note sweep.
+      this.filter = this.ctx.createBiquadFilter();
+      this.filter.type = "lowpass";
+      this.filter.frequency.value = AUDIO_CONFIG.FILTER_FREQ;
+      this.filter.Q.value = AUDIO_CONFIG.FILTER_Q;
+      this.filter.connect(this.masterGain);
+
+      // Additive partials baked into one PeriodicWave reused by every voice.
+      // Using number[] (not Float32Array) preserves float64 precision so that
+      // the values round-trip exactly through the fake in tests and match the
+      // PARTIALS constants without float32 rounding noise.
+      const imag: number[] = [0, ...PARTIALS];
+      const real: number[] = new Array(imag.length).fill(0);
+      this.wave = this.ctx.createPeriodicWave(real, imag);
+
+      // Track this context for energy idle-suspend (own key; role "guitar").
+      registerAudioContext(this.ctx, "guitar");
     } catch (e) {
       this.unsupported = true;
-      this.polySynth = null;
+      this.ctx = null;
+      this.masterGain = null;
       this.filter = null;
-      this.volume = null;
+      this.wave = null;
       console.warn("GuitarSynth init failed:", e);
     }
   }
 
   async resume(): Promise<void> {
     this.init();
-    if (this.unsupported) return;
+    if (this.unsupported || !this.ctx) return;
     try {
-      await ensureToneStarted();
+      if (this.ctx.state !== "running") await this.ctx.resume();
     } catch (e) {
-      console.warn("Tone.start failed:", e);
+      console.warn("Guitar context resume failed:", e);
       this.onError?.(AUDIO_BLOCKED_MESSAGE);
     }
   }
 
   setMute(mute: boolean): void {
     this.isMuted = mute;
-    if (this.volume) {
-      const targetDb = mute ? -Infinity : gainToDb(AUDIO_CONFIG.MASTER_GAIN);
-      // rampTo gives a click-free transition equivalent to the old
-      // setTargetAtTime smoothing.
-      this.volume.volume.rampTo(targetDb, AUDIO_CONFIG.MUTE_TRANSITION_TIME);
+    if (this.masterGain && this.ctx) {
+      const target = mute ? 0 : AUDIO_CONFIG.MASTER_GAIN;
+      const now = this.ctx.currentTime;
+      // Click-free transition equivalent to the old rampTo smoothing.
+      this.masterGain.gain.cancelScheduledValues(now);
+      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+      this.masterGain.gain.linearRampToValueAtTime(target, now + AUDIO_CONFIG.MUTE_TRANSITION_TIME);
     }
-    // Unmute is *usually* a user gesture, but this effect also fires on
-    // initial mount (isMutedAtom defaults to false). Skip the opportunistic
-    // resume when the AudioContext hasn't been unlocked yet — otherwise
-    // Tone.start() rejects on Safari/iOS without a gesture and fires the
-    // "audio blocked" toast on every fresh page load. App.tsx's dedicated
-    // pointerdown handler still performs the real first-gesture resume.
-    if (!mute && audioContextUnlocked()) {
+    // Unmute is *usually* a user gesture, but this effect also fires on initial
+    // mount (isMutedAtom defaults to false). Skip the opportunistic resume when
+    // the context hasn't been unlocked yet — otherwise resume() runs without a
+    // gesture and Safari/iOS rejects it. App.tsx's pointerdown handler performs
+    // the real first-gesture resume.
+    if (!mute && this.contextUnlocked()) {
       void this.resume();
     }
+  }
+
+  private contextUnlocked(): boolean {
+    return this.ctx != null && this.ctx.state !== "suspended";
   }
 
   async playNote(frequency: number): Promise<void> {
     if (this.isMuted) return;
     this.init();
-    if (this.unsupported || !this.polySynth) return;
+    if (this.unsupported || !this.ctx || !this.masterGain || !this.filter || !this.wave) return;
 
-    try {
-      await ensureToneStarted();
-    } catch (e) {
-      console.warn("Tone.start failed in playNote:", e);
-      this.onError?.(AUDIO_BLOCKED_MESSAGE);
+    // Returning from idle-suspend: resume our OWN context. Active tapping keeps
+    // it running (markAudioActivity reschedules the idle timer), so this only
+    // pays latency on the first tap after a long idle.
+    if (this.ctx.state !== "running") {
+      try {
+        await this.ctx.resume();
+      } catch (e) {
+        console.warn("Guitar context resume failed in playNote:", e);
+        this.onError?.(AUDIO_BLOCKED_MESSAGE);
+        return;
+      }
+    }
+
+    markAudioActivity();
+
+    if (this.activeVoices >= AUDIO_CONFIG.MAX_POLYPHONY) {
+      // Matches the old PolySynth-throws-and-we-swallow behavior.
+      console.warn("GuitarSynth.playNote skipped: max polyphony reached");
       return;
     }
 
     try {
-      this.polySynth.triggerAttackRelease(frequency, AUDIO_CONFIG.NOTE_DURATION);
+      const { ATTACK_TIME, DECAY_TIME, SUSTAIN, RELEASE_TIME, NOTE_DURATION } = AUDIO_CONFIG;
+      // Schedule from currentTime — zero lookahead, so a tap sounds instantly.
+      const t0 = this.ctx.currentTime;
+
+      const osc = this.ctx.createOscillator();
+      osc.setPeriodicWave(this.wave);
+      osc.frequency.setValueAtTime(frequency, t0);
+
+      const env = this.ctx.createGain();
+      // ADSR: attack → decay-to-sustain → release tail. Exponential ramps need
+      // a strictly-positive target, hence NEAR_ZERO.
+      env.gain.setValueAtTime(NEAR_ZERO, t0);
+      env.gain.linearRampToValueAtTime(1, t0 + ATTACK_TIME);
+      env.gain.exponentialRampToValueAtTime(
+        Math.max(SUSTAIN, NEAR_ZERO),
+        t0 + ATTACK_TIME + DECAY_TIME,
+      );
+      const releaseEnd = t0 + NOTE_DURATION + RELEASE_TIME;
+      env.gain.exponentialRampToValueAtTime(NEAR_ZERO, releaseEnd);
+      env.gain.setValueAtTime(0, releaseEnd + 0.001);
+
+      osc.connect(env);
+      env.connect(this.filter);
+
+      const stopAt = releaseEnd + 0.02;
+      osc.start(t0);
+      osc.stop(stopAt);
+
+      this.activeVoices += 1;
+      osc.onended = () => {
+        this.activeVoices = Math.max(0, this.activeVoices - 1);
+        try {
+          osc.disconnect();
+        } catch {
+          /* already disconnected */
+        }
+        try {
+          env.disconnect();
+        } catch {
+          /* already disconnected */
+        }
+      };
+
+      this.checkOutputAfterPlay();
     } catch (e) {
-      // PolySynth throws if maxPolyphony is exceeded; swallow and log
-      // rather than surfacing — same UX as the old "skipping note" warn.
       console.warn("GuitarSynth.playNote failed:", e);
     }
+  }
+
+  /**
+   * After a note is triggered, verify it actually reached the hardware. On
+   * Safari the context can report "running" while output is dead (see
+   * audioOutputHealth). Fire-and-forget, de-duped so rapid taps run one probe.
+   * Probes THIS synth's own context.
+   */
+  private checkOutputAfterPlay(): void {
+    if (this.wedgeProbeInFlight || !this.onOutputWedged || !this.ctx) return;
+    this.wedgeProbeInFlight = true;
+    void probeOutputHealth(this.ctx)
+      .then((health) => {
+        if (health === "wedged") this.onOutputWedged?.();
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.wedgeProbeInFlight = false;
+      });
   }
 }
 
@@ -185,22 +266,29 @@ export const synth = new GuitarSynth();
 
 /**
  * Test-only hook: reset internal state on the singleton so tests can
- * re-exercise init/playNote/setMute paths. Not part of the public runtime
- * API.
+ * re-exercise init/playNote/setMute paths. Not part of the public runtime API.
  */
 export function __resetSynthForTests(): void {
   const s = synth as unknown as {
-    polySynth: unknown;
+    ctx: unknown;
+    masterGain: unknown;
     filter: unknown;
-    volume: unknown;
+    wave: unknown;
+    activeVoices: number;
     isMuted: boolean;
     unsupported: boolean;
+    wedgeProbeInFlight: boolean;
     onError: undefined;
+    onOutputWedged: undefined;
   };
-  s.polySynth = null;
+  s.ctx = null;
+  s.masterGain = null;
   s.filter = null;
-  s.volume = null;
+  s.wave = null;
+  s.activeVoices = 0;
   s.isMuted = false;
   s.unsupported = false;
+  s.wedgeProbeInFlight = false;
   s.onError = undefined;
+  s.onOutputWedged = undefined;
 }
