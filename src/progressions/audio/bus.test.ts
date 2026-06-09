@@ -61,10 +61,8 @@ describe("resumeProgressionAudio – suspension recovery", () => {
   let stateChangeHandler: (() => void) | null;
   let mockCtx: Record<string, unknown>;
 
-  beforeEach(() => {
-    _resetProgressionAudioForTests();
-    stateChangeHandler = null;
-    mockCtx = {
+  function makeMockCtx() {
+    return {
       currentTime: 0,
       sampleRate: 44100,
       state: "running" as AudioContextState,
@@ -75,12 +73,23 @@ describe("resumeProgressionAudio – suspension recovery", () => {
       }),
       destination: {},
       resume: vi.fn(),
+      close: vi.fn(),
       addEventListener: vi.fn((_event: string, handler: () => void) => {
         stateChangeHandler = handler;
       }),
     };
+  }
+
+  beforeEach(() => {
+    _resetProgressionAudioForTests();
+    stateChangeHandler = null;
+    mockCtx = makeMockCtx();
     (window as unknown as { AudioContext: unknown }).AudioContext =
-      vi.fn(function () { return mockCtx; }) as unknown as typeof AudioContext;
+      vi.fn(function () {
+        // Return the latest mockCtx — tests that need a fresh instance
+        // reassign mockCtx before the next ensureProgressionAudio() call.
+        return mockCtx;
+      }) as unknown as typeof AudioContext;
   });
 
   afterEach(() => {
@@ -117,6 +126,31 @@ describe("resumeProgressionAudio – suspension recovery", () => {
     expect(g3).not.toBe(g1);
     expect(g3).not.toBeNull();
   });
+
+  it("replaces the AudioContext after long idle (zombie detection)", () => {
+    const audio1 = ensureProgressionAudio();
+    expect(audio1).not.toBeNull();
+    const ctx1 = audio1!.ctx;
+
+    let fakeNow = performance.now();
+    vi.spyOn(performance, "now").mockImplementation(() => fakeNow);
+
+    // Touch lastAudioActivityMs.
+    ensureProgressionAudio();
+
+    // Advance 61 seconds past the idle threshold.
+    fakeNow += 61_000;
+
+    // Swap in a fresh mock so the rebuilt context is a new object.
+    mockCtx = makeMockCtx();
+
+    const audio2 = ensureProgressionAudio();
+    expect(audio2).not.toBeNull();
+    expect(audio2!.ctx).not.toBe(ctx1);
+
+    vi.mocked(performance.now).mockRestore();
+  });
+
 
   it("reconnects bus → ctx.destination after suspension", async () => {
     const audio = ensureProgressionAudio();

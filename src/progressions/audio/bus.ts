@@ -13,7 +13,7 @@
 
 import { getDraw } from "tone";
 import { buildLayerBuses, type LayerBuses } from "./layerBuses";
-import { _resetToneBusForTests, bindToneToProgressionContext } from "./toneBus";
+import { _resetToneBusForTests, bindToneToProgressionContext, resetToneBusBinding } from "./toneBus";
 import { materializeSignalGraph, type MaterializedGraph, type SignalGraphPlan } from "./sound/buildSignalGraph";
 
 const BUS_GAIN = 0.55;
@@ -34,6 +34,60 @@ let unsupported = false;
  * re-established.
  */
 let needsGraphRebuild = false;
+
+/**
+ * Zombie-context detection: Safari silently disconnects AudioContext audio
+ * output after extended idle — the context reports `state === "running"` and
+ * `currentTime` advances, but no audio reaches the speakers. No
+ * `statechange` event fires. The only remedy is closing the dead context and
+ * creating a fresh one.
+ *
+ * Two independent triggers mark a context as potentially zombie:
+ *
+ * 1. **Background return** — the page was hidden for ≥ 10 s. Safari
+ *    aggressively reclaims resources for background tabs.
+ * 2. **Long idle** — no audio was scheduled for ≥ 60 s while the page
+ *    stayed visible. Safari may still throttle a visible-but-idle tab.
+ */
+let contextMayBeZombie = false;
+let lastAudioActivityMs = 0;
+let pageHiddenAtMs: number | null = null;
+const MIN_HIDDEN_FOR_ZOMBIE_MS = 10_000;
+const IDLE_ZOMBIE_THRESHOLD_MS = 60_000;
+
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      pageHiddenAtMs = performance.now();
+    } else if (document.visibilityState === "visible") {
+      if (pageHiddenAtMs !== null && ctx) {
+        const hiddenDuration = performance.now() - pageHiddenAtMs;
+        if (hiddenDuration > MIN_HIDDEN_FOR_ZOMBIE_MS) {
+          contextMayBeZombie = true;
+        }
+      }
+      pageHiddenAtMs = null;
+    }
+  });
+}
+
+function tearDownForContextReplacement(): void {
+  if (currentGraph) {
+    try { currentGraph.dispose(); } catch { /* already disposed */ }
+    currentGraph = null;
+  }
+  lastPlanKey = null;
+  if (ctx) {
+    try { ctx.close(); } catch { /* already closed */ }
+  }
+  ctx = null;
+  bus = null;
+  layers = null;
+  needsGraphRebuild = false;
+  contextMayBeZombie = false;
+  resetToneBusBinding();
+}
+
 
 function getAudioContextConstructor(): (new () => AudioContext) | undefined {
   const w = window as Window & {
@@ -58,7 +112,22 @@ export interface ProgressionAudio {
  */
 export function ensureProgressionAudio(): ProgressionAudio | null {
   if (unsupported) return null;
-  if (ctx && bus && layers) return { ctx, bus, layers };
+
+  // Zombie-context recovery (see block comment above the flags).
+  if (ctx) {
+    const isZombieFromBackground = contextMayBeZombie;
+    const isZombieFromIdle =
+      lastAudioActivityMs > 0 &&
+      performance.now() - lastAudioActivityMs > IDLE_ZOMBIE_THRESHOLD_MS;
+    if (isZombieFromBackground || isZombieFromIdle) {
+      tearDownForContextReplacement();
+    }
+  }
+
+  if (ctx && bus && layers) {
+    lastAudioActivityMs = performance.now();
+    return { ctx, bus, layers };
+  }
 
   const Ctor = getAudioContextConstructor();
   if (!Ctor) {
@@ -117,6 +186,7 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     // advance loses its under-load safety margin.
   }
 
+  lastAudioActivityMs = performance.now();
   return { ctx, bus, layers };
 }
 
@@ -257,6 +327,9 @@ export function _resetProgressionAudioForTests(): void {
   layers = null;
   unsupported = false;
   needsGraphRebuild = false;
+  contextMayBeZombie = false;
+  lastAudioActivityMs = 0;
+  pageHiddenAtMs = null;
   _resetToneBusForTests();
 }
 
