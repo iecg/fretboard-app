@@ -41,6 +41,9 @@ importers:
       lucide-react:
         specifier: ^1.14.0
         version: 1.14.0(react@19.2.7)
+      lz-string:
+        specifier: ^1.5.0
+        version: 1.5.0
       motion:
         specifier: ^12.40.0
         version: 12.40.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -72,6 +75,9 @@ importers:
       '@types/culori':
         specifier: ^4.0.1
         version: 4.0.1
+      '@types/lz-string':
+        specifier: ^1.5.0
+        version: 1.5.0
       '@types/node':
         specifier: ^25.6.0
         version: 25.9.1
@@ -171,7 +177,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^4.1.7
-        version: 4.1.7(@types/node@25.9.1)(@vitest/coverage-v8@4.1.8(vitest@4.1.7))(jsdom@29.1.1)(vite@8.0.16(@types/node@25.9.1)(jiti@2.6.1))
+        version: 4.1.7(@types/node@25.9.1)(@vitest/coverage-v8@4.1.8(vitest@4.1.7))(jsdom@29.1.1)(vite@8.0.16(@types/node@25.9.1))
 
 packages:
 
@@ -1148,6 +1154,10 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
+  '@types/lz-string@1.5.0':
+    resolution: {integrity: sha512-s84fKOrzqqNCAPljhVyC5TjAo6BH4jKHw9NRNFNiRUY5QSgZCmVm5XILlWbisiKl+0OcS7eWihmKGS5akc2iQw==}
+    deprecated: This is a stub types definition. lz-string provides its own type definitions, so you do not need this installed.
+
   '@types/node@25.9.1':
     resolution: {integrity: sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg==}
 
@@ -2000,10 +2010,6 @@ packages:
   jake@10.9.4:
     resolution: {integrity: sha512-wpHYzhxiVQL+IV05BLE2Xn34zW1S223hvjtqk0+gsPrwd/8JNLXJgZZM/iPFsYc1xyphF+6M6EvdE5E9MBGkDA==}
     engines: {node: '>=10'}
-    hasBin: true
-
-  jiti@2.6.1:
-    resolution: {integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==}
     hasBin: true
 
   jotai@2.20.0:
@@ -3879,6 +3885,10 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
+  '@types/lz-string@1.5.0':
+    dependencies:
+      lz-string: 1.5.0
+
   '@types/node@25.9.1':
     dependencies:
       undici-types: 7.24.6
@@ -4020,13 +4030,13 @@ snapshots:
     optionalDependencies:
       vite: 8.0.14(@types/node@25.9.1)
 
-  '@vitest/mocker@4.1.7(vite@8.0.16(@types/node@25.9.1)(jiti@2.6.1))':
+  '@vitest/mocker@4.1.7(vite@8.0.16(@types/node@25.9.1))':
     dependencies:
       '@vitest/spy': 4.1.7
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.0.16(@types/node@25.9.1)(jiti@2.6.1)
+      vite: 8.0.16(@types/node@25.9.1)
 
   '@vitest/pretty-format@4.1.7':
     dependencies:
@@ -4867,9 +4877,6 @@ snapshots:
       filelist: 1.0.6
       picocolors: 1.1.1
 
-  jiti@2.6.1:
-    optional: true
-
   jotai@2.20.0(@babel/core@7.29.0)(@babel/template@7.28.6)(@types/react@19.2.16)(react@19.2.7):
     optionalDependencies:
       '@babel/core': 7.29.0
@@ -5599,7 +5606,7 @@ snapshots:
       '@types/node': 25.9.1
       fsevents: 2.3.3
 
-  vite@8.0.16(@types/node@25.9.1)(jiti@2.6.1):
+  vite@8.0.16(@types/node@25.9.1):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -5609,7 +5616,6 @@ snapshots:
     optionalDependencies:
       '@types/node': 25.9.1
       fsevents: 2.3.3
-      jiti: 2.6.1
 
   vitest-axe@0.1.0(vitest@4.1.7):
     dependencies:
@@ -5621,10 +5627,10 @@ snapshots:
       redent: 3.0.0
       vitest: 4.1.7(@types/node@25.9.1)(@vitest/coverage-v8@4.1.8)(jsdom@29.1.1)(vite@8.0.14(@types/node@25.9.1))
 
-  vitest@4.1.7(@types/node@25.9.1)(@vitest/coverage-v8@4.1.8(vitest@4.1.7))(jsdom@29.1.1)(vite@8.0.16(@types/node@25.9.1)(jiti@2.6.1)):
+  vitest@4.1.7(@types/node@25.9.1)(@vitest/coverage-v8@4.1.8(vitest@4.1.7))(jsdom@29.1.1)(vite@8.0.16(@types/node@25.9.1)):
     dependencies:
       '@vitest/expect': 4.1.7
-      '@vitest/mocker': 4.1.7(vite@8.0.16(@types/node@25.9.1)(jiti@2.6.1))
+      '@vitest/mocker': 4.1.7(vite@8.0.16(@types/node@25.9.1))
       '@vitest/pretty-format': 4.1.7
       '@vitest/runner': 4.1.7
       '@vitest/snapshot': 4.1.7
@@ -5641,7 +5647,7 @@ snapshots:
       tinyexec: 1.1.2
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
-      vite: 8.0.16(@types/node@25.9.1)(jiti@2.6.1)
+      vite: 8.0.16(@types/node@25.9.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 25.9.1

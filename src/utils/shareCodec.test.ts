@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { encodeShareState, decodeShareState, type ShareState } from "./shareCodec";
+import { encodeShareState, decodeShareState, encodeShareUrl, decodeShareUrl, type ShareState } from "./shareCodec";
 
 describe("encodeShareState", () => {
   it("encodes a basic major progression", () => {
@@ -155,6 +155,59 @@ describe("roundtrip", () => {
     };
     const encoded = encodeShareState(state);
     const decoded = decodeShareState(encoded);
+    expect(decoded).toEqual(state);
+  });
+});
+
+describe("compression fallback", () => {
+  it("uses 's' param for short state", () => {
+    const state: ShareState = {
+      root: "C",
+      scale: "major",
+      tempo: 120,
+      timeSignature: { numerator: 4, denominator: 4 },
+      steps: [
+        { degree: "I", qualityOverride: null, duration: { value: 1, unit: "bar" } },
+      ],
+    };
+    const url = encodeShareUrl(state, "https://example.com/app/");
+    expect(url).toContain("?s=");
+    expect(url).not.toContain("?z=");
+  });
+
+  it("falls back to 'z' param for very long state", () => {
+    const longSteps = Array.from({ length: 200 }, (_, i) => ({
+      degree: i % 2 === 0 ? "I" : "IV",
+      qualityOverride: "mMaj7",
+      duration: { value: 4, unit: "bar" as const },
+    }));
+    const state: ShareState = {
+      root: "C",
+      scale: "major",
+      tempo: 120,
+      timeSignature: { numerator: 4, denominator: 4 },
+      steps: longSteps,
+    };
+    const url = encodeShareUrl(state, "https://example.com/app/");
+    expect(url).toContain("?z=");
+  });
+
+  it("roundtrips through compression", () => {
+    const longSteps = Array.from({ length: 200 }, (_, i) => ({
+      degree: i % 2 === 0 ? "I" : "IV",
+      qualityOverride: "mMaj7",
+      duration: { value: 4, unit: "bar" as const },
+    }));
+    const state: ShareState = {
+      root: "C",
+      scale: "major",
+      tempo: 120,
+      timeSignature: { numerator: 4, denominator: 4 },
+      steps: longSteps,
+    };
+    const url = encodeShareUrl(state, "https://example.com/app/");
+    const params = new URL(url).searchParams;
+    const decoded = decodeShareUrl(params);
     expect(decoded).toEqual(state);
   });
 });

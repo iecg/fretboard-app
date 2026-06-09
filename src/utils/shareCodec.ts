@@ -1,3 +1,5 @@
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
+
 export interface ShareState {
   root: string;
   scale: string;
@@ -101,4 +103,39 @@ export function encodeShareState(state: ShareState): string {
   const ts = `${state.timeSignature.numerator}x${state.timeSignature.denominator}`;
   const chords = state.steps.map(encodeStep).join("-");
   return `${root}.${scale}.${state.tempo}.${ts}.${chords}`;
+}
+
+const MAX_S_PARAM_LENGTH = 1500;
+
+export function encodeShareUrl(state: ShareState, baseUrl: string): string {
+  const encoded = encodeShareState(state);
+  const url = new URL(baseUrl);
+  if (encoded.length <= MAX_S_PARAM_LENGTH) {
+    url.searchParams.set("s", encoded);
+  } else {
+    const json = JSON.stringify(state);
+    url.searchParams.set("z", compressToEncodedURIComponent(json));
+  }
+  return url.toString();
+}
+
+export function decodeShareUrl(params: URLSearchParams): ShareState | null {
+  const s = params.get("s");
+  if (s) return decodeShareState(s);
+
+  const z = params.get("z");
+  if (z) {
+    try {
+      const json = decompressFromEncodedURIComponent(z);
+      if (!json) return null;
+      const parsed = JSON.parse(json) as ShareState;
+      // Validate structure minimally
+      if (!parsed.root || !parsed.scale || !parsed.steps?.length) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  return null;
 }
