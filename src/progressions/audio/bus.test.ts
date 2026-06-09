@@ -151,6 +151,7 @@ describe("resumeProgressionAudio – suspension recovery", () => {
     vi.mocked(performance.now).mockRestore();
   });
 
+
   it("reconnects bus → ctx.destination after suspension", async () => {
     const audio = ensureProgressionAudio();
     expect(audio).not.toBeNull();

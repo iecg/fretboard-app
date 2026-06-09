@@ -166,7 +166,19 @@ this document is the theory home only and does not decide the rendering.
 
 ---
 
-## 5. Annotated citation index (theory & pedagogy)
+## 5. Blues scale defaults
+
+Blues progression presets load **minor blues** as the fretboard overlay scale, not major or natural minor. Shipped in **#560 (blues preset scale default)**.
+
+**Rationale.** The overlay scale is what a player solos with. The minor blues scale ("blues box") is the idiomatic soloing scale over a dominant 12-bar blues. The ♭3 and ♭5 (the "blues note") are what make a blues solo sound like a blues solo; reaching for the major scale over a dominant 12-bar reads as harmonically defensible but pedagogically wrong for a beginner — the characteristic blues tensions are simply absent. **[spec]/[convention]**
+
+**Chord resolution is unaffected.** `getHarmonyParentScale` in `packages/core/src/keyHarmony.ts` maps `"minor blues"` → `"minor"`, so chord resolution routes through the minor parent regardless of which overlay is displayed. Blues scales are coloring overlays over their parent scale, not independent harmonic frames. This pattern is consistent across all modal overlays (Dorian → minor, Lydian → major, etc.). **[internal]**
+
+**Root stability for dominant presets.** The 12-bar and 8-bar specs use `I/IV/V` degrees with explicit `:7` quality overrides. Switching the parent from `major` to `minor` does not move the roots: in C, both parents yield `I = C` (ord 0), `IV = F` (ord 3), `V = G` (ord 4). The `:7` overrides force dominant quality, so `C7 / F7 / G7` are unchanged and no step becomes unavailable. **[spec]**
+
+---
+
+## 6. Annotated citation index (theory & pedagogy)
 
 **Guide-tone lines & voice leading**
 - **Levine, *The Jazz Theory Book* (Sher Music, 1995); Jerry Coker; Jeff Larsen.**
@@ -210,7 +222,7 @@ this document is the theory home only and does not decide the rendering.
 
 ---
 
-## 6. Open questions / deferred
+## 7. Open questions / deferred
 
 None currently — theory-side deferred items, if any, will land here. (The
 consolidation spot-check found no un-shipped theory ideas; the deferred *rendering*
@@ -220,7 +232,7 @@ by the extended-chord work, not an open theory question.)
 
 ---
 
-## 7. Provenance
+## 8. Provenance
 
 This document consolidates the theory/pedagogy grounding from the following sources.
 Specs are ephemeral (deleted once shipped); SHAs let them be re-read from history
@@ -233,6 +245,10 @@ with `git show <sha>:<path>`.
 - `docs/superpowers/specs/2026-06-07-improvisation-lenses-design.md` — SHA
   `5566bde9`. The Root / Guide / Common lens ladder and its pedagogy citations (§3),
   shipped in #550.
+
+- `docs/superpowers/specs/2026-06-08-blues-preset-scale-default-design.md` — blues overlay
+  rationale, `getHarmonyParentScale` mapping, root-stability analysis for dominant presets
+  (§5). Shipped in #560.
 
 **Relocated grounding:**
 - The guide-tone-line and modal-characteristic-tone theory (§2, §4) is **relocated
