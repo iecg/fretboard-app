@@ -1,5 +1,7 @@
-/* --surface-shell is defined in src/styles/semantic.css as var(--bg-color),
-   which is #121212 — the deepest app-level surface in the surface ladder. */
+/* No background here — the app gradient is painted on body (see
+   src/styles/index.css); the shell stays transparent so it shows through,
+   exactly like .app-container in src/styles/App.css. Do not re-add a
+   background: it would cover the gradient with a flat surface color. */
 /* Safe-area insets are NOT applied here — #root (src/styles/index.css) already
    pads all four env(safe-area-inset-*) values; re-applying them would
    double-stack on notched devices. The bottom inset belongs to the sheet. */
@@ -9,7 +11,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--surface-shell);
 }
 
 .header,
@@ -20,9 +21,14 @@
 .stage {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* Match .app-container's mobile horizontal padding (src/styles/App.css) so
+     the fretboard measures the same available width it had under
+     MainLayoutWrapper and its right edge stays inside the viewport. */
+  padding-inline: 0.65rem;
   /* Reserve room for the sheet's peek height so the fretboard is never covered. */
   padding-bottom: var(--mobile-sheet-peek, 96px);
 }
