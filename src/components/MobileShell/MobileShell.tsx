@@ -1,4 +1,5 @@
 import { type ReactNode } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./MobileShell.module.css";
 
 interface MobileShellProps {
@@ -26,6 +27,7 @@ export function MobileShell({
   layoutTier,
   layoutVariant,
 }: MobileShellProps) {
+  const { t } = useTranslation();
   return (
     <div
       className={styles.shell}
@@ -35,7 +37,11 @@ export function MobileShell({
     >
       <div className={styles.header}>{header}</div>
       <div className={styles.track}>{track}</div>
-      <main className={styles.stage} data-testid="mobile-stage">
+      <main
+        aria-label={t("mobileShell.stageLabel")}
+        className={styles.stage}
+        data-testid="mobile-stage"
+      >
         {children}
       </main>
       {sheet}

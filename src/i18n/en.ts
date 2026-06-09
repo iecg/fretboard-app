@@ -341,4 +341,7 @@ export const en: Dictionary = {
     chordUnavailable: "Unavailable",
     playingChord: "Playing",
   },
+  mobileShell: {
+    stageLabel: "Fretboard stage",
+  },
 };

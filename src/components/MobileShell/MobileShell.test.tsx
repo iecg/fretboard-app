@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import { MobileShell } from "./MobileShell";
 
 describe("MobileShell", () => {
   it("renders header, track, fretboard stage, and sheet regions", () => {
-    render(
+    renderWithAtoms(
       <MobileShell
         layoutTier="mobile"
         layoutVariant="mobile"
@@ -22,5 +23,8 @@ describe("MobileShell", () => {
     const shell = screen.getByTestId("mobile-shell");
     expect(shell).toHaveAttribute("data-layout-tier", "mobile");
     expect(shell).toHaveAttribute("data-layout-variant", "mobile");
+    expect(
+      screen.getByRole("main", { name: "Fretboard stage" }),
+    ).toBeInTheDocument();
   });
 });

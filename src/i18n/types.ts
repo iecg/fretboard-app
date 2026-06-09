@@ -310,6 +310,9 @@ export interface Dictionary {
     chordUnavailable: string;
     playingChord: string;
   };
+  mobileShell: {
+    stageLabel: string;
+  };
 }
 
 export type SupportedLanguage = "en" | "es";

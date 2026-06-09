@@ -341,4 +341,7 @@ export const es: Dictionary = {
     chordUnavailable: "No disponible",
     playingChord: "Reproduciendo",
   },
+  mobileShell: {
+    stageLabel: "Escenario del diapasón",
+  },
 };
