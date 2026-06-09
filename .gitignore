@@ -37,7 +37,8 @@ src/__snapshots__/
 
 # === Project Tools ===
 .vbw-planning/
-.claude/
+.claude/*
+!.claude/skills/
 .vbw-planning
 .gemini/
 .superpowers/
