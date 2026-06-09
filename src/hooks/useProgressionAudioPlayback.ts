@@ -393,7 +393,18 @@ export function useProgressionAudioPlayback() {
       if (gen !== genRef.current) return;
       const audio = eng.ensureProgressionAudio();
       if (!audio) { tearDownAndStop(); return; }
-      eng.resumeProgressionAudio();
+      await eng.resumeProgressionAudio();
+      if (gen !== genRef.current) return;
+      // Safari can fail to resume AudioContext after extended idle.
+      // Bail before scheduling audio on a suspended context (no sound,
+      // but the visual clock would still advance — causing a fast,
+      // silent playhead).
+      if (audio.ctx.state !== "running") {
+        clearTimeout(loadingTimer);
+        tearDownAndStop();
+        setPlaying(false);
+        return;
+      }
       eng.restoreProgressionBus();
       eng.setLayerGain(audio.layers, "chord", store.get(progressionChordEnabledAtom));
       eng.setLayerGain(audio.layers, "bass", store.get(progressionBassEnabledAtom));

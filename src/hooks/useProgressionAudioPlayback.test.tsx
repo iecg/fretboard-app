@@ -13,6 +13,7 @@ import {
   progressionLoopEnabledAtom,
   progressionMetronomeEnabledAtom,
   progressionPlaybackLoadingAtom,
+  progressionPlayingAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
   setProgressionPlayingAtom,
@@ -702,6 +703,54 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     renderWithStore(<Harness />, store);
     expect(toneMocks.parts).toHaveLength(0);
     expect(toneMocks.loops).toHaveLength(0);
+  });
+
+  it("tears down and resets playing when AudioContext stays suspended after resume (Safari idle)", async () => {
+    _resetProgressionAudioForTests();
+    const resumeMock = vi.fn().mockResolvedValue(undefined);
+    const suspendedContext = {
+      currentTime: 0,
+      sampleRate: 44100,
+      state: "suspended" as AudioContextState,
+      createGain: () => ({
+        gain: {
+          value: 1,
+          cancelScheduledValues: vi.fn(),
+          setValueAtTime: vi.fn(),
+          linearRampToValueAtTime: vi.fn(),
+          exponentialRampToValueAtTime: vi.fn(),
+          setTargetAtTime: vi.fn(),
+        },
+        connect: vi.fn().mockReturnThis(),
+        disconnect: vi.fn(),
+      }),
+      destination: {} as AudioDestinationNode,
+      resume: resumeMock,
+    };
+    (window as unknown as { AudioContext: unknown }).AudioContext =
+      vi.fn(function () {
+        return suspendedContext;
+      }) as unknown as typeof AudioContext;
+
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+
+    await vi.waitFor(() => {
+      expect(resumeMock).toHaveBeenCalled();
+    });
+
+    // No parts — playback tore down before scheduling.
+    expect(toneMocks.parts).toHaveLength(0);
+    expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
+    // Playing reset to false so the UI reflects the failed start.
+    expect(store.get(progressionPlayingAtom)).toBe(false);
   });
 
   describe("error handling", () => {

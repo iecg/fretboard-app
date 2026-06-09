@@ -43,6 +43,18 @@ describe("ensureToneStarted", () => {
     expect(mocks.startMock).toHaveBeenCalledTimes(1);
   });
 
+  it("re-invokes Tone.start() when the context has been re-suspended after initial start (Safari idle)", async () => {
+    await ensureToneStarted();
+    expect(mocks.startMock).toHaveBeenCalledTimes(1);
+
+    // Simulate Safari re-suspending the context after extended idle.
+    mocks.state.contextState = "suspended";
+
+    await ensureToneStarted();
+    expect(mocks.startMock).toHaveBeenCalledTimes(2);
+    expect(Tone.getContext().state).toBe("running");
+  });
+
   it("does not re-invoke Tone.start() once initialization has settled", async () => {
     await Promise.all([ensureToneStarted(), ensureToneStarted()]);
     // Concurrent callers may both miss the gate on their first turn, so

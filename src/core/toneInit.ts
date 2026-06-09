@@ -11,7 +11,15 @@ let started = false;
  * invoked across the app lifecycle.
  */
 export async function ensureToneStarted(): Promise<void> {
-  if (started) return;
+  if (started) {
+    // Safari re-suspends AudioContext after extended idle. Detect and
+    // re-call Tone.start() on the next user gesture so audio resumes.
+    try {
+      if (Tone.getContext().state === "running") return;
+    } catch {
+      // Context unavailable; fall through to Tone.start().
+    }
+  }
   await Tone.start();
   started = true;
 }
