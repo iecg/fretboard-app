@@ -65,7 +65,12 @@ export interface MonoSynthVoiceSpec {
 
 /** Params for the strum voice. The source is subtractive (`oscillator` +
  *  `envelope`) or a mono-synth single-coil (`mono`);
- *  `strumLagSec` overrides the per-note strum stagger. */
+ *  `strumLagSec` overrides the per-note strum stagger.
+ *  `voiceVolumeDb` sets per-voice gain (dB) on the Tone.Synth before summing.
+ *  Required for strum patches that sum 4-6 polyphonic voices: without it the
+ *  coherent sum can reach +14 dBFS before the channel, overloading the
+ *  compressor. Omit for mono-synth strum (the `mono` path) which is inherently
+ *  single-voiced. */
 export interface StrumSpec {
   oscillator?: { type: "custom"; partials: number[] };
   envelope?: EnvelopeSpec;
@@ -73,6 +78,7 @@ export interface StrumSpec {
   noteDurationSec: number;
   releaseTailSec: number;
   strumLagSec?: number;
+  voiceVolumeDb?: number;
 }
 
 export interface ChordPatch {
