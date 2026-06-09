@@ -94,8 +94,16 @@ export function Fretboard(props: FretboardProps) {
   const highlightNotes = props.highlightNotes ?? state.highlightNotes;
   const rootNote = props.rootNote ?? state.rootNote;
   const displayFormat = props.displayFormat ?? state.displayFormat;
-  const chordTones = props.chordTones ?? state.chordTones;
-  const chordRoot = props.chordRoot ?? state.chordRoot;
+  // Chord-identity fields read from the UN-deferred `baseState` so they update
+  // in lockstep with the emphasis context (which subscribes to atoms directly,
+  // without a useDeferredValue wrapper). Reading these from the deferred `state`
+  // produced a 1-2 frame gap at chord boundaries where the chord-tone
+  // classification (deferred) still reflected chord A while the emphasis cues
+  // (urgent) already targeted chord B — visible as old chord-tone notes
+  // lingering "highlighted" for ~150-300ms after the boundary (combined with
+  // the 0.15s CSS fill transition).
+  const chordTones = props.chordTones ?? baseState.chordTones;
+  const chordRoot = props.chordRoot ?? baseState.chordRoot;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
   const chordBoxBounds = props.chordBoxBounds !== undefined ? props.chordBoxBounds : state.chordBoxBounds;
   const autoCenterTarget = props.autoCenterTarget ?? viewport.autoCenterTarget;
@@ -109,7 +117,9 @@ export function Fretboard(props: FretboardProps) {
   const activePattern = props.activePattern ?? state.activePattern;
   const activeShape = props.activeShape ?? state.activeShape;
   const shapeScope = props.shapeScope ?? state.shapeScope;
-  const noteSemantics = state.noteSemanticMap.size > 0 ? state.noteSemanticMap : undefined;
+  // Chord-identity (see chordTones/chordRoot above): use baseState so semantic
+  // classification flips on the same render as the emphasis context.
+  const noteSemantics = baseState.noteSemanticMap.size > 0 ? baseState.noteSemanticMap : undefined;
   const startFret = viewport.startFret;
   const endFret = viewport.endFret;
   const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
@@ -118,21 +128,23 @@ export function Fretboard(props: FretboardProps) {
 
   const fretboardLayout = getCachedFretboardLayout(tuning, Math.max(endFret, maxFret));
 
-  // `state.fullChordPositions` is already a Set<string> sourced from
+  // `baseState.fullChordPositions` is already a Set<string> sourced from
   // chordHighlightPositionsAtom — pass it through directly. The note-highlight
   // set is the union of ALL fitting voicing candidates' positions, decoupled
-  // from `state.fullChordMatches` (the connector source).
-  const fullChordPositionKeys = state.fullChordPositions;
+  // from `baseState.fullChordMatches` (the connector source). Both are read
+  // from `baseState` (chord-identity) so they update in sync with the chord
+  // tones above and the emphasis context (see comment on `chordTones`).
+  const fullChordPositionKeys = baseState.fullChordPositions;
 
   const fullChordVoicings = useMemo(
     () =>
-      state.fullChordMatches.map((match) => ({
+      baseState.fullChordMatches.map((match) => ({
         shape: match.shape,
         voicingKey: match.positionKeys.map((key) => key.replace("-", ",")).join("|"),
         notes: match.notes,
         isFallback: match.isFallback,
       })),
-    [state.fullChordMatches],
+    [baseState.fullChordMatches],
   );
 
   const [containerWidth, setContainerWidth] = useState<number>(() => {
