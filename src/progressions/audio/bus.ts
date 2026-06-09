@@ -25,6 +25,16 @@ let bus: GainNode | null = null;
 let layers: LayerBuses | null = null;
 let unsupported = false;
 
+/**
+ * Set when Safari (or any browser) suspends the AudioContext after extended
+ * idle. The next `resumeProgressionAudio()` call uses this to force a fresh
+ * signal-graph rebuild — cached Tone.js nodes (Channel, Compressor, Limiter,
+ * Reverb) may be non-functional after a long suspension even though the
+ * context reports "running". The bus→destination native connection is also
+ * re-established.
+ */
+let needsGraphRebuild = false;
+
 function getAudioContextConstructor(): (new () => AudioContext) | undefined {
   const w = window as Window & {
     AudioContext?: new () => AudioContext;
@@ -58,6 +68,15 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
 
   try {
     ctx = new Ctor();
+
+    // Track when Safari (or any browser) re-suspends the context after idle.
+    // The flag tells resumeProgressionAudio() to rebuild stale Tone.js nodes.
+    ctx.addEventListener("statechange", () => {
+      if (ctx?.state === "suspended" || ctx?.state === "interrupted") {
+        needsGraphRebuild = true;
+      }
+    });
+
     bus = ctx.createGain();
     bus.gain.value = BUS_GAIN;
     bus.connect(ctx.destination);
@@ -111,6 +130,25 @@ export async function resumeProgressionAudio(): Promise<void> {
     } catch {
       // best-effort
     }
+  }
+
+  // Post-suspension recovery: after Safari re-suspends the AudioContext during
+  // extended idle, ctx.resume() restores state to "running" but the cached
+  // Tone.js signal-graph nodes (Channel, Compressor, Limiter, Reverb) may be
+  // non-functional, and the bus→destination native connection may be broken.
+  // Dispose the stale graph and reconnect the bus so the next
+  // configureProgressionGraph() call builds fresh nodes.
+  if (needsGraphRebuild) {
+    if (currentGraph) {
+      currentGraph.dispose();
+      // dispose() already sets currentGraph = null and lastPlanKey = null
+      // when the disposed graph matches currentGraph.
+    }
+    // Re-establish the bus→destination link (Safari may drop native
+    // AudioNode connections during very long suspension).
+    try { audio.bus.disconnect(); } catch { /* not connected */ }
+    audio.bus.connect(audio.ctx.destination);
+    needsGraphRebuild = false;
   }
 }
 
@@ -218,6 +256,7 @@ export function _resetProgressionAudioForTests(): void {
   bus = null;
   layers = null;
   unsupported = false;
+  needsGraphRebuild = false;
   _resetToneBusForTests();
 }
 

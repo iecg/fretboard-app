@@ -27,6 +27,7 @@ describe("ProgressionPositionReadout", () => {
         connect: vi.fn(),
       }),
       destination: {},
+      addEventListener: vi.fn(),
     };
 
     (window as unknown as { AudioContext: unknown }).AudioContext =
@@ -77,6 +78,7 @@ describe("ProgressionPositionReadout", () => {
         connect: vi.fn(),
       }),
       destination: {},
+      addEventListener: vi.fn(),
     };
 
     (window as unknown as { AudioContext: unknown }).AudioContext =
@@ -143,6 +145,7 @@ describe("ProgressionPositionReadout", () => {
         connect: vi.fn(),
       }),
       destination: {},
+      addEventListener: vi.fn(),
     };
 
     (window as unknown as { AudioContext: unknown }).AudioContext =
@@ -205,6 +208,7 @@ describe("ProgressionPositionReadout", () => {
         connect: vi.fn(),
       }),
       destination: {},
+      addEventListener: vi.fn(),
     };
 
     (window as unknown as { AudioContext: unknown }).AudioContext =

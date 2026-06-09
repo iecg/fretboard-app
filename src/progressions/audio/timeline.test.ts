@@ -38,6 +38,7 @@ beforeEach(() => {
     }),
     destination: {} as AudioDestinationNode,
     resume: vi.fn(),
+    addEventListener: vi.fn(),
   };
 
   (window as unknown as { AudioContext: unknown }).AudioContext =
