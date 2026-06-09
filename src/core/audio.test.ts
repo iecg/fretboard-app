@@ -17,6 +17,14 @@ const mocks = vi.hoisted(() => {
     get state() {
       return contextState.value;
     },
+    // `playNote` registers rawContext for idle-suspend and schedules notes
+    // at immediate() (== currentTime, no lookAhead) for zero-latency taps.
+    rawContext: {
+      get state() {
+        return contextState.value;
+      },
+    },
+    immediate: () => 0,
   }));
 
   const triggerAttackRelease = vi.fn();
@@ -25,6 +33,9 @@ const mocks = vi.hoisted(() => {
   const PolySynth = vi.fn(function PolySynthMock() {
     const instance = {
       triggerAttackRelease,
+      // Notes schedule at the synth's own context time (no lookAhead, correct
+      // timeline after Tone.setContext). Mock returns a fixed 0.
+      immediate: vi.fn(() => 0),
       connect: vi.fn().mockReturnThis(),
       toDestination: vi.fn().mockReturnThis(),
       dispose: vi.fn(),
@@ -173,6 +184,14 @@ describe("GuitarSynth (Tone-backed)", () => {
       await synth.playNote(440);
       expect(mocks.triggerAttackRelease).toHaveBeenCalledTimes(1);
       expect(mocks.triggerAttackRelease.mock.calls[0][0]).toBe(440);
+    });
+
+    it("schedules the note at the context's immediate() time, not the lookahead-delayed now()", async () => {
+      // Regression guard: triggering with no explicit time uses Tone.now()
+      // (== currentTime + lookAhead, ~100ms), an audible per-tap delay. The
+      // 3rd arg must be the immediate() time (mock returns 0).
+      await synth.playNote(440);
+      expect(mocks.triggerAttackRelease.mock.calls[0][2]).toBe(0);
     });
 
     it("ensures Tone has started before triggering", async () => {

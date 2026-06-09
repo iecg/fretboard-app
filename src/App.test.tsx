@@ -65,6 +65,7 @@ vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async 
 vi.mock("./core/lazyGuitarAudio", () => ({
   setGuitarMutePreference: vi.fn(),
   setGuitarAudioErrorHandler: vi.fn(),
+  setGuitarOutputWedgedHandler: vi.fn(),
   resumeGuitarAudio: vi.fn(),
   playGuitarNote: vi.fn(),
   prefetchAudioModule: vi.fn(),

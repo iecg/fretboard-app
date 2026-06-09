@@ -16,6 +16,8 @@
 import * as Tone from "tone";
 
 import { ensureToneStarted } from "./toneInit";
+import { markAudioActivity, registerAudioContext } from "./audioIdleSuspend";
+import { probeOutputHealth } from "./audioOutputHealth";
 
 const AUDIO_CONFIG = {
   /** Master volume in linear gain (matches prior MASTER_GAIN = 0.5). */
@@ -82,7 +84,10 @@ class GuitarSynth {
   private volume: Tone.Volume | null = null;
   private isMuted = false;
   private unsupported = false;
+  private wedgeProbeInFlight = false;
   onError?: (message: string) => void;
+  /** Called when a played note reveals the Safari dead-output wedge. */
+  onOutputWedged?: () => void;
 
   init(): void {
     if (this.unsupported || this.polySynth) return;
@@ -164,6 +169,11 @@ class GuitarSynth {
     if (this.unsupported || !this.polySynth) return;
 
     try {
+      // ensureToneStarted() resumes/starts the LIVE Tone context (which may
+      // have been swapped via Tone.setContext when the progression engine
+      // bound its own context). Never cache a context reference for resume —
+      // a stale/orphaned context sits "suspended" forever and awaiting its
+      // resume on every note added a fixed per-note latency.
       await ensureToneStarted();
     } catch (e) {
       console.warn("Tone.start failed in playNote:", e);
@@ -171,13 +181,51 @@ class GuitarSynth {
       return;
     }
 
+    // Track whichever context is live right now for energy idle-suspend.
+    // Tagged "guitar"; if the progression engine already owns this (shared)
+    // context the "progression" role sticks — see registerAudioContext.
+    registerAudioContext(Tone.getContext().rawContext as AudioContext, "guitar");
+    markAudioActivity();
     try {
-      this.polySynth.triggerAttackRelease(frequency, AUDIO_CONFIG.NOTE_DURATION);
+      // Schedule at the context's immediate() time (== currentTime), NOT the
+      // default Tone.now() which adds the context lookAhead (0.1s). For a
+      // tap-to-play instrument that 100ms is an audible per-note delay; the
+      // progression sequencer keeps the lookAhead for glitch-free scheduling.
+      // Schedule at THIS synth's own context time, not Tone.now() (which adds
+      // the 0.1s lookAhead → audible per-tap delay) and not
+      // Tone.getContext().immediate() (the GLOBAL context — after a progression
+      // calls Tone.setContext() the synth is orphaned on its original context,
+      // so the global clock is the wrong timeline and notes schedule in the
+      // synth's past → silence). `polySynth.immediate()` is its own currentTime.
+      this.polySynth.triggerAttackRelease(
+        frequency,
+        AUDIO_CONFIG.NOTE_DURATION,
+        this.polySynth.immediate(),
+      );
+      this.checkOutputAfterPlay();
     } catch (e) {
       // PolySynth throws if maxPolyphony is exceeded; swallow and log
       // rather than surfacing — same UX as the old "skipping note" warn.
       console.warn("GuitarSynth.playNote failed:", e);
     }
+  }
+
+  /**
+   * After a note is triggered, verify it actually reached the hardware. On
+   * Safari the context can report "running" while output is dead (see
+   * audioOutputHealth). Fire-and-forget, de-duped so rapid taps run one probe.
+   */
+  private checkOutputAfterPlay(): void {
+    if (this.wedgeProbeInFlight || !this.onOutputWedged) return;
+    this.wedgeProbeInFlight = true;
+    void probeOutputHealth()
+      .then((health) => {
+        if (health === "wedged") this.onOutputWedged?.();
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.wedgeProbeInFlight = false;
+      });
   }
 }
 
@@ -195,12 +243,16 @@ export function __resetSynthForTests(): void {
     volume: unknown;
     isMuted: boolean;
     unsupported: boolean;
+    wedgeProbeInFlight: boolean;
     onError: undefined;
+    onOutputWedged: undefined;
   };
   s.polySynth = null;
   s.filter = null;
   s.volume = null;
   s.isMuted = false;
   s.unsupported = false;
+  s.wedgeProbeInFlight = false;
   s.onError = undefined;
+  s.onOutputWedged = undefined;
 }

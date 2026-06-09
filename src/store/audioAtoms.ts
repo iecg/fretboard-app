@@ -5,6 +5,14 @@ import type { QualitySetting } from "../progressions/audio/sound/qualityTiers";
 
 export const audioErrorAtom = atom<string | null>(null);
 
+/**
+ * Set when Safari's Web Audio output session is detected as wedged (context
+ * reports "running" + currentTime advances, but the hardware clock is frozen —
+ * see `core/audioOutputHealth.ts`). Not persisted: a browser restart clears the
+ * condition, and so does a reload of this flag. Drives a guidance banner.
+ */
+export const audioOutputWedgedAtom = atom<boolean>(false);
+
 export const enharmonicDisplayAtom = atom<"auto" | "on" | "off">("auto");
 
 export const isMutedAtom = atomWithStorage(

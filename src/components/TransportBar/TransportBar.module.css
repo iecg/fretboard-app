@@ -91,6 +91,14 @@
   color: var(--track-accent);
 }
 
+.spinIcon {
+  animation: transport-spin 0.7s linear infinite;
+}
+
+@keyframes transport-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Mobile tier: grow the transport / instrument touch targets up to the shared
    control-height token so the play, stop, loop and instrument buttons are
    comfortably tappable on phones. */

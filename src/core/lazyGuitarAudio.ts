@@ -3,11 +3,13 @@ type GuitarSynthModule = typeof import("./audio");
 let modulePromise: Promise<GuitarSynthModule> | null = null;
 let desiredMute = false;
 let errorHandler: ((message: string) => void) | undefined;
+let outputWedgedHandler: (() => void) | undefined;
 
 async function loadAudioModule(): Promise<GuitarSynthModule> {
   if (!modulePromise) {
     modulePromise = import("./audio").then((mod) => {
       mod.synth.onError = errorHandler;
+      mod.synth.onOutputWedged = outputWedgedHandler;
       mod.synth.setMute(desiredMute);
       return mod;
     });
@@ -35,6 +37,15 @@ export function setGuitarAudioErrorHandler(
   });
 }
 
+export function setGuitarOutputWedgedHandler(
+  nextHandler: (() => void) | undefined,
+): void {
+  outputWedgedHandler = nextHandler;
+  void modulePromise?.then((mod) => {
+    mod.synth.onOutputWedged = nextHandler;
+  });
+}
+
 export async function resumeGuitarAudio(): Promise<void> {
   const mod = await loadAudioModule();
   await mod.synth.resume();
@@ -49,4 +60,5 @@ export function __resetLazyGuitarAudioForTests(): void {
   modulePromise = null;
   desiredMute = false;
   errorHandler = undefined;
+  outputWedgedHandler = undefined;
 }

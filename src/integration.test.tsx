@@ -14,6 +14,7 @@ const lazyAudio = vi.hoisted(() => ({
   playGuitarNote: vi.fn(),
   setGuitarMutePreference: vi.fn(),
   setGuitarAudioErrorHandler: vi.fn(),
+  setGuitarOutputWedgedHandler: vi.fn(),
   resumeGuitarAudio: vi.fn(),
   prefetchAudioModule: vi.fn(),
 }));

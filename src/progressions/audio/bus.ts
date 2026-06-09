@@ -12,6 +12,7 @@
  */
 
 import { getDraw } from "tone";
+import { registerAudioContext, unregisterAudioContext } from "../../core/audioIdleSuspend";
 import { buildLayerBuses, type LayerBuses } from "./layerBuses";
 import { _resetToneBusForTests, bindToneToProgressionContext, resetToneBusBinding } from "./toneBus";
 import { materializeSignalGraph, type MaterializedGraph, type SignalGraphPlan } from "./sound/buildSignalGraph";
@@ -78,6 +79,7 @@ function tearDownForContextReplacement(): void {
   }
   lastPlanKey = null;
   if (ctx) {
+    unregisterAudioContext(ctx);
     try { ctx.close(); } catch { /* already closed */ }
   }
   ctx = null;
@@ -151,6 +153,7 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     bus.connect(ctx.destination);
     layers = buildLayerBuses(ctx, bus);
     bindToneToProgressionContext({ ctx, bus, layers });
+    registerAudioContext(ctx, "progression");
   } catch (err) {
     // Dev-mode diagnostic — silent in production. The 2026-05-25 P2-T1
     // regression (Tone.Draw.expiration assignment on undefined) hid in
