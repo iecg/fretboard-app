@@ -37,6 +37,7 @@ import type {
 } from "../progressions/audio/progressionAudioEngine";
 import type { BuiltLayers } from "../progressions/audio/buildAllLayers";
 import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
+import { ensureToneStarted } from "../core/toneInit";
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
@@ -393,6 +394,16 @@ export function useProgressionAudioPlayback() {
       if (gen !== genRef.current) return;
       const audio = eng.ensureProgressionAudio();
       if (!audio) { tearDownAndStop(); return; }
+
+      // Call Tone.start() BEFORE resumeProgressionAudio(). When Safari
+      // re-suspends the AudioContext after extended idle, ctx.resume() alone
+      // restores the "running" state but may not re-establish the internal
+      // audio-output gate. Tone.start() plays a silent buffer that
+      // re-unlocks the output. Must run while the context is still
+      // "suspended" — once resumed, ensureToneStarted() short-circuits.
+      try { await ensureToneStarted(); } catch { /* best-effort */ }
+      if (gen !== genRef.current) return;
+
       await eng.resumeProgressionAudio();
       if (gen !== genRef.current) return;
       // Safari can fail to resume AudioContext after extended idle.

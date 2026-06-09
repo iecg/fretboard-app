@@ -58,6 +58,7 @@ describe("configureProgressionGraph", () => {
         destination: {},
         currentTime: 0,
         state: "running",
+        addEventListener: vi.fn(),
       };
     }) as unknown as typeof AudioContext;
   });

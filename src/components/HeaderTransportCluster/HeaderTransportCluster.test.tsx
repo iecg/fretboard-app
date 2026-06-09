@@ -83,6 +83,7 @@ describe("HeaderTransportCluster", () => {
         connect: vi.fn(),
       }),
       destination: {},
+      addEventListener: vi.fn(),
     };
 
     (window as unknown as { AudioContext: unknown }).AudioContext =

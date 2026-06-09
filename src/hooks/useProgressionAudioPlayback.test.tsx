@@ -30,6 +30,13 @@ vi.mock("../progressions/audio/visualClock", () => ({
   stopVisualClock: visualClockMocks.stopVisualClock,
 }));
 
+// toneInit mock: the hook calls ensureToneStarted() for Safari idle recovery.
+// Its behavior is tested in toneInit.test.ts; here it's a no-op.
+vi.mock("../core/toneInit", () => ({
+  ensureToneStarted: vi.fn().mockResolvedValue(undefined),
+  __resetToneStartedForTests: vi.fn(),
+}));
+
 // Tone mocks: capture all Parts and Loops constructed; expose for assertions.
 const toneMocks = vi.hoisted(() => {
   const contextNowRef = { fn: () => 0 };
@@ -238,6 +245,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       }),
       destination: {} as AudioDestinationNode,
       resume: vi.fn(),
+      addEventListener: vi.fn(),
     };
     toneMocks.contextNowRef.fn = () => audioContext.currentTime;
     (window as unknown as { AudioContext: unknown }).AudioContext =
@@ -726,6 +734,7 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
       }),
       destination: {} as AudioDestinationNode,
       resume: resumeMock,
+      addEventListener: vi.fn(),
     };
     (window as unknown as { AudioContext: unknown }).AudioContext =
       vi.fn(function () {
@@ -751,6 +760,27 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(store.get(progressionPlaybackLoadingAtom)).toBe(false);
     // Playing reset to false so the UI reflects the failed start.
     expect(store.get(progressionPlayingAtom)).toBe(false);
+  });
+
+  it("calls ensureToneStarted before scheduling audio (Safari idle re-unlock)", async () => {
+    const toneInitMod = await import("../core/toneInit");
+    const spy = vi.mocked(toneInitMod.ensureToneStarted);
+    spy.mockClear();
+
+    const store = makeAtomStore([
+      [rootNoteAtom, "C"],
+      [scaleNameAtom, "major"],
+      [progressionStepsAtom, threeBars],
+      [progressionTempoBpmAtom, 60],
+      [beatsPerBarAtom, 4],
+    ]);
+    store.set(setProgressionPlayingAtom, true);
+    renderWithStore(<Harness />, store);
+
+    await vi.waitFor(() => {
+      expect(toneMocks.parts).toHaveLength(5);
+    });
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   describe("error handling", () => {
