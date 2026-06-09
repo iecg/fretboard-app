@@ -13,6 +13,7 @@
   border-top: 0.5px solid var(--dc-border);
   border-bottom: 0.5px solid var(--dc-border);
   overflow: hidden;
+  container-type: inline-size;
 }
 
 /* Light-mode: cream BG, warm hairline divider. Reference palette: BG #ebebdc, MUTE #857c6c. */
@@ -74,3 +75,34 @@
   letter-spacing: 0.04em;
   color: var(--dc-fg-muted);
 }
+
+/* Progressive field hiding via container queries — least important first.
+   Container width ≈ viewport width (status bar spans full-bleed). The bar
+   only renders at ≥ 768 px (tablet+), so the top three breakpoints cover all
+   real-world cases; the lower ones are defensive for unusual window sizes. */
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+@container (max-width: 1099px) {
+  .status-bar :global([data-field-id="version"]) { display: none; }
+}
+
+@container (max-width: 899px) {
+  .status-bar :global([data-field-id="progression"]) { display: none; }
+}
+
+@container (max-width: 799px) {
+  .status-bar :global([data-field-id="tuning"]) { display: none; }
+}
+
+@container (max-width: 699px) {
+  .status-bar :global([data-field-id="frets"]) { display: none; }
+}
+
+@container (max-width: 599px) {
+  .status-bar :global([data-field-id="tempo"]) { display: none; }
+}
+
+@container (max-width: 499px) {
+  .status-bar :global([data-field-id="pattern"]) { display: none; }
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

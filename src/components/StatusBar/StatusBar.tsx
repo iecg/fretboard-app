@@ -76,7 +76,7 @@ export function StatusBar() {
   ];
 
   const renderField = (f: StatusField) => (
-    <div key={f.id} className={styles.field}>
+    <div key={f.id} className={styles.field} data-field-id={f.id}>
       <span className={styles.label}>{f.label}</span>
       <span className={styles.value} data-testid={`status-${f.id}`}>
         {f.value}
@@ -89,7 +89,7 @@ export function StatusBar() {
       <div className={styles.group}>{leftFields.map(renderField)}</div>
       <div className={styles.group}>
         {rightFields.map(renderField)}
-        <span className={styles.field}>
+        <span className={styles.field} data-field-id="version">
           <span className={styles.version} data-testid="status-version">
             FretFlow Studio {__APP_VERSION__}
           </span>
