@@ -83,26 +83,26 @@
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 @container (max-width: 1099px) {
-  :global([data-field-id="version"]) { display: none; }
+  .status-bar :global([data-field-id="version"]) { display: none; }
 }
 
 @container (max-width: 899px) {
-  :global([data-field-id="progression"]) { display: none; }
+  .status-bar :global([data-field-id="progression"]) { display: none; }
 }
 
 @container (max-width: 799px) {
-  :global([data-field-id="tuning"]) { display: none; }
+  .status-bar :global([data-field-id="tuning"]) { display: none; }
 }
 
 @container (max-width: 699px) {
-  :global([data-field-id="frets"]) { display: none; }
+  .status-bar :global([data-field-id="frets"]) { display: none; }
 }
 
 @container (max-width: 599px) {
-  :global([data-field-id="tempo"]) { display: none; }
+  .status-bar :global([data-field-id="tempo"]) { display: none; }
 }
 
 @container (max-width: 499px) {
-  :global([data-field-id="pattern"]) { display: none; }
+  .status-bar :global([data-field-id="pattern"]) { display: none; }
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
