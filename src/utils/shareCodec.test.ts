@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { compressToEncodedURIComponent } from "lz-string";
 import { encodeShareState, decodeShareState, encodeShareUrl, decodeShareUrl, type ShareState } from "./shareCodec";
 
 describe("encodeShareState", () => {
@@ -190,6 +191,12 @@ describe("compression fallback", () => {
     };
     const url = encodeShareUrl(state, "https://example.com/app/");
     expect(url).toContain("?z=");
+  });
+
+  it("returns null for malformed z payload missing timeSignature", () => {
+    const malformed = JSON.stringify({ root: "C", scale: "major", tempo: 120, steps: [{ degree: "I", qualityOverride: null, duration: { value: 1, unit: "bar" } }] });
+    const params = new URLSearchParams({ z: compressToEncodedURIComponent(malformed) });
+    expect(decodeShareUrl(params)).toBeNull();
   });
 
   it("roundtrips through compression", () => {

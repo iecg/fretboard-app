@@ -119,6 +119,28 @@ export function encodeShareUrl(state: ShareState, baseUrl: string): string {
   return url.toString();
 }
 
+function isValidShareState(value: unknown): value is ShareState {
+  if (!value || typeof value !== "object") return false;
+  const s = value as Partial<ShareState>;
+  if (typeof s.root !== "string" || typeof s.scale !== "string") return false;
+  if (typeof s.tempo !== "number" || !Number.isFinite(s.tempo) || s.tempo < MIN_TEMPO || s.tempo > MAX_TEMPO) return false;
+  if (
+    !s.timeSignature ||
+    typeof s.timeSignature.numerator !== "number" ||
+    typeof s.timeSignature.denominator !== "number"
+  ) return false;
+  if (!Array.isArray(s.steps) || s.steps.length === 0) return false;
+  return s.steps.every(
+    (step) =>
+      step &&
+      typeof step.degree === "string" &&
+      (typeof step.qualityOverride === "string" || step.qualityOverride === null) &&
+      !!step.duration &&
+      typeof step.duration.value === "number" &&
+      (step.duration.unit === "bar" || step.duration.unit === "beat"),
+  );
+}
+
 export function decodeShareUrl(params: URLSearchParams): ShareState | null {
   const s = params.get("s");
   if (s) return decodeShareState(s);
@@ -128,9 +150,8 @@ export function decodeShareUrl(params: URLSearchParams): ShareState | null {
     try {
       const json = decompressFromEncodedURIComponent(z);
       if (!json) return null;
-      const parsed = JSON.parse(json) as ShareState;
-      // Validate structure minimally
-      if (!parsed.root || !parsed.scale || !parsed.steps?.length) return null;
+      const parsed: unknown = JSON.parse(json);
+      if (!isValidShareState(parsed)) return null;
       return parsed;
     } catch {
       return null;

@@ -45,10 +45,8 @@ export function usePWAInstall() {
     const prompt = deferredPromptRef.current;
     if (!prompt) return;
     await prompt.prompt();
-    const { outcome } = await prompt.userChoice;
-    if (outcome === "accepted") {
-      setCanInstall(false);
-    }
+    await prompt.userChoice;
+    setCanInstall(false);
     deferredPromptRef.current = null;
   }, []);
 

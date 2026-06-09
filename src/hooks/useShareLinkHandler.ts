@@ -19,6 +19,6 @@ export function useShareLinkHandler(): void {
     const url = new URL(window.location.href);
     url.searchParams.delete("s");
     url.searchParams.delete("z");
-    window.history.replaceState(null, "", url.pathname + url.hash);
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
   }, [setOverrides]);
 }

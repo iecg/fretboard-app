@@ -1,12 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "vitest-axe";
 import { InstallBanner } from "./InstallBanner";
 
 describe("InstallBanner", () => {
-  it("renders when canInstall is true", () => {
-    render(<InstallBanner canInstall={true} onInstall={vi.fn()} onDismiss={vi.fn()} />);
+  it("renders when canInstall is true", async () => {
+    const { container } = render(<InstallBanner canInstall={true} onInstall={vi.fn()} onDismiss={vi.fn()} />);
     expect(screen.getByText(/install fretflow/i)).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 
   it("renders nothing when canInstall is false", () => {

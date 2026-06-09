@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useAtomValue } from "jotai";
 import { Share2 } from "lucide-react";
 import clsx from "clsx";
@@ -18,7 +18,7 @@ export function ShareButton() {
   const steps = useAtomValue(effectiveProgressionStepsAtom);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const handleShare = useCallback(async () => {
+  const handleShare = async () => {
     const state: ShareState = {
       root,
       scale,
@@ -48,7 +48,7 @@ export function ShareButton() {
     } catch {
       setToastMessage("Couldn't copy link");
     }
-  }, [root, scale, tempo, numerator, denominator, steps]);
+  };
 
   return (
     <>

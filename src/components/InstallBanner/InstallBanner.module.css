@@ -35,6 +35,11 @@
   opacity: 0.9;
 }
 
+.banner-install:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 .banner-dismiss {
   display: inline-flex;
   align-items: center;
@@ -50,4 +55,9 @@
 
 .banner-dismiss:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.banner-dismiss:focus-visible {
+  outline: 2px solid var(--color-text-primary, #fff);
+  outline-offset: 2px;
 }
