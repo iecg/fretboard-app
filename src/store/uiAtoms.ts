@@ -29,3 +29,16 @@ export const helpWhatsNewSeenAtom = atomWithStorage<string>(
   GET_ON_INIT,
 );
 
+export type MobileSheetSnap = "peek" | "half" | "full";
+
+/**
+ * Persisted snap position of the mobile bottom sheet. "peek" shows only the
+ * mini-player transport row; "half" and "full" expose the Inspector tabs.
+ */
+export const mobileSheetSnapAtom = atomWithStorage<MobileSheetSnap>(
+  k("mobileSheetSnap"),
+  "peek",
+  rawStringStorage<MobileSheetSnap>(),
+  GET_ON_INIT,
+);
+
