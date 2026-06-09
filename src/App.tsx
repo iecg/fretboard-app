@@ -101,9 +101,11 @@ function AppContent() {
     const onDeviceChange = () => {
       clearTimeout(settleTimer);
       settleTimer = setTimeout(() => {
-        void probeOutputHealth().then((health) => {
-          if (health === "wedged") setAudioOutputWedged(true);
-        });
+        void probeOutputHealth()
+          .then((health) => {
+            if (health === "wedged") setAudioOutputWedged(true);
+          })
+          .catch(() => {});
       }, 600);
     };
     md.addEventListener("devicechange", onDeviceChange);

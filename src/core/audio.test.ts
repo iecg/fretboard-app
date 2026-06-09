@@ -89,6 +89,9 @@ let ctorState: AudioContextState = "running";
 let resumeRejects = false;
 
 import { __resetSynthForTests, synth } from "./audio";
+import { probeOutputHealth } from "./audioOutputHealth";
+
+const probeMock = probeOutputHealth as unknown as ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   created.gains.length = 0;
@@ -97,6 +100,8 @@ beforeEach(() => {
   lastPeriodicWave = null;
   ctorState = "running";
   resumeRejects = false;
+  probeMock.mockClear();
+  probeMock.mockResolvedValue("healthy");
 
   (window as any).AudioContext = vi.fn(function FakeCtor() {
     const ctx = new FakeAudioContext();
@@ -199,6 +204,53 @@ describe("GuitarSynth (raw Web Audio)", () => {
       expect(onError.mock.calls[0][0]).toMatch(/audio could not be started/i);
       expect(created.oscillators.length).toBe(0);
       synth.onError = undefined;
+    });
+  });
+
+  describe("output-health probe (Safari wedge signal)", () => {
+    it("fires onOutputWedged when the post-play probe reports a wedged context", async () => {
+      probeMock.mockResolvedValueOnce("wedged");
+      const onWedged = vi.fn();
+      synth.onOutputWedged = onWedged;
+
+      await synth.playNote(440);
+      await vi.waitFor(() => expect(onWedged).toHaveBeenCalledTimes(1));
+
+      // The probe runs against the guitar's own context, not the Tone global.
+      expect(probeMock).toHaveBeenCalledWith((synth as any).ctx);
+      synth.onOutputWedged = undefined;
+    });
+
+    it("does not fire onOutputWedged when the probe reports healthy", async () => {
+      const onWedged = vi.fn();
+      synth.onOutputWedged = onWedged;
+
+      await synth.playNote(440);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(onWedged).not.toHaveBeenCalled();
+      synth.onOutputWedged = undefined;
+    });
+
+    it("de-dupes the probe while one is already in flight", async () => {
+      // Hold the first probe pending so the second tap sees it in-flight.
+      let release!: (h: string) => void;
+      probeMock.mockReturnValueOnce(new Promise<string>((r) => (release = r)));
+      synth.onOutputWedged = vi.fn();
+
+      await synth.playNote(440); // starts probe #1 (pending)
+      await synth.playNote(440); // in-flight → must NOT start probe #2
+
+      expect(probeMock).toHaveBeenCalledTimes(1);
+      release("healthy");
+      synth.onOutputWedged = undefined;
+    });
+
+    it("never probes when no onOutputWedged handler is set", async () => {
+      await synth.playNote(440);
+      await Promise.resolve();
+      expect(probeMock).not.toHaveBeenCalled();
     });
   });
 

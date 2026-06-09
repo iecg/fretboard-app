@@ -95,6 +95,12 @@
   animation: transport-spin 0.7s linear infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .spinIcon {
+    animation: none;
+  }
+}
+
 @keyframes transport-spin {
   to { transform: rotate(360deg); }
 }
