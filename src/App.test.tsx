@@ -315,9 +315,10 @@ describe("App", () => {
       render(<App />);
       setViewport(768, 1024);
       fireEvent(window, new Event("resize"));
+      // At 768×1024 (tablet-split), useSheetShell=true → MobileShell renders.
       await waitFor(() => {
-        const appContainer = document.querySelector(".app-container");
-        expect(appContainer?.getAttribute("data-layout-tier")).toBe("tablet");
+        const mobileShell = document.querySelector("[data-testid='mobile-shell']");
+        expect(mobileShell?.getAttribute("data-layout-tier")).toBe("tablet");
       });
     });
   });

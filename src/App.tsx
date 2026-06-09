@@ -27,12 +27,8 @@ import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
+import { MobileShell } from "./components/MobileShell/MobileShell";
 
-import { ShareButton } from "./components/ShareButton/ShareButton";
-import { useShareLinkHandler } from "./hooks/useShareLinkHandler";
-import { SharedLinkBanner } from "./components/SharedLinkBanner/SharedLinkBanner";
-import { usePWAInstall } from "./hooks/usePWAInstall";
-import { InstallBanner } from "./components/InstallBanner/InstallBanner";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -62,9 +58,6 @@ function AppContent() {
   const toggleMute = useSetAtom(toggleMuteAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
-
-  useShareLinkHandler();
-  const { canInstall, install, dismiss } = usePWAInstall();
   const setTheme = useSetAtom(themeAtom);
 
   const [showHelp, setShowHelp] = useState(false);
@@ -160,6 +153,93 @@ function AppContent() {
     };
   }, []);
 
+  const headerNode = (
+    <AppHeader
+      brandTitle="FretFlow"
+      brandWordmark={<FretFlowWordmark />}
+      brandIcon={<BrandMark />}
+      transport={layout.useSheetShell ? undefined : <HeaderTransportCluster />}
+      actions={
+        <>
+          <button
+            type="button"
+            onClick={() => setTheme(theme === "modern-dark" ? "light" : "dark")}
+            className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
+            title={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
+            aria-label={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
+          >
+            {theme === "modern-dark" ? (
+              <Sun className="icon" />
+            ) : (
+              <Moon className="icon" />
+            )}
+          </button>
+          <SettingsTooltip>
+            <button
+              type="button"
+              onClick={() => setSettingsOverlayOpen((v) => !v)}
+              className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
+              title={t("settings.title")}
+              aria-label={t("settings.open")}
+            >
+              <Settings2 className="icon" />
+            </button>
+          </SettingsTooltip>
+          <button
+            type="button"
+            onClick={toggleMute}
+            className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
+            title={isMuted ? t("common.unmuteTitle") : t("common.muteTitle")}
+            aria-label={isMuted ? t("common.unmute") : t("common.mute")}
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={isMuted ? "muted" : "unmuted"}
+                initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
+                transition={{ duration: ANIMATION_DURATION_XFADE }}
+                className={sharedStyles["flex-center"]}
+              >
+                {isMuted ? (
+                  <VolumeX className="icon icon-muted" />
+                ) : (
+                  <Volume2 className="icon icon-active" />
+                )}
+              </motion.span>
+            </AnimatePresence>
+          </button>
+          <button
+            ref={helpTriggerRef}
+            type="button"
+            onClick={() => setShowHelp(true)}
+            className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
+            title={t("common.helpTitle")}
+            aria-label={t("common.help")}
+          >
+            <HelpCircle className="icon" />
+          </button>
+        </>
+      }
+    />
+  );
+
+  const helpModalNode = (
+    <Suspense fallback={null}>
+      <HelpModal
+        isOpen={showHelp}
+        onClose={() => setShowHelp(false)}
+        triggerRef={helpTriggerRef}
+      />
+    </Suspense>
+  );
+
+  const settingsOverlayNode = (
+    <Suspense fallback={null}>
+      <SettingsOverlay />
+    </Suspense>
+  );
+
   return (
   <TooltipProvider>
   <>
@@ -173,124 +253,60 @@ function AppContent() {
         <p className="rotate-overlay-message">{t("common.rotateMessage")}</p>
       </div>
     </div>
-    <SharedLinkBanner />
-    <InstallBanner canInstall={canInstall} onInstall={install} onDismiss={dismiss} />
-    <MainLayoutWrapper
-      layoutTier={layout.tier}
-      layoutVariant={layout.variant}
-      isChordActive={!!chordType}
-      showSummary={layout.showSummary}
-      showControlsPanel={layout.showControlsPanel}
-      showMobileTabs={layout.showMobileTabs}
-      showStatusBar={layout.showStatusBar}
-      header={
-        <AppHeader
-          brandTitle="FretFlow"
-          brandWordmark={<FretFlowWordmark />}
-          brandIcon={<BrandMark />}
-          transport={<HeaderTransportCluster />}
-          actions={
-            <>
-              <ShareButton />
-              <button
-                type="button"
-                onClick={() => setTheme(theme === "modern-dark" ? "light" : "dark")}
-                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-                title={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
-                aria-label={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
-              >
-                {theme === "modern-dark" ? (
-                  <Sun className="icon" />
-                ) : (
-                  <Moon className="icon" />
-                )}
-              </button>
-              <SettingsTooltip>
-                <button
-                  type="button"
-                  onClick={() => setSettingsOverlayOpen((v) => !v)}
-                  className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-                  title={t("settings.title")}
-                  aria-label={t("settings.open")}
-                >
-                  <Settings2 className="icon" />
-                </button>
-              </SettingsTooltip>
-              <button
-                type="button"
-                onClick={toggleMute}
-                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-                title={isMuted ? t("common.unmuteTitle") : t("common.muteTitle")}
-                aria-label={isMuted ? t("common.unmute") : t("common.mute")}
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={isMuted ? "muted" : "unmuted"}
-                    initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
-                    transition={{ duration: ANIMATION_DURATION_XFADE }}
-                    className={sharedStyles["flex-center"]}
-                  >
-                    {isMuted ? (
-                      <VolumeX className="icon icon-muted" />
-                    ) : (
-                      <Volume2 className="icon icon-active" />
-                    )}
-                  </motion.span>
-                </AnimatePresence>
-              </button>
-              <button
-                ref={helpTriggerRef}
-                type="button"
-                onClick={() => setShowHelp(true)}
-                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-                title={t("common.helpTitle")}
-                aria-label={t("common.help")}
-              >
-                <HelpCircle className="icon" />
-              </button>
-            </>
+    {layout.useSheetShell ? (
+      <>
+        <MobileShell
+          layoutTier={layout.tier}
+          layoutVariant={layout.variant}
+          header={headerNode}
+          track={<ProgressionSummarySlot />}
+          sheet={
+            <Suspense fallback={null}>
+              <Inspector placement="bottom" />
+            </Suspense>
           }
+        >
+          <Fretboard stringRowPx={layout.stringRowPx} />
+        </MobileShell>
+        {helpModalNode}
+        {settingsOverlayNode}
+      </>
+    ) : (
+      <MainLayoutWrapper
+        layoutTier={layout.tier}
+        layoutVariant={layout.variant}
+        isChordActive={!!chordType}
+        showSummary={layout.showSummary}
+        showControlsPanel={layout.showControlsPanel}
+        showMobileTabs={layout.showMobileTabs}
+        showStatusBar={layout.showStatusBar}
+        header={headerNode}
+        summary={
+          <ProgressionSummarySlot />
+        }
+        statusBar={
+          <Suspense fallback={null}>
+            <StatusBar />
+          </Suspense>
+        }
+        helpModal={helpModalNode}
+        controlsPanel={
+          <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
+            <Inspector placement="top" />
+          </Suspense>
+        }
+        mobileTabs={
+          <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
+            <Inspector placement="bottom" />
+          </Suspense>
+        }
+        settingsOverlay={settingsOverlayNode}
+      >
+        <Fretboard
+          stringRowPx={layout.stringRowPx}
         />
-      }
-      summary={
-        <ProgressionSummarySlot />
-      }
-      statusBar={
-        <Suspense fallback={null}>
-          <StatusBar />
-        </Suspense>
-      }
-      helpModal={
-        <Suspense fallback={null}>
-          <HelpModal
-            isOpen={showHelp}
-            onClose={() => setShowHelp(false)}
-            triggerRef={helpTriggerRef}
-          />
-        </Suspense>
-      }
-      controlsPanel={
-        <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
-          <Inspector placement="top" />
-        </Suspense>
-      }
-      mobileTabs={
-        <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
-          <Inspector placement="bottom" />
-        </Suspense>
-      }
-      settingsOverlay={
-        <Suspense fallback={null}>
-          <SettingsOverlay />
-        </Suspense>
-      }
-    >
-      <Fretboard
-        stringRowPx={layout.stringRowPx}
-      />
-    </MainLayoutWrapper>
+      </MainLayoutWrapper>
+    )}
     {audioError && (
       <div role="alert" className={audioErrorStyles.banner}>
         <span className={audioErrorStyles.message}>{audioError}</span>
