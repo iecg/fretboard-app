@@ -259,6 +259,45 @@ Durable principles that outlive any single spec:
   this is the audio analogue of the visual voice-leading motion documented in the visual-
   language reference. **[internal]/[spec]**
 
+### 3.1 Separate AudioContexts — guitar off Tone, on raw Web Audio
+
+The guitar synth and the progression engine each own **separate, independent
+`AudioContext` instances**. This is the foundational audio isolation decision. **[spec]**
+
+| | Guitar | Progression |
+|---|---|---|
+| Context | own `AudioContext`, created + owned by `audio.ts` | own `AudioContext` (`bus.ts`) |
+| Framework | none — raw Web Audio | Tone.js (global context) |
+| `Tone.setContext` | never touches it | binds the progression context globally |
+| Scheduling | `ctx.currentTime` (zero lookahead) | Tone lookahead (transport-relative) |
+
+**The problem it solves.** The guitar and the progression previously shared Tone's one
+global `AudioContext`. The progression binds its own context via `Tone.setContext()` — a
+process-wide mutation — which orphans any Tone-based guitar nodes on a stale context.
+Observed symptoms: fixed ~100 ms per-tap lookahead delay, post-progression silence, a
+clock mismatch between the synth's context and the global one, and a "sticky progression
+role" workaround in `audioIdleSuspend.ts` that existed only to paper over the
+shared-key collision. **[spec]**
+
+**Why raw Web Audio instead of a second Tone context.** The guitar is a fire-and-forget,
+tap-to-play instrument (oscillator → ADSR envelope → lowpass → master gain →
+destination). It needs none of Tone's sequencing/transport machinery. Raw Web Audio was
+preferred over keeping Tone with a per-node `{ context }` option because: (1) the guitar
+does not need Tone — Tone is a sequencing framework and the guitar pays for it only with
+global-context coupling; (2) it deletes the bug class rather than containing it — with no
+shared global context, the orphaning, lookahead delay, `setContext` hijack,
+sticky-role hack, and post-progression silence cannot recur; (3) it is the right tool —
+the guitar was hand-rolled Web Audio before the Tone migration and raw Web Audio is the
+lower-latency, fewer-moving-parts path for a tap instrument. **[spec]**
+
+**Voice engine recipe.** Shared nodes (built once in `init()`): a `masterGain`
+(linear 0.5), a `BiquadFilterNode` (lowpass, 10 kHz, Q 0.1), and a `PeriodicWave` with
+sine-harmonic amplitudes `[0, 1, 0.8, 0.45, 0.22, 0.12, 0.05]` (DC term 0; six
+partials). Per-note: an `OscillatorNode` at `ctx.currentTime` (zero lookahead), feeding
+an ADSR `GainNode` (attack 0.006 s → 1, decay 0.55 s → sustain 0.02, release 0.3 s
+after 0.5 s note duration). Max polyphony 12; at the cap, new notes are silently
+skipped. **[spec]**
+
 ---
 
 ## 4. Backing-track variation & humanizer
@@ -404,6 +443,9 @@ This document consolidates the grounding from the following specs, all under
 - `2026-06-08-backing-track-variation-design.md` — the variation & humanizer design (shipped
   #562): structural variation semantics (additive drums / substitutive chord+bass), groove
   lock, ghost dropping, genre-coupling via `GenreStyle`, and humanizer exclusions (§4).
+- `2026-06-09-separate-audio-contexts-design.md` — SHA `a540c046` — the separate-contexts
+  decision: guitar off Tone onto raw Web Audio with its own `AudioContext`, voice engine
+  recipe, and rationale for decoupling from Tone's global context (shipped #584) (§3.1).
 
 **Draft (never shipped — content preserved in §6):**
 - `2026-06-03-funk-bossa-voicing-migration-design.md` — SHA `ef93f7c1` — see §6.2.
