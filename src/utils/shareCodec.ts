@@ -29,6 +29,72 @@ function encodeStep(step: ShareState["steps"][number]): string {
   return token;
 }
 
+const MIN_TEMPO = 40;
+const MAX_TEMPO = 240;
+
+function decodeRoot(encoded: string): string | null {
+  const decoded = encoded.replace("s", "#");
+  if (!/^[A-G]#?$/.test(decoded)) return null;
+  return decoded;
+}
+
+function decodeScale(encoded: string): string {
+  return encoded.replace(/\+/g, " ");
+}
+
+function decodeTimeSignature(encoded: string): { numerator: number; denominator: number } | null {
+  const match = encoded.match(/^(\d+)x(\d+)$/);
+  if (!match) return null;
+  const numerator = Number(match[1]);
+  const denominator = Number(match[2]);
+  if (numerator < 1 || numerator > 16 || ![1, 2, 4, 8, 16].includes(denominator)) return null;
+  return { numerator, denominator };
+}
+
+function decodeStep(token: string): ShareState["steps"][number] | null {
+  const match = token.match(/^([ivIV]+)(?::([A-Za-z0-9]+))?(?:\*(\d+)(bt|b))?$/);
+  if (!match) return null;
+  const [, degree, quality, durationValue, durationUnit] = match;
+  return {
+    degree,
+    qualityOverride: quality ?? null,
+    duration: durationValue
+      ? { value: Number(durationValue), unit: durationUnit === "bt" ? "beat" : "bar" }
+      : { value: 1, unit: "bar" },
+  };
+}
+
+export function decodeShareState(param: string): ShareState | null {
+  if (!param) return null;
+  const parts = param.split(".");
+  if (parts.length < 5) return null;
+
+  const root = decodeRoot(parts[0]);
+  if (!root) return null;
+
+  const scale = decodeScale(parts[1]);
+
+  const tempo = Number(parts[2]);
+  if (!Number.isFinite(tempo) || tempo < MIN_TEMPO || tempo > MAX_TEMPO) return null;
+
+  const timeSignature = decodeTimeSignature(parts[3]);
+  if (!timeSignature) return null;
+
+  // Rejoin remaining parts in case scale name contained dots (unlikely but defensive)
+  const chordsStr = parts.slice(4).join(".");
+  const chordTokens = chordsStr.split("-").filter(Boolean);
+  if (chordTokens.length === 0) return null;
+
+  const steps: ShareState["steps"] = [];
+  for (const token of chordTokens) {
+    const step = decodeStep(token);
+    if (!step) return null;
+    steps.push(step);
+  }
+
+  return { root, scale, tempo: Math.round(tempo), timeSignature, steps };
+}
+
 export function encodeShareState(state: ShareState): string {
   const root = encodeRoot(state.root);
   const scale = encodeScale(state.scale);
