@@ -23,6 +23,11 @@ export function bindToneToProgressionContext(audio: ProgressionAudio): void {
   bound = true;
 }
 
+/** Clear the one-shot guard so `bindToneToProgressionContext` re-binds on the next call. */
+export function resetToneBusBinding(): void {
+  bound = false;
+}
+
 /** Test-only reset so the module behaves predictably across vitest runs. */
 export function _resetToneBusForTests(): void {
   bound = false;
