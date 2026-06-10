@@ -28,7 +28,7 @@ describe("ProgressionTrack.module.css", () => {
       "utf8",
     );
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.track\s*\{[^}]*border-top:\s*none/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.track\s*\{[^}]*border-top:\s*none/s,
     );
   });
 });

@@ -210,7 +210,7 @@
   font-size: 10px;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .labeled-select-item {
+:global([data-layout-tier="mobile"]) .labeled-select-item {
   min-height: var(--control-height);
   padding-block: 0.6rem;
 }

@@ -109,7 +109,7 @@
    control-height token so the play, stop, loop and instrument buttons are
    comfortably tappable on phones. */
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) .transportButton {
+:global([data-layout-tier="mobile"]) .transportButton {
   min-width: var(--control-height);
   min-height: var(--control-height);
 }

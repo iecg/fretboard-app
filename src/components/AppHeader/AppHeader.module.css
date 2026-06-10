@@ -57,7 +57,7 @@
   display: block;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .app-header-brand-icon :global(.brand-mark) {
+:global([data-layout-tier="mobile"]) .app-header-brand-icon :global(.brand-mark) {
   width: clamp(1.35rem, 6vw, 1.65rem);
 }
 
@@ -139,7 +139,7 @@
    flex-basis keeps the transport from claiming the whole second row by its
    content width — it shrinks so the utility actions stay on the same line,
    then grows to fill the leftover space. */
-:global(.app-container[data-layout-tier="tablet"]) .app-header-transport {
+:global([data-layout-tier="tablet"]) .app-header-transport {
   flex: 1 1 0;
   padding-inline-start: 0;
   border-inline-start: none;
@@ -148,7 +148,7 @@
 /* Mobile tier: the brand and the utility actions share the first row; the
    transport cluster drops to a full-width second row (see the `order` rules
    below). It carries no leading divider as a standalone band. */
-:global(.app-container[data-layout-tier="mobile"]) .app-header-transport {
+:global([data-layout-tier="mobile"]) .app-header-transport {
   order: 2;
   flex: 1 1 100%;
   padding-inline-start: 0;
@@ -169,7 +169,7 @@
 /* Mobile tier: the actions sit on the first row beside the brand (the
    transport cluster is reordered to the second row), with no leading
    divider since they no longer follow the transport readouts. */
-:global(.app-container[data-layout-tier="mobile"]) .app-header-actions {
+:global([data-layout-tier="mobile"]) .app-header-actions {
   order: 1;
   flex: 0 0 auto;
   gap: 0.15rem;
@@ -200,7 +200,7 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-:global(.app-container[data-layout-tier="mobile"]) .app-header {
+:global([data-layout-tier="mobile"]) .app-header {
   /* Mobile app-container uses 0.65rem padding (see App.css @media rules).
      Tighter inline padding + a denser row gap let the brand + actions pack
      into the first row without the actions wrapping or clipping. */
@@ -210,17 +210,17 @@
   gap: 0.45rem 0.5rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .app-header-brand {
+:global([data-layout-tier="mobile"]) .app-header-brand {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .app-header-brand-wordmark {
+:global([data-layout-tier="mobile"]) .app-header-brand-wordmark {
   min-width: 0;
   max-width: min(13rem, 52vw);
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .app-header-brand-title {
+:global([data-layout-tier="mobile"]) .app-header-brand-title {
   font-size: clamp(1.72rem, 9vw, 2.3rem);
 }
 
@@ -230,29 +230,29 @@
    forced to a single line (no wrap) so brand · transport · utility actions
    stay aligned even at the compact 1024px width — the transport cluster
    shrinks via `min-width: 0` rather than wrapping. */
-:global(.app-container[data-layout-tier="desktop"]) .app-header {
+:global([data-layout-tier="desktop"]) .app-header {
   flex-wrap: nowrap;
   padding-top: clamp(0.34rem, 0.6vw, 0.5rem);
   padding-bottom: clamp(0.34rem, 0.6vw, 0.5rem);
 }
 
-:global(.app-container[data-layout-tier="desktop"]) .app-header-brand-icon :global(.brand-mark) {
+:global([data-layout-tier="desktop"]) .app-header-brand-icon :global(.brand-mark) {
   width: clamp(1.3rem, 2vw, 1.6rem);
 }
 
 /* Tablet tier: compact header — tighter padding and slightly smaller brand
    mark. The brand takes the full first row so the transport cluster and the
    utility actions wrap together onto a single shared second row. */
-:global(.app-container[data-layout-tier="tablet"]) .app-header {
+:global([data-layout-tier="tablet"]) .app-header {
   padding-top: clamp(0.42rem, 0.8vw, 0.58rem);
   padding-bottom: clamp(0.42rem, 0.8vw, 0.58rem);
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .app-header-brand {
+:global([data-layout-tier="tablet"]) .app-header-brand {
   flex: 1 1 100%;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .app-header-brand-icon :global(.brand-mark) {
+:global([data-layout-tier="tablet"]) .app-header-brand-icon :global(.brand-mark) {
   width: clamp(1.4rem, 2.3vw, 1.7rem);
 }
 

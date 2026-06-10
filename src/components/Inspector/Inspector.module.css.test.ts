@@ -27,7 +27,7 @@ describe("Inspector.module.css", () => {
       "utf8",
     );
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.cardHeadActions\s*\{[^}]*order:\s*3/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.cardHeadActions\s*\{[^}]*order:\s*3/s,
     );
   });
 });

@@ -241,7 +241,7 @@
  * ------------------------------------------------------------------------- */
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) .cluster {
+:global([data-layout-tier="mobile"]) .cluster {
   flex-wrap: wrap;
   row-gap: 0.35rem;
 }
@@ -251,7 +251,7 @@
    a full-width row of their own). Keeping the cluster to two rows is what holds
    the mobile header under its height budget — see the responsive.spec.ts guard
    "keeps mobile header actions and transport within the viewport". */
-:global(.app-container[data-layout-tier="mobile"]) .positionReadout {
+:global([data-layout-tier="mobile"]) .positionReadout {
   flex: 0 1 auto;
   min-width: 0;
   margin-inline-start: 0;
@@ -259,7 +259,7 @@
   padding-inline: 0.38rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .contextReadouts {
+:global([data-layout-tier="mobile"]) .contextReadouts {
   flex: 1 1 auto;
   grid-template-columns: minmax(4.25rem, 0.7fr) minmax(0, 1.3fr);
   min-width: 0;
@@ -267,12 +267,12 @@
   margin-inline-start: auto;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .contextBox {
+:global([data-layout-tier="mobile"]) .contextBox {
   padding-block: 0.18rem;
   padding-inline: 0.38rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .scalePrimary {
+:global([data-layout-tier="mobile"]) .scalePrimary {
   max-width: 100%;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */

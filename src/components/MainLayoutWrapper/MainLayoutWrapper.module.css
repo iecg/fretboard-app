@@ -43,11 +43,11 @@
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) .app-shell {
+:global([data-layout-tier="mobile"]) .app-shell {
   --layout-gap: 0.5rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .app-shell {
+:global([data-layout-tier="tablet"]) .app-shell {
   --layout-gap: 0.72rem;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */

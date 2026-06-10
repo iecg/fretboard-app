@@ -160,27 +160,27 @@
 
 /* Desktop density overrides */
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="desktop"]) .card-skeleton__header {
+:global([data-layout-tier="desktop"]) .card-skeleton__header {
   padding: 0.62rem 1rem 0.5rem;
 }
 
-:global(.app-container[data-layout-tier="desktop"]) .card-skeleton__body {
+:global([data-layout-tier="desktop"]) .card-skeleton__body {
   padding: 0.6rem 1rem 0.75rem;
 }
 
-:global(.app-container[data-layout-tier="desktop"]) .controls-skeleton {
+:global([data-layout-tier="desktop"]) .controls-skeleton {
   gap: 0.82rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .card-skeleton__header {
+:global([data-layout-tier="tablet"]) .card-skeleton__header {
   padding: 0.65rem 1.1rem 0.52rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .card-skeleton__body {
+:global([data-layout-tier="tablet"]) .card-skeleton__body {
   padding: 0.65rem 1.1rem 0.78rem;
 }
 
-:global(.app-container[data-layout-tier="tablet"]) .controls-skeleton {
+:global([data-layout-tier="tablet"]) .controls-skeleton {
   gap: 1rem;
 }
 

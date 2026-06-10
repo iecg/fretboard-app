@@ -15,12 +15,14 @@ const sharedCSS = readFileSync(
 // ─── CSS selector correctness ───────────────────────────────────────────────
 
 describe("shared.module.css responsive selectors", () => {
-  it("no bare (unescaped) .app-container tier selectors remain", () => {
-    // Bare selectors like `.app-container[data-layout-tier` (without :global)
-    // are locally scoped and never match the global app-container element.
-    const barePattern =
-      /(?<!:global\([^)]*)\.(app-container)\[data-layout-tier/g;
-    expect(sharedCSS).not.toMatch(barePattern);
+  it("no .app-container-scoped tier selectors remain", () => {
+    // Tier rules must scope by the bare data-layout-tier attribute (inside
+    // :global) so they match under BOTH shells: MainLayoutWrapper sets the
+    // attribute on .app-container, MobileShell sets it on its own root.
+    // Any `.app-container[data-layout-tier` prefix would silently skip the
+    // MobileShell tree (and, without :global, is locally scoped and matches
+    // nothing at all).
+    expect(sharedCSS).not.toContain(".app-container[data-layout-tier");
   });
 
   it("toggle-group base height uses the token-based control height", () => {
@@ -41,22 +43,22 @@ describe("shared.module.css responsive selectors", () => {
     // Desktop and tablet use the compact base values. Mobile gets a dedicated
     // touch-target override for accessibility on small screens.
     expect(sharedCSS).not.toContain(
-      ':global(.app-container[data-layout-tier="desktop"]) .toggle-btn',
+      ':global([data-layout-tier="desktop"]) .toggle-btn',
     );
     expect(sharedCSS).not.toContain(
-      ':global(.app-container[data-layout-tier="tablet"]) .toggle-btn',
+      ':global([data-layout-tier="tablet"]) .toggle-btn',
     );
     expect(sharedCSS).not.toContain(
-      ':global(.app-container[data-layout-tier="desktop"]) .note-btn',
+      ':global([data-layout-tier="desktop"]) .note-btn',
     );
     expect(sharedCSS).not.toContain(
-      ':global(.app-container[data-layout-tier="tablet"]) .note-btn',
+      ':global([data-layout-tier="tablet"]) .note-btn',
     );
   });
 
   it("defines 44px mobile override for .icon-button--sm", () => {
     expect(sharedCSS).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.icon-button--sm\s*\{[^}]*width:\s*var\(--size-touch-target\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.icon-button--sm\s*\{[^}]*width:\s*var\(--size-touch-target\)/s,
     );
   });
 });

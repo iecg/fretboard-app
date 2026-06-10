@@ -258,22 +258,22 @@
  * there's no bounded scrollport to fade into.
  * ------------------------------------------------------------------------- */
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) .col {
+:global([data-layout-tier="mobile"]) .col {
   flex: 0 0 auto;
   width: 100%;
   min-width: 0;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .scroll {
+:global([data-layout-tier="mobile"]) .scroll {
   flex: 0 0 auto;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .list {
+:global([data-layout-tier="mobile"]) .list {
   max-height: none;
   overflow-y: visible;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .list {
+:global([data-layout-tier="mobile"]) .list {
   mask-image: none;
   animation: none;
 }

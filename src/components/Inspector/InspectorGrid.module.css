@@ -26,7 +26,7 @@
 
 /* Mobile tier — collapse to two columns regardless of the declared column
    count. Wide cells (span >= 2) clamp to the available tracks automatically. */
-:global(.app-container[data-layout-tier="mobile"]) .propGrid {
+:global([data-layout-tier="mobile"]) .propGrid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -191,19 +191,19 @@
 /* Mobile tier — clamp every cell to at most the two available tracks. A raw
    `span 3`/`span 6` would otherwise spill into implicit columns and break the
    collapsed grid. */
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="3"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="4"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="5"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="6"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="7"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="8"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="9"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="10"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="11"],
-:global(.app-container[data-layout-tier="mobile"]) .prop[data-span="12"],
-:global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="3"],
-:global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="4"],
-:global(.app-container[data-layout-tier="mobile"]) .toggleProp[data-span="6"] {
+:global([data-layout-tier="mobile"]) .prop[data-span="3"],
+:global([data-layout-tier="mobile"]) .prop[data-span="4"],
+:global([data-layout-tier="mobile"]) .prop[data-span="5"],
+:global([data-layout-tier="mobile"]) .prop[data-span="6"],
+:global([data-layout-tier="mobile"]) .prop[data-span="7"],
+:global([data-layout-tier="mobile"]) .prop[data-span="8"],
+:global([data-layout-tier="mobile"]) .prop[data-span="9"],
+:global([data-layout-tier="mobile"]) .prop[data-span="10"],
+:global([data-layout-tier="mobile"]) .prop[data-span="11"],
+:global([data-layout-tier="mobile"]) .prop[data-span="12"],
+:global([data-layout-tier="mobile"]) .toggleProp[data-span="3"],
+:global([data-layout-tier="mobile"]) .toggleProp[data-span="4"],
+:global([data-layout-tier="mobile"]) .toggleProp[data-span="6"] {
   grid-column: span 2;
 }
 

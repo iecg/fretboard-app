@@ -26,7 +26,7 @@
   animation: none;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .help-modal {
+:global([data-layout-tier="mobile"]) .help-modal {
   width: calc(100vw - 2 * clamp(0.75rem, 3vw, 1.25rem));
 }
 

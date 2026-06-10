@@ -84,22 +84,22 @@
 
 /* Mobile tier: tighten card padding so the controls keep breathing room
    against the rest of the inspector. */
-:global(.app-container[data-layout-tier="mobile"]) .cardHead {
+:global([data-layout-tier="mobile"]) .cardHead {
   padding: 0.5rem 0.75rem;
   flex-wrap: wrap;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .cardBody {
+:global([data-layout-tier="mobile"]) .cardBody {
   padding: 0.75rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .cardHeadActions {
+:global([data-layout-tier="mobile"]) .cardHeadActions {
   order: 3;
   flex: 1 1 100%;
   justify-content: flex-end;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .cardDesc {
+:global([data-layout-tier="mobile"]) .cardDesc {
   /* Description gets noisy on narrow widths — hide it; the section name and
      toggle still convey the meaning. */
   display: none;
