@@ -571,6 +571,33 @@ describe("chord & bass variation catalogs", () => {
   });
 });
 
+describe("strum directions", () => {
+  it("shuffle-comp anchors a downstroke on the one and an upstroke pickup", () => {
+    const p = getChordPattern("shuffle-comp")!;
+    const byBeat = new Map(p.hits.map((h) => [h.beat, h.direction]));
+    expect(byBeat.get(0)).toBe("down");
+    expect(byBeat.get(1.5)).toBe("up");
+  });
+
+  it("offbeat-skank plays every hit as a reggae upstroke", () => {
+    const p = getChordPattern("offbeat-skank")!;
+    expect(p.hits.every((h) => h.direction === "up")).toBe(true);
+  });
+
+  it("jazz-comp strums down on the downbeat and up on the off-beat pickups", () => {
+    const p = getChordPattern("jazz-comp")!;
+    const byBeat = new Map(p.hits.map((h) => [h.beat, h.direction]));
+    expect(byBeat.get(0)).toBe("down");
+    expect(byBeat.get(1.5)).toBe("up");
+    expect(byBeat.get(3.5)).toBe("up");
+  });
+
+  it("leaves straight-quarters all-down (default) — no annotations", () => {
+    const p = getChordPattern("straight-quarters")!;
+    expect(p.hits.every((h) => h.direction === undefined)).toBe(true);
+  });
+});
+
 describe("bossa patterns", () => {
   it("rewrites the bossa drum pattern as a 2-bar cell with a bossa-clave cross-stick", () => {
     const bossa = getDrumPattern("bossa")!;
