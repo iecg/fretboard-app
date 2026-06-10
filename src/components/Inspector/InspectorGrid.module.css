@@ -128,6 +128,14 @@
   flex-shrink: 0;
 }
 
+/* Grouped button clusters (e.g. the Song-tab instrument toggles) stay compact
+   and left-aligned rather than stretching to fill the prop cell — scoped to the
+   instrument cluster's aria-label so other role="group" controls that DO want
+   the full cell width (chord-type grid, note selector, etc.) are unaffected. */
+.propControl > :global([role="group"][aria-label="Backing instruments"]) {
+  width: auto;
+}
+
 .propHint {
   margin: 0;
   font-size: 0.625rem;

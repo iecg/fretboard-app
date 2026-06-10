@@ -43,6 +43,9 @@ describe("InstrumentToggleCluster", () => {
       expect(button).toHaveAttribute("aria-pressed", "false");
       fireEvent.click(button);
       expect(store.get(atom)).toBe(true);
+      // Cover the atom→attribute render path: the rendered button reflects the
+      // new state, not just the underlying atom.
+      expect(button).toHaveAttribute("aria-pressed", "true");
       unmount();
     }
   });

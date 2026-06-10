@@ -46,7 +46,7 @@ export function BackingTrackControls({ hideHeader = false }: BackingTrackControl
     <>
       {!hideHeader && <GroupHeader>{t("inspector.groupBackingTrack")}</GroupHeader>}
       {useSheetShell && (
-        <Prop label={t("inspector.btTracks")} span={6}>
+        <Prop label={t("inspector.btInstruments")} span={6}>
           <InstrumentToggleCluster />
         </Prop>
       )}
