@@ -30,8 +30,13 @@
   flex-shrink: 0;
 }
 
+/* The --track-* fallbacks below let .transportButton render standalone (e.g.
+   in the mobile sheet's peek row) without a .transportBar / .cluster ancestor
+   declaring them. The fallback literals mirror the .transportBar declarations
+   above; light theme needs none because its overrides further down target
+   .transportButton directly with literals. */
 .transportButton {
-  --tb-fg: var(--track-accent-dim);
+  --tb-fg: var(--track-accent-dim, rgb(77 228 255 / 0.55));
   --tb-border: rgb(77 228 255 / 0.18);
   --tb-bg: rgb(77 228 255 / 0.03);
 
@@ -54,7 +59,7 @@
 }
 
 .transportButton:hover:not(:disabled) {
-  --tb-fg: var(--track-accent);
+  --tb-fg: var(--track-accent, var(--faceplate-accent, #4DE4FF));
   --tb-border: rgb(77 228 255 / 0.45);
   --tb-bg: rgb(77 228 255 / 0.08);
 }
@@ -65,9 +70,9 @@
 
 .transportButton:focus-visible {
   outline: none;
-  --tb-border: var(--track-accent);
+  --tb-border: var(--track-accent, var(--faceplate-accent, #4DE4FF));
   box-shadow:
-    0 0 0 1px var(--track-accent),
+    0 0 0 1px var(--track-accent, var(--faceplate-accent, #4DE4FF)),
     0 0 10px rgb(77 228 255 / 0.45);
 }
 
@@ -77,7 +82,7 @@
 }
 
 .transportButton--accent {
-  --tb-fg: var(--track-accent);
+  --tb-fg: var(--track-accent, var(--faceplate-accent, #4DE4FF));
   --tb-border: rgb(77 228 255 / 0.6);
   --tb-bg: rgb(77 228 255 / 0.1);
 
@@ -87,8 +92,15 @@
     inset 0 0 10px rgb(77 228 255 / 0.08);
 }
 
+/* Touch-size variant for standalone hosts whose primary control needs a 44px
+   hit target regardless of tier guards (e.g. the sheet peek play button). */
+.transportButton--touch {
+  min-width: var(--size-touch-target);
+  min-height: var(--size-touch-target);
+}
+
 .playButton {
-  color: var(--track-accent);
+  color: var(--track-accent, var(--faceplate-accent, #4DE4FF));
 }
 
 .spinIcon {

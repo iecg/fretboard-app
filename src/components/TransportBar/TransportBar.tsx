@@ -1,9 +1,9 @@
-import clsx from "clsx";
 import { LoaderCircle, Play, Repeat, Square } from "lucide-react";
 import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
 import { useTranslation } from "../../hooks/useTranslation";
 import shared from "../shared/shared.module.css";
 import { InstrumentToggleCluster } from "./InstrumentToggleCluster";
+import { TransportButton } from "./TransportButton";
 import styles from "./TransportBar.module.css";
 
 /**
@@ -43,13 +43,9 @@ export function TransportBar() {
       </div>
 
       <div className={styles.transportCluster}>
-        <button
-          type="button"
-          className={clsx(
-            styles.transportButton,
-            styles.playButton,
-            playStopIsPlaying && styles["transportButton--accent"],
-          )}
+        <TransportButton
+          className={styles.playButton}
+          active={playStopIsPlaying}
           onClick={handlePlayStopClick}
           disabled={playStopDisabled}
           aria-label={playStopLabel}
@@ -62,16 +58,15 @@ export function TransportBar() {
           ) : (
             <Play size={14} strokeWidth={2.4} aria-hidden="true" fill="currentColor" />
           )}
-        </button>
-        <button
-          type="button"
-          className={clsx(styles.transportButton, progressionLoopEnabled && styles["transportButton--accent"])}
+        </TransportButton>
+        <TransportButton
+          active={progressionLoopEnabled}
           onClick={() => setProgressionLoopEnabled(!progressionLoopEnabled)}
           aria-pressed={progressionLoopEnabled}
           aria-label="Loop progression"
         >
           <Repeat size={13} strokeWidth={2.4} aria-hidden="true" />
-        </button>
+        </TransportButton>
       </div>
 
       <span className={styles.clusterDivider} aria-hidden="true" />
