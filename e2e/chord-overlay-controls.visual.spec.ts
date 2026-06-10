@@ -72,6 +72,10 @@ test.describe("Chord Overlay Controls Visual", () => {
         chordOverlayMode: "manual",
         chordQualityOverride: "M",
         chordRootOverride: "C",
+        // Mobile rehost: the Inspector tabs live inside the bottom sheet, which
+        // boots at "peek" (body hidden) by default. Seed "full" so the Overlay
+        // tab + ChordOverlayControls are visible/clickable.
+        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );

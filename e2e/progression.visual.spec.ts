@@ -36,15 +36,20 @@ test.describe("Progression Visual", () => {
           { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
+        // Inspector tabs live inside the bottom sheet; "full" exposes them.
+        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );
 
-    // Navigate to the Song tab in the Inspector bottom tab bar.
+    // Navigate to the Song tab in the Inspector sheet tab bar.
     await page.getByRole("tab", { name: "Song" }).click();
 
     await expect(page.getByRole("button", { name: "Sequence" })).toBeVisible();
-    await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
+    // The shell's top-band ProgressionTrack is painted but vaul marks the
+    // sheet's background aria-hidden while the drawer is open, so role-based
+    // queries skip it — assert via the attribute selector instead.
+    await expect(page.locator('[aria-label="Progression track"]')).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });
 
@@ -64,14 +69,16 @@ test.describe("Progression Visual", () => {
           { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
+        // Inspector tabs live inside the bottom sheet; "full" exposes them.
+        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );
 
-    // Navigate to the Song tab in the Inspector bottom tab bar.
+    // Navigate to the Song tab in the Inspector sheet tab bar.
     await page.getByRole("tab", { name: "Song" }).click();
 
-    await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
+    await expect(page.locator('[aria-label="Progression track"]')).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-long-390x844", linuxTolerance);
   });
 
@@ -91,14 +98,16 @@ test.describe("Progression Visual", () => {
           { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
+        // Inspector tabs live inside the bottom sheet; "full" exposes them.
+        mobileSheetSnap: "full",
       },
       { width: 375, height: 667 },
     );
 
-    // Navigate to the Song tab in the Inspector bottom tab bar.
+    // Navigate to the Song tab in the Inspector sheet tab bar.
     await page.getByRole("tab", { name: "Song" }).click();
 
-    await expect(page.getByRole("group", { name: "Progression track" })).toBeVisible();
+    await expect(page.locator('[aria-label="Progression track"]')).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-long-375x667", linuxTolerance);
   });
 
@@ -147,6 +156,8 @@ test.describe("Progression Visual", () => {
           { id: "s7", degree: "vii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
+        // Inspector tabs live inside the bottom sheet; "full" exposes them.
+        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );
@@ -154,7 +165,9 @@ test.describe("Progression Visual", () => {
     // The step list lives in the Inspector Song tab.
     await page.getByRole("tab", { name: "Song" }).click();
 
-    const track = page.getByRole("group", { name: "Progression track" });
+    // vaul marks the sheet's background aria-hidden while open, so the top-band
+    // track is skipped by role queries — locate it via the attribute selector.
+    const track = page.locator('[aria-label="Progression track"]');
     await expect(track).toBeVisible();
     expect(
       await track.evaluate((el) => el.scrollLeft),

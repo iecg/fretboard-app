@@ -43,6 +43,12 @@ export interface VisualState {
     qualityOverride: string | null;
   }>;
   fingeringPattern?: string;
+  /**
+   * Mobile bottom-sheet snap position (sheet shell only). Seeds the
+   * `<prefix>mobileSheetSnap` localStorage key so the vaul sheet boots at a
+   * deterministic snap ("peek" | "half" | "full") for snapshots.
+   */
+  mobileSheetSnap?: "peek" | "half" | "full";
   [key: string]: unknown;
 }
 
@@ -124,7 +130,11 @@ export async function loadVisualState(
     `,
   });
 
-  await page.waitForSelector('[data-testid="app-container"]');
+  // Mobile/tablet-split render the MobileShell instead of the desktop
+  // app-container, so wait for whichever shell root mounts.
+  await page.waitForSelector(
+    '[data-testid="app-container"], [data-testid="mobile-shell"]'
+  );
   await page.waitForLoadState("networkidle");
   await page.evaluate(() => document.fonts.ready);
   await waitForStableLayout(page);
@@ -325,9 +335,39 @@ export async function expectLocatorVisual(locator: Locator, name: string) {
 }
 
 /**
- * Opens the settings drawer and waits for it to be stable.
+ * True when the current shell is the mobile/tablet-split sheet shell — the
+ * compact header renders a single overflow menu instead of inline icon buttons.
+ */
+async function isSheetShell(page: Page): Promise<boolean> {
+  return (
+    (await page.locator('[data-testid="header-overflow-trigger"]').count()) > 0
+  );
+}
+
+/**
+ * Opens an overflow-menu item ("Settings" / "Help") on the mobile sheet shell
+ * and waits for the resulting AdaptiveModal sheet to be visible + stable.
+ */
+async function openOverflowItem(page: Page, itemName: RegExp) {
+  await page.getByTestId("header-overflow-trigger").click();
+  await page.getByRole("menuitem", { name: itemName }).click();
+  const sheet = page.locator('[data-testid="adaptive-modal-sheet"]');
+  await sheet.waitFor({ state: "visible" });
+  await page.evaluate(() => document.fonts.ready);
+  await waitForStable(sheet);
+  await waitForStableLayout(page);
+}
+
+/**
+ * Opens settings and waits for it to be stable. Desktop opens the inline
+ * settings drawer; the mobile sheet shell opens it from the overflow menu as an
+ * AdaptiveModal sheet.
  */
 export async function openSettings(page: Page) {
+  if (await isSheetShell(page)) {
+    await openOverflowItem(page, /^Settings$/);
+    return;
+  }
   await page.getByLabel("Open settings").click();
   const drawer = page.locator('[data-testid="settings-drawer"]');
   await drawer.waitFor({ state: "visible" });
@@ -337,9 +377,15 @@ export async function openSettings(page: Page) {
 }
 
 /**
- * Opens the help modal and waits for it to be stable.
+ * Opens help and waits for it to be stable. Desktop opens the inline help
+ * modal; the mobile sheet shell opens it from the overflow menu as an
+ * AdaptiveModal sheet.
  */
 export async function openHelp(page: Page) {
+  if (await isSheetShell(page)) {
+    await openOverflowItem(page, /Help/);
+    return;
+  }
   await page.getByLabel("Open help").click();
   const modal = page.locator('[data-testid="help-modal"]');
   await modal.waitFor({ state: "visible" });
