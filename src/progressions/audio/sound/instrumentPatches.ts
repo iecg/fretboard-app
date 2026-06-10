@@ -105,11 +105,13 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
       envelope: { attack: 0.01, decay: 1.1, sustain: 0.05, release: 0.4 },
       noteDurationSec: 1.8, releaseTailSec: 2.35,
       // Per-voice attenuation: 4-6 simultaneous voices at 0 dBFS sum to ~+14 dBFS
-      // before the channel, overloading the compressor by 22+ dB and making rock
-      // 5-6 dB louder post-compression than poly-patch genres. -18 dB per voice
-      // brings the 6-voice peak to ~-10 dBFS pre-compressor at typical velocity,
-      // matching grand-piano / e-piano poly levels and normalizing perceived loudness.
-      voiceVolumeDb: -18,
+      // before the channel, overloading the compressor. -14 dB per voice tames
+      // that multi-voice sum while deliberately leaving the strummed guitar ~4 dB
+      // above the poly-patch genres: the strum is meant to sit on top of the mix
+      // (rock, blues, and any manual strum selection), not merely match the keys.
+      // Funk is unaffected — it uses the separate `chord-funk-scratch` MonoSynth
+      // patch (velocity-native, no per-voice attenuation).
+      voiceVolumeDb: -14,
     },
     insert: { eq3: { low: 0, mid: 0, high: 2 } },
   },
