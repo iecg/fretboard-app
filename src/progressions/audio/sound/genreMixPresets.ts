@@ -1,3 +1,6 @@
+import { getChordPatch } from "./instrumentPatches";
+import type { ChordInstrumentId } from "../instruments/types";
+
 export type MixInstrument = "chord" | "bass" | "drums" | "metronome";
 
 export interface InstrumentMix {
@@ -22,6 +25,10 @@ export interface GenreMix {
   patches: { bass: string; chord: string; chordAlt?: string; drumKit: string };
   perInstrument: Record<MixInstrument, InstrumentMix>;
   master: MasterMix;
+  /** Optional chord-bus block used when the user selects the NON-default chord
+   *  family (resolved by `resolveMixForInstrument`). Lets a genre stage the
+   *  swapped instrument independently of its default. Unset = no override. */
+  chordAltMix?: InstrumentMix;
 }
 
 /**
@@ -128,6 +135,22 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
 
 const byGenre = new Map(GENRE_MIX_PRESETS.map((m) => [m.genre, m]));
 export const getGenreMix = (genre: string): GenreMix | undefined => byGenre.get(genre);
+
+/**
+ * Resolve a genre mix for the user's selected chord instrument. When the genre
+ * defines a `chordAltMix` AND the selected instrument's family differs from the
+ * default chord patch's family, the chord bus block is replaced by `chordAltMix`;
+ * otherwise the mix is returned unchanged (same object reference). Pure.
+ */
+export function resolveMixForInstrument(mix: GenreMix, instrument: ChordInstrumentId): GenreMix {
+  if (!mix.chordAltMix) return mix;
+  const defaultFamily = getChordPatch(mix.patches.chord)?.family;
+  if (!defaultFamily) return mix; // unknown patch → fail safe, no swap
+  // "piano" and "organ" both render on the poly synth family.
+  const selectedFamily = instrument === "strum" ? "strum" : "poly";
+  if (selectedFamily === defaultFamily) return mix;
+  return { ...mix, perInstrument: { ...mix.perInstrument, chord: mix.chordAltMix } };
+}
 
 /** Fallback mix when a genre id has no preset (defensive). */
 export const DEFAULT_GENRE_MIX: GenreMix = GENRE_MIX_PRESETS[0];

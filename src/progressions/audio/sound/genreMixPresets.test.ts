@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { GENRE_MIX_PRESETS, getGenreMix, MASTER_LIMITER_CEILING_DB } from "./genreMixPresets";
+import { GENRE_MIX_PRESETS, getGenreMix, MASTER_LIMITER_CEILING_DB, resolveMixForInstrument } from "./genreMixPresets";
 import { getBassPatch, getChordPatch, getDrumKitPatch } from "./instrumentPatches";
 import { GENRE_STYLES } from "../genres";
 
@@ -120,5 +120,45 @@ describe("genre mix presets", () => {
     const patchId = getGenreMix("funk")!.patches.chord;
     const patch = getChordPatch(patchId)!;
     expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
+  });
+
+  describe("resolveMixForInstrument", () => {
+    it("returns the same mix object when the genre has no chordAltMix (all current genres)", () => {
+      for (const m of GENRE_MIX_PRESETS) {
+        expect(resolveMixForInstrument(m, "strum")).toBe(m);
+        expect(resolveMixForInstrument(m, "organ")).toBe(m);
+      }
+    });
+
+    it("swaps in chordAltMix only when the selected family differs from the default", () => {
+      const base = getGenreMix("blues")!; // strum default (chord-steel-strum)
+      const altBlock = { volumeDb: 2, pan: 0.3, reverbSend: 0.4 };
+      const withAlt = { ...base, chordAltMix: altBlock };
+      // Strum is the default family → unchanged chord block.
+      expect(resolveMixForInstrument(withAlt, "strum").perInstrument.chord).toBe(base.perInstrument.chord);
+      // Poly (organ/piano) differs from the strum default → use the alt block.
+      expect(resolveMixForInstrument(withAlt, "organ").perInstrument.chord).toBe(altBlock);
+      expect(resolveMixForInstrument(withAlt, "piano").perInstrument.chord).toBe(altBlock);
+      // patches are preserved (only the chord bus block changes).
+      expect(resolveMixForInstrument(withAlt, "organ").patches).toBe(base.patches);
+    });
+
+    it("returns the same mix when the default chord patch id is unknown (fail safe)", () => {
+      const base = getGenreMix("blues")!;
+      const withBadPatch = {
+        ...base,
+        patches: { ...base.patches, chord: "chord-does-not-exist" },
+        chordAltMix: { volumeDb: 2, pan: 0.3, reverbSend: 0.4 },
+      };
+      expect(resolveMixForInstrument(withBadPatch, "organ")).toBe(withBadPatch);
+    });
+
+    it("swaps for a poly-default genre when strum is selected", () => {
+      const base = getGenreMix("pop")!; // poly default (chord-grand-piano)
+      const altBlock = { volumeDb: -1, pan: -0.1, reverbSend: 0.1 };
+      const withAlt = { ...base, chordAltMix: altBlock };
+      expect(resolveMixForInstrument(withAlt, "piano").perInstrument.chord).toBe(base.perInstrument.chord);
+      expect(resolveMixForInstrument(withAlt, "strum").perInstrument.chord).toBe(altBlock);
+    });
   });
 });
