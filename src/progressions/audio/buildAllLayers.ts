@@ -28,7 +28,6 @@ import { applyJitter, shouldDropHit, grooveLockTimeAmount } from "./humanize";
 
 type DrumVoice = "kick" | "snare" | "hihat" | "openHat" | "ride" | "crossStick";
 type StrumStyle = "staccato" | "sustained";
-type StrumDirection = "down" | "up";
 
 export interface ChordOnsetEvent {
   stepIndex: number;
@@ -43,7 +42,6 @@ export interface ChordStrumEvent {
   voicing: readonly string[];
   velocity: number;
   style?: StrumStyle;
-  direction?: StrumDirection;
   durationSec?: number;
 }
 
@@ -352,7 +350,6 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
                         : compVoicing,
               velocity,
               style: hit.style,
-              direction: hit.direction,
               durationSec:
                 hit.articulation === "muted"
                   ? MUTED_STRUM_DURATION_SEC

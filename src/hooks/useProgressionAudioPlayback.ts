@@ -7,7 +7,6 @@ import {
   progressionBassEnabledAtom,
   progressionBassPatternAtom,
   progressionChordEnabledAtom,
-  progressionChordInstrumentAtom,
   progressionChordPatternAtom,
   progressionDrumPatternAtom,
   progressionDrumsEnabledAtom,
@@ -131,7 +130,6 @@ export function useProgressionAudioPlayback() {
   const tempo = useAtomValue(progressionTempoBpmAtom);
   const beatsPerBar = useAtomValue(beatsPerBarAtom);
   const swing = useAtomValue(progressionSwingAtom);
-  const chordInstrument = useAtomValue(progressionChordInstrumentAtom);
   const chordPatternId = useAtomValue(progressionChordPatternAtom);
   const bassPatternId = useAtomValue(progressionBassPatternAtom);
   const drumPatternId = useAtomValue(progressionDrumPatternAtom);
@@ -212,7 +210,6 @@ export function useProgressionAudioPlayback() {
       loopEnabled,
     ],
   );
-  const instrumentRef = useRef(chordInstrument);
   const genRef = useRef(0);
   // Tempo the currently-live Tone Parts were baked at. The layer event timings
   // are seconds-at-build-tempo; a live tempo change rescales the Transport but
@@ -462,16 +459,12 @@ export function useProgressionAudioPlayback() {
       await yieldToMacrotask();
       if (gen !== genRef.current) return;
 
-      const mix = eng.resolveMixForInstrument(
-        eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX,
-        store.get(progressionChordInstrumentAtom),
-      );
+      const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
       const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
       eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
       const bassPatch = eng.getBassPatch(mix.patches.bass);
       const drumKit = eng.getDrumKitPatch(mix.patches.drumKit);
       const chordPatchId = mix.patches.chord;
-      const chordAltPatchId = mix.patches.chordAlt;
 
       const inputs = buildInputsRef.current;
 
@@ -580,9 +573,9 @@ export function useProgressionAudioPlayback() {
       const chordStrumPart = eng.createProgressionPart<ChordStrumEvent>({
         events: built.chordStrums, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, value) => {
-          const voice = eng.getChordVoiceForInstrument(instrumentRef.current, chordPatchId, chordAltPatchId);
+          const voice = eng.getChordVoice(chordPatchId);
           voice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
-            velocity: value.velocity, style: value.style, direction: value.direction, durationSec: value.durationSec,
+            velocity: value.velocity, style: value.style, durationSec: value.durationSec,
           });
         },
       });
@@ -693,10 +686,6 @@ export function useProgressionAudioPlayback() {
   }, [swing]);
 
   useEffect(() => {
-    instrumentRef.current = chordInstrument;
-  }, [chordInstrument]);
-
-  useEffect(() => {
     if (!engine) return;
     const audio = engine.ensureProgressionAudio();
     if (!audio) return;
@@ -732,10 +721,7 @@ export function useProgressionAudioPlayback() {
         if (action === "restart") {
           setTabRestartTick((t) => t + 1);
         } else if (action === "rebuild") {
-          const mix = eng.resolveMixForInstrument(
-            eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX,
-            store.get(progressionChordInstrumentAtom),
-          );
+          const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
           const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
           eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
         }
@@ -785,13 +771,10 @@ export function useProgressionAudioPlayback() {
     if (!engine || !playing) return;
     const eng = engine;
     const timer = setTimeout(() => {
-      const mix = eng.resolveMixForInstrument(
-        eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX,
-        chordInstrument,
-      );
+      const mix = eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX;
       const tier = resolveActiveTier(eng, quality);
       eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
     }, 0);
     return () => clearTimeout(timer);
-  }, [genreId, quality, playing, chordInstrument]);
+  }, [genreId, quality, playing]);
 }

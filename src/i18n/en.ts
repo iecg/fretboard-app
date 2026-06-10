@@ -77,7 +77,6 @@ export const en: Dictionary = {
     timeSignature: "Time signature",
     timeSignatureAriaLabel: "Time signature",
     btGenre: "Genre",
-    btInstrument: "Instrument",
     btChordPattern: "Chord Pattern",
     btBassPattern: "Bass Pattern",
     btDrumPattern: "Drum Pattern",

@@ -75,7 +75,6 @@ export interface Dictionary {
     timeSignature: string;
     timeSignatureAriaLabel: string;
     btGenre: string;
-    btInstrument: string;
     btChordPattern: string;
     btBassPattern: string;
     btDrumPattern: string;

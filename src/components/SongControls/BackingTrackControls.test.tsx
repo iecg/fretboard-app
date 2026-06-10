@@ -14,7 +14,6 @@ describe("BackingTrackControls", () => {
     renderWithStore(<BackingTrackControls />, makeAtomStore([]));
     expect(screen.getByRole("heading", { name: "Backing Track" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Chord pattern" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Bass pattern" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Drum pattern" })).toBeInTheDocument();

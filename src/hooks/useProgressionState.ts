@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { activeProgressionStepIndexAtom, activeResolvedProgressionStepAtom, addProgressionStepAtom, duplicateProgressionStepAtom, advanceProgressionPlaybackAtom, applyGenreStyleAtom, beatsPerBarAtom, currentProgressionBarAtom, currentProgressionPresetIdAtom, displayedProgressionStepIndexAtom, loadProgressionPresetAtom, loadProgressionSuggestionAtom, moveProgressionStepAtom, previousProgressionStepAtom, progressionBassEnabledAtom, progressionBassPatternAtom, progressionChordEnabledAtom, progressionChordInstrumentAtom, progressionChordPatternAtom, progressionDrumPatternAtom, progressionDrumsEnabledAtom, progressionDrumVariationsAtom, progressionGenreStyleAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackBlockedReasonAtom, progressionPlayingAtom, progressionStepDurationMsAtom, progressionStepDeadlineAtom, progressionStepsAtom, progressionSwingAtom, progressionTempoBpmAtom, qualityLockAtom, removeProgressionStepAtom, resolvedProgressionStepsAtom, selectProgressionStepRootAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, totalProgressionBarsAtom, updateProgressionStepDegreeAtom, updateProgressionStepDurationAtom, updateProgressionStepQualityAtom } from "../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, activeResolvedProgressionStepAtom, addProgressionStepAtom, duplicateProgressionStepAtom, advanceProgressionPlaybackAtom, applyGenreStyleAtom, beatsPerBarAtom, currentProgressionBarAtom, currentProgressionPresetIdAtom, displayedProgressionStepIndexAtom, loadProgressionPresetAtom, loadProgressionSuggestionAtom, moveProgressionStepAtom, previousProgressionStepAtom, progressionBassEnabledAtom, progressionBassPatternAtom, progressionChordEnabledAtom, progressionChordPatternAtom, progressionDrumPatternAtom, progressionDrumsEnabledAtom, progressionDrumVariationsAtom, progressionGenreStyleAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackBlockedReasonAtom, progressionPlayingAtom, progressionStepDurationMsAtom, progressionStepDeadlineAtom, progressionStepsAtom, progressionSwingAtom, progressionTempoBpmAtom, qualityLockAtom, removeProgressionStepAtom, resolvedProgressionStepsAtom, selectProgressionStepRootAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, totalProgressionBarsAtom, updateProgressionStepDegreeAtom, updateProgressionStepDurationAtom, updateProgressionStepQualityAtom } from "../store/progressionAtoms";
 
 export function useProgressionState() {
   const [progressionTempoBpm, setProgressionTempoBpm] = useAtom(progressionTempoBpmAtom);
@@ -11,24 +11,15 @@ export function useProgressionState() {
   const [progressionBassEnabled, setProgressionBassEnabled] = useAtom(progressionBassEnabledAtom);
   const progressionGenreStyle = useAtomValue(progressionGenreStyleAtom);
   const setGenreStyle = useSetAtom(progressionGenreStyleAtom);
-  const [progressionChordInstrument, rawSetChordInstrument] = useAtom(progressionChordInstrumentAtom);
   const [progressionChordPattern, rawSetChordPattern] = useAtom(progressionChordPatternAtom);
   const [progressionBassPattern, rawSetBassPattern] = useAtom(progressionBassPatternAtom);
   const [progressionDrumPattern, rawSetDrumPattern] = useAtom(progressionDrumPatternAtom);
   const [progressionDrumVariations, rawSetDrumVariations] = useAtom(progressionDrumVariationsAtom);
   const [progressionSwing, rawSetSwing] = useAtom(progressionSwingAtom);
 
-  // Changing any individual instrument/pattern/swing setting after picking a
-  // genre means the active mix no longer matches that genre — revert the
-  // genre selector to "custom". `applyGenreStyle` is exempt: it legitimately
-  // sets the genre.
-  const setProgressionChordInstrument = useCallback(
-    (v: typeof progressionChordInstrument) => {
-      rawSetChordInstrument(v);
-      setGenreStyle("custom");
-    },
-    [rawSetChordInstrument, setGenreStyle],
-  );
+  // Changing any individual pattern/swing setting after picking a genre means
+  // the active mix no longer matches that genre — revert the genre selector to
+  // "custom". `applyGenreStyle` is exempt: it legitimately sets the genre.
   const setProgressionChordPattern = useCallback(
     (v: string) => {
       rawSetChordPattern(v);
@@ -96,8 +87,6 @@ export function useProgressionState() {
     setProgressionChordEnabled,
     progressionGenreStyle,
     applyGenreStyle: useSetAtom(applyGenreStyleAtom),
-    progressionChordInstrument,
-    setProgressionChordInstrument,
     progressionChordPattern,
     setProgressionChordPattern,
     progressionBassPattern,

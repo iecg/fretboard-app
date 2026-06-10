@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { GENRE_MIX_PRESETS, getGenreMix, MASTER_LIMITER_CEILING_DB, resolveMixForInstrument } from "./genreMixPresets";
+import { GENRE_MIX_PRESETS, getGenreMix, MASTER_LIMITER_CEILING_DB } from "./genreMixPresets";
 import { getBassPatch, getChordPatch, getDrumKitPatch } from "./instrumentPatches";
 import { GENRE_STYLES } from "../genres";
 
@@ -15,37 +15,15 @@ describe("genre mix presets", () => {
       expect(getBassPatch(m.patches.bass), `bass ${m.patches.bass}`).toBeDefined();
       expect(getChordPatch(m.patches.chord), `chord ${m.patches.chord}`).toBeDefined();
       expect(getDrumKitPatch(m.patches.drumKit), `kit ${m.patches.drumKit}`).toBeDefined();
-      if (m.patches.chordAlt) {
-        expect(getChordPatch(m.patches.chordAlt), `chordAlt ${m.patches.chordAlt}`).toBeDefined();
-      }
     }
   });
 
-  it("genre chord-patch family matches the genre's chordInstrument family", () => {
-    for (const g of GENRE_STYLES) {
-      const mix = getGenreMix(g.id)!;
-      const patch = getChordPatch(mix.patches.chord)!;
-      const expectedFamily = g.chordInstrument === "strum" ? "strum" : "poly";
-      expect(patch.family, `${g.id}`).toBe(expectedFamily);
-    }
-  });
-
-  it("defaults blues to a strummed guitar with the organ preserved as the alt patch", () => {
-    const blues = getGenreMix("blues")!;
-    const primary = getChordPatch(blues.patches.chord)!;
-    expect(primary.family).toBe("strum"); // default out-of-the-box = strummed guitar
-    expect(blues.patches.chordAlt).toBe("chord-jazz-organ");
-    const alt = getChordPatch(blues.patches.chordAlt!)!;
-    expect(alt.family).toBe("poly"); // organ still reachable via the keys instrument
-  });
-
-  it("any genre's chordAlt (when present) is the opposite family of its default chord patch", () => {
+  it("every genre's chord patch is a piano (the chord layer is piano-only)", () => {
+    // The chord-instrument feature (strum/organ) was dropped — synthesized
+    // guitar never read as a guitar. Every genre comps on a piano poly patch.
     for (const m of GENRE_MIX_PRESETS) {
-      if (!m.patches.chordAlt) continue;
-      const primary = getChordPatch(m.patches.chord)!;
-      const alt = getChordPatch(m.patches.chordAlt);
-      expect(alt, `chordAlt ${m.patches.chordAlt} not found`).toBeDefined();
-      expect(alt!.family, `${m.genre}`).not.toBe(primary.family);
+      const patch = getChordPatch(m.patches.chord)!;
+      expect(patch.poly, `${m.genre} chord patch must be a poly piano`).toBeDefined();
     }
   });
 
@@ -103,10 +81,6 @@ describe("genre mix presets", () => {
     expect(rock.perInstrument.bass.volumeDb).toBeLessThanOrEqual(-1);
   });
 
-  it("uses the short funk-scratch guitar patch for funk", () => {
-    expect(getGenreMix("funk")!.patches.chord).toBe("chord-funk-scratch");
-  });
-
   it("retunes bass bus levels to tame over-hot low end (mix balance pass)", () => {
     expect(getGenreMix("rock")!.perInstrument.bass.volumeDb).toBe(-5);
     expect(getGenreMix("blues")!.perInstrument.bass.volumeDb).toBe(-2);
@@ -114,51 +88,15 @@ describe("genre mix presets", () => {
     expect(getGenreMix("pop")!.perInstrument.bass.volumeDb).toBe(-1);
   });
 
-  it("funk's chord patch is short-decay so the guitar can actually scratch", () => {
-    // Recurrence guard: two prior funk passes failed because the guitar was a
-    // long-ringing acoustic strum. The funk chord patch must stay short.
-    const patchId = getGenreMix("funk")!.patches.chord;
-    const patch = getChordPatch(patchId)!;
-    expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
-  });
-
-  describe("resolveMixForInstrument", () => {
-    it("returns the same mix object when the genre has no chordAltMix (all current genres)", () => {
-      for (const m of GENRE_MIX_PRESETS) {
-        expect(resolveMixForInstrument(m, "strum")).toBe(m);
-        expect(resolveMixForInstrument(m, "organ")).toBe(m);
-      }
-    });
-
-    it("swaps in chordAltMix only when the selected family differs from the default", () => {
-      const base = getGenreMix("blues")!; // strum default (chord-steel-strum)
-      const altBlock = { volumeDb: 2, pan: 0.3, reverbSend: 0.4 };
-      const withAlt = { ...base, chordAltMix: altBlock };
-      // Strum is the default family → unchanged chord block.
-      expect(resolveMixForInstrument(withAlt, "strum").perInstrument.chord).toBe(base.perInstrument.chord);
-      // Poly (organ/piano) differs from the strum default → use the alt block.
-      expect(resolveMixForInstrument(withAlt, "organ").perInstrument.chord).toBe(altBlock);
-      expect(resolveMixForInstrument(withAlt, "piano").perInstrument.chord).toBe(altBlock);
-      // patches are preserved (only the chord bus block changes).
-      expect(resolveMixForInstrument(withAlt, "organ").patches).toBe(base.patches);
-    });
-
-    it("returns the same mix when the default chord patch id is unknown (fail safe)", () => {
-      const base = getGenreMix("blues")!;
-      const withBadPatch = {
-        ...base,
-        patches: { ...base.patches, chord: "chord-does-not-exist" },
-        chordAltMix: { volumeDb: 2, pan: 0.3, reverbSend: 0.4 },
-      };
-      expect(resolveMixForInstrument(withBadPatch, "organ")).toBe(withBadPatch);
-    });
-
-    it("swaps for a poly-default genre when strum is selected", () => {
-      const base = getGenreMix("pop")!; // poly default (chord-grand-piano)
-      const altBlock = { volumeDb: -1, pan: -0.1, reverbSend: 0.1 };
-      const withAlt = { ...base, chordAltMix: altBlock };
-      expect(resolveMixForInstrument(withAlt, "piano").perInstrument.chord).toBe(base.perInstrument.chord);
-      expect(resolveMixForInstrument(withAlt, "strum").perInstrument.chord).toBe(altBlock);
-    });
+  it("stages the piano chord bus consistently across genres (piano-only seeds)", () => {
+    // -2 reference everywhere; funk and bossa tuck the comp slightly under
+    // their busier rhythm sections. By-ear seeds from the piano-only pivot.
+    expect(getGenreMix("pop")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("rock")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("blues")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("jazz")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("ballad")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("funk")!.perInstrument.chord.volumeDb).toBe(-3);
+    expect(getGenreMix("bossa-nova")!.perInstrument.chord.volumeDb).toBe(-3);
   });
 });

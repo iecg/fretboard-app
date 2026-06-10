@@ -320,10 +320,6 @@ describe("funk-16th chord comp pattern", () => {
     expect(ghosts.length).toBeGreaterThanOrEqual(3); // soft scratch strokes
   });
 
-  it("alternates strum direction for the 16th scratch feel", () => {
-    expect(funk.hits.some((h) => h.direction === "up")).toBe(true);
-    expect(funk.hits.some((h) => h.direction === "down")).toBe(true);
-  });
 });
 
 describe("funk-scratch chord comp", () => {
@@ -337,13 +333,12 @@ describe("funk-scratch chord comp", () => {
     }
   });
 
-  it("anchors the one with a single root note (not a strummed chord)", () => {
+  it("anchors the one with a single root note (not a full chord)", () => {
     const byBeat = new Map(funk.hits.map((h) => [h.beat, h]));
     expect(byBeat.get(0)!.articulation).toBe("root");
-    expect(byBeat.get(0)!.direction).toBe("down");
   });
 
-  it("has one plain stab and two color-stabs as down-strummed offbeat accents", () => {
+  it("has one plain stab and two color-stabs as syncopated offbeat accents", () => {
     const stabs = funk.hits.filter((h) => h.articulation === "stab");
     const colors = funk.hits.filter((h) => h.articulation === "color-stab");
     expect(stabs).toHaveLength(1);
@@ -351,7 +346,6 @@ describe("funk-scratch chord comp", () => {
     expect(colors.map((c) => c.beat).sort((a, b) => a - b)).toEqual([2.5, 3.5]);
     for (const c of colors) {
       expect(c.beat % 1).toBeCloseTo(0.5); // syncopated upbeats (the "&")
-      expect(c.direction).toBe("down"); // down-strummed, not up
       expect(c.velocity).toBeLessThan(stabs[0].velocity); // sit under the main stab
     }
   });
@@ -571,46 +565,29 @@ describe("chord & bass variation catalogs", () => {
   });
 });
 
-describe("strum directions", () => {
-  it("shuffle-comp is a swung eighth-note shuffle strum: down on beats, muted up on the &s", () => {
+describe("shuffle comp groove", () => {
+  it("shuffle-comp is a swung eighth-note shuffle with a 2-and-4 backbeat accent", () => {
     const p = getChordPattern("shuffle-comp")!;
-    // Eight hits across the bar — a downstroke on every beat, an up on every "&".
+    // Eight hits across the bar — a full chord on every beat, a ghost on every "&".
     expect(p.hits.map((h) => h.beat)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]);
     for (const h of p.hits) {
       if (h.beat % 1 === 0) {
-        expect(h.direction, `beat ${h.beat}`).toBe("down");
         expect(h.articulation, `beat ${h.beat}`).toBeUndefined(); // full comp chord
       } else {
-        expect(h.direction, `beat ${h.beat}`).toBe("up");
-        expect(h.articulation, `beat ${h.beat}`).toBe("muted"); // ghost up-brush
+        expect(h.articulation, `beat ${h.beat}`).toBe("muted"); // ghost blip
       }
     }
-    // Front-weighted accents: the "1" strongest, beat 3 the secondary accent,
-    // and every downbeat louder than every ghost off-beat.
+    // Backbeat accent: the "2" and "4" (beats 1 & 3) are the loudest downbeats and
+    // every downbeat is louder than every ghost off-beat.
     const byBeat = new Map(p.hits.map((h) => [h.beat, h.velocity]));
-    expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(2)!);
-    expect(byBeat.get(2)!).toBeGreaterThan(byBeat.get(1)!);
+    expect(byBeat.get(1)!).toBeGreaterThan(byBeat.get(0)!); // "2" > "1"
+    expect(byBeat.get(3)!).toBeGreaterThan(byBeat.get(2)!); // "4" > "3"
+    const backbeatMin = Math.min(byBeat.get(1)!, byBeat.get(3)!);
+    const nonBackbeatMax = Math.max(byBeat.get(0)!, byBeat.get(2)!);
+    expect(backbeatMin).toBeGreaterThan(nonBackbeatMax); // both backbeats beat both others
     const maxOffbeat = Math.max(...p.hits.filter((h) => h.beat % 1 !== 0).map((h) => h.velocity));
     const minDownbeat = Math.min(...p.hits.filter((h) => h.beat % 1 === 0).map((h) => h.velocity));
     expect(minDownbeat).toBeGreaterThan(maxOffbeat);
-  });
-
-  it("offbeat-skank plays every hit as a reggae upstroke", () => {
-    const p = getChordPattern("offbeat-skank")!;
-    expect(p.hits.every((h) => h.direction === "up")).toBe(true);
-  });
-
-  it("jazz-comp strums down on the downbeat and up on the off-beat pickups", () => {
-    const p = getChordPattern("jazz-comp")!;
-    const byBeat = new Map(p.hits.map((h) => [h.beat, h.direction]));
-    expect(byBeat.get(0)).toBe("down");
-    expect(byBeat.get(1.5)).toBe("up");
-    expect(byBeat.get(3.5)).toBe("up");
-  });
-
-  it("leaves straight-quarters all-down (default) — no annotations", () => {
-    const p = getChordPattern("straight-quarters")!;
-    expect(p.hits.every((h) => h.direction === undefined)).toBe(true);
   });
 });
 

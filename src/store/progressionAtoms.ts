@@ -30,7 +30,6 @@ import {
   scaleNameAtom,
   preferFlatsAtom,
 } from "./scaleAtoms";
-import type { ChordInstrumentId } from "../progressions/audio/instruments/types";
 import { getGenreStyle } from "../progressions/audio/genres";
 import {
   GET_ON_INIT,
@@ -64,13 +63,6 @@ const stringStorage = createStorage<string>({
   serialize: (v) => v,
   deserialize: (raw) => raw,
   validate: stringValidator(),
-});
-
-const chordInstrumentStorage = createStorage<ChordInstrumentId>({
-  serialize: (v) => v,
-  deserialize: (raw) => raw as ChordInstrumentId,
-  validate: (v): v is ChordInstrumentId =>
-    v === "strum" || v === "piano" || v === "organ",
 });
 
 const stringArrayStorage = createStorage<string[]>({
@@ -231,13 +223,6 @@ export const progressionGenreStyleAtom = atomWithStorage<string>(
   GET_ON_INIT,
 );
 
-export const progressionChordInstrumentAtom = atomWithStorage<ChordInstrumentId>(
-  k("progressionChordInstrument"),
-  "strum",
-  chordInstrumentStorage,
-  GET_ON_INIT,
-);
-
 export const progressionChordPatternAtom = atomWithStorage<string>(
   k("progressionChordPattern"),
   "pop-8ths",
@@ -291,7 +276,6 @@ export const applyGenreStyleAtom = atom(null, (_get, set, genreId: string) => {
   const genre = getGenreStyle(genreId);
   if (!genre) return;
   set(progressionGenreStyleAtom, genreId);
-  set(progressionChordInstrumentAtom, genre.chordInstrument);
   set(progressionChordPatternAtom, genre.chordPattern);
   set(progressionBassPatternAtom, genre.bassPattern);
   set(progressionDrumPatternAtom, genre.drumPattern);
@@ -747,7 +731,6 @@ export const resetProgressionAtomsAtom = atom(null, (_get, set) => {
   set(beatsPerBarAtom, RESET);
   set(timeSignatureDenominatorAtom, RESET);
   set(progressionGenreStyleAtom, RESET);
-  set(progressionChordInstrumentAtom, RESET);
   set(progressionChordPatternAtom, RESET);
   set(progressionBassPatternAtom, RESET);
   set(progressionDrumPatternAtom, RESET);

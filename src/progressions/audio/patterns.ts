@@ -11,8 +11,6 @@
  * "groove" object.
  */
 
-type StrumDirection = "down" | "up";
-
 export type ChordArticulation = "muted" | "root" | "stab" | "color-stab";
 
 export interface DrumHit {
@@ -34,12 +32,10 @@ export interface ChordHit {
   beat: number;
   velocity: number;
   style?: "staccato" | "sustained";
-  /** Strum direction; up-strokes reverse the voicing order. Defaults to down. */
-  direction?: StrumDirection;
-  /** Note-length + voicing intent for the strum voice.
+  /** Note-length + voicing intent for the chord voice.
    *  "root" plays a single root note (anchor); "stab" rings a plain chord;
    *  "color-stab" rings a chord with funk extensions; "muted" chokes a plain
-   *  chord short (chicken-scratch ghost). Omitted rings the patch default. */
+   *  chord short (a ghost blip). Omitted rings the patch default. */
   articulation?: ChordArticulation;
   /** Bossa LH/RH split (used when the pattern's voicing is "rootless-jazz"):
    *  "bass-root"/"bass-fifth" play a single low note (LH); "chord" plays the
@@ -142,12 +138,12 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "pop-8ths",
     label: "Pop 8ths",
     hits: [
-      { beat: 0, velocity: 0.95, direction: "down" },
-      { beat: 1, velocity: 0.6, direction: "down" },
-      { beat: 1.5, velocity: 0.55, direction: "up" },
-      { beat: 2.5, velocity: 0.55, direction: "up" },
-      { beat: 3, velocity: 0.7, direction: "down" },
-      { beat: 3.5, velocity: 0.5, direction: "up" },
+      { beat: 0, velocity: 0.95 },
+      { beat: 1, velocity: 0.6 },
+      { beat: 1.5, velocity: 0.55 },
+      { beat: 2.5, velocity: 0.55 },
+      { beat: 3, velocity: 0.7 },
+      { beat: 3.5, velocity: 0.5 },
     ],
   },
   {
@@ -159,62 +155,59 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "offbeat-skank",
     label: "Offbeat Skank",
     hits: [
-      { beat: 0.5, velocity: 0.7, direction: "up" },
-      { beat: 1.5, velocity: 0.7, direction: "up" },
-      { beat: 2.5, velocity: 0.7, direction: "up" },
-      { beat: 3.5, velocity: 0.7, direction: "up" },
+      { beat: 0.5, velocity: 0.7 },
+      { beat: 1.5, velocity: 0.7 },
+      { beat: 2.5, velocity: 0.7 },
+      { beat: 3.5, velocity: 0.7 },
     ],
   },
   {
     id: "shuffle-comp",
     label: "Shuffle Comp",
-    // Eighth-note blues shuffle strum: a downstroke on every beat and a soft
-    // muted up-brush on every swung "&". The swing engine delays the .5
+    // Swung eighth-note blues shuffle comp: a full chord on every beat and a
+    // soft muted ghost blip on every swung "&". The swing engine delays the .5
     // off-beats to the late triplet, so straight eighths here play as the
-    // long–short shuffle. Front-weighted accents (the "1" strongest, beat 3 the
-    // secondary accent); off-beats are ghost strokes. Muted off-beats use the
-    // short choke duration — audible on both the strum voice (a muted up-brush)
-    // and the organ alt (a short ghost blip). Spec:
+    // long–short shuffle. BACKBEAT accent: the hits on "2" and "4" (beats 1 & 3)
+    // are the loudest, locking the comp to the snare backbeat; "1" and "3" sit
+    // softer. Muted off-beats use the short choke duration. Spec:
     // docs/superpowers/specs/2026-06-10-blues-shuffle-strum-realism-design.md
     hits: [
-      { beat: 0, velocity: 0.9, direction: "down" },
-      { beat: 0.5, velocity: 0.4, direction: "up", articulation: "muted" },
-      { beat: 1, velocity: 0.72, direction: "down" },
-      { beat: 1.5, velocity: 0.4, direction: "up", articulation: "muted" },
-      { beat: 2, velocity: 0.8, direction: "down" },
-      { beat: 2.5, velocity: 0.4, direction: "up", articulation: "muted" },
-      { beat: 3, velocity: 0.72, direction: "down" },
-      { beat: 3.5, velocity: 0.5, direction: "up", articulation: "muted" },
+      { beat: 0, velocity: 0.78 }, // "1" (softer)
+      { beat: 0.5, velocity: 0.45, articulation: "muted" },
+      { beat: 1, velocity: 0.95 }, // "2" — backbeat accent
+      { beat: 1.5, velocity: 0.45, articulation: "muted" },
+      { beat: 2, velocity: 0.8 }, // "3" (softer)
+      { beat: 2.5, velocity: 0.45, articulation: "muted" },
+      { beat: 3, velocity: 0.95 }, // "4" — backbeat accent
+      { beat: 3.5, velocity: 0.5, articulation: "muted" },
     ],
   },
   {
     id: "jazz-comp",
     label: "Jazz Comping",
     hits: [
-      { beat: 0, velocity: 0.75, style: "staccato", direction: "down" },
-      { beat: 1.5, velocity: 0.6, style: "staccato", direction: "up" },
-      { beat: 3.5, velocity: 0.7, style: "staccato", direction: "up" },
+      { beat: 0, velocity: 0.75, style: "staccato" },
+      { beat: 1.5, velocity: 0.6, style: "staccato" },
+      { beat: 3.5, velocity: 0.7, style: "staccato" },
     ],
   },
   {
     id: "funk-16th",
     label: "Funk 16ths",
-    // Percussive 16th-note scratch comp: a strong downbeat stab, syncopated
-    // accents on the "e/a" subdivisions, and soft muted scratch strokes between
-    // them. Alternating down/up strums emulate the wrist motion of funk
-    // rhythm guitar. (The strum voice ignores `style`, so the percussive feel
-    // comes from rhythm + velocity dynamics + strum direction, not staccato.)
+    // Percussive 16th-note comp: a strong downbeat stab, syncopated accents on
+    // the "e/a" subdivisions, and soft ghost hits between them. The percussive
+    // feel comes from rhythm + velocity dynamics.
     hits: [
-      { beat: 0, velocity: 0.95, direction: "down" },
-      { beat: 0.5, velocity: 0.3, direction: "up" },
-      { beat: 0.75, velocity: 0.7, direction: "up" },
-      { beat: 1.25, velocity: 0.35, direction: "down" },
-      { beat: 1.5, velocity: 0.65, direction: "up" },
-      { beat: 2, velocity: 0.8, direction: "down" },
-      { beat: 2.5, velocity: 0.3, direction: "up" },
-      { beat: 2.75, velocity: 0.7, direction: "up" },
-      { beat: 3.25, velocity: 0.35, direction: "down" },
-      { beat: 3.5, velocity: 0.6, direction: "up" },
+      { beat: 0, velocity: 0.95 },
+      { beat: 0.5, velocity: 0.3 },
+      { beat: 0.75, velocity: 0.7 },
+      { beat: 1.25, velocity: 0.35 },
+      { beat: 1.5, velocity: 0.65 },
+      { beat: 2, velocity: 0.8 },
+      { beat: 2.5, velocity: 0.3 },
+      { beat: 2.75, velocity: 0.7 },
+      { beat: 3.25, velocity: 0.35 },
+      { beat: 3.5, velocity: 0.6 },
     ],
   },
   {
@@ -222,31 +215,31 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     label: "Funk Scratch",
     // Researched chicken-scratch (Jimmy Nolen / James Brown): a single root-note
     // anchor on the one, one plain chord stab on the 2, then two syncopated
-    // color (rootless funk grip) downstroke stabs on the "&" of 3 and "&" of 4,
+    // color (rootless funk grip) stabs on the "&" of 3 and "&" of 4,
     // with muted ghost 16ths weaving between. Down on numbers/"&", up on "e"/"a".
     hits: [
-      { beat: 0, velocity: 0.9, direction: "down", articulation: "root" },
-      { beat: 0.5, velocity: 0.24, direction: "down", articulation: "muted" },
-      { beat: 0.75, velocity: 0.22, direction: "up", articulation: "muted" },
-      { beat: 1.0, velocity: 0.85, direction: "down", articulation: "stab" },
-      { beat: 1.5, velocity: 0.24, direction: "down", articulation: "muted" },
-      { beat: 1.75, velocity: 0.22, direction: "up", articulation: "muted" },
-      { beat: 2.25, velocity: 0.2, direction: "up", articulation: "muted" },
-      { beat: 2.5, velocity: 0.6, direction: "down", articulation: "color-stab" },
-      { beat: 2.75, velocity: 0.22, direction: "up", articulation: "muted" },
-      { beat: 3.25, velocity: 0.2, direction: "up", articulation: "muted" },
-      { beat: 3.5, velocity: 0.62, direction: "down", articulation: "color-stab" },
-      { beat: 3.75, velocity: 0.2, direction: "up", articulation: "muted" },
+      { beat: 0, velocity: 0.9, articulation: "root" },
+      { beat: 0.5, velocity: 0.24, articulation: "muted" },
+      { beat: 0.75, velocity: 0.22, articulation: "muted" },
+      { beat: 1.0, velocity: 0.85, articulation: "stab" },
+      { beat: 1.5, velocity: 0.24, articulation: "muted" },
+      { beat: 1.75, velocity: 0.22, articulation: "muted" },
+      { beat: 2.25, velocity: 0.2, articulation: "muted" },
+      { beat: 2.5, velocity: 0.6, articulation: "color-stab" },
+      { beat: 2.75, velocity: 0.22, articulation: "muted" },
+      { beat: 3.25, velocity: 0.2, articulation: "muted" },
+      { beat: 3.5, velocity: 0.62, articulation: "color-stab" },
+      { beat: 3.75, velocity: 0.2, articulation: "muted" },
     ],
   },
   {
     id: "pop-syncopated-push",
     label: "Pop Syncopated Push",
     hits: [
-      { beat: 0, velocity: 0.9, direction: "down" },
-      { beat: 1.5, velocity: 0.7, direction: "up" },
-      { beat: 2.5, velocity: 0.8, direction: "down" },
-      { beat: 3.5, velocity: 0.85, direction: "up" },
+      { beat: 0, velocity: 0.9 },
+      { beat: 1.5, velocity: 0.7 },
+      { beat: 2.5, velocity: 0.8 },
+      { beat: 3.5, velocity: 0.85 },
     ],
   },
   {
@@ -659,10 +652,10 @@ export const CHORD_VARIATIONS: readonly ChordVariation[] = [
     // Pushed turnaround bar: a strong stab on the one, anticipated color stabs
     // driving into the next chord.
     hits: [
-      { beat: 0, velocity: 0.92, direction: "down", articulation: "stab" },
-      { beat: 1.5, velocity: 0.6, direction: "up", articulation: "muted" },
-      { beat: 2.5, velocity: 0.7, direction: "down", articulation: "color-stab" },
-      { beat: 3.5, velocity: 0.75, direction: "down", articulation: "color-stab" },
+      { beat: 0, velocity: 0.92, articulation: "stab" },
+      { beat: 1.5, velocity: 0.6, articulation: "muted" },
+      { beat: 2.5, velocity: 0.7, articulation: "color-stab" },
+      { beat: 3.5, velocity: 0.75, articulation: "color-stab" },
     ],
   },
 ];

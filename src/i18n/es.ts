@@ -77,7 +77,6 @@ export const es: Dictionary = {
     timeSignature: "Compás",
     timeSignatureAriaLabel: "Compás musical",
     btGenre: "Género",
-    btInstrument: "Instrumento",
     btChordPattern: "Patrón de acordes",
     btBassPattern: "Patrón de bajo",
     btDrumPattern: "Patrón de batería",

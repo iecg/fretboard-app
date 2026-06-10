@@ -2,7 +2,6 @@ import { useProgressionState } from "../../hooks/useProgressionState";
 import { useTranslation } from "../../hooks/useTranslation";
 import { GENRE_STYLES } from "../../progressions/audio/genres";
 import { CHORD_PATTERNS, BASS_PATTERNS, DRUM_PATTERNS } from "../../progressions/audio/patterns";
-import type { ChordInstrumentId } from "../../progressions/audio/instruments/types";
 import { Prop, GroupHeader } from "../Inspector/InspectorGrid";
 
 export interface BackingTrackControlsProps {
@@ -13,8 +12,8 @@ import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 import styles from "./BackingTrackControls.module.css";
 
 /**
- * The BACKING TRACK group of the Progression tab — genre, chord instrument,
- * the chord/bass/drum pattern pickers, and the swing slider. Rehosted here
+ * The BACKING TRACK group of the Progression tab — genre, the chord/bass/drum
+ * pattern pickers, and the swing slider. Rehosted here
  * from `ProgressionTrack` (DAW Shell Phase 11). Returns a fragment of a
  * `GroupHeader` plus `Prop` cells, designed to be rendered inside the
  * Progression tab's `PropGrid`.
@@ -24,8 +23,6 @@ export function BackingTrackControls({ hideHeader = false }: BackingTrackControl
   const {
     progressionGenreStyle,
     applyGenreStyle,
-    progressionChordInstrument,
-    setProgressionChordInstrument,
     progressionChordPattern,
     setProgressionChordPattern,
     progressionBassPattern,
@@ -53,19 +50,6 @@ export function BackingTrackControls({ hideHeader = false }: BackingTrackControl
               : []),
           ]}
           onChange={applyGenreStyle}
-        />
-      </Prop>
-      <Prop label={t("inspector.btInstrument")} span={1}>
-        <LabeledSelect
-          label="Chord instrument"
-          hideLabel
-          value={progressionChordInstrument}
-          options={[
-            { value: "strum", label: "Strum" },
-            { value: "piano", label: "Piano" },
-            { value: "organ", label: "Organ" },
-          ]}
-          onChange={(v) => setProgressionChordInstrument(v as ChordInstrumentId)}
         />
       </Prop>
       <Prop label={t("inspector.btChordPattern")} span={1}>

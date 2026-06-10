@@ -774,7 +774,7 @@ describe("SongControls grid layout", () => {
   it("renders the rehosted backing-track controls", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Chord pattern" })).toBeInTheDocument();
     expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
   });
 

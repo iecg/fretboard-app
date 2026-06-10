@@ -1,4 +1,4 @@
-import type { BassPatch, ChordPatch, ChordFamily, DrumKitPatch } from "./patchTypes";
+import type { BassPatch, ChordPatch, DrumKitPatch } from "./patchTypes";
 
 // ── Bass ──────────────────────────────────────────────────────────────────
 // MonoSynth is single-oscillator; "blends" are approximated via oscillator
@@ -50,9 +50,14 @@ export const BASS_PATCHES: readonly BassPatch[] = [
 ];
 
 // ── Chords ───────────────────────────────────────────────────────────────
+// The chord layer is PIANO-ONLY. Synthesized guitar strums (additive Tone.Synth,
+// then Karplus-Strong PluckSynth) and the organ patches were dropped: across many
+// tuning rounds the synthesized guitar never read as a guitar and produced
+// artifacts. The piano voice is the pedagogical baseline for trying progressions
+// and playing over; a future guitar would come back as real samples.
 export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
-    id: "chord-grand-piano", label: "Grand Piano", family: "poly",
+    id: "chord-grand-piano", label: "Grand Piano",
     poly: {
       volume: -6, maxPolyphonyFloor: 6,
       oscillator: { type: "custom", partials: [1, 0.55, 0.3, 0.16, 0.08] },
@@ -62,7 +67,7 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
     insert: { eq3: { low: 0, mid: 0, high: 1 } },
   },
   {
-    id: "chord-epiano", label: "Electric Piano", family: "poly",
+    id: "chord-epiano", label: "Electric Piano",
     poly: {
       volume: -6, maxPolyphonyFloor: 6,
       oscillator: { type: "custom", partials: [1, 0.2, 0.6, 0.1, 0.25] },
@@ -71,91 +76,10 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
     },
     insert: { eq3: { low: -1, mid: 1, high: 2 } },
   },
-  {
-    id: "chord-jazz-organ", label: "Jazz Organ", family: "poly",
-    poly: {
-      volume: -6, maxPolyphonyFloor: 6,
-      oscillator: { type: "custom", partials: [1, 0.6, 0.4, 0.3, 0.2] },
-      envelope: { attack: 0.02, decay: 0.05, sustain: 0.9, release: 0.5 },
-      releaseTailSec: 0.5, sustainedDurationSec: 1.5, shortDurationSec: 0.2,
-    },
-  },
-  {
-    id: "chord-rock-organ", label: "Rock Organ", family: "poly",
-    poly: {
-      volume: -6, maxPolyphonyFloor: 6,
-      oscillator: { type: "custom", partials: [1, 0.7, 0.5, 0.4, 0.3, 0.2] },
-      envelope: { attack: 0.015, decay: 0.05, sustain: 0.9, release: 0.4 },
-      releaseTailSec: 0.4, sustainedDurationSec: 1.5, shortDurationSec: 0.2,
-    },
-    insert: { saturation: { kind: "distortion", amount: 0.12 } },
-  },
-  {
-    id: "chord-nylon-strum", label: "Nylon Strum", family: "strum",
-    strum: {
-      oscillator: { type: "custom", partials: [1, 0.6, 0.3, 0.14, 0.06] },
-      envelope: { attack: 0.012, decay: 1.2, sustain: 0.05, release: 0.4 },
-      noteDurationSec: 1.6, releaseTailSec: 2.0,
-    },
-  },
-  {
-    id: "chord-steel-strum", label: "Steel Strum", family: "strum",
-    strum: {
-      oscillator: { type: "custom", partials: [1, 0.8, 0.45, 0.22, 0.12, 0.05] },
-      envelope: { attack: 0.01, decay: 1.1, sustain: 0.05, release: 0.4 },
-      noteDurationSec: 1.8, releaseTailSec: 2.35,
-      // Per-voice attenuation: 4-6 simultaneous voices at 0 dBFS sum to ~+14 dBFS
-      // before the channel, overloading the compressor. -14 dB per voice tames
-      // that multi-voice sum while deliberately leaving the strummed guitar ~4 dB
-      // above the poly-patch genres: the strum is meant to sit on top of the mix
-      // (rock, blues, and any manual strum selection), not merely match the keys.
-      // Funk is unaffected — it uses the separate `chord-funk-scratch` MonoSynth
-      // patch (velocity-native, no per-voice attenuation).
-      voiceVolumeDb: -14,
-    },
-    insert: { eq3: { low: 0, mid: 0, high: 2 } },
-  },
-  {
-    id: "chord-funk-scratch", label: "Funk Scratch", family: "strum",
-    strum: {
-      // Clean single-coil funk guitar (Nile Rodgers chicken scratch), built as a
-      // MonoSynth "channel strip" rather than a bare plucked string (which never
-      // read as a guitar):
-      //  - sawtooth oscillator: the harmonically dense raw material a bright
-      //    single-coil needs.
-      //  - lowpass + snappy filter envelope: the filter sweeps open on attack
-      //    (~800Hz -> ~5-6kHz) then settles, which IS the pick "spank" of a
-      //    plucked string; the lowpass also doubles as the cab/tone rolloff that
-      //    caps synthetic fizz per-voice.
-      //  - percussive amp envelope: low sustain + short decay so the note is tight.
-      //    durationSec (per articulation hit) governs choke-vs-ring NATIVELY here
-      //    — a 0.06s ghost chokes, a 0.4s stab rings — unlike the old PluckSynth
-      //    where decay was set by comb resonance.
-      // The amp/pickup voicing (cut lows for tightness, mid presence for the
-      // single-coil honk, keep highs for sparkle) lives in the eq3 insert below.
-      // Tight strumLagSec so the chord lands as a single stab. Velocity is honored
-      // natively by MonoSynth (no gain stage needed).
-      mono: {
-        oscillator: { type: "sawtooth" },
-        filter: { type: "lowpass", Q: 1 },
-        filterEnvelope: { attack: 0.005, decay: 0.08, sustain: 0.2, release: 0.1, baseFrequency: 800, octaves: 2.8 },
-        envelope: { attack: 0.004, decay: 0.2, sustain: 0.15, release: 0.1 },
-      },
-      noteDurationSec: 0.18,
-      // Hold the pooled voice for the full stab tail before it can be re-leased:
-      // STAB_STRUM_DURATION_SEC (0.4) + the amp envelope release (0.1) = 0.5s.
-      // A shorter tail let a reused voice clip the last ~0.1s of a ringing stab.
-      releaseTailSec: 0.5,
-      strumLagSec: 0.007,
-    },
-    insert: { eq3: { low: -6, mid: 2, high: 2 } },
-  },
 ];
 
-export const DEFAULT_CHORD_PATCH_BY_FAMILY: Record<ChordFamily, string> = {
-  poly: "chord-grand-piano",
-  strum: "chord-steel-strum",
-};
+/** Fallback chord patch for unknown ids. */
+export const DEFAULT_CHORD_PATCH_ID = "chord-grand-piano";
 
 // ── Drums ──────────────────────────────────────────────────────────────────
 export const DRUM_KIT_PATCHES: readonly DrumKitPatch[] = [

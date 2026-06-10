@@ -298,29 +298,38 @@ an ADSR `GainNode` (attack 0.006 s → 1, decay 0.55 s → sustain 0.02, release
 after 0.5 s note duration). Max polyphony 12; at the cap, new notes are silently
 skipped. **[spec]**
 
-### 3.2 Per-genre chord instrument default & the secondary `chordAlt` patch
+### 3.2 The chord layer is piano-only (synthesized guitar dropped)
 
-Each genre declares a default chord instrument family (`GenreStyle.chordInstrument`:
-`strum` → guitar, `piano`/`organ` → keys) and a single default chord patch
-(`GenreMix.patches.chord`), whose family must match the default instrument (enforced by a
-`genreMixPresets.test.ts` invariant). The instrument dropdown's *Piano* and *Organ* both map
-to the `poly` family, so they are not distinct timbres — the only real switch is **guitar vs.
-keys**, and the specific keys timbre is whatever poly patch the genre provides. **[internal]**
+The progression chord layer plays **piano poly patches only** (`chord-grand-piano`
+everywhere; `chord-epiano` for Jazz). There is no chord-instrument selector and no strum
+voice. **[spec]**
 
-**Blues defaults to a strummed guitar (shipped this spec).** Blues already used shuffle bass
-+ blues-shuffle drums; its chord default moved from the Jazz Organ to a steel strum so the
-eighth-note shuffle strum (the `shuffle-comp` pattern) is heard out of the box, matching how
-Rock and Funk already default to a guitar. **[internal]**
+**Why.** A synthesized strummed guitar was attempted twice and dropped: an additive
+`Tone.Synth` pluck (rich partials + full-spectrum EQ + chebyshev warmth) read as "saturated
+and muddled… loose thick strings" — chebyshev waveshaping on a 4–6 note polyphonic chord
+produces intermodulation distortion, and a low-band EQ boost booms the stacked chord tones;
+a Karplus-Strong rebuild (`Tone.PluckSynth` + per-voice velocity VCA) got closer but
+produced a persistent periodic "GSM buzz" artifact and never achieved a convincing body.
+After six listening rounds the decision was to stop pursuing guitar **synthesis** entirely:
+the piano is the pedagogical baseline for trying progressions and playing over, and a
+future guitar would come back as **real samples** (e.g. `Tone.Sampler`), not synthesis.
+Hard-won synthesis lessons, recorded so they aren't relearned: never put a wet waveshaper on
+a polyphonic chord bus; `PluckSynth` ignores `triggerAttackRelease` velocity (needs a VCA);
+KS `attackNoise < 1` partially fills the delay line and the circulating noise-chunk +
+silence gap *is* a pulse-train buzz at the note's pitch. **[spec]**
 
-**Preserving the organ — `GenreMix.patches.chordAlt`.** Because the resolver picks the genre
-patch whose family matches the selected instrument, switching the default to a strum patch
-would otherwise make *Organ* fall back to the generic grand piano. An optional `chordAlt`
-patch (the opposite family of `chord`) is consulted when the user switches instrument family:
-`getChordVoiceForInstrument(instrument, primaryId, altId?)` returns whichever of primary/alt
-matches the selected family, else the family default. Blues sets `chordAlt: "chord-jazz-organ"`
-so selecting *Organ*/*Piano* restores the Jazz Organ. **Known limitation:** the chord
-channel's EQ/saturation insert (`buildSignalGraph`) follows the *default* patch, so the alt
-timbre routes through the default patch's channel insert. **[internal]**
+**What was removed.** The Strum/Piano/Organ dropdown, `progressionChordInstrumentAtom`,
+`GenreStyle.chordInstrument`, the strum voice (`strumVoice.ts`, `string.ts`), the strum and
+organ patches, `ChordFamily`, `chordAlt`/`chordAltMix` + `resolveMixForInstrument`, and the
+`direction` field on `ChordHit` (an up/down-stroke concept only the strum voice consumed).
+Patterns keep rhythm, velocity, and articulation — `muted`/`root`/`stab` durations are
+honored by the poly voice, so ghost strokes read as short piano blips. **[internal]**
+
+**Shuffle backbeat accent (kept).** The Blues `shuffle-comp` pattern is swung eighth-notes
+(full chord on each beat, muted ghost blip on each "&") with the accents on the **2 and 4**
+(beats 1 & 3 in the zero-based `beat` field) so the comp locks with the snare backbeat — a
+front-weighted accent (loudest on 1 & 3) fought the snare and read as "not feeling like a
+shuffle." This applies to piano comping just as it did to the strum. **[spec]**
 
 ---
 

@@ -1,6 +1,3 @@
-import { getChordPatch } from "./instrumentPatches";
-import type { ChordInstrumentId } from "../instruments/types";
-
 export type MixInstrument = "chord" | "bass" | "drums" | "metronome";
 
 export interface InstrumentMix {
@@ -18,17 +15,10 @@ export interface MasterMix {
 
 export interface GenreMix {
   genre: string;
-  /** `chord` is the default-family patch (its family must match the genre's
-   *  `chordInstrument`). `chordAlt`, when set, is the patch for the *other*
-   *  family — used when the user switches the instrument away from the default
-   *  (e.g. Blues defaults to a strum guitar but offers the organ via `chordAlt`). */
-  patches: { bass: string; chord: string; chordAlt?: string; drumKit: string };
+  /** The chord layer is piano-only; `chord` is the genre's piano patch. */
+  patches: { bass: string; chord: string; drumKit: string };
   perInstrument: Record<MixInstrument, InstrumentMix>;
   master: MasterMix;
-  /** Optional chord-bus block used when the user selects the NON-default chord
-   *  family (resolved by `resolveMixForInstrument`). Lets a genre stage the
-   *  swapped instrument independently of its default. Unset = no override. */
-  chordAltMix?: InstrumentMix;
 }
 
 /**
@@ -58,9 +48,11 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "rock",
-    patches: { bass: "bass-pick", chord: "chord-steel-strum", drumKit: "kit-acoustic-rock" },
+    patches: { bass: "bass-pick", chord: "chord-grand-piano", drumKit: "kit-acoustic-rock" },
     perInstrument: {
-      chord: { volumeDb: -3, pan: -0.18, reverbSend: 0.12 },
+      // -2 (was -3): the -3 was staged for the dropped strum-guitar sitting on
+      // top of the mix; the piano sits at the pop reference.
+      chord: { volumeDb: -2, pan: -0.18, reverbSend: 0.12 },
       // -5: the sawtooth bass-pick (buzzy, mid-forward) over a dense staccato
       // pedal-bass pattern read too prominent even at -2; pulled to -5 in the
       // mix-balance pass (paired with easing its mid EQ to +1).
@@ -76,9 +68,11 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "blues",
-    patches: { bass: "bass-upright", chord: "chord-steel-strum", chordAlt: "chord-jazz-organ", drumKit: "kit-blues-shuffle" },
+    patches: { bass: "bass-upright", chord: "chord-grand-piano", drumKit: "kit-blues-shuffle" },
     perInstrument: {
-      chord: { volumeDb: -3, pan: -0.15, reverbSend: 0.2 },
+      // -2 / 0.2: piano comping at the pop reference; the lower send was a
+      // workaround for the dropped strum voice's noise artifacts.
+      chord: { volumeDb: -2, pan: -0.15, reverbSend: 0.2 },
       bass: { volumeDb: -2, pan: 0, reverbSend: 0.05 },
       drums: { volumeDb: -2, pan: 0.06, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
@@ -111,9 +105,11 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "funk",
-    patches: { bass: "bass-finger", chord: "chord-funk-scratch", drumKit: "kit-funk" },
+    patches: { bass: "bass-finger", chord: "chord-grand-piano", drumKit: "kit-funk" },
     perInstrument: {
-      chord: { volumeDb: -4, pan: -0.2, reverbSend: 0.06 },
+      // -3 (was -4): the -4 was staged for the dropped percussive scratch patch;
+      // piano stabs need a bit more presence against the funk rhythm section.
+      chord: { volumeDb: -3, pan: -0.2, reverbSend: 0.06 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.0 },
       drums: { volumeDb: 0, pan: 0.05, reverbSend: 0.05 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
@@ -135,22 +131,6 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
 
 const byGenre = new Map(GENRE_MIX_PRESETS.map((m) => [m.genre, m]));
 export const getGenreMix = (genre: string): GenreMix | undefined => byGenre.get(genre);
-
-/**
- * Resolve a genre mix for the user's selected chord instrument. When the genre
- * defines a `chordAltMix` AND the selected instrument's family differs from the
- * default chord patch's family, the chord bus block is replaced by `chordAltMix`;
- * otherwise the mix is returned unchanged (same object reference). Pure.
- */
-export function resolveMixForInstrument(mix: GenreMix, instrument: ChordInstrumentId): GenreMix {
-  if (!mix.chordAltMix) return mix;
-  const defaultFamily = getChordPatch(mix.patches.chord)?.family;
-  if (!defaultFamily) return mix; // unknown patch → fail safe, no swap
-  // "piano" and "organ" both render on the poly synth family.
-  const selectedFamily = instrument === "strum" ? "strum" : "poly";
-  if (selectedFamily === defaultFamily) return mix;
-  return { ...mix, perInstrument: { ...mix.perInstrument, chord: mix.chordAltMix } };
-}
 
 /** Fallback mix when a genre id has no preset (defensive). */
 export const DEFAULT_GENRE_MIX: GenreMix = GENRE_MIX_PRESETS[0];
