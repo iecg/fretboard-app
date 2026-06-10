@@ -196,4 +196,13 @@ describe("HelpModal/HelpModal", () => {
     fireEvent.click(screen.getByLabelText(en.help.close));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it("presents as an AdaptiveModal sheet (not the desktop dialog) on tablet-split", () => {
+    // 800x1100 → tablet tier, tall → tablet-split → useSheetShell. The touch
+    // shell must open Help as the sheet, matching the header overflow menu.
+    setViewport(800, 1100);
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    expect(screen.getByTestId("adaptive-modal-sheet")).toBeInTheDocument();
+    expect(screen.queryByTestId("help-modal")).not.toBeInTheDocument();
+  });
 });

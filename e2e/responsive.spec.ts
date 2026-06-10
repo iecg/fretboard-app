@@ -306,20 +306,35 @@ test.describe("responsive layout regressions", () => {
     await expect(page.locator('[data-testid="fretboard-outer"]')).toBeVisible();
     expect(initial.scrollWidth).toBeLessThanOrEqual(initial.innerWidth);
 
-    // Settings opens from the header overflow menu. At the tablet tier the
-    // overlay still presents as the desktop side drawer (the full-height
-    // adaptive sheet is mobile-tier only). Open it via the overflow menu and
-    // verify the drawer sits within the viewport without crowding the layout.
+    // The header presents the overflow menu (compact actions) at tablet-split.
+    expect(initial.headerActionsMode).toBe("compact");
+
+    // Settings opens from the header overflow menu. Tablet-split is a touch
+    // shell (useSheetShell), so Settings presents as the full-height adaptive
+    // sheet — matching the header + main shell — NOT the desktop side drawer.
+    // Open it via the overflow menu and verify the sheet sits within the
+    // viewport without crowding the layout.
     await page.getByTestId("header-overflow-trigger").click();
     await page.getByRole("menuitem", { name: /^Settings$/ }).click();
-    await expect(page.getByTestId("settings-drawer")).toBeVisible();
+    await expect(page.getByTestId("adaptive-modal-sheet")).toBeVisible();
+    await expect(page.getByTestId("settings-drawer")).toHaveCount(0);
 
     const withSettings = await getMetrics(page);
-    expect(withSettings.settingsDrawerRect).not.toBeNull();
-    expect(withSettings.settingsDrawerRect!.width).toBeGreaterThanOrEqual(320);
-    expect(withSettings.settingsDrawerRect!.width).toBeLessThanOrEqual(420);
-    expect(withSettings.settingsDrawerRect!.bottom).toBeLessThanOrEqual(1024 + 1);
-    // The drawer must not introduce a horizontal scrollbar on the page.
+    expect(withSettings.adaptiveSheetRect).not.toBeNull();
+    // The sheet spans the viewport width without horizontal overflow — unlike
+    // the legacy slide-from-right drawer, which extended past the 768px
+    // viewport. (The sheet's content box scrolls internally, so its bottom
+    // edge can exceed the fold; the invariant here is horizontal fit + anchor.)
+    expect(withSettings.adaptiveSheetRect!.left).toBeGreaterThanOrEqual(-1);
+    expect(withSettings.adaptiveSheetRect!.right).toBeLessThanOrEqual(
+      withSettings.innerWidth + 1,
+    );
+    expect(withSettings.adaptiveSheetRect!.width).toBeLessThanOrEqual(
+      withSettings.innerWidth + 1,
+    );
+    // The sheet is anchored within the viewport (top edge on-screen).
+    expect(withSettings.adaptiveSheetRect!.top).toBeLessThanOrEqual(1024);
+    // The sheet must not introduce a horizontal scrollbar on the page.
     expect(withSettings.scrollWidth).toBeLessThanOrEqual(withSettings.innerWidth);
   });
 

@@ -7,8 +7,6 @@ import clsx from "clsx";
 import { settingsOverlayOpenAtom } from "../../store/uiAtoms";
 import {
   getResponsiveLayout,
-  getResponsiveTier,
-  type ResponsiveTier,
 } from "../../layout/responsive";
 import {
   ANIMATION_DURATION_STANDARD,
@@ -26,11 +24,6 @@ import { AdaptiveModal } from "../shared/AdaptiveModal";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
-const getLayoutTier = (): ResponsiveTier => {
-  if (typeof window === "undefined") return "desktop";
-  return getResponsiveTier(window.innerWidth);
-};
-
 function getViewportSnapshot() {
   if (typeof window === "undefined") {
     return { width: 1440, height: 900 };
@@ -39,6 +32,17 @@ function getViewportSnapshot() {
     width: window.innerWidth,
     height: window.innerHeight,
   };
+}
+
+/**
+ * Presentation signals (tier + useSheetShell) for the *current* viewport,
+ * read straight from `window`. Snapshotted at open time so a later layout
+ * change that swaps the chrome closes the overlay cleanly.
+ */
+function getPresentationSignal(): { tier: string; useSheetShell: boolean } {
+  const { width, height } = getViewportSnapshot();
+  const layout = getResponsiveLayout(width, height);
+  return { tier: layout.tier, useSheetShell: layout.useSheetShell };
 }
 
 /**
@@ -70,8 +74,14 @@ function SettingsSections({ onClose }: { onClose: () => void }) {
 export default function SettingsOverlay() {
   const [isOpen, setIsOpen] = useAtom(settingsOverlayOpenAtom);
   const [viewport, setViewport] = useState(getViewportSnapshot);
-  const openTierRef = useRef<ResponsiveTier | null>(null);
   const layout = getResponsiveLayout(viewport.width, viewport.height);
+  /* Capture the presentation signals at open time so a layout change that
+     swaps the chrome (tier change, or a useSheetShell flip such as
+     tablet-split↔tablet-stacked at the same tier) closes the overlay cleanly
+     rather than stranding it in the wrong shell. */
+  const openSignalRef = useRef<{ tier: string; useSheetShell: boolean } | null>(
+    null,
+  );
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -81,20 +91,25 @@ export default function SettingsOverlay() {
   }, []);
 
   useEffect(() => {
-    openTierRef.current = isOpen ? getLayoutTier() : null;
+    openSignalRef.current = isOpen ? getPresentationSignal() : null;
   }, [isOpen]);
 
-  /* Close on tier change (e.g. rotation). */
+  /* Close on presentation change (e.g. rotation, or a useSheetShell flip). */
   useEffect(() => {
-    if (!isOpen || !openTierRef.current) return;
-    if (layout.tier !== openTierRef.current) {
+    const opened = openSignalRef.current;
+    if (!isOpen || !opened) return;
+    if (
+      layout.tier !== opened.tier ||
+      layout.useSheetShell !== opened.useSheetShell
+    ) {
       setIsOpen(false);
     }
-  }, [isOpen, layout.tier, setIsOpen]);
+  }, [isOpen, layout.tier, layout.useSheetShell, setIsOpen]);
 
-  /* Mobile: present as a full-height swipe-to-dismiss sheet. The sheet
-     provides the backdrop + drag-dismiss; we supply the header + body. */
-  if (layout.tier === "mobile") {
+  /* Touch shell (mobile or tablet-split): present as a full-height
+     swipe-to-dismiss sheet. The sheet provides the backdrop + drag-dismiss;
+     we supply the header + body. */
+  if (layout.useSheetShell) {
     return (
       <AdaptiveModal
         presentation="sheet"
@@ -124,7 +139,7 @@ export default function SettingsOverlay() {
     );
   }
 
-  /* Desktop / tablet: slide-from-right Radix Dialog drawer. */
+  /* Desktop (non-sheet shell): slide-from-right Radix Dialog drawer. */
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <AnimatePresence>

@@ -190,6 +190,21 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(screen.getByRole("button", { name: "Reset all settings" })).toBeTruthy();
   });
 
+  it("presents as an AdaptiveModal sheet (not the desktop drawer) on tablet-split", () => {
+    // 800x1100 → tablet tier, tall → tablet-split → useSheetShell. The touch
+    // shell must open Settings as the sheet, matching the header overflow menu.
+    setViewport(800, 1100);
+    const store = createStore();
+    store.set(settingsOverlayOpenAtom, true);
+    renderOverlay(store);
+
+    expect(screen.getByTestId("adaptive-modal-sheet")).toBeTruthy();
+    expect(document.querySelector(".settings-overlay-drawer")).toBeNull();
+    expect(document.querySelector(".settings-overlay-title")?.textContent).toBe(
+      "Settings",
+    );
+  });
+
   it("closes overlay when backdrop is clicked", async () => {
     const { store } = renderOpenOverlay();
     const backdrop = document.querySelector(".settings-overlay-backdrop");

@@ -133,11 +133,13 @@ function HelpBody() {
 
 export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
   const { t } = useTranslation();
-  const { tier } = useLayoutMode();
+  const { useSheetShell } = useLayoutMode();
 
   /* Desktop focus-return. Restoring focus to the Help trigger after close is an
      a11y requirement (keyboard + screen-reader users must not be dumped on
-     <body>). Radix's own onCloseAutoFocus does not fire here — the dialog uses
+     <body>). Only runs on the desktop path (`!useSheetShell`) — the touch
+     shell uses the sheet, where vaul manages focus. Radix's own
+     onCloseAutoFocus does not fire here — the dialog uses
      Portal forceMount and is conditionally unmounted by the `isOpen` guard, so
      Radix never runs its close-autofocus lifecycle (verified live: 0 calls) —
      and there is no Radix Dialog.Trigger to restore to (the trigger lives in
@@ -161,7 +163,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
       wasOpenRef.current = true;
       return;
     }
-    if (!wasOpenRef.current || tier === "mobile") return;
+    if (!wasOpenRef.current || useSheetShell) return;
     wasOpenRef.current = false;
 
     let rafId = 0;
@@ -176,12 +178,13 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
     };
     rafId = window.requestAnimationFrame(reclaim);
     return () => window.cancelAnimationFrame(rafId);
-  }, [isOpen, tier, triggerRef]);
+  }, [isOpen, useSheetShell, triggerRef]);
 
-  /* Mobile: present as a full-height swipe-to-dismiss sheet. Focus-return to
-     the trigger is NOT wired here — vaul manages focus and returns it to the
-     document on close. (The desktop path restores focus via the effect above.) */
-  if (tier === "mobile") {
+  /* Touch shell (mobile or tablet-split): present as a full-height
+     swipe-to-dismiss sheet. Focus-return to the trigger is NOT wired here —
+     vaul manages focus and returns it to the document on close. (The desktop
+     path restores focus via the effect above.) */
+  if (useSheetShell) {
     return (
       <AdaptiveModal
         presentation="sheet"
@@ -209,7 +212,7 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
     );
   }
 
-  /* Desktop / tablet: centered Radix Dialog with motion fade/scale. */
+  /* Desktop (non-sheet shell): centered Radix Dialog with motion fade/scale. */
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <AnimatePresence>
