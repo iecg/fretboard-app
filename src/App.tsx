@@ -265,7 +265,7 @@ function AppContent() {
           sheet={
             <MobileSheet peek={<SheetPeekTransport />}>
               <Suspense fallback={null}>
-                <Inspector placement="bottom" />
+                <Inspector placement="sheet" />
               </Suspense>
             </MobileSheet>
           }

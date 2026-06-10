@@ -1,8 +1,10 @@
 import { useProgressionState } from "../../hooks/useProgressionState";
 import { useTranslation } from "../../hooks/useTranslation";
+import useLayoutMode from "../../hooks/useLayoutMode";
 import { GENRE_STYLES } from "../../progressions/audio/genres";
 import { CHORD_PATTERNS, BASS_PATTERNS, DRUM_PATTERNS } from "../../progressions/audio/patterns";
 import type { ChordInstrumentId } from "../../progressions/audio/instruments/types";
+import { InstrumentToggleCluster } from "../TransportBar/InstrumentToggleCluster";
 import { Prop, GroupHeader } from "../Inspector/InspectorGrid";
 
 export interface BackingTrackControlsProps {
@@ -21,6 +23,10 @@ import styles from "./BackingTrackControls.module.css";
  */
 export function BackingTrackControls({ hideHeader = false }: BackingTrackControlsProps = {}) {
   const { t } = useTranslation();
+  // The four instrument on/off toggles only get a home here on touch/sheet
+  // shells — on desktop the header TransportBar already hosts them, so showing
+  // them in the Song tab too would duplicate the controls.
+  const { useSheetShell } = useLayoutMode();
   const {
     progressionGenreStyle,
     applyGenreStyle,
@@ -39,6 +45,11 @@ export function BackingTrackControls({ hideHeader = false }: BackingTrackControl
   return (
     <>
       {!hideHeader && <GroupHeader>{t("inspector.groupBackingTrack")}</GroupHeader>}
+      {useSheetShell && (
+        <Prop label={t("inspector.btTracks")} span={6}>
+          <InstrumentToggleCluster />
+        </Prop>
+      )}
       <Prop label={t("inspector.btGenre")} span={1}>
         <LabeledSelect
           label="Genre style"

@@ -19,7 +19,7 @@ const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
 };
 
 export interface InspectorProps {
-  placement?: "top" | "bottom";
+  placement?: "top" | "bottom" | "sheet";
 }
 
 export function Inspector({ placement = "top" }: InspectorProps) {
@@ -54,12 +54,16 @@ export function Inspector({ placement = "top" }: InspectorProps) {
 
   return (
     <RadixTabs.Root
-      className={clsx(styles.root, placement === "bottom" && styles.placementBottom)}
+      className={clsx(
+        styles.root,
+        placement === "bottom" && styles.placementBottom,
+        placement === "sheet" && styles.placementSheet,
+      )}
       data-placement={placement}
       value={active}
       onValueChange={handleValueChange}
     >
-      {placement === "top" ? <div className={styles.tabHeader}>{tabList}</div> : tabList}
+      {placement !== "bottom" ? <div className={styles.tabHeader}>{tabList}</div> : tabList}
       {INSPECTOR_TABS.map((tab) => (
         <RadixTabs.Content
           key={tab.id}

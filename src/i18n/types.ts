@@ -67,6 +67,7 @@ export interface Dictionary {
     groupProgression: string;
     groupChords: string;
     groupBackingTrack: string;
+    btTracks: string;
     progressionMode: string;
     meterTempo: string;
     meterLoop: string;
