@@ -4,14 +4,15 @@
 
 /* Height must be 100dvh: vaul computes snap offsets as
    windowHeight - snapHeight, so the drawer's untransformed top must sit at
-   y=0 for "96px" / 0.45 / 0.85 to equal the actually-visible height. At the
-   top snap (0.85) the bottom 15dvh hangs below the viewport — .body
-   compensates with padding so scrollable content stays reachable. */
+   y=0 for "96px" / 0.45 / 1 to equal the actually-visible height. At the
+   full snap (1) the whole drawer is visible and its top edge touches the
+   viewport top — padding-top keeps the grab handle below the notch. */
 .content {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
   height: 100dvh;
+  padding-top: env(safe-area-inset-top, 0px);
   display: flex;
   flex-direction: column;
   border-radius: 14px 14px 0 0;
@@ -43,9 +44,9 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* 15dvh = portion of the 100dvh drawer below the viewport at the 0.85
-     snap; without this the end of the scrollable content is unreachable. */
-  padding-bottom: calc(15dvh + env(safe-area-inset-bottom, 0px));
+  /* The full snap shows the whole 100dvh drawer, so only the home-indicator
+     safe area needs clearing for the end of the content to stay reachable. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* At peek the body is hidden so the tab content can't half-show. */

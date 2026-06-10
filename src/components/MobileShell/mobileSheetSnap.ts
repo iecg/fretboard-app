@@ -8,9 +8,10 @@ import { type MobileSheetSnap } from "../../store/uiAtoms";
  * literal is the manual counterpart to that token.
  * NOTE: vaul computes snap offsets against the full window height, so
  * MobileSheet.module.css keeps the drawer at 100dvh — px/fraction values here
- * are literally the visible sheet height.
+ * are literally the visible sheet height. The full snap is 1 (the sheet
+ * reaches the viewport top); the drawer content pads for the top safe area.
  */
-export const SNAP_POINTS = ["96px", 0.45, 0.85] as const;
+export const SNAP_POINTS = ["96px", 0.45, 1] as const;
 
 const SNAP_BY_ID: Record<MobileSheetSnap, (typeof SNAP_POINTS)[number]> = {
   peek: SNAP_POINTS[0],
