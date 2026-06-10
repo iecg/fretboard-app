@@ -462,7 +462,10 @@ export function useProgressionAudioPlayback() {
       await yieldToMacrotask();
       if (gen !== genRef.current) return;
 
-      const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
+      const mix = eng.resolveMixForInstrument(
+        eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX,
+        store.get(progressionChordInstrumentAtom),
+      );
       const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
       eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
       const bassPatch = eng.getBassPatch(mix.patches.bass);
@@ -729,7 +732,10 @@ export function useProgressionAudioPlayback() {
         if (action === "restart") {
           setTabRestartTick((t) => t + 1);
         } else if (action === "rebuild") {
-          const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
+          const mix = eng.resolveMixForInstrument(
+            eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX,
+            store.get(progressionChordInstrumentAtom),
+          );
           const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
           eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
         }
@@ -779,10 +785,13 @@ export function useProgressionAudioPlayback() {
     if (!engine || !playing) return;
     const eng = engine;
     const timer = setTimeout(() => {
-      const mix = eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX;
+      const mix = eng.resolveMixForInstrument(
+        eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX,
+        chordInstrument,
+      );
       const tier = resolveActiveTier(eng, quality);
       eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
     }, 0);
     return () => clearTimeout(timer);
-  }, [genreId, quality, playing]);
+  }, [genreId, quality, playing, chordInstrument]);
 }
