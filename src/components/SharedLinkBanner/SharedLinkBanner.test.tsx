@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { axe } from "vitest-axe";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, Provider } from "jotai";
@@ -48,5 +49,12 @@ describe("SharedLinkBanner", () => {
     render(<SharedLinkBanner />, { wrapper: createWrapper(store) });
     await user.click(screen.getByRole("button", { name: /dismiss/i }));
     expect(store.get(urlOverridesAtom)).toBeNull();
+  });
+
+  it("has no accessibility violations when visible", async () => {
+    const store = createStore();
+    store.set(urlOverridesAtom, OVERRIDE);
+    const { container } = render(<SharedLinkBanner />, { wrapper: createWrapper(store) });
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

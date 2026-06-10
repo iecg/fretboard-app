@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "vitest-axe";
 import { createStore, Provider } from "jotai";
 import { type ReactNode } from "react";
 import { ShareButton } from "./ShareButton";
@@ -75,5 +76,12 @@ describe("ShareButton", () => {
     render(<ShareButton />, { wrapper: createWrapper(store) });
     await user.click(screen.getByRole("button", { name: /share/i }));
     expect(screen.getByRole("status")).toBeInTheDocument();
+  });
+
+  it("has no accessibility violations", async () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, DEFAULT_STEPS);
+    const { container } = render(<ShareButton />, { wrapper: createWrapper(store) });
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
