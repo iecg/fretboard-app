@@ -1,7 +1,7 @@
 {
   "name": "fretboard-app",
   "private": true,
-  "version": "2.8.2",
+  "version": "2.9.0",
   "type": "module",
   "main": "./packages/core/dist/index.js",
   "types": "./packages/core/dist/index.d.ts",
