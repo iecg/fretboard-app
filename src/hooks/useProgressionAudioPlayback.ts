@@ -715,15 +715,24 @@ export function useProgressionAudioPlayback() {
       if (document.visibilityState !== "visible") return;
       if (!playing || blocked || muted) return;
 
-      getEngine().then((eng) => {
+      getEngine().then(async (eng) => {
         if (!eng) return;
         // Re-check that playback is still active by the time the engine resolves
         if (!store.get(progressionPlayingAtom)) return;
         if (store.get(progressionPlaybackBlockedReasonAtom)) return;
 
-        const needsRestart = eng.recoverProgressionContext();
-        if (needsRestart) {
+        const action = await eng.recoverProgressionContext();
+
+        // Re-check after the await in case playback was stopped
+        if (!store.get(progressionPlayingAtom)) return;
+        if (store.get(progressionPlaybackBlockedReasonAtom)) return;
+
+        if (action === "restart") {
           setTabRestartTick((t) => t + 1);
+        } else if (action === "rebuild") {
+          const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
+          const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
+          eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
         }
       });
     };

@@ -339,8 +339,8 @@ export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGr
  * should restart playback. Returns `false` when the context was recovered
  * in-place (scenario 2) — the existing Parts are still valid.
  */
-export function recoverProgressionContext(): boolean {
-  if (!ctx) return false;
+export async function recoverProgressionContext(): Promise<"restart" | "rebuild" | "none"> {
+  if (!ctx) return "none";
 
   const wasZombie = contextMayBeZombie;
 
@@ -352,17 +352,19 @@ export function recoverProgressionContext(): boolean {
   if (wasZombie) {
     // Old AudioContext was closed — all Tone.Parts referencing it are dead.
     // The caller must tear down and rebuild playback from bar 1.
-    return true;
+    return "restart";
   }
 
-  // Same context, but may have been suspended by the browser. resume + graph
-  // rebuild restores the signal path. Fire-and-forget — the existing Parts
-  // continue firing after the Transport clock resumes.
+  let graphWasDisposed = false;
   if (ctx && (ctx.state === "suspended" || ctx.state === "interrupted")) {
-    resumeProgressionAudio();
+    const hadGraph = currentGraph !== null;
+    await resumeProgressionAudio();
+    if (hadGraph && currentGraph === null) {
+      graphWasDisposed = true;
+    }
   }
 
-  return false;
+  return graphWasDisposed ? "rebuild" : "none";
 }
 
 /** Test-only reset hook so the module behaves predictably across `vitest` runs. */
