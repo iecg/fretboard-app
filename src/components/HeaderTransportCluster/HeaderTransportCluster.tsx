@@ -1,8 +1,11 @@
 import { useAtomValue } from "jotai";
+import clsx from "clsx";
 import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
 import { scaleHeadlineAtom } from "../../store/scaleAtoms";
 import { TransportBar } from "../TransportBar/TransportBar";
 import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
+import { TempoReadout } from "./TempoReadout";
+import tempoStyles from "./TempoReadout.module.css";
 import styles from "./HeaderTransportCluster.module.css";
 
 /**
@@ -43,15 +46,9 @@ export function HeaderTransportCluster() {
       />
 
       <div className={styles.contextReadouts}>
-        <div className={styles.contextBox}>
-          <span className={styles.readoutLabel}>Tempo</span>
-          <span className={styles.tempoValue} data-testid="header-tempo">
-            {progressionTempoBpm}
-            <span className={styles.tempoUnit}>BPM</span>
-          </span>
-        </div>
-        <div className={styles.contextBox}>
-          <span className={styles.readoutLabel}>Scale</span>
+        <TempoReadout className={styles.contextBox} />
+        <div className={clsx(tempoStyles.readout, styles.contextBox)}>
+          <span className={tempoStyles.readoutLabel}>Scale</span>
           <span className={styles.scaleValue}>
             <span className={styles.scalePrimary}>{scale}</span>
           </span>

@@ -19,6 +19,7 @@ import { useMediaSession } from "./hooks/useMediaSession";
 import { useTranslation } from "./hooks/useTranslation";
 import { AppHeader } from "./components/AppHeader/AppHeader";
 import { HeaderTransportCluster } from "./components/HeaderTransportCluster/HeaderTransportCluster";
+import { TempoReadout } from "./components/HeaderTransportCluster/TempoReadout";
 import { BrandMark } from "./components/BrandMark/BrandMark";
 import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark";
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
@@ -160,7 +161,9 @@ function AppContent() {
       brandTitle="FretFlow"
       brandWordmark={<FretFlowWordmark />}
       brandIcon={<BrandMark />}
-      transport={layout.useSheetShell ? undefined : <HeaderTransportCluster />}
+      /* Sheet shell: the full transport lives in the sheet peek, so the header
+         gap between brand and actions carries just the compact tempo chip. */
+      transport={layout.useSheetShell ? <TempoReadout /> : <HeaderTransportCluster />}
       actions={
         <>
           <ShareButton />

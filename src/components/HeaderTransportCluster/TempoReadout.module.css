@@ -1,0 +1,72 @@
+/* ----------------------------------------------------------------------------
+ * TempoReadout — compact LCD tempo chip (label + BPM value).
+ *
+ * Single source for the chip chrome shared by the header transport cluster's
+ * Tempo/Scale readouts and the standalone tempo chip in the sheet-shell
+ * header. The --track-* custom properties come from a HeaderTransportCluster
+ * ancestor when nested; the fallbacks mirror that token block so the chip
+ * renders identically standalone.
+ * ------------------------------------------------------------------------- */
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.05rem;
+  padding: 0.13rem 0.42rem 0.14rem;
+  border: 1px solid var(--track-border, var(--faceplate-border));
+  border-radius: 6px;
+  background: var(--track-bg-readout, #050a13);
+}
+
+.readoutLabel {
+  color: var(--track-text-muted, rgb(193 218 235 / 0.32));
+  font-family: var(--font-mono);
+  font-size: 0.45rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.tempoValue {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.24rem;
+  color: var(--track-accent, var(--faceplate-accent, #4DE4FF));
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 8px rgb(77 228 255 / 0.35);
+}
+
+.tempoUnit {
+  color: var(--track-text-muted, rgb(193 218 235 / 0.32));
+  font-family: var(--font-mono);
+  font-size: 0.45rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-shadow: none;
+}
+
+/* Light-mode flip — PANEL chip + warm hairline, CYAN teal value, INK muted
+   text. Literal values mirror HeaderTransportCluster's light token flip so
+   the standalone chip matches the nested readouts. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .readout {
+  background: var(--surface-card-top);
+  border-color: var(--track-border, rgb(133 124 108 / 0.22));
+}
+
+:global([data-theme="modern-light"]) .readoutLabel,
+:global([data-theme="modern-light"]) .tempoUnit {
+  color: var(--track-text-muted, rgb(42 37 29 / 0.45));
+}
+
+:global([data-theme="modern-light"]) .tempoValue {
+  color: var(--track-accent, #147088);
+  text-shadow: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */

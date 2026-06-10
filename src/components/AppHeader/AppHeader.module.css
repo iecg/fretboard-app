@@ -150,12 +150,17 @@
   border-inline-start: none;
 }
 
-/* Mobile tier: the brand and the utility actions share the first row; the
-   transport cluster drops to a full-width second row (see the `order` rules
-   below). It carries no leading divider as a standalone band. */
-:global([data-layout-tier="mobile"]) .app-header-transport {
-  order: 2;
-  flex: 1 1 100%;
+/* Sheet shell (mobile + tablet-split variants): the transport slot carries
+   only the compact TempoReadout chip, inline in the middle gap between the
+   brand and the utility actions. It sizes to content (the brand's flex-grow
+   pushes it toward the actions) and drops the leading divider. These rules
+   intentionally follow the tier rules above so they win at equal specificity
+   on tablet-split. */
+:global([data-layout-variant="mobile"]) .app-header-transport,
+:global([data-layout-variant="tablet-split"]) .app-header-transport {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-inline-start: auto;
   padding-inline-start: 0;
   border-inline-start: none;
 }
