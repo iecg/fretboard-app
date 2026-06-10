@@ -120,6 +120,8 @@ const toneMocks = vi.hoisted(() => {
     cancel: vi.fn(),
     bpm: { value: 120 },
     seconds: 0,
+    ticks: 0,
+    PPQ: 192,
     swing: 0,
     timeSignature: 4,
   };
@@ -602,8 +604,8 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     // Loop=true at build time: no end-event scheduled.
     expect(toneMocks.transport.scheduleOnce).not.toHaveBeenCalled();
 
-    // Simulate transport mid-loop (3s into a 12s loop → 9s remaining).
-    toneMocks.transport.seconds = 3;
+    // Simulate transport mid-loop (3s into a 12s loop at 60 BPM → 3 beats = 3 * 192 = 576 ticks).
+    toneMocks.transport.ticks = 576;
 
     act(() => {
       store.set(progressionLoopEnabledAtom, false);
@@ -613,11 +615,12 @@ describe("useProgressionAudioPlayback (tone-native orchestrator)", () => {
     expect(toneMocks.transport.scheduleOnce).toHaveBeenCalledTimes(1);
     const [, when] = toneMocks.transport.scheduleOnce.mock.calls[0];
     expect(typeof when).toBe("string");
-    // "+<positive number>" — 9s remaining + 0.05s lead = 9.05s.
-    expect(when).toMatch(/^\+\d+(\.\d+)?$/);
-    const seconds = Number(String(when).slice(1));
-    expect(seconds).toBeGreaterThan(0);
-    expect(seconds).toBeLessThanOrEqual(12 + 0.1);
+    // "+<ticks>i" — 9s remaining at 60BPM = 9 beats = 9 * 192 = 1728 ticks. + lead = 0.05 * 192 = 9.6 -> 10 ticks. Total ~ 1738i.
+    expect(when).toMatch(/^\+\d+i$/);
+    const ticks = Number(String(when).slice(1, -1));
+    expect(ticks).toBeGreaterThan(0);
+    // 12s loop at 60 BPM = 12 beats = 2304 ticks. Remaining + lead = 1728 + 9.6 = 1737.6 ticks.
+    expect(ticks).toBeLessThanOrEqual(2304 + 10);
   });
 
   it("toggling drums flips the layer gain without rebuilding primitives", async () => {
