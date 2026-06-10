@@ -657,11 +657,9 @@ export function useProgressionAudioPlayback() {
       // for lint's exhaustive-deps check (which would otherwise warn).
       genRefSnapshot.current++;
       
-      // Audio is NOT disposed here. The next effect run handles teardown: a
-      // restart-tier change disposes + rewinds up front (see the reset block at
-      // the top of this effect), and a stop (`playing` false) hits the
-      // `tearDownAndStop()` early-return branch. Cleanup's only job is bumping
-      // `genRef` to invalidate any in-flight build.
+      // Stop the visual clock explicitly so the RAF loop doesn't leak across
+      // effect restarts (e.g. tab recovery). The next run handles audio teardown.
+      stopVisualClock();
     };
   }, [
     playing,
