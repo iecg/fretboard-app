@@ -58,8 +58,7 @@
   --token-z-note: 10;
   --token-z-dropdown: 50;
   --token-z-header: 80;
-  --token-z-bottom-nav: 100;
-  --token-z-mobile-sheet: 100; /* same tier as bottom-nav, which the sheet replaces */
+  --token-z-mobile-sheet: 100; /* sits above header — the mobile bottom sheet layer */
   --token-z-overlay-backdrop: 200;
   --token-z-overlay-drawer: 201;
   --token-z-help-overlay: 1000;
@@ -205,9 +204,11 @@
   :root {
     --size-touch-target: 2.75rem; /* 44px */
     --control-height: 44px;
-    /* 3.5rem = empirical height of .placementBottom .tabList — keep in sync with Inspector.module.css.
-       Static fallback only: getCollisionPadding() in src/utils/collision.ts measures the tablist
-       height at runtime for precision, so update both places if the tablist height changes. */
+    /* Bottom safe-zone reserved so dropdowns/selects (LabeledSelect, PresetMenu,
+       AppHeaderActions) don't run to the very bottom edge on mobile, where the
+       MobileShell bottom sheet peek sits. 3.5rem static reserve + safe-area inset.
+       getCollisionPadding() in src/utils/collision.ts supplies dynamic padding at
+       runtime; this token is the CSS-side static fallback. */
     --mobile-bottom-nav-safe-zone: calc(3.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

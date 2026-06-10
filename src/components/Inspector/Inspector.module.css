@@ -103,57 +103,10 @@
   }
 }
 
-/* Tab icons are present in the DOM for both placements but only shown in the
- * bottom-docked variant — the top variant stays text-only, as on desktop. */
+/* Tab icons are present in the DOM but never shown — both the top and sheet
+ * placements stay text-only. The icons remain in markup for a11y parity. */
 .tabIcon {
   display: none;
-}
-
-/* Bottom-docked placement — a viewport-fixed icon+label tab bar for the
- * mobile tier and the tablet-split variant. The panel reserves bottom space
- * so its content is never occluded by the fixed bar. */
-.placementBottom {
-  padding-bottom: 3.5rem;
-}
-
-.placementBottom .tabList {
-  position: fixed;
-  inset: auto 0 0 0;
-  z-index: var(--z-bottom-nav);
-  border-bottom: 0;
-  border-top: 1px solid var(--faceplate-border);
-  background: linear-gradient(
-    180deg,
-    var(--faceplate-bg-elevated),
-    var(--faceplate-bg)
-  );
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.placementBottom .tab {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  border-bottom: 0;
-  border-top: 2px solid transparent;
-  padding: var(--space-2, 0.5rem) 2px;
-}
-
-.placementBottom .tab[data-state="active"] {
-  border-bottom-color: transparent;
-  border-top-color: var(--faceplate-accent);
-}
-
-.placementBottom .tabIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.placementBottom .tabLabel {
-  font-size: 9px;
 }
 
 /* Sheet placement — tabs at the top of the sheet body, the panel area becomes a

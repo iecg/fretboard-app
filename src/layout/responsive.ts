@@ -18,7 +18,6 @@ export interface ResponsiveLayout {
   compactHeight: boolean;
   stringRowPx: number;
   showControlsPanel: boolean;
-  showMobileTabs: boolean;
   /** True when the surface uses the MobileShell + bottom sheet (touch contexts). */
   useSheetShell: boolean;
   showSummary: boolean;
@@ -104,7 +103,6 @@ export function getResponsiveLayout(
     compactHeight,
     stringRowPx: getStringRowPx(tier),
     showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
-    showMobileTabs: useSheetShell,
     useSheetShell,
     showSummary: true,
     showStatusBar: tier !== "mobile" && variant !== "tablet-split",

@@ -210,7 +210,6 @@ function AppContent() {
         isChordActive={!!chordType}
         showSummary={layout.showSummary}
         showControlsPanel={layout.showControlsPanel}
-        showMobileTabs={layout.showMobileTabs}
         showStatusBar={layout.showStatusBar}
         header={headerNode}
         summary={
@@ -225,11 +224,6 @@ function AppContent() {
         controlsPanel={
           <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
             <Inspector placement="top" />
-          </Suspense>
-        }
-        mobileTabs={
-          <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
-            <Inspector placement="bottom" />
           </Suspense>
         }
         settingsOverlay={settingsOverlayNode}
