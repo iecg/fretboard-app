@@ -131,6 +131,7 @@ export interface Dictionary {
     unmuteTitle: string;
     help: string;
     helpTitle: string;
+    moreActions: string;
     themeToLight: string;
     themeToDark: string;
     dismiss: string;

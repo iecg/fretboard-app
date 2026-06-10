@@ -133,6 +133,7 @@ export const es: Dictionary = {
     unmuteTitle: "Activar sonido",
     help: "Abrir ayuda",
     helpTitle: "Ayuda e Instrucciones",
+    moreActions: "Más acciones",
     themeToLight: "Cambiar a tema claro",
     themeToDark: "Cambiar a tema oscuro",
     dismiss: "Cerrar",

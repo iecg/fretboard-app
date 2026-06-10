@@ -133,6 +133,7 @@ export const en: Dictionary = {
     unmuteTitle: "Unmute",
     help: "Open help",
     helpTitle: "Help & Instructions",
+    moreActions: "More actions",
     themeToLight: "Switch to light theme",
     themeToDark: "Switch to dark theme",
     dismiss: "Dismiss",

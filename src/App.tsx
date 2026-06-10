@@ -1,9 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
-import clsx from "clsx";
-import { useSetAtom, useAtomValue, useAtom, createStore, Provider } from "jotai";
-import { AnimatePresence, motion } from "motion/react";
+import { useAtomValue, useAtom, createStore, Provider } from "jotai";
 import { Fretboard } from "./components/Fretboard/Fretboard";
-import { HelpCircle, Moon, Settings2, Sun, Volume2, VolumeX } from "lucide-react";
 import {
   resumeGuitarAudio,
   setGuitarAudioErrorHandler,
@@ -12,9 +9,8 @@ import {
   prefetchAudioModule,
 } from "./core/lazyGuitarAudio";
 import { probeOutputHealth } from "./core/audioOutputHealth";
-import { isMutedAtom, toggleMuteAtom, audioErrorAtom, audioOutputWedgedAtom } from "./store/audioAtoms";
+import { isMutedAtom, audioErrorAtom, audioOutputWedgedAtom } from "./store/audioAtoms";
 import { chordTypeAtom } from "./store/chordOverlayAtoms";
-import { settingsOverlayOpenAtom, themeAtom } from "./store/uiAtoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
@@ -31,11 +27,9 @@ import { MobileShell } from "./components/MobileShell/MobileShell";
 import { MobileSheet } from "./components/MobileShell/MobileSheet";
 import { SheetPeekTransport } from "./components/MobileShell/SheetPeekTransport";
 
-import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
+import { AppHeaderActions } from "./components/AppHeaderActions/AppHeaderActions";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
-import sharedStyles from "./components/shared/shared.module.css";
 import { ControlsPanelSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
-import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
 import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
 import "./styles/App.css";
 
@@ -56,11 +50,8 @@ function AppContent() {
 
   const chordType = useAtomValue(chordTypeAtom);
   const isMuted = useAtomValue(isMutedAtom);
-  const setSettingsOverlayOpen = useSetAtom(settingsOverlayOpenAtom);
-  const toggleMute = useSetAtom(toggleMuteAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
-  const setTheme = useSetAtom(themeAtom);
 
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
@@ -162,66 +153,11 @@ function AppContent() {
       brandIcon={<BrandMark />}
       transport={layout.useSheetShell ? undefined : <HeaderTransportCluster />}
       actions={
-        <>
-          <button
-            type="button"
-            onClick={() => setTheme(theme === "modern-dark" ? "light" : "dark")}
-            className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-            title={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
-            aria-label={theme === "modern-dark" ? t("common.themeToLight") : t("common.themeToDark")}
-          >
-            {theme === "modern-dark" ? (
-              <Sun className="icon" />
-            ) : (
-              <Moon className="icon" />
-            )}
-          </button>
-          <SettingsTooltip>
-            <button
-              type="button"
-              onClick={() => setSettingsOverlayOpen((v) => !v)}
-              className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-              title={t("settings.title")}
-              aria-label={t("settings.open")}
-            >
-              <Settings2 className="icon" />
-            </button>
-          </SettingsTooltip>
-          <button
-            type="button"
-            onClick={toggleMute}
-            className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-            title={isMuted ? t("common.unmuteTitle") : t("common.muteTitle")}
-            aria-label={isMuted ? t("common.unmute") : t("common.mute")}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={isMuted ? "muted" : "unmuted"}
-                initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.8, rotate: 10 }}
-                transition={{ duration: ANIMATION_DURATION_XFADE }}
-                className={sharedStyles["flex-center"]}
-              >
-                {isMuted ? (
-                  <VolumeX className="icon icon-muted" />
-                ) : (
-                  <Volume2 className="icon icon-active" />
-                )}
-              </motion.span>
-            </AnimatePresence>
-          </button>
-          <button
-            ref={helpTriggerRef}
-            type="button"
-            onClick={() => setShowHelp(true)}
-            className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}
-            title={t("common.helpTitle")}
-            aria-label={t("common.help")}
-          >
-            <HelpCircle className="icon" />
-          </button>
-        </>
+        <AppHeaderActions
+          variant={layout.useSheetShell ? "menu" : "buttons"}
+          onShowHelp={() => setShowHelp(true)}
+          helpTriggerRef={helpTriggerRef}
+        />
       }
     />
   );
