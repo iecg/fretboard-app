@@ -6,9 +6,11 @@ import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
 import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import { useTranslation } from "../../hooks/useTranslation";
+import useLayoutMode from "../../hooks/useLayoutMode";
 import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
 import { HELP_TABS, CURRENT_WHATS_NEW_ID, type HelpTab } from "./helpContent";
 import { HelpDiagram } from "./diagrams/HelpDiagram";
+import { AdaptiveModal } from "../shared/AdaptiveModal";
 import styles from "./HelpModal.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
@@ -46,7 +48,12 @@ function HelpTabPanel({ tab }: { tab: HelpTab }) {
   );
 }
 
-export function HelpModal({ isOpen, onClose }: HelpModalProps) {
+/**
+ * Single-source help body — the tablist + active panel + what's-new notice
+ * shared by both the desktop dialog and the mobile sheet. Tab state lives here
+ * so both presentations get identical behavior without duplicated markup.
+ */
+function HelpBody() {
   const { t } = useTranslation();
   const [whatsNewSeen, setWhatsNewSeen] = useAtom(helpWhatsNewSeenAtom);
   const [activeTabId, setActiveTabId] = useState<HelpTab["id"]>("start");
@@ -70,6 +77,90 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
       ?.focus();
   }
 
+  return (
+    <>
+      {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus -- tablist uses roving tabindex; individual tabs are focusable */}
+      <div className={styles["help-modal-tabs"]} role="tablist" aria-label={t("help.title")} onKeyDown={handleTabsKeyDown}>
+        {HELP_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            id={`help-tab-${tab.id}`}
+            aria-selected={tab.id === activeTabId}
+            aria-controls={`help-panel-${tab.id}`}
+            className={styles["help-modal-tab"]}
+            tabIndex={tab.id === activeTabId ? 0 : -1}
+            onClick={() => setActiveTabId(tab.id)}
+          >
+            {t(tab.labelKey)}
+          </button>
+        ))}
+      </div>
+
+      <div className={styles["help-modal-content"]} data-testid="help-modal-content">
+        {showWhatsNew && activeTabId === "start" ? (
+          <aside
+            className={styles["help-modal-notice"]}
+            data-testid="help-modal-whats-new"
+            aria-label={t("help.whatsNew.label")}
+          >
+            <h3 className={styles["help-modal-notice-title"]}>
+              {t("help.whatsNew.label")}
+            </h3>
+            <p>{t("help.whatsNew.body")}</p>
+            <button
+              type="button"
+              className={styles["help-modal-notice-dismiss"]}
+              onClick={() => setWhatsNewSeen(CURRENT_WHATS_NEW_ID)}
+            >
+              {t("help.whatsNew.dismiss")}
+            </button>
+          </aside>
+        ) : null}
+
+        <HelpTabPanel tab={activeTab} />
+      </div>
+    </>
+  );
+}
+
+export function HelpModal({ isOpen, onClose }: HelpModalProps) {
+  const { t } = useTranslation();
+  const { tier } = useLayoutMode();
+
+  /* Mobile: present as a full-height swipe-to-dismiss sheet. Focus-return to
+     the trigger is managed by vaul (focus returns to body/trigger as vaul
+     dictates rather than via Radix's triggerRef restore). */
+  if (tier === "mobile") {
+    return (
+      <AdaptiveModal
+        presentation="sheet"
+        open={isOpen}
+        onOpenChange={(open) => { if (!open) onClose(); }}
+        label={t("help.title")}
+      >
+        <div className={styles["help-modal-header"]}>
+          <h2 className={styles["help-modal-title"]}>{t("help.title")}</h2>
+          <button
+            type="button"
+            className={clsx(
+              sharedStyles["icon-button"],
+              sharedStyles["icon-button--sm"],
+              styles["help-modal-close"],
+            )}
+            aria-label={t("help.close")}
+            onClick={onClose}
+          >
+            <X className="icon" />
+          </button>
+        </div>
+        <HelpBody />
+      </AdaptiveModal>
+    );
+  }
+
+  /* Desktop / tablet: centered Radix Dialog with motion fade/scale. */
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <AnimatePresence>
@@ -112,48 +203,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                   </Dialog.Close>
                 </div>
 
-                {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus -- tablist uses roving tabindex; individual tabs are focusable */}
-                <div className={styles["help-modal-tabs"]} role="tablist" aria-label={t("help.title")} onKeyDown={handleTabsKeyDown}>
-                  {HELP_TABS.map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      role="tab"
-                      id={`help-tab-${tab.id}`}
-                      aria-selected={tab.id === activeTabId}
-                      aria-controls={`help-panel-${tab.id}`}
-                      className={styles["help-modal-tab"]}
-                      tabIndex={tab.id === activeTabId ? 0 : -1}
-                      onClick={() => setActiveTabId(tab.id)}
-                    >
-                      {t(tab.labelKey)}
-                    </button>
-                  ))}
-                </div>
-
-                <div className={styles["help-modal-content"]} data-testid="help-modal-content">
-                  {showWhatsNew && activeTabId === "start" ? (
-                    <aside
-                      className={styles["help-modal-notice"]}
-                      data-testid="help-modal-whats-new"
-                      aria-label={t("help.whatsNew.label")}
-                    >
-                      <h3 className={styles["help-modal-notice-title"]}>
-                        {t("help.whatsNew.label")}
-                      </h3>
-                      <p>{t("help.whatsNew.body")}</p>
-                      <button
-                        type="button"
-                        className={styles["help-modal-notice-dismiss"]}
-                        onClick={() => setWhatsNewSeen(CURRENT_WHATS_NEW_ID)}
-                      >
-                        {t("help.whatsNew.dismiss")}
-                      </button>
-                    </aside>
-                  ) : null}
-
-                  <HelpTabPanel tab={activeTab} />
-                </div>
+                <HelpBody />
               </motion.div>
             </Dialog.Content>
           </Dialog.Portal>

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { HelpModal } from "./HelpModal";
@@ -9,7 +9,25 @@ import { CURRENT_WHATS_NEW_ID, HELP_TABS } from "./helpContent";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
 
+function setViewport(width: number, height: number) {
+  Object.defineProperty(window, "innerWidth", {
+    writable: true,
+    configurable: true,
+    value: width,
+  });
+  Object.defineProperty(window, "innerHeight", {
+    writable: true,
+    configurable: true,
+    value: height,
+  });
+}
+
 describe("HelpModal/HelpModal", () => {
+  beforeEach(() => {
+    // Desktop default — keeps the dialog presentation for the existing suite.
+    setViewport(1280, 900);
+  });
+
   it("renders dialog when isOpen=true", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByRole("dialog", { name: en.help.title })).toBeInTheDocument();
@@ -130,5 +148,25 @@ describe("HelpModal/HelpModal", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByLabelText(en.help.close).className).toMatch(/icon-button--sm/);
     expect(typeof styles["help-modal-close"]).toBe("string");
+  });
+
+  it("presents as an AdaptiveModal sheet (not the desktop dialog) on mobile", () => {
+    setViewport(390, 844);
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    // Mobile routes through AdaptiveModal presentation="sheet".
+    expect(screen.getByTestId("adaptive-modal-sheet")).toBeInTheDocument();
+    // The desktop fade/scale dialog surface must NOT be rendered on mobile.
+    expect(screen.queryByTestId("help-modal")).not.toBeInTheDocument();
+    // Tabs + close still present inside the sheet.
+    expect(screen.getAllByRole("tab")).toHaveLength(HELP_TABS.length);
+    expect(screen.getByLabelText(en.help.close)).toBeInTheDocument();
+  });
+
+  it("calls onClose when the sheet close button is clicked on mobile", () => {
+    setViewport(390, 844);
+    const onClose = vi.fn();
+    render(<HelpModal isOpen={true} onClose={onClose} />);
+    fireEvent.click(screen.getByLabelText(en.help.close));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

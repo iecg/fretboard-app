@@ -22,6 +22,7 @@ import ResetSettingsSection from "./sections/ResetSettingsSection";
 import LanguageSettingsSection from "./sections/LanguageSettingsSection";
 import { useTranslation } from "../../hooks/useTranslation";
 import { VersionBadge } from "../VersionBadge/VersionBadge";
+import { AdaptiveModal } from "../shared/AdaptiveModal";
 import styles from "./SettingsOverlay.module.css";
 import sharedStyles from "../shared/shared.module.css";
 
@@ -38,6 +39,32 @@ function getViewportSnapshot() {
     width: window.innerWidth,
     height: window.innerHeight,
   };
+}
+
+/**
+ * Single-source settings body — the stacked section list shared by both the
+ * desktop drawer and the mobile sheet. Lives inside `settings-overlay-content`
+ * (desktop) or the sheet body (mobile). `onClose` is forwarded to
+ * ResetSettingsSection so the reset two-step flow can dismiss the overlay.
+ */
+function SettingsSections({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <>
+      <OverlaySection id="display" title={t("settings.sections.display")}>
+        <DisplaySettingsSection />
+      </OverlaySection>
+      <OverlaySection id="instrument" title={t("settings.sections.instrument")}>
+        <InstrumentSettingsSection />
+      </OverlaySection>
+      <LanguageSettingsSection />
+      <AppearanceSettingsSection />
+      <OverlaySection id="reset" title={t("settings.sections.reset")} tone="danger">
+        <ResetSettingsSection onClose={onClose} />
+      </OverlaySection>
+      <VersionBadge />
+    </>
+  );
 }
 
 export default function SettingsOverlay() {
@@ -65,6 +92,39 @@ export default function SettingsOverlay() {
     }
   }, [isOpen, layout.tier, setIsOpen]);
 
+  /* Mobile: present as a full-height swipe-to-dismiss sheet. The sheet
+     provides the backdrop + drag-dismiss; we supply the header + body. */
+  if (layout.tier === "mobile") {
+    return (
+      <AdaptiveModal
+        presentation="sheet"
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        label={t("settings.title")}
+      >
+        <div className={styles["settings-overlay-header"]}>
+          <h2 className={styles["settings-overlay-title"]}>{t("settings.title")}</h2>
+          <button
+            type="button"
+            className={clsx(
+              sharedStyles["icon-button"],
+              sharedStyles["icon-button--sm"],
+              styles["settings-overlay-close"],
+            )}
+            aria-label={t("settings.close")}
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="icon" />
+          </button>
+        </div>
+        <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
+          <SettingsSections onClose={() => setIsOpen(false)} />
+        </div>
+      </AdaptiveModal>
+    );
+  }
+
+  /* Desktop / tablet: slide-from-right Radix Dialog drawer. */
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <AnimatePresence>
@@ -105,18 +165,7 @@ export default function SettingsOverlay() {
                   </Dialog.Close>
                 </div>
                 <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
-                  <OverlaySection id="display" title={t("settings.sections.display")}>
-                    <DisplaySettingsSection />
-                  </OverlaySection>
-                  <OverlaySection id="instrument" title={t("settings.sections.instrument")}>
-                    <InstrumentSettingsSection />
-                  </OverlaySection>
-                  <LanguageSettingsSection />
-                  <AppearanceSettingsSection />
-                  <OverlaySection id="reset" title={t("settings.sections.reset")} tone="danger">
-                    <ResetSettingsSection onClose={() => setIsOpen(false)} />
-                  </OverlaySection>
-                  <VersionBadge />
+                  <SettingsSections onClose={() => setIsOpen(false)} />
                 </div>
               </motion.div>
             </Dialog.Content>

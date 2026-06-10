@@ -174,14 +174,20 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
-  it("marks the drawer with the correct layout-tier on mobile", () => {
+  it("presents as an AdaptiveModal sheet (not the desktop drawer) on mobile", () => {
     setViewport(390, 844);
     const store = createStore();
     store.set(settingsOverlayOpenAtom, true);
     renderOverlay(store);
 
-    const drawer = document.querySelector(".settings-overlay-drawer");
-    expect(drawer?.getAttribute("data-layout-tier")).toBe("mobile");
+    // Mobile routes through AdaptiveModal presentation="sheet".
+    expect(screen.getByTestId("adaptive-modal-sheet")).toBeTruthy();
+    // The desktop slide-from-right drawer must NOT be rendered on mobile.
+    expect(document.querySelector(".settings-overlay-drawer")).toBeNull();
+    // Visible header title rendered inside the sheet.
+    expect(document.querySelector(".settings-overlay-title")?.textContent).toBe("Settings");
+    // Sections are still present inside the sheet.
+    expect(screen.getByRole("button", { name: "Reset all settings" })).toBeTruthy();
   });
 
   it("closes overlay when backdrop is clicked", async () => {
