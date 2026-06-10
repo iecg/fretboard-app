@@ -59,6 +59,7 @@
   --token-z-dropdown: 50;
   --token-z-header: 80;
   --token-z-bottom-nav: 100;
+  --token-z-mobile-sheet: 100; /* same tier as bottom-nav, which the sheet replaces */
   --token-z-overlay-backdrop: 200;
   --token-z-overlay-drawer: 201;
   --token-z-help-overlay: 1000;

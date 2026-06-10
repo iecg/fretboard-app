@@ -96,6 +96,7 @@
   --z-dropdown: var(--token-z-dropdown);
   --z-header: var(--token-z-header);
   --z-bottom-nav: var(--token-z-bottom-nav);
+  --z-mobile-sheet: var(--token-z-mobile-sheet);
   --z-overlay-backdrop: var(--token-z-overlay-backdrop);
   --z-overlay-drawer: var(--token-z-overlay-drawer);
   --z-help-overlay: var(--token-z-help-overlay);

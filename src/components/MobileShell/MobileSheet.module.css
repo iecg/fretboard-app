@@ -16,11 +16,12 @@
   flex-direction: column;
   border-radius: 14px 14px 0 0;
   border-top: 1px solid var(--chrome-border);
-  /* --surface-float is 96% alpha; composite it over the opaque shell color so
-     the fretboard never bleeds through the sheet. */
+  /* Composite --surface-float over the opaque shell color (dark: 96% alpha;
+     light: fully opaque — either way the result is visually opaque over
+     --bg-color) so the fretboard never bleeds through the sheet. */
   background-color: var(--bg-color);
   background-image: linear-gradient(var(--surface-float), var(--surface-float));
-  z-index: 30;
+  z-index: var(--z-mobile-sheet);
 }
 
 .handle {
