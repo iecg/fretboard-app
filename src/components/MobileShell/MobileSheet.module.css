@@ -1,6 +1,6 @@
-/* Floating bottom sheet over the fretboard. Uses --surface-float (same as
-   SettingsOverlay/HelpModal floating surfaces) so it reads as raised chrome
-   and is effectively opaque over the stage. */
+/* Floating bottom sheet over the fretboard. Paints the opaque shell
+   background (--bg-color) so nested Inspector cards contrast exactly as they
+   do on desktop; the raised-chrome read comes from the top border + radius. */
 
 /* Height must be 100dvh: vaul computes snap offsets as
    windowHeight - snapHeight, so the drawer's untransformed top must sit at
@@ -17,11 +17,11 @@
   flex-direction: column;
   border-radius: 14px 14px 0 0;
   border-top: 1px solid var(--chrome-border);
-  /* Composite --surface-float over the opaque shell color (dark: 96% alpha;
-     light: fully opaque — either way the result is visually opaque over
-     --bg-color) so the fretboard never bleeds through the sheet. */
+  /* Opaque shell background — the same surface desktop Inspector cards sit
+     against, so the cards keep their relief inside the sheet. (A previous
+     --surface-float tint flattened card contrast in both themes.) The
+     fretboard never bleeds through because --bg-color is opaque. */
   background-color: var(--bg-color);
-  background-image: linear-gradient(var(--surface-float), var(--surface-float));
   z-index: var(--z-mobile-sheet);
 }
 
