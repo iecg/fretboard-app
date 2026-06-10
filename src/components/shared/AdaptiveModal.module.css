@@ -1,0 +1,61 @@
+/* Shared dim backdrop for both presentations. Reuses the same scrim + z token
+   as HelpModal so this modal stacks above everything, including the mobile
+   sheet (--z-mobile-sheet: 100). --z-help-overlay resolves to 1000. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--chrome-scrim);
+  z-index: var(--z-help-overlay);
+}
+
+/* Desktop: centered dialog, mirrors HelpModal surface/elevation tokens. */
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: calc(var(--z-help-overlay) + 1);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: min(42rem, calc(100vw - 2 * clamp(0.75rem, 3vw, 1.25rem)));
+  max-width: 100%;
+  max-height: min(88dvh, 48rem);
+  overflow: hidden;
+  background: var(--surface-panel);
+  border: 1px solid var(--surface-card-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--elevation-overlay);
+}
+
+/* Mobile: full-height swipe-to-dismiss sheet. */
+.sheet {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: calc(var(--z-help-overlay) + 1);
+  display: flex;
+  flex-direction: column;
+  height: 94dvh;
+  border-radius: 14px 14px 0 0;
+  background: var(--surface-panel);
+  box-shadow: var(--elevation-overlay);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.sheetHandle {
+  flex: none;
+  width: 36px;
+  height: 4px;
+  margin: 8px auto 4px;
+  border-radius: 2px;
+  background: var(--chrome-border);
+}
+
+.sheetBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
