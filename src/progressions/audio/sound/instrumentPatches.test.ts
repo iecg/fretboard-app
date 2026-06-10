@@ -88,6 +88,15 @@ describe("instrument patches", () => {
     expect(snare.volume ?? 0).toBeGreaterThan(0); // lifted via the new lever
   });
 
+  it("normalizes keys chord patches to a common reference, strum +4 above it", () => {
+    const REF = -6; // grand-piano anchor
+    for (const id of ["chord-grand-piano", "chord-epiano", "chord-jazz-organ", "chord-rock-organ"]) {
+      expect(getChordPatch(id)!.poly!.volume, id).toBe(REF);
+    }
+    // Steel strum is per-voice; deliberately ~4 dB hotter than the keys reference.
+    expect(getChordPatch("chord-steel-strum")!.strum!.voiceVolumeDb).toBe(-14);
+  });
+
   it("provides a clean single-coil funk scratch guitar patch (MonoSynth + amp strip)", () => {
     const patch = getChordPatch("chord-funk-scratch")!;
     expect(patch).toBeDefined();

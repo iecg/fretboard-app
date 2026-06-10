@@ -64,7 +64,7 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
     id: "chord-epiano", label: "Electric Piano", family: "poly",
     poly: {
-      volume: -7, maxPolyphonyFloor: 6,
+      volume: -6, maxPolyphonyFloor: 6,
       oscillator: { type: "custom", partials: [1, 0.2, 0.6, 0.1, 0.25] },
       envelope: { attack: 0.005, decay: 0.7, sustain: 0.12, release: 1.0 },
       releaseTailSec: 1.0, sustainedDurationSec: 1.2, shortDurationSec: 0.4,
@@ -74,7 +74,7 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
     id: "chord-jazz-organ", label: "Jazz Organ", family: "poly",
     poly: {
-      volume: -10, maxPolyphonyFloor: 6,
+      volume: -6, maxPolyphonyFloor: 6,
       oscillator: { type: "custom", partials: [1, 0.6, 0.4, 0.3, 0.2] },
       envelope: { attack: 0.02, decay: 0.05, sustain: 0.9, release: 0.5 },
       releaseTailSec: 0.5, sustainedDurationSec: 1.5, shortDurationSec: 0.2,
@@ -83,7 +83,7 @@ export const CHORD_PATCHES: readonly ChordPatch[] = [
   {
     id: "chord-rock-organ", label: "Rock Organ", family: "poly",
     poly: {
-      volume: -11, maxPolyphonyFloor: 6,
+      volume: -6, maxPolyphonyFloor: 6,
       oscillator: { type: "custom", partials: [1, 0.7, 0.5, 0.4, 0.3, 0.2] },
       envelope: { attack: 0.015, decay: 0.05, sustain: 0.9, release: 0.4 },
       releaseTailSec: 0.4, sustainedDurationSec: 1.5, shortDurationSec: 0.2,
