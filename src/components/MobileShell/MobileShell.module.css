@@ -32,3 +32,76 @@
   /* Reserve room for the sheet's peek height so the fretboard is never covered. */
   padding-bottom: var(--mobile-sheet-peek, 96px);
 }
+
+/* Portrait-lock overlay — owned by the mobile shell (the only shell that
+   renders at viewport ≤ 767px, where the show rule below fires). CSS-only;
+   relocated verbatim from the former global .rotate-overlay rules in
+   src/styles/App.css. */
+.rotateOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--surface-base, #1c1c1e);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.rotateOverlayContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.rotateOverlayIcon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--text-muted, #a0a0a5);
+  animation: rotate-hint 2s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-90deg);
+  }
+
+  50% {
+    transform: rotate(-90deg);
+  }
+
+  75% {
+    transform: rotate(0deg);
+  }
+}
+
+.rotateOverlayMessage {
+  font-size: 1rem;
+  color: var(--text-main, #f5f5f7);
+  margin: 0;
+  max-width: 20rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotateOverlayIcon {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}
+
+/* Show only on mobile-tier landscape viewports. width ≤ 767px is always the
+   mobile tier (BREAKPOINTS.mobileMax), where MobileShell renders — so this
+   preserves the exact visibility of the former global rule. */
+@media (max-width: 767px) and (orientation: landscape) {
+  .rotateOverlay {
+    display: flex;
+  }
+}

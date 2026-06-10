@@ -35,6 +35,28 @@ export function MobileShell({
       data-layout-variant={layoutVariant}
       data-testid="mobile-shell"
     >
+      {/* Portrait lock — CSS-only, shown via @media orientation:landscape at
+          viewport ≤ 767px (mobile tier), the only tier this shell renders in. */}
+      <div className={styles.rotateOverlay} role="alert" aria-live="polite">
+        <div className={styles.rotateOverlayContent}>
+          <svg
+            className={styles.rotateOverlayIcon}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="4" y="2" width="16" height="20" rx="2" />
+            <path d="M12 18h.01" />
+          </svg>
+          <p className={styles.rotateOverlayMessage}>
+            {t("common.rotateMessage")}
+          </p>
+        </div>
+      </div>
       <div className={styles.header}>{header}</div>
       <div className={styles.track}>{track}</div>
       <main
