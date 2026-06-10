@@ -28,6 +28,11 @@ import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 
+import { ShareButton } from "./components/ShareButton/ShareButton";
+import { useShareLinkHandler } from "./hooks/useShareLinkHandler";
+import { SharedLinkBanner } from "./components/SharedLinkBanner/SharedLinkBanner";
+import { usePWAInstall } from "./hooks/usePWAInstall";
+import { InstallBanner } from "./components/InstallBanner/InstallBanner";
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import sharedStyles from "./components/shared/shared.module.css";
@@ -57,6 +62,9 @@ function AppContent() {
   const toggleMute = useSetAtom(toggleMuteAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
+
+  useShareLinkHandler();
+  const { canInstall, install, dismiss } = usePWAInstall();
   const setTheme = useSetAtom(themeAtom);
 
   const [showHelp, setShowHelp] = useState(false);
@@ -165,6 +173,8 @@ function AppContent() {
         <p className="rotate-overlay-message">{t("common.rotateMessage")}</p>
       </div>
     </div>
+    <SharedLinkBanner />
+    <InstallBanner canInstall={canInstall} onInstall={install} onDismiss={dismiss} />
     <MainLayoutWrapper
       layoutTier={layout.tier}
       layoutVariant={layout.variant}
@@ -181,6 +191,7 @@ function AppContent() {
           transport={<HeaderTransportCluster />}
           actions={
             <>
+              <ShareButton />
               <button
                 type="button"
                 onClick={() => setTheme(theme === "modern-dark" ? "light" : "dark")}

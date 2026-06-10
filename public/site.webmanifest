@@ -2,10 +2,12 @@
   "name": "FretFlow",
   "short_name": "FretFlow",
   "description": "Interactive guitar fretboard for visualizing scales, chords, and fingering patterns",
+  "id": "/fretboard-app/",
   "start_url": "/fretboard-app/",
+  "scope": "/fretboard-app/",
   "display": "standalone",
   "background_color": "#121212",
-  "theme_color": "#863bff",
+  "theme_color": "#0a1420",
   "icons": [
     {
       "src": "favicon-32x32.png",

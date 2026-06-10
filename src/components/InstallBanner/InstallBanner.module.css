@@ -1,0 +1,70 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  background: var(--surface-strip);
+  border-bottom: 1px solid var(--token-border-subtle);
+  color: var(--text-main);
+  font-size: var(--text-xs);
+  text-align: center;
+  width: 100%;
+}
+
+.banner-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.banner-install {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--dc-bg);
+  color: var(--dc-fg-strong);
+  border: 1px solid var(--dc-border);
+  border-radius: var(--dc-radius);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--dc-transition);
+}
+
+.banner-install:hover {
+  background: var(--dc-bg-hover);
+  border-color: var(--dc-border-hover);
+}
+
+.banner-install:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
+}
+
+.banner-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition: var(--transition-surface);
+}
+
+.banner-dismiss:hover {
+  color: var(--text-main);
+  background: var(--surface-hover);
+}
+
+.banner-dismiss:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
+}
