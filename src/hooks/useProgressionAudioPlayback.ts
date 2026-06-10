@@ -468,6 +468,7 @@ export function useProgressionAudioPlayback() {
       const bassPatch = eng.getBassPatch(mix.patches.bass);
       const drumKit = eng.getDrumKitPatch(mix.patches.drumKit);
       const chordPatchId = mix.patches.chord;
+      const chordAltPatchId = mix.patches.chordAlt;
 
       const inputs = buildInputsRef.current;
 
@@ -576,7 +577,7 @@ export function useProgressionAudioPlayback() {
       const chordStrumPart = eng.createProgressionPart<ChordStrumEvent>({
         events: built.chordStrums, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, value) => {
-          const voice = eng.getChordVoiceForInstrument(instrumentRef.current, chordPatchId);
+          const voice = eng.getChordVoiceForInstrument(instrumentRef.current, chordPatchId, chordAltPatchId);
           voice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
             velocity: value.velocity, style: value.style, direction: value.direction, durationSec: value.durationSec,
           });
