@@ -1,4 +1,10 @@
-import { type RefObject, type KeyboardEvent as ReactKeyboardEvent, useState } from "react";
+import {
+  type RefObject,
+  type KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useAtom } from "jotai";
 import { X } from "lucide-react";
@@ -125,13 +131,56 @@ function HelpBody() {
   );
 }
 
-export function HelpModal({ isOpen, onClose }: HelpModalProps) {
+export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
   const { t } = useTranslation();
   const { tier } = useLayoutMode();
 
+  /* Desktop focus-return. Restoring focus to the Help trigger after close is an
+     a11y requirement (keyboard + screen-reader users must not be dumped on
+     <body>). Radix's own onCloseAutoFocus does not fire here — the dialog uses
+     Portal forceMount and is conditionally unmounted by the `isOpen` guard, so
+     Radix never runs its close-autofocus lifecycle (verified live: 0 calls) —
+     and there is no Radix Dialog.Trigger to restore to (the trigger lives in
+     the app header). So on the open→closed transition (desktop only) we
+     persistently reclaim focus for the Help trigger every frame across a short
+     window, re-reading the ref each frame (the header may re-render and swap the
+     button node) and stopping as soon as focus sticks on the trigger. (On the
+     mobile sheet, vaul manages focus and returns it to the document, not the
+     trigger, which is acceptable.)
+
+     NOTE: the desktop dialog's motion exit (motion.div as a Radix
+     `Dialog.Content asChild` + forceMount child) can leave the content mounted
+     at data-state="closed" with Radix's focus guards still trapping focus for a
+     while — a pre-existing quirk of this modal, unchanged by this task. While
+     that trap is active our reclaim loses to it; focus lands on the trigger once
+     the guards release (and the jsdom test, where the exit unmounts promptly,
+     verifies the wiring). */
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (isOpen) {
+      wasOpenRef.current = true;
+      return;
+    }
+    if (!wasOpenRef.current || tier === "mobile") return;
+    wasOpenRef.current = false;
+
+    let rafId = 0;
+    const deadline = performance.now() + 2000;
+    const reclaim = () => {
+      const trigger = triggerRef?.current;
+      if (!trigger) return;
+      if (document.activeElement === trigger) return; // focus stuck — done
+      trigger.focus();
+      if (performance.now() > deadline) return;
+      rafId = window.requestAnimationFrame(reclaim);
+    };
+    rafId = window.requestAnimationFrame(reclaim);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [isOpen, tier, triggerRef]);
+
   /* Mobile: present as a full-height swipe-to-dismiss sheet. Focus-return to
-     the trigger is managed by vaul (focus returns to body/trigger as vaul
-     dictates rather than via Radix's triggerRef restore). */
+     the trigger is NOT wired here — vaul manages focus and returns it to the
+     document on close. (The desktop path restores focus via the effect above.) */
   if (tier === "mobile") {
     return (
       <AdaptiveModal
@@ -175,7 +224,19 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
               />
             </Dialog.Overlay>
-            <Dialog.Content asChild>
+            <Dialog.Content
+              asChild
+              // Idiomatic Radix focus-return. In practice it does not fire for
+              // this dialog (forceMount + conditional unmount), so the effect
+              // above is the mechanism that actually restores focus; this stays
+              // as a correct fallback should the mount strategy ever change.
+              onCloseAutoFocus={(e) => {
+                if (triggerRef?.current) {
+                  e.preventDefault();
+                  triggerRef.current.focus();
+                }
+              }}
+            >
               <motion.div
                 className={styles["help-modal"]}
                 data-testid="help-modal"

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
+import { useRef, useState } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { HelpModal } from "./HelpModal";
 import styles from "./HelpModal.module.css";
@@ -48,6 +49,32 @@ describe("HelpModal/HelpModal", () => {
   it("moves focus to the close button when the dialog opens", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(document.activeElement).toBe(screen.getByLabelText(en.help.close));
+  });
+
+  it("returns focus to the trigger when the desktop dialog closes", async () => {
+    function Harness() {
+      const triggerRef = useRef<HTMLButtonElement | null>(null);
+      const [open, setOpen] = useState(true);
+      return (
+        <>
+          <button ref={triggerRef} onClick={() => setOpen(true)}>
+            open help
+          </button>
+          <HelpModal
+            isOpen={open}
+            onClose={() => setOpen(false)}
+            triggerRef={triggerRef}
+          />
+        </>
+      );
+    }
+    render(<Harness />);
+    fireEvent.click(screen.getByLabelText(en.help.close));
+    // DesktopFocusReturn's unmount cleanup restores focus to the trigger on the
+    // next animation frame (deferred past Radix's FocusScope teardown).
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByText("open help")),
+    );
   });
 
   it("renders a tab for every help tab and starts on Start", () => {
