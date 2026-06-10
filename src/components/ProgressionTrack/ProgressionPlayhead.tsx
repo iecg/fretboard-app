@@ -125,6 +125,9 @@ export function ProgressionPlayhead({
       if (anim) {
         anim.cancel();
       }
+      if (el && typeof el.getAnimations === "function") {
+        el.getAnimations().forEach((a) => a.cancel());
+      }
     };
   }, [playing, totalBarsForDisplay, totalDurationBars]);
 
