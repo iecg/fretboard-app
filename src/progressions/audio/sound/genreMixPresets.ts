@@ -53,10 +53,11 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
       // -2 (was -3): the -3 was staged for the dropped strum-guitar sitting on
       // top of the mix; the piano sits at the pop reference.
       chord: { volumeDb: -2, pan: -0.18, reverbSend: 0.12 },
-      // -5: the sawtooth bass-pick (buzzy, mid-forward) over a dense staccato
-      // pedal-bass pattern read too prominent even at -2; pulled to -5 in the
-      // mix-balance pass (paired with easing its mid EQ to +1).
-      bass: { volumeDb: -5, pan: 0, reverbSend: 0.02 },
+      // -4: the sawtooth bass-pick (buzzy, mid-forward) over a dense staccato
+      // pedal-bass pattern read too prominent at -2 (paired with easing its mid
+      // EQ to +1). Eased back from -5 in the piano-only pass — the piano comp
+      // leaves more room than the long-ringing strum it replaced.
+      bass: { volumeDb: -4, pan: 0, reverbSend: 0.02 },
       // -1 (was 0): rock's long-ringing steel strum + constant staccato pedal
       // bass already give it the highest sustained energy of any genre. Staging
       // the kit at 0 too made rock the loudest overall — pull it to the pop
@@ -83,11 +84,15 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     genre: "jazz",
     patches: { bass: "bass-upright", chord: "chord-epiano", drumKit: "kit-jazz-brush" },
     perInstrument: {
-      chord: { volumeDb: -2, pan: -0.16, reverbSend: 0.22 },
-      bass: { volumeDb: -2, pan: 0, reverbSend: 0.06 },
-      // -3 (was -5): the brush/ride voices are already individually soft, so
-      // the extra bus cut buried the whole kit. Sits just under the front line.
-      drums: { volumeDb: -3, pan: 0.1, reverbSend: 0 },
+      // The whole genre sits ~2 dB under the others (chord/bass -4, drums -5):
+      // jazz read as the loudest genre across all three instruments — its
+      // gentle master compressor (threshold -20, ratio 2.5) leaves far more
+      // dynamics through than the other genres' glue, so the buses compensate.
+      chord: { volumeDb: -4, pan: -0.16, reverbSend: 0.22 },
+      bass: { volumeDb: -4, pan: 0, reverbSend: 0.06 },
+      // Keeps the original intent: the brush kit sits just under the front
+      // line (no more than ~2 dB below the chord bus) so it stays audible.
+      drums: { volumeDb: -5, pan: 0.1, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
     master: { compressor: { threshold: -20, ratio: 2.5, attack: 0.015, release: 0.22 }, reverb: { decay: 1.3, wet: 0.22 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },

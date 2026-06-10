@@ -165,26 +165,32 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "shuffle-comp",
     label: "Shuffle Comp",
     // Swung eighth-note blues shuffle comp: a full chord on every beat and a
-    // soft muted ghost blip on every swung "&". The swing engine delays the .5
+    // soft short chord on every swung "&" (plain hits play the piano patch's
+    // short duration — real swung eighths; the old strum-era 0.06s "muted"
+    // chokes read as clicks on a piano). The swing engine delays the .5
     // off-beats to the late triplet, so straight eighths here play as the
     // long–short shuffle. BACKBEAT accent: the hits on "2" and "4" (beats 1 & 3)
     // are the loudest, locking the comp to the snare backbeat; "1" and "3" sit
-    // softer. Muted off-beats use the short choke duration. Spec:
+    // softer. Spec:
     // docs/superpowers/specs/2026-06-10-blues-shuffle-strum-realism-design.md
     hits: [
       { beat: 0, velocity: 0.78 }, // "1" (softer)
-      { beat: 0.5, velocity: 0.45, articulation: "muted" },
+      { beat: 0.5, velocity: 0.45 },
       { beat: 1, velocity: 0.95 }, // "2" — backbeat accent
-      { beat: 1.5, velocity: 0.45, articulation: "muted" },
+      { beat: 1.5, velocity: 0.45 },
       { beat: 2, velocity: 0.8 }, // "3" (softer)
-      { beat: 2.5, velocity: 0.45, articulation: "muted" },
+      { beat: 2.5, velocity: 0.45 },
       { beat: 3, velocity: 0.95 }, // "4" — backbeat accent
-      { beat: 3.5, velocity: 0.5, articulation: "muted" },
+      { beat: 3.5, velocity: 0.5 },
     ],
   },
   {
     id: "jazz-comp",
     label: "Jazz Comping",
+    // Rootless Type-B comp (7-9-3-5, the bossa voicing builder) — the walking
+    // bass owns the root, so the piano comps like a jazz pianist: rootless,
+    // mid-register, short anticipated stabs.
+    voicing: "rootless-jazz",
     hits: [
       { beat: 0, velocity: 0.75, style: "staccato" },
       { beat: 1.5, velocity: 0.6, style: "staccato" },
@@ -213,23 +219,17 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
   {
     id: "funk-scratch",
     label: "Funk Scratch",
-    // Researched chicken-scratch (Jimmy Nolen / James Brown): a single root-note
-    // anchor on the one, one plain chord stab on the 2, then two syncopated
-    // color (rootless funk grip) stabs on the "&" of 3 and "&" of 4,
-    // with muted ghost 16ths weaving between. Down on numbers/"&", up on "e"/"a".
+    // Syncopated funk piano/clav comp: a single root-note anchor on the one, a
+    // plain chord stab on the 2, then two syncopated color (rootless funk grip)
+    // stabs on the "&" of 3 and "&" of 4. The strum-era muted ghost 16ths that
+    // wove between the stabs are gone — a 0.06s "muted" blip is a guitar choke,
+    // and on piano a machine-gun of them read as clicks; the drums + bass carry
+    // the 16th-note motion instead.
     hits: [
       { beat: 0, velocity: 0.9, articulation: "root" },
-      { beat: 0.5, velocity: 0.24, articulation: "muted" },
-      { beat: 0.75, velocity: 0.22, articulation: "muted" },
       { beat: 1.0, velocity: 0.85, articulation: "stab" },
-      { beat: 1.5, velocity: 0.24, articulation: "muted" },
-      { beat: 1.75, velocity: 0.22, articulation: "muted" },
-      { beat: 2.25, velocity: 0.2, articulation: "muted" },
       { beat: 2.5, velocity: 0.6, articulation: "color-stab" },
-      { beat: 2.75, velocity: 0.22, articulation: "muted" },
-      { beat: 3.25, velocity: 0.2, articulation: "muted" },
       { beat: 3.5, velocity: 0.62, articulation: "color-stab" },
-      { beat: 3.75, velocity: 0.2, articulation: "muted" },
     ],
   },
   {

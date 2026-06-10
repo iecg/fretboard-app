@@ -350,8 +350,12 @@ describe("funk-scratch chord comp", () => {
     }
   });
 
-  it("fills the rest with muted ghost scratches", () => {
-    expect(funk.hits.some((h) => h.articulation === "muted")).toBe(true);
+  it("keeps the comp sparse — no muted ghost blips on piano", () => {
+    // The strum-era muted ghost 16ths are gone: a 0.06s "muted" blip is a
+    // guitar choke and read as machine-gun clicks on piano. The comp is the
+    // four-stab skeleton; drums + bass carry the 16th-note motion.
+    expect(funk.hits.every((h) => h.articulation !== "muted")).toBe(true);
+    expect(funk.hits).toHaveLength(4);
   });
 });
 
@@ -568,14 +572,12 @@ describe("chord & bass variation catalogs", () => {
 describe("shuffle comp groove", () => {
   it("shuffle-comp is a swung eighth-note shuffle with a 2-and-4 backbeat accent", () => {
     const p = getChordPattern("shuffle-comp")!;
-    // Eight hits across the bar — a full chord on every beat, a ghost on every "&".
+    // Eight hits across the bar — a full chord on every beat, a soft short
+    // chord on every "&". No "muted" chokes: a 0.06s blip is a strum concept
+    // that reads as a click on piano; plain hits play the patch's short length.
     expect(p.hits.map((h) => h.beat)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]);
     for (const h of p.hits) {
-      if (h.beat % 1 === 0) {
-        expect(h.articulation, `beat ${h.beat}`).toBeUndefined(); // full comp chord
-      } else {
-        expect(h.articulation, `beat ${h.beat}`).toBe("muted"); // ghost blip
-      }
+      expect(h.articulation, `beat ${h.beat}`).toBeUndefined();
     }
     // Backbeat accent: the "2" and "4" (beats 1 & 3) are the loudest downbeats and
     // every downbeat is louder than every ghost off-beat.

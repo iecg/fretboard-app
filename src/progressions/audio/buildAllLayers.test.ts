@@ -211,7 +211,7 @@ describe("buildAllLayers", () => {
     expect(at(2.5).value.voicing).toEqual(buildFunkColorVoicing("C", "M"));
   });
 
-  it("maps funk durations: root short, stab/color ring, ghost chokes", async () => {
+  it("maps funk durations: root short, stab/color ring (no muted ghosts on piano)", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
       chordPatternId: "funk-scratch",
@@ -221,9 +221,11 @@ describe("buildAllLayers", () => {
     expect(at(0).value.durationSec).toBe(ROOT_STRUM_DURATION_SEC);
     expect(at(1).value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
     expect(at(2.5).value.durationSec).toBe(STAB_STRUM_DURATION_SEC);
+    // The strum-era muted ghost 16ths were removed for piano (a 0.06s choke
+    // reads as a click); no event carries the muted duration.
     expect(
       out.chordStrums.some((s) => s.value.durationSec === MUTED_STRUM_DURATION_SEC),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("voice-leads funk color-stabs into the current chord's register (rootless grip)", async () => {
@@ -284,7 +286,7 @@ describe("buildAllLayers", () => {
       }
     });
 
-    it("emits stab strums that ring, and ghost strums that choke (funk-scratch)", async () => {
+    it("emits a short root anchor and ringing stabs (funk-scratch)", async () => {
       const layers = await buildAllLayersAsync({
         ...baseInput,
         chordPatternId: "funk-scratch",
@@ -295,7 +297,7 @@ describe("buildAllLayers", () => {
       expect(durs.every((d) => typeof d === "number")).toBe(true);
       const min = Math.min(...(durs as number[]));
       const max = Math.max(...(durs as number[]));
-      expect(min).toBeCloseTo(MUTED_STRUM_DURATION_SEC);
+      expect(min).toBeCloseTo(ROOT_STRUM_DURATION_SEC);
       expect(max).toBe(STAB_STRUM_DURATION_SEC);
     });
 
@@ -461,10 +463,10 @@ describe("buildAllLayers", () => {
     }
   });
 
-  it("leaves a default-voicing comp (jazz) using the standard rooted voicing", async () => {
+  it("leaves a default-voicing comp (pop-8ths) using the standard rooted voicing", async () => {
     const out = await buildAllLayersAsync({
       ...baseInput,
-      chordPatternId: "jazz-comp",
+      chordPatternId: "pop-8ths",
       steps: [step({ duration: { value: 1, unit: "bar" } })], // C major
     });
     // Default path: the engine's buildVoicing keeps the root present (in some
@@ -472,6 +474,20 @@ describe("buildAllLayers", () => {
     expect(
       out.chordStrums[0].value.voicing.some((n) => n.replace(/-?\d+$/, "") === "C"),
     ).toBe(true);
+  });
+
+  it("comps jazz rootless (Type-B via the bossa voicing builder)", async () => {
+    const out = await buildAllLayersAsync({
+      ...baseInput,
+      chordPatternId: "jazz-comp",
+      steps: [step({ duration: { value: 1, unit: "bar" } })], // C major
+    });
+    // jazz-comp sets voicing: "rootless-jazz" — the walking bass owns the root,
+    // so the comp voicing must NOT contain the root pitch class.
+    expect(out.chordStrums.length).toBeGreaterThan(0);
+    expect(
+      out.chordStrums[0].value.voicing.some((n) => n.replace(/-?\d+$/, "") === "C"),
+    ).toBe(false);
   });
 
   it("is deterministic for the bossa 2-bar cell across a 4-bar span (drums, bass, comp)", async () => {

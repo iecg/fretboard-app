@@ -1,9 +1,9 @@
 import clsx from "clsx";
 import {
-  AudioWaveform,
   Drum,
   Guitar,
   LoaderCircle,
+  Piano,
   Play,
   Repeat,
   Square,
@@ -113,10 +113,10 @@ export function TransportBar() {
           className={clsx(styles.transportButton, progressionStrumEnabled && styles["transportButton--accent"])}
           onClick={() => setProgressionStrumEnabled(!progressionStrumEnabled)}
           aria-pressed={progressionStrumEnabled}
-          aria-label="Chord strum"
-          title="Chord strum"
+          aria-label="Chords"
+          title="Chords"
         >
-          <Guitar size={13} strokeWidth={2.4} aria-hidden="true" />
+          <Piano size={13} strokeWidth={2.4} aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -126,7 +126,8 @@ export function TransportBar() {
           aria-label="Bassline"
           title="Bassline"
         >
-          <AudioWaveform size={13} strokeWidth={2.4} aria-hidden="true" />
+          {/* The guitar reads as the bass instrument now that chords are piano. */}
+          <Guitar size={13} strokeWidth={2.4} aria-hidden="true" />
         </button>
         <button
           type="button"

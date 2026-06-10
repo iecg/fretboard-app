@@ -326,10 +326,30 @@ Patterns keep rhythm, velocity, and articulation — `muted`/`root`/`stab` durat
 honored by the poly voice, so ghost strokes read as short piano blips. **[internal]**
 
 **Shuffle backbeat accent (kept).** The Blues `shuffle-comp` pattern is swung eighth-notes
-(full chord on each beat, muted ghost blip on each "&") with the accents on the **2 and 4**
+(full chord on each beat, soft short chord on each "&") with the accents on the **2 and 4**
 (beats 1 & 3 in the zero-based `beat` field) so the comp locks with the snare backbeat — a
 front-weighted accent (loudest on 1 & 3) fought the snare and read as "not feeling like a
 shuffle." This applies to piano comping just as it did to the strum. **[spec]**
+
+**Piano-only polish (follow-up pass).** Three durable decisions from the first listening
+round after the pivot: **[spec]**
+
+- **No "muted" ghost articulations in piano genre defaults.** The 0.06s muted choke is a
+  guitar concept; on piano it reads as a click (and as machine-gun clicks in funk's woven
+  ghost 16ths). `shuffle-comp`'s "&" hits became plain soft hits (the patch's short
+  duration = real swung eighths) and `funk-scratch` was reduced to its four-stab skeleton
+  (root on 1, stab on 2, color-stabs on the & of 3 and & of 4) — drums + bass carry the
+  16th-note motion.
+- **Jazz comps rootless.** `jazz-comp` sets `voicing: "rootless-jazz"`, reusing the bossa
+  Type-B builder (7-9-3-5, mid register) — the walking bass owns the root, so the piano
+  comps like a jazz pianist instead of stacking root-position chords. Jazz's buses also sit
+  ~2 dB under the other genres (chord/bass −4, drums −5): its gentle master compressor
+  (threshold −20, ratio 2.5) passes more dynamics than the other genres' glue, which made
+  jazz read as the loudest genre.
+- **Backing-track UI exposes only Genre.** Chord/bass/drum pattern pickers and the swing
+  slider were removed from the Inspector — patterns and swing are properties a genre
+  bundles, not user knobs. The atoms remain (genre application writes them); the transport
+  chord toggle's icon is a piano (and the freed guitar icon now marks the bassline).
 
 ---
 
