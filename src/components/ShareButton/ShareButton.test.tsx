@@ -1,19 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
-import { createStore, Provider } from "jotai";
-import { type ReactNode } from "react";
+import { createStore } from "jotai";
 import { ShareButton } from "./ShareButton";
 import { baseRootNoteAtom, baseScaleNameAtom } from "../../store/scaleAtoms";
 import { progressionTempoBpmAtom, beatsPerBarAtom, timeSignatureDenominatorAtom, progressionStepsAtom } from "../../store/progressionAtoms";
+import { renderWithStore } from "../../test-utils/renderWithAtoms";
 import type { ProgressionStep } from "../../progressions/progressionDomain";
-
-function createWrapper(store: ReturnType<typeof createStore>) {
-  return ({ children }: { children: ReactNode }) => (
-    <Provider store={store}>{children}</Provider>
-  );
-}
 
 const DEFAULT_STEPS: ProgressionStep[] = [
   { id: "1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
@@ -43,7 +37,7 @@ describe("ShareButton", () => {
   it("renders a share button with accessible label", () => {
     const store = createStore();
     store.set(progressionStepsAtom, DEFAULT_STEPS);
-    render(<ShareButton />, { wrapper: createWrapper(store) });
+    renderWithStore(<ShareButton />, store);
     expect(screen.getByRole("button", { name: /share/i })).toBeInTheDocument();
   });
 
@@ -61,7 +55,7 @@ describe("ShareButton", () => {
     store.set(timeSignatureDenominatorAtom, 4);
     store.set(progressionStepsAtom, DEFAULT_STEPS);
 
-    render(<ShareButton />, { wrapper: createWrapper(store) });
+    renderWithStore(<ShareButton />, store);
     await user.click(screen.getByRole("button", { name: /share/i }));
 
     expect(writeTextSpy).toHaveBeenCalledWith(
@@ -73,7 +67,7 @@ describe("ShareButton", () => {
     const user = userEvent.setup();
     const store = createStore();
     store.set(progressionStepsAtom, DEFAULT_STEPS);
-    render(<ShareButton />, { wrapper: createWrapper(store) });
+    renderWithStore(<ShareButton />, store);
     await user.click(screen.getByRole("button", { name: /share/i }));
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
@@ -81,7 +75,7 @@ describe("ShareButton", () => {
   it("has no accessibility violations", async () => {
     const store = createStore();
     store.set(progressionStepsAtom, DEFAULT_STEPS);
-    const { container } = render(<ShareButton />, { wrapper: createWrapper(store) });
+    const { container } = renderWithStore(<ShareButton />, store);
     expect(await axe(container)).toHaveNoViolations();
   });
 });

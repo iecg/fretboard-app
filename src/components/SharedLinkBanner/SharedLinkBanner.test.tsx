@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { axe } from "vitest-axe";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { createStore, Provider } from "jotai";
-import { type ReactNode } from "react";
+import { createStore } from "jotai";
 import { SharedLinkBanner } from "./SharedLinkBanner";
 import { urlOverridesAtom } from "../../store/urlOverrideAtoms";
+import { renderWithStore } from "../../test-utils/renderWithAtoms";
 import type { ShareState } from "../../utils/shareCodec";
 
 const OVERRIDE: ShareState = {
@@ -21,23 +21,17 @@ const OVERRIDE: ShareState = {
   ],
 };
 
-function createWrapper(store: ReturnType<typeof createStore>) {
-  return ({ children }: { children: ReactNode }) => (
-    <Provider store={store}>{children}</Provider>
-  );
-}
-
 describe("SharedLinkBanner", () => {
   it("renders nothing when no overrides active", () => {
     const store = createStore();
-    const { container } = render(<SharedLinkBanner />, { wrapper: createWrapper(store) });
+    const { container } = renderWithStore(<SharedLinkBanner />, store);
     expect(container.firstChild).toBeNull();
   });
 
   it("renders banner text when overrides active", () => {
     const store = createStore();
     store.set(urlOverridesAtom, OVERRIDE);
-    render(<SharedLinkBanner />, { wrapper: createWrapper(store) });
+    renderWithStore(<SharedLinkBanner />, store);
     expect(screen.getByText(/viewing shared song/i)).toBeInTheDocument();
     expect(screen.getByText(/C major/)).toBeInTheDocument();
   });
@@ -46,7 +40,7 @@ describe("SharedLinkBanner", () => {
     const user = userEvent.setup();
     const store = createStore();
     store.set(urlOverridesAtom, OVERRIDE);
-    render(<SharedLinkBanner />, { wrapper: createWrapper(store) });
+    renderWithStore(<SharedLinkBanner />, store);
     await user.click(screen.getByRole("button", { name: /dismiss/i }));
     expect(store.get(urlOverridesAtom)).toBeNull();
   });
@@ -54,7 +48,7 @@ describe("SharedLinkBanner", () => {
   it("has no accessibility violations when visible", async () => {
     const store = createStore();
     store.set(urlOverridesAtom, OVERRIDE);
-    const { container } = render(<SharedLinkBanner />, { wrapper: createWrapper(store) });
+    const { container } = renderWithStore(<SharedLinkBanner />, store);
     expect(await axe(container)).toHaveNoViolations();
   });
 });
