@@ -113,6 +113,17 @@
   min-width: var(--control-height);
   min-height: var(--control-height);
 }
+
+/* The backing-track instrument cluster (InstrumentToggleCluster) also appears
+   inside the mobile bottom sheet's Song tab, which vaul portals out of the
+   [data-layout-tier] shell root — so the tier guard above doesn't reach it there
+   and the instrument buttons stay at 1.7rem (~27px). Re-assert the touch size
+   via the Inspector's sheet-placement hook. The desktop header transport (also
+   .transportButton, but never inside a sheet) is untouched. */
+:global([data-placement="sheet"]) .transportButton {
+  min-width: var(--size-touch-target);
+  min-height: var(--size-touch-target);
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 /* ----------------------------------------------------------------------------

@@ -351,6 +351,23 @@
   min-height: var(--size-touch-target);
 }
 
+/* Mobile bottom-sheet variant of the guard above. The Inspector sheet content
+   is rendered through a portal that escapes the [data-layout-tier] shell root,
+   so the tier guard never reaches ToggleBars inside the sheet (e.g. the chord
+   editor's Beat/Bar unit toggle). Re-assert the 44px target via the Inspector's
+   sheet-placement hook. Desktop ToggleBars are unaffected. */
+:global([data-placement="sheet"]) .toggle-group {
+  height: auto;
+  min-height: var(--control-height);
+}
+:global([data-placement="sheet"]) .toggle-btn {
+  min-height: var(--size-touch-target);
+  /* Short text toggles (e.g. the editor's Beat | Bar unit pair) render ~37px
+     wide; widen them so each option is a full square touch target. Wider /
+     flex:1 options are unaffected (their content already exceeds 44px). */
+  min-width: var(--size-touch-target);
+}
+
 .accidental-toggle {
   font-size: 1.4rem;
   width: 2.5rem;

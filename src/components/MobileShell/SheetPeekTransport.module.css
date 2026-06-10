@@ -140,6 +140,11 @@ button.chip:focus-visible {
 /* Loop toggle — pushed to the far right */
 .toggle {
   margin-left: auto;
+  /* Icon-only chip: the chip's vertical 44px min-height covers height, but the
+     14px icon + 12px side padding only reaches ~40px wide. Pin the width to a
+     full touch target. This module renders only inside the mobile sheet, so no
+     tier guard is needed. */
+  min-width: var(--size-touch-target);
 }
 
 /* Loop toggle — active/pressed state */

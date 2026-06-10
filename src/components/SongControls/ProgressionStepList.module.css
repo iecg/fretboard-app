@@ -277,3 +277,11 @@
   mask-image: none;
   animation: none;
 }
+
+/* Touch-target guard for the mobile bottom sheet. Each chord row is a tappable
+   button (selects that step) but its 2.7rem (43.2px) height falls just under the
+   44px minimum. The sheet content is portaled out of the [data-layout-tier]
+   shell, so scope to the Inspector's sheet placement. Desktop rows keep 2.7rem. */
+:global([data-placement="sheet"]) .row {
+  min-height: var(--size-touch-target);
+}

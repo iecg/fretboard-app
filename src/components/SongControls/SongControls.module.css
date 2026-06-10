@@ -598,3 +598,38 @@
   justify-content: center;
   margin-left: 0;
 }
+
+/* ===== Mobile bottom-sheet: 44px touch targets =====
+ * The Song tab is rendered inside the Inspector's "sheet" placement, which vaul
+ * portals out of the [data-layout-tier="mobile"] shell root. The tier guards
+ * above therefore never reach these controls when they live in the sheet, so
+ * the progression toolbar/editor buttons stayed below 44px on touch. Re-assert
+ * the touch sizes via the sheet-placement hook. The desktop/tablet bottom-tab
+ * placement still uses the tier guards above; desktop top placement is untouched.
+ */
+:global([data-placement="sheet"]) .toolbar-button {
+  width: var(--control-height);
+  min-height: var(--size-touch-target);
+  padding: 0;
+}
+
+:global([data-placement="sheet"]) .delete-button {
+  width: var(--control-height);
+  min-height: var(--size-touch-target);
+  padding: 0;
+  margin-left: 0;
+}
+
+:global([data-placement="sheet"]) .grouped-button {
+  width: var(--size-touch-target);
+  height: var(--size-touch-target);
+}
+
+:global([data-placement="sheet"]) .pager-button {
+  width: var(--size-touch-target);
+  height: var(--size-touch-target);
+}
+
+:global([data-placement="sheet"]) .lock-toggle {
+  min-height: var(--size-touch-target);
+}

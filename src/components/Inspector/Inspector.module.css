@@ -173,3 +173,11 @@
   -webkit-overflow-scrolling: touch;
   padding-bottom: 16px;
 }
+
+/* Touch-target guard — the sheet's tab triggers (Overlay / Song) are the only
+   way to switch the panel, so they need a full 44px hit height. The text-only
+   tabs are otherwise ~31px tall. Scoped to the sheet placement so the desktop
+   top-placement tabs are untouched. */
+.placementSheet .tab {
+  min-height: var(--size-touch-target);
+}
