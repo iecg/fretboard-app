@@ -1,0 +1,53 @@
+/* Floating bottom sheet over the fretboard. Uses --surface-float (same as
+   SettingsOverlay/HelpModal floating surfaces) so it reads as raised chrome
+   and is effectively opaque over the stage. */
+
+/* Height must be 100dvh: vaul computes snap offsets as
+   windowHeight - snapHeight, so the drawer's untransformed top must sit at
+   y=0 for "96px" / 0.45 / 0.85 to equal the actually-visible height. At the
+   top snap (0.85) the bottom 15dvh hangs below the viewport — .body
+   compensates with padding so scrollable content stays reachable. */
+.content {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px 14px 0 0;
+  border-top: 1px solid var(--chrome-border);
+  /* --surface-float is 96% alpha; composite it over the opaque shell color so
+     the fretboard never bleeds through the sheet. */
+  background-color: var(--bg-color);
+  background-image: linear-gradient(var(--surface-float), var(--surface-float));
+  z-index: 30;
+}
+
+.handle {
+  flex: none;
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  margin: 8px auto 4px;
+  background: var(--surface-highlight);
+}
+
+.peek {
+  flex: none;
+  padding: 4px 12px 8px;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* 15dvh = portion of the 100dvh drawer below the viewport at the 0.85
+     snap; without this the end of the scrollable content is unreachable. */
+  padding-bottom: calc(15dvh + env(safe-area-inset-bottom, 0px));
+}
+
+/* At peek the body is hidden so the tab content can't half-show. */
+.body[data-snap="peek"] {
+  visibility: hidden;
+}

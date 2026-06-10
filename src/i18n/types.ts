@@ -313,6 +313,9 @@ export interface Dictionary {
   mobileShell: {
     stageLabel: string;
   };
+  mobileSheet: {
+    label: string;
+  };
 }
 
 export type SupportedLanguage = "en" | "es";

@@ -28,6 +28,7 @@ import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { MobileShell } from "./components/MobileShell/MobileShell";
+import { MobileSheet } from "./components/MobileShell/MobileSheet";
 
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
@@ -261,9 +262,11 @@ function AppContent() {
           header={headerNode}
           track={<ProgressionSummarySlot />}
           sheet={
-            <Suspense fallback={null}>
-              <Inspector placement="bottom" />
-            </Suspense>
+            <MobileSheet peek={null}>
+              <Suspense fallback={null}>
+                <Inspector placement="bottom" />
+              </Suspense>
+            </MobileSheet>
           }
         >
           <Fretboard stringRowPx={layout.stringRowPx} />

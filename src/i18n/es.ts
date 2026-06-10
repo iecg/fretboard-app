@@ -344,4 +344,7 @@ export const es: Dictionary = {
   mobileShell: {
     stageLabel: "Escenario del diapasón",
   },
+  mobileSheet: {
+    label: "Reproducción y controles",
+  },
 };
