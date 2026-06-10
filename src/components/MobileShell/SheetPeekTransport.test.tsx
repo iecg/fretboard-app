@@ -4,9 +4,9 @@ import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import {
-  progressionTempoBpmAtom,
   progressionLoopEnabledAtom,
   progressionStepsAtom,
+  progressionDrumsEnabledAtom,
   beatsPerBarAtom,
   setProgressionPlayingAtom,
   progressionPlayingAtom,
@@ -29,15 +29,17 @@ describe("SheetPeekTransport", () => {
     localStorage.clear();
   });
 
-  it("shows play button, tempo, scale, and loop toggle", () => {
-    renderWithAtoms(<SheetPeekTransport />, [
-      ...playableAtoms,
-      [progressionTempoBpmAtom, 90],
-    ]);
+  it("shows play button, backing-instrument toggles, and loop toggle", () => {
+    renderWithAtoms(<SheetPeekTransport />, [...playableAtoms]);
     expect(screen.getByTestId("peek-play")).toBeInTheDocument();
-    expect(screen.getByTestId("peek-tempo")).toHaveTextContent("90");
-    expect(screen.getByTestId("peek-scale")).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Backing instruments" })).toBeInTheDocument();
     expect(screen.getByTestId("peek-loop")).toBeInTheDocument();
+  });
+
+  it("no longer renders the scale and tempo chips (moved to track/header)", () => {
+    renderWithAtoms(<SheetPeekTransport />, [...playableAtoms]);
+    expect(screen.queryByTestId("peek-scale")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("peek-tempo")).not.toBeInTheDocument();
   });
 
   it("toggles loop on tap", async () => {
@@ -45,6 +47,14 @@ describe("SheetPeekTransport", () => {
     const { unmount } = renderWithStore(<SheetPeekTransport />, store);
     await userEvent.click(screen.getByTestId("peek-loop"));
     expect(store.get(progressionLoopEnabledAtom)).toBe(true);
+    unmount();
+  });
+
+  it("toggles a backing instrument from the peek row", async () => {
+    const store = makeAtomStore([[progressionDrumsEnabledAtom, false]]);
+    const { unmount } = renderWithStore(<SheetPeekTransport />, store);
+    await userEvent.click(screen.getByRole("button", { name: "Drums" }));
+    expect(store.get(progressionDrumsEnabledAtom)).toBe(true);
     unmount();
   });
 
@@ -77,17 +87,14 @@ describe("SheetPeekTransport", () => {
     expect(store.get(progressionPlayingAtom)).toBe(true);
   });
 
-  it("shows loop chip with aria-pressed reflecting loop state", () => {
+  it("shows loop toggle with aria-pressed reflecting loop state", () => {
     const store = makeAtomStore([[progressionLoopEnabledAtom, true]]);
     renderWithStore(<SheetPeekTransport />, store);
     expect(screen.getByTestId("peek-loop")).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("renders the tempo value in the tempo chip", () => {
-    renderWithAtoms(<SheetPeekTransport />, [
-      ...playableAtoms,
-      [progressionTempoBpmAtom, 120],
-    ]);
-    expect(screen.getByTestId("peek-tempo")).toHaveTextContent("120");
+  it("opts the row into the sheet touch-target guard", () => {
+    renderWithAtoms(<SheetPeekTransport />, [...playableAtoms]);
+    expect(screen.getByTestId("peek-transport")).toHaveAttribute("data-placement", "sheet");
   });
 });

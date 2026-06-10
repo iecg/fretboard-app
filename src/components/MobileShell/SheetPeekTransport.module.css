@@ -1,10 +1,8 @@
 /* ----------------------------------------------------------------------------
  * SheetPeekTransport — mini-player row pinned in the mobile bottom-sheet peek.
  *
- * Token budget:
- *   accent:  --faceplate-accent (cyan in dark, teal in light)
- *   border:  --dc-border (DAW-control border, theme-adaptive)
- *   surface: --dc-bg (DAW-control surface, theme-adaptive)
+ * The buttons themselves are the shared faceplate TransportButton (styles in
+ * TransportBar.module.css); this module only lays out the row.
  * --------------------------------------------------------------------------- */
 
 .row {
@@ -12,58 +10,14 @@
   align-items: center;
   gap: 8px;
   padding: 0 var(--space-4);
-  /* 44px minimum ensures the row itself is a comfortable touch target and
-     visually balances the play button height at the peek position. */
+  /* 56px minimum keeps the row a comfortable touch band at the peek snap and
+     vertically balances the 44px play button. */
   min-height: 56px;
 }
 
-/* ----------------------------------------------------------------------------
- * Play / Stop button — round accent pill, 44px touch target
- * --------------------------------------------------------------------------- */
-
-.play {
-  --peek-accent: var(--faceplate-accent, #4de4ff);
-
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--peek-accent);
-  color: #ffffff;
-  flex: none;
-  cursor: pointer;
-  transition:
-    opacity var(--transition-fast),
-    transform 120ms ease,
-    box-shadow var(--transition-fast);
-}
-
-.play:hover:not(:disabled) {
-  box-shadow: 0 0 12px color-mix(in srgb, var(--peek-accent) 60%, transparent);
-}
-
-.play:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.play:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 2px var(--peek-accent),
-    0 0 10px color-mix(in srgb, var(--peek-accent) 45%, transparent);
-}
-
-.play:disabled {
-  opacity: var(--control-disabled-opacity);
-  cursor: not-allowed;
-}
-
-.play--playing {
-  /* Slightly dimmed background while playing to signal active state */
-  background: color-mix(in srgb, var(--peek-accent) 85%, transparent);
+/* Loop toggle — pushed to the far right */
+.loop {
+  margin-left: auto;
 }
 
 .spinIcon {
@@ -78,79 +32,4 @@
 
 @keyframes peek-spin {
   to { transform: rotate(360deg); }
-}
-
-/* ----------------------------------------------------------------------------
- * Chips — scale, tempo, and loop toggle
- * --------------------------------------------------------------------------- */
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 44px;
-  padding: 0 12px;
-  border-radius: var(--radius-chip);
-  border: 1px solid var(--dc-border);
-  background: var(--dc-bg);
-  font-size: var(--text-sm);
-  color: var(--dc-fg-strong);
-  white-space: nowrap;
-  user-select: none;
-  /* Ensure text/content is centered vertically */
-  justify-content: center;
-}
-
-.chipLabel {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--dc-fg-strong);
-}
-
-.unit {
-  font-size: var(--text-xxs);
-  opacity: 0.7;
-  letter-spacing: 0.04em;
-  font-weight: var(--font-weight-normal);
-}
-
-/* Loop toggle — button reset on top of chip styles */
-button.chip {
-  cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    color var(--transition-fast),
-    background-color var(--transition-fast);
-}
-
-button.chip:hover {
-  border-color: var(--dc-border-hover);
-  background: var(--dc-bg-hover);
-}
-
-button.chip:active {
-  transform: scale(0.97);
-}
-
-button.chip:focus-visible {
-  outline: none;
-  box-shadow: var(--dc-glow-focus);
-}
-
-/* Loop toggle — pushed to the far right */
-.toggle {
-  margin-left: auto;
-  /* Icon-only chip: the chip's vertical 44px min-height covers height, but the
-     14px icon + 12px side padding only reaches ~40px wide. Pin the width to a
-     full touch target. This module renders only inside the mobile sheet, so no
-     tier guard is needed. */
-  min-width: var(--size-touch-target);
-}
-
-/* Loop toggle — active/pressed state */
-.toggle[aria-pressed="true"] {
-  border-color: var(--dc-border-active);
-  background: var(--dc-bg-active);
-  color: var(--dc-fg-strong);
-  box-shadow: var(--dc-glow-active);
 }
