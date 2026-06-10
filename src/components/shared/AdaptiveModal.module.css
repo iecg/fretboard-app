@@ -1,11 +1,21 @@
 /* Shared dim backdrop for both presentations. Reuses the same scrim + z token
    as HelpModal so this modal stacks above everything, including the mobile
-   sheet (--z-mobile-sheet: 100). --z-help-overlay resolves to 1000. */
+   sheet (--z-mobile-sheet: 100). --z-help-overlay resolves to 1000.
+   The dialog path drives its own fade via Radix's data-state attrs; the sheet
+   path's overlay is animated by vaul. */
 .overlay {
   position: fixed;
   inset: 0;
   background: var(--chrome-scrim);
   z-index: var(--z-help-overlay);
+}
+
+.overlay[data-state="open"] {
+  animation: adaptiveOverlayIn 150ms ease-out;
+}
+
+.overlay[data-state="closed"] {
+  animation: adaptiveOverlayOut 120ms ease-in;
 }
 
 /* Desktop: centered dialog, mirrors HelpModal surface/elevation tokens. */
@@ -28,6 +38,49 @@
   box-shadow: var(--elevation-overlay);
 }
 
+.dialog[data-state="open"] {
+  animation: adaptiveDialogIn 150ms ease-out;
+}
+
+.dialog[data-state="closed"] {
+  animation: adaptiveDialogOut 120ms ease-in;
+}
+
+@keyframes adaptiveOverlayIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes adaptiveOverlayOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes adaptiveDialogIn {
+  from {
+    opacity: 0;
+    translate: -50% -50%;
+    scale: 0.97;
+  }
+}
+
+@keyframes adaptiveDialogOut {
+  to {
+    opacity: 0;
+    translate: -50% -50%;
+    scale: 0.97;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay[data-state],
+  .dialog[data-state] {
+    animation: none;
+  }
+}
+
 /* Mobile: full-height swipe-to-dismiss sheet. */
 .sheet {
   position: fixed;
@@ -43,14 +96,33 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Visible drag bar. vaul's <Drawer.Handle> renders this element plus an inner
+   `data-vaul-handle-hitarea` child for a 44px touch target. The app does not
+   import vaul/style.css, so the visible pill styling lives here; the hitarea
+   sizing is re-asserted below since vaul's stylesheet isn't loaded. */
 .sheetHandle {
+  display: block;
+  position: relative;
   flex: none;
   width: 36px;
   height: 4px;
   margin: 8px auto 4px;
-  border-radius: 2px;
+  border-radius: 999px;
   background: var(--chrome-border);
+  touch-action: pan-y;
 }
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+.sheetHandle :global([data-vaul-handle-hitarea]) {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100%, var(--size-touch-target));
+  height: max(100%, var(--size-touch-target));
+  touch-action: inherit;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .sheetBody {
   flex: 1;

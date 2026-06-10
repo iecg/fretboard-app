@@ -21,9 +21,10 @@ interface AdaptiveModalProps {
  * (`open` / `onOpenChange`) and dismissible (Escape, overlay click, or — for
  * the sheet — a swipe-down drag).
  *
- * Both presentations carry a visually-hidden Title for accessibility (Radix
- * Dialog and vaul both warn without one) and an `aria-label` on the content
- * for redundancy.
+ * Both presentations carry a visually-hidden Title (Radix Dialog and vaul both
+ * warn without one) which Radix wires up as the accessible name via
+ * `aria-labelledby`. `aria-describedby={undefined}` opts out of Radix's
+ * Description requirement to silence its dev-only console warning.
  */
 export function AdaptiveModal({
   open,
@@ -40,10 +41,10 @@ export function AdaptiveModal({
           <Drawer.Content
             className={styles.sheet}
             data-testid="adaptive-modal-sheet"
-            aria-label={label}
+            aria-describedby={undefined}
           >
             <Drawer.Title className={sharedStyles["sr-only"]}>{label}</Drawer.Title>
-            <div className={styles.sheetHandle} aria-hidden="true" />
+            <Drawer.Handle className={styles.sheetHandle} />
             <div className={styles.sheetBody}>{children}</div>
           </Drawer.Content>
         </Drawer.Portal>
@@ -55,7 +56,7 @@ export function AdaptiveModal({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles.overlay} />
-        <Dialog.Content className={styles.dialog} aria-label={label}>
+        <Dialog.Content className={styles.dialog} aria-describedby={undefined}>
           <Dialog.Title className={sharedStyles["sr-only"]}>{label}</Dialog.Title>
           {children}
         </Dialog.Content>
