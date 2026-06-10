@@ -613,6 +613,23 @@
   padding: 0;
 }
 
+/* The sheet sizes the toolbar button icon-only, so hide its text label (still
+   announced via the button's aria-label). The tier guard above already does
+   this on the mobile tier, but at tablet-split (where only the sheet-placement
+   hooks fire, not the mobile tier) the icon-only button would otherwise keep a
+   stray visible label. Hide it at every sheet width. */
+:global([data-placement="sheet"]) .toolbar-button > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 :global([data-placement="sheet"]) .delete-button {
   width: var(--control-height);
   min-height: var(--size-touch-target);

@@ -129,5 +129,10 @@
   width: var(--size-touch-target);
   height: var(--size-touch-target);
   transform: translate(-50%, -50%);
+  /* Sit at the base of the switch's stacking context. The .thumb is a later DOM
+     child with no z-index, so it intentionally stacks above this overlay — keep
+     this at 0 so a future z-index/overflow tweak can't silently clip the 44px
+     hit area or paint over the thumb. */
+  z-index: 0;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
