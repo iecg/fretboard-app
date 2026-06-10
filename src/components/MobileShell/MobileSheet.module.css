@@ -25,6 +25,16 @@
   z-index: var(--z-mobile-sheet);
 }
 
+/* Radix's FocusScope focuses the drawer container at mount (vaul 1.1.2 fails
+   to forward modal={false}, so the trap is active — same bug family as
+   useUnhideMobileShell). Chrome then pins :focus-visible on it, drawing a
+   permanent focus ring around the whole sheet on first load. The container is
+   chrome, not an operable control — suppress its ring; inner controls keep
+   their own focus styles. */
+.content:focus-visible {
+  outline: none;
+}
+
 .handle {
   flex: none;
   width: 36px;
