@@ -298,6 +298,30 @@ an ADSR `GainNode` (attack 0.006 s → 1, decay 0.55 s → sustain 0.02, release
 after 0.5 s note duration). Max polyphony 12; at the cap, new notes are silently
 skipped. **[spec]**
 
+### 3.2 Per-genre chord instrument default & the secondary `chordAlt` patch
+
+Each genre declares a default chord instrument family (`GenreStyle.chordInstrument`:
+`strum` → guitar, `piano`/`organ` → keys) and a single default chord patch
+(`GenreMix.patches.chord`), whose family must match the default instrument (enforced by a
+`genreMixPresets.test.ts` invariant). The instrument dropdown's *Piano* and *Organ* both map
+to the `poly` family, so they are not distinct timbres — the only real switch is **guitar vs.
+keys**, and the specific keys timbre is whatever poly patch the genre provides. **[internal]**
+
+**Blues defaults to a strummed guitar (shipped this spec).** Blues already used shuffle bass
++ blues-shuffle drums; its chord default moved from the Jazz Organ to a steel strum so the
+eighth-note shuffle strum (the `shuffle-comp` pattern) is heard out of the box, matching how
+Rock and Funk already default to a guitar. **[internal]**
+
+**Preserving the organ — `GenreMix.patches.chordAlt`.** Because the resolver picks the genre
+patch whose family matches the selected instrument, switching the default to a strum patch
+would otherwise make *Organ* fall back to the generic grand piano. An optional `chordAlt`
+patch (the opposite family of `chord`) is consulted when the user switches instrument family:
+`getChordVoiceForInstrument(instrument, primaryId, altId?)` returns whichever of primary/alt
+matches the selected family, else the family default. Blues sets `chordAlt: "chord-jazz-organ"`
+so selecting *Organ*/*Piano* restores the Jazz Organ. **Known limitation:** the chord
+channel's EQ/saturation insert (`buildSignalGraph`) follows the *default* patch, so the alt
+timbre routes through the default patch's channel insert. **[internal]**
+
 ---
 
 ## 4. Backing-track variation & humanizer
@@ -446,6 +470,9 @@ This document consolidates the grounding from the following specs, all under
 - `2026-06-09-separate-audio-contexts-design.md` — SHA `a540c046` — the separate-contexts
   decision: guitar off Tone onto raw Web Audio with its own `AudioContext`, voice engine
   recipe, and rationale for decoupling from Tone's global context (shipped #584) (§3.1).
+- `2026-06-10-blues-shuffle-strum-realism-design.md` — the eighth-note Blues shuffle strum
+  (`shuffle-comp`), the Blues strum-guitar default, and the per-genre `chordAlt` secondary
+  chord patch with family-matched voice resolution (§3.2).
 
 **Draft (never shipped — content preserved in §6):**
 - `2026-06-03-funk-bossa-voicing-migration-design.md` — SHA `ef93f7c1` — see §6.2.
