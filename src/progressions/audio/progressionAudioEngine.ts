@@ -1,7 +1,7 @@
 import { getDraw, getTransport } from "tone";
 import type { ProgressionPartHandle } from "./progressionPart";
 
-export { ensureProgressionAudio, resumeProgressionAudio, restoreProgressionBus, silenceProgressionBus, configureProgressionGraph } from "./bus";
+export { ensureProgressionAudio, recoverProgressionContext, resumeProgressionAudio, restoreProgressionBus, silenceProgressionBus, configureProgressionGraph } from "./bus";
 export { planSignalGraph } from "./sound/buildSignalGraph";
 export type { SignalGraphPlan, MaterializedGraph } from "./sound/buildSignalGraph";
 export { TIER_PROFILES, resolveTier, detectDefaultTier } from "./sound/qualityTiers";

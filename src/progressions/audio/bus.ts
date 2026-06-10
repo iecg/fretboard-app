@@ -321,6 +321,50 @@ export function configureProgressionGraph(plan: SignalGraphPlan): MaterializedGr
   return graph;
 }
 
+/**
+ * Called when the page becomes visible after being hidden while a progression
+ * was playing. Handles two scenarios:
+ *
+ * 1. **Zombie context** (Safari) — AudioContext reports "running" but produces
+ *    no audio after extended idle. `ensureProgressionAudio()` tears down the
+ *    dead context and creates a fresh one. Old Tone.Parts are dead → caller
+ *    must restart playback from bar 1.
+ *
+ * 2. **Suspended context** (Chrome/Firefox) — AudioContext was suspended when
+ *    the tab went to background. `ctx.resume()` + `needsGraphRebuild` recovery
+ *    restores the existing signal graph. Existing Tone.Parts continue after
+ *    resume → no restart needed.
+ *
+ * Returns `true` when the context was replaced (scenario 1) — the caller
+ * should restart playback. Returns `false` when the context was recovered
+ * in-place (scenario 2) — the existing Parts are still valid.
+ */
+export function recoverProgressionContext(): boolean {
+  if (!ctx) return false;
+
+  const wasZombie = contextMayBeZombie;
+
+  // ensureProgressionAudio detects zombie → tears down dead context and
+  // creates a fresh one. After this call, contextMayBeZombie is cleared and
+  // ctx points at the replacement (or the same healthy context).
+  ensureProgressionAudio();
+
+  if (wasZombie) {
+    // Old AudioContext was closed — all Tone.Parts referencing it are dead.
+    // The caller must tear down and rebuild playback from bar 1.
+    return true;
+  }
+
+  // Same context, but may have been suspended by the browser. resume + graph
+  // rebuild restores the signal path. Fire-and-forget — the existing Parts
+  // continue firing after the Transport clock resumes.
+  if (ctx && (ctx.state === "suspended" || ctx.state === "interrupted")) {
+    resumeProgressionAudio();
+  }
+
+  return false;
+}
+
 /** Test-only reset hook so the module behaves predictably across `vitest` runs. */
 export function _resetProgressionAudioForTests(): void {
   if (currentGraph) { try { currentGraph.dispose(); } catch { /* */ } currentGraph = null; }
