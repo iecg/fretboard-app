@@ -36,7 +36,7 @@ export const BASS_PATCHES: readonly BassPatch[] = [
     filter: { type: "lowpass", Q: 2 },
     filterEnvelope: { attack: 0.002, decay: 0.2, sustain: 0.3, release: 0.2, baseFrequency: 200, octaves: 3 },
     volumeDb: -3,
-    insert: { eq3: { low: 0, mid: 2, high: 0 } },
+    insert: { eq3: { low: 0, mid: 1, high: 0 } },
   },
   {
     id: "bass-synth", label: "Synth Bass",

@@ -97,6 +97,10 @@ describe("instrument patches", () => {
     expect(getChordPatch("chord-steel-strum")!.strum!.voiceVolumeDb).toBe(-14);
   });
 
+  it("eases the rock bass-pick mid presence so it sits back in the mix", () => {
+    expect(getBassPatch("bass-pick")!.insert!.eq3!.mid).toBe(1);
+  });
+
   it("provides a clean single-coil funk scratch guitar patch (MonoSynth + amp strip)", () => {
     const patch = getChordPatch("chord-funk-scratch")!;
     expect(patch).toBeDefined();

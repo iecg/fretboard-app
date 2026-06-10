@@ -107,6 +107,13 @@ describe("genre mix presets", () => {
     expect(getGenreMix("funk")!.patches.chord).toBe("chord-funk-scratch");
   });
 
+  it("retunes bass bus levels to tame over-hot low end (mix balance pass)", () => {
+    expect(getGenreMix("rock")!.perInstrument.bass.volumeDb).toBe(-5);
+    expect(getGenreMix("blues")!.perInstrument.bass.volumeDb).toBe(-2);
+    expect(getGenreMix("jazz")!.perInstrument.bass.volumeDb).toBe(-2);
+    expect(getGenreMix("pop")!.perInstrument.bass.volumeDb).toBe(-1);
+  });
+
   it("funk's chord patch is short-decay so the guitar can actually scratch", () => {
     // Recurrence guard: two prior funk passes failed because the guitar was a
     // long-ringing acoustic strum. The funk chord patch must stay short.
