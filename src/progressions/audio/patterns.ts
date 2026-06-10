@@ -168,9 +168,23 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
   {
     id: "shuffle-comp",
     label: "Shuffle Comp",
+    // Eighth-note blues shuffle strum: a downstroke on every beat and a soft
+    // muted up-brush on every swung "&". The swing engine delays the .5
+    // off-beats to the late triplet, so straight eighths here play as the
+    // long–short shuffle. Front-weighted accents (the "1" strongest, beat 3 the
+    // secondary accent); off-beats are ghost strokes. Muted off-beats use the
+    // short choke duration — audible on both the strum voice (a muted up-brush)
+    // and the organ alt (a short ghost blip). Spec:
+    // docs/superpowers/specs/2026-06-10-blues-shuffle-strum-realism-design.md
     hits: [
       { beat: 0, velocity: 0.9, direction: "down" },
-      { beat: 1.5, velocity: 0.6, direction: "up" },
+      { beat: 0.5, velocity: 0.4, direction: "up", articulation: "muted" },
+      { beat: 1, velocity: 0.72, direction: "down" },
+      { beat: 1.5, velocity: 0.4, direction: "up", articulation: "muted" },
+      { beat: 2, velocity: 0.8, direction: "down" },
+      { beat: 2.5, velocity: 0.4, direction: "up", articulation: "muted" },
+      { beat: 3, velocity: 0.72, direction: "down" },
+      { beat: 3.5, velocity: 0.5, direction: "up", articulation: "muted" },
     ],
   },
   {

@@ -572,11 +572,27 @@ describe("chord & bass variation catalogs", () => {
 });
 
 describe("strum directions", () => {
-  it("shuffle-comp anchors a downstroke on the one and an upstroke pickup", () => {
+  it("shuffle-comp is a swung eighth-note shuffle strum: down on beats, muted up on the &s", () => {
     const p = getChordPattern("shuffle-comp")!;
-    const byBeat = new Map(p.hits.map((h) => [h.beat, h.direction]));
-    expect(byBeat.get(0)).toBe("down");
-    expect(byBeat.get(1.5)).toBe("up");
+    // Eight hits across the bar — a downstroke on every beat, an up on every "&".
+    expect(p.hits.map((h) => h.beat)).toEqual([0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]);
+    for (const h of p.hits) {
+      if (h.beat % 1 === 0) {
+        expect(h.direction, `beat ${h.beat}`).toBe("down");
+        expect(h.articulation, `beat ${h.beat}`).toBeUndefined(); // full comp chord
+      } else {
+        expect(h.direction, `beat ${h.beat}`).toBe("up");
+        expect(h.articulation, `beat ${h.beat}`).toBe("muted"); // ghost up-brush
+      }
+    }
+    // Front-weighted accents: the "1" strongest, beat 3 the secondary accent,
+    // and every downbeat louder than every ghost off-beat.
+    const byBeat = new Map(p.hits.map((h) => [h.beat, h.velocity]));
+    expect(byBeat.get(0)!).toBeGreaterThan(byBeat.get(2)!);
+    expect(byBeat.get(2)!).toBeGreaterThan(byBeat.get(1)!);
+    const maxOffbeat = Math.max(...p.hits.filter((h) => h.beat % 1 !== 0).map((h) => h.velocity));
+    const minDownbeat = Math.min(...p.hits.filter((h) => h.beat % 1 === 0).map((h) => h.velocity));
+    expect(minDownbeat).toBeGreaterThan(maxOffbeat);
   });
 
   it("offbeat-skank plays every hit as a reggae upstroke", () => {
