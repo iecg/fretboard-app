@@ -152,18 +152,25 @@ test.describe("Theme Contract", () => {
   });
 
 
-  test("Inspector bottom tab bar uses theme-appropriate active indicators", async ({ page }) => {
-    // Mobile layout renders the Inspector with placement="bottom"; the default
-    // active tab is "Scale".
-    await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
+  test("Inspector sheet tabs use theme-appropriate active indicators", async ({ page }) => {
+    // The legacy fixed bottom tab bar (placement="bottom") was removed. On
+    // mobile the Inspector now renders inside the vaul bottom sheet with
+    // placement="sheet"; seed the sheet open at "full" so the tabs are above
+    // the fold. The active tab carries a non-transparent accent underline
+    // (border-bottom), which is the active-indicator contract worth keeping.
+    await loadVisualState(
+      page,
+      { theme: "dark", mobileSheetSnap: "full" },
+      { width: 390, height: 844 },
+    );
     const activeTab = page.locator(
-      '[data-placement="bottom"] [role="tab"][data-state="active"]',
+      '[data-placement="sheet"] [role="tab"][data-state="active"]',
     );
     await expect(activeTab).toBeVisible();
-    const borderTopColor = await activeTab.evaluate(
-      (el) => getComputedStyle(el).borderTopColor,
+    const borderBottomColor = await activeTab.evaluate(
+      (el) => getComputedStyle(el).borderBottomColor,
     );
-    expect(borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
+    expect(borderBottomColor).not.toBe("rgba(0, 0, 0, 0)");
   });
 
   test("fretboard tonic note uses key-tonic role color in light mode", async ({ page }) => {
