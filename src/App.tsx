@@ -27,6 +27,11 @@ import { MobileShell } from "./components/MobileShell/MobileShell";
 import { MobileSheet } from "./components/MobileShell/MobileSheet";
 import { SheetPeekTransport } from "./components/MobileShell/SheetPeekTransport";
 
+import { ShareButton } from "./components/ShareButton/ShareButton";
+import { useShareLinkHandler } from "./hooks/useShareLinkHandler";
+import { SharedLinkBanner } from "./components/SharedLinkBanner/SharedLinkBanner";
+import { usePWAInstall } from "./hooks/usePWAInstall";
+import { InstallBanner } from "./components/InstallBanner/InstallBanner";
 import { AppHeaderActions } from "./components/AppHeaderActions/AppHeaderActions";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import { ControlsPanelSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
@@ -52,6 +57,9 @@ function AppContent() {
   const isMuted = useAtomValue(isMutedAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
+
+  useShareLinkHandler();
+  const { canInstall, install, dismiss } = usePWAInstall();
 
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
@@ -154,12 +162,15 @@ function AppContent() {
       brandIcon={<BrandMark />}
       transport={layout.useSheetShell ? undefined : <HeaderTransportCluster />}
       actions={
-        <AppHeaderActions
-          variant={layout.useSheetShell ? "menu" : "buttons"}
-          onShowHelp={() => setShowHelp(true)}
-          helpTriggerRef={helpTriggerRef}
-          settingsTriggerRef={settingsTriggerRef}
-        />
+        <>
+          <ShareButton />
+          <AppHeaderActions
+            variant={layout.useSheetShell ? "menu" : "buttons"}
+            onShowHelp={() => setShowHelp(true)}
+            helpTriggerRef={helpTriggerRef}
+            settingsTriggerRef={settingsTriggerRef}
+          />
+        </>
       }
     />
   );
@@ -183,6 +194,11 @@ function AppContent() {
   return (
   <TooltipProvider>
   <>
+    {/* Shared-link + PWA-install banners are global (both layouts). On the
+        mobile sheet shell — a fixed inset:0 surface — they can be occluded;
+        refining their placement inside the shell is a tracked follow-up. */}
+    <SharedLinkBanner />
+    <InstallBanner canInstall={canInstall} onInstall={install} onDismiss={dismiss} />
     {/* Portrait-lock overlay lives inside MobileShell — the only shell that
         renders at the ≤ 767px mobile tier its show media query targets. */}
     {layout.useSheetShell ? (
