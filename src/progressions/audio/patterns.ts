@@ -159,27 +159,27 @@ export const CHORD_PATTERNS: readonly ChordPattern[] = [
     id: "offbeat-skank",
     label: "Offbeat Skank",
     hits: [
-      { beat: 0.5, velocity: 0.7 },
-      { beat: 1.5, velocity: 0.7 },
-      { beat: 2.5, velocity: 0.7 },
-      { beat: 3.5, velocity: 0.7 },
+      { beat: 0.5, velocity: 0.7, direction: "up" },
+      { beat: 1.5, velocity: 0.7, direction: "up" },
+      { beat: 2.5, velocity: 0.7, direction: "up" },
+      { beat: 3.5, velocity: 0.7, direction: "up" },
     ],
   },
   {
     id: "shuffle-comp",
     label: "Shuffle Comp",
     hits: [
-      { beat: 0, velocity: 0.9 },
-      { beat: 1.5, velocity: 0.6 },
+      { beat: 0, velocity: 0.9, direction: "down" },
+      { beat: 1.5, velocity: 0.6, direction: "up" },
     ],
   },
   {
     id: "jazz-comp",
     label: "Jazz Comping",
     hits: [
-      { beat: 0, velocity: 0.75, style: "staccato" },
-      { beat: 1.5, velocity: 0.6, style: "staccato" },
-      { beat: 3.5, velocity: 0.7, style: "staccato" },
+      { beat: 0, velocity: 0.75, style: "staccato", direction: "down" },
+      { beat: 1.5, velocity: 0.6, style: "staccato", direction: "up" },
+      { beat: 3.5, velocity: 0.7, style: "staccato", direction: "up" },
     ],
   },
   {
