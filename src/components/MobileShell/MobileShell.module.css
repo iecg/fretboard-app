@@ -29,7 +29,9 @@
      the fretboard measures the same available width it had under
      MainLayoutWrapper and its right edge stays inside the viewport. */
   padding-inline: 0.65rem;
-  /* Reserve room for the sheet's peek height so the fretboard is never covered. */
+  /* Reserve room for the sheet's peek height so the fretboard is never covered.
+     --mobile-sheet-peek is defined in semantic.css (← --token-mobile-sheet-peek);
+     the same token drives the banner's mobile bottom offset. */
   padding-bottom: var(--mobile-sheet-peek, 96px);
 }
 

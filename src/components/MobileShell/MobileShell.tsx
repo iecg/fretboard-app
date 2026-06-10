@@ -35,8 +35,10 @@ export function MobileShell({
       data-layout-variant={layoutVariant}
       data-testid="mobile-shell"
     >
-      {/* Portrait lock — CSS-only, shown via @media orientation:landscape at
-          viewport ≤ 767px (mobile tier), the only tier this shell renders in. */}
+      {/* Portrait lock — CSS-only, shown via @media (max-width:767px) AND
+          landscape. MobileShell also renders at tablet-split (768–1023px), but
+          the show rule never fires there — identical to the old global
+          behaviour. */}
       <div className={styles.rotateOverlay} role="alert" aria-live="polite">
         <div className={styles.rotateOverlayContent}>
           <svg

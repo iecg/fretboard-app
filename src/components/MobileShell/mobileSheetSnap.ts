@@ -3,7 +3,9 @@ import { type MobileSheetSnap } from "../../store/uiAtoms";
 /**
  * vaul snap points for the mobile bottom sheet.
  * The 96px in SNAP_POINTS[0] must be kept in sync with the
- * var(--mobile-sheet-peek, 96px) fallback in MobileShell.module.css.
+ * --mobile-sheet-peek CSS token (defined in src/styles/semantic.css ←
+ * --token-mobile-sheet-peek in tokens.css). JS can't read a CSS var, so this
+ * literal is the manual counterpart to that token.
  * NOTE: vaul computes snap offsets against the full window height, so
  * MobileSheet.module.css keeps the drawer at 100dvh — px/fraction values here
  * are literally the visible sheet height.

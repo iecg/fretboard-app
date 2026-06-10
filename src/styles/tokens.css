@@ -64,6 +64,12 @@
   --token-z-overlay-drawer: 201;
   --token-z-help-overlay: 1000;
 
+  /* Mobile bottom-sheet peek height. Single source of truth for the reserved
+     space below the fretboard stage and the banner's mobile bottom offset.
+     Kept in sync with the SNAP_POINTS[0] "96px" literal in
+     src/components/MobileShell/mobileSheetSnap.ts (JS can't read a CSS var). */
+  --token-mobile-sheet-peek: 96px;
+
   --token-disabled-opacity: 0.3;
 
   --token-border-subtle: rgb(255 255 255 / 0.06);

@@ -25,9 +25,9 @@
    BREAKPOINTS.mobileMax). The banner renders at the app fragment root, a
    sibling of MobileShell, so it has no [data-layout-tier] ancestor to scope on
    — a width media query is the only reliable hook. Lift it above the always-
-   open bottom-sheet peek (var --mobile-sheet-peek, fallback 96px — the value is
-   only ever referenced with this fallback, never assigned; see
-   MobileShell.module.css .stage padding-bottom) and inside the bottom safe
+   open bottom-sheet peek (--mobile-sheet-peek, defined in semantic.css ←
+   --token-mobile-sheet-peek; the same token drives MobileShell.module.css
+   .stage padding-bottom) and inside the bottom safe
    area so it clears the home indicator. z-index already sits above the sheet
    (--token-z-overlay-drawer 201 > --token-z-mobile-sheet 100). */
 @media (max-width: 767px) {

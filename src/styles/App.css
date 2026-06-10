@@ -74,5 +74,5 @@
 }
 
 /* Portrait-lock overlay relocated to MobileShell.module.css (.rotateOverlay*)
-   — it is a mobile-shell concern; the shell is the only surface rendered at
-   the ≤ 767px tier the overlay targets. */
+   — it is a mobile-shell concern; MobileShell is the only shell rendered at
+   the ≤ 767px tier the overlay's show rule targets. */
