@@ -48,10 +48,13 @@ export type MobileSheetSnap = "peek" | "half" | "full";
 /**
  * Persisted snap position of the mobile bottom sheet. "peek" shows only the
  * mini-player transport row; "half" and "full" expose the Inspector tabs.
+ * Defaults to "half" — the sheet rests half-open (Maps-style) so the controls
+ * use the lower screen and the fretboard is sized to fill the space above it
+ * (see getMobileStringRowPx in src/layout/responsive.ts).
  */
 export const mobileSheetSnapAtom = atomWithStorage<MobileSheetSnap>(
   k("mobileSheetSnap"),
-  "peek",
+  "half",
   rawStringStorage<MobileSheetSnap>(),
   GET_ON_INIT,
 );

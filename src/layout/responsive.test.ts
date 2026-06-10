@@ -21,7 +21,25 @@ describe("useSheetShell flag", () => {
 });
 
 describe("stringRowPx", () => {
-  it("mobile string rows grow to use reclaimed chrome space", () => {
-    expect(getResponsiveLayout(375, 812).stringRowPx).toBe(38);
+  it("mobile rows size from viewport height to fill the band above the half sheet", () => {
+    // 0.55 * 812 - 170 chrome = 276.6 → floor(276.6 / 6) = 46
+    expect(getResponsiveLayout(375, 812).stringRowPx).toBe(46);
+    // 0.55 * 844 - 170 = 294.2 → floor / 6 = 49
+    expect(getResponsiveLayout(390, 844).stringRowPx).toBe(49);
+  });
+
+  it("clamps mobile rows to the floor on compact heights", () => {
+    // 0.55 * 500 - 170 = 105 → 17/row raw → clamped to 34
+    expect(getResponsiveLayout(390, 500).stringRowPx).toBe(34);
+  });
+
+  it("clamps mobile rows to the ceiling on tall viewports", () => {
+    // 0.55 * 1200 - 170 = 490 → 81/row raw → clamped to 56
+    expect(getResponsiveLayout(390, 1200).stringRowPx).toBe(56);
+  });
+
+  it("keeps tablet and desktop rows tier-fixed", () => {
+    expect(getResponsiveLayout(800, 1100).stringRowPx).toBe(36);
+    expect(getResponsiveLayout(1280, 1000).stringRowPx).toBe(42);
   });
 });

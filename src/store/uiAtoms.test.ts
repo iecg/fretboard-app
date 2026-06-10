@@ -3,9 +3,9 @@ import { createStore } from "jotai";
 import { mobileSheetSnapAtom } from "./uiAtoms";
 
 describe("mobileSheetSnapAtom", () => {
-  it("defaults to peek", () => {
+  it("defaults to half (resting half-open sheet)", () => {
     const store = createStore();
-    expect(store.get(mobileSheetSnapAtom)).toBe("peek");
+    expect(store.get(mobileSheetSnapAtom)).toBe("half");
   });
 
   it("accepts the three snap ids", () => {

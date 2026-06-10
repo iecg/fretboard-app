@@ -51,9 +51,15 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Mobile inline layout */
-:global([data-layout-tier="mobile"]) .fretboard-outer {
+/* Mobile inline layout. Inside the sheet shell the board must size to content
+   (height: auto) so the stage's justify-content: center can place it in the
+   visible band above the sheet — the base height: 100% would stretch it and
+   defeat centering. The tablet-split variant only exists under MobileShell,
+   so it gets the same treatment. */
+:global([data-layout-tier="mobile"]) .fretboard-outer,
+:global([data-layout-variant="tablet-split"]) .fretboard-outer {
   width: 100%;
+  height: auto;
   overflow: hidden;
 }
 

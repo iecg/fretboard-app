@@ -82,11 +82,12 @@ describe("responsive layout helper", () => {
 
   // Canonical viewport matrix — one row per target device / variant.
   it.each([
-    // phones (portrait)
-    [375, 667, "mobile", "mobile", 38],
-    [390, 844, "mobile", "mobile", 38],
-    // phone landscape
-    [667, 375, "mobile", "mobile", 38],
+    // phones (portrait) — mobile rows derive from viewport height (fill the
+    // band above the half-open sheet, clamped 34–56)
+    [375, 667, "mobile", "mobile", 34],
+    [390, 844, "mobile", "mobile", 49],
+    // phone landscape (portrait-lock overlay covers this; floor clamp applies)
+    [667, 375, "mobile", "mobile", 34],
     // tablet portrait
     [768, 1024, "tablet", "tablet-split", 36],
     // compact tablet (short height)
@@ -110,7 +111,11 @@ describe("responsive layout helper", () => {
       expect(layout.variant).toBe(variant);
       expect(layout.stringRowPx).toBe(stringRowPx);
       expect(getResponsiveVariant(width, height)).toBe(variant);
-      expect(getStringRowPx(tier)).toBe(stringRowPx);
+      if (tier !== "mobile") {
+        // Mobile rows are height-derived (see responsive.test.ts); only the
+        // tablet/desktop tiers use the fixed per-tier value.
+        expect(getStringRowPx(tier)).toBe(stringRowPx);
+      }
     },
   );
 

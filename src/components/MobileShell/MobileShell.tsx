@@ -1,5 +1,7 @@
 import { type ReactNode, useRef } from "react";
+import { useAtomValue } from "jotai";
 import { useTranslation } from "../../hooks/useTranslation";
+import { mobileSheetSnapAtom } from "../../store/uiAtoms";
 import { useUnhideMobileShell } from "./useUnhideMobileShell";
 import styles from "./MobileShell.module.css";
 
@@ -30,6 +32,10 @@ export function MobileShell({
 }: MobileShellProps) {
   const { t } = useTranslation();
   const shellRef = useRef<HTMLDivElement>(null);
+  // Stage spacing tracks the sheet's snap so the fretboard centers in the
+  // space that is actually visible above the sheet (45dvh covered at half,
+  // peek height at peek) — see the data-sheet-snap rules in the CSS module.
+  const sheetSnap = useAtomValue(mobileSheetSnapAtom);
   // The always-open persistent MobileSheet is non-modal, but vaul 1.1.2 fails to
   // forward `modal={false}` to Radix, so Radix's `hideOthers` permanently marks
   // this shell `aria-hidden`. Keep the shell reachable by assistive tech.
@@ -40,6 +46,7 @@ export function MobileShell({
       className={styles.shell}
       data-layout-tier={layoutTier}
       data-layout-variant={layoutVariant}
+      data-sheet-snap={sheetSnap}
       data-testid="mobile-shell"
     >
       {/* Portrait lock — CSS-only, shown via @media (max-width:767px) AND

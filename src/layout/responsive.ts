@@ -36,6 +36,32 @@ const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
   desktop: STRING_ROW_PX_DESKTOP,
 };
 
+/* Mobile portrait sizes the board from the viewport height so it fills the
+   stage above the half-open resting sheet instead of leaving a dead band. */
+const STRING_ROW_PX_MOBILE_MIN = 34;
+const STRING_ROW_PX_MOBILE_MAX = 56;
+/** Fraction of the viewport the bottom sheet covers at its half (resting)
+ *  snap. Keep in sync with SNAP_POINTS[1] in
+ *  src/components/MobileShell/mobileSheetSnap.ts and the 45dvh stage padding
+ *  in MobileShell.module.css. */
+const MOBILE_SHEET_HALF_SNAP = 0.45;
+/** Vertical chrome sharing the space above the half sheet with the strings:
+ *  app header (~72px) + progression track (~56px) + the board's fret-number
+ *  band and stage gaps (~42px). An estimate — the min/max clamp keeps errors
+ *  degrading into a few px of centered breathing room rather than overflow. */
+const MOBILE_STAGE_CHROME_PX = 170;
+const MOBILE_STRING_COUNT = 6;
+
+function getMobileStringRowPx(viewportHeight: number): number {
+  const aboveHalfSheet =
+    viewportHeight * (1 - MOBILE_SHEET_HALF_SNAP) - MOBILE_STAGE_CHROME_PX;
+  const raw = Math.floor(aboveHalfSheet / MOBILE_STRING_COUNT);
+  return Math.min(
+    STRING_ROW_PX_MOBILE_MAX,
+    Math.max(STRING_ROW_PX_MOBILE_MIN, raw),
+  );
+}
+
 export function getResponsiveTier(viewportWidth: number): ResponsiveTier {
   if (viewportWidth <= BREAKPOINTS.mobileMax) {
     return "mobile";
@@ -101,7 +127,10 @@ export function getResponsiveLayout(
     tier,
     variant,
     compactHeight,
-    stringRowPx: getStringRowPx(tier),
+    stringRowPx:
+      tier === "mobile"
+        ? getMobileStringRowPx(viewportHeight)
+        : getStringRowPx(tier),
     showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
     useSheetShell,
     showSummary: true,

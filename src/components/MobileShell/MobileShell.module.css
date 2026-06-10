@@ -24,6 +24,9 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  /* Center the board in the visible band above the sheet; the snap-aware
+     padding-bottom below keeps "visible" accurate at every snap. */
+  justify-content: center;
   overflow: hidden;
   /* Match .app-container's mobile horizontal padding (src/styles/App.css) so
      the fretboard measures the same available width it had under
@@ -33,6 +36,23 @@
      --mobile-sheet-peek is defined in semantic.css (← --token-mobile-sheet-peek);
      the same token drives the banner's mobile bottom offset. */
   padding-bottom: var(--mobile-sheet-peek, 96px);
+  transition: padding-bottom 280ms ease;
+}
+
+/* At the half (resting) and full snaps the sheet covers the bottom 45dvh+ of
+   the viewport — pad the stage to match so the centered board sits in the
+   actually-visible band. 45dvh mirrors SNAP_POINTS[1] (0.45) in
+   mobileSheetSnap.ts; keep the two in sync. At full the stage is entirely
+   covered, so the same value is fine. */
+.shell[data-sheet-snap="half"] .stage,
+.shell[data-sheet-snap="full"] .stage {
+  padding-bottom: 45dvh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage {
+    transition: none;
+  }
 }
 
 /* Portrait-lock overlay — owned by the mobile shell (the only shell that
