@@ -82,27 +82,38 @@
   color: var(--dc-fg-muted);
 }
 
-/* Mobile tier: tighten card padding so the controls keep breathing room
-   against the rest of the inspector. */
-:global([data-layout-tier="mobile"]) .cardHead {
+/* Mobile tier + sheet placement: tighten card padding so the controls keep
+   breathing room against the rest of the inspector. The sheet hook covers
+   tablet-split, where the vaul portal re-stamps tier="tablet" and the
+   mobile-tier guard alone wouldn't reach. */
+:global([data-layout-tier="mobile"]) .cardHead,
+:global([data-placement="sheet"]) .cardHead {
   padding: 0.5rem 0.75rem;
   flex-wrap: wrap;
 }
 
-:global([data-layout-tier="mobile"]) .cardBody {
+:global([data-layout-tier="mobile"]) .cardBody,
+:global([data-placement="sheet"]) .cardBody {
   padding: 0.75rem;
 }
 
-:global([data-layout-tier="mobile"]) .cardHeadActions {
+:global([data-layout-tier="mobile"]) .cardHeadActions,
+:global([data-placement="sheet"]) .cardHeadActions {
   order: 3;
   flex: 1 1 100%;
   justify-content: flex-end;
 }
 
-:global([data-layout-tier="mobile"]) .cardDesc {
+:global([data-layout-tier="mobile"]) .cardDesc,
+:global([data-placement="sheet"]) .cardDesc {
   /* Description gets noisy on narrow widths — hide it; the section name and
      toggle still convey the meaning. */
   display: none;
+}
+
+/* Sheet placement: slightly smaller radius matches the denser card rhythm. */
+:global([data-placement="sheet"]) .card {
+  border-radius: 8px;
 }
 
 .card[data-locked="true"] .cardHeadActions {

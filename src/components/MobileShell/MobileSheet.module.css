@@ -36,7 +36,9 @@
 
 .peek {
   flex: none;
-  padding: 4px 12px 8px;
+  /* The peek row carries its own 56px min-height; keep the wrapper tight so
+     the gap to the tab header below stays small at half/full snaps. */
+  padding: 0 12px 4px;
 }
 
 .body {

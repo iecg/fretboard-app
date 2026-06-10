@@ -650,3 +650,9 @@
 :global([data-placement="sheet"]) .lock-toggle {
   min-height: var(--size-touch-target);
 }
+
+/* Sheet placement: the preset/key/time columns wrap to one column anyway at
+   sheet widths; make the stacking deterministic instead of wrap-dependent. */
+:global([data-placement="sheet"]) .groupRow {
+  flex-direction: column;
+}

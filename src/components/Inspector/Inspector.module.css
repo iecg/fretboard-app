@@ -117,6 +117,20 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  /* The sheet's peek row and body supply their own spacing — the root's
+     top-placement padding/gap would stack into a dead band between the tab
+     header and the panel content. */
+  padding: 0;
+  gap: var(--space-1, 0.25rem);
+}
+
+/* Inside the sheet there is no app-container padding to escape — the
+   top-placement full-bleed negative margins would overflow the sheet edge.
+   Span the sheet width and inset the pills with plain padding instead. */
+.placementSheet .tabHeader {
+  width: 100%;
+  margin-inline: 0;
+  padding-inline: var(--space-3, 0.75rem);
 }
 
 .placementSheet .tabPanel {
@@ -124,7 +138,9 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 16px;
+  /* Inline padding floats the section cards off the sheet edges so they read
+     as cards against the shell background (matching desktop). */
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem) 16px;
 }
 
 /* Touch-target guard — the sheet's tab triggers (Overlay / Song) are the only
