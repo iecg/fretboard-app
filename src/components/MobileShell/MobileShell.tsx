@@ -1,5 +1,6 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useUnhideMobileShell } from "./useUnhideMobileShell";
 import styles from "./MobileShell.module.css";
 
 interface MobileShellProps {
@@ -28,8 +29,14 @@ export function MobileShell({
   layoutVariant,
 }: MobileShellProps) {
   const { t } = useTranslation();
+  const shellRef = useRef<HTMLDivElement>(null);
+  // The always-open persistent MobileSheet is non-modal, but vaul 1.1.2 fails to
+  // forward `modal={false}` to Radix, so Radix's `hideOthers` permanently marks
+  // this shell `aria-hidden`. Keep the shell reachable by assistive tech.
+  useUnhideMobileShell(shellRef);
   return (
     <div
+      ref={shellRef}
       className={styles.shell}
       data-layout-tier={layoutTier}
       data-layout-variant={layoutVariant}

@@ -1,6 +1,8 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Drawer } from "vaul";
+import { useSetAtom } from "jotai";
+import { openModalSheetCountAtom } from "../../store/uiAtoms";
 import sharedStyles from "./shared.module.css";
 import styles from "./AdaptiveModal.module.css";
 
@@ -33,6 +35,21 @@ export function AdaptiveModal({
   label,
   children,
 }: AdaptiveModalProps) {
+  const setOpenModalSheetCount = useSetAtom(openModalSheetCountAtom);
+
+  // A modal sheet (Settings / Help on mobile) legitimately aria-hides the
+  // background via Radix's `hideOthers`. Register while open so the persistent
+  // MobileSheet's un-hiding observer (`useUnhideMobileShell`) stands down and
+  // does not fight that intended modal hiding. Only the sheet presentation is
+  // modal-over-the-shell; the desktop "dialog" path doesn't share the mobile
+  // shell surface, so it doesn't participate.
+  const isOpenSheet = presentation === "sheet" && open;
+  useEffect(() => {
+    if (!isOpenSheet) return;
+    setOpenModalSheetCount((c) => c + 1);
+    return () => setOpenModalSheetCount((c) => c - 1);
+  }, [isOpenSheet, setOpenModalSheetCount]);
+
   if (presentation === "sheet") {
     return (
       <Drawer.Root open={open} onOpenChange={onOpenChange}>
