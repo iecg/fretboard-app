@@ -83,10 +83,10 @@ describe("responsive layout helper", () => {
   // Canonical viewport matrix — one row per target device / variant.
   it.each([
     // phones (portrait)
-    [375, 667, "mobile", "mobile", 34],
-    [390, 844, "mobile", "mobile", 34],
+    [375, 667, "mobile", "mobile", 38],
+    [390, 844, "mobile", "mobile", 38],
     // phone landscape
-    [667, 375, "mobile", "mobile", 34],
+    [667, 375, "mobile", "mobile", 38],
     // tablet portrait
     [768, 1024, "tablet", "tablet-split", 36],
     // compact tablet (short height)

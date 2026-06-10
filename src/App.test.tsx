@@ -365,7 +365,7 @@ describe("Responsive string row sizes", () => {
   beforeEach(() => localStorage.clear());
 
   it.each([
-    [390, 844, "34"],
+    [390, 844, "38"],
     [768, 1024, "36"],
     [1440, 900, "42"],
   ])("viewport %ix%i uses string row size %s", (w, h, expected) => {

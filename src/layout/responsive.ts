@@ -27,7 +27,7 @@ export interface ResponsiveLayout {
   panelMode: DashboardPanelMode;
 }
 
-const STRING_ROW_PX_MOBILE = 34;
+const STRING_ROW_PX_MOBILE = 38;
 export const STRING_ROW_PX_TABLET = 36;
 const STRING_ROW_PX_DESKTOP = 42;
 

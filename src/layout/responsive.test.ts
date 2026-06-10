@@ -19,3 +19,9 @@ describe("useSheetShell flag", () => {
     expect(getResponsiveLayout(1100, 700).useSheetShell).toBe(false);
   });
 });
+
+describe("stringRowPx", () => {
+  it("mobile string rows grow to use reclaimed chrome space", () => {
+    expect(getResponsiveLayout(375, 812).stringRowPx).toBe(38);
+  });
+});
