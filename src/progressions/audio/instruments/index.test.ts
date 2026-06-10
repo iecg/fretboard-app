@@ -21,4 +21,25 @@ describe("chord voice resolution by instrument + genre patch", () => {
     }
   });
 
+  it("prefers the genre alt patch when it matches the selected family", () => {
+    // Blues-style config: strum default + organ alt. Selecting a keys
+    // instrument resolves to the alt (organ), not the family fallback (piano).
+    const organ = getChordVoiceForInstrument("organ", "chord-steel-strum", "chord-jazz-organ");
+    const organDirect = getChordVoiceForInstrument("organ", "chord-jazz-organ");
+    expect(organ).toBe(organDirect);
+  });
+
+  it("uses the primary patch when it matches the selected family, ignoring the alt", () => {
+    const strum = getChordVoiceForInstrument("strum", "chord-steel-strum", "chord-jazz-organ");
+    const strumDirect = getChordVoiceForInstrument("strum", "chord-steel-strum");
+    expect(strum).toBe(strumDirect);
+  });
+
+  it("falls back to the family default when neither primary nor alt matches the family", () => {
+    // Both patches are poly; selecting strum matches neither → steel default.
+    const strum = getChordVoiceForInstrument("strum", "chord-epiano", "chord-jazz-organ");
+    const steelDefault = getChordVoiceForInstrument("strum", "chord-steel-strum");
+    expect(strum).toBe(steelDefault);
+  });
+
 });

@@ -32,12 +32,16 @@ function voiceForPatch(patch: ChordPatch): ChordVoice {
 export function getChordVoiceForInstrument(
   instrument: ChordInstrumentId,
   genrePatchId: string,
+  genreAltPatchId?: string,
 ): ChordVoice {
   const family = familyForInstrument(instrument);
-  const genrePatch = getChordPatch(genrePatchId);
-  const patch = genrePatch && genrePatch.family === family
-    ? genrePatch
-    : getChordPatch(DEFAULT_CHORD_PATCH_BY_FAMILY[family])!;
+  // Prefer whichever of the genre's primary/alt patches matches the selected
+  // instrument family; otherwise fall back to that family's default patch.
+  const candidates = [genrePatchId, genreAltPatchId]
+    .map((id) => (id ? getChordPatch(id) : undefined))
+    .filter((p): p is ChordPatch => p !== undefined);
+  const patch = candidates.find((p) => p.family === family)
+    ?? getChordPatch(DEFAULT_CHORD_PATCH_BY_FAMILY[family])!;
   return voiceForPatch(patch);
 }
 
