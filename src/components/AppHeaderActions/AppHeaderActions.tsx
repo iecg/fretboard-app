@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from "react";
+import { Fragment, type ReactNode, type RefObject } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -147,7 +147,6 @@ export function AppHeaderActions({
   const renderButton = (action: HeaderAction) => {
     const button = (
       <button
-        key={action.id}
         ref={action.id === "help" ? helpTriggerRef : undefined}
         type="button"
         onClick={action.run}
@@ -177,7 +176,7 @@ export function AppHeaderActions({
     if (action.id === "settings") {
       return <SettingsTooltip key={action.id}>{button}</SettingsTooltip>;
     }
-    return button;
+    return <Fragment key={action.id}>{button}</Fragment>;
   };
 
   return <>{actions.map(renderButton)}</>;
