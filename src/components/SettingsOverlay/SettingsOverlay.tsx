@@ -1,17 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useAtom } from "jotai";
-import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import clsx from "clsx";
 import { settingsOverlayOpenAtom } from "../../store/uiAtoms";
 import {
   getResponsiveLayout,
 } from "../../layout/responsive";
-import {
-  ANIMATION_DURATION_STANDARD,
-  ANIMATION_EASE,
-} from "@fretflow/core";
 import { OverlaySection } from "./shared";
 import DisplaySettingsSection from "./sections/DisplaySettingsSection";
 import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";
@@ -71,7 +66,14 @@ function SettingsSections({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function SettingsOverlay() {
+interface SettingsOverlayProps {
+  /** Focus-return target (the header settings button). On desktop close, focus
+   *  is restored here — the trigger lives in the app header, so there is no
+   *  Radix Dialog.Trigger for Radix to auto-restore to. */
+  triggerRef?: RefObject<HTMLButtonElement | null>;
+}
+
+export default function SettingsOverlay({ triggerRef }: SettingsOverlayProps) {
   const [isOpen, setIsOpen] = useAtom(settingsOverlayOpenAtom);
   const [viewport, setViewport] = useState(getViewportSnapshot);
   const layout = getResponsiveLayout(viewport.width, viewport.height);
@@ -139,54 +141,52 @@ export default function SettingsOverlay() {
     );
   }
 
-  /* Desktop (non-sheet shell): slide-from-right Radix Dialog drawer. */
+  /* Desktop (non-sheet shell): slide-from-right Radix Dialog drawer. Radix owns
+     mount/unmount via its built-in Presence; the slide/fade enter/exit are CSS
+     keyframes keyed on `[data-state]` (see SettingsOverlay.module.css). Letting
+     Radix drive the unmount is what restores focus to the settings trigger on
+     close and releases the scroll lock — the old forceMount + AnimatePresence
+     pairing left the drawer mounted and dumped focus on <body>. */
   return (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-      <AnimatePresence>
-        {isOpen ? (
-          <Dialog.Portal forceMount>
-            <Dialog.Overlay asChild>
-              <motion.div
-                className={styles["settings-overlay-backdrop"]}
-                aria-hidden="true"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
-              />
-            </Dialog.Overlay>
-            <Dialog.Content asChild>
-              <motion.div
-                className={styles["settings-overlay-drawer"]}
-                data-testid="settings-drawer"
-                data-layout-tier={layout.tier}
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ duration: ANIMATION_DURATION_STANDARD, ease: ANIMATION_EASE }}
+      <Dialog.Portal>
+        <Dialog.Overlay
+          className={styles["settings-overlay-backdrop"]}
+          aria-hidden="true"
+        />
+        <Dialog.Content
+          className={styles["settings-overlay-drawer"]}
+          data-testid="settings-drawer"
+          data-layout-tier={layout.tier}
+          // Restore focus to the settings trigger on close. Radix's default
+          // restore lands on <body> here, so focus it explicitly (the node is
+          // stable across the close, re-read via the ref for safety).
+          onCloseAutoFocus={(e) => {
+            if (triggerRef?.current) {
+              e.preventDefault();
+              triggerRef.current.focus();
+            }
+          }}
+        >
+          <div className={styles["settings-overlay-header"]}>
+            <Dialog.Title className={styles["settings-overlay-title"]}>
+              {t("settings.title")}
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"], styles["settings-overlay-close"])}
+                aria-label={t("settings.close")}
               >
-                <div className={styles["settings-overlay-header"]}>
-                  <Dialog.Title className={styles["settings-overlay-title"]}>
-                    {t("settings.title")}
-                  </Dialog.Title>
-                  <Dialog.Close asChild>
-                    <button
-                      type="button"
-                      className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"], styles["settings-overlay-close"])}
-                      aria-label={t("settings.close")}
-                    >
-                      <X className="icon" />
-                    </button>
-                  </Dialog.Close>
-                </div>
-                <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
-                  <SettingsSections onClose={() => setIsOpen(false)} />
-                </div>
-              </motion.div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        ) : null}
-      </AnimatePresence>
+                <X className="icon" />
+              </button>
+            </Dialog.Close>
+          </div>
+          <div className={clsx(styles["settings-overlay-content"], "custom-scrollbar")}>
+            <SettingsSections onClose={() => setIsOpen(false)} />
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
     </Dialog.Root>
   );
 }

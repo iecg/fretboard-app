@@ -30,6 +30,40 @@
   border-left: none;
 }
 
+/* Enter/exit animation. Radix sets data-state="open|closed" and keeps the
+   backdrop + drawer mounted through the closing animation via its built-in
+   Presence, replacing the former Framer Motion exit while letting Radix run its
+   proper close lifecycle (focus return to the trigger + scroll unlock). */
+.settings-overlay-backdrop[data-state="open"] {
+  animation: settings-backdrop-in 0.24s ease-out;
+}
+.settings-overlay-backdrop[data-state="closed"] {
+  animation: settings-backdrop-out 0.24s ease-out;
+}
+.settings-overlay-drawer[data-state="open"] {
+  animation: settings-drawer-in 0.24s ease-out;
+}
+.settings-overlay-drawer[data-state="closed"] {
+  animation: settings-drawer-out 0.24s ease-out;
+}
+
+@keyframes settings-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes settings-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes settings-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes settings-drawer-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
 .settings-overlay-header {
   display: flex;
   align-items: center;
@@ -202,6 +236,12 @@
   .settings-overlay-close,
   .overlay-reset-btn {
     transition: none;
+    animation: none;
+  }
+
+  /* No motion: Radix sees no running animation and unmounts immediately. */
+  .settings-overlay-backdrop[data-state],
+  .settings-overlay-drawer[data-state] {
     animation: none;
   }
 }

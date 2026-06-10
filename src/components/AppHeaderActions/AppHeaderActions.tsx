@@ -31,6 +31,9 @@ export interface AppHeaderActionsProps {
   /** Focus-return target for the help modal — applies to the buttons variant
    *  only (the menu variant's help item is a Radix menu item). */
   helpTriggerRef?: RefObject<HTMLButtonElement | null>;
+  /** Focus-return target for the settings overlay — buttons variant only, same
+   *  rationale as `helpTriggerRef`. */
+  settingsTriggerRef?: RefObject<HTMLButtonElement | null>;
 }
 
 interface HeaderAction {
@@ -48,6 +51,7 @@ export function AppHeaderActions({
   variant,
   onShowHelp,
   helpTriggerRef,
+  settingsTriggerRef,
 }: AppHeaderActionsProps) {
   const { t } = useTranslation();
   const theme = useResolvedTheme();
@@ -145,9 +149,15 @@ export function AppHeaderActions({
   // (SettingsTooltip on settings, the crossfade on mute, the focus-return ref
   // on help). This keeps handlers/labels single-sourced with the menu variant.
   const renderButton = (action: HeaderAction) => {
+    const triggerRef =
+      action.id === "help"
+        ? helpTriggerRef
+        : action.id === "settings"
+          ? settingsTriggerRef
+          : undefined;
     const button = (
       <button
-        ref={action.id === "help" ? helpTriggerRef : undefined}
+        ref={triggerRef}
         type="button"
         onClick={action.run}
         className={clsx(sharedStyles["icon-button"], sharedStyles["icon-button--sm"])}

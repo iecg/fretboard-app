@@ -23,7 +23,50 @@
   display: flex;
   flex-direction: column;
   will-change: transform, opacity;
-  animation: none;
+}
+
+/* Enter/exit animation. Radix sets data-state="open|closed" on the Overlay and
+   Content and keeps them mounted through the closing animation via its built-in
+   Presence, so these CSS keyframes replace the former Framer Motion exit while
+   letting Radix run its proper close lifecycle (focus return + scroll unlock).
+   Centering uses the `translate` property, so animating `transform: scale()`
+   here composes with it and scales around the dialog centre. */
+.help-modal-overlay[data-state="open"] {
+  animation: help-overlay-in 0.2s ease-out;
+}
+.help-modal-overlay[data-state="closed"] {
+  animation: help-overlay-out 0.2s ease-out;
+}
+.help-modal[data-state="open"] {
+  animation: help-modal-in 0.2s ease-out;
+}
+.help-modal[data-state="closed"] {
+  animation: help-modal-out 0.2s ease-out;
+}
+
+@keyframes help-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes help-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes help-modal-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes help-modal-out {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No motion: Radix sees no running animation and unmounts immediately. */
+  .help-modal-overlay[data-state],
+  .help-modal[data-state] {
+    animation: none;
+  }
 }
 
 :global([data-layout-tier="mobile"]) .help-modal {

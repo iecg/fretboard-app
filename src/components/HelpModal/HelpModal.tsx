@@ -1,16 +1,12 @@
 import {
   type RefObject,
   type KeyboardEvent as ReactKeyboardEvent,
-  useEffect,
-  useRef,
   useState,
 } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useAtom } from "jotai";
 import { X } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import clsx from "clsx";
-import { ANIMATION_DURATION_FAST, ANIMATION_EASE } from "@fretflow/core";
 import { useTranslation } from "../../hooks/useTranslation";
 import useLayoutMode from "../../hooks/useLayoutMode";
 import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
@@ -135,51 +131,6 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
   const { t } = useTranslation();
   const { useSheetShell } = useLayoutMode();
 
-  /* Desktop focus-return. Restoring focus to the Help trigger after close is an
-     a11y requirement (keyboard + screen-reader users must not be dumped on
-     <body>). Only runs on the desktop path (`!useSheetShell`) — the touch
-     shell uses the sheet, where vaul manages focus. Radix's own
-     onCloseAutoFocus does not fire here — the dialog uses
-     Portal forceMount and is conditionally unmounted by the `isOpen` guard, so
-     Radix never runs its close-autofocus lifecycle (verified live: 0 calls) —
-     and there is no Radix Dialog.Trigger to restore to (the trigger lives in
-     the app header). So on the open→closed transition (desktop only) we
-     persistently reclaim focus for the Help trigger every frame across a short
-     window, re-reading the ref each frame (the header may re-render and swap the
-     button node) and stopping as soon as focus sticks on the trigger. (On the
-     mobile sheet, vaul manages focus and returns it to the document, not the
-     trigger, which is acceptable.)
-
-     NOTE: the desktop dialog's motion exit (motion.div as a Radix
-     `Dialog.Content asChild` + forceMount child) can leave the content mounted
-     at data-state="closed" with Radix's focus guards still trapping focus for a
-     while — a pre-existing quirk of this modal, unchanged by this task. While
-     that trap is active our reclaim loses to it; focus lands on the trigger once
-     the guards release (and the jsdom test, where the exit unmounts promptly,
-     verifies the wiring). */
-  const wasOpenRef = useRef(false);
-  useEffect(() => {
-    if (isOpen) {
-      wasOpenRef.current = true;
-      return;
-    }
-    if (!wasOpenRef.current || useSheetShell) return;
-    wasOpenRef.current = false;
-
-    let rafId = 0;
-    const deadline = performance.now() + 2000;
-    const reclaim = () => {
-      const trigger = triggerRef?.current;
-      if (!trigger) return;
-      if (document.activeElement === trigger) return; // focus stuck — done
-      trigger.focus();
-      if (performance.now() > deadline) return;
-      rafId = window.requestAnimationFrame(reclaim);
-    };
-    rafId = window.requestAnimationFrame(reclaim);
-    return () => window.cancelAnimationFrame(rafId);
-  }, [isOpen, useSheetShell, triggerRef]);
-
   /* Touch shell (mobile or tablet-split): present as a full-height
      swipe-to-dismiss sheet. Focus-return to the trigger is NOT wired here —
      vaul manages focus and returns it to the document on close. (The desktop
@@ -212,67 +163,53 @@ export function HelpModal({ isOpen, onClose, triggerRef }: HelpModalProps) {
     );
   }
 
-  /* Desktop (non-sheet shell): centered Radix Dialog with motion fade/scale. */
+  /* Desktop (non-sheet shell): centered Radix Dialog. Radix owns mount/unmount
+     via its built-in Presence, so the enter/exit animations are CSS keyframes
+     keyed on `[data-state]` (see HelpModal.module.css). This is what makes the
+     dialog actually tear down on close — running FocusScope's teardown and the
+     `onCloseAutoFocus` below — instead of the old forceMount + AnimatePresence
+     pairing, where AnimatePresence never released the portaled subtree and the
+     dialog (plus its focus trap and scroll lock) lingered mounted forever. */
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <AnimatePresence>
-        {isOpen ? (
-          <Dialog.Portal forceMount>
-            <Dialog.Overlay asChild>
-              <motion.div
-                className={styles["help-modal-overlay"]}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
-              />
-            </Dialog.Overlay>
-            <Dialog.Content
-              asChild
-              // Idiomatic Radix focus-return. In practice it does not fire for
-              // this dialog (forceMount + conditional unmount), so the effect
-              // above is the mechanism that actually restores focus; this stays
-              // as a correct fallback should the mount strategy ever change.
-              onCloseAutoFocus={(e) => {
-                if (triggerRef?.current) {
-                  e.preventDefault();
-                  triggerRef.current.focus();
-                }
-              }}
-            >
-              <motion.div
-                className={styles["help-modal"]}
-                data-testid="help-modal"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: ANIMATION_DURATION_FAST, ease: ANIMATION_EASE }}
+      <Dialog.Portal>
+        <Dialog.Overlay className={styles["help-modal-overlay"]} />
+        <Dialog.Content
+          className={styles["help-modal"]}
+          data-testid="help-modal"
+          // Restore focus to the Help trigger on close (the trigger lives in the
+          // app header, so there is no Radix Dialog.Trigger to auto-restore to).
+          // Re-read the ref at close time in case the header re-rendered and
+          // swapped the button node.
+          onCloseAutoFocus={(e) => {
+            if (triggerRef?.current) {
+              e.preventDefault();
+              triggerRef.current.focus();
+            }
+          }}
+        >
+          <div className={styles["help-modal-header"]}>
+            <Dialog.Title className={styles["help-modal-title"]}>
+              {t("help.title")}
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                className={clsx(
+                  sharedStyles["icon-button"],
+                  sharedStyles["icon-button--sm"],
+                  styles["help-modal-close"],
+                )}
+                aria-label={t("help.close")}
               >
-                <div className={styles["help-modal-header"]}>
-                  <Dialog.Title className={styles["help-modal-title"]}>
-                    {t("help.title")}
-                  </Dialog.Title>
-                  <Dialog.Close asChild>
-                    <button
-                      type="button"
-                      className={clsx(
-                        sharedStyles["icon-button"],
-                        sharedStyles["icon-button--sm"],
-                        styles["help-modal-close"],
-                      )}
-                      aria-label={t("help.close")}
-                    >
-                      <X className="icon" />
-                    </button>
-                  </Dialog.Close>
-                </div>
+                <X className="icon" />
+              </button>
+            </Dialog.Close>
+          </div>
 
-                <HelpBody />
-              </motion.div>
-            </Dialog.Content>
-          </Dialog.Portal>
-        ) : null}
-      </AnimatePresence>
+          <HelpBody />
+        </Dialog.Content>
+      </Dialog.Portal>
     </Dialog.Root>
   );
 }

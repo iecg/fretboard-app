@@ -55,6 +55,7 @@ function AppContent() {
 
   const [showHelp, setShowHelp] = useState(false);
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
+  const settingsTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
   const theme = useResolvedTheme();
   useKeyboardShortcuts();
@@ -157,6 +158,7 @@ function AppContent() {
           variant={layout.useSheetShell ? "menu" : "buttons"}
           onShowHelp={() => setShowHelp(true)}
           helpTriggerRef={helpTriggerRef}
+          settingsTriggerRef={settingsTriggerRef}
         />
       }
     />
@@ -174,7 +176,7 @@ function AppContent() {
 
   const settingsOverlayNode = (
     <Suspense fallback={null}>
-      <SettingsOverlay />
+      <SettingsOverlay triggerRef={settingsTriggerRef} />
     </Suspense>
   );
 
