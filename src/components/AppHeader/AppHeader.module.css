@@ -7,11 +7,6 @@
   flex-wrap: wrap;
   gap: clamp(0.5rem, 1.2vw, 0.95rem);
   padding: clamp(0.8rem, 1.4vw, 1.1rem) clamp(0.75rem, 2vw, 1.25rem);
-  /* Escape the app-container horizontal + top padding so the header goes
-     edge-to-edge. The negative margins match the container padding rules
-     in App.css (default and mobile breakpoint). */
-  margin-top: calc(-1 * clamp(0.75rem, 1.5vw, 1rem));
-  margin-inline: calc(-1 * clamp(0.75rem, 1.5vw, 1rem));
   /* Header blends into the app background — no panel treatment (no
      gradient, border, shadow, or backdrop blur) so the wordmark and
      brand mark sit directly on the gradient app background instead of
@@ -23,6 +18,16 @@
   position: sticky;
   top: 0;
   z-index: var(--z-header);
+}
+
+/* Escape the app-container horizontal + top padding so the header goes
+   edge-to-edge. The negative margins match the container padding rules in
+   App.css and are gated on the desktop/tablet container — the MobileShell
+   sheet shell has no container padding, so an ungated escape would pull the
+   brand and actions flush against the viewport edge. */
+:global(.app-container) .app-header {
+  margin-top: calc(-1 * clamp(0.75rem, 1.5vw, 1rem));
+  margin-inline: calc(-1 * clamp(0.75rem, 1.5vw, 1rem));
 }
 
 .app-header-brand {
@@ -201,12 +206,11 @@
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 :global([data-layout-tier="mobile"]) .app-header {
-  /* Mobile app-container uses 0.65rem padding (see App.css @media rules).
-     Tighter inline padding + a denser row gap let the brand + actions pack
-     into the first row without the actions wrapping or clipping. */
+  /* Mobile tier renders inside MobileShell (no .app-container padding to
+     escape, hence no negative margins). Tighter inline padding aligns the
+     brand with the shell stage's 0.65rem; a denser row gap lets the brand +
+     actions pack into the first row without wrapping or clipping. */
   padding-inline: 0.65rem;
-  margin-top: -0.65rem;
-  margin-inline: -0.65rem;
   gap: 0.45rem 0.5rem;
 }
 
