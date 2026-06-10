@@ -22,9 +22,7 @@ export function TransportBar() {
   const { t } = useTranslation();
   const {
     progressionPlaying,
-    progressionPlaybackBlockedReason,
     progressionPlaybackLoading,
-    setProgressionPlaying,
     progressionLoopEnabled,
     setProgressionLoopEnabled,
     progressionStrumEnabled,
@@ -35,27 +33,14 @@ export function TransportBar() {
     setProgressionDrumsEnabled,
     progressionMetronomeEnabled,
     setProgressionMetronomeEnabled,
-    stopProgressionPlayback,
+    // Shared play/stop button model — single source of truth.
+    playStopDisabled,
+    playStopLabelKey,
+    handlePlayStopClick,
   } = usePlaybackTransportModel();
-  const canPlay = !progressionPlaybackBlockedReason;
-  const playStopDisabled = !progressionPlaying && (!canPlay || progressionPlaybackLoading);
   const playStopIsPlaying = progressionPlaying;
   const progressionLabel = t("inspector.groupProgression").toLocaleLowerCase();
-  const playStopLabel = playStopIsPlaying
-    ? `${t("controls.stopProgression")} ${progressionLabel}`
-    : `${t("controls.playProgressionTooltip")} ${progressionLabel}`;
-
-  const handlePlayStopClick = () => {
-    if (progressionPlaying) {
-      stopProgressionPlayback();
-      return;
-    }
-
-    // Direct synchronous write. Wrapping this Jotai setter in startTransition
-    // tagged every progression-atom subscriber's rerender to the transition and
-    // tripped React's ">10 fibers inside startTransition" subscription warning.
-    setProgressionPlaying(true);
-  };
+  const playStopLabel = `${t(playStopLabelKey)} ${progressionLabel}`;
 
   return (
     <div className={styles.transportBar} data-testid="transport-bar">

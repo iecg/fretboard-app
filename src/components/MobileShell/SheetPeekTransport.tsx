@@ -1,60 +1,38 @@
 import clsx from "clsx";
+import { useAtomValue } from "jotai";
 import { LoaderCircle, Play, Repeat, Square } from "lucide-react";
 import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
-import { useScaleState } from "../../hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
+import { scaleHeadlineAtom } from "../../store/scaleAtoms";
 import styles from "./SheetPeekTransport.module.css";
-
-/**
- * The headline of a scale label, stripping the parenthetical mode suffix.
- * e.g. "C Major (Ionian)" → "C Major"
- */
-function scaleHeadline(label: string): string {
-  return label.split(" (")[0].trim();
-}
 
 /**
  * Mini-player transport row for the mobile bottom sheet peek state.
  * Always visible at every snap point (peek / half / full).
  *
- * Mirrors TransportBar's play/pause/stop handler logic exactly — including
- * the blocked/loading/playing disabled conditions — while presenting a
- * compact single-row layout with scale and tempo readout chips.
+ * Play/stop behavior is sourced from `usePlaybackTransportModel` (the single
+ * source of truth shared with TransportBar + HeaderTransportCluster), so the
+ * disabled/loading/playing semantics can never drift between surfaces.
  */
 export function SheetPeekTransport() {
   const { t } = useTranslation();
   const {
     progressionPlaying,
-    progressionPlaybackBlockedReason,
     progressionPlaybackLoading,
-    setProgressionPlaying,
     progressionLoopEnabled,
     setProgressionLoopEnabled,
     progressionTempoBpm,
-    stopProgressionPlayback,
+    // Shared play/stop button model.
+    playStopDisabled,
+    playStopLabelKey,
+    handlePlayStopClick,
   } = usePlaybackTransportModel();
-  const { scaleLabel } = useScaleState();
+  // Subscribe to exactly the headline selector — avoids re-renders from the
+  // ~11 atoms useScaleState() would pull in.
+  const scale = useAtomValue(scaleHeadlineAtom);
 
-  const canPlay = !progressionPlaybackBlockedReason;
-  // Mirrors TransportBar: disabled when stopped + (blocked OR loading); never
-  // disabled when playing (so the user can always stop).
-  const playStopDisabled = !progressionPlaying && (!canPlay || progressionPlaybackLoading);
   const progressionLabel = t("inspector.groupProgression").toLocaleLowerCase();
-  const playStopLabel = progressionPlaying
-    ? `${t("controls.stopProgression")} ${progressionLabel}`
-    : `${t("controls.playProgressionTooltip")} ${progressionLabel}`;
-
-  const handlePlayStopClick = () => {
-    if (progressionPlaying) {
-      stopProgressionPlayback();
-      return;
-    }
-    // Direct synchronous write — matches TransportBar's comment about
-    // NOT wrapping in startTransition to avoid the ">10 fibers" warning.
-    setProgressionPlaying(true);
-  };
-
-  const scale = scaleHeadline(scaleLabel);
+  const playStopLabel = `${t(playStopLabelKey)} ${progressionLabel}`;
 
   return (
     <div className={styles.row} data-testid="peek-transport">

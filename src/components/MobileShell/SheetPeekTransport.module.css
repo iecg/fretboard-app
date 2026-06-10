@@ -57,7 +57,7 @@
 }
 
 .play:disabled {
-  opacity: 0.5;
+  opacity: var(--control-disabled-opacity);
   cursor: not-allowed;
 }
 
@@ -90,7 +90,7 @@
   gap: 4px;
   min-height: 44px;
   padding: 0 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-chip);
   border: 1px solid var(--dc-border);
   background: var(--dc-bg);
   font-size: var(--text-sm);
