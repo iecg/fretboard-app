@@ -1,15 +1,16 @@
 .toast {
   position: fixed;
-  bottom: var(--space-lg, 1.5rem);
+  bottom: var(--space-4);
   left: 50%;
   transform: translateX(-50%);
-  padding: var(--space-sm, 0.5rem) var(--space-md, 1rem);
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-surface-elevated, #2a2a2e);
-  color: var(--color-text-primary, #fff);
-  font-size: var(--font-size-sm, 0.875rem);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 9999;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface-float);
+  border: 1px solid var(--surface-card-border);
+  color: var(--text-main);
+  font-size: var(--text-sm);
+  box-shadow: var(--elevation-float);
+  z-index: var(--z-overlay-drawer);
   pointer-events: none;
   animation: toast-in 200ms ease-out;
 }

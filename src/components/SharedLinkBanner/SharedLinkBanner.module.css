@@ -2,11 +2,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm, 0.5rem);
-  padding: var(--space-xs, 0.25rem) var(--space-md, 1rem);
-  background: var(--color-accent-subtle, rgba(134, 59, 255, 0.15));
-  color: var(--color-text-primary, #fff);
-  font-size: var(--font-size-xs, 0.75rem);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-4);
+  background: var(--surface-strip);
+  border-bottom: 1px solid var(--token-border-subtle);
+  color: var(--text-main);
+  font-size: var(--text-xs);
   text-align: center;
   width: 100%;
 }
@@ -23,18 +24,21 @@
   justify-content: center;
   background: none;
   border: none;
-  color: inherit;
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 2px;
-  border-radius: var(--radius-sm, 4px);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
+  transition: var(--transition-surface);
 }
 
 .banner-dismiss:hover {
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  background: var(--surface-hover);
 }
 
 .banner-dismiss:focus-visible {
-  outline: 2px solid var(--color-text-primary, #fff);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
 }
