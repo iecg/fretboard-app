@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
 import { getNoteFrequency } from "@fretflow/core";
 import { audioOutputWedgedAtom, audioQualityAtom, isMutedAtom } from "../store/audioAtoms";
@@ -151,6 +151,11 @@ export function useProgressionAudioPlayback() {
   const setLoading = useSetAtom(progressionPlaybackLoadingAtom);
   const setOutputWedged = useSetAtom(audioOutputWedgedAtom);
   const store = useStore();
+
+  // Incremented when the user returns to a visible tab with a playing
+  // progression and the AudioContext was replaced (Safari zombie recovery).
+  // Triggers the main playback effect to restart from bar 1.
+  const [tabRestartTick, setTabRestartTick] = useState(0);
 
   const primsRef = useRef<PlaybackPrimitives | null>(null);
   const buildKey = useMemo(
@@ -329,10 +334,12 @@ export function useProgressionAudioPlayback() {
     return () => {
       stopVisualClock();
       releaseAudioActive();
-      if (engine) engine.getDraw().cancel?.();
+      if (engine) {
+        engine.getDraw().cancel?.();
+        engine.silenceProgressionBus();
+      }
       engine?.disposeAll(primsRef.current);
       primsRef.current = null;
-      engine?.silenceProgressionBus();
       setLoading(false);
     };
   }, [setLoading]);
@@ -360,9 +367,9 @@ export function useProgressionAudioPlayback() {
     const tearDownAndStop = () => {
       stopVisualClock();
       releaseAudioActive();
+      if (engine) engine.silenceProgressionBus();
       engine?.disposeAll(primsRef.current);
       primsRef.current = null;
-      if (engine) engine.silenceProgressionBus();
       engine?.clearTimeline();
       setLoading(false);
     };
@@ -628,7 +635,7 @@ export function useProgressionAudioPlayback() {
       let endEventId: number | null = null;
       if (!inputs.loopEnabled) {
         endEventId = eng.getTransport().scheduleOnce(
-          () => setPlaying(false),
+          (audioTime) => eng.getDraw().schedule(() => setPlaying(false), audioTime),
           `+${totalDurationSec + SCHEDULE_LEAD_SECONDS}`,
         );
       }
@@ -661,6 +668,7 @@ export function useProgressionAudioPlayback() {
     blocked,
     muted,
     buildKey,
+    tabRestartTick,
     setActiveStepIndex,
     setPlaying,
     setLoading,
@@ -696,6 +704,33 @@ export function useProgressionAudioPlayback() {
     engine.setLayerGain(audio.layers, "metronome", metronomeOn);
   }, [chordOn, bassOn, drumsOn, metronomeOn]);
 
+  // Tab-return recovery: when the page becomes visible while a progression is
+  // playing, check if the AudioContext needs recovery (browser-suspended or
+  // Safari zombie). If the context was replaced (zombie), bump a tick counter
+  // to force the main playback effect to restart from bar 1. If just suspended,
+  // recoverProgressionContext handles the resume + graph rebuild in-place.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      if (!playing || blocked || muted) return;
+
+      getEngine().then((eng) => {
+        if (!eng) return;
+        // Re-check that playback is still active by the time the engine resolves
+        if (!store.get(progressionPlayingAtom)) return;
+        if (store.get(progressionPlaybackBlockedReasonAtom)) return;
+
+        const needsRestart = eng.recoverProgressionContext();
+        if (needsRestart) {
+          setTabRestartTick((t) => t + 1);
+        }
+      });
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [playing, blocked, muted, store]);
+
   useEffect(() => {
     if (!engine) return;
     const prims = primsRef.current;
@@ -709,12 +744,16 @@ export function useProgressionAudioPlayback() {
       }
     } else {
       if (prims.endEventId === null && totalDurationSec > 0) {
-        const transport = engine.getTransport() as unknown as { seconds: number };
-        const elapsedInLoop = transport.seconds % totalDurationSec;
-        const remaining = totalDurationSec - elapsedInLoop;
+        const transport = engine.getTransport() as unknown as { ticks: number, PPQ: number };
+        const ticksPerSecondAtBuild = (builtTempoRef.current / 60) * transport.PPQ;
+        const totalTicks = totalDurationSec * ticksPerSecondAtBuild;
+        const leadTicks = SCHEDULE_LEAD_SECONDS * ticksPerSecondAtBuild;
+        
+        const elapsedTicksInLoop = transport.ticks % totalTicks;
+        const remainingTicks = totalTicks - elapsedTicksInLoop;
         prims.endEventId = engine.getTransport().scheduleOnce(
-          () => setPlaying(false),
-          `+${remaining + SCHEDULE_LEAD_SECONDS}`,
+          (audioTime) => engine!.getDraw().schedule(() => setPlaying(false), audioTime),
+          `+${Math.round(remainingTicks + leadTicks)}i`,
         );
       }
     }
