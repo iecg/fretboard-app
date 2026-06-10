@@ -365,7 +365,8 @@ describe("Responsive string row sizes", () => {
   beforeEach(() => localStorage.clear());
 
   it.each([
-    [390, 844, "38"],
+    // Mobile rows are height-derived: floor((0.55 * 844 - 170) / 6) = 49.
+    [390, 844, "49"],
     [768, 1024, "36"],
     [1440, 900, "42"],
   ])("viewport %ix%i uses string row size %s", (w, h, expected) => {

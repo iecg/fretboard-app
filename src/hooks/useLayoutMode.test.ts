@@ -22,11 +22,12 @@ function setViewport(width: number, height: number) {
 
 describe("useLayoutMode", () => {
   describe("returns mobile tier layout for narrow viewport", () => {
-    it("tier is mobile and stringRowPx is 38 at 375x667", () => {
+    it("tier is mobile and stringRowPx clamps to 34 at 375x667", () => {
       setViewport(375, 667);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("mobile");
-      expect(result.current.stringRowPx).toBe(38);
+      // Height-derived: floor((0.55 * 667 - 170) / 6) = 32 → floor clamp 34.
+      expect(result.current.stringRowPx).toBe(34);
     });
   });
 
