@@ -15,6 +15,9 @@ describe("genre mix presets", () => {
       expect(getBassPatch(m.patches.bass), `bass ${m.patches.bass}`).toBeDefined();
       expect(getChordPatch(m.patches.chord), `chord ${m.patches.chord}`).toBeDefined();
       expect(getDrumKitPatch(m.patches.drumKit), `kit ${m.patches.drumKit}`).toBeDefined();
+      if (m.patches.chordAlt) {
+        expect(getChordPatch(m.patches.chordAlt), `chordAlt ${m.patches.chordAlt}`).toBeDefined();
+      }
     }
   });
 
@@ -24,6 +27,25 @@ describe("genre mix presets", () => {
       const patch = getChordPatch(mix.patches.chord)!;
       const expectedFamily = g.chordInstrument === "strum" ? "strum" : "poly";
       expect(patch.family, `${g.id}`).toBe(expectedFamily);
+    }
+  });
+
+  it("defaults blues to a strummed guitar with the organ preserved as the alt patch", () => {
+    const blues = getGenreMix("blues")!;
+    const primary = getChordPatch(blues.patches.chord)!;
+    expect(primary.family).toBe("strum"); // default out-of-the-box = strummed guitar
+    expect(blues.patches.chordAlt).toBe("chord-jazz-organ");
+    const alt = getChordPatch(blues.patches.chordAlt!)!;
+    expect(alt.family).toBe("poly"); // organ still reachable via the keys instrument
+  });
+
+  it("any genre's chordAlt (when present) is the opposite family of its default chord patch", () => {
+    for (const m of GENRE_MIX_PRESETS) {
+      if (!m.patches.chordAlt) continue;
+      const primary = getChordPatch(m.patches.chord)!;
+      const alt = getChordPatch(m.patches.chordAlt);
+      expect(alt, `chordAlt ${m.patches.chordAlt} not found`).toBeDefined();
+      expect(alt!.family, `${m.genre}`).not.toBe(primary.family);
     }
   });
 

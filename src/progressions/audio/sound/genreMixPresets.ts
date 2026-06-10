@@ -15,7 +15,11 @@ export interface MasterMix {
 
 export interface GenreMix {
   genre: string;
-  patches: { bass: string; chord: string; drumKit: string };
+  /** `chord` is the default-family patch (its family must match the genre's
+   *  `chordInstrument`). `chordAlt`, when set, is the patch for the *other*
+   *  family — used when the user switches the instrument away from the default
+   *  (e.g. Blues defaults to a strum guitar but offers the organ via `chordAlt`). */
+  patches: { bass: string; chord: string; chordAlt?: string; drumKit: string };
   perInstrument: Record<MixInstrument, InstrumentMix>;
   master: MasterMix;
 }
@@ -64,7 +68,7 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "blues",
-    patches: { bass: "bass-upright", chord: "chord-jazz-organ", drumKit: "kit-blues-shuffle" },
+    patches: { bass: "bass-upright", chord: "chord-steel-strum", chordAlt: "chord-jazz-organ", drumKit: "kit-blues-shuffle" },
     perInstrument: {
       chord: { volumeDb: -3, pan: -0.15, reverbSend: 0.2 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.05 },

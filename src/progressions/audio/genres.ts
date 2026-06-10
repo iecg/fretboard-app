@@ -29,7 +29,7 @@ export const GENRE_STYLES: readonly GenreStyle[] = [
     tempoRange: [110, 140], suggestedTempo: 120, swing: 0,
   },
   {
-    id: "blues", label: "Blues", chordInstrument: "organ",
+    id: "blues", label: "Blues", chordInstrument: "strum",
     chordPattern: "shuffle-comp", bassPattern: "shuffle",
     drumPattern: "blues-shuffle", drumVariations: ["blues-fill-4"], chordVariations: [], bassVariations: [],
     tempoRange: [70, 110], suggestedTempo: 85, swing: 0.33,
