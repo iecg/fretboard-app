@@ -29,6 +29,7 @@ import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/Prog
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { MobileShell } from "./components/MobileShell/MobileShell";
 import { MobileSheet } from "./components/MobileShell/MobileSheet";
+import { SheetPeekTransport } from "./components/MobileShell/SheetPeekTransport";
 
 import { SettingsTooltip } from "./components/SettingsTooltip/SettingsTooltip";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
@@ -262,7 +263,7 @@ function AppContent() {
           header={headerNode}
           track={<ProgressionSummarySlot />}
           sheet={
-            <MobileSheet peek={null}>
+            <MobileSheet peek={<SheetPeekTransport />}>
               <Suspense fallback={null}>
                 <Inspector placement="bottom" />
               </Suspense>
