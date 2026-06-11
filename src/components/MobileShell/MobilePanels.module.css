@@ -43,7 +43,9 @@
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
-  border-bottom: 1px solid var(--border-subtle);
+  /* Visible separation from the scrolling body — content scrolling under the
+     header reads as cut off without it. */
+  border-bottom: 1px solid var(--panel-header-border);
 }
 
 /* Same visual language as the Inspector tab pills. */

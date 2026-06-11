@@ -83,6 +83,12 @@
   --chrome-scrim: color-mix(in srgb, var(--bg-color) 68%, rgba(0, 0, 0, 0.32));
   --chrome-hover-bg: var(--surface-highlight);
 
+  /* Divider between a mobile panel/sheet header and its scrollable body —
+     shared by the dock panels (MobilePanels) and the Settings/Help sheets so
+     the separation reads identically everywhere. Theme-adaptive through
+     --chrome-border's constituents. */
+  --panel-header-border: var(--chrome-border);
+
   --panel-surface-bg: var(--surface-base);
   --panel-surface-border: 1px solid var(--surface-highlight);
   --panel-surface-radius: var(--radius-xl);
