@@ -11,6 +11,7 @@ import {
 import { probeOutputHealth } from "./core/audioOutputHealth";
 import { isMutedAtom, audioErrorAtom, audioOutputWedgedAtom } from "./store/audioAtoms";
 import { chordTypeAtom } from "./store/chordOverlayAtoms";
+import { mobilePanelAtom } from "./store/uiAtoms";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
@@ -25,8 +26,9 @@ import { FretFlowWordmark } from "./components/FretFlowWordmark/FretFlowWordmark
 import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/ProgressionSummarySlot";
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { MobileShell } from "./components/MobileShell/MobileShell";
-import { MobileSheet } from "./components/MobileShell/MobileSheet";
-import { DockTransport } from "./components/MobileShell/DockTransport";
+import { MobileDock } from "./components/MobileShell/MobileDock";
+import { MobileOverlayPanel } from "./components/MobileShell/MobileOverlayPanel";
+import { MobileSongPanel } from "./components/MobileShell/MobileSongPanel";
 
 import { ShareButton } from "./components/ShareButton/ShareButton";
 import { useShareLinkHandler } from "./hooks/useShareLinkHandler";
@@ -55,6 +57,9 @@ function AppContent() {
   const { t } = useTranslation();
 
   const chordType = useAtomValue(chordTypeAtom);
+  // Which dock panel is open — drives the sheet-shell board height (the board
+  // shrinks to the band left visible above the open Overlay panel).
+  const mobilePanel = useAtomValue(mobilePanelAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
@@ -211,16 +216,18 @@ function AppContent() {
           layoutVariant={layout.variant}
           header={headerNode}
           track={<ProgressionSummarySlot />}
-          sheet={
-            <MobileSheet peek={<DockTransport />}>
-              <Suspense fallback={null}>
-                <Inspector placement="sheet" />
-              </Suspense>
-            </MobileSheet>
-          }
+          panel={<MobileOverlayPanel />}
+          dock={<MobileDock />}
         >
-          <Fretboard stringRowPx={layout.stringRowPx} />
+          <Fretboard
+            stringRowPx={
+              mobilePanel === "overlay"
+                ? layout.stringRowPxPanelOpen
+                : layout.stringRowPx
+            }
+          />
         </MobileShell>
+        <MobileSongPanel />
         {helpModalNode}
         {settingsOverlayNode}
       </>

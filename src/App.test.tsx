@@ -365,9 +365,10 @@ describe("Responsive string row sizes", () => {
   beforeEach(() => localStorage.clear());
 
   it.each([
-    // Mobile rows are height-derived: floor((0.55 * 844 - 170) / 6) = 49.
-    [390, 844, "49"],
-    [768, 1024, "36"],
+    // Sheet-shell rows (mobile + tablet-split) are height-derived between the
+    // header/track and the dock, capped at 64 — see responsive.test.ts.
+    [390, 844, "64"],
+    [768, 1024, "64"],
     [1440, 900, "42"],
   ])("viewport %ix%i uses string row size %s", (w, h, expected) => {
     setViewport(w, h);

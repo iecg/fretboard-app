@@ -1,8 +1,7 @@
-import { type ReactNode, useRef } from "react";
+import { type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "../../hooks/useTranslation";
-import { mobileSheetSnapAtom } from "../../store/uiAtoms";
-import { useUnhideMobileShell } from "./useUnhideMobileShell";
+import { mobilePanelAtom } from "../../store/uiAtoms";
 import styles from "./MobileShell.module.css";
 
 interface MobileShellProps {
@@ -11,42 +10,39 @@ interface MobileShellProps {
   header: ReactNode;
   /** Progression chip strip. */
   track: ReactNode;
-  /** Bottom sheet (MobileSheet). */
-  sheet: ReactNode;
+  /** Non-modal Overlay panel (MobileOverlayPanel) — anchored above the dock. */
+  panel: ReactNode;
+  /** Fixed bottom dock (MobileDock). */
+  dock: ReactNode;
   layoutTier: string;
   layoutVariant: string;
 }
 
 /**
  * Fixed, non-scrolling mobile app surface. Owns only structure: compact
- * header, progression strip, fretboard stage (fills remaining height), and
- * the bottom sheet. All behavior lives in the shared components passed in.
+ * header, progression strip, fretboard stage (fills remaining height), the
+ * Overlay panel slot, and the bottom dock. All behavior lives in the shared
+ * components passed in.
  */
 export function MobileShell({
   children,
   header,
   track,
-  sheet,
+  panel,
+  dock,
   layoutTier,
   layoutVariant,
 }: MobileShellProps) {
   const { t } = useTranslation();
-  const shellRef = useRef<HTMLDivElement>(null);
-  // Stage spacing tracks the sheet's snap so the fretboard centers in the
-  // space that is actually visible above the sheet (45dvh covered at half,
-  // peek height at peek) — see the data-sheet-snap rules in the CSS module.
-  const sheetSnap = useAtomValue(mobileSheetSnapAtom);
-  // The always-open persistent MobileSheet is non-modal, but vaul 1.1.2 fails to
-  // forward `modal={false}` to Radix, so Radix's `hideOthers` permanently marks
-  // this shell `aria-hidden`. Keep the shell reachable by assistive tech.
-  useUnhideMobileShell(shellRef);
+  // Stage spacing tracks the open panel so the fretboard centers in the band
+  // that is actually visible — see the data-mobile-panel rules in the CSS.
+  const mobilePanel = useAtomValue(mobilePanelAtom);
   return (
     <div
-      ref={shellRef}
       className={styles.shell}
       data-layout-tier={layoutTier}
       data-layout-variant={layoutVariant}
-      data-sheet-snap={sheetSnap}
+      data-mobile-panel={mobilePanel}
       data-testid="mobile-shell"
     >
       {/* Portrait lock — CSS-only, shown via @media (max-width:767px) AND
@@ -82,7 +78,8 @@ export function MobileShell({
       >
         {children}
       </main>
-      {sheet}
+      {panel}
+      {dock}
     </div>
   );
 }

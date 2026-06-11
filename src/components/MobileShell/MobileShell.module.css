@@ -24,29 +24,28 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  /* Center the board in the visible band above the sheet; the snap-aware
-     padding-bottom below keeps "visible" accurate at every snap. */
+  /* Center the board in the visible band; the panel-aware padding below keeps
+     "visible" accurate while the Overlay panel is open. */
   justify-content: center;
   overflow: hidden;
   /* Match .app-container's mobile horizontal padding (src/styles/App.css) so
      the fretboard measures the same available width it had under
      MainLayoutWrapper and its right edge stays inside the viewport. */
   padding-inline: 0.65rem;
-  /* Reserve room for the sheet's peek height so the fretboard is never covered.
-     --mobile-sheet-peek is defined in semantic.css (← --token-mobile-sheet-peek);
-     the same token drives the banner's mobile bottom offset. */
-  padding-bottom: var(--mobile-sheet-peek, 96px);
+  /* Intentional breathing room: the height-derived board caps at 64px rows,
+     so the leftover space frames it instead of reading as a dead band. */
+  padding-block: clamp(12px, 4dvh, 48px);
   transition: padding-bottom 280ms ease;
 }
 
-/* At the half (resting) and full snaps the sheet covers the bottom 45dvh+ of
-   the viewport — pad the stage to match so the centered board sits in the
-   actually-visible band. 45dvh mirrors SNAP_POINTS[1] (0.45) in
-   mobileSheetSnap.ts; keep the two in sync. At full the stage is entirely
-   covered, so the same value is fine. */
-.shell[data-sheet-snap="half"] .stage,
-.shell[data-sheet-snap="full"] .stage {
-  padding-bottom: 45dvh;
+/* While the Overlay panel is open it covers the viewport up to
+   --mobile-panel-cover (dock included) — pad the stage by the part of that
+   cover that overlaps it (the dock already sits in flex flow below). */
+.shell[data-mobile-panel="overlay"] .stage {
+  padding-bottom: calc(
+    var(--mobile-panel-cover, 55dvh) - var(--mobile-dock-height, 104px) -
+      env(safe-area-inset-bottom, 0px)
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
