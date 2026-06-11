@@ -4,23 +4,23 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { InstrumentToggleCluster } from "../TransportBar/InstrumentToggleCluster";
 import { TransportButton } from "../TransportBar/TransportButton";
 import transportStyles from "../TransportBar/TransportBar.module.css";
-import styles from "./SheetPeekTransport.module.css";
+import styles from "./DockTransport.module.css";
 
 /**
- * Mini-player transport row for the mobile bottom sheet peek state.
- * Always visible at every snap point (peek / half / full).
+ * Mini-player transport row for the mobile dock — always visible at the
+ * bottom of the mobile shell.
  *
  * Play/stop behavior is sourced from `usePlaybackTransportModel` (the single
  * source of truth shared with TransportBar + HeaderTransportCluster), and the
  * buttons are the shared faceplate `TransportButton` — same treatment as the
  * desktop transport, so the style can never drift between surfaces.
  *
- * `data-placement="sheet"` on the row opts the InstrumentToggleCluster into
- * the existing sheet touch-target guard in TransportBar.module.css (the vaul
- * portal escapes the shell's tier attribute, and tablet-split has no
- * mobile-tier guard).
+ * `data-placement="sheet"` is stale-but-load-bearing: it opts the row into
+ * every existing `[data-placement="sheet"]` touch-target/compaction hook
+ * (TransportBar, Switch, steppers, …) without churning a dozen CSS modules
+ * for a rename.
  */
-export function SheetPeekTransport() {
+export function DockTransport() {
   const { t } = useTranslation();
   const {
     progressionPlaying,
@@ -37,7 +37,7 @@ export function SheetPeekTransport() {
   const playStopLabel = `${t(playStopLabelKey)} ${progressionLabel}`;
 
   return (
-    <div className={styles.row} data-testid="peek-transport" data-placement="sheet">
+    <div className={styles.row} data-testid="dock-transport" data-placement="sheet">
       <TransportButton
         size="touch"
         active={progressionPlaying}
@@ -46,7 +46,7 @@ export function SheetPeekTransport() {
         disabled={playStopDisabled}
         aria-label={playStopLabel}
         aria-busy={progressionPlaybackLoading || undefined}
-        data-testid="peek-play"
+        data-testid="dock-play"
       >
         {progressionPlaybackLoading && progressionPlaying ? (
           <LoaderCircle size={18} strokeWidth={2.4} aria-hidden="true" className={styles.spinIcon} />
@@ -67,7 +67,7 @@ export function SheetPeekTransport() {
         onClick={() => setProgressionLoopEnabled(!progressionLoopEnabled)}
         aria-pressed={progressionLoopEnabled}
         aria-label="Loop progression"
-        data-testid="peek-loop"
+        data-testid="dock-loop"
       >
         <Repeat size={16} strokeWidth={2.4} aria-hidden="true" />
       </TransportButton>

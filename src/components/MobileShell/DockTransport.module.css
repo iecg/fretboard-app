@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- * SheetPeekTransport — mini-player row pinned in the mobile bottom-sheet peek.
+ * DockTransport — mini-player row pinned in the mobile dock.
  *
  * The buttons themselves are the shared faceplate TransportButton (styles in
  * TransportBar.module.css); this module only lays out the row.
@@ -10,7 +10,7 @@
   align-items: center;
   gap: 8px;
   padding: 0 var(--space-4);
-  /* 56px minimum keeps the row a comfortable touch band at the peek snap and
+  /* 56px minimum keeps the row a comfortable touch band in the dock and
      vertically balances the 44px play button. */
   min-height: 56px;
 }
@@ -21,7 +21,7 @@
 }
 
 .spinIcon {
-  animation: peek-spin 0.7s linear infinite;
+  animation: dock-spin 0.7s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -30,6 +30,6 @@
   }
 }
 
-@keyframes peek-spin {
+@keyframes dock-spin {
   to { transform: rotate(360deg); }
 }

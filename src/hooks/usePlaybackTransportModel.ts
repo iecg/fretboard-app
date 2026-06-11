@@ -40,7 +40,7 @@ export function usePlaybackTransportModel() {
 
   // --- Play/stop button model (single source of truth) -------------------
   // Every transport surface (TransportBar, HeaderTransportCluster,
-  // SheetPeekTransport) shares the exact same play/stop semantics. Compute
+  // DockTransport) shares the exact same play/stop semantics. Compute
   // them once here so behavior can never drift between surfaces.
   const canPlay = !progressionPlaybackBlockedReason;
   // Disabled when stopped + (blocked OR loading); never disabled while playing

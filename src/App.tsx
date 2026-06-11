@@ -26,7 +26,7 @@ import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/Prog
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { MobileShell } from "./components/MobileShell/MobileShell";
 import { MobileSheet } from "./components/MobileShell/MobileSheet";
-import { SheetPeekTransport } from "./components/MobileShell/SheetPeekTransport";
+import { DockTransport } from "./components/MobileShell/DockTransport";
 
 import { ShareButton } from "./components/ShareButton/ShareButton";
 import { useShareLinkHandler } from "./hooks/useShareLinkHandler";
@@ -212,7 +212,7 @@ function AppContent() {
           header={headerNode}
           track={<ProgressionSummarySlot />}
           sheet={
-            <MobileSheet peek={<SheetPeekTransport />}>
+            <MobileSheet peek={<DockTransport />}>
               <Suspense fallback={null}>
                 <Inspector placement="sheet" />
               </Suspense>
