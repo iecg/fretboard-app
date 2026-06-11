@@ -69,7 +69,6 @@ export const es: Dictionary = {
     groupProgression: "Progresión",
     groupChords: "Acordes",
     groupBackingTrack: "Pista de acompañamiento",
-    btInstruments: "Instrumentos",
     progressionMode: "Modo",
     meterTempo: "Tempo",
     meterLoop: "Bucle",
