@@ -6,6 +6,7 @@ import {
   incomingTonesAtom,
   departingTonesAtom,
   guideCountdownActiveAtom,
+  guideCountdownWindowMsAtom,
   guideCountdownTickFractionsAtom,
   commonTonesWithNextAtom,
   heldTargetTonesAtom,
@@ -21,6 +22,8 @@ export interface EmphasisContext {
   incomingTones: Set<string>;
   departingTones: Set<string>;
   guideCountdownActive: boolean;
+  /** Countdown window length in ms (`--guide-duration` for the drain ring). */
+  guideCountdownWindowMs: number;
   countdownTicks: number[];
   lens: PracticeLens;
   commonTones: Set<string>;
@@ -35,6 +38,7 @@ export interface EmphasisContext {
 export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
   const playing = useAtomValue(progressionPlayingAtom);
   const guideCountdownActive = useAtomValue(guideCountdownActiveAtom);
+  const guideCountdownWindowMs = useAtomValue(guideCountdownWindowMsAtom);
   const countdownTicks = useAtomValue(guideCountdownTickFractionsAtom);
   const nextGuideTones = useAtomValue(nextChordGuideTonesAtom);
   const nextGuideToneLabels = useAtomValue(nextChordGuideToneLabelsAtom);
@@ -52,6 +56,7 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
     incomingTones,
     departingTones,
     guideCountdownActive,
+    guideCountdownWindowMs,
     countdownTicks,
     lens,
     commonTones,

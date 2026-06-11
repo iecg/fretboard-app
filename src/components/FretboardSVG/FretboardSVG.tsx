@@ -8,7 +8,6 @@ import {
 } from "@fretflow/core";
 import { fingeringPatternAtom } from "../../store/fingeringAtoms";
 import { intervalPairsAtom } from "../../store/shapeAtoms";
-import { guideCountdownActiveAtom, guideCountdownWindowMsAtom, guideCountdownTickFractionsAtom } from "../../store/practiceLensAtoms";
 import { useFretboardPlaybackSnapshot } from "./hooks/useFretboardPlaybackSnapshot";
 import { STRING_ROW_PX_TABLET } from "../../layout/responsive";
 import styles from "./FretboardSVG.module.css";
@@ -44,6 +43,7 @@ const DEFAULT_WRAPPED_NOTES = new Set<string>();
 const DEFAULT_COLOR_NOTES: string[] = [];
 const DEFAULT_SHAPE_POLYGONS: ShapePolygon[] = [];
 const DEFAULT_CHORD_TONES: string[] = [];
+const DEFAULT_COUNTDOWN_TICKS: number[] = [];
 
 interface FretboardSVGProps {
   /** Pixels per fret column used to size the scroll container; passed through but not read internally. */
@@ -333,17 +333,22 @@ export function FretboardSVG({
   void effectiveZoom;
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const intervalPairs = useAtomValue(intervalPairsAtom);
-  const guideCountdownActive = useAtomValue(guideCountdownActiveAtom);
-  const guideCountdownWindowMs = useAtomValue(guideCountdownWindowMsAtom);
-  const countdownTicks = useAtomValue(guideCountdownTickFractionsAtom);
+  // Countdown state is read from the host-supplied emphasis context — NOT from
+  // own atom subscriptions — so the board-level ring attributes
+  // (data-transition-phase, --guide-duration, tick fractions) flip in the SAME
+  // commit as the per-note guide-target roles the context drives. Subscribing
+  // here put them on the urgent lane while the context prop rode the parent's
+  // (possibly transition-parked) render — the same cross-lane tear as the
+  // chord-boundary highlight flash (see the `emphasisContext` prop doc).
+  const guideCountdownActive = emphasisContext?.guideCountdownActive ?? false;
+  const guideCountdownWindowMs = emphasisContext?.guideCountdownWindowMs ?? 0;
+  const countdownTicks = emphasisContext?.countdownTicks ?? DEFAULT_COUNTDOWN_TICKS;
 
-  // Playback snapshot is subscribed here (inside the lazy boundary) so that
-  // frame ticks stay contained to FretboardSVG rather than re-rendering the
-  // Fretboard shell above it. FretboardSVG itself DOES re-render per frame
-  // (it subscribes to progressionVisualFrameAtom via this hook), but note
-  // emphasis is decoupled from frame ticks by useEmphasisContext, so the
-  // per-note getEmphasis pass does not recompute on every frame. Tests may
-  // inject the snapshot directly via the prop to avoid atom setup.
+  // Playback snapshot is subscribed here (inside the lazy boundary). It only
+  // carries the boundary-stable `playing` flag (flips on start/stop, never at
+  // chord boundaries), so this own-subscription is safe from the cross-lane
+  // tear described on `emphasisContext`. Tests may inject the snapshot
+  // directly via the prop to avoid atom setup.
   const internalPlaybackSnapshot = useFretboardPlaybackSnapshot(
     playbackSnapshotProp === undefined,
   );

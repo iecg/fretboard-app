@@ -315,6 +315,7 @@ function makeLensEmphasisContext(
     incomingTones: new Set(),
     departingTones: new Set(),
     guideCountdownActive: false,
+    guideCountdownWindowMs: 0,
     countdownTicks: [],
     lens: "guide",
     commonTones: new Set(),
