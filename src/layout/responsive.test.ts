@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getResponsiveLayout } from "./responsive";
+import { getResponsiveLayout, scaleRowForZoomOut } from "./responsive";
 
 describe("useSheetShell flag", () => {
   it("is true for the mobile tier", () => {
@@ -55,5 +55,22 @@ describe("stringRowPxPanelOpen", () => {
   it("equals stringRowPx outside the sheet shell", () => {
     expect(getResponsiveLayout(1280, 1000).stringRowPxPanelOpen).toBe(42);
     expect(getResponsiveLayout(800, 700).stringRowPxPanelOpen).toBe(36);
+  });
+});
+
+describe("scaleRowForZoomOut", () => {
+  it("leaves rows alone at 100 and above (zoom-in widens frets, not rows)", () => {
+    expect(scaleRowForZoomOut(64, 100)).toBe(64);
+    expect(scaleRowForZoomOut(64, 150)).toBe(64);
+  });
+
+  it("shrinks rows proportionally below 100", () => {
+    expect(scaleRowForZoomOut(64, 90)).toBe(58); // 57.6 rounded
+    expect(scaleRowForZoomOut(64, 50)).toBe(32);
+  });
+
+  it("clamps to the 24px legibility floor", () => {
+    expect(scaleRowForZoomOut(34, 50)).toBe(24); // 17 raw → floor
+    expect(scaleRowForZoomOut(26, 60)).toBe(24); // 15.6 raw → floor
   });
 });

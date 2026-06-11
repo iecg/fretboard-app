@@ -72,3 +72,12 @@ export const STEPPER_VALUE_POP_TRANSITION = {
 export const FRET_ZOOM_MIN = 100;
 export const FRET_ZOOM_MAX = 200;
 export const FRET_ZOOM_DEFAULT = 100;
+/**
+ * Floor for zooming OUT below the 100% auto-fit on sheet shells (mobile +
+ * tablet-split): sub-100 values shrink the string-row height proportionally,
+ * which shrinks the note bubbles and therefore the fret-width floor, fitting
+ * more frets on screen. Desktop renders sub-100 values as plain auto-fit (the
+ * full neck is already visible there), so a persisted mobile zoom-out is
+ * harmless across shells.
+ */
+export const FRET_ZOOM_OUT_MIN = 50;

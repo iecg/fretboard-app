@@ -1,6 +1,6 @@
 import { useAtom } from "jotai";
 import { ZoomIn, ZoomOut } from "lucide-react";
-import { FRET_ZOOM_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
+import { FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { TransportButton } from "../TransportBar/TransportButton";
@@ -12,7 +12,9 @@ const ZOOM_STEP = 10;
 /**
  * Floating zoom buttons over the mobile stage (maps-style). Adjusts the same
  * fretZoomAtom the Settings stepper drives: 100 = auto-fit width, above it
- * the board zooms in and scrolls horizontally.
+ * the board zooms in and scrolls horizontally, below it the board shrinks
+ * (rows and bubbles scale down) so more frets fit — a real zoom-out, floored
+ * at FRET_ZOOM_OUT_MIN.
  */
 export function StageZoomControl() {
   const { t } = useTranslation();
@@ -20,7 +22,7 @@ export function StageZoomControl() {
 
   const step = (delta: number) =>
     setFretZoom(
-      Math.min(FRET_ZOOM_MAX, Math.max(FRET_ZOOM_MIN, fretZoom + delta)),
+      Math.min(FRET_ZOOM_MAX, Math.max(FRET_ZOOM_OUT_MIN, fretZoom + delta)),
     );
 
   return (
@@ -37,7 +39,7 @@ export function StageZoomControl() {
       <TransportButton
         size="touch"
         onClick={() => step(-ZOOM_STEP)}
-        disabled={fretZoom <= FRET_ZOOM_MIN}
+        disabled={fretZoom <= FRET_ZOOM_OUT_MIN}
         aria-label={t("mobileDock.zoomOut")}
         data-testid="stage-zoom-out"
       >

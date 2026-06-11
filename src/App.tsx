@@ -12,6 +12,8 @@ import { probeOutputHealth } from "./core/audioOutputHealth";
 import { isMutedAtom, audioErrorAtom, audioOutputWedgedAtom } from "./store/audioAtoms";
 import { chordTypeAtom } from "./store/chordOverlayAtoms";
 import { mobilePanelAtom } from "./store/uiAtoms";
+import { fretZoomAtom } from "./store/layoutAtoms";
+import { scaleRowForZoomOut } from "./layout/responsive";
 import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
 import useLayoutMode from "./hooks/useLayoutMode";
 import { useResolvedTheme } from "./hooks/useResolvedTheme";
@@ -61,6 +63,9 @@ function AppContent() {
   // Which dock panel is open — drives the sheet-shell board height (the board
   // shrinks to the band left visible above the open Overlay panel).
   const mobilePanel = useAtomValue(mobilePanelAtom);
+  // Sub-100 zoom on sheet shells = zoom OUT: rows (and with them the note
+  // bubbles and the fret-width floor) shrink proportionally so more frets fit.
+  const fretZoom = useAtomValue(fretZoomAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
@@ -227,11 +232,12 @@ function AppContent() {
           dock={<MobileDock />}
         >
           <Fretboard
-            stringRowPx={
+            stringRowPx={scaleRowForZoomOut(
               mobilePanel === "overlay"
                 ? layout.stringRowPxPanelOpen
-                : layout.stringRowPx
-            }
+                : layout.stringRowPx,
+              fretZoom,
+            )}
           />
         </MobileShell>
         {helpModalNode}

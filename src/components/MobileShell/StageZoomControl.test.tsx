@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { FRET_ZOOM_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
+import { FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { fretZoomAtom } from "../../store/layoutAtoms";
 import { StageZoomControl } from "./StageZoomControl";
@@ -19,8 +19,16 @@ describe("StageZoomControl", () => {
     expect(store.get(fretZoomAtom)).toBe(100);
   });
 
-  it("disables zoom-out at the minimum and zoom-in at the maximum", () => {
-    const atMin = makeAtomStore([[fretZoomAtom, FRET_ZOOM_MIN]]);
+  it("zooms out below 100 down to the zoom-out floor", async () => {
+    const store = makeAtomStore([[fretZoomAtom, 100]]);
+    renderWithStore(<StageZoomControl />, store);
+
+    await userEvent.click(screen.getByTestId("stage-zoom-out"));
+    expect(store.get(fretZoomAtom)).toBe(90);
+  });
+
+  it("disables zoom-out at the zoom-out floor and zoom-in at the maximum", () => {
+    const atMin = makeAtomStore([[fretZoomAtom, FRET_ZOOM_OUT_MIN]]);
     const { unmount } = renderWithStore(<StageZoomControl />, atMin);
     expect(screen.getByTestId("stage-zoom-out")).toBeDisabled();
     expect(screen.getByTestId("stage-zoom-in")).toBeEnabled();

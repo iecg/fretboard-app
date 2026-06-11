@@ -82,6 +82,24 @@ function getDockStringRowPx(viewportHeight: number): number {
   return clampShellRow(band / SHELL_STRING_COUNT);
 }
 
+/** Absolute floor for zoom-out-scaled rows — below ~24px the note markers
+ *  stop being readable, even zoomed out. */
+const STRING_ROW_PX_ZOOM_OUT_FLOOR = 24;
+
+/**
+ * Sheet-shell zoom OUT: a sub-100 fretZoom shrinks the row height
+ * proportionally. The note bubbles and the fret-width floor both derive from
+ * the row height, so more frets fit on screen automatically. Zoom values of
+ * 100+ leave the rows alone (zoom IN works by widening frets, not rows).
+ */
+export function scaleRowForZoomOut(rowPx: number, fretZoom: number): number {
+  if (fretZoom >= 100) return rowPx;
+  return Math.max(
+    STRING_ROW_PX_ZOOM_OUT_FLOOR,
+    Math.round((rowPx * fretZoom) / 100),
+  );
+}
+
 /** Rows that fit the band left visible above the open Overlay panel. */
 function getPanelOpenStringRowPx(viewportHeight: number): number {
   const band =
