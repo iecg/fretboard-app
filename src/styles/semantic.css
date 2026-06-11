@@ -61,6 +61,15 @@
      Prefer these tokens in new components over bare surface-base/raised/overlay primitives.
      Theme overrides (themes.css) set light-mode values; dark defaults alias existing primitives. */
   --surface-shell:       var(--bg-color);
+  /* App-gradient surface for full-bleed mobile chrome (dock + panels): the
+     same gradient family the body/.app-container paint, so these surfaces
+     read as the app's room rather than a flat color island. The gradient
+     tokens are theme-adaptive (themes.css overrides them for light). */
+  --surface-app-panel: linear-gradient(
+    180deg,
+    var(--bg-app-gradient-mid, var(--bg-app-gradient-start)),
+    var(--bg-app-gradient-end)
+  );
   --surface-card-top:    var(--surface-overlay);
   --surface-card-nested: color-mix(in srgb, var(--bg-color) 60%, var(--surface-raised) 40%);
   --surface-well:        var(--surface-raised);
