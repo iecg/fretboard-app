@@ -215,6 +215,26 @@
   box-shadow: var(--focus-ring-glow);
 }
 
+/* Inside the AdaptiveModal mobile sheet, the header adopts the shared mobile
+   panel chrome (MobilePanels.module.css .panelHeader/.panelTitle) so Settings
+   reads as the same family of drawers as the dock panels. The desktop drawer
+   keeps its own treatment. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-presentation="sheet"]) .settings-overlay-header {
+  background: none;
+  border-bottom-color: var(--panel-header-border);
+}
+
+:global([data-presentation="sheet"]) .settings-overlay-title {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--faceplate-accent);
+  text-shadow: var(--faceplate-accent-glow);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 .settings-overlay-drawer[data-layout-tier="mobile"] .settings-overlay-header {
   padding: 12px 16px;
 }

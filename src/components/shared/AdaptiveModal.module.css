@@ -81,7 +81,9 @@
   }
 }
 
-/* Mobile: full-height swipe-to-dismiss sheet. */
+/* Mobile: full-height swipe-to-dismiss sheet. Paints the same app-gradient
+   surface as the dock panels (MobilePanels.module.css) so Settings/Help read
+   as the same family of drawers. */
 .sheet {
   position: fixed;
   inset-inline: 0;
@@ -91,7 +93,8 @@
   flex-direction: column;
   height: 94dvh;
   border-radius: 14px 14px 0 0;
-  background: var(--surface-panel);
+  border-top: 1px solid var(--chrome-border);
+  background: var(--surface-app-panel, var(--surface-panel));
   box-shadow: var(--elevation-overlay);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }

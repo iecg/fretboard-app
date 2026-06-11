@@ -41,6 +41,9 @@ export function AdaptiveModal({
           <Drawer.Content
             className={styles.sheet}
             data-testid="adaptive-modal-sheet"
+            // Scoping hook for hosted content (Settings/Help headers) to adopt
+            // the shared mobile panel chrome inside the sheet only.
+            data-presentation="sheet"
             aria-describedby={undefined}
           >
             <Drawer.Title className={sharedStyles["sr-only"]}>{label}</Drawer.Title>
