@@ -46,13 +46,19 @@ const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
    degrading into a few px of breathing room rather than overflow. */
 const STRING_ROW_PX_SHELL_MIN = 34;
 const STRING_ROW_PX_SHELL_MAX = 64;
+/** Rows above the open Overlay panel may shrink further than the closed-state
+ *  floor — the band is intentionally small and the panel is for tweaking, not
+ *  playing. Below ~26px note markers stop being legible. */
+const STRING_ROW_PX_PANEL_OPEN_MIN = 26;
 /** AppHeader band in the sheet shell (padding + 44px content row). */
 const SHELL_HEADER_PX = 64;
+/** ShellTransport strip under the header (44px play button + padding). */
+const SHELL_TRANSPORT_PX = 56;
 /** Progression chip strip. */
 const SHELL_TRACK_PX = 56;
-/** MobileDock: 44px toggle row + 56px transport row + border. Keep in sync
- *  with --token-mobile-dock-height in src/styles/tokens.css. */
-const SHELL_DOCK_PX = 104;
+/** MobileDock tab bar: 44px toggle row + borders. Keep in sync with
+ *  --token-mobile-dock-height in src/styles/tokens.css. */
+const SHELL_DOCK_PX = 48;
 /** Fret-number band + stage breathing paddings. */
 const STAGE_CHROME_PX = 46;
 /** Fraction of the viewport the open Overlay panel + dock cover together.
@@ -60,18 +66,16 @@ const STAGE_CHROME_PX = 46;
 const PANEL_COVER_FRACTION = 0.55;
 const SHELL_STRING_COUNT = 6;
 
-function clampShellRow(raw: number): number {
-  return Math.min(
-    STRING_ROW_PX_SHELL_MAX,
-    Math.max(STRING_ROW_PX_SHELL_MIN, Math.floor(raw)),
-  );
+function clampShellRow(raw: number, min = STRING_ROW_PX_SHELL_MIN): number {
+  return Math.min(STRING_ROW_PX_SHELL_MAX, Math.max(min, Math.floor(raw)));
 }
 
-/** Rows that fill the stage between header/track and the dock. */
+/** Rows that fill the stage between header/transport/track and the dock. */
 function getDockStringRowPx(viewportHeight: number): number {
   const band =
     viewportHeight -
     SHELL_HEADER_PX -
+    SHELL_TRANSPORT_PX -
     SHELL_TRACK_PX -
     SHELL_DOCK_PX -
     STAGE_CHROME_PX;
@@ -83,9 +87,10 @@ function getPanelOpenStringRowPx(viewportHeight: number): number {
   const band =
     viewportHeight * (1 - PANEL_COVER_FRACTION) -
     SHELL_HEADER_PX -
+    SHELL_TRANSPORT_PX -
     SHELL_TRACK_PX -
     STAGE_CHROME_PX;
-  return clampShellRow(band / SHELL_STRING_COUNT);
+  return clampShellRow(band / SHELL_STRING_COUNT, STRING_ROW_PX_PANEL_OPEN_MIN);
 }
 
 export function getResponsiveTier(viewportWidth: number): ResponsiveTier {

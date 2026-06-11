@@ -8,12 +8,12 @@ import { mobilePanelAtom } from "../../store/uiAtoms";
 import { MobileDock } from "./MobileDock";
 
 describe("MobileDock", () => {
-  it("renders both panel toggles and the transport row", () => {
+  it("renders both panel toggles and no transport (it lives in ShellTransport)", () => {
     const store = makeAtomStore([]);
     renderWithStore(<MobileDock />, store);
     expect(screen.getByTestId("dock-toggle-overlay")).toBeInTheDocument();
     expect(screen.getByTestId("dock-toggle-song")).toBeInTheDocument();
-    expect(screen.getByTestId("dock-transport")).toBeInTheDocument();
+    expect(screen.queryByTestId("shell-transport")).not.toBeInTheDocument();
     expect(screen.getByTestId("mobile-dock")).toHaveAttribute("data-placement", "sheet");
   });
 

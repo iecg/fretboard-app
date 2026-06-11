@@ -65,15 +65,12 @@
   --token-z-overlay-drawer: 201;
   --token-z-help-overlay: 1000;
 
-  /* Mobile bottom-sheet peek height. Single source of truth for the reserved
-     space below the fretboard stage and the banner's mobile bottom offset.
-     Kept in sync with the SNAP_POINTS[0] "96px" literal in
-     src/components/MobileShell/mobileSheetSnap.ts (JS can't read a CSS var). */
-  /* Mobile dock height: 44px panel-toggle row + 56px transport row + border.
-     Single source for the Overlay panel's bottom anchor and the banner's
+  /* Mobile dock height: 44px panel-toggle tab bar + top border + the toggles'
+     2px indicator border (playback lives in the ShellTransport strip under
+     the header). Single source for the panels' bottom anchor and the banner's
      mobile offset. Kept in sync with SHELL_DOCK_PX in src/layout/responsive.ts
      (JS can't read a CSS var). */
-  --token-mobile-dock-height: 104px;
+  --token-mobile-dock-height: 48px;
 
   /* Fraction of the viewport the open Overlay panel + dock cover together.
      Kept in sync with PANEL_COVER_FRACTION (0.55) in src/layout/responsive.ts. */

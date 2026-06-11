@@ -5,12 +5,13 @@ import { mobilePanelAtom } from "../../store/uiAtoms";
 import { MobileShell } from "./MobileShell";
 
 describe("MobileShell", () => {
-  it("renders header, track, fretboard stage, panel, and dock regions", () => {
+  it("renders header, transport, track, fretboard stage, panel, and dock regions", () => {
     renderWithAtoms(
       <MobileShell
         layoutTier="mobile"
         layoutVariant="mobile"
         header={<div data-testid="hdr" />}
+        transport={<div data-testid="trn" />}
         track={<div data-testid="trk" />}
         panel={<div data-testid="pnl" />}
         dock={<div data-testid="dck" />}
@@ -19,6 +20,7 @@ describe("MobileShell", () => {
       </MobileShell>,
     );
     expect(screen.getByTestId("hdr")).toBeInTheDocument();
+    expect(screen.getByTestId("trn")).toBeInTheDocument();
     expect(screen.getByTestId("trk")).toBeInTheDocument();
     expect(screen.getByTestId("fret")).toBeInTheDocument();
     expect(screen.getByTestId("pnl")).toBeInTheDocument();
@@ -39,6 +41,7 @@ describe("MobileShell", () => {
         layoutTier="mobile"
         layoutVariant="mobile"
         header={null}
+        transport={null}
         track={null}
         panel={null}
         dock={null}

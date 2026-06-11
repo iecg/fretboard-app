@@ -1,8 +1,9 @@
 /* ----------------------------------------------------------------------------
- * DockTransport — mini-player row pinned in the mobile dock.
+ * ShellTransport — always-visible transport strip between the mobile shell's
+ * header and the progression track.
  *
  * The buttons themselves are the shared faceplate TransportButton (styles in
- * TransportBar.module.css); this module only lays out the row.
+ * TransportBar.module.css); this module only lays out the strip.
  * --------------------------------------------------------------------------- */
 
 .row {
@@ -10,9 +11,11 @@
   align-items: center;
   gap: 8px;
   padding: 0 var(--space-4);
-  /* 56px minimum keeps the row a comfortable touch band in the dock and
-     vertically balances the 44px play button. */
+  /* 56px minimum keeps the strip a comfortable touch band and vertically
+     balances the 44px play button. */
   min-height: 56px;
+  /* Reads as part of the top chrome — same divider the header uses. */
+  border-bottom: 1px solid var(--chrome-border);
 }
 
 /* Loop toggle — pushed to the far right */
@@ -21,7 +24,7 @@
 }
 
 .spinIcon {
-  animation: dock-spin 0.7s linear infinite;
+  animation: shell-transport-spin 0.7s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -30,6 +33,6 @@
   }
 }
 
-@keyframes dock-spin {
+@keyframes shell-transport-spin {
   to { transform: rotate(360deg); }
 }

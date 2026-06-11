@@ -14,6 +14,7 @@
 }
 
 .header,
+.transport,
 .track {
   flex: none;
 }
@@ -46,7 +47,7 @@
 .shell[data-mobile-panel="overlay"] .stage {
   padding-bottom: calc(
     var(--mobile-panel-cover, 55dvh)
-    - var(--mobile-dock-height, 104px)
+    - var(--mobile-dock-height, 48px)
     - env(safe-area-inset-bottom, 0px)
   );
 }

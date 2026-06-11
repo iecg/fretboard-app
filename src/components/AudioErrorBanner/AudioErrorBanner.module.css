@@ -25,14 +25,14 @@
    BREAKPOINTS.mobileMax). The banner renders at the app fragment root, a
    sibling of MobileShell, so it has no [data-layout-tier] ancestor to scope on
    — a width media query is the only reliable hook. Lift it above the
-   always-visible transport dock (--mobile-dock-height, semantic.css ←
+   always-visible dock tab bar (--mobile-dock-height, semantic.css ←
    --token-mobile-dock-height) and inside the bottom safe area so it clears
    the home indicator. z-index already sits above the dock
    (--token-z-overlay-drawer 201 > --token-z-mobile-dock 100). */
 @media (max-width: 767px) {
   .banner {
     bottom: calc(
-      var(--mobile-dock-height, 104px)
+      var(--mobile-dock-height, 48px)
       + env(safe-area-inset-bottom, 0px)
       + var(--space-2)
     );

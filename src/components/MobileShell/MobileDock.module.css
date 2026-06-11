@@ -1,9 +1,9 @@
 /* ----------------------------------------------------------------------------
- * MobileDock — fixed two-row dock at the bottom of the mobile shell.
- * Toggle row (Overlay / Song) on top, DockTransport row underneath.
+ * MobileDock — fixed tab bar (Overlay / Song toggles) at the bottom of the
+ * mobile shell. Playback lives in the ShellTransport strip under the header.
  *
  * In normal flex flow inside MobileShell; position:relative + z-index so the
- * sliding Overlay panel (lower z) emerges from behind it.
+ * sliding panels (lower z) emerge from behind it.
  * --------------------------------------------------------------------------- */
 
 .dock {
@@ -21,7 +21,8 @@
 .toggleRow {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid var(--border-subtle);
+  /* Fill the dock band so the toggles' active border sits on its bottom edge. */
+  flex: 1;
 }
 
 /* Same visual language as the Inspector tab pills (Inspector.module.css .tab):
@@ -37,7 +38,6 @@
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
   font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
   font-size: 11px;
   font-weight: 500;

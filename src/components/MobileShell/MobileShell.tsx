@@ -9,9 +9,11 @@ interface MobileShellProps {
   /** Fretboard stage content. */
   children: ReactNode;
   header: ReactNode;
+  /** Always-visible playback strip (ShellTransport) — under the header. */
+  transport: ReactNode;
   /** Progression chip strip. */
   track: ReactNode;
-  /** Non-modal Overlay panel (MobileOverlayPanel) — anchored above the dock. */
+  /** Non-modal panels (MobileOverlayPanel / MobileSongPanel) — anchored above the dock. */
   panel: ReactNode;
   /** Fixed bottom dock (MobileDock). */
   dock: ReactNode;
@@ -21,13 +23,14 @@ interface MobileShellProps {
 
 /**
  * Fixed, non-scrolling mobile app surface. Owns only structure: compact
- * header, progression strip, fretboard stage (fills remaining height), the
- * Overlay panel slot, and the bottom dock. All behavior lives in the shared
- * components passed in.
+ * header, transport strip, progression strip, fretboard stage (fills the
+ * remaining height), the panel slot, and the bottom dock tab bar. All
+ * behavior lives in the shared components passed in.
  */
 export function MobileShell({
   children,
   header,
+  transport,
   track,
   panel,
   dock,
@@ -71,6 +74,7 @@ export function MobileShell({
         </div>
       </div>
       <div className={styles.header}>{header}</div>
+      <div className={styles.transport}>{transport}</div>
       <div className={styles.track}>{track}</div>
       <main
         aria-label={t("mobileShell.stageLabel")}

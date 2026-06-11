@@ -27,6 +27,7 @@ import { ProgressionSummarySlot } from "./components/ProgressionSummarySlot/Prog
 import { MainLayoutWrapper } from "./components/MainLayoutWrapper/MainLayoutWrapper";
 import { MobileShell } from "./components/MobileShell/MobileShell";
 import { MobileDock } from "./components/MobileShell/MobileDock";
+import { ShellTransport } from "./components/MobileShell/ShellTransport";
 import { MobileOverlayPanel } from "./components/MobileShell/MobileOverlayPanel";
 import { MobileSongPanel } from "./components/MobileShell/MobileSongPanel";
 
@@ -215,6 +216,7 @@ function AppContent() {
           layoutTier={layout.tier}
           layoutVariant={layout.variant}
           header={headerNode}
+          transport={<ShellTransport />}
           track={<ProgressionSummarySlot />}
           panel={<MobileOverlayPanel />}
           dock={<MobileDock />}
