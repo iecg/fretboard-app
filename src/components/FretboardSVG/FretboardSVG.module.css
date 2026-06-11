@@ -6,6 +6,7 @@
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
 }
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .fretboard-board {
   box-shadow: 0 10px 30px var(--fretboard-board-shadow);
 }
@@ -19,6 +20,7 @@
 :global([data-layout-variant="tablet-split"]) .fretboard-board {
   box-shadow: none;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .fretboard-neck {
   position: relative;

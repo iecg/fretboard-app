@@ -32,8 +32,9 @@
 @media (max-width: 767px) {
   .banner {
     bottom: calc(
-      var(--mobile-dock-height, 104px) + env(safe-area-inset-bottom, 0px) +
-        var(--space-2)
+      var(--mobile-dock-height, 104px)
+      + env(safe-area-inset-bottom, 0px)
+      + var(--space-2)
     );
   }
 }

@@ -66,7 +66,7 @@ export function DockTransport() {
         className={styles.loop}
         onClick={() => setProgressionLoopEnabled(!progressionLoopEnabled)}
         aria-pressed={progressionLoopEnabled}
-        aria-label="Loop progression"
+        aria-label={t("controls.loopProgression")}
         data-testid="dock-loop"
       >
         <Repeat size={16} strokeWidth={2.4} aria-hidden="true" />

@@ -44,6 +44,7 @@
    Scoped by the data-layout-tier attribute (not .app-container) so the rules
    apply under both shells: MainLayoutWrapper (.app-container) and MobileShell
    both set data-layout-tier on an ancestor. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-layout-tier="tablet"]) .fretboard-wrapper,
 :global([data-layout-tier="desktop"]) .fretboard-wrapper {
   overflow-x: auto;
@@ -68,6 +69,7 @@
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .skeleton-container {
   position: absolute;

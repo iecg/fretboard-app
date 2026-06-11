@@ -11,11 +11,11 @@
 }
 
 .overlay[data-state="open"] {
-  animation: adaptiveOverlayIn 150ms ease-out;
+  animation: adaptive-overlay-in 150ms ease-out;
 }
 
 .overlay[data-state="closed"] {
-  animation: adaptiveOverlayOut 120ms ease-in;
+  animation: adaptive-overlay-out 120ms ease-in;
 }
 
 /* Desktop: centered dialog, mirrors HelpModal surface/elevation tokens. */
@@ -39,26 +39,26 @@
 }
 
 .dialog[data-state="open"] {
-  animation: adaptiveDialogIn 150ms ease-out;
+  animation: adaptive-dialog-in 150ms ease-out;
 }
 
 .dialog[data-state="closed"] {
-  animation: adaptiveDialogOut 120ms ease-in;
+  animation: adaptive-dialog-out 120ms ease-in;
 }
 
-@keyframes adaptiveOverlayIn {
+@keyframes adaptive-overlay-in {
   from {
     opacity: 0;
   }
 }
 
-@keyframes adaptiveOverlayOut {
+@keyframes adaptive-overlay-out {
   to {
     opacity: 0;
   }
 }
 
-@keyframes adaptiveDialogIn {
+@keyframes adaptive-dialog-in {
   from {
     opacity: 0;
     translate: -50% -50%;
@@ -66,7 +66,7 @@
   }
 }
 
-@keyframes adaptiveDialogOut {
+@keyframes adaptive-dialog-out {
   to {
     opacity: 0;
     translate: -50% -50%;

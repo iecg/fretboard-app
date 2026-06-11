@@ -1,3 +1,10 @@
+/* CSS Modules `:global(...)` selectors are pervasive in this file (theme,
+   layout-tier/variant, and the ancestor .app-container / .brand-mark hooks),
+   so the `selector-pseudo-class-no-unknown` rule is disabled file-wide rather
+   than per block. The rule only concerns the `:global` pseudo-class, so this
+   does not weaken linting of anything else. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+
 .app-header {
   display: flex;
   align-items: center;
@@ -189,7 +196,6 @@
 }
 
 /* Light-mode header chrome — warm divider tones instead of faceplate-divider dark navy */
-/* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .app-header-transport {
   border-inline-start-color: rgb(133 124 108 / 0.25);
 }
@@ -209,6 +215,7 @@
   border-bottom: 1px solid rgb(133 124 108 / 0.22);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
+/* (file-wide selector-pseudo-class-no-unknown disable opened at the top.) */
 
 :global([data-layout-tier="mobile"]) .app-header {
   /* Mobile tier renders inside MobileShell (no .app-container padding to

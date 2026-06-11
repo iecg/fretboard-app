@@ -313,6 +313,7 @@ export const es: Dictionary = {
     progressionNavigation: "Navegación de la progresión",
     pauseProgressionTooltip: "Pausar",
     playProgressionTooltip: "Reproducir",
+    loopProgression: "Repetir la progresión",
     stopProgression: "Detener",
     stopProgressionTooltip: "Detener y volver al compás 1",
     presetCustom: "Personalizada",

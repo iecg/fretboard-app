@@ -83,9 +83,11 @@
 }
 
 /* Mobile tier + sheet placement: tighten card padding so the controls keep
-   breathing room against the rest of the inspector. The sheet hook covers
-   tablet-split, where the vaul portal re-stamps tier="tablet" and the
-   mobile-tier guard alone wouldn't reach. */
+   breathing room against the rest of the inspector. The data-placement="sheet"
+   hook covers the mobile dock panels (and tablet-split), whose Song panel is
+   portaled outside the shell's tier attribute, so the mobile-tier guard alone
+   wouldn't reach. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-layout-tier="mobile"]) .cardHead,
 :global([data-placement="sheet"]) .cardHead {
   padding: 0.5rem 0.75rem;
@@ -115,6 +117,7 @@
 :global([data-placement="sheet"]) .card {
   border-radius: 8px;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .card[data-locked="true"] .cardHeadActions {
   cursor: not-allowed;

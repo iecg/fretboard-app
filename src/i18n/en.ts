@@ -313,6 +313,7 @@ export const en: Dictionary = {
     progressionNavigation: "Progression navigation",
     pauseProgressionTooltip: "Pause",
     playProgressionTooltip: "Play",
+    loopProgression: "Loop progression",
     stopProgression: "Stop",
     stopProgressionTooltip: "Stop and return to bar 1",
     presetCustom: "Custom",

@@ -55,6 +55,7 @@
    transport readout and sits alone in the brand↔actions gap — scale it up so
    the tempo is legible at arm's length. The desktop cluster (desktop tier)
    keeps the dense sizes above. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-layout-tier="mobile"]) .readout,
 :global([data-layout-variant="tablet-split"]) .readout {
   gap: 0.1rem;
@@ -76,6 +77,7 @@
 :global([data-layout-variant="tablet-split"]) .tempoUnit {
   font-size: 0.55rem;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 /* Light-mode flip — PANEL chip + warm hairline, CYAN teal value, INK muted
    text. Literal values mirror HeaderTransportCluster's light token flip so

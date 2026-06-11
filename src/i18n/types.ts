@@ -282,6 +282,7 @@ export interface Dictionary {
     progressionNavigation: string;
     pauseProgressionTooltip: string;
     playProgressionTooltip: string;
+    loopProgression: string;
     stopProgression: string;
     stopProgressionTooltip: string;
     presetCustom: string;
