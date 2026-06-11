@@ -19,6 +19,8 @@
 }
 
 .stage {
+  /* Positioning context for the floating StageZoomControl. */
+  position: relative;
   flex: 1;
   min-height: 0;
   min-width: 0;

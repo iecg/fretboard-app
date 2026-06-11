@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "../../hooks/useTranslation";
 import { mobilePanelAtom } from "../../store/uiAtoms";
+import { StageZoomControl } from "./StageZoomControl";
 import styles from "./MobileShell.module.css";
 
 interface MobileShellProps {
@@ -77,6 +78,7 @@ export function MobileShell({
         data-testid="mobile-stage"
       >
         {children}
+        <StageZoomControl />
       </main>
       {panel}
       {dock}

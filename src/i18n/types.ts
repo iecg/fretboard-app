@@ -317,6 +317,8 @@ export interface Dictionary {
   };
   mobileDock: {
     label: string;
+    zoomIn: string;
+    zoomOut: string;
   };
   mobilePanels: {
     closeOverlay: string;

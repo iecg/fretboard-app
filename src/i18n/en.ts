@@ -348,6 +348,8 @@ export const en: Dictionary = {
   },
   mobileDock: {
     label: "Playback and controls",
+    zoomIn: "Zoom in on the fretboard",
+    zoomOut: "Zoom out on the fretboard",
   },
   mobilePanels: {
     closeOverlay: "Close overlay panel",

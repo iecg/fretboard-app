@@ -348,6 +348,8 @@ export const es: Dictionary = {
   },
   mobileDock: {
     label: "Reproducción y controles",
+    zoomIn: "Acercar el diapasón",
+    zoomOut: "Alejar el diapasón",
   },
   mobilePanels: {
     closeOverlay: "Cerrar panel de superposición",
