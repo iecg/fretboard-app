@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectFullPageVisual, loadVisualState } from "./visual-helpers";
+import { expectFullPageVisual, loadVisualState, openMobilePanel } from "./visual-helpers";
 
 const linuxTolerance =
   process.platform === "linux" ? { maxDiffPixels: 12000 } : undefined;
@@ -36,19 +36,17 @@ test.describe("Progression Visual", () => {
           { id: "one", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "two", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
-        // Inspector tabs live inside the bottom sheet; "full" exposes them.
-        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );
 
-    // Navigate to the Song tab in the Inspector sheet tab bar.
-    await page.getByRole("tab", { name: "Song" }).click();
+    // Open the full-screen Song panel via its dock toggle.
+    await openMobilePanel(page, "song");
 
     await expect(page.getByRole("button", { name: "Sequence" })).toBeVisible();
-    // The shell's top-band ProgressionTrack is painted but vaul marks the
-    // sheet's background aria-hidden while the drawer is open, so role-based
-    // queries skip it — assert via the attribute selector instead.
+    // The shell's top-band ProgressionTrack is painted behind the modal Song
+    // panel (Radix aria-hides the background), so role-based queries skip it —
+    // assert via the attribute selector instead.
     await expect(page.locator('[aria-label="Progression track"]')).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-390x844", linuxTolerance);
   });
@@ -70,13 +68,12 @@ test.describe("Progression Visual", () => {
           { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
         // Inspector tabs live inside the bottom sheet; "full" exposes them.
-        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );
 
-    // Navigate to the Song tab in the Inspector sheet tab bar.
-    await page.getByRole("tab", { name: "Song" }).click();
+    // Open the full-screen Song panel via its dock toggle.
+    await openMobilePanel(page, "song");
 
     await expect(page.locator('[aria-label="Progression track"]')).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-long-390x844", linuxTolerance);
@@ -99,13 +96,12 @@ test.describe("Progression Visual", () => {
           { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
         // Inspector tabs live inside the bottom sheet; "full" exposes them.
-        mobileSheetSnap: "full",
       },
       { width: 375, height: 667 },
     );
 
-    // Navigate to the Song tab in the Inspector sheet tab bar.
-    await page.getByRole("tab", { name: "Song" }).click();
+    // Open the full-screen Song panel via its dock toggle.
+    await openMobilePanel(page, "song");
 
     await expect(page.locator('[aria-label="Progression track"]')).toBeVisible();
     await expectFullPageVisual(page, "progression-mobile-long-375x667", linuxTolerance);
@@ -157,15 +153,14 @@ test.describe("Progression Visual", () => {
           { id: "s8", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
         ],
         // Inspector tabs live inside the bottom sheet; "full" exposes them.
-        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );
 
     // The step list lives in the Inspector Song tab.
-    await page.getByRole("tab", { name: "Song" }).click();
+    await openMobilePanel(page, "song");
 
-    // vaul marks the sheet's background aria-hidden while open, so the top-band
+    // The modal Song panel aria-hides the background, so the top-band
     // track is skipped by role queries — locate it via the attribute selector.
     const track = page.locator('[aria-label="Progression track"]');
     await expect(track).toBeVisible();

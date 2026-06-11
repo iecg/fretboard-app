@@ -43,13 +43,17 @@ export interface VisualState {
     qualityOverride: string | null;
   }>;
   fingeringPattern?: string;
-  /**
-   * Mobile bottom-sheet snap position (sheet shell only). Seeds the
-   * `<prefix>mobileSheetSnap` localStorage key so the vaul sheet boots at a
-   * deterministic snap ("peek" | "half" | "full") for snapshots.
-   */
-  mobileSheetSnap?: "peek" | "half" | "full";
   [key: string]: unknown;
+}
+
+/**
+ * Opens a mobile dock panel (sheet shell only). The panel atom is
+ * deliberately not persisted, so specs open panels through the dock toggles
+ * exactly like a user. Waits for the panel surface to be visible.
+ */
+export async function openMobilePanel(page: Page, panel: "overlay" | "song") {
+  await page.getByTestId(`dock-toggle-${panel}`).click();
+  await expect(page.getByTestId(`mobile-${panel}-panel`)).toBeVisible();
 }
 
 /**

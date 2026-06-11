@@ -1,17 +1,20 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Regression guard for the persistent mobile bottom sheet's accessibility.
+ * Accessibility contract for the mobile dock shell.
  *
- * The always-open, non-modal `MobileSheet` is a vaul `Drawer` rendered with
- * `modal={false}`. vaul 1.1.2 fails to forward that prop to the underlying
- * Radix Dialog, so Radix runs its modal `hideOthers()` and permanently marks
- * the shell (header / progression track / fretboard stage) `aria-hidden="true"`
- * — making the whole app invisible to VoiceOver / TalkBack. `MobileShell`
- * counteracts this with `useUnhideMobileShell`, while still allowing the
- * genuinely-modal Settings / Help sheets to hide the background.
+ * History: the previous always-open vaul sheet failed to forward
+ * `modal={false}` to Radix, which permanently aria-hid the whole shell and
+ * required a MutationObserver workaround. The dock architecture removed the
+ * persistent drawer entirely, so the contract is now:
  *
- * These tests assert both halves of that contract on a mobile viewport.
+ * 1. By default NOTHING aria-hides the shell (regression guard against any
+ *    future broken non-modal dialog).
+ * 2. Genuine modals (Settings sheet, the full-screen Song panel) DO hide the
+ *    background while open and restore it on close — Radix's refcounted
+ *    hideOthers, now working unassisted.
+ * 3. The non-modal Overlay panel does NOT hide the stage (the board must stay
+ *    operable while tweaking overlay controls).
  */
 
 const MOBILE = { width: 390, height: 844 } as const;
@@ -20,8 +23,7 @@ async function gotoMobile(page: Page) {
   await page.setViewportSize({ width: MOBILE.width, height: MOBILE.height });
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator('[data-testid="mobile-shell"]')).toBeVisible();
-  // The persistent sheet is always mounted.
-  await expect(page.locator('[data-testid="mobile-sheet"]')).toBeVisible();
+  await expect(page.locator('[data-testid="mobile-dock"]')).toBeVisible();
 }
 
 function shellHiddenState(page: Page) {
@@ -38,11 +40,17 @@ function shellHiddenState(page: Page) {
           }
         : null;
     return {
+      shellAriaHidden: shell?.getAttribute("aria-hidden") ?? null,
+      // The shell hosts an aria-live region (rotate overlay), so the
+      // aria-hidden package descends into it and hides individual children
+      // (stage/header/track) rather than the shell or #root — "effectively
+      // hidden" checks the stage's own ancestor chain.
+      stageEffectivelyHidden: !!stage?.closest('[aria-hidden="true"]'),
       stage: read(stage),
       header: read(header),
       track: read(track),
-      // Count of elements still carrying the aria-hidden package's spurious
-      // marker inside the shell (should be 0 when no modal is open).
+      // Count of elements carrying the aria-hidden package's marker inside
+      // the shell (should be 0 when no modal is open).
       spuriousMarkerCount: shell
         ? shell.querySelectorAll('[data-aria-hidden="true"]').length
         : -1,
@@ -50,35 +58,67 @@ function shellHiddenState(page: Page) {
   });
 }
 
-test.describe("mobile persistent sheet accessibility", () => {
-  test("does not aria-hide the fretboard, header, or track while the persistent sheet is open", async ({
-    page,
-  }) => {
+test.describe("mobile dock shell accessibility", () => {
+  test("nothing aria-hides the shell by default", async ({ page }) => {
     await gotoMobile(page);
 
     const state = await shellHiddenState(page);
-
-    // The fretboard stage must be reachable by assistive tech.
+    expect(state.shellAriaHidden).toBeNull();
     expect(state.stage).not.toBeNull();
     expect(state.stage!.ariaHidden).toBeNull();
     expect(state.stage!.dataAriaHidden).toBeNull();
-
-    // Header and progression track too.
     expect(state.header).not.toBeNull();
     expect(state.header!.ariaHidden).toBeNull();
     expect(state.track).not.toBeNull();
     expect(state.track!.ariaHidden).toBeNull();
-
-    // No element under the shell carries the aria-hidden package's marker.
     expect(state.spuriousMarkerCount).toBe(0);
-
-    // The persistent sheet's own content must remain reachable (it is the
-    // dialog labeled by its visually-hidden Title).
-    const sheetDialog = page.getByRole("dialog");
-    await expect(sheetDialog.first()).toBeVisible();
   });
 
-  test("still hides the background for the modal Settings sheet, and restores it on close", async ({
+  test("the non-modal Overlay panel keeps the stage reachable", async ({ page }) => {
+    await gotoMobile(page);
+
+    await page.getByTestId("dock-toggle-overlay").click();
+    await expect(page.getByTestId("mobile-overlay-panel")).toBeVisible();
+
+    const state = await shellHiddenState(page);
+    // The board must remain operable while the Overlay panel is open.
+    expect(state.shellAriaHidden).toBeNull();
+    expect(state.stage!.ariaHidden).toBeNull();
+    expect(state.spuriousMarkerCount).toBe(0);
+
+    // And the panel is a labelled non-modal dialog.
+    const panel = page.getByTestId("mobile-overlay-panel");
+    await expect(panel).toHaveAttribute("role", "dialog");
+    await expect(panel).not.toHaveAttribute("aria-modal", "true");
+  });
+
+  test("the modal Song panel hides the background and restores it on close", async ({
+    page,
+  }) => {
+    await gotoMobile(page);
+
+    await page.getByTestId("dock-toggle-song").click();
+    await expect(page.getByTestId("mobile-song-panel")).toBeVisible();
+
+    // Modal behavior: the background shell IS hidden from assistive tech
+    // while the Song panel is open (Radix hideOthers marks the shell or one
+    // of its ancestors aria-hidden).
+    await expect
+      .poll(async () => (await shellHiddenState(page)).stageEffectivelyHidden)
+      .toBe(true);
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("mobile-song-panel")).toHaveCount(0);
+
+    await expect
+      .poll(async () => (await shellHiddenState(page)).stageEffectivelyHidden)
+      .toBe(false);
+    const restored = await shellHiddenState(page);
+    expect(restored.stage!.ariaHidden).toBeNull();
+    expect(restored.spuriousMarkerCount).toBe(0);
+  });
+
+  test("the modal Settings sheet hides the background and restores it on close", async ({
     page,
   }) => {
     await gotoMobile(page);
@@ -86,24 +126,20 @@ test.describe("mobile persistent sheet accessibility", () => {
     // Open Settings via the overflow menu (mobile presents actions in a menu).
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Settings" }).click();
-
-    // The modal Settings sheet is now open.
     await expect(page.locator('[data-testid="adaptive-modal-sheet"]')).toBeVisible();
 
-    // Modal behavior: the background shell IS aria-hidden while Settings is open.
-    const open = await shellHiddenState(page);
-    expect(open.stage!.ariaHidden).toBe("true");
+    await expect
+      .poll(async () => (await shellHiddenState(page)).stageEffectivelyHidden)
+      .toBe(true);
 
-    // Close Settings (Escape dismisses the vaul modal sheet).
     await page.keyboard.press("Escape");
     await expect(
       page.locator('[data-testid="adaptive-modal-sheet"]'),
     ).toHaveCount(0);
 
-    // The observer re-asserts: the shell is reachable again.
     await expect
-      .poll(async () => (await shellHiddenState(page)).stage!.ariaHidden)
-      .toBeNull();
+      .poll(async () => (await shellHiddenState(page)).stageEffectivelyHidden)
+      .toBe(false);
     const restored = await shellHiddenState(page);
     expect(restored.spuriousMarkerCount).toBe(0);
   });

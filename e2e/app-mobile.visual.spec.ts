@@ -3,18 +3,19 @@ import {
   prepareVisualPage,
   expectFullPageVisual,
   loadVisualState,
+  openMobilePanel,
 } from "./visual-helpers";
 
 /**
- * Mobile visual coverage for the sheet shell (`MobileShell` + vaul
- * `MobileSheet`). The old scrolling `app-container` / `main-fretboard` layout
- * with an in-flow Inspector tablist is gone — assertions now target the shell
- * (`mobile-shell` / `mobile-stage`), the always-visible peek transport
- * (`peek-transport`), and the portaled sheet (`mobile-sheet`).
+ * Mobile visual coverage for the dock shell (`MobileShell` + `MobileDock` +
+ * the Overlay / Song panels). Assertions target the shell (`mobile-shell` /
+ * `mobile-stage`), the always-visible dock (`mobile-dock` / `dock-transport`),
+ * and the panels (`mobile-overlay-panel` / `mobile-song-panel`).
  *
- * Sheet snap is persisted in `<prefix>mobileSheetSnap`; `loadVisualState` seeds
- * it via the `mobileSheetSnap` VisualState field so the vaul sheet boots at a
- * deterministic snap ("peek" | "half" | "full") instead of animating into one.
+ * The panel atom is deliberately not persisted, so panel scenarios open via
+ * the dock toggles (openMobilePanel). With reduced-motion + the animation
+ * detox injected by loadVisualState the panels render at their final position
+ * without an entrance animation, so the captures are deterministic.
  */
 test.describe("App Mobile Visual", () => {
   test("app-mobile-portrait-390x844", async ({ page }) => {
@@ -22,7 +23,7 @@ test.describe("App Mobile Visual", () => {
 
     await expect(page.getByTestId("mobile-shell")).toBeVisible();
     await expect(page.getByTestId("mobile-stage")).toBeVisible();
-    await expect(page.getByTestId("peek-transport")).toBeVisible();
+    await expect(page.getByTestId("dock-transport")).toBeVisible();
 
     await expectFullPageVisual(page, "app-mobile-portrait-390x844");
   });
@@ -31,7 +32,7 @@ test.describe("App Mobile Visual", () => {
     await loadVisualState(page, { theme: "light" }, { width: 390, height: 844 });
 
     await expect(page.getByTestId("mobile-shell")).toBeVisible();
-    await expect(page.getByTestId("peek-transport")).toBeVisible();
+    await expect(page.getByTestId("dock-transport")).toBeVisible();
 
     await expectFullPageVisual(page, "app-mobile-light-portrait-390x844");
   });
@@ -48,70 +49,39 @@ test.describe("App Mobile Visual", () => {
     await expectFullPageVisual(page, "app-mobile-landscape-667x375");
   });
 
-  // ─── Sheet snap scenarios ──────────────────────────────────────────────────
-  // Seed `mobileSheetSnap` so the vaul sheet boots already at the target snap.
-  // With reduced-motion + the animation detox injected by loadVisualState the
-  // sheet renders at its final translate without an entrance animation, so the
-  // full-page captures are deterministic.
+  // ─── Dock panel scenarios ──────────────────────────────────────────────────
 
-  test("app-mobile-sheet-peek-390x844", async ({ page }) => {
-    await loadVisualState(
-      page,
-      { mobileSheetSnap: "peek" },
-      { width: 390, height: 844 },
-    );
+  test("app-mobile-dock-390x844", async ({ page }) => {
+    await loadVisualState(page, {}, { width: 390, height: 844 });
 
     await expect(page.getByTestId("mobile-shell")).toBeVisible();
-    const sheet = page.getByTestId("mobile-sheet");
-    await expect(sheet).toBeVisible();
-    // Only the mini-player row shows; the body is visibility:hidden at peek.
-    await expect(page.getByTestId("peek-transport")).toBeVisible();
+    await expect(page.getByTestId("mobile-dock")).toBeVisible();
+    await expect(page.getByTestId("dock-toggle-overlay")).toBeVisible();
+    await expect(page.getByTestId("dock-toggle-song")).toBeVisible();
+    await expect(page.getByTestId("stage-zoom")).toBeVisible();
 
-    await expectFullPageVisual(page, "app-mobile-sheet-peek-390x844");
+    await expectFullPageVisual(page, "app-mobile-dock-390x844");
   });
 
-  test("app-mobile-sheet-half-390x844", async ({ page }) => {
-    await loadVisualState(
-      page,
-      { mobileSheetSnap: "half" },
-      { width: 390, height: 844 },
-    );
+  test("app-mobile-overlay-panel-390x844", async ({ page }) => {
+    await loadVisualState(page, {}, { width: 390, height: 844 });
 
-    await expect(page.getByTestId("mobile-sheet")).toBeVisible();
-    // Expanded — Inspector tabs + Overlay content are now reachable.
-    await expect(page.getByRole("tab", { name: "Overlay" })).toBeVisible();
+    await openMobilePanel(page, "overlay");
+    // The Overlay tab content hosts inside the anchored panel; the board
+    // stays visible above it.
     await expect(page.getByTestId("view-tab")).toBeVisible();
+    await expect(page.getByTestId("mobile-stage")).toBeVisible();
 
-    await expectFullPageVisual(page, "app-mobile-sheet-half-390x844");
+    await expectFullPageVisual(page, "app-mobile-overlay-panel-390x844");
   });
 
-  test("app-mobile-sheet-full-390x844", async ({ page }) => {
-    await loadVisualState(
-      page,
-      { mobileSheetSnap: "full" },
-      { width: 390, height: 844 },
-    );
+  test("app-mobile-song-panel-390x844", async ({ page }) => {
+    await loadVisualState(page, {}, { width: 390, height: 844 });
 
-    await expect(page.getByTestId("mobile-sheet")).toBeVisible();
-    await expect(page.getByRole("tab", { name: "Overlay" })).toBeVisible();
-    await expect(page.getByTestId("view-tab")).toBeVisible();
-
-    await expectFullPageVisual(page, "app-mobile-sheet-full-390x844");
-  });
-
-  test("app-mobile-sheet-song-390x844", async ({ page }) => {
-    await loadVisualState(
-      page,
-      { mobileSheetSnap: "full" },
-      { width: 390, height: 844 },
-    );
-
-    await expect(page.getByTestId("mobile-sheet")).toBeVisible();
-    // Switch to the Song tab — key/scale, progression, time signature, tempo,
-    // backing track + Instruments toggles.
-    await page.getByRole("tab", { name: "Song" }).click();
+    await openMobilePanel(page, "song");
+    // Full-screen Song setup: preset, key/scale, time, progression editor.
     await expect(page.getByRole("button", { name: "Sequence" })).toBeVisible();
 
-    await expectFullPageVisual(page, "app-mobile-sheet-song-390x844");
+    await expectFullPageVisual(page, "app-mobile-song-panel-390x844");
   });
 });

@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { loadVisualState } from "./visual-helpers";
+import { loadVisualState, openMobilePanel } from "./visual-helpers";
 
 /**
  * Resolve a CSS custom property to the browser's COMPUTED color string, matching
@@ -152,22 +152,15 @@ test.describe("Theme Contract", () => {
   });
 
 
-  test("Inspector sheet tabs use theme-appropriate active indicators", async ({ page }) => {
-    // The legacy fixed bottom tab bar (placement="bottom") was removed. On
-    // mobile the Inspector now renders inside the vaul bottom sheet with
-    // placement="sheet"; seed the sheet open at "full" so the tabs are above
-    // the fold. The active tab carries a non-transparent accent underline
-    // (border-bottom), which is the active-indicator contract worth keeping.
-    await loadVisualState(
-      page,
-      { theme: "dark", mobileSheetSnap: "full" },
-      { width: 390, height: 844 },
-    );
-    const activeTab = page.locator(
-      '[data-placement="sheet"] [role="tab"][data-state="active"]',
-    );
-    await expect(activeTab).toBeVisible();
-    const borderBottomColor = await activeTab.evaluate(
+  test("mobile dock toggles use theme-appropriate active indicators", async ({ page }) => {
+    // The dock's panel toggles reuse the Inspector tab visual language: an
+    // open toggle carries a non-transparent accent underline (border-bottom) —
+    // the active-indicator contract worth keeping across themes.
+    await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
+    await openMobilePanel(page, "overlay");
+    const openToggle = page.locator('[data-testid="dock-toggle-overlay"][data-state="open"]');
+    await expect(openToggle).toBeVisible();
+    const borderBottomColor = await openToggle.evaluate(
       (el) => getComputedStyle(el).borderBottomColor,
     );
     expect(borderBottomColor).not.toBe("rgba(0, 0, 0, 0)");

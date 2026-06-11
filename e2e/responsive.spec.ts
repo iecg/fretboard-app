@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { loadVisualState, openSettings } from "./visual-helpers";
+import { loadVisualState, openMobilePanel, openSettings } from "./visual-helpers";
 
 /**
  * Navigates to the app and waits for whichever shell root mounts.
@@ -246,9 +246,9 @@ test.describe("responsive layout regressions", () => {
       // Compact header stays within a sane bound.
       expect(metrics.headerRect!.height, name).toBeLessThanOrEqual(96);
 
-      // Transport is now the peek mini-player at the bottom sheet's top edge —
+      // Transport is the dock mini-player row at the bottom of the shell —
       // assert it (and its play button) stay within the viewport.
-      const peek = page.getByTestId("peek-transport");
+      const peek = page.getByTestId("dock-transport");
       await expect(peek, name).toBeVisible();
       const peekRect = await peek.evaluate((el) => {
         const r = el.getBoundingClientRect();
@@ -262,7 +262,7 @@ test.describe("responsive layout regressions", () => {
       expect(peekRect.right, name).toBeLessThanOrEqual(viewport.width);
       expect(peekRect.bottom, name).toBeLessThanOrEqual(viewport.height + 1);
 
-      await expect(page.getByTestId("peek-play"), name).toBeVisible();
+      await expect(page.getByTestId("dock-play"), name).toBeVisible();
     }
   });
 
@@ -401,11 +401,11 @@ test.describe("responsive layout regressions", () => {
       { width: 390, height: 844, name: "390x844" },
       { width: 375, height: 667, name: "375x667" },
     ]) {
-      // Seed the sheet open at "full" so the Inspector tabs + Overlay controls
-      // are above the fold and interactive.
-      await loadVisualState(page, { mobileSheetSnap: "full" }, viewport);
+      await loadVisualState(page, {}, viewport);
 
-      await page.getByRole("tab", { name: "Overlay" }).click();
+      // Open the Overlay panel via its dock toggle (the panel atom is not
+      // persisted, so panels open exactly like a user would).
+      await openMobilePanel(page, "overlay");
 
       const voicing = page.getByRole("combobox", { name: "Voicing" });
       await expect(voicing, viewport.name).toBeVisible();
@@ -456,9 +456,6 @@ test.describe("responsive layout regressions", () => {
     await loadVisualState(
       page,
       {
-        // Seed the sheet open at "full" so the Song tab content is above the
-        // fold and reachable inside the bottom sheet.
-        mobileSheetSnap: "full",
         progressionSteps: [
           { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
@@ -473,8 +470,7 @@ test.describe("responsive layout regressions", () => {
       { width: 390, height: 844 },
     );
 
-    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
-    await page.getByRole("tab", { name: "Song" }).click();
+    await openMobilePanel(page, "song");
 
     // The chord list <ul> carries the "Progression navigation" accessible name;
     // it only renders once a step is active (the seeded progression has steps).
@@ -498,8 +494,6 @@ test.describe("responsive layout regressions", () => {
     await loadVisualState(
       page,
       {
-        // Seed the sheet open at "full" so the Song tab content is reachable.
-        mobileSheetSnap: "full",
         progressionSteps: [
           { id: "s1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null },
           { id: "s2", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null },
@@ -514,8 +508,7 @@ test.describe("responsive layout regressions", () => {
       { width: 390, height: 844 },
     );
 
-    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
-    await page.getByRole("tab", { name: "Song" }).click();
+    await openMobilePanel(page, "song");
 
     const list = page.locator('[aria-label="Progression navigation"]');
     await expect(list).toBeVisible();
@@ -535,10 +528,9 @@ test.describe("responsive layout regressions", () => {
       { width: 390, height: 844, name: "390x844" },
       { width: 375, height: 667, name: "375x667" },
     ]) {
-      // Seed the sheet open at "full" so the Song tab + preset menu trigger are
-      // above the fold.
-      await loadVisualState(page, { mobileSheetSnap: "full" }, viewport);
-      await page.getByRole("tab", { name: "Song" }).click();
+      await loadVisualState(page, {}, viewport);
+      // The preset menu trigger lives in the full-screen Song panel.
+      await openMobilePanel(page, "song");
 
       // The PresetMenu trigger's accessible name is the translated
       // `inspector.progressionLabel` ("Sequence"), not "preset".

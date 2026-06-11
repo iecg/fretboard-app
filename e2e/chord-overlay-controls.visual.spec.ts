@@ -12,7 +12,7 @@
  *   3. Mobile dark   — 390x844, manual mode
  */
 import { expect, test } from "@playwright/test";
-import { loadVisualState, expectFullPageVisual } from "./visual-helpers";
+import { loadVisualState, expectFullPageVisual, openMobilePanel } from "./visual-helpers";
 
 const linuxTolerance =
   process.platform === "linux" ? { maxDiffPixels: 12000 } : undefined;
@@ -72,16 +72,12 @@ test.describe("Chord Overlay Controls Visual", () => {
         chordOverlayMode: "manual",
         chordQualityOverride: "M",
         chordRootOverride: "C",
-        // Mobile rehost: the Inspector tabs live inside the bottom sheet, which
-        // boots at "peek" (body hidden) by default. Seed "full" so the Overlay
-        // tab + ChordOverlayControls are visible/clickable.
-        mobileSheetSnap: "full",
       },
       { width: 390, height: 844 },
     );
 
-    // Activate the Overlay tab so ChordOverlayControls is visible.
-    await page.getByRole("tab", { name: "Overlay" }).click();
+    // Open the Overlay panel so ChordOverlayControls is visible.
+    await openMobilePanel(page, "overlay");
 
     // Wait for the Voicing dropdown to confirm the panel is mounted.
     // (The Lens selector row sits below Voicing.)
