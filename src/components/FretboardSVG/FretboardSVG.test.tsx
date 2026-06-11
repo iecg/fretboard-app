@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import type { ComponentProps } from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
 import "../../styles/index.css";
 import "../../styles/themes.css";
@@ -10,6 +11,7 @@ import { axe } from "../../test-utils/a11y";
 import { resolveFretboardMotionPolicy } from "./motionPolicy";
 
 import { renderWithStore } from "../../test-utils/renderWithAtoms";
+import { useEmphasisContext } from "./hooks/useEmphasisContext";
 import { createStore } from "jotai";
 import {
   setProgressionPlayingAtom,
@@ -24,6 +26,17 @@ vi.mock("./motionPolicy", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./motionPolicy")>();
   return { ...actual, resolveFretboardMotionPolicy: vi.fn().mockImplementation(actual.resolveFretboardMotionPolicy) };
 });
+
+/**
+ * Mirrors the production wiring for seeded-store playback tests: the Fretboard
+ * shell reads the emphasis context (same render/store snapshot as the chord
+ * identity) and passes it down as a prop — FretboardSVG no longer subscribes
+ * to the emphasis atoms itself (see the `emphasisContext` prop doc).
+ */
+function FretboardSVGWithEmphasis(props: ComponentProps<typeof FretboardSVG>) {
+  const emphasisContext = useEmphasisContext((props.chordTones ?? []).length > 0);
+  return <FretboardSVG {...props} emphasisContext={emphasisContext} />;
+}
 
 
 
@@ -579,7 +592,7 @@ describe("FretboardSVG/FretboardSVG", () => {
     store.set(progressionStepDeadlineAtom, Date.now() + 100);
 
     const { container } = renderWithStore(
-      <FretboardSVG
+      <FretboardSVGWithEmphasis
         {...BASE_PROPS}
         {...C_MAJOR}
         highlightNotes={["C", "E", "G", "B", "D"]}
@@ -861,7 +874,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(progressionStepDeadlineAtom, Date.now() + 100);
 
       renderWithStore(
-        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        <FretboardSVGWithEmphasis {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
         store,
       );
       const board = screen.getByTestId("fretboard-svg");
@@ -887,7 +900,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(progressionStepDeadlineAtom, Date.now() + stepMs * 3);
 
       renderWithStore(
-        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        <FretboardSVGWithEmphasis {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
         store,
       );
       const board = screen.getByTestId("fretboard-svg");
@@ -908,7 +921,7 @@ describe("FretboardSVG/FretboardSVG", () => {
       store.set(progressionStepDeadlineAtom, Date.now() + 100);
 
       const { container } = renderWithStore(
-        <FretboardSVG {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
+        <FretboardSVGWithEmphasis {...BASE_PROPS} {...C_MAJOR} highlightNotes={["C", "E", "G", "B", "D"]} />,
         store,
       );
 

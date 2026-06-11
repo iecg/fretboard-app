@@ -2,8 +2,6 @@ import { useProgressionState } from "../../hooks/useProgressionState";
 import { useTranslation } from "../../hooks/useTranslation";
 import useLayoutMode from "../../hooks/useLayoutMode";
 import { GENRE_STYLES } from "../../progressions/audio/genres";
-import { CHORD_PATTERNS, BASS_PATTERNS, DRUM_PATTERNS } from "../../progressions/audio/patterns";
-import type { ChordInstrumentId } from "../../progressions/audio/instruments/types";
 import { InstrumentToggleCluster } from "../TransportBar/InstrumentToggleCluster";
 import { Prop, GroupHeader } from "../Inspector/InspectorGrid";
 
@@ -12,35 +10,20 @@ export interface BackingTrackControlsProps {
   hideHeader?: boolean;
 }
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
-import styles from "./BackingTrackControls.module.css";
 
 /**
- * The BACKING TRACK group of the Progression tab — genre, chord instrument,
- * the chord/bass/drum pattern pickers, and the swing slider. Rehosted here
- * from `ProgressionTrack` (DAW Shell Phase 11). Returns a fragment of a
- * `GroupHeader` plus `Prop` cells, designed to be rendered inside the
- * Progression tab's `PropGrid`.
+ * The BACKING TRACK group of the Progression tab. Exposes only the genre
+ * selector — patterns and swing are bundled into each genre preset rather
+ * than offered as individual knobs.
  */
 export function BackingTrackControls({ hideHeader = false }: BackingTrackControlsProps = {}) {
   const { t } = useTranslation();
   // The four instrument on/off toggles only get a home here on touch/sheet
   // shells — on desktop the header TransportBar already hosts them, so showing
-  // them in the Song tab too would duplicate the controls.
+  // them in the Song tab too would duplicate the controls. (Patterns and swing
+  // are no longer individual knobs — they're bundled into each genre preset.)
   const { useSheetShell } = useLayoutMode();
-  const {
-    progressionGenreStyle,
-    applyGenreStyle,
-    progressionChordInstrument,
-    setProgressionChordInstrument,
-    progressionChordPattern,
-    setProgressionChordPattern,
-    progressionBassPattern,
-    setProgressionBassPattern,
-    progressionDrumPattern,
-    setProgressionDrumPattern,
-    progressionSwing,
-    setProgressionSwing,
-  } = useProgressionState();
+  const { progressionGenreStyle, applyGenreStyle } = useProgressionState();
 
   return (
     <>
@@ -65,62 +48,6 @@ export function BackingTrackControls({ hideHeader = false }: BackingTrackControl
           ]}
           onChange={applyGenreStyle}
         />
-      </Prop>
-      <Prop label={t("inspector.btInstrument")} span={1}>
-        <LabeledSelect
-          label="Chord instrument"
-          hideLabel
-          value={progressionChordInstrument}
-          options={[
-            { value: "strum", label: "Strum" },
-            { value: "piano", label: "Piano" },
-            { value: "organ", label: "Organ" },
-          ]}
-          onChange={(v) => setProgressionChordInstrument(v as ChordInstrumentId)}
-        />
-      </Prop>
-      <Prop label={t("inspector.btChordPattern")} span={1}>
-        <LabeledSelect
-          label="Chord pattern"
-          hideLabel
-          value={progressionChordPattern}
-          options={CHORD_PATTERNS.map((p) => ({ value: p.id, label: p.label }))}
-          onChange={setProgressionChordPattern}
-        />
-      </Prop>
-      <Prop label={t("inspector.btBassPattern")} span={1}>
-        <LabeledSelect
-          label="Bass pattern"
-          hideLabel
-          value={progressionBassPattern}
-          options={BASS_PATTERNS.map((p) => ({ value: p.id, label: p.label }))}
-          onChange={setProgressionBassPattern}
-        />
-      </Prop>
-      <Prop label={t("inspector.btDrumPattern")} span={1}>
-        <LabeledSelect
-          label="Drum pattern"
-          hideLabel
-          value={progressionDrumPattern}
-          options={DRUM_PATTERNS.map((p) => ({ value: p.id, label: p.label }))}
-          onChange={setProgressionDrumPattern}
-        />
-      </Prop>
-      <Prop label={t("inspector.btSwing")} span={1}>
-        <div className={styles.swing}>
-          <input
-            type="range"
-            min={0}
-            max={0.5}
-            step={0.01}
-            value={progressionSwing}
-            onChange={(e) => setProgressionSwing(Number(e.target.value))}
-            aria-label="Swing amount"
-            className={styles.swingRange}
-            style={{ ["--swing-fill" as string]: `${(progressionSwing / 0.5) * 100}%` }}
-          />
-          <span className={styles.swingValue}>{Math.round(progressionSwing * 100)}%</span>
-        </div>
       </Prop>
     </>
   );

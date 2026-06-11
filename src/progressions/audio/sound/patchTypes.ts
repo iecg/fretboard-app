@@ -40,9 +40,9 @@ export interface BassPatch {
   insert?: InsertSpec;
 }
 
-export type ChordFamily = "poly" | "strum";
-
-/** Params for a PolySynth-based chord voice (piano / e-piano / organ). */
+/** Params for the PolySynth-based chord voice (piano / e-piano). The chord
+ *  layer is piano-only — synthesized guitar strums were dropped after multiple
+ *  attempts (additive and Karplus-Strong) never read as a guitar. */
 export interface PolyChordSpec {
   volume: number; // dB
   maxPolyphonyFloor: number;
@@ -53,40 +53,10 @@ export interface PolyChordSpec {
   shortDurationSec: number;
 }
 
-/** Subtractive single-coil-guitar params (Tone.MonoSynth): an oscillator through
- *  a lowpass with a snappy filter envelope (the pick "spank") + an amp envelope.
- *  Present instead of `pluck`/`oscillator` for the funk guitar strum patch. */
-export interface MonoSynthVoiceSpec {
-  oscillator: { type: OscillatorType };
-  filter: { type: "lowpass"; Q: number };
-  filterEnvelope: FilterEnvelopeSpec;
-  envelope: EnvelopeSpec;
-}
-
-/** Params for the strum voice. The source is subtractive (`oscillator` +
- *  `envelope`) or a mono-synth single-coil (`mono`);
- *  `strumLagSec` overrides the per-note strum stagger.
- *  `voiceVolumeDb` sets per-voice gain (dB) on the Tone.Synth before summing.
- *  Required for strum patches that sum 4-6 polyphonic voices: without it the
- *  coherent sum can reach +14 dBFS before the channel, overloading the
- *  compressor. Omit for mono-synth strum (the `mono` path) which is inherently
- *  single-voiced. */
-export interface StrumSpec {
-  oscillator?: { type: "custom"; partials: number[] };
-  envelope?: EnvelopeSpec;
-  mono?: MonoSynthVoiceSpec;
-  noteDurationSec: number;
-  releaseTailSec: number;
-  strumLagSec?: number;
-  voiceVolumeDb?: number;
-}
-
 export interface ChordPatch {
   id: string;
   label: string;
-  family: ChordFamily;
-  poly?: PolyChordSpec; // present when family === "poly"
-  strum?: StrumSpec; // present when family === "strum"
+  poly: PolyChordSpec;
   insert?: InsertSpec;
 }
 

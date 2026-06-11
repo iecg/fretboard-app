@@ -14,6 +14,7 @@ const LazyFretboardSVG = lazy(() =>
 import { getFretboardScale, getWireX } from "../FretboardSVG/fretboardGeometry";
 import { FretboardSkeleton } from "./FretboardSkeleton";
 import { useFretboardTopologyModel, type ShapeScope, type ActiveShapeType } from "../../hooks/useFretboardTopologyModel";
+import { useEmphasisContext } from "../FretboardSVG/hooks/useEmphasisContext";
 import { useFretboardViewportModel } from "../../hooks/useFretboardViewportModel";
 import {
   STRING_ROW_PX_DEFAULT,
@@ -95,13 +96,17 @@ export function Fretboard(props: FretboardProps) {
   const rootNote = props.rootNote ?? state.rootNote;
   const displayFormat = props.displayFormat ?? state.displayFormat;
   // Chord-identity fields read from the UN-deferred `baseState` so they update
-  // in lockstep with the emphasis context (which subscribes to atoms directly,
-  // without a useDeferredValue wrapper). Reading these from the deferred `state`
-  // produced a 1-2 frame gap at chord boundaries where the chord-tone
-  // classification (deferred) still reflected chord A while the emphasis cues
-  // (urgent) already targeted chord B — visible as old chord-tone notes
-  // lingering "highlighted" for ~150-300ms after the boundary (combined with
-  // the 0.15s CSS fill transition).
+  // in lockstep with the voice-leading emphasis context, which is ALSO read in
+  // THIS component (below) and passed down alongside them. Both signals must
+  // travel through the same render: the displayed-step index is written inside
+  // a startTransition (visualClock), which mutates the store immediately but
+  // parks the React notifications in the low-priority transition lane. If
+  // FretboardSVG subscribed to the emphasis atoms itself, an URGENT commit in
+  // that window (e.g. the Tone.Draw audio-onset write flipping the countdown
+  // atoms) re-rendered it with fresh emphasis reads (the NEW chord) while its
+  // identity props were still the queued OLD chord — the chord-boundary
+  // highlight flash. Reading identity + emphasis here, in one render, makes
+  // every commit carry a consistent pair from a single store snapshot.
   const chordTones = props.chordTones ?? baseState.chordTones;
   const chordRoot = props.chordRoot ?? baseState.chordRoot;
   const chordFretSpread = props.chordFretSpread ?? state.chordFretSpread;
@@ -120,6 +125,10 @@ export function Fretboard(props: FretboardProps) {
   // Chord-identity (see chordTones/chordRoot above): use baseState so semantic
   // classification flips on the same render as the emphasis context.
   const noteSemantics = baseState.noteSemanticMap.size > 0 ? baseState.noteSemanticMap : undefined;
+  // The emphasis context is read HERE — the same render (and store snapshot)
+  // as the chord-identity fields above — and passed down, so identity and
+  // emphasis can never tear across React priority lanes (see comment above).
+  const emphasisContext = useEmphasisContext(chordTones.length > 0);
   const startFret = viewport.startFret;
   const endFret = viewport.endFret;
   const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
@@ -360,6 +369,7 @@ export function Fretboard(props: FretboardProps) {
             noteSemantics={noteSemantics}
             fullChordPositionKeys={fullChordPositionKeys}
             fullChordVoicings={fullChordVoicings}
+            emphasisContext={emphasisContext}
             showChordConnectors={state.showChordConnectors}
             id={id}
             onNoteClick={handleFretClick}

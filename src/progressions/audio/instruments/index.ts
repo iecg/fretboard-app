@@ -1,43 +1,21 @@
-import type { ChordInstrumentId, ChordVoice } from "./types";
-import { createStrumVoice } from "./strumVoice";
+import type { ChordVoice } from "./types";
 import { createReusableChordVoice } from "./createReusableChordVoice";
-import { getChordPatch, DEFAULT_CHORD_PATCH_BY_FAMILY } from "../sound/instrumentPatches";
-import type { ChordFamily, ChordPatch } from "../sound/patchTypes";
+import { getChordPatch, DEFAULT_CHORD_PATCH_ID } from "../sound/instrumentPatches";
 
-export type { ChordInstrumentId, ChordVoice } from "./types";
-
-const familyForInstrument = (id: ChordInstrumentId): ChordFamily =>
-  id === "strum" ? "strum" : "poly";
+export type { ChordVoice } from "./types";
 
 const voiceCache = new Map<string, ChordVoice>();
 
-function buildVoice(patch: ChordPatch): ChordVoice {
-  if (patch.family === "strum") return createStrumVoice(patch.strum);
-  return createReusableChordVoice(patch.poly!);
-}
-
-function voiceForPatch(patch: ChordPatch): ChordVoice {
+/**
+ * Resolve the pooled chord voice for a chord patch id. The chord layer is
+ * piano-only (poly patches); unknown ids fall back to the grand piano.
+ * Memoized per patch id (one pooled voice per timbre).
+ */
+export function getChordVoice(patchId: string): ChordVoice {
+  const patch = getChordPatch(patchId) ?? getChordPatch(DEFAULT_CHORD_PATCH_ID)!;
   const cached = voiceCache.get(patch.id);
   if (cached) return cached;
-  const v = buildVoice(patch);
+  const v = createReusableChordVoice(patch.poly);
   voiceCache.set(patch.id, v);
   return v;
 }
-
-/**
- * Resolve the chord voice for the user-selected instrument family, preferring
- * the genre's chord patch when its family matches; otherwise fall back to the
- * family default patch. Memoized per patch id (one pooled voice per timbre).
- */
-export function getChordVoiceForInstrument(
-  instrument: ChordInstrumentId,
-  genrePatchId: string,
-): ChordVoice {
-  const family = familyForInstrument(instrument);
-  const genrePatch = getChordPatch(genrePatchId);
-  const patch = genrePatch && genrePatch.family === family
-    ? genrePatch
-    : getChordPatch(DEFAULT_CHORD_PATCH_BY_FAMILY[family])!;
-  return voiceForPatch(patch);
-}
-

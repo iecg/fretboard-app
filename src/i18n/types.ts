@@ -76,11 +76,6 @@ export interface Dictionary {
     timeSignature: string;
     timeSignatureAriaLabel: string;
     btGenre: string;
-    btInstrument: string;
-    btChordPattern: string;
-    btBassPattern: string;
-    btDrumPattern: string;
-    btSwing: string;
     voicingAriaLabel: string;
     voicingLabel: string;
     voicingOff: string;
@@ -232,6 +227,10 @@ export interface Dictionary {
     };
   };
   controls: {
+    chords: string;
+    bassline: string;
+    drums: string;
+    metronome: string;
     shape: string;
     position: string;
     octave: string;

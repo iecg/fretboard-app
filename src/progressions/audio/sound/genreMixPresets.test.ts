@@ -18,12 +18,12 @@ describe("genre mix presets", () => {
     }
   });
 
-  it("genre chord-patch family matches the genre's chordInstrument family", () => {
-    for (const g of GENRE_STYLES) {
-      const mix = getGenreMix(g.id)!;
-      const patch = getChordPatch(mix.patches.chord)!;
-      const expectedFamily = g.chordInstrument === "strum" ? "strum" : "poly";
-      expect(patch.family, `${g.id}`).toBe(expectedFamily);
+  it("every genre's chord patch is a piano (the chord layer is piano-only)", () => {
+    // The chord-instrument feature (strum/organ) was dropped — synthesized
+    // guitar never read as a guitar. Every genre comps on a piano poly patch.
+    for (const m of GENRE_MIX_PRESETS) {
+      const patch = getChordPatch(m.patches.chord)!;
+      expect(patch.poly, `${m.genre} chord patch must be a poly piano`).toBeDefined();
     }
   });
 
@@ -45,11 +45,12 @@ describe("genre mix presets", () => {
   });
 
   it("keeps the jazz kit audible — not buried far below the front line", () => {
-    // Regression guard: the jazz drums bus was -5dB (quietest of any genre),
-    // and stacking that under the already-soft brush/ride voices made the kit
-    // barely audible. It must stay below the chord but no more than ~2dB under.
+    // Regression guard: stacking a deep drums-bus cut under the already-soft
+    // brush/ride voices made the kit barely audible. The intent is the GAP, not
+    // an absolute: the kit must sit no more than ~2dB under the chord bus
+    // (which the genre-wide jazz level cut shifts around).
     const jazz = getGenreMix("jazz")!;
-    expect(jazz.perInstrument.drums.volumeDb).toBeGreaterThanOrEqual(-3);
+    expect(jazz.perInstrument.drums.volumeDb).toBeGreaterThanOrEqual(jazz.perInstrument.chord.volumeDb - 2);
   });
 
   it("pushes funk bass to at least match its chord level", () => {
@@ -81,15 +82,29 @@ describe("genre mix presets", () => {
     expect(rock.perInstrument.bass.volumeDb).toBeLessThanOrEqual(-1);
   });
 
-  it("uses the short funk-scratch guitar patch for funk", () => {
-    expect(getGenreMix("funk")!.patches.chord).toBe("chord-funk-scratch");
+  it("retunes bass bus levels to tame over-hot low end (mix balance pass)", () => {
+    expect(getGenreMix("rock")!.perInstrument.bass.volumeDb).toBe(-4);
+    expect(getGenreMix("blues")!.perInstrument.bass.volumeDb).toBe(-2);
+    expect(getGenreMix("pop")!.perInstrument.bass.volumeDb).toBe(-1);
   });
 
-  it("funk's chord patch is short-decay so the guitar can actually scratch", () => {
-    // Recurrence guard: two prior funk passes failed because the guitar was a
-    // long-ringing acoustic strum. The funk chord patch must stay short.
-    const patchId = getGenreMix("funk")!.patches.chord;
-    const patch = getChordPatch(patchId)!;
-    expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
+  it("stages the piano chord bus consistently across genres (piano-only seeds)", () => {
+    // -2 reference; funk and bossa tuck the comp slightly under their busier
+    // rhythm sections. By-ear seeds from the piano-only pivot.
+    expect(getGenreMix("pop")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("rock")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("blues")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("ballad")!.perInstrument.chord.volumeDb).toBe(-2);
+    expect(getGenreMix("funk")!.perInstrument.chord.volumeDb).toBe(-3);
+    expect(getGenreMix("bossa-nova")!.perInstrument.chord.volumeDb).toBe(-3);
+  });
+
+  it("sits the whole jazz genre ~2dB under the others (user: jazz was loudest)", () => {
+    // Jazz's gentle master compressor (threshold -20, ratio 2.5) passes far
+    // more dynamics than the other genres' glue, so its buses compensate.
+    const jazz = getGenreMix("jazz")!;
+    expect(jazz.perInstrument.chord.volumeDb).toBe(-4);
+    expect(jazz.perInstrument.bass.volumeDb).toBe(-4);
+    expect(jazz.perInstrument.drums.volumeDb).toBe(-5);
   });
 });

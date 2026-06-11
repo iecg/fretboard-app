@@ -21,7 +21,7 @@ describe("InstrumentToggleCluster", () => {
   it("renders the four backing-instrument toggles in a labeled group", () => {
     renderWithStore(<InstrumentToggleCluster />, makeAtomStore([]));
     expect(screen.getByRole("group", { name: "Backing instruments" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Chord strum" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Chords" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Bassline" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Drums" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Metronome" })).toBeTruthy();
@@ -29,7 +29,7 @@ describe("InstrumentToggleCluster", () => {
 
   it("toggles each backing-instrument atom when its button is clicked", () => {
     const cases = [
-      ["Chord strum", progressionChordEnabledAtom],
+      ["Chords", progressionChordEnabledAtom],
       ["Bassline", progressionBassEnabledAtom],
       ["Drums", progressionDrumsEnabledAtom],
       ["Metronome", progressionMetronomeEnabledAtom],
