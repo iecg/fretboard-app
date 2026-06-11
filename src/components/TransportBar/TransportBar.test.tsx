@@ -54,7 +54,7 @@ describe("TransportBar", () => {
     expect(screen.getByRole("button", { name: "Loop progression" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Stop progression" })).toBeNull();
     expect(screen.queryByLabelText(/pause progression/i)).toBeNull();
-    expect(screen.getByRole("button", { name: "Chord strum" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Chords" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Bassline" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Drums" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Metronome" })).toBeTruthy();
@@ -113,7 +113,7 @@ describe("TransportBar", () => {
 
   it("toggles each backing-instrument atom when its button is clicked", () => {
     const cases = [
-      ["Chord strum", progressionChordEnabledAtom],
+      ["Chords", progressionChordEnabledAtom],
       ["Bassline", progressionBassEnabledAtom],
       ["Drums", progressionDrumsEnabledAtom],
       ["Metronome", progressionMetronomeEnabledAtom],

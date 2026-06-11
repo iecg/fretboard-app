@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   BASS_PATCHES, CHORD_PATCHES, DRUM_KIT_PATCHES,
   getBassPatch, getChordPatch, getDrumKitPatch,
-  DEFAULT_CHORD_PATCH_BY_FAMILY,
+  DEFAULT_CHORD_PATCH_ID,
 } from "./instrumentPatches";
 
 describe("instrument patches", () => {
@@ -50,16 +50,14 @@ describe("instrument patches", () => {
     }
   });
 
-  it("poly chord patches carry poly spec, strum patches carry strum spec", () => {
+  it("every chord patch is a piano poly patch (the chord layer is piano-only)", () => {
     for (const p of CHORD_PATCHES) {
-      if (p.family === "poly") { expect(p.poly).toBeDefined(); expect(p.strum).toBeUndefined(); }
-      else { expect(p.strum).toBeDefined(); expect(p.poly).toBeUndefined(); }
+      expect(p.poly, p.id).toBeDefined();
     }
   });
 
-  it("default chord patch exists for each family", () => {
-    expect(getChordPatch(DEFAULT_CHORD_PATCH_BY_FAMILY.poly)?.family).toBe("poly");
-    expect(getChordPatch(DEFAULT_CHORD_PATCH_BY_FAMILY.strum)?.family).toBe("strum");
+  it("the default chord patch exists", () => {
+    expect(getChordPatch(DEFAULT_CHORD_PATCH_ID)).toBeDefined();
   });
 
   it("lookups return undefined for unknown ids", () => {
@@ -88,29 +86,14 @@ describe("instrument patches", () => {
     expect(snare.volume ?? 0).toBeGreaterThan(0); // lifted via the new lever
   });
 
-  it("provides a clean single-coil funk scratch guitar patch (MonoSynth + amp strip)", () => {
-    const patch = getChordPatch("chord-funk-scratch")!;
-    expect(patch).toBeDefined();
-    expect(patch.family).toBe("strum");
-    // Root-cause guard: the funk guitar is a MonoSynth "channel strip", not a bare
-    // plucked string (which never read as a guitar across three tuning rounds). A
-    // mono source spec must be present.
-    expect(patch.strum!.mono).toBeDefined();
-    // Live filter envelope = the pick "spank". Without it the note has no attack
-    // transient and reads as a static synth pad (mirrors the bass live-filter guard).
-    expect(patch.strum!.mono!.filterEnvelope.octaves).toBeGreaterThan(0);
-    // Harmonic oscillator: a guitar needs overtones; a sine-family oscillator has
-    // none and cannot read as a plucked string (mirrors the bass harmonics guard).
-    const SINE_FAMILY = new Set(["sine", "fatsine", "fmsine"]);
-    expect(SINE_FAMILY.has(patch.strum!.mono!.oscillator.type)).toBe(false);
-    // Amp formant: the channel strip must cut lows (tightness) and keep mid
-    // presence (single-coil honk) so it cannot be flattened to a full-range tone.
-    expect(patch.insert!.eq3!.low).toBeLessThan(0);
-    expect(patch.insert!.eq3!.mid).toBeGreaterThanOrEqual(0);
-    // Tight strum so the chord reads as a single stab.
-    expect(patch.strum!.strumLagSec).toBeLessThanOrEqual(0.01);
-    // Genre short-decay fence: the default note duration must stay short so the
-    // funk stab reads as percussive, never a sustained pad.
-    expect(patch.strum!.noteDurationSec).toBeLessThanOrEqual(0.3);
+  it("normalizes all piano chord patches to the common -6 reference", () => {
+    const REF = -6; // grand-piano anchor
+    for (const p of CHORD_PATCHES) {
+      expect(p.poly.volume, p.id).toBe(REF);
+    }
+  });
+
+  it("eases the rock bass-pick mid presence so it sits back in the mix", () => {
+    expect(getBassPatch("bass-pick")!.insert!.eq3!.mid).toBe(1);
   });
 });

@@ -298,6 +298,59 @@ an ADSR `GainNode` (attack 0.006 s → 1, decay 0.55 s → sustain 0.02, release
 after 0.5 s note duration). Max polyphony 12; at the cap, new notes are silently
 skipped. **[spec]**
 
+### 3.2 The chord layer is piano-only (synthesized guitar dropped)
+
+The progression chord layer plays **piano poly patches only** (`chord-grand-piano`
+everywhere; `chord-epiano` for Jazz). There is no chord-instrument selector and no strum
+voice. **[spec]**
+
+**Why.** A synthesized strummed guitar was attempted twice and dropped: an additive
+`Tone.Synth` pluck (rich partials + full-spectrum EQ + chebyshev warmth) read as "saturated
+and muddled… loose thick strings" — chebyshev waveshaping on a 4–6 note polyphonic chord
+produces intermodulation distortion, and a low-band EQ boost booms the stacked chord tones;
+a Karplus-Strong rebuild (`Tone.PluckSynth` + per-voice velocity VCA) got closer but
+produced a persistent periodic "GSM buzz" artifact and never achieved a convincing body.
+After six listening rounds the decision was to stop pursuing guitar **synthesis** entirely:
+the piano is the pedagogical baseline for trying progressions and playing over, and a
+future guitar would come back as **real samples** (e.g. `Tone.Sampler`), not synthesis.
+Hard-won synthesis lessons, recorded so they aren't relearned: never put a wet waveshaper on
+a polyphonic chord bus; `PluckSynth` ignores `triggerAttackRelease` velocity (needs a VCA);
+KS `attackNoise < 1` partially fills the delay line and the circulating noise-chunk +
+silence gap *is* a pulse-train buzz at the note's pitch. **[spec]**
+
+**What was removed.** The Strum/Piano/Organ dropdown, `progressionChordInstrumentAtom`,
+`GenreStyle.chordInstrument`, the strum voice (`strumVoice.ts`, `string.ts`), the strum and
+organ patches, `ChordFamily`, `chordAlt`/`chordAltMix` + `resolveMixForInstrument`, and the
+`direction` field on `ChordHit` (an up/down-stroke concept only the strum voice consumed).
+Patterns keep rhythm, velocity, and articulation — `muted`/`root`/`stab` durations are
+honored by the poly voice, so ghost strokes read as short piano blips. **[internal]**
+
+**Shuffle backbeat accent (kept).** The Blues `shuffle-comp` pattern is swung eighth-notes
+(full chord on each beat, soft short chord on each "&") with the accents on the **2 and 4**
+(beats 1 & 3 in the zero-based `beat` field) so the comp locks with the snare backbeat — a
+front-weighted accent (loudest on 1 & 3) fought the snare and read as "not feeling like a
+shuffle." This applies to piano comping just as it did to the strum. **[spec]**
+
+**Piano-only polish (follow-up pass).** Three durable decisions from the first listening
+round after the pivot: **[spec]**
+
+- **No "muted" ghost articulations in piano genre defaults.** The 0.06s muted choke is a
+  guitar concept; on piano it reads as a click (and as machine-gun clicks in funk's woven
+  ghost 16ths). `shuffle-comp`'s "&" hits became plain soft hits (the patch's short
+  duration = real swung eighths) and `funk-scratch` was reduced to its four-stab skeleton
+  (root on 1, stab on 2, color-stabs on the & of 3 and & of 4) — drums + bass carry the
+  16th-note motion.
+- **Jazz comps rootless.** `jazz-comp` sets `voicing: "rootless-jazz"`, reusing the bossa
+  Type-B builder (7-9-3-5, mid register) — the walking bass owns the root, so the piano
+  comps like a jazz pianist instead of stacking root-position chords. Jazz's buses also sit
+  ~2 dB under the other genres (chord/bass −4, drums −5): its gentle master compressor
+  (threshold −20, ratio 2.5) passes more dynamics than the other genres' glue, which made
+  jazz read as the loudest genre.
+- **Backing-track UI exposes only Genre.** Chord/bass/drum pattern pickers and the swing
+  slider were removed from the Inspector — patterns and swing are properties a genre
+  bundles, not user knobs. The atoms remain (genre application writes them); the transport
+  chord toggle's icon is a piano (and the freed guitar icon now marks the bassline).
+
 ---
 
 ## 4. Backing-track variation & humanizer
@@ -446,6 +499,12 @@ This document consolidates the grounding from the following specs, all under
 - `2026-06-09-separate-audio-contexts-design.md` — SHA `a540c046` — the separate-contexts
   decision: guitar off Tone onto raw Web Audio with its own `AudioContext`, voice engine
   recipe, and rationale for decoupling from Tone's global context (shipped #584) (§3.1).
+- `2026-06-10-blues-shuffle-strum-realism-design.md` — initiated as strum-guitar realism
+  (eighth-note shuffle strum, Blues strum default, per-genre `chordAlt` with family-matched
+  voice resolution); the branch then **pivoted to the piano-only chord layer** (§3.2), which
+  removed the strum/organ/`chordAlt` machinery. What survives from the spec: the
+  `shuffle-comp` rhythm (adapted for piano, 2-and-4 backbeat accent) and the synthesis
+  post-mortem recorded in §3.2.
 
 **Draft (never shipped — content preserved in §6):**
 - `2026-06-03-funk-bossa-voicing-migration-design.md` — SHA `ef93f7c1` — see §6.2.

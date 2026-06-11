@@ -7,7 +7,6 @@ import {
   progressionBassEnabledAtom,
   progressionBassPatternAtom,
   progressionChordEnabledAtom,
-  progressionChordInstrumentAtom,
   progressionChordPatternAtom,
   progressionDrumPatternAtom,
   progressionDrumsEnabledAtom,
@@ -36,6 +35,7 @@ import type {
   ProgressionPartHandle,
 } from "../progressions/audio/progressionAudioEngine";
 import type { BuiltLayers } from "../progressions/audio/buildAllLayers";
+import type { BassPatch, DrumKitPatch } from "../progressions/audio/sound/patchTypes";
 import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 import { ensureToneStarted } from "../core/toneInit";
 import { holdAudioActive, isContextSuspended, releaseAudioActive } from "../core/audioIdleSuspend";
@@ -131,7 +131,6 @@ export function useProgressionAudioPlayback() {
   const tempo = useAtomValue(progressionTempoBpmAtom);
   const beatsPerBar = useAtomValue(beatsPerBarAtom);
   const swing = useAtomValue(progressionSwingAtom);
-  const chordInstrument = useAtomValue(progressionChordInstrumentAtom);
   const chordPatternId = useAtomValue(progressionChordPatternAtom);
   const bassPatternId = useAtomValue(progressionBassPatternAtom);
   const drumPatternId = useAtomValue(progressionDrumPatternAtom);
@@ -212,13 +211,24 @@ export function useProgressionAudioPlayback() {
       loopEnabled,
     ],
   );
-  const instrumentRef = useRef(chordInstrument);
   const genRef = useRef(0);
   // Tempo the currently-live Tone Parts were baked at. The layer event timings
   // are seconds-at-build-tempo; a live tempo change rescales the Transport but
   // not those baked seconds, so the visual timeline needs this reference to
   // mirror the rescale (see the tempo effect below + timeline.setTimelineScale).
   const builtTempoRef = useRef(tempo);
+  // Instrument patches of the CURRENTLY CONFIGURED mix graph. The Part onEvent
+  // callbacks read this ref instead of build-time captures: a genre change can
+  // reconfigure the mix graph IN PLACE without rebuilding the Tone.Parts
+  // (genreId is not part of buildKey), and a build-time capture would keep
+  // scheduling the previous genre's voices/kits through the new graph. Updated
+  // at every mix-resolution site (initial build, tab-recovery rebuild, and the
+  // genre/quality reconfigure effect).
+  const mixPatchesRef = useRef<{
+    chordPatchId: string;
+    bassPatch: BassPatch | undefined;
+    drumKit: DrumKitPatch | undefined;
+  } | null>(null);
 
   const buildInputsRef = useRef({
     steps,
@@ -465,9 +475,11 @@ export function useProgressionAudioPlayback() {
       const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
       const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
       eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
-      const bassPatch = eng.getBassPatch(mix.patches.bass);
-      const drumKit = eng.getDrumKitPatch(mix.patches.drumKit);
-      const chordPatchId = mix.patches.chord;
+      mixPatchesRef.current = {
+        chordPatchId: mix.patches.chord,
+        bassPatch: eng.getBassPatch(mix.patches.bass),
+        drumKit: eng.getDrumKitPatch(mix.patches.drumKit),
+      };
 
       const inputs = buildInputsRef.current;
 
@@ -576,9 +588,9 @@ export function useProgressionAudioPlayback() {
       const chordStrumPart = eng.createProgressionPart<ChordStrumEvent>({
         events: built.chordStrums, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, value) => {
-          const voice = eng.getChordVoiceForInstrument(instrumentRef.current, chordPatchId);
+          const voice = eng.getChordVoice(mixPatchesRef.current?.chordPatchId ?? "");
           voice.scheduleChord(audio.layers.chord, value.voicing, audioTime, {
-            velocity: value.velocity, style: value.style, direction: value.direction, durationSec: value.durationSec,
+            velocity: value.velocity, style: value.style, durationSec: value.durationSec,
           });
         },
       });
@@ -590,7 +602,7 @@ export function useProgressionAudioPlayback() {
         onEvent: (audioTime, value) => {
           const freq = getNoteFrequency(value.note);
           if (!Number.isFinite(freq) || freq <= 0) return;
-          eng.scheduleBassNote(audio.layers.bass, freq, audioTime, { velocity: value.velocity, durationSec: value.durationSec, patch: bassPatch });
+          eng.scheduleBassNote(audio.layers.bass, freq, audioTime, { velocity: value.velocity, durationSec: value.durationSec, patch: mixPatchesRef.current?.bassPatch });
         },
       });
       bassPart.start(partStart, 0);
@@ -599,13 +611,14 @@ export function useProgressionAudioPlayback() {
       const drumPart = eng.createProgressionPart<DrumEvent>({
         events: built.drums, loop: inputs.loopEnabled, loopEnd: totalDurationSec,
         onEvent: (audioTime, value) => {
+          const kit = mixPatchesRef.current?.drumKit;
           switch (value.type) {
-            case "kick": eng.scheduleKick(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
-            case "snare": eng.scheduleSnare(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
-            case "hihat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
-            case "openHat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, open: true, kit: drumKit }); break;
-            case "ride": eng.scheduleRide(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
-            case "crossStick": eng.scheduleCrossStick(audio.layers.drums, audioTime, { velocity: value.velocity, kit: drumKit }); break;
+            case "kick": eng.scheduleKick(audio.layers.drums, audioTime, { velocity: value.velocity, kit }); break;
+            case "snare": eng.scheduleSnare(audio.layers.drums, audioTime, { velocity: value.velocity, kit }); break;
+            case "hihat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, kit }); break;
+            case "openHat": eng.scheduleHiHat(audio.layers.drums, audioTime, { velocity: value.velocity, open: true, kit }); break;
+            case "ride": eng.scheduleRide(audio.layers.drums, audioTime, { velocity: value.velocity, kit }); break;
+            case "crossStick": eng.scheduleCrossStick(audio.layers.drums, audioTime, { velocity: value.velocity, kit }); break;
           }
         },
       });
@@ -689,10 +702,6 @@ export function useProgressionAudioPlayback() {
   }, [swing]);
 
   useEffect(() => {
-    instrumentRef.current = chordInstrument;
-  }, [chordInstrument]);
-
-  useEffect(() => {
     if (!engine) return;
     const audio = engine.ensureProgressionAudio();
     if (!audio) return;
@@ -731,6 +740,11 @@ export function useProgressionAudioPlayback() {
           const mix = eng.getGenreMix(store.get(progressionGenreStyleAtom)) ?? eng.DEFAULT_GENRE_MIX;
           const tier = resolveActiveTier(eng, store.get(audioQualityAtom));
           eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
+          mixPatchesRef.current = {
+            chordPatchId: mix.patches.chord,
+            bassPatch: eng.getBassPatch(mix.patches.bass),
+            drumKit: eng.getDrumKitPatch(mix.patches.drumKit),
+          };
         }
       });
     };
@@ -781,6 +795,14 @@ export function useProgressionAudioPlayback() {
       const mix = eng.getGenreMix(genreId) ?? eng.DEFAULT_GENRE_MIX;
       const tier = resolveActiveTier(eng, quality);
       eng.configureProgressionGraph(eng.planSignalGraph(eng.TIER_PROFILES[tier], mix));
+      // Keep the scheduled voices/kits aligned with the in-place reconfigure —
+      // the Tone.Parts are NOT rebuilt here, so their onEvent callbacks read
+      // patches via mixPatchesRef.
+      mixPatchesRef.current = {
+        chordPatchId: mix.patches.chord,
+        bassPatch: eng.getBassPatch(mix.patches.bass),
+        drumKit: eng.getDrumKitPatch(mix.patches.drumKit),
+      };
     }, 0);
     return () => clearTimeout(timer);
   }, [genreId, quality, playing]);

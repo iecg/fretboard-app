@@ -771,11 +771,12 @@ describe("SongControls grid layout", () => {
     expect(within(readout).getByText("5")).toBeInTheDocument();
   });
 
-  it("renders the rehosted backing-track controls", () => {
+  it("renders the rehosted backing-track controls (genre only)", () => {
     renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
     expect(screen.getByRole("combobox", { name: "Genre style" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Chord instrument" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Swing amount")).toBeInTheDocument();
+    // Patterns + swing are bundled into the genre preset, not individual knobs.
+    expect(screen.queryByRole("combobox", { name: "Chord pattern" })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Swing amount")).not.toBeInTheDocument();
   });
 
   it("asks the user to add a chord when the progression is empty", () => {

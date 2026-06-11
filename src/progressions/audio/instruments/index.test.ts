@@ -1,24 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { getChordVoiceForInstrument } from "./index";
-import { getChordPatch } from "../sound/instrumentPatches";
+import { getChordVoice } from "./index";
 
-describe("chord voice resolution by instrument + genre patch", () => {
-  it("uses the genre patch when its family matches the selected instrument (memoized)", () => {
-    const v = getChordVoiceForInstrument("piano", "chord-epiano");
-    expect(v).toBe(getChordVoiceForInstrument("piano", "chord-epiano"));
+describe("chord voice resolution (piano-only chord layer)", () => {
+  it("resolves a known patch id to a memoized voice", () => {
+    const v = getChordVoice("chord-epiano");
+    expect(typeof v.scheduleChord).toBe("function");
+    expect(v).toBe(getChordVoice("chord-epiano"));
   });
 
-  it("falls back to the family default when instrument family != genre patch family", () => {
-    const strumV = getChordVoiceForInstrument("strum", "chord-epiano");
-    const steelDefault = getChordVoiceForInstrument("strum", "chord-steel-strum");
-    expect(strumV).toBe(steelDefault);
+  it("falls back to the grand piano for unknown patch ids", () => {
+    const unknown = getChordVoice("chord-does-not-exist");
+    const grand = getChordVoice("chord-grand-piano");
+    expect(unknown).toBe(grand);
   });
-
-  it("every chord patch resolves to a usable voice", () => {
-    for (const inst of ["piano", "organ", "strum"] as const) {
-      const v = getChordVoiceForInstrument(inst, getChordPatch("chord-grand-piano")!.id);
-      expect(typeof v.scheduleChord).toBe("function");
-    }
-  });
-
 });

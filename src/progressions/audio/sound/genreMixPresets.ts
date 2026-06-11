@@ -15,6 +15,7 @@ export interface MasterMix {
 
 export interface GenreMix {
   genre: string;
+  /** The chord layer is piano-only; `chord` is the genre's piano patch. */
   patches: { bass: string; chord: string; drumKit: string };
   perInstrument: Record<MixInstrument, InstrumentMix>;
   master: MasterMix;
@@ -39,7 +40,7 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     patches: { bass: "bass-finger", chord: "chord-grand-piano", drumKit: "kit-acoustic-rock" },
     perInstrument: {
       chord: { volumeDb: -2, pan: -0.12, reverbSend: 0.18 },
-      bass: { volumeDb: 0, pan: 0, reverbSend: 0.04 },
+      bass: { volumeDb: -1, pan: 0, reverbSend: 0.04 },
       drums: { volumeDb: -1, pan: 0.05, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
@@ -47,12 +48,16 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "rock",
-    patches: { bass: "bass-pick", chord: "chord-steel-strum", drumKit: "kit-acoustic-rock" },
+    patches: { bass: "bass-pick", chord: "chord-grand-piano", drumKit: "kit-acoustic-rock" },
     perInstrument: {
-      chord: { volumeDb: -3, pan: -0.18, reverbSend: 0.12 },
-      // -2 (was 0): the sawtooth bass-pick is the buzziest/most harmonic-rich
-      // bass patch; at unity it sat too present in the rock mix.
-      bass: { volumeDb: -2, pan: 0, reverbSend: 0.02 },
+      // -2 (was -3): the -3 was staged for the dropped strum-guitar sitting on
+      // top of the mix; the piano sits at the pop reference.
+      chord: { volumeDb: -2, pan: -0.18, reverbSend: 0.12 },
+      // -4: the sawtooth bass-pick (buzzy, mid-forward) over a dense staccato
+      // pedal-bass pattern read too prominent at -2 (paired with easing its mid
+      // EQ to +1). Eased back from -5 in the piano-only pass — the piano comp
+      // leaves more room than the long-ringing strum it replaced.
+      bass: { volumeDb: -4, pan: 0, reverbSend: 0.02 },
       // -1 (was 0): rock's long-ringing steel strum + constant staccato pedal
       // bass already give it the highest sustained energy of any genre. Staging
       // the kit at 0 too made rock the loudest overall — pull it to the pop
@@ -64,10 +69,12 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "blues",
-    patches: { bass: "bass-upright", chord: "chord-jazz-organ", drumKit: "kit-blues-shuffle" },
+    patches: { bass: "bass-upright", chord: "chord-grand-piano", drumKit: "kit-blues-shuffle" },
     perInstrument: {
-      chord: { volumeDb: -3, pan: -0.15, reverbSend: 0.2 },
-      bass: { volumeDb: 0, pan: 0, reverbSend: 0.05 },
+      // -2 / 0.2: piano comping at the pop reference; the lower send was a
+      // workaround for the dropped strum voice's noise artifacts.
+      chord: { volumeDb: -2, pan: -0.15, reverbSend: 0.2 },
+      bass: { volumeDb: -2, pan: 0, reverbSend: 0.05 },
       drums: { volumeDb: -2, pan: 0.06, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
@@ -77,11 +84,15 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
     genre: "jazz",
     patches: { bass: "bass-upright", chord: "chord-epiano", drumKit: "kit-jazz-brush" },
     perInstrument: {
-      chord: { volumeDb: -2, pan: -0.16, reverbSend: 0.22 },
-      bass: { volumeDb: 0, pan: 0, reverbSend: 0.06 },
-      // -3 (was -5): the brush/ride voices are already individually soft, so
-      // the extra bus cut buried the whole kit. Sits just under the front line.
-      drums: { volumeDb: -3, pan: 0.1, reverbSend: 0 },
+      // The whole genre sits ~2 dB under the others (chord/bass -4, drums -5):
+      // jazz read as the loudest genre across all three instruments — its
+      // gentle master compressor (threshold -20, ratio 2.5) leaves far more
+      // dynamics through than the other genres' glue, so the buses compensate.
+      chord: { volumeDb: -4, pan: -0.16, reverbSend: 0.22 },
+      bass: { volumeDb: -4, pan: 0, reverbSend: 0.06 },
+      // Keeps the original intent: the brush kit sits just under the front
+      // line (no more than ~2 dB below the chord bus) so it stays audible.
+      drums: { volumeDb: -5, pan: 0.1, reverbSend: 0 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },
     },
     master: { compressor: { threshold: -20, ratio: 2.5, attack: 0.015, release: 0.22 }, reverb: { decay: 1.3, wet: 0.22 }, limiterThreshold: MASTER_LIMITER_CEILING_DB },
@@ -99,9 +110,11 @@ export const GENRE_MIX_PRESETS: readonly GenreMix[] = [
   },
   {
     genre: "funk",
-    patches: { bass: "bass-finger", chord: "chord-funk-scratch", drumKit: "kit-funk" },
+    patches: { bass: "bass-finger", chord: "chord-grand-piano", drumKit: "kit-funk" },
     perInstrument: {
-      chord: { volumeDb: -4, pan: -0.2, reverbSend: 0.06 },
+      // -3 (was -4): the -4 was staged for the dropped percussive scratch patch;
+      // piano stabs need a bit more presence against the funk rhythm section.
+      chord: { volumeDb: -3, pan: -0.2, reverbSend: 0.06 },
       bass: { volumeDb: 0, pan: 0, reverbSend: 0.0 },
       drums: { volumeDb: 0, pan: 0.05, reverbSend: 0.05 },
       metronome: { volumeDb: -6, pan: 0, reverbSend: 0 },

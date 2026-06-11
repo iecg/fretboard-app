@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
-import { progressionChordPatternAtom, progressionGenreStyleAtom } from "../store/progressionAtoms";
+import { progressionChordPatternAtom, progressionGenreStyleAtom, progressionSwingAtom } from "../store/progressionAtoms";
 import { useProgressionState } from "./useProgressionState";
 
 function makeWrapper(store: ReturnType<typeof createStore>) {
@@ -11,41 +11,8 @@ function makeWrapper(store: ReturnType<typeof createStore>) {
   );
 }
 
-describe("useProgressionState — individual setters revert genre to custom", () => {
-  it("reverts genre style to 'custom' when an individual pattern setting changes", () => {
-    const store = createStore();
-    store.set(progressionGenreStyleAtom, "rock");
-
-    const { result } = renderHook(() => useProgressionState(), {
-      wrapper: makeWrapper(store),
-    });
-
-    expect(store.get(progressionGenreStyleAtom)).toBe("rock");
-
-    act(() => {
-      result.current.setProgressionChordPattern("offbeat-skank");
-    });
-
-    expect(store.get(progressionChordPatternAtom)).toBe("offbeat-skank");
-    expect(store.get(progressionGenreStyleAtom)).toBe("custom");
-  });
-
-  it("reverts genre style to 'custom' when swing changes", () => {
-    const store = createStore();
-    store.set(progressionGenreStyleAtom, "jazz");
-
-    const { result } = renderHook(() => useProgressionState(), {
-      wrapper: makeWrapper(store),
-    });
-
-    act(() => {
-      result.current.setProgressionSwing(0.5);
-    });
-
-    expect(store.get(progressionGenreStyleAtom)).toBe("custom");
-  });
-
-  it("applyGenreStyle does NOT revert to custom", () => {
+describe("useProgressionState — genre application", () => {
+  it("applyGenreStyle sets the genre and its bundled pattern + swing", () => {
     const store = createStore();
 
     const { result } = renderHook(() => useProgressionState(), {
@@ -53,9 +20,11 @@ describe("useProgressionState — individual setters revert genre to custom", ()
     });
 
     act(() => {
-      result.current.applyGenreStyle("rock");
+      result.current.applyGenreStyle("blues");
     });
 
-    expect(store.get(progressionGenreStyleAtom)).toBe("rock");
+    expect(store.get(progressionGenreStyleAtom)).toBe("blues");
+    expect(store.get(progressionChordPatternAtom)).toBe("shuffle-comp");
+    expect(store.get(progressionSwingAtom)).toBeCloseTo(0.33);
   });
 });
