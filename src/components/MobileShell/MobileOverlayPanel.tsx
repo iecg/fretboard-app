@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { useAtom } from "jotai";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
@@ -23,6 +23,14 @@ export function MobileOverlayPanel() {
   const { t } = useTranslation();
   const [panel, setPanel] = useAtom(mobilePanelAtom);
   const open = panel === "overlay";
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Move SR/keyboard context into the panel once, when it opens — without
+  // trapping. A stable ref + effect avoids re-focusing on every render (which
+  // an inline ref callback would do, stealing focus from interactive children).
+  useEffect(() => {
+    if (open) panelRef.current?.focus({ preventScroll: true });
+  }, [open]);
 
   const close = () => {
     setPanel("none");
@@ -42,8 +50,7 @@ export function MobileOverlayPanel() {
           data-placement="sheet"
           className={styles.overlayPanel}
           tabIndex={-1}
-          // Move SR/keyboard context into the panel on open without trapping.
-          ref={(node) => node?.focus({ preventScroll: true })}
+          ref={panelRef}
           onKeyDown={(event) => {
             if (event.key === "Escape") close();
           }}

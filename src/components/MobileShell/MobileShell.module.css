@@ -45,8 +45,9 @@
    cover that overlaps it (the dock already sits in flex flow below). */
 .shell[data-mobile-panel="overlay"] .stage {
   padding-bottom: calc(
-    var(--mobile-panel-cover, 55dvh) - var(--mobile-dock-height, 104px) -
-      env(safe-area-inset-bottom, 0px)
+    var(--mobile-panel-cover, 55dvh)
+    - var(--mobile-dock-height, 104px)
+    - env(safe-area-inset-bottom, 0px)
   );
 }
 
