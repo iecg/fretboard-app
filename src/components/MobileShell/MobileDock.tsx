@@ -43,10 +43,8 @@ export function MobileDock() {
               className={styles.toggle}
               data-state={open ? "open" : "closed"}
               aria-expanded={open}
-              // The Overlay panel is an in-tree sibling region; the Song panel
-              // is a portaled full-screen dialog (no stable id to point at).
-              aria-controls={target === "overlay" ? "mobile-overlay-panel" : undefined}
-              aria-haspopup={target === "song" ? "dialog" : undefined}
+              // Both panels are in-tree sibling regions with stable ids.
+              aria-controls={`mobile-${target}-panel`}
               onClick={() => setPanel(open ? "none" : target)}
             >
               {tab.icon}

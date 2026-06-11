@@ -6,6 +6,7 @@ import { axe } from "vitest-axe";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { mobilePanelAtom } from "../../store/uiAtoms";
 import { MobileSongPanel } from "./MobileSongPanel";
+import { MobileDock } from "./MobileDock";
 
 describe("MobileSongPanel", () => {
   it("renders nothing while closed", () => {
@@ -14,11 +15,14 @@ describe("MobileSongPanel", () => {
     expect(screen.queryByTestId("mobile-song-panel")).not.toBeInTheDocument();
   });
 
-  it("opens as a modal dialog titled Song hosting the song controls", async () => {
+  it("opens as a non-modal dialog titled Song hosting the song controls", async () => {
     const store = makeAtomStore([[mobilePanelAtom, "song"]]);
     renderWithStore(<MobileSongPanel />, store);
     const panel = await screen.findByTestId("mobile-song-panel");
     expect(panel).toHaveAttribute("role", "dialog");
+    // Non-modal by design: the transport strip and dock tabs above/below the
+    // drawer must stay operable (same contract as the Overlay panel).
+    expect(panel).not.toHaveAttribute("aria-modal");
     expect(panel).toHaveAttribute("data-placement", "sheet");
     expect(screen.getByText("Song")).toBeInTheDocument();
     // SongControls is lazy — the Preset card arrives async.
@@ -27,29 +31,38 @@ describe("MobileSongPanel", () => {
     });
   });
 
-  it("closes via the close button", async () => {
+  it("closes via the close button and returns focus to the dock toggle", async () => {
     const store = makeAtomStore([[mobilePanelAtom, "song"]]);
-    renderWithStore(<MobileSongPanel />, store);
+    renderWithStore(
+      <>
+        <MobileSongPanel />
+        <MobileDock />
+      </>,
+      store,
+    );
     await userEvent.click(await screen.findByTestId("song-panel-close"));
     expect(store.get(mobilePanelAtom)).toBe("none");
+    await waitFor(() => {
+      expect(screen.getByTestId("dock-toggle-song")).toHaveFocus();
+    });
   });
 
-  it("closes on Escape via Radix", async () => {
+  it("closes on Escape", async () => {
     const store = makeAtomStore([[mobilePanelAtom, "song"]]);
     renderWithStore(<MobileSongPanel />, store);
-    await screen.findByTestId("mobile-song-panel");
+    const panel = await screen.findByTestId("mobile-song-panel");
+    await waitFor(() => expect(panel).toHaveFocus());
     await userEvent.keyboard("{Escape}");
     expect(store.get(mobilePanelAtom)).toBe("none");
   });
 
   it("has no axe violations while open", async () => {
     const store = makeAtomStore([[mobilePanelAtom, "song"]]);
-    renderWithStore(<MobileSongPanel />, store);
-    // Radix Dialog portals to <body>, so scan the document body, not the
-    // render container. Wait for the lazy SongControls content first.
+    const { container } = renderWithStore(<MobileSongPanel />, store);
+    // Wait for the lazy SongControls content to mount before scanning.
     await waitFor(() => {
       expect(screen.getByText(/preset/i)).toBeInTheDocument();
     });
-    expect(await axe(document.body)).toHaveNoViolations();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -42,14 +42,18 @@ describe("MobileDock", () => {
     expect(screen.getByTestId("dock-toggle-song")).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("wires panel semantics: overlay controls the in-tree panel, song announces a dialog", () => {
+  it("wires both toggles to their in-tree panels via aria-controls", () => {
     const store = makeAtomStore([]);
     renderWithStore(<MobileDock />, store);
     expect(screen.getByTestId("dock-toggle-overlay")).toHaveAttribute(
       "aria-controls",
       "mobile-overlay-panel",
     );
-    expect(screen.getByTestId("dock-toggle-song")).toHaveAttribute("aria-haspopup", "dialog");
+    expect(screen.getByTestId("dock-toggle-song")).toHaveAttribute(
+      "aria-controls",
+      "mobile-song-panel",
+    );
+    expect(screen.getByTestId("dock-toggle-song")).not.toHaveAttribute("aria-haspopup");
   });
 
   it("has no axe violations", async () => {

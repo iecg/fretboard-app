@@ -58,9 +58,8 @@
   --token-z-note: 10;
   --token-z-dropdown: 50;
   --token-z-header: 80;
-  --token-z-mobile-panel: 90; /* mobile Overlay panel — above header, BELOW the dock so it emerges from behind it */
-  --token-z-mobile-dock: 100; /* mobile transport dock — paints over the sliding Overlay panel */
-  --token-z-mobile-song-panel: 150; /* full-screen Song panel — covers the dock, below Settings/Help (201) */
+  --token-z-mobile-panel: 90; /* mobile dock panels (Overlay + Song) — above header, BELOW the dock so they emerge from behind it */
+  --token-z-mobile-dock: 100; /* mobile dock tab bar — paints over the sliding panels */
   --token-z-overlay-backdrop: 200;
   --token-z-overlay-drawer: 201;
   --token-z-help-overlay: 1000;
@@ -75,6 +74,11 @@
   /* Fraction of the viewport the open Overlay panel + dock cover together.
      Kept in sync with PANEL_COVER_FRACTION (0.55) in src/layout/responsive.ts. */
   --token-mobile-panel-cover: 55dvh;
+
+  /* Top anchor of the tall Song panel: header (64) + transport strip (56) +
+     progression track (56). Kept in sync with SHELL_HEADER_PX +
+     SHELL_TRANSPORT_PX + SHELL_TRACK_PX in src/layout/responsive.ts. */
+  --token-mobile-song-panel-top: 176px;
 
   --token-disabled-opacity: 0.3;
 

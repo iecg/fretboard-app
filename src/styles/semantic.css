@@ -106,9 +106,9 @@
   --z-header: var(--token-z-header);
   --z-mobile-panel: var(--token-z-mobile-panel);
   --z-mobile-dock: var(--token-z-mobile-dock);
-  --z-mobile-song-panel: var(--token-z-mobile-song-panel);
   --mobile-dock-height: var(--token-mobile-dock-height);
   --mobile-panel-cover: var(--token-mobile-panel-cover);
+  --mobile-song-panel-top: var(--token-mobile-song-panel-top);
   --z-overlay-backdrop: var(--token-z-overlay-backdrop);
   --z-overlay-drawer: var(--token-z-overlay-drawer);
   --z-help-overlay: var(--token-z-help-overlay);

@@ -218,7 +218,12 @@ function AppContent() {
           header={headerNode}
           transport={<ShellTransport />}
           track={<ProgressionSummarySlot />}
-          panel={<MobileOverlayPanel />}
+          panel={
+            <>
+              <MobileOverlayPanel />
+              <MobileSongPanel />
+            </>
+          }
           dock={<MobileDock />}
         >
           <Fretboard
@@ -229,7 +234,6 @@ function AppContent() {
             }
           />
         </MobileShell>
-        <MobileSongPanel />
         {helpModalNode}
         {settingsOverlayNode}
       </>
