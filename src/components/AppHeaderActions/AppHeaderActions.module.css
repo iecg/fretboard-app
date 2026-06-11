@@ -1,6 +1,6 @@
-/* Header overflow menu — standard float-surface chrome (the same family as
-   SettingsOverlay / HelpModal) rather than the PresetMenu faceplate gradient,
-   so the utility menu reads as app chrome, not as a DAW control. */
+/* Header overflow menu — same faceplate chrome as the PresetMenu dropdown
+   (PresetMenu.module.css .preset-menu-content); the two dropdowns must read
+   as one popover family. Keep the chrome declarations in sync. */
 
 .menu-content {
   z-index: var(--z-dropdown);
@@ -13,14 +13,17 @@
   );
   overflow-y: auto;
   padding: 0.25rem;
-  background: var(--surface-float);
-  border: 1px solid var(--chrome-border);
-  border-radius: 10px;
+  background:
+    radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
+    linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));
+  border: 1px solid var(--faceplate-border);
+  border-radius: var(--dc-radius);
   box-shadow: var(--elevation-overlay);
 }
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .menu-content {
+  border-color: rgb(133 124 108 / 0.30);
   box-shadow: 0 4px 12px rgb(42 37 29 / 0.10), 0 1px 4px rgb(42 37 29 / 0.06);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
@@ -52,7 +55,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--dc-fg-muted);
+  /* Same ink as the item label — the extra-muted tier read as a washed-out,
+     "semi-transparent" icon next to its text. */
+  color: var(--dc-fg);
 }
 
 .menu-item[data-highlighted] .menu-item-icon {
