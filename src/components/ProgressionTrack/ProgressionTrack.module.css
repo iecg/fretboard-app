@@ -54,6 +54,20 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Sheet shell: hide the horizontal scrollbar (same pattern as the fretboard's
+   .hide-scrollbar) — a visible desktop-style scrollbar on the chip strip
+   breaks the native-app read. Touch scrolling is unaffected; desktop keeps
+   the thin scrollbar as its scroll affordance. */
+:global([data-layout-tier="mobile"]) .track,
+:global([data-layout-variant="tablet-split"]) .track {
+  scrollbar-width: none;
+}
+
+:global([data-layout-tier="mobile"]) .track::-webkit-scrollbar,
+:global([data-layout-variant="tablet-split"]) .track::-webkit-scrollbar {
+  display: none;
+}
+
 /* =========================================================================
  * Light-mode overrides
  *
