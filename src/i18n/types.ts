@@ -318,6 +318,13 @@ export interface Dictionary {
   mobileSheet: {
     label: string;
   };
+  mobileDock: {
+    label: string;
+  };
+  mobilePanels: {
+    closeOverlay: string;
+    closeSong: string;
+  };
 }
 
 export type SupportedLanguage = "en" | "es";

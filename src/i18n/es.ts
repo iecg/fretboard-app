@@ -349,4 +349,11 @@ export const es: Dictionary = {
   mobileSheet: {
     label: "Reproducción y controles",
   },
+  mobileDock: {
+    label: "Reproducción y controles",
+  },
+  mobilePanels: {
+    closeOverlay: "Cerrar panel de superposición",
+    closeSong: "Cerrar panel de canción",
+  },
 };

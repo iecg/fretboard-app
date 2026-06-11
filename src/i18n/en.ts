@@ -349,4 +349,11 @@ export const en: Dictionary = {
   mobileSheet: {
     label: "Playback and controls",
   },
+  mobileDock: {
+    label: "Playback and controls",
+  },
+  mobilePanels: {
+    closeOverlay: "Close overlay panel",
+    closeSong: "Close song panel",
+  },
 };

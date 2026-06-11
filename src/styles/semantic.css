@@ -96,7 +96,12 @@
   --z-dropdown: var(--token-z-dropdown);
   --z-header: var(--token-z-header);
   --z-mobile-sheet: var(--token-z-mobile-sheet);
+  --z-mobile-panel: var(--token-z-mobile-panel);
+  --z-mobile-dock: var(--token-z-mobile-dock);
+  --z-mobile-song-panel: var(--token-z-mobile-song-panel);
   --mobile-sheet-peek: var(--token-mobile-sheet-peek);
+  --mobile-dock-height: var(--token-mobile-dock-height);
+  --mobile-panel-cover: var(--token-mobile-panel-cover);
   --z-overlay-backdrop: var(--token-z-overlay-backdrop);
   --z-overlay-drawer: var(--token-z-overlay-drawer);
   --z-help-overlay: var(--token-z-help-overlay);
