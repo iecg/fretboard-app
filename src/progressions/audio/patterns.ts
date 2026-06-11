@@ -650,10 +650,11 @@ export const CHORD_VARIATIONS: readonly ChordVariation[] = [
     barInterval: 4,
     barPhase: 3,
     // Pushed turnaround bar: a strong stab on the one, anticipated color stabs
-    // driving into the next chord.
+    // driving into the next chord. The "& of 2" is a plain soft hit (patch
+    // default length) — the strum-era "muted" choke reads as a click on piano.
     hits: [
       { beat: 0, velocity: 0.92, articulation: "stab" },
-      { beat: 1.5, velocity: 0.6, articulation: "muted" },
+      { beat: 1.5, velocity: 0.6 },
       { beat: 2.5, velocity: 0.7, articulation: "color-stab" },
       { beat: 3.5, velocity: 0.75, articulation: "color-stab" },
     ],

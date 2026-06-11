@@ -499,9 +499,12 @@ This document consolidates the grounding from the following specs, all under
 - `2026-06-09-separate-audio-contexts-design.md` — SHA `a540c046` — the separate-contexts
   decision: guitar off Tone onto raw Web Audio with its own `AudioContext`, voice engine
   recipe, and rationale for decoupling from Tone's global context (shipped #584) (§3.1).
-- `2026-06-10-blues-shuffle-strum-realism-design.md` — the eighth-note Blues shuffle strum
-  (`shuffle-comp`), the Blues strum-guitar default, and the per-genre `chordAlt` secondary
-  chord patch with family-matched voice resolution (§3.2).
+- `2026-06-10-blues-shuffle-strum-realism-design.md` — initiated as strum-guitar realism
+  (eighth-note shuffle strum, Blues strum default, per-genre `chordAlt` with family-matched
+  voice resolution); the branch then **pivoted to the piano-only chord layer** (§3.2), which
+  removed the strum/organ/`chordAlt` machinery. What survives from the spec: the
+  `shuffle-comp` rhythm (adapted for piano, 2-and-4 backbeat accent) and the synthesis
+  post-mortem recorded in §3.2.
 
 **Draft (never shipped — content preserved in §6):**
 - `2026-06-03-funk-bossa-voicing-migration-design.md` — SHA `ef93f7c1` — see §6.2.

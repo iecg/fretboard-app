@@ -256,6 +256,10 @@ export const es: Dictionary = {
     },
   },
   controls: {
+    chords: "Acordes",
+    bassline: "Línea de bajo",
+    drums: "Batería",
+    metronome: "Metrónomo",
     shape: "Forma",
     position: "Posición",
     octave: "Octava",

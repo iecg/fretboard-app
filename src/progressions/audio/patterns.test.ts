@@ -528,6 +528,23 @@ describe("BASS_PATTERNS turnaround opt-in", () => {
 });
 
 describe("chord & bass variation catalogs", () => {
+  it("no chord pattern or variation uses the muted articulation (piano click guard)", () => {
+    // Recurrence guard for the piano-only chord layer: "muted" maps to a 0.06s
+    // choke (MUTED_STRUM_DURATION_SEC) — a strum-era concept that reads as a
+    // click on piano. The base patterns dropped it; variations must not
+    // reintroduce it (funk-turnaround-chord did, audible every 4th funk bar).
+    for (const p of CHORD_PATTERNS) {
+      for (const h of p.hits) {
+        expect(h.articulation, `${p.id} beat ${h.beat}`).not.toBe("muted");
+      }
+    }
+    for (const v of CHORD_VARIATIONS) {
+      for (const h of v.hits) {
+        expect(h.articulation, `${v.id} beat ${h.beat}`).not.toBe("muted");
+      }
+    }
+  });
+
   it("exposes chord and bass variation catalogs with unique IDs", () => {
     const chordIds = CHORD_VARIATIONS.map((v) => v.id);
     expect(new Set(chordIds).size).toBe(chordIds.length);

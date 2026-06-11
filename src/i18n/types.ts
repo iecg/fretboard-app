@@ -225,6 +225,10 @@ export interface Dictionary {
     };
   };
   controls: {
+    chords: string;
+    bassline: string;
+    drums: string;
+    metronome: string;
     shape: string;
     position: string;
     octave: string;

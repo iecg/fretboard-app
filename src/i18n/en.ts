@@ -256,6 +256,10 @@ export const en: Dictionary = {
     },
   },
   controls: {
+    chords: "Chords",
+    bassline: "Bassline",
+    drums: "Drums",
+    metronome: "Metronome",
     shape: "Shape",
     position: "Position",
     octave: "Octave",
