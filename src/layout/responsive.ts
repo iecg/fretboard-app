@@ -17,9 +17,6 @@ export interface ResponsiveLayout {
   variant: ResponsiveVariant;
   compactHeight: boolean;
   stringRowPx: number;
-  /** Sheet-shell row height while the Overlay panel is open (board must fit
-   *  the band above the panel). Equals stringRowPx on desktop/tablet-stacked. */
-  stringRowPxPanelOpen: number;
   showControlsPanel: boolean;
   /** True when the surface uses the MobileShell + bottom sheet (touch contexts). */
   useSheetShell: boolean;
@@ -46,10 +43,6 @@ const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
    degrading into a few px of breathing room rather than overflow. */
 const STRING_ROW_PX_SHELL_MIN = 34;
 const STRING_ROW_PX_SHELL_MAX = 64;
-/** Rows above the open Overlay panel may shrink further than the closed-state
- *  floor — the band is intentionally small and the panel is for tweaking, not
- *  playing. Below ~26px note markers stop being legible. */
-const STRING_ROW_PX_PANEL_OPEN_MIN = 26;
 /** AppHeader band in the sheet shell (padding + 44px content row). */
 const SHELL_HEADER_PX = 64;
 /** ShellTransport strip under the header (44px play button + padding). */
@@ -61,27 +54,13 @@ const SHELL_TRACK_PX = 56;
 const SHELL_DOCK_PX = 48;
 /** Fret-number band + stage breathing paddings. */
 const STAGE_CHROME_PX = 46;
-/** Fraction of the viewport the open Overlay panel + dock cover together.
- *  Keep in sync with --token-mobile-panel-cover (55dvh) in tokens.css. */
-const PANEL_COVER_FRACTION = 0.55;
-/** Measured top chrome above the stage (header + transport strip + track).
- *  The header renders taller at tablet widths. Keep the mobile value in sync
- *  with --token-mobile-song-panel-top in tokens.css (and its tablet-split
- *  override in semantic.css). */
-const PANEL_OPEN_TOP_CHROME_MOBILE_PX = 190; // 72 header + 56 transport + 62 track
-const PANEL_OPEN_TOP_CHROME_TABLET_PX = 212; // 98 header + 56 transport + 58 track
-/** Fret-number band under the board (part of fretboard-outer). */
-const FRET_NUMBER_BAND_PX = 24;
 const SHELL_STRING_COUNT = 6;
 
-/** The stage's top breathing padding: clamp(12px, 4dvh, 48px) in
- *  MobileShell.module.css. */
-function stagePadTopPx(viewportHeight: number): number {
-  return Math.min(Math.max(viewportHeight * 0.04, 12), 48);
-}
-
-function clampShellRow(raw: number, min = STRING_ROW_PX_SHELL_MIN): number {
-  return Math.min(STRING_ROW_PX_SHELL_MAX, Math.max(min, Math.floor(raw)));
+function clampShellRow(raw: number): number {
+  return Math.min(
+    STRING_ROW_PX_SHELL_MAX,
+    Math.max(STRING_ROW_PX_SHELL_MIN, Math.floor(raw)),
+  );
 }
 
 /** Rows that fill the stage between header/transport/track and the dock. */
@@ -112,24 +91,6 @@ export function scaleRowForZoomOut(rowPx: number, fretZoom: number): number {
     STRING_ROW_PX_ZOOM_OUT_FLOOR,
     Math.round((rowPx * fretZoom) / 100),
   );
-}
-
-/** Rows that fit the band left visible above the open Overlay panel. Uses
- *  measured chrome (unlike the closed-state estimate above) because here an
- *  overestimate doesn't degrade into breathing room — it pushes the board
- *  behind the panel. */
-function getPanelOpenStringRowPx(
-  viewportHeight: number,
-  tier: ResponsiveTier,
-): number {
-  const chrome =
-    (tier === "mobile"
-      ? PANEL_OPEN_TOP_CHROME_MOBILE_PX
-      : PANEL_OPEN_TOP_CHROME_TABLET_PX) +
-    FRET_NUMBER_BAND_PX +
-    stagePadTopPx(viewportHeight);
-  const band = viewportHeight * (1 - PANEL_COVER_FRACTION) - chrome;
-  return clampShellRow(band / SHELL_STRING_COUNT, STRING_ROW_PX_PANEL_OPEN_MIN);
 }
 
 export function getResponsiveTier(viewportWidth: number): ResponsiveTier {
@@ -204,9 +165,6 @@ export function getResponsiveLayout(
     variant,
     compactHeight,
     stringRowPx,
-    stringRowPxPanelOpen: useSheetShell
-      ? getPanelOpenStringRowPx(viewportHeight, tier)
-      : stringRowPx,
     showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
     useSheetShell,
     showSummary: true,

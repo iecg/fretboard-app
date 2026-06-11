@@ -72,20 +72,12 @@
   --token-mobile-dock-height: 48px;
 
   /* Fraction of the viewport the open Overlay panel + dock cover together.
-     Kept in sync with PANEL_COVER_FRACTION (0.55) in src/layout/responsive.ts. */
+     The board behind it stays fixed — the panel slides up over it. */
   --token-mobile-panel-cover: 55dvh;
 
-  /* Stage band the board needs while the Overlay panel is open, at the
-     panel-open row floor: STRING_ROW_PX_PANEL_OPEN_MIN (26) × 6 strings +
-     FRET_NUMBER_BAND_PX (24) + the stage's top breathing padding (≤36px on
-     phones) — src/layout/responsive.ts. On short phones the Overlay panel
-     yields (shrinks) rather than cover this band. */
-  --token-mobile-panel-open-stage-px: 216px;
-
   /* Top anchor of the tall Song panel: measured mobile header (72) +
-     transport strip (56) + progression track (62). Kept in sync with
-     PANEL_OPEN_TOP_CHROME_MOBILE_PX in src/layout/responsive.ts; the
-     tablet-split override lives in semantic.css. */
+     transport strip (56) + progression track (62). The tablet-split override
+     (taller header) lives in semantic.css. */
   --token-mobile-song-panel-top: 190px;
 
   --token-disabled-opacity: 0.3;

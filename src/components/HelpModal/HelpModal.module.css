@@ -128,6 +128,17 @@
   overscroll-behavior: contain;
 }
 
+/* In the mobile sheet, hide the scrollbar (scroll stays functional). */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-presentation="sheet"]) .help-modal-content {
+  scrollbar-width: none;
+}
+
+:global([data-presentation="sheet"]) .help-modal-content::-webkit-scrollbar {
+  display: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 .help-modal-content h3 {
   margin-top: var(--space-4);
   margin-bottom: var(--space-2);

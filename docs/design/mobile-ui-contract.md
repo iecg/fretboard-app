@@ -29,9 +29,13 @@ bug, not an abstraction.
 - **T2 `[review]` Panel / drawer / modal surfaces use `--surface-app-panel`.** Never a raw
   hex, a one-off gradient, or pure white. *(seen: the mobile sheet sat on a different
   surface color than the desktop cards, which never sit on pure white.)*
-- **T3 `[review]` Dividers use `--panel-header-border`.** One token for every panel/sheet
-  header separator (it aliases `--chrome-border`). Do not invent per-component border
-  tokens or hardcode `rgb(255 255 255 / …)`.
+- **T3 `[review]` Dividers use `--surface-card-border`.** One token — the app's canonical
+  card-border — for every sheet-shell hairline: the header bottom border, the transport
+  strip, the dock, the panel borders/headers, and the Settings/Help sheet borders.
+  (`--panel-header-border` aliases it.) Do not invent per-component border tokens or hardcode
+  `rgb(255 255 255 / …)`. *(seen: the header hardcoded `rgb(255 255 255 / 0.06)`, mobile
+  chrome used `--chrome-border`, and the app's cards used `--surface-card-border` — three
+  different hairlines.)*
 - **T4 `[review]` One drawer-motion spec.** Every bottom drawer slides with the same
   duration and easing (0.28s `easeOut`). *(seen: Overlay used 0.28s and Song used 0.32s, so
   two “identical” drawers animated differently.)*
@@ -42,6 +46,11 @@ bug, not an abstraction.
   (`src/components/MobileShell/MobilePanel.tsx`). Overlay and Song are wrappers over it;
   no screen builds a bespoke drawer. *(seen: Song was a Radix Dialog while Overlay was an
   anchored drawer, so they had different chrome, focus behavior, and push behavior.)*
+- **P1b `[runtime]` Both drawers slide over a static board — neither reflows it.** Opening
+  Overlay or Song must NOT resize or push the fretboard; the panel animates up over a
+  fixed-size stage. Overlay (half) leaves the upper board visible, Song (tall) covers it.
+  *(seen: Overlay shrank the board while Song overlaid it — two “identical” panels behaving
+  differently and the resize looked janky.)*
 - **P2 `[review]` Settings and Help render through `AdaptiveModal`** and adopt the shared
   `.sheet` chrome on the sheet shell (same surface + header treatment as the panels).
   *(seen: Settings/Help did not match the panel family and their content could not scroll.)*
@@ -71,8 +80,9 @@ bug, not an abstraction.
 - **Z1 `[review]` The sheet shell allows sub-100% zoom** down to `FRET_ZOOM_OUT_MIN`
   (`packages/core/src/constants.ts`), so more of the neck fits. Desktop keeps `FRET_ZOOM_MIN`
   (100) as its floor.
-- **Z2 `[runtime]` The zoom control sits bottom-right** of the stage and **hides while a
-  panel is open** (it must not overlap an open drawer).
+- **Z2 `[runtime]` The zoom control is a horizontal row, bottom-right** of the stage (zoom
+  out · in laid out left-to-right, not stacked vertically) and **hides while a panel is
+  open** (it must not overlap an open drawer).
 
 ## 5. How to run
 

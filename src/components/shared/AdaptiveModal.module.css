@@ -93,7 +93,7 @@
   flex-direction: column;
   height: 94dvh;
   border-radius: 14px 14px 0 0;
-  border-top: 1px solid var(--chrome-border);
+  border-top: 1px solid var(--surface-card-border);
   background: var(--surface-app-panel, var(--surface-panel));
   box-shadow: var(--elevation-overlay);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -127,10 +127,16 @@
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
+/* A flex column that hands the single scroll container to the hosted content
+   (the Settings/Help header stays put, its body scrolls — the same sticky-header
+   structure as MobilePanel). One scroller in the chain is load-bearing: vaul's
+   drag-to-dismiss attaches to the scrollable descendant, and a second nested
+   overflow:auto here made it attach to an element that never actually scrolled,
+   so the sheet couldn't be scrolled at all. */
 .sheetBody {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }

@@ -15,7 +15,7 @@
      balances the 44px play button. */
   min-height: 56px;
   /* Reads as part of the top chrome — same divider the header uses. */
-  border-bottom: 1px solid var(--chrome-border);
+  border-bottom: 1px solid var(--surface-card-border);
 }
 
 /* Loop toggle — pushed to the far right */

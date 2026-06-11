@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   min-height: var(--mobile-dock-height);
-  border-top: 1px solid var(--chrome-border);
+  border-top: 1px solid var(--surface-card-border);
   /* Falls back to the flat shell color until --surface-app-panel exists. */
   background: var(--surface-app-panel, var(--bg-color));
   padding-bottom: env(safe-area-inset-bottom, 0px);

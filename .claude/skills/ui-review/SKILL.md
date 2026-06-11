@@ -67,15 +67,20 @@ For each viewport:
 - **L4 — no dead band / shadow below the board.** `preview_eval` the gap between the board
   (`[data-testid="fretboard-outer"]`) bottom and the stage bottom; a large empty gap or a
   visible shadow strip beneath the board is a violation.
-- **Z2 — zoom control bottom-right, hidden under a panel.** With no panel open, the zoom
-  control sits in the stage's bottom-right. Open a panel (tap the Overlay dock toggle) and
-  confirm the control is hidden (`opacity:0` / not hit-testable), then close it.
-- **L5 — sheets scroll.** Open Settings (and Help): `preview_eval` that the sheet body is
-  scrollable when its content overflows (`scrollHeight > clientHeight` ⇒ scrolling reaches
-  the bottom). Content clipped with no scroll is a violation.
-- **P1 chrome parity (runtime aspect).** Open Overlay, then Song. Both must share surface,
-  radius, border, and a **visible** header divider, and the board stays fully visible above
-  the open Overlay panel. Differences are a `P1`/`T4` violation.
+- **Z2 — horizontal zoom control, bottom-right, hidden under a panel.** With no panel open,
+  the control sits in the stage's bottom-right and its `flex-direction` is `row` (buttons
+  side-by-side, not stacked). Open a panel (`.click()` the Overlay dock toggle) and confirm
+  the control is hidden (`opacity:0` / not hit-testable), then close it.
+- **L5 — sheets scroll.** Open Settings (and Help): `preview_eval` that the hosted content
+  (`settings-overlay-content` / `help-modal-content`) is the bounded scroller
+  (`scrollHeight > clientHeight`, setting `scrollTop` holds) and its header stays put while
+  the body scrolls. Content clipped with no scroll is a violation.
+- **P1b no reflow.** Record the board (`fretboard-outer`) height with no panel, then open
+  Overlay and Song in turn (settle each). The board height must be UNCHANGED in all three
+  states — both drawers slide over a static board. A resize is a `P1b` violation.
+- **P1 chrome parity.** Overlay and Song must share surface, radius, border, and a
+  **visible** header divider, and the dock tabs stay visible under both. Differences are a
+  `P1`/`T4` violation.
 
 ## Step 3 — Review pass (`[review]`: T2, T3, T4, P1, P2, P3, Z1)
 

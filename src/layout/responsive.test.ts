@@ -42,23 +42,6 @@ describe("stringRowPx (sheet shell: height-derived between header/transport/trac
   });
 });
 
-describe("stringRowPxPanelOpen", () => {
-  it("fits the band above the open Overlay panel on the sheet shell", () => {
-    // 844 * 0.45 - (190 chrome + 24 fret numbers + 33.76 pad) = 132 → 22 raw
-    // → clamped to the 26 panel-open floor (the CSS panel yields instead).
-    expect(getResponsiveLayout(390, 844).stringRowPxPanelOpen).toBe(26);
-    // 667 * 0.45 - 240.68 = 59.5 → 9 raw → clamped to the 26 floor
-    expect(getResponsiveLayout(375, 667).stringRowPxPanelOpen).toBe(26);
-    // Tablet chrome (taller header): 1100 * 0.45 - (212 + 24 + 44) = 215 → 35
-    expect(getResponsiveLayout(800, 1100).stringRowPxPanelOpen).toBe(35);
-  });
-
-  it("equals stringRowPx outside the sheet shell", () => {
-    expect(getResponsiveLayout(1280, 1000).stringRowPxPanelOpen).toBe(42);
-    expect(getResponsiveLayout(800, 700).stringRowPxPanelOpen).toBe(36);
-  });
-});
-
 describe("scaleRowForZoomOut", () => {
   it("leaves rows alone at 100 and above (zoom-in widens frets, not rows)", () => {
     expect(scaleRowForZoomOut(64, 100)).toBe(64);

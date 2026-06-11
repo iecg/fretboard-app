@@ -1,13 +1,14 @@
 /* Floating zoom pair anchored to the stage's bottom-right corner, maps-style
    (and out of the board's way — the board top edge can reach high when zoomed
-   in). The stage is the positioning context. */
+   in). A horizontal row so the buttons read out · in left-to-right. The stage
+   is the positioning context. */
 
 .zoomControl {
   position: absolute;
   bottom: 12px;
   right: 12px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
   z-index: var(--z-note, 10);
   transition: opacity 0.2s ease;
