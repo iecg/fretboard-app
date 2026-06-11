@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { getEmphasis, type LeadLensContext } from "../utils/semantics";
 import type { NoteData } from "./useNoteData";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
-import { useEmphasisContext, type EmphasisContext } from "./useEmphasisContext";
+import type { EmphasisContext } from "./useEmphasisContext";
 
 export interface RenderedFretboardNote extends NoteData {
   cx: number;
@@ -24,6 +24,10 @@ interface BuildRenderedFretboardNotesProps {
 export interface UseAnimatedFretboardViewProps {
   topology: StaticFretboardTopologyNote[];
   hasChordOverlay: boolean;
+  /** Voice-leading emphasis context, supplied by the host alongside the
+   *  topology (same render = same store snapshot as the chord identity that
+   *  produced the topology — see the prop doc in FretboardSVG). */
+  emphasisContext?: EmphasisContext | null;
   displayFormat?: "notes" | "degrees" | "none";
   preferFlats?: boolean;
   scaleName?: string;
@@ -159,6 +163,7 @@ export function buildRenderedFretboardNotes({
 export function useAnimatedFretboardView({
   topology,
   hasChordOverlay,
+  emphasisContext = null,
   displayFormat,
   preferFlats,
   scaleName,
@@ -170,8 +175,6 @@ export function useAnimatedFretboardView({
   void preferFlats;
   void scaleName;
   void rootNote;
-
-  const emphasisContext = useEmphasisContext(hasChordOverlay);
 
   const noteData = useMemo(() => buildAnimatedFretboardNotes({
     topology,

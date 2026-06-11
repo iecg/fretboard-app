@@ -9,7 +9,7 @@ import {
 } from "./useAnimatedFretboardView";
 import type { NoteData } from "./useNoteData";
 import { useStaticFretboardTopology } from "./useStaticFretboardTopology";
-import type { EmphasisContext } from "./useEmphasisContext";
+import { useEmphasisContext, type EmphasisContext } from "./useEmphasisContext";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
 import {
   setProgressionPlayingAtom,
@@ -80,9 +80,13 @@ describe("useAnimatedFretboardView", () => {
     const { result } = renderHook(
       () => {
         const topology = useStaticFretboardTopology(TOPOLOGY_PROPS);
+        // Mirrors the production wiring: the host (Fretboard shell) reads the
+        // emphasis context and passes it in alongside the topology.
+        const emphasisContext = useEmphasisContext(true);
         const view = useAnimatedFretboardView({
           topology,
           hasChordOverlay: true,
+          emphasisContext,
           displayFormat: "notes",
           preferFlats: false,
           scaleName: "major",
@@ -131,9 +135,12 @@ describe("useAnimatedFretboardView", () => {
     const { result } = renderHook(
       () => {
         const topology = useStaticFretboardTopology(TOPOLOGY_PROPS);
+        // Mirrors the production wiring (host-supplied emphasis context).
+        const emphasisContext = useEmphasisContext(true);
         const view = useAnimatedFretboardView({
           topology,
           hasChordOverlay: true,
+          emphasisContext,
           displayFormat: "notes",
           preferFlats: false,
           scaleName: "major",

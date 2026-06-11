@@ -17,6 +17,7 @@ import { useChordConnectorPolylines, CHORD_TONE_CLASSES } from "./hooks/useChord
 import { useIntervalConnectorPolylines } from "./hooks/useIntervalConnectorPolylines";
 import { useStaticFretboardTopology, type StaticFretboardTopologyNote } from "./hooks/useStaticFretboardTopology";
 import { useAnimatedFretboardView } from "./hooks/useAnimatedFretboardView";
+import type { EmphasisContext } from "./hooks/useEmphasisContext";
 import { type BoxBound } from "./utils/semantics";
 import { FretboardBackground } from "./FretboardBackground";
 import { FretboardDefs } from "./FretboardDefs";
@@ -125,6 +126,18 @@ interface FretboardSVGProps {
     /** Close-voicing fallback flag — marks a close-voicing substitute (rendered at full ribbon strength). */
     isFallback?: boolean;
   }>;
+  /**
+   * Voice-leading emphasis context for the active progression step. Supplied
+   * by the Fretboard shell, which reads it from the SAME render (and therefore
+   * the same store snapshot) as the chord-identity props above — keeping
+   * classification and emphasis cues consistent on every commit. If this
+   * component subscribed to the emphasis atoms itself, an urgent commit during
+   * the displayed-step startTransition window (e.g. the audio-onset countdown
+   * flip) would render NEW emphasis against the parent's still-queued OLD
+   * identity props — the chord-boundary highlight flash. `null` = no emphasis
+   * (not playing / no chord overlay); also the default for prop-driven tests.
+   */
+  emphasisContext?: EmphasisContext | null;
   /** When false, chord voicing connector polylines are not rendered. Defaults to true. */
   showChordConnectors?: boolean;
   /** Optional DOM id applied to the SVG wrapper for stable external references. */
@@ -308,6 +321,7 @@ export function FretboardSVG({
   noteSemantics,
   fullChordPositionKeys,
   fullChordVoicings,
+  emphasisContext = null,
   showChordConnectors = true,
   id,
   onNoteClick,
@@ -560,6 +574,7 @@ export function FretboardSVG({
   const { renderedNotes } = useAnimatedFretboardView({
     topology,
     hasChordOverlay,
+    emphasisContext,
     displayFormat,
     preferFlats,
     scaleName: scaleName || "",
