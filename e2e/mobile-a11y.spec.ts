@@ -10,11 +10,12 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * 1. By default NOTHING aria-hides the shell (regression guard against any
  *    future broken non-modal dialog).
- * 2. Genuine modals (Settings sheet, the full-screen Song panel) DO hide the
- *    background while open and restore it on close — Radix's refcounted
- *    hideOthers, now working unassisted.
- * 3. The non-modal Overlay panel does NOT hide the stage (the board must stay
- *    operable while tweaking overlay controls).
+ * 2. Genuine modals (the Settings/Help sheets) DO hide the background while
+ *    open and restore it on close — Radix's refcounted hideOthers, working
+ *    unassisted.
+ * 3. The non-modal dock panels (Overlay AND Song) do NOT hide the shell: the
+ *    chrome above/below the drawers (board, transport strip, dock tabs) must
+ *    stay operable while they are open.
  */
 
 const MOBILE = { width: 390, height: 844 } as const;
@@ -92,7 +93,7 @@ test.describe("mobile dock shell accessibility", () => {
     await expect(panel).not.toHaveAttribute("aria-modal", "true");
   });
 
-  test("the modal Song panel hides the background and restores it on close", async ({
+  test("the non-modal Song panel keeps the shell reachable and closes on Escape", async ({
     page,
   }) => {
     await gotoMobile(page);
@@ -100,22 +101,23 @@ test.describe("mobile dock shell accessibility", () => {
     await page.getByTestId("dock-toggle-song").click();
     await expect(page.getByTestId("mobile-song-panel")).toBeVisible();
 
-    // Modal behavior: the background shell IS hidden from assistive tech
-    // while the Song panel is open (Radix hideOthers marks the shell or one
-    // of its ancestors aria-hidden).
-    await expect
-      .poll(async () => (await shellHiddenState(page)).stageEffectivelyHidden)
-      .toBe(true);
+    // Same contract as the Overlay panel: nothing gets aria-hidden — the
+    // transport strip and dock tabs around the drawer stay operable.
+    const state = await shellHiddenState(page);
+    expect(state.shellAriaHidden).toBeNull();
+    expect(state.stageEffectivelyHidden).toBe(false);
+    expect(state.spuriousMarkerCount).toBe(0);
+
+    const panel = page.getByTestId("mobile-song-panel");
+    await expect(panel).toHaveAttribute("role", "dialog");
+    await expect(panel).not.toHaveAttribute("aria-modal", "true");
+    // The dock tabs stay visible under the open drawer.
+    await expect(page.getByTestId("dock-toggle-overlay")).toBeVisible();
 
     await page.keyboard.press("Escape");
     await expect(page.getByTestId("mobile-song-panel")).toHaveCount(0);
-
-    await expect
-      .poll(async () => (await shellHiddenState(page)).stageEffectivelyHidden)
-      .toBe(false);
-    const restored = await shellHiddenState(page);
-    expect(restored.stage!.ariaHidden).toBeNull();
-    expect(restored.spuriousMarkerCount).toBe(0);
+    // Focus returns to the owning dock toggle.
+    await expect(page.getByTestId("dock-toggle-song")).toBeFocused();
   });
 
   test("the modal Settings sheet hides the background and restores it on close", async ({

@@ -115,6 +115,14 @@
   --mobile-dock-height: var(--token-mobile-dock-height);
   --mobile-panel-cover: var(--token-mobile-panel-cover);
   --mobile-song-panel-top: var(--token-mobile-song-panel-top);
+  /* Where the open Overlay panel's top edge sits: 55dvh of cover on tall
+     viewports, but never so high that the board band above it (header +
+     transport + track + the floor-size board) stops fitting — on short
+     phones the panel shrinks instead of burying the board. */
+  --mobile-overlay-panel-top: max(
+    calc(100dvh - var(--mobile-panel-cover)),
+    calc(var(--mobile-song-panel-top) + var(--token-mobile-panel-open-stage-px))
+  );
   --z-overlay-backdrop: var(--token-z-overlay-backdrop);
   --z-overlay-drawer: var(--token-z-overlay-drawer);
   --z-help-overlay: var(--token-z-help-overlay);
@@ -260,6 +268,13 @@
   --dc-transition:
     color 160ms ease, border-color 160ms ease, background-color 160ms ease,
     box-shadow 200ms ease;
+}
+
+/* The AppHeader renders taller at tablet widths (98px vs 72px measured), so
+   the tall Song panel anchors lower there. Kept in sync with
+   PANEL_OPEN_TOP_CHROME_TABLET_PX in src/layout/responsive.ts. */
+[data-layout-variant="tablet-split"] {
+  --mobile-song-panel-top: 212px;
 }
 
 [data-theme="modern-light"] {

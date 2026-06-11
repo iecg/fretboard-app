@@ -44,12 +44,13 @@ describe("stringRowPx (sheet shell: height-derived between header/transport/trac
 
 describe("stringRowPxPanelOpen", () => {
   it("fits the band above the open Overlay panel on the sheet shell", () => {
-    // 844 * 0.45 - 64 - 56 - 56 - 46 = 157.8 → 26/row
+    // 844 * 0.45 - (190 chrome + 24 fret numbers + 33.76 pad) = 132 → 22 raw
+    // → clamped to the 26 panel-open floor (the CSS panel yields instead).
     expect(getResponsiveLayout(390, 844).stringRowPxPanelOpen).toBe(26);
-    // 667 * 0.45 - 222 = 78.15 → 13 raw → clamped to the 26 panel-open floor
+    // 667 * 0.45 - 240.68 = 59.5 → 9 raw → clamped to the 26 floor
     expect(getResponsiveLayout(375, 667).stringRowPxPanelOpen).toBe(26);
-    // 1100 * 0.45 - 222 = 273 → 45/row
-    expect(getResponsiveLayout(800, 1100).stringRowPxPanelOpen).toBe(45);
+    // Tablet chrome (taller header): 1100 * 0.45 - (212 + 24 + 44) = 215 → 35
+    expect(getResponsiveLayout(800, 1100).stringRowPxPanelOpen).toBe(35);
   });
 
   it("equals stringRowPx outside the sheet shell", () => {

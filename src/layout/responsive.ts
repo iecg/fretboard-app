@@ -64,7 +64,21 @@ const STAGE_CHROME_PX = 46;
 /** Fraction of the viewport the open Overlay panel + dock cover together.
  *  Keep in sync with --token-mobile-panel-cover (55dvh) in tokens.css. */
 const PANEL_COVER_FRACTION = 0.55;
+/** Measured top chrome above the stage (header + transport strip + track).
+ *  The header renders taller at tablet widths. Keep the mobile value in sync
+ *  with --token-mobile-song-panel-top in tokens.css (and its tablet-split
+ *  override in semantic.css). */
+const PANEL_OPEN_TOP_CHROME_MOBILE_PX = 190; // 72 header + 56 transport + 62 track
+const PANEL_OPEN_TOP_CHROME_TABLET_PX = 212; // 98 header + 56 transport + 58 track
+/** Fret-number band under the board (part of fretboard-outer). */
+const FRET_NUMBER_BAND_PX = 24;
 const SHELL_STRING_COUNT = 6;
+
+/** The stage's top breathing padding: clamp(12px, 4dvh, 48px) in
+ *  MobileShell.module.css. */
+function stagePadTopPx(viewportHeight: number): number {
+  return Math.min(Math.max(viewportHeight * 0.04, 12), 48);
+}
 
 function clampShellRow(raw: number, min = STRING_ROW_PX_SHELL_MIN): number {
   return Math.min(STRING_ROW_PX_SHELL_MAX, Math.max(min, Math.floor(raw)));
@@ -100,14 +114,21 @@ export function scaleRowForZoomOut(rowPx: number, fretZoom: number): number {
   );
 }
 
-/** Rows that fit the band left visible above the open Overlay panel. */
-function getPanelOpenStringRowPx(viewportHeight: number): number {
-  const band =
-    viewportHeight * (1 - PANEL_COVER_FRACTION) -
-    SHELL_HEADER_PX -
-    SHELL_TRANSPORT_PX -
-    SHELL_TRACK_PX -
-    STAGE_CHROME_PX;
+/** Rows that fit the band left visible above the open Overlay panel. Uses
+ *  measured chrome (unlike the closed-state estimate above) because here an
+ *  overestimate doesn't degrade into breathing room — it pushes the board
+ *  behind the panel. */
+function getPanelOpenStringRowPx(
+  viewportHeight: number,
+  tier: ResponsiveTier,
+): number {
+  const chrome =
+    (tier === "mobile"
+      ? PANEL_OPEN_TOP_CHROME_MOBILE_PX
+      : PANEL_OPEN_TOP_CHROME_TABLET_PX) +
+    FRET_NUMBER_BAND_PX +
+    stagePadTopPx(viewportHeight);
+  const band = viewportHeight * (1 - PANEL_COVER_FRACTION) - chrome;
   return clampShellRow(band / SHELL_STRING_COUNT, STRING_ROW_PX_PANEL_OPEN_MIN);
 }
 
@@ -184,7 +205,7 @@ export function getResponsiveLayout(
     compactHeight,
     stringRowPx,
     stringRowPxPanelOpen: useSheetShell
-      ? getPanelOpenStringRowPx(viewportHeight)
+      ? getPanelOpenStringRowPx(viewportHeight, tier)
       : stringRowPx,
     showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
     useSheetShell,

@@ -41,12 +41,14 @@
   transition: padding-bottom 280ms ease;
 }
 
-/* While the Overlay panel is open it covers the viewport up to
-   --mobile-panel-cover (dock included) — pad the stage by the part of that
-   cover that overlaps it (the dock already sits in flex flow below). */
+/* While the Overlay panel is open, pad the stage by the part of the panel
+   that overlaps it: from the panel's top edge (--mobile-overlay-panel-top,
+   semantic.css) down to the stage's bottom (the dock already sits in flex
+   flow below). */
 .shell[data-mobile-panel="overlay"] .stage {
   padding-bottom: calc(
-    var(--mobile-panel-cover, 55dvh)
+    100dvh
+    - var(--mobile-overlay-panel-top, calc(100dvh - var(--mobile-panel-cover, 55dvh)))
     - var(--mobile-dock-height, 48px)
     - env(safe-area-inset-bottom, 0px)
   );

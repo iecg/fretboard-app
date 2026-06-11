@@ -230,7 +230,7 @@ test.describe("responsive layout regressions", () => {
 
       const metrics = await getMetrics(page);
       // The mobile header is compact: brand + a single overflow trigger, no
-      // inline transport cluster (transport moved into the sheet peek).
+      // inline transport cluster (transport lives in the strip below it).
       expect(metrics.headerRect, name).not.toBeNull();
       expect(metrics.titleRect, name).not.toBeNull();
       expect(metrics.actionsRect, name).not.toBeNull();
@@ -246,23 +246,37 @@ test.describe("responsive layout regressions", () => {
       // Compact header stays within a sane bound.
       expect(metrics.headerRect!.height, name).toBeLessThanOrEqual(96);
 
-      // Transport is the dock mini-player row at the bottom of the shell —
-      // assert it (and its play button) stay within the viewport.
-      const peek = page.getByTestId("dock-transport");
-      await expect(peek, name).toBeVisible();
-      const peekRect = await peek.evaluate((el) => {
+      // The transport strip sits under the header at the top of the shell —
+      // assert it (and its play button) stay within the viewport, above the
+      // progression track.
+      const transport = page.getByTestId("shell-transport");
+      await expect(transport, name).toBeVisible();
+      const transportRect = await transport.evaluate((el) => {
         const r = el.getBoundingClientRect();
         return {
           left: Math.round(r.left),
           right: Math.round(r.right),
+          top: Math.round(r.top),
           bottom: Math.round(r.bottom),
         };
       });
-      expect(peekRect.left, name).toBeGreaterThanOrEqual(0);
-      expect(peekRect.right, name).toBeLessThanOrEqual(viewport.width);
-      expect(peekRect.bottom, name).toBeLessThanOrEqual(viewport.height + 1);
+      expect(transportRect.left, name).toBeGreaterThanOrEqual(0);
+      expect(transportRect.right, name).toBeLessThanOrEqual(viewport.width);
+      // Top chrome: header above, strip well inside the upper half.
+      expect(transportRect.top, name).toBeGreaterThan(0);
+      expect(transportRect.bottom, name).toBeLessThanOrEqual(viewport.height / 2);
 
-      await expect(page.getByTestId("dock-play"), name).toBeVisible();
+      await expect(page.getByTestId("shell-play"), name).toBeVisible();
+
+      // The dock is now a slim tab bar pinned to the bottom edge.
+      const dock = page.getByTestId("mobile-dock");
+      await expect(dock, name).toBeVisible();
+      const dockRect = await dock.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { top: Math.round(r.top), bottom: Math.round(r.bottom) };
+      });
+      expect(dockRect.bottom, name).toBeLessThanOrEqual(viewport.height + 1);
+      expect(dockRect.bottom - dockRect.top, name).toBeLessThanOrEqual(64);
     }
   });
 
