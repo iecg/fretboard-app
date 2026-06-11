@@ -30,18 +30,6 @@ describe("Inspector v2.0", () => {
     expect(container.querySelector('[data-inspector-tab="song"]')).toBeNull();
   });
 
-  it("renders with placement=\"sheet\" — tabs in the header and a sheet root", () => {
-    const { container } = renderWithAtoms(<Inspector placement="sheet" />);
-    const root = container.querySelector('[data-placement="sheet"]');
-    expect(root).not.toBeNull();
-    // Tabs render in the header position (same as "top"), at the TOP of the body.
-    const header = root?.querySelector('[class*="tabHeader"]');
-    expect(header).not.toBeNull();
-    expect(header?.querySelector('[role="tablist"]')).not.toBeNull();
-    // Sheet placement makes the root a full-height scroll container.
-    expect(root?.className).toMatch(/placementSheet/);
-  });
-
   it("keeps a visited tab body mounted after switching away (keep-alive)", async () => {
     const user = userEvent.setup();
     const { container } = renderWithAtoms(<Inspector />);

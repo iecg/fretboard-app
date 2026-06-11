@@ -346,9 +346,6 @@ export const en: Dictionary = {
   mobileShell: {
     stageLabel: "Fretboard stage",
   },
-  mobileSheet: {
-    label: "Playback and controls",
-  },
   mobileDock: {
     label: "Playback and controls",
   },

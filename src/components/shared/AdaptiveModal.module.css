@@ -1,6 +1,6 @@
 /* Shared dim backdrop for both presentations. Reuses the same scrim + z token
    as HelpModal so this modal stacks above everything, including the mobile
-   sheet (--z-mobile-sheet: 100). --z-help-overlay resolves to 1000.
+   dock (--z-mobile-dock: 100). --z-help-overlay resolves to 1000.
    The dialog path drives its own fade via Radix's data-state attrs; the sheet
    path's overlay is animated by vaul. */
 .overlay {

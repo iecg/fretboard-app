@@ -315,9 +315,6 @@ export interface Dictionary {
   mobileShell: {
     stageLabel: string;
   };
-  mobileSheet: {
-    label: string;
-  };
   mobileDock: {
     label: string;
   };

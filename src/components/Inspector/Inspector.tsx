@@ -1,7 +1,6 @@
 import { useState, type ReactNode } from "react";
 import * as RadixTabs from "@radix-ui/react-tabs";
 import { useAtom } from "jotai";
-import clsx from "clsx";
 import { useTranslation } from "../../hooks/useTranslation";
 import { INSPECTOR_TABS, type InspectorTabId } from "./tabs";
 import { inspectorActiveTabAtom } from "../../store/inspectorAtoms";
@@ -18,11 +17,7 @@ const TAB_BODIES: Record<InspectorTabId, () => ReactNode> = {
   ),
 };
 
-export interface InspectorProps {
-  placement?: "top" | "sheet";
-}
-
-export function Inspector({ placement = "top" }: InspectorProps) {
+export function Inspector() {
   const { t } = useTranslation();
   const [active, setActive] = useAtom(inspectorActiveTabAtom);
   // Keep-alive: once a tab has been opened, keep its body mounted (Radix hides
@@ -54,11 +49,8 @@ export function Inspector({ placement = "top" }: InspectorProps) {
 
   return (
     <RadixTabs.Root
-      className={clsx(
-        styles.root,
-        placement === "sheet" && styles.placementSheet,
-      )}
-      data-placement={placement}
+      className={styles.root}
+      data-placement="top"
       value={active}
       onValueChange={handleValueChange}
     >

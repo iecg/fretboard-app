@@ -251,7 +251,7 @@ function AppContent() {
         helpModal={helpModalNode}
         controlsPanel={
           <Suspense fallback={<ControlsPanelSkeleton mode={layout.panelMode} />}>
-            <Inspector placement="top" />
+            <Inspector />
           </Suspense>
         }
         settingsOverlay={settingsOverlayNode}
