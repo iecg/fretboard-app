@@ -1,0 +1,70 @@
+/* ----------------------------------------------------------------------------
+ * Mobile dock panels.
+ *
+ * .overlayPanel — non-modal, anchored above the dock; the board stays visible
+ *   above it. Sits BELOW the dock in z so the slide-up emerges from behind it.
+ * .songPanel — full-screen modal (Radix Dialog), covers the shell incl. dock.
+ *
+ * Both paint --surface-app-panel (the app-gradient surface) so they read as
+ * the same room as the rest of the app, never a flat color island.
+ * --------------------------------------------------------------------------- */
+
+.overlayPanel {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom, 0px));
+  /* Panel + dock together cover --mobile-panel-cover of the viewport. */
+  top: calc(100dvh - var(--mobile-panel-cover, 55dvh));
+  z-index: var(--z-mobile-panel);
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--chrome-border);
+  border-radius: 14px 14px 0 0;
+  background: var(--surface-app-panel, var(--bg-color));
+  outline: none;
+}
+
+.songPanel {
+  position: fixed;
+  inset: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  z-index: var(--z-mobile-song-panel);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-app-panel, var(--bg-color));
+  outline: none;
+}
+
+.panelHeader {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Same visual language as the Inspector tab pills. */
+.panelTitle {
+  margin: 0;
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--faceplate-accent);
+  text-shadow: var(--faceplate-accent-glow);
+}
+
+.panelBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-2) var(--space-3) 16px;
+}
+
+.songPanel .panelBody {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}

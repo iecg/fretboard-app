@@ -652,7 +652,16 @@
 }
 
 /* Sheet placement: the preset/key/time columns wrap to one column anyway at
-   sheet widths; make the stacking deterministic instead of wrap-dependent. */
+   sheet widths; make the stacking deterministic instead of wrap-dependent.
+   In column direction the base `.groupColumn` flex-basis (24rem) would become
+   a 384px HEIGHT per card and `align-items: flex-start` would shrink cards to
+   fit-content width — reset both so cards hug their content and span the row. */
 :global([data-placement="sheet"]) .groupRow {
   flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3, 0.75rem);
+}
+
+:global([data-placement="sheet"]) .groupColumn {
+  flex: 0 0 auto;
 }
