@@ -3,11 +3,12 @@ import { useAtom } from "jotai";
 import { StepperControl } from "../../StepperControl/StepperControl";
 import { FretRangeControl } from "../../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
-import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
+import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
 import { ZOOM_STEP, SETTING_FIELDS } from "../constants";
 import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import { useTranslation } from "../../../hooks/useTranslation";
+import useLayoutMode from "../../../hooks/useLayoutMode";
 import { accidentalModeAtom } from "../../../store/scaleAtoms";
 import { enharmonicDisplayAtom, audioQualityAtom } from "../../../store/audioAtoms";
 import { displayFormatAtom } from "../../../store/uiAtoms";
@@ -17,6 +18,11 @@ export default function DisplaySettingsSection() {
   const { t } = useTranslation();
   const { fretZoom, setFretZoom, fretStart, setFretStart, fretEnd, setFretEnd } =
     useSettingsForm();
+  // Sub-100 zoom (zoom OUT) only does anything on sheet shells, where it
+  // shrinks the board so more frets fit; desktop auto-fit already shows the
+  // full neck, so its stepper floor stays at 100.
+  const { useSheetShell } = useLayoutMode();
+  const zoomMin = useSheetShell ? FRET_ZOOM_OUT_MIN : FRET_ZOOM_MIN;
 
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
@@ -100,10 +106,14 @@ export default function DisplaySettingsSection() {
           <StepperControl
             value={fretZoom}
             onChange={setFretZoom}
-            min={FRET_ZOOM_MIN}
+            min={zoomMin}
             max={FRET_ZOOM_MAX}
             step={ZOOM_STEP}
-            formatValue={(zoom) => (zoom <= 100 ? t("settings.view.auto") : `${zoom}${t("settings.view.zoomSuffix")}`)}
+            formatValue={(zoom) =>
+              zoom === 100
+                ? t("settings.view.auto")
+                : `${zoom}${t("settings.view.zoomSuffix")}`
+            }
             buttonVariant="mobile"
           />
         </div>

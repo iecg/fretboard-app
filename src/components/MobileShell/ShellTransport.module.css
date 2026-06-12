@@ -1,0 +1,38 @@
+/* ----------------------------------------------------------------------------
+ * ShellTransport — always-visible transport strip between the mobile shell's
+ * header and the progression track.
+ *
+ * The buttons themselves are the shared faceplate TransportButton (styles in
+ * TransportBar.module.css); this module only lays out the strip.
+ * --------------------------------------------------------------------------- */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 var(--space-4);
+  /* 56px minimum keeps the strip a comfortable touch band and vertically
+     balances the 44px play button. */
+  min-height: 56px;
+  /* Reads as part of the top chrome — same divider the header uses. */
+  border-bottom: 1px solid var(--surface-card-border);
+}
+
+/* Loop toggle — pushed to the far right */
+.loop {
+  margin-left: auto;
+}
+
+.spinIcon {
+  animation: shell-transport-spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinIcon {
+    animation: none;
+  }
+}
+
+@keyframes shell-transport-spin {
+  to { transform: rotate(360deg); }
+}

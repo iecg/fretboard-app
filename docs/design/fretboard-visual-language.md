@@ -359,6 +359,11 @@ overlay off — guide tones exist only in chord context. See §10 for the spec t
   or color state (see CLAUDE.md "Note Roles").
 - **No silent caps.** When a feature bounds coverage (top-K moves, region gating), log what
   was dropped.
+- **Board drop shadow is desktop-only.** `.fretboard-board`'s `0 10px 30px` shadow gives the
+  neck lift on desktop/tablet-stacked, but in the sheet shell (mobile + tablet-split) — where
+  the board is height-derived and centered against the app gradient — the blur reads as a
+  smeared band below the neck (recurring owner complaint). Suppressed via tier/variant-gated
+  `box-shadow: none` in FretboardSVG.module.css; do not re-add it for those surfaces.
 
 ---
 

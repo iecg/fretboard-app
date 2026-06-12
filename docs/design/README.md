@@ -11,6 +11,7 @@ than re-deriving the grounding, and add any new sources back into it.
 | [`fretboard-visual-language.md`](./fretboard-visual-language.md) | markers, color, marker shape/size/fill, connectors, voice-leading motion, contrast/OKLCH tokens — *how notes are drawn* |
 | [`audio-voicing-engine.md`](./audio-voicing-engine.md) | voicing selection, inversion-based strum, close-voicing fallback, audio / Tone.js playback |
 | [`music-theory-pedagogy.md`](./music-theory-pedagogy.md) | chord qualities & extensions, scales, guide tones, improvisation lenses, modal characteristic tones — *what notes mean* |
+| [`mobile-ui-contract.md`](./mobile-ui-contract.md) | mobile/tablet sheet shell, panels/drawers, Settings/Help sheets, surfaces & dividers, header padding, scroll/overflow, zoom control — *enforceable UI rules* (run `/ui-review` or `pnpm run ui:tokens`) |
 
 **Domain split.** Theory (`music-theory-pedagogy.md`) decides which notes mean what;
 visual-language (`fretboard-visual-language.md`) decides how they look; audio-voicing

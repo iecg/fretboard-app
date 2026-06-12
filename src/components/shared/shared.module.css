@@ -343,12 +343,29 @@
    so these buttons are touch-reachable and need a full-size hit area. The
    toggle-group also switches to min-height so the container grows to fit the
    larger buttons instead of clipping them. */
-:global(.app-container[data-layout-tier="mobile"]) .toggle-group {
+:global([data-layout-tier="mobile"]) .toggle-group {
   height: auto;
   min-height: var(--control-height);
 }
-:global(.app-container[data-layout-tier="mobile"]) .toggle-btn {
+:global([data-layout-tier="mobile"]) .toggle-btn {
   min-height: var(--size-touch-target);
+}
+
+/* Mobile bottom-sheet variant of the guard above. The Inspector sheet content
+   is rendered through a portal that escapes the [data-layout-tier] shell root,
+   so the tier guard never reaches ToggleBars inside the sheet (e.g. the chord
+   editor's Beat/Bar unit toggle). Re-assert the 44px target via the Inspector's
+   sheet-placement hook. Desktop ToggleBars are unaffected. */
+:global([data-placement="sheet"]) .toggle-group {
+  height: auto;
+  min-height: var(--control-height);
+}
+:global([data-placement="sheet"]) .toggle-btn {
+  min-height: var(--size-touch-target);
+  /* Short text toggles (e.g. the editor's Beat | Bar unit pair) render ~37px
+     wide; widen them so each option is a full square touch target. Wider /
+     flex:1 options are unaffected (their content already exceeds 44px). */
+  min-width: var(--size-touch-target);
 }
 
 .accidental-toggle {
@@ -408,7 +425,7 @@
 
 /* Wrap to 2 rows × 6 cells on mobile so each touch target meets the
    WCAG 2.5.5 44×44 minimum (12 columns at ~390px viewport = ~32px wide). */
-:global(.app-container[data-layout-tier="mobile"]) .note-grid {
+:global([data-layout-tier="mobile"]) .note-grid {
   grid-template-columns: repeat(6, minmax(44px, 1fr));
 }
 
@@ -474,7 +491,7 @@
 
 /* Mobile touch-target guard — the Inspector docks at the bottom on mobile,
    so these buttons are touch-reachable and need a full-size hit area. */
-:global(.app-container[data-layout-tier="mobile"]) .note-btn {
+:global([data-layout-tier="mobile"]) .note-btn {
   min-height: var(--size-touch-target);
 }
 
@@ -577,7 +594,7 @@
 .icon-button--sm :global(.icon) { width: 1rem;    height: 1rem;    }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
-:global(.app-container[data-layout-tier="mobile"]) .icon-button--sm {
+:global([data-layout-tier="mobile"]) .icon-button--sm {
   width: var(--size-touch-target);   /* 2.75rem = 44px */
   height: var(--size-touch-target);
 }

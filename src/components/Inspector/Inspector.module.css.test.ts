@@ -26,8 +26,10 @@ describe("Inspector.module.css", () => {
       join(__dirname, "InspectorCard.module.css"),
       "utf8",
     );
+    // The mobile-tier selector shares its rule with the sheet-placement hook,
+    // so allow additional selectors between it and the block.
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.cardHeadActions\s*\{[^}]*order:\s*3/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.cardHeadActions\s*[^{]*\{[^}]*order:\s*3/s,
     );
   });
 });

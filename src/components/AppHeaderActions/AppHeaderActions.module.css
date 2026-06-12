@@ -1,0 +1,65 @@
+/* Header overflow menu — same faceplate chrome as the PresetMenu dropdown
+   (PresetMenu.module.css .preset-menu-content); the two dropdowns must read
+   as one popover family. Keep the chrome declarations in sync. */
+
+.menu-content {
+  z-index: var(--z-dropdown);
+  min-width: 12rem;
+  max-width: min(90vw, 22rem);
+  max-height: min(
+    var(--radix-dropdown-menu-content-available-height, 60vh),
+    calc(100dvh - var(--mobile-bottom-nav-safe-zone, 0px) - 1rem),
+    480px
+  );
+  overflow-y: auto;
+  padding: 0.25rem;
+  background:
+    radial-gradient(120% 200% at 0% 0%, var(--faceplate-wash), transparent 55%),
+    linear-gradient(180deg, var(--faceplate-bg-elevated), var(--faceplate-bg));
+  border: 1px solid var(--faceplate-border);
+  border-radius: var(--dc-radius);
+  box-shadow: var(--elevation-overlay);
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-theme="modern-light"]) .menu-content {
+  border-color: rgb(133 124 108 / 0.30);
+  box-shadow: 0 4px 12px rgb(42 37 29 / 0.10), 0 1px 4px rgb(42 37 29 / 0.06);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+.menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  min-height: 1.85rem;
+  padding: 0.32rem 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--dc-fg);
+  border-radius: calc(var(--dc-radius) - 2px);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+.menu-item[data-highlighted] {
+  background-color: var(--dc-bg-hover);
+  color: var(--dc-fg-strong);
+}
+
+.menu-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  /* Same ink as the item label — the extra-muted tier read as a washed-out,
+     "semi-transparent" icon next to its text. */
+  color: var(--dc-fg);
+}
+
+.menu-item[data-highlighted] .menu-item-icon {
+  color: var(--dc-fg-strong);
+}

@@ -61,6 +61,15 @@
      Prefer these tokens in new components over bare surface-base/raised/overlay primitives.
      Theme overrides (themes.css) set light-mode values; dark defaults alias existing primitives. */
   --surface-shell:       var(--bg-color);
+  /* App-gradient surface for full-bleed mobile chrome (dock + panels): the
+     same gradient family the body/.app-container paint, so these surfaces
+     read as the app's room rather than a flat color island. The gradient
+     tokens are theme-adaptive (themes.css overrides them for light). */
+  --surface-app-panel: linear-gradient(
+    180deg,
+    var(--bg-app-gradient-mid, var(--bg-app-gradient-start)),
+    var(--bg-app-gradient-end)
+  );
   --surface-card-top:    var(--surface-overlay);
   --surface-card-nested: color-mix(in srgb, var(--bg-color) 60%, var(--surface-raised) 40%);
   --surface-well:        var(--surface-raised);
@@ -73,6 +82,12 @@
   --chrome-border: color-mix(in srgb, var(--surface-highlight) 80%, transparent);
   --chrome-scrim: color-mix(in srgb, var(--bg-color) 68%, rgba(0, 0, 0, 0.32));
   --chrome-hover-bg: var(--surface-highlight);
+
+  /* Divider between a mobile panel/sheet header and its scrollable body —
+     shared by the dock panels (MobilePanels) and the Settings/Help sheets so
+     the separation reads identically everywhere. Routes through the app's
+     canonical card-border token so mobile chrome matches the rest of the UI. */
+  --panel-header-border: var(--surface-card-border);
 
   --panel-surface-bg: var(--surface-base);
   --panel-surface-border: 1px solid var(--surface-highlight);
@@ -95,7 +110,11 @@
   --z-note: var(--token-z-note);
   --z-dropdown: var(--token-z-dropdown);
   --z-header: var(--token-z-header);
-  --z-bottom-nav: var(--token-z-bottom-nav);
+  --z-mobile-panel: var(--token-z-mobile-panel);
+  --z-mobile-dock: var(--token-z-mobile-dock);
+  --mobile-dock-height: var(--token-mobile-dock-height);
+  --mobile-panel-cover: var(--token-mobile-panel-cover);
+  --mobile-song-panel-top: var(--token-mobile-song-panel-top);
   --z-overlay-backdrop: var(--token-z-overlay-backdrop);
   --z-overlay-drawer: var(--token-z-overlay-drawer);
   --z-help-overlay: var(--token-z-help-overlay);
@@ -241,6 +260,12 @@
   --dc-transition:
     color 160ms ease, border-color 160ms ease, background-color 160ms ease,
     box-shadow 200ms ease;
+}
+
+/* The AppHeader renders taller at tablet widths (98px vs 72px measured), so
+   the tall Song panel anchors lower there. */
+[data-layout-variant="tablet-split"] {
+  --mobile-song-panel-top: 212px;
 }
 
 [data-theme="modern-light"] {

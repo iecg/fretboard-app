@@ -28,8 +28,10 @@ test.describe("App Layout Visual Regression", () => {
   });
 
   test("app-tablet-portrait-768x1024", async ({ page }) => {
+    // tablet-split (tablet width + tall viewport) now renders the sheet shell
+    // (useSheetShell === true), not the desktop app-container.
     await prepareVisualPage(page, { width: 768, height: 1024 });
-    await expect(page.getByTestId("app-container")).toBeVisible();
+    await expect(page.getByTestId("mobile-shell")).toBeVisible();
     await expectFullPageVisual(page, "app-tablet-portrait-768x1024");
   });
 });

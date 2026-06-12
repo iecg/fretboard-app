@@ -82,13 +82,15 @@ describe("responsive layout helper", () => {
 
   // Canonical viewport matrix — one row per target device / variant.
   it.each([
-    // phones (portrait)
-    [375, 667, "mobile", "mobile", 34],
-    [390, 844, "mobile", "mobile", 34],
-    // phone landscape
+    // phones (portrait) — sheet-shell rows derive from viewport height (fill
+    // the band between header/track and the dock, clamped 34–64)
+    [375, 667, "mobile", "mobile", 64],
+    [390, 844, "mobile", "mobile", 64],
+    // phone landscape (portrait-lock overlay covers this; floor clamp applies)
     [667, 375, "mobile", "mobile", 34],
-    // tablet portrait
-    [768, 1024, "tablet", "tablet-split", 36],
+    // tablet portrait — tablet-split renders the sheet shell, so its rows are
+    // height-derived too
+    [768, 1024, "tablet", "tablet-split", 64],
     // compact tablet (short height)
     [768, 400, "tablet", "tablet-stacked", 36],
     // desktop — compact height → stacked
@@ -110,17 +112,13 @@ describe("responsive layout helper", () => {
       expect(layout.variant).toBe(variant);
       expect(layout.stringRowPx).toBe(stringRowPx);
       expect(getResponsiveVariant(width, height)).toBe(variant);
-      expect(getStringRowPx(tier)).toBe(stringRowPx);
+      if (!layout.useSheetShell) {
+        // Sheet-shell rows are height-derived (see responsive.test.ts); only
+        // the non-shell variants use the fixed per-tier value.
+        expect(getStringRowPx(tier)).toBe(stringRowPx);
+      }
     },
   );
-
-  it("shows mobile tabs on all mobile viewports and tablet-split", () => {
-    expect(getResponsiveLayout(390, 844).showMobileTabs).toBe(true);
-    expect(getResponsiveLayout(667, 375).showMobileTabs).toBe(true);    // landscape mobile
-    expect(getResponsiveLayout(768, 1024).showMobileTabs).toBe(true);   // tablet-split
-    expect(getResponsiveLayout(768, 400).showMobileTabs).toBe(false);   // tablet-stacked
-    expect(getResponsiveLayout(1440, 900).showMobileTabs).toBe(false);
-  });
 
   it("shows the shared controls panel only when not using the tab bar", () => {
     expect(getResponsiveLayout(390, 844).showControlsPanel).toBe(false);

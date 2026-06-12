@@ -127,6 +127,7 @@ export const en: Dictionary = {
     unmuteTitle: "Unmute",
     help: "Open help",
     helpTitle: "Help & Instructions",
+    moreActions: "More actions",
     themeToLight: "Switch to light theme",
     themeToDark: "Switch to dark theme",
     dismiss: "Dismiss",
@@ -310,6 +311,7 @@ export const en: Dictionary = {
     progressionNavigation: "Progression navigation",
     pauseProgressionTooltip: "Pause",
     playProgressionTooltip: "Play",
+    loopProgression: "Loop progression",
     stopProgression: "Stop",
     stopProgressionTooltip: "Stop and return to bar 1",
     presetCustom: "Custom",
@@ -339,5 +341,17 @@ export const en: Dictionary = {
     chordSelected: "selected",
     chordUnavailable: "Unavailable",
     playingChord: "Playing",
+  },
+  mobileShell: {
+    stageLabel: "Fretboard stage",
+  },
+  mobileDock: {
+    label: "Playback and controls",
+    zoomIn: "Zoom in on the fretboard",
+    zoomOut: "Zoom out on the fretboard",
+  },
+  mobilePanels: {
+    closeOverlay: "Close overlay panel",
+    closeSong: "Close song panel",
   },
 };

@@ -473,11 +473,11 @@
    two-column grid so each field sits beside its partner instead of stacking
    into a tall single column. The PropGrid's own data-columns template is
    overridden here; Prop cells lose their multi-column span and fill one track. */
-:global(.app-container[data-layout-tier="mobile"]) .mobile-paired-grid {
+:global([data-layout-tier="mobile"]) .mobile-paired-grid {
   grid-template-columns: minmax(5.5rem, 0.8fr) minmax(0, 1.2fr);
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .mobile-paired-grid > * {
+:global([data-layout-tier="mobile"]) .mobile-paired-grid > * {
   /* stylelint-disable-next-line declaration-no-important */
   grid-column: auto !important;
   min-width: 0;
@@ -485,7 +485,7 @@
 
 /* Compact the progression card header toolbar: no wrap, tighter gaps, pushed
    to the right edge of the (wrapped) head row. */
-:global(.app-container[data-layout-tier="mobile"]) .progression-toolbar {
+:global([data-layout-tier="mobile"]) .progression-toolbar {
   gap: 0.35rem;
   flex-wrap: nowrap;
   margin-left: auto;
@@ -493,7 +493,7 @@
 
 /* Drop the "Add" text label to an icon-only button — visually hidden, still
    announced (the button also carries an aria-label). */
-:global(.app-container[data-layout-tier="mobile"]) .toolbar-button > span {
+:global([data-layout-tier="mobile"]) .toolbar-button > span {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -506,20 +506,20 @@
 }
 
 /* The dividers add width the compact row can't spare. */
-:global(.app-container[data-layout-tier="mobile"]) .toolbar-divider {
+:global([data-layout-tier="mobile"]) .toolbar-divider {
   display: none;
 }
 
 /* Force the chord list + editor into a single stacked column so the editor
    panel always sits below the list instead of wrapping beside it (which, at
    narrow widths, let the two overlap). */
-:global(.app-container[data-layout-tier="mobile"]) .progression-master-detail {
+:global([data-layout-tier="mobile"]) .progression-master-detail {
   flex-direction: column;
   flex-wrap: nowrap;
   align-items: stretch;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .editor-panel {
+:global([data-layout-tier="mobile"]) .editor-panel {
   flex: 0 1 auto;
   width: 100%;
   min-width: 0;
@@ -527,43 +527,43 @@
 
 /* Editor controls go one-per-row so Root / Quality / Duration each get the
    full width rather than fighting over a wrapping flex row. */
-:global(.app-container[data-layout-tier="mobile"]) .editor-grid {
+:global([data-layout-tier="mobile"]) .editor-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.8rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .duration-row,
-:global(.app-container[data-layout-tier="mobile"]) .quality-row {
+:global([data-layout-tier="mobile"]) .duration-row,
+:global([data-layout-tier="mobile"]) .quality-row {
   flex-wrap: wrap;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .duration-unit {
+:global([data-layout-tier="mobile"]) .duration-unit {
   flex: 1 1 8rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .toolbar-button {
+:global([data-layout-tier="mobile"]) .toolbar-button {
   width: var(--control-height);
   padding: 0;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .delete-button {
+:global([data-layout-tier="mobile"]) .delete-button {
   width: var(--control-height);
   padding: 0;
   margin-left: 0;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .grouped-button {
+:global([data-layout-tier="mobile"]) .grouped-button {
   height: var(--control-height);
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .root-quality-row {
+:global([data-layout-tier="mobile"]) .root-quality-row {
   display: flex;
   align-items: center;
   gap: 0.35rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .lock-label {
+:global([data-layout-tier="mobile"]) .lock-label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -575,26 +575,93 @@
   border-width: 0;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .lock-toggle {
+:global([data-layout-tier="mobile"]) .lock-toggle {
   width: var(--control-height);
   padding: 0;
   flex-shrink: 0;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .pager-button {
+:global([data-layout-tier="mobile"]) .pager-button {
   width: var(--control-height);
   height: var(--control-height);
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .editor-panel-header {
+:global([data-layout-tier="mobile"]) .editor-panel-header {
   flex-wrap: wrap;
   row-gap: 0.35rem;
   align-items: flex-start;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .editor-pager {
+:global([data-layout-tier="mobile"]) .editor-pager {
   order: 3;
   flex: 1 1 100%;
   justify-content: center;
   margin-left: 0;
+}
+
+/* ===== Mobile bottom-sheet: 44px touch targets =====
+ * The Song tab is rendered inside the Inspector's "sheet" placement, which vaul
+ * portals out of the [data-layout-tier="mobile"] shell root. The tier guards
+ * above therefore never reach these controls when they live in the sheet, so
+ * the progression toolbar/editor buttons stayed below 44px on touch. Re-assert
+ * the touch sizes via the sheet-placement hook. The desktop/tablet bottom-tab
+ * placement still uses the tier guards above; desktop top placement is untouched.
+ */
+:global([data-placement="sheet"]) .toolbar-button {
+  width: var(--control-height);
+  min-height: var(--size-touch-target);
+  padding: 0;
+}
+
+/* The sheet sizes the toolbar button icon-only, so hide its text label (still
+   announced via the button's aria-label). The tier guard above already does
+   this on the mobile tier, but at tablet-split (where only the sheet-placement
+   hooks fire, not the mobile tier) the icon-only button would otherwise keep a
+   stray visible label. Hide it at every sheet width. */
+:global([data-placement="sheet"]) .toolbar-button > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+:global([data-placement="sheet"]) .delete-button {
+  width: var(--control-height);
+  min-height: var(--size-touch-target);
+  padding: 0;
+  margin-left: 0;
+}
+
+:global([data-placement="sheet"]) .grouped-button {
+  width: var(--size-touch-target);
+  height: var(--size-touch-target);
+}
+
+:global([data-placement="sheet"]) .pager-button {
+  width: var(--size-touch-target);
+  height: var(--size-touch-target);
+}
+
+:global([data-placement="sheet"]) .lock-toggle {
+  min-height: var(--size-touch-target);
+}
+
+/* Sheet placement: the preset/key/time columns wrap to one column anyway at
+   sheet widths; make the stacking deterministic instead of wrap-dependent.
+   In column direction the base `.groupColumn` flex-basis (24rem) would become
+   a 384px HEIGHT per card and `align-items: flex-start` would shrink cards to
+   fit-content width — reset both so cards hug their content and span the row. */
+:global([data-placement="sheet"]) .groupRow {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3, 0.75rem);
+}
+
+:global([data-placement="sheet"]) .groupColumn {
+  flex: 0 0 auto;
 }

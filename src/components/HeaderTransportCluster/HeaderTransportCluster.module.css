@@ -43,33 +43,27 @@
   text-shadow: none;
 }
 
-:global([data-theme="modern-light"]) .tempoValue {
-  text-shadow: none;
-}
-
 :global([data-theme="modern-light"]) .scalePrimary {
   text-shadow: none;
 }
 
-/* Position readout: PANEL chip + warm hairline (matches Tempo/Scale) */
+/* Position readout: PANEL chip + warm hairline. The Tempo/Scale chips get the
+   same treatment from TempoReadout.module.css's light override. */
 :global([data-theme="modern-light"]) .positionReadout {
-  background: var(--surface-card-top);
-  border-color: var(--track-border);
-}
-
-/* Tempo + Scale readouts: PANEL chip + warm hairline */
-:global([data-theme="modern-light"]) .contextBox {
   background: var(--surface-card-top);
   border-color: var(--track-border);
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */
 
 /* ----------------------------------------------------------------------------
- * Readout boxes (Position, Tempo, Scale) — compact LCD chips
+ * Readout boxes (Position, Tempo, Scale) — compact LCD chips.
+ * The Tempo/Scale chips take their chrome from TempoReadout.module.css
+ * `.readout` (the shared chip primitive); `.contextBox` here only carries the
+ * cluster-specific layout overrides. The position readout keeps a local copy
+ * of the chrome because it sizes/pads differently.
  * ------------------------------------------------------------------------- */
 
-.positionReadout,
-.contextBox {
+.positionReadout {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -78,9 +72,6 @@
   border: 1px solid var(--track-border);
   border-radius: 6px;
   background: var(--track-bg-readout);
-}
-
-.positionReadout {
   /* Size to content; a little extra leading space separates it from the
      transport's instrument buttons so the two groups read distinctly. */
   flex: 0 0 auto;
@@ -102,6 +93,8 @@
 }
 
 .readoutLabel {
+  /* Position readout's label; the Tempo/Scale chips use the shared
+     TempoReadout.module.css .readoutLabel. */
   color: var(--track-text-muted);
   font-family: var(--font-mono);
   font-size: 0.45rem;
@@ -188,30 +181,7 @@
   padding-inline-start: 0;
 }
 
-/* Tempo readout ------------------------------------------------------------ */
-
-.tempoValue {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.24rem;
-  color: var(--track-accent);
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums slashed-zero;
-  font-size: 0.85rem;
-  font-weight: 700;
-  line-height: 1;
-  text-shadow: 0 0 8px rgb(77 228 255 / 0.35);
-}
-
-.tempoUnit {
-  color: var(--track-text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.45rem;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  text-shadow: none;
-}
+/* Tempo readout: see TempoReadout.module.css (shared chip primitive). */
 
 /* Scale readout ------------------------------------------------------------ */
 
@@ -241,7 +211,7 @@
  * ------------------------------------------------------------------------- */
 
 /* stylelint-disable selector-pseudo-class-no-unknown */
-:global(.app-container[data-layout-tier="mobile"]) .cluster {
+:global([data-layout-tier="mobile"]) .cluster {
   flex-wrap: wrap;
   row-gap: 0.35rem;
 }
@@ -251,7 +221,7 @@
    a full-width row of their own). Keeping the cluster to two rows is what holds
    the mobile header under its height budget — see the responsive.spec.ts guard
    "keeps mobile header actions and transport within the viewport". */
-:global(.app-container[data-layout-tier="mobile"]) .positionReadout {
+:global([data-layout-tier="mobile"]) .positionReadout {
   flex: 0 1 auto;
   min-width: 0;
   margin-inline-start: 0;
@@ -259,7 +229,7 @@
   padding-inline: 0.38rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .contextReadouts {
+:global([data-layout-tier="mobile"]) .contextReadouts {
   flex: 1 1 auto;
   grid-template-columns: minmax(4.25rem, 0.7fr) minmax(0, 1.3fr);
   min-width: 0;
@@ -267,12 +237,12 @@
   margin-inline-start: auto;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .contextBox {
+:global([data-layout-tier="mobile"]) .contextBox {
   padding-block: 0.18rem;
   padding-inline: 0.38rem;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .scalePrimary {
+:global([data-layout-tier="mobile"]) .scalePrimary {
   max-width: 100%;
 }
 /* stylelint-enable selector-pseudo-class-no-unknown */

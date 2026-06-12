@@ -1,18 +1,12 @@
+import { useAtomValue } from "jotai";
+import clsx from "clsx";
 import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
-import { useScaleState } from "../../hooks/useScaleState";
+import { scaleHeadlineAtom } from "../../store/scaleAtoms";
 import { TransportBar } from "../TransportBar/TransportBar";
 import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
+import { TempoReadout } from "./TempoReadout";
+import tempoStyles from "./TempoReadout.module.css";
 import styles from "./HeaderTransportCluster.module.css";
-
-/**
- * The header SCALE readout shows only the root + scale name — the
- * parenthetical mode ("(Ionian)") and any trailing mode index ("1st Mode")
- * are dropped so the chip stays compact.
- */
-function scaleHeadline(label: string): string {
-  return label.split(" (")[0].trim();
-}
-
 
 /**
  * The DAW transport cluster, hosted in the unified `AppHeader` (Always-On DAW
@@ -20,9 +14,12 @@ function scaleHeadline(label: string): string {
  * toggles) with the position, tempo, and scale readouts that previously lived
  * in `ProgressionTrack`'s transport row.
  *
- * All readouts bind to existing atoms via `useProgressionState` /
- * `useScaleState` — this component is a pure relocation of rendering, with no
- * new state.
+ * All readouts bind to existing atoms via `usePlaybackTransportModel` and the
+ * shared `scaleHeadlineAtom` selector — this component is a pure relocation of
+ * rendering, with no new state.
+ *
+ * The header SCALE readout shows only the root + scale name; the parenthetical
+ * mode ("(Ionian)") is dropped by `scaleHeadlineAtom` so the chip stays compact.
  */
 export function HeaderTransportCluster() {
   const {
@@ -32,10 +29,9 @@ export function HeaderTransportCluster() {
     totalProgressionBars,
     beatsPerBar,
   } = usePlaybackTransportModel();
-  const { scaleLabel } = useScaleState();
+  const scale = useAtomValue(scaleHeadlineAtom);
 
   const canPlay = !progressionPlaybackBlockedReason;
-  const scale = scaleHeadline(scaleLabel);
 
   return (
     <div className={styles.cluster} data-testid="header-transport-cluster">
@@ -50,15 +46,9 @@ export function HeaderTransportCluster() {
       />
 
       <div className={styles.contextReadouts}>
-        <div className={styles.contextBox}>
-          <span className={styles.readoutLabel}>Tempo</span>
-          <span className={styles.tempoValue} data-testid="header-tempo">
-            {progressionTempoBpm}
-            <span className={styles.tempoUnit}>BPM</span>
-          </span>
-        </div>
-        <div className={styles.contextBox}>
-          <span className={styles.readoutLabel}>Scale</span>
+        <TempoReadout className={styles.contextBox} />
+        <div className={clsx(tempoStyles.readout, styles.contextBox)}>
+          <span className={tempoStyles.readoutLabel}>Scale</span>
           <span className={styles.scaleValue}>
             <span className={styles.scalePrimary}>{scale}</span>
           </span>

@@ -21,7 +21,7 @@
   overflow: hidden;
   will-change: transform;
   box-shadow: var(--elevation-overlay);
-  border-left: 1px solid var(--chrome-border);
+  border-left: 1px solid var(--surface-card-border);
 }
 
 .settings-overlay-drawer[data-layout-tier="mobile"] {
@@ -30,12 +30,46 @@
   border-left: none;
 }
 
+/* Enter/exit animation. Radix sets data-state="open|closed" and keeps the
+   backdrop + drawer mounted through the closing animation via its built-in
+   Presence, replacing the former Framer Motion exit while letting Radix run its
+   proper close lifecycle (focus return to the trigger + scroll unlock). */
+.settings-overlay-backdrop[data-state="open"] {
+  animation: settings-backdrop-in 0.24s ease-out;
+}
+.settings-overlay-backdrop[data-state="closed"] {
+  animation: settings-backdrop-out 0.24s ease-out;
+}
+.settings-overlay-drawer[data-state="open"] {
+  animation: settings-drawer-in 0.24s ease-out;
+}
+.settings-overlay-drawer[data-state="closed"] {
+  animation: settings-drawer-out 0.24s ease-out;
+}
+
+@keyframes settings-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes settings-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes settings-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes settings-drawer-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
 .settings-overlay-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--chrome-border);
+  border-bottom: 1px solid var(--surface-card-border);
   flex-shrink: 0;
   background: var(--surface-float);
 }
@@ -50,13 +84,27 @@
 
 .settings-overlay-content {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 14px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 16px 16px max(32px, env(safe-area-inset-bottom, 0px));
   overscroll-behavior: contain;
 }
+
+/* In the mobile sheet, hide the scrollbar (scroll stays functional). The
+   desktop drawer keeps its styled .custom-scrollbar. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-presentation="sheet"]) .settings-overlay-content {
+  scrollbar-width: none;
+}
+
+:global([data-presentation="sheet"]) .settings-overlay-content::-webkit-scrollbar {
+  display: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .overlay-section-card {
   display: flex;
@@ -181,6 +229,26 @@
   box-shadow: var(--focus-ring-glow);
 }
 
+/* Inside the AdaptiveModal mobile sheet, the header adopts the shared mobile
+   panel chrome (MobilePanels.module.css .panelHeader/.panelTitle) so Settings
+   reads as the same family of drawers as the dock panels. The desktop drawer
+   keeps its own treatment. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-presentation="sheet"]) .settings-overlay-header {
+  background: none;
+  border-bottom-color: var(--panel-header-border);
+}
+
+:global([data-presentation="sheet"]) .settings-overlay-title {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--faceplate-accent);
+  text-shadow: var(--faceplate-accent-glow);
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
 .settings-overlay-drawer[data-layout-tier="mobile"] .settings-overlay-header {
   padding: 12px 16px;
 }
@@ -202,6 +270,12 @@
   .settings-overlay-close,
   .overlay-reset-btn {
     transition: none;
+    animation: none;
+  }
+
+  /* No motion: Radix sees no running animation and unmounts immediately. */
+  .settings-overlay-backdrop[data-state],
+  .settings-overlay-drawer[data-state] {
     animation: none;
   }
 }

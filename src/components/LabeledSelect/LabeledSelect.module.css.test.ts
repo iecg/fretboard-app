@@ -11,7 +11,7 @@ describe("control-surface composition", () => {
   it("defines mobile item height override", () => {
     const css = readFileSync(join(__dirname, "LabeledSelect.module.css"), "utf8");
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.labeled-select-item\s*\{[^}]*min-height:\s*var\(--control-height\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.labeled-select-item\s*\{[^}]*min-height:\s*var\(--control-height\)/s,
     );
   });
 });

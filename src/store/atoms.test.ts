@@ -105,12 +105,19 @@ describe("atoms", () => {
       unsub();
     });
 
+    it("number: accepts the sheet-shell zoom-out floor (50)", () => {
+      localStorage.setItem(k("fretZoom"), "50");
+      const store = makeStore();
+      const unsub = mount(store, fretZoomAtom);
+      expect(store.get(fretZoomAtom)).toBe(50);
+      unsub();
+    });
+
     it.each([
       ["NaN", "non-numeric"],
       ["9999", "out-of-range high"],
-      ["10", "below min"],
+      ["10", "below the zoom-out floor"],
       ["75.5", "non-integer float"],
-      ["50", "legacy sub-auto"],
     ])("number: self-heals %s (%s) to default 100", (stored) => {
       localStorage.setItem(k("fretZoom"), stored);
       const store = makeStore();

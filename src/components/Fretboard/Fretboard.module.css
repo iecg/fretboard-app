@@ -40,25 +40,36 @@
 
 /* Tablet and desktop: enable native scroll on the fretboard (same as mobile)
    so an overflowing board scrolls horizontally instead of being clipped by the
-   base `overflow: clip` rule. */
-:global(.app-container[data-layout-tier="tablet"]) .fretboard-wrapper,
-:global(.app-container[data-layout-tier="desktop"]) .fretboard-wrapper {
+   base `overflow: clip` rule.
+   Scoped by the data-layout-tier attribute (not .app-container) so the rules
+   apply under both shells: MainLayoutWrapper (.app-container) and MobileShell
+   both set data-layout-tier on an ancestor. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-layout-tier="tablet"]) .fretboard-wrapper,
+:global([data-layout-tier="desktop"]) .fretboard-wrapper {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Mobile inline layout */
-:global(.app-container[data-layout-tier="mobile"]) .fretboard-outer {
+/* Mobile inline layout. Inside the sheet shell the board must size to content
+   (height: auto) so the stage's justify-content: center can place it in the
+   visible band above the sheet — the base height: 100% would stretch it and
+   defeat centering. The tablet-split variant only exists under MobileShell,
+   so it gets the same treatment. */
+:global([data-layout-tier="mobile"]) .fretboard-outer,
+:global([data-layout-variant="tablet-split"]) .fretboard-outer {
   width: 100%;
+  height: auto;
   overflow: hidden;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .fretboard-wrapper {
+:global([data-layout-tier="mobile"]) .fretboard-wrapper {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .skeleton-container {
   position: absolute;

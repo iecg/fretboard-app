@@ -74,3 +74,14 @@
 .stepper-control--fill .stepper-group {
   width: 100%;
 }
+
+/* Touch-target guard for the mobile bottom sheet. The toolbar variant's +/-
+   buttons render at calc(--control-height - 6px) = 38px even though the
+   surrounding shell is 44px, so the tappable button itself falls short. The
+   sheet content is portaled out of the [data-layout-tier] shell, so scope to
+   the Inspector's sheet placement (the working hook there). Desktop steppers
+   keep their 32px size. */
+:global([data-placement="sheet"]) .stepper-btn {
+  min-width: var(--size-touch-target);
+  min-height: var(--size-touch-target);
+}

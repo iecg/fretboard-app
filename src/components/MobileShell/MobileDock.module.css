@@ -1,0 +1,60 @@
+/* ----------------------------------------------------------------------------
+ * MobileDock — fixed tab bar (Overlay / Song toggles) at the bottom of the
+ * mobile shell. Playback lives in the ShellTransport strip under the header.
+ *
+ * In normal flex flow inside MobileShell; position:relative + z-index so the
+ * sliding panels (lower z) emerge from behind it.
+ * --------------------------------------------------------------------------- */
+
+.dock {
+  position: relative;
+  z-index: var(--z-mobile-dock);
+  display: flex;
+  flex-direction: column;
+  min-height: var(--mobile-dock-height);
+  border-top: 1px solid var(--surface-card-border);
+  /* Falls back to the flat shell color until --surface-app-panel exists. */
+  background: var(--surface-app-panel, var(--bg-color));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: stretch;
+  /* Fill the dock band so the toggles' active border sits on its bottom edge. */
+  flex: 1;
+}
+
+/* Same visual language as the Inspector tab pills (Inspector.module.css .tab):
+   letter-spaced uppercase, accent + glow when its panel is open. */
+.toggle {
+  appearance: none;
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: var(--size-touch-target, 44px);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, text-shadow 120ms ease;
+}
+
+.toggle[data-state="open"] {
+  color: var(--faceplate-accent);
+  border-bottom-color: var(--faceplate-accent);
+  text-shadow: var(--faceplate-accent-glow);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--faceplate-accent);
+  outline-offset: -2px;
+}

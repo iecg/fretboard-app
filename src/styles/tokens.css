@@ -58,10 +58,27 @@
   --token-z-note: 10;
   --token-z-dropdown: 50;
   --token-z-header: 80;
-  --token-z-bottom-nav: 100;
+  --token-z-mobile-panel: 90; /* mobile dock panels (Overlay + Song) — above header, BELOW the dock so they emerge from behind it */
+  --token-z-mobile-dock: 100; /* mobile dock tab bar — paints over the sliding panels */
   --token-z-overlay-backdrop: 200;
   --token-z-overlay-drawer: 201;
   --token-z-help-overlay: 1000;
+
+  /* Mobile dock height: 44px panel-toggle tab bar + top border + the toggles'
+     2px indicator border (playback lives in the ShellTransport strip under
+     the header). Single source for the panels' bottom anchor and the banner's
+     mobile offset. Kept in sync with SHELL_DOCK_PX in src/layout/responsive.ts
+     (JS can't read a CSS var). */
+  --token-mobile-dock-height: 48px;
+
+  /* Fraction of the viewport the open Overlay panel + dock cover together.
+     The board behind it stays fixed — the panel slides up over it. */
+  --token-mobile-panel-cover: 55dvh;
+
+  /* Top anchor of the tall Song panel: measured mobile header (72) +
+     transport strip (56) + progression track (62). The tablet-split override
+     (taller header) lives in semantic.css. */
+  --token-mobile-song-panel-top: 190px;
 
   --token-disabled-opacity: 0.3;
 
@@ -198,9 +215,11 @@
   :root {
     --size-touch-target: 2.75rem; /* 44px */
     --control-height: 44px;
-    /* 3.5rem = empirical height of .placementBottom .tabList — keep in sync with Inspector.module.css.
-       Static fallback only: getCollisionPadding() in src/utils/collision.ts measures the tablist
-       height at runtime for precision, so update both places if the tablist height changes. */
+    /* Bottom safe-zone reserved so dropdowns/selects (LabeledSelect, PresetMenu,
+       AppHeaderActions) don't run to the very bottom edge on mobile, where the
+       MobileShell bottom sheet peek sits. 3.5rem static reserve + safe-area inset.
+       getCollisionPadding() in src/utils/collision.ts supplies dynamic padding at
+       runtime; this token is the CSS-side static fallback. */
     --mobile-bottom-nav-safe-zone: calc(3.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

@@ -29,3 +29,13 @@ export const helpWhatsNewSeenAtom = atomWithStorage<string>(
   GET_ON_INIT,
 );
 
+export type MobilePanelId = "none" | "overlay" | "song";
+
+/**
+ * Which dock panel is open in the mobile shell: the Overlay panel (anchored
+ * above the dock, board stays visible) or the Song panel (full-screen setup).
+ * Deliberately NOT persisted — restoring a stale "song" would reopen the
+ * full-screen setup panel on every app load.
+ */
+export const mobilePanelAtom = atom<MobilePanelId>("none");
+

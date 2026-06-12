@@ -127,6 +127,7 @@ export const es: Dictionary = {
     unmuteTitle: "Activar sonido",
     help: "Abrir ayuda",
     helpTitle: "Ayuda e Instrucciones",
+    moreActions: "Más acciones",
     themeToLight: "Cambiar a tema claro",
     themeToDark: "Cambiar a tema oscuro",
     dismiss: "Cerrar",
@@ -310,6 +311,7 @@ export const es: Dictionary = {
     progressionNavigation: "Navegación de la progresión",
     pauseProgressionTooltip: "Pausar",
     playProgressionTooltip: "Reproducir",
+    loopProgression: "Repetir la progresión",
     stopProgression: "Detener",
     stopProgressionTooltip: "Detener y volver al compás 1",
     presetCustom: "Personalizada",
@@ -339,5 +341,17 @@ export const es: Dictionary = {
     chordSelected: "seleccionado",
     chordUnavailable: "No disponible",
     playingChord: "Reproduciendo",
+  },
+  mobileShell: {
+    stageLabel: "Escenario del diapasón",
+  },
+  mobileDock: {
+    label: "Reproducción y controles",
+    zoomIn: "Acercar el diapasón",
+    zoomOut: "Alejar el diapasón",
+  },
+  mobilePanels: {
+    closeOverlay: "Cerrar panel de superposición",
+    closeSong: "Cerrar panel de canción",
   },
 };

@@ -1,15 +1,30 @@
 import { expect, test, type Page } from "@playwright/test";
-import { loadVisualState } from "./visual-helpers";
+import { loadVisualState, openMobilePanel, openSettings } from "./visual-helpers";
 
+/**
+ * Navigates to the app and waits for whichever shell root mounts.
+ *
+ * Desktop/tablet-stacked render the `app-container`; mobile and tablet-split
+ * render the `mobile-shell` (the vaul bottom-sheet shell). The Inspector
+ * tablist lives inside the sheet on mobile and is below the fold at the
+ * default "peek" snap, so it is only awaited on the desktop `app-container`
+ * path — mobile callers wait for whatever they actually need.
+ */
 async function gotoApp(page: Page, width: number, height: number) {
   await page.setViewportSize({ width, height });
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.locator('[data-testid="app-container"]')).toBeVisible();
-
-  // Wait for the Inspector controls panel to mount.
   await expect(
-    page.getByRole("tablist", { name: "Inspector" }),
+    page.locator('[data-testid="app-container"], [data-testid="mobile-shell"]'),
   ).toBeVisible();
+
+  // The desktop controls panel mounts the Inspector tablist inline; on mobile
+  // the tablist is inside the (collapsed) sheet, so only gate on it for the
+  // desktop shell.
+  if ((await page.locator('[data-testid="app-container"]').count()) > 0) {
+    await expect(
+      page.getByRole("tablist", { name: "Inspector" }),
+    ).toBeVisible();
+  }
 }
 
 async function expectNoVerticalOverlap(
@@ -42,35 +57,52 @@ async function expectNoVerticalOverlap(
   ).toBeLessThanOrEqual(rects.second!.top + 1);
 }
 
-async function expectOpenMenuAboveBottomTabs(page: Page, viewportName: string) {
+/**
+ * The legacy fixed bottom tab bar is gone — the bottom surface is now the vaul
+ * sheet. An open dropdown/listbox must therefore stay within the viewport: its
+ * bottom edge must not run past the viewport's bottom and it must be a real,
+ * usable menu (taller than a single touch target).
+ */
+async function expectOpenMenuWithinViewport(page: Page, viewportName: string) {
   const metrics = await page.evaluate(() => {
     const menu = document.querySelector('[role="listbox"], [role="menu"]');
-    const tabList = document.querySelector('[role="tablist"][aria-label="Inspector"]');
     const getRect = (element: Element | null) => {
       if (!(element instanceof HTMLElement)) return null;
       const rect = element.getBoundingClientRect();
       return {
         top: Math.round(rect.top),
         bottom: Math.round(rect.bottom),
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
         height: Math.round(rect.height),
       };
     };
     return {
       menu: getRect(menu),
-      tabList: getRect(tabList),
       innerHeight: window.innerHeight,
+      innerWidth: window.innerWidth,
     };
   });
 
   expect(metrics.menu, viewportName).not.toBeNull();
-  expect(metrics.tabList, viewportName).not.toBeNull();
   expect(metrics.menu!.height, viewportName).toBeGreaterThan(44);
-  expect(metrics.menu!.bottom, viewportName).toBeLessThanOrEqual(metrics.tabList!.top - 4);
+  expect(metrics.menu!.bottom, viewportName).toBeLessThanOrEqual(
+    metrics.innerHeight + 1,
+  );
+  expect(metrics.menu!.top, viewportName).toBeGreaterThanOrEqual(-1);
+  expect(metrics.menu!.right, viewportName).toBeLessThanOrEqual(
+    metrics.innerWidth + 1,
+  );
+  expect(metrics.menu!.left, viewportName).toBeGreaterThanOrEqual(-1);
 }
 
 async function getMetrics(page: Page) {
   return page.evaluate(() => {
-    const app = document.querySelector('[data-testid="app-container"]');
+    // Tier/variant data attributes live on `app-container` (desktop) or
+    // `mobile-shell` (mobile / tablet-split). Read from whichever exists.
+    const app =
+      document.querySelector('[data-testid="app-container"]') ??
+      document.querySelector('[data-testid="mobile-shell"]');
     const badge = document.querySelector('[data-testid="version-badge"]');
     const badgeRect = badge?.getBoundingClientRect();
     const toolbar = document.querySelector('[data-testid="fretboard-outer"]');
@@ -80,6 +112,9 @@ async function getMetrics(page: Page) {
     const transport = document.querySelector('[data-testid="app-header-transport"]');
     const transportCluster = document.querySelector('[data-testid="header-transport-cluster"]');
     const settingsDrawer = document.querySelector('[data-testid="settings-drawer"]');
+    // Mobile/tablet-split present Settings/Help as a vaul adaptive sheet
+    // (portaled to <body>) instead of the desktop drawer.
+    const adaptiveSheet = document.querySelector('[data-testid="adaptive-modal-sheet"]');
     const helpModal = document.querySelector('[data-testid="help-modal"]');
     const helpContent = document.querySelector('[data-testid="help-modal-content"]');
     // The desktop controls panel is the Inspector (Radix Tabs); its tablist
@@ -129,6 +164,7 @@ async function getMetrics(page: Page) {
       transportRect: getRect(transport),
       transportClusterRect: getRect(transportCluster),
       settingsDrawerRect: getRect(settingsDrawer),
+      adaptiveSheetRect: getRect(adaptiveSheet),
       helpModalRect: getRect(helpModal),
       controlsColumnRect: getRect(controlsColumn),
       keyColumnRect: getRect(keyColumn),
@@ -156,11 +192,14 @@ test.describe("responsive layout regressions", () => {
       const before = await getMetrics(page);
       expect(before.tier, viewport.name).toBe("mobile");
       expect(before.variant, viewport.name).toBe("mobile");
-      expect(before.summaryCount, viewport.name).toBe(1);
 
-      // Version badge now lives inside the settings overlay; open it before
-      // verifying the footer is reachable.
-      await page.getByRole("button", { name: "Open settings" }).click();
+      // Version badge now lives inside the settings overlay, which opens on
+      // mobile as a vaul adaptive sheet via the header overflow menu. Open it
+      // and verify the footer (version badge) is reachable within the viewport.
+      await openSettings(page);
+      await expect(
+        page.locator('[data-testid="adaptive-modal-sheet"]'),
+      ).toBeVisible();
       await page.locator('[data-testid="version-badge"]').scrollIntoViewIfNeeded();
 
       const after = await getMetrics(page);
@@ -168,6 +207,8 @@ test.describe("responsive layout regressions", () => {
       expect(after.badgeBottom!, viewport.name).toBeLessThanOrEqual(
         viewport.height,
       );
+      // The compact mobile header still shares a single row between brand and
+      // actions.
       expect(after.titleRect).not.toBeNull();
       expect(after.actionsRect).not.toBeNull();
       const headerSharesRow =
@@ -177,7 +218,7 @@ test.describe("responsive layout regressions", () => {
     }
   });
 
-  test("keeps mobile header actions and transport within the viewport", async ({
+  test("keeps mobile header actions and peek transport within the viewport", async ({
     page,
   }) => {
     for (const viewport of [
@@ -188,17 +229,54 @@ test.describe("responsive layout regressions", () => {
       await gotoApp(page, viewport.width, viewport.height);
 
       const metrics = await getMetrics(page);
+      // The mobile header is compact: brand + a single overflow trigger, no
+      // inline transport cluster (transport lives in the strip below it).
       expect(metrics.headerRect, name).not.toBeNull();
       expect(metrics.titleRect, name).not.toBeNull();
       expect(metrics.actionsRect, name).not.toBeNull();
-      expect(metrics.transportRect, name).not.toBeNull();
-      expect(metrics.transportClusterRect, name).not.toBeNull();
 
+      const overflowRect = await page
+        .getByTestId("header-overflow-trigger")
+        .evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return { right: Math.round(r.right), bottom: Math.round(r.bottom) };
+        });
+      expect(overflowRect.right, name).toBeLessThanOrEqual(viewport.width);
       expect(metrics.actionsRect!.right, name).toBeLessThanOrEqual(viewport.width);
-      expect(metrics.transportClusterRect!.right, name).toBeLessThanOrEqual(
-        viewport.width,
-      );
-      expect(metrics.headerRect!.height, name).toBeLessThanOrEqual(176);
+      // Compact header stays within a sane bound.
+      expect(metrics.headerRect!.height, name).toBeLessThanOrEqual(96);
+
+      // The transport strip sits under the header at the top of the shell —
+      // assert it (and its play button) stay within the viewport, above the
+      // progression track.
+      const transport = page.getByTestId("shell-transport");
+      await expect(transport, name).toBeVisible();
+      const transportRect = await transport.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          left: Math.round(r.left),
+          right: Math.round(r.right),
+          top: Math.round(r.top),
+          bottom: Math.round(r.bottom),
+        };
+      });
+      expect(transportRect.left, name).toBeGreaterThanOrEqual(0);
+      expect(transportRect.right, name).toBeLessThanOrEqual(viewport.width);
+      // Top chrome: header above, strip well inside the upper half.
+      expect(transportRect.top, name).toBeGreaterThan(0);
+      expect(transportRect.bottom, name).toBeLessThanOrEqual(viewport.height / 2);
+
+      await expect(page.getByTestId("shell-play"), name).toBeVisible();
+
+      // The dock is now a slim tab bar pinned to the bottom edge.
+      const dock = page.getByTestId("mobile-dock");
+      await expect(dock, name).toBeVisible();
+      const dockRect = await dock.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { top: Math.round(r.top), bottom: Math.round(r.bottom) };
+      });
+      expect(dockRect.bottom, name).toBeLessThanOrEqual(viewport.height + 1);
+      expect(dockRect.bottom - dockRect.top, name).toBeLessThanOrEqual(64);
     }
   });
 
@@ -226,30 +304,52 @@ test.describe("responsive layout regressions", () => {
     }
   });
 
-  test("keeps tablet split layout and settings drawer from crowding the layout", async ({
+  test("keeps tablet split layout and settings sheet from crowding the layout", async ({
     page,
   }) => {
     await gotoApp(page, 768, 1024);
 
     const initial = await getMetrics(page);
+    // Tablet-split renders the MobileShell sheet shell — tier reads from the
+    // shell root.
     expect(initial.tier).toBe("tablet");
     expect(initial.variant).toBe("tablet-split");
-    expect(initial.headerActionsMode).toBe("compact");
-    expect(initial.headerSubtitle).toBe("hidden");
 
-    // Tablet-split renders the Inspector rather than a side-by-side
-    // controls/key split. Verify the fretboard and Inspector are visible
-    // without horizontal overflow.
+    // Tablet-split renders the fretboard stage; the Inspector lives in the
+    // bottom sheet. Verify the fretboard is visible without horizontal overflow.
     await expect(page.locator('[data-testid="fretboard-outer"]')).toBeVisible();
-    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
     expect(initial.scrollWidth).toBeLessThanOrEqual(initial.innerWidth);
 
-    await page.getByRole("button", { name: "Open settings" }).click();
+    // The header presents the overflow menu (compact actions) at tablet-split.
+    expect(initial.headerActionsMode).toBe("compact");
+
+    // Settings opens from the header overflow menu. Tablet-split is a touch
+    // shell (useSheetShell), so Settings presents as the full-height adaptive
+    // sheet — matching the header + main shell — NOT the desktop side drawer.
+    // Open it via the overflow menu and verify the sheet sits within the
+    // viewport without crowding the layout.
+    await page.getByTestId("header-overflow-trigger").click();
+    await page.getByRole("menuitem", { name: /^Settings$/ }).click();
+    await expect(page.getByTestId("adaptive-modal-sheet")).toBeVisible();
+    await expect(page.getByTestId("settings-drawer")).toHaveCount(0);
+
     const withSettings = await getMetrics(page);
-    expect(withSettings.settingsDrawerRect).not.toBeNull();
-    expect(withSettings.settingsDrawerRect!.width).toBeGreaterThanOrEqual(320);
-    expect(withSettings.settingsDrawerRect!.width).toBeLessThanOrEqual(420);
-    expect(withSettings.settingsDrawerRect!.bottom).toBeLessThanOrEqual(1024);
+    expect(withSettings.adaptiveSheetRect).not.toBeNull();
+    // The sheet spans the viewport width without horizontal overflow — unlike
+    // the legacy slide-from-right drawer, which extended past the 768px
+    // viewport. (The sheet's content box scrolls internally, so its bottom
+    // edge can exceed the fold; the invariant here is horizontal fit + anchor.)
+    expect(withSettings.adaptiveSheetRect!.left).toBeGreaterThanOrEqual(-1);
+    expect(withSettings.adaptiveSheetRect!.right).toBeLessThanOrEqual(
+      withSettings.innerWidth + 1,
+    );
+    expect(withSettings.adaptiveSheetRect!.width).toBeLessThanOrEqual(
+      withSettings.innerWidth + 1,
+    );
+    // The sheet is anchored within the viewport (top edge on-screen).
+    expect(withSettings.adaptiveSheetRect!.top).toBeLessThanOrEqual(1024);
+    // The sheet must not introduce a horizontal scrollbar on the page.
+    expect(withSettings.scrollWidth).toBeLessThanOrEqual(withSettings.innerWidth);
   });
 
   test("keeps 1024x1366 in the desktop split layout", async ({ page }) => {
@@ -293,32 +393,41 @@ test.describe("responsive layout regressions", () => {
     expect(after.keyColumnRect!.bottom).toBeLessThanOrEqual(768 + 10); // 10px tolerance
   });
 
-  test("uses a full-width settings drawer on narrow portrait phones", async ({
+  test("opens settings as a bottom sheet that fits the viewport on narrow phones", async ({
     page,
   }) => {
+    // The legacy full-width settings drawer is gone; mobile settings present as
+    // a vaul bottom sheet. It must fit within the viewport width with no
+    // horizontal overflow.
     await gotoApp(page, 390, 844);
-    await page.getByRole("button", { name: "Open settings" }).click();
+    await openSettings(page);
 
     const metrics = await getMetrics(page);
-    expect(metrics.isFullWidthSettings).toBe(true);
-    expect(metrics.settingsDrawerRect).not.toBeNull();
-    expect(metrics.settingsDrawerRect!.width).toBeGreaterThanOrEqual(388);
+    expect(metrics.adaptiveSheetRect).not.toBeNull();
+    expect(metrics.adaptiveSheetRect!.left).toBeGreaterThanOrEqual(-1);
+    expect(metrics.adaptiveSheetRect!.right).toBeLessThanOrEqual(390 + 1);
+    expect(metrics.adaptiveSheetRect!.width).toBeLessThanOrEqual(390 + 1);
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
   });
 
-  test("keeps Overlay voicing dropdown above bottom tabs on mobile", async ({ page }) => {
+  test("keeps the Overlay voicing dropdown within the viewport on mobile", async ({ page }) => {
     for (const viewport of [
       { width: 390, height: 844, name: "390x844" },
       { width: 375, height: 667, name: "375x667" },
     ]) {
-      await gotoApp(page, viewport.width, viewport.height);
-      await page.getByRole("tab", { name: "Overlay" }).click();
+      await loadVisualState(page, {}, viewport);
+
+      // Open the Overlay panel via its dock toggle (the panel atom is not
+      // persisted, so panels open exactly like a user would).
+      await openMobilePanel(page, "overlay");
 
       const voicing = page.getByRole("combobox", { name: "Voicing" });
       await expect(voicing, viewport.name).toBeVisible();
       await voicing.click();
 
-      await expectOpenMenuAboveBottomTabs(page, viewport.name);
+      // No bottom tab bar anymore — the open dropdown must simply stay within
+      // the viewport (not overflow the bottom or side edges).
+      await expectOpenMenuWithinViewport(page, viewport.name);
     }
   });
 
@@ -375,8 +484,7 @@ test.describe("responsive layout regressions", () => {
       { width: 390, height: 844 },
     );
 
-    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
-    await page.getByRole("tab", { name: "Song" }).click();
+    await openMobilePanel(page, "song");
 
     // The chord list <ul> carries the "Progression navigation" accessible name;
     // it only renders once a step is active (the seeded progression has steps).
@@ -414,8 +522,7 @@ test.describe("responsive layout regressions", () => {
       { width: 390, height: 844 },
     );
 
-    await expect(page.getByRole("tablist", { name: "Inspector" })).toBeVisible();
-    await page.getByRole("tab", { name: "Song" }).click();
+    await openMobilePanel(page, "song");
 
     const list = page.locator('[aria-label="Progression navigation"]');
     await expect(list).toBeVisible();
@@ -435,8 +542,9 @@ test.describe("responsive layout regressions", () => {
       { width: 390, height: 844, name: "390x844" },
       { width: 375, height: 667, name: "375x667" },
     ]) {
-      await gotoApp(page, viewport.width, viewport.height);
-      await page.getByRole("tab", { name: "Song" }).click();
+      await loadVisualState(page, {}, viewport);
+      // The preset menu trigger lives in the full-screen Song panel.
+      await openMobilePanel(page, "song");
 
       // The PresetMenu trigger's accessible name is the translated
       // `inspector.progressionLabel` ("Sequence"), not "preset".

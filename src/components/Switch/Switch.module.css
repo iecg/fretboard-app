@@ -109,4 +109,30 @@
   background: #b1431b;
   box-shadow: 0 1px 2px rgb(177 67 27 / 0.35);
 }
+
+/* Touch-target guard for the mobile bottom sheet. The pill is intentionally a
+   compact 36x20 visual, but on touch the tappable area must reach 44x44. Rather
+   than resize the pill (which would look wrong beside its label), extend the hit
+   area with a transparent, centered ::before overlay. Scoped to the Inspector's
+   sheet placement (the Scale/Chord on-off switches live there); the switch is
+   portaled out of the [data-layout-tier] shell so the tier hook can't reach it. */
+:global([data-placement="sheet"]) .switch {
+  /* Keep the larger hit area from spilling out of tight rows. */
+  isolation: isolate;
+}
+
+:global([data-placement="sheet"]) .switch::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--size-touch-target);
+  height: var(--size-touch-target);
+  transform: translate(-50%, -50%);
+  /* Sit at the base of the switch's stacking context. The .thumb is a later DOM
+     child with no z-index, so it intentionally stacks above this overlay — keep
+     this at 0 so a future z-index/overflow tweak can't silently clip the 44px
+     hit area or paint over the thumb. */
+  z-index: 0;
+}
 /* stylelint-enable selector-pseudo-class-no-unknown */

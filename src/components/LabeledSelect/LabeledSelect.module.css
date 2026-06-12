@@ -210,8 +210,19 @@
   font-size: 10px;
 }
 
-:global(.app-container[data-layout-tier="mobile"]) .labeled-select-item {
+:global([data-layout-tier="mobile"]) .labeled-select-item {
   min-height: var(--control-height);
   padding-block: 0.6rem;
+}
+
+/* Touch-target guard for the mobile bottom sheet. The trigger's min-height is
+   already var(--control-height) (44px under the mobile media query), but a few
+   width-constrained triggers (e.g. the backing-track Style/Pattern selects with
+   data-width="auto") render ~43.5px wide — just under the 44px minimum. Pin a
+   width floor. The Inspector sheet content is portaled out of the
+   [data-layout-tier] shell, so scope to its sheet-placement hook; wider triggers
+   are unaffected (their content width already exceeds 44px). */
+:global([data-placement="sheet"]) .labeled-select-trigger {
+  min-width: var(--size-touch-target);
 }
 

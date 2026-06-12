@@ -12,7 +12,9 @@ import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
 /**
  * The BACKING TRACK group of the Progression tab. Exposes only the genre
  * selector — patterns and swing are bundled into each genre preset rather
- * than offered as individual knobs.
+ * than offered as individual knobs, and the instrument on/off toggles live
+ * in the transport (desktop TransportBar / mobile ShellTransport) on every
+ * shell.
  */
 export function BackingTrackControls({ hideHeader = false }: BackingTrackControlsProps = {}) {
   const { t } = useTranslation();

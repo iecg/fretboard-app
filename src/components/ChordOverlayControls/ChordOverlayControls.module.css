@@ -9,7 +9,7 @@
 }
 
 /* On mobile, collapse the 12-column PropGrid so every child spans full width. */
-:global(.app-container[data-layout-tier="mobile"]) .grid > * {
+:global([data-layout-tier="mobile"]) .grid > * {
   grid-column: 1 / -1 !important;
 }
 

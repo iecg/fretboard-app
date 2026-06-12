@@ -22,20 +22,22 @@ function setViewport(width: number, height: number) {
 
 describe("useLayoutMode", () => {
   describe("returns mobile tier layout for narrow viewport", () => {
-    it("tier is mobile and stringRowPx is 34 at 375x667", () => {
+    it("tier is mobile and stringRowPx caps at 64 at 375x667", () => {
       setViewport(375, 667);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("mobile");
-      expect(result.current.stringRowPx).toBe(34);
+      // Height-derived: floor((667 - 270 chrome) / 6) = 66 → capped to 64.
+      expect(result.current.stringRowPx).toBe(64);
     });
   });
 
   describe("returns tablet tier layout for tablet viewport", () => {
-    it("tier is tablet and stringRowPx is 36 at 768x1024", () => {
+    it("tier is tablet; tablet-split rows are height-derived (sheet shell)", () => {
       setViewport(768, 1024);
       const { result } = renderHook(() => useLayoutMode(), { wrapper });
       expect(result.current.tier).toBe("tablet");
-      expect(result.current.stringRowPx).toBe(36);
+      // tablet-split renders the sheet shell: floor((1024 - 270) / 6) → 64 cap.
+      expect(result.current.stringRowPx).toBe(64);
     });
   });
 

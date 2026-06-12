@@ -18,14 +18,15 @@ export interface ResponsiveLayout {
   compactHeight: boolean;
   stringRowPx: number;
   showControlsPanel: boolean;
-  showMobileTabs: boolean;
+  /** True when the surface uses the MobileShell + bottom sheet (touch contexts). */
+  useSheetShell: boolean;
   showSummary: boolean;
   showStatusBar: boolean;
   isSplitPanel: boolean;
   panelMode: DashboardPanelMode;
 }
 
-const STRING_ROW_PX_MOBILE = 34;
+const STRING_ROW_PX_MOBILE = 38;
 export const STRING_ROW_PX_TABLET = 36;
 const STRING_ROW_PX_DESKTOP = 42;
 
@@ -34,6 +35,63 @@ const STRING_ROW_PX_BY_TIER: Record<ResponsiveTier, number> = {
   tablet: STRING_ROW_PX_TABLET,
   desktop: STRING_ROW_PX_DESKTOP,
 };
+
+/* The sheet shell (mobile + tablet-split) sizes the board from the viewport
+   height so it fills the stage between header/track and the fixed dock with
+   intentional centered breathing room instead of a dead band. All SHELL_*
+   constants are estimates of CSS chrome — the min/max clamp keeps errors
+   degrading into a few px of breathing room rather than overflow. */
+const STRING_ROW_PX_SHELL_MIN = 34;
+const STRING_ROW_PX_SHELL_MAX = 64;
+/** AppHeader band in the sheet shell (padding + 44px content row). */
+const SHELL_HEADER_PX = 64;
+/** ShellTransport strip under the header (44px play button + padding). */
+const SHELL_TRANSPORT_PX = 56;
+/** Progression chip strip. */
+const SHELL_TRACK_PX = 56;
+/** MobileDock tab bar: 44px toggle row + borders. Keep in sync with
+ *  --token-mobile-dock-height in src/styles/tokens.css. */
+const SHELL_DOCK_PX = 48;
+/** Fret-number band + stage breathing paddings. */
+const STAGE_CHROME_PX = 46;
+const SHELL_STRING_COUNT = 6;
+
+function clampShellRow(raw: number): number {
+  return Math.min(
+    STRING_ROW_PX_SHELL_MAX,
+    Math.max(STRING_ROW_PX_SHELL_MIN, Math.floor(raw)),
+  );
+}
+
+/** Rows that fill the stage between header/transport/track and the dock. */
+function getDockStringRowPx(viewportHeight: number): number {
+  const band =
+    viewportHeight -
+    SHELL_HEADER_PX -
+    SHELL_TRANSPORT_PX -
+    SHELL_TRACK_PX -
+    SHELL_DOCK_PX -
+    STAGE_CHROME_PX;
+  return clampShellRow(band / SHELL_STRING_COUNT);
+}
+
+/** Absolute floor for zoom-out-scaled rows — below ~24px the note markers
+ *  stop being readable, even zoomed out. */
+const STRING_ROW_PX_ZOOM_OUT_FLOOR = 24;
+
+/**
+ * Sheet-shell zoom OUT: a sub-100 fretZoom shrinks the row height
+ * proportionally. The note bubbles and the fret-width floor both derive from
+ * the row height, so more frets fit on screen automatically. Zoom values of
+ * 100+ leave the rows alone (zoom IN works by widening frets, not rows).
+ */
+export function scaleRowForZoomOut(rowPx: number, fretZoom: number): number {
+  if (fretZoom >= 100) return rowPx;
+  return Math.max(
+    STRING_ROW_PX_ZOOM_OUT_FLOOR,
+    Math.round((rowPx * fretZoom) / 100),
+  );
+}
 
 export function getResponsiveTier(viewportWidth: number): ResponsiveTier {
   if (viewportWidth <= BREAKPOINTS.mobileMax) {
@@ -94,16 +152,21 @@ export function getResponsiveLayout(
       : isSplitPanel
         ? "split"
         : "stacked";
-  const showMobileTabs =
-    tier === "mobile" || variant === "tablet-split";
+  const useSheetShell = tier === "mobile" || variant === "tablet-split";
+
+  // Height-derived rows apply to the whole sheet shell (mobile AND
+  // tablet-split) — tier-fixed rows would leave a dead band above the dock.
+  const stringRowPx = useSheetShell
+    ? getDockStringRowPx(viewportHeight)
+    : getStringRowPx(tier);
 
   return {
     tier,
     variant,
     compactHeight,
-    stringRowPx: getStringRowPx(tier),
+    stringRowPx,
     showControlsPanel: tier !== "mobile" && variant !== "tablet-split",
-    showMobileTabs,
+    useSheetShell,
     showSummary: true,
     showStatusBar: tier !== "mobile" && variant !== "tablet-split",
     isSplitPanel,

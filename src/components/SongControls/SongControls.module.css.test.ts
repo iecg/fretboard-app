@@ -16,13 +16,13 @@ describe("SongControls button chrome", () => {
   });
   it("defines mobile progression toolbar button size overrides", () => {
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.toolbar-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.toolbar-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
     );
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.delete-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.delete-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
     );
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.grouped-button\s*\{[^}]*height:\s*var\(--control-height\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.grouped-button\s*\{[^}]*height:\s*var\(--control-height\)/s,
     );
   });
   it("lays Root and Quality side-by-side at base (non-mobile) tier", () => {
@@ -34,28 +34,28 @@ describe("SongControls button chrome", () => {
   });
   it("defines mobile root-quality flex row, lock-label sr-only, and lock-toggle size overrides", () => {
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.root-quality-row\s*\{[^}]*display:\s*flex/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.root-quality-row\s*\{[^}]*display:\s*flex/s,
     );
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.lock-label\s*\{[^}]*clip-path:\s*inset\(50%\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.lock-label\s*\{[^}]*clip-path:\s*inset\(50%\)/s,
     );
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.lock-toggle\s*\{[^}]*width:\s*var\(--control-height\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.lock-toggle\s*\{[^}]*width:\s*var\(--control-height\)/s,
     );
   });
 
   it("defines mobile editor pager button size", () => {
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.pager-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.pager-button\s*\{[^}]*width:\s*var\(--control-height\)/s,
     );
   });
 
   it("defines mobile editor panel header wrapping and pager order", () => {
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.editor-panel-header\s*\{[^}]*flex-wrap:\s*wrap/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.editor-panel-header\s*\{[^}]*flex-wrap:\s*wrap/s,
     );
     expect(css).toMatch(
-      /:global\(\.app-container\[data-layout-tier="mobile"\]\)\s+\.editor-pager\s*\{[^}]*order:\s*3/s,
+      /:global\(\[data-layout-tier="mobile"\]\)\s+\.editor-pager\s*\{[^}]*order:\s*3/s,
     );
   });
 });

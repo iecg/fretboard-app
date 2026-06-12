@@ -1,0 +1,77 @@
+/* ----------------------------------------------------------------------------
+ * Mobile dock panels — one shared drawer surface (MobilePanel), two heights.
+ *
+ * .panelHalf (Overlay) — leaves the board visible above it.
+ * .panelTall (Song)    — rises to just below the progression track, so the
+ *   timeline + transport strip stay usable while editing the song.
+ *
+ * Both are non-modal, anchored above the dock tab bar (the tabs stay visible
+ * and switchable), and sit BELOW the dock in z so the slide-up emerges from
+ * behind it. Both paint --surface-app-panel (the app-gradient surface) so
+ * they read as the same room as the rest of the app, never a flat island.
+ * --------------------------------------------------------------------------- */
+
+.panel {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(var(--mobile-dock-height) + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-mobile-panel);
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--surface-card-border);
+  border-radius: 14px 14px 0 0;
+  background: var(--surface-app-panel, var(--bg-color));
+  outline: none;
+}
+
+/* Panel + dock together cover --mobile-panel-cover of the viewport. The board
+   behind it stays a fixed size (the panel slides up over it, no reflow), so
+   the anchor is a plain cover fraction. */
+.panelHalf {
+  top: calc(100dvh - var(--mobile-panel-cover, 55dvh));
+}
+
+/* Anchored just below the progression track: header + transport + track.
+   Keep in sync with SHELL_HEADER_PX + SHELL_TRANSPORT_PX + SHELL_TRACK_PX in
+   src/layout/responsive.ts (JS can't read a CSS var). */
+.panelTall {
+  top: calc(var(--mobile-song-panel-top, 176px) + env(safe-area-inset-top, 0px));
+}
+
+.panelHeader {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  /* Visible separation from the scrolling body — content scrolling under the
+     header reads as cut off without it. */
+  border-bottom: 1px solid var(--panel-header-border);
+}
+
+/* Same visual language as the Inspector tab pills. */
+.panelTitle {
+  margin: 0;
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--faceplate-accent);
+  text-shadow: var(--faceplate-accent-glow);
+}
+
+.panelBody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-2) var(--space-3) 16px;
+  /* Scroll stays functional; the bar is hidden (sheet-shell only element). */
+  scrollbar-width: none;
+}
+
+.panelBody::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,116 @@
+/* No background here — the app gradient is painted on body (see
+   src/styles/index.css); the shell stays transparent so it shows through,
+   exactly like .app-container in src/styles/App.css. Do not re-add a
+   background: it would cover the gradient with a flat surface color. */
+/* Safe-area insets are NOT applied here — #root (src/styles/index.css) already
+   pads all four env(safe-area-inset-*) values; re-applying them would
+   double-stack on notched devices. The bottom inset belongs to the sheet. */
+.shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header,
+.transport,
+.track {
+  flex: none;
+}
+
+.stage {
+  /* Positioning context for the floating StageZoomControl. */
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* Center the board in the visible band; the panel-aware padding below keeps
+     "visible" accurate while the Overlay panel is open. */
+  justify-content: center;
+  overflow: hidden;
+  /* Match .app-container's mobile horizontal padding (src/styles/App.css) so
+     the fretboard measures the same available width it had under
+     MainLayoutWrapper and its right edge stays inside the viewport. */
+  padding-inline: 0.65rem;
+  /* Intentional breathing room: the height-derived board caps at 64px rows,
+     so the leftover space frames it instead of reading as a dead band. The
+     board stays a fixed size — opening either dock panel slides it up OVER
+     this static stage rather than reflowing it. */
+  padding-block: clamp(12px, 4dvh, 48px);
+}
+
+/* Portrait-lock overlay — owned by the mobile shell (the only shell that
+   renders at viewport ≤ 767px, where the show rule below fires). CSS-only;
+   relocated verbatim from the former global .rotate-overlay rules in
+   src/styles/App.css. */
+.rotateOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--surface-base, #1c1c1e);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.rotateOverlayContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.rotateOverlayIcon {
+  width: 3rem;
+  height: 3rem;
+  color: var(--text-muted, #a0a0a5);
+  animation: rotate-hint 2s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-90deg);
+  }
+
+  50% {
+    transform: rotate(-90deg);
+  }
+
+  75% {
+    transform: rotate(0deg);
+  }
+}
+
+.rotateOverlayMessage {
+  font-size: 1rem;
+  color: var(--text-main, #f5f5f7);
+  margin: 0;
+  max-width: 20rem;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotateOverlayIcon {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}
+
+/* Show only on mobile-tier landscape viewports. width ≤ 767px is always the
+   mobile tier (BREAKPOINTS.mobileMax), where MobileShell renders — so this
+   preserves the exact visibility of the former global rule. */
+@media (max-width: 767px) and (orientation: landscape) {
+  .rotateOverlay {
+    display: flex;
+  }
+}

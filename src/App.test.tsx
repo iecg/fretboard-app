@@ -315,9 +315,10 @@ describe("App", () => {
       render(<App />);
       setViewport(768, 1024);
       fireEvent(window, new Event("resize"));
+      // At 768×1024 (tablet-split), useSheetShell=true → MobileShell renders.
       await waitFor(() => {
-        const appContainer = document.querySelector(".app-container");
-        expect(appContainer?.getAttribute("data-layout-tier")).toBe("tablet");
+        const mobileShell = document.querySelector("[data-testid='mobile-shell']");
+        expect(mobileShell?.getAttribute("data-layout-tier")).toBe("tablet");
       });
     });
   });
@@ -364,8 +365,10 @@ describe("Responsive string row sizes", () => {
   beforeEach(() => localStorage.clear());
 
   it.each([
-    [390, 844, "34"],
-    [768, 1024, "36"],
+    // Sheet-shell rows (mobile + tablet-split) are height-derived between the
+    // header/track and the dock, capped at 64 — see responsive.test.ts.
+    [390, 844, "64"],
+    [768, 1024, "64"],
     [1440, 900, "42"],
   ])("viewport %ix%i uses string row size %s", (w, h, expected) => {
     setViewport(w, h);

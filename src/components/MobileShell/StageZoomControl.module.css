@@ -1,0 +1,31 @@
+/* Floating zoom pair anchored to the stage's bottom-right corner, maps-style
+   (and out of the board's way — the board top edge can reach high when zoomed
+   in). A horizontal row so the buttons read out · in left-to-right. The stage
+   is the positioning context. */
+
+.zoomControl {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  z-index: var(--z-note, 10);
+  transition: opacity 0.2s ease;
+}
+
+/* An open panel slides over the stage's bottom corner — fade the controls out
+   rather than leaving them half-buried behind the drawer. */
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-mobile-panel="overlay"]) .zoomControl,
+:global([data-mobile-panel="song"]) .zoomControl {
+  opacity: 0;
+  pointer-events: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+@media (prefers-reduced-motion: reduce) {
+  .zoomControl {
+    transition: none;
+  }
+}

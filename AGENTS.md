@@ -15,6 +15,7 @@ pnpm run test:e2e:production   # build + playwright against vite preview
 pnpm run test:visual           # build + visual regression suite
 pnpm run test:visual:update    # refresh darwin visual snapshots
 pnpm run lint                  # eslint
+pnpm run ui:tokens             # flag undefined CSS token (var(--x)) references — see /ui-review
 pnpm run preview               # preview build locally
 ```
 
@@ -106,6 +107,7 @@ src/
   - Shared module CSS in `src/components/shared/shared.module.css`.
   - Use `clsx` for conditional classes, `cva` for variant class systems, `motion` (from `motion/react`) for animations.
   - Linting is **ESLint only** (`pnpm run lint` → `eslint .`); there is no stylelint or lint-staged. Package manager is **pnpm** (workspace defined in `pnpm-workspace.yaml`).
+  - **Tokens must resolve.** Every `var(--x)` must point at a defined token (a CSS `--x: …` declaration or a React inline-style key). Run `pnpm run ui:tokens` (or `/ui-review`) before finishing any mobile/tablet UI change — see `docs/design/mobile-ui-contract.md`.
 - **React Compiler:** Enabled via `babel-plugin-react-compiler` in `vite.config.ts` with `compilationMode: 'infer'`. Every component and hook in `src/` and `packages/core/src/` is auto-memoized — manual `useMemo` / `useCallback` / `React.memo` is rarely needed for render-perf and should be added only when profiling proves it. The `react-compiler/react-compiler` ESLint rule runs at `error` and guards Rules-of-React compliance. To opt a single component out, add `'use no memo'` as the first statement of the function body with a `// TODO(react-compiler): <reason>` comment.
 - **A11y:** ARIA labels + semantic HTML + `:focus-visible` styles required. `vitest-axe` available for component tests.
 
@@ -140,5 +142,6 @@ Durable "why" docs live in `docs/design/` (index: `docs/design/README.md`). They
 - markers / color / marker shape / connectors / voice-leading motion → `docs/design/fretboard-visual-language.md`
 - voicing / strum / close-voicing fallback / audio playback → `docs/design/audio-voicing-engine.md`
 - chord qualities / scales / guide tones / improvisation lenses / modes → `docs/design/music-theory-pedagogy.md`
+- mobile/tablet sheet shell / panels & drawers / Settings & Help sheets / surfaces & dividers / header padding / scroll & overflow / zoom control → `docs/design/mobile-ui-contract.md` (run `/ui-review` to enforce)
 
 Provenance: each doc lists the source specs it consolidates with the git SHA before deletion (`git show <sha>:<path>` recovers the original).

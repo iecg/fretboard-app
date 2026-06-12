@@ -6,9 +6,21 @@
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
 }
 
+/* stylelint-disable selector-pseudo-class-no-unknown */
 :global([data-theme="modern-light"]) .fretboard-board {
   box-shadow: 0 10px 30px var(--fretboard-board-shadow);
 }
+
+/* Sheet shell (mobile tier + tablet-split): no board shadow. Against the
+   shell's gradient with a height-derived, centered board the 30px blur reads
+   as a smeared band below the neck, not as lift — a repeat owner complaint.
+   Desktop/tablet-stacked keep the shadow. See
+   docs/design/fretboard-visual-language.md ("Board drop shadow"). */
+:global([data-layout-tier="mobile"]) .fretboard-board,
+:global([data-layout-variant="tablet-split"]) .fretboard-board {
+  box-shadow: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
 
 .fretboard-neck {
   position: relative;

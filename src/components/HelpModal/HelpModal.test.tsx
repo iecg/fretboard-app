@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { useRef, useState } from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { HelpModal } from "./HelpModal";
 import styles from "./HelpModal.module.css";
@@ -9,7 +10,25 @@ import { CURRENT_WHATS_NEW_ID, HELP_TABS } from "./helpContent";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
 
+function setViewport(width: number, height: number) {
+  Object.defineProperty(window, "innerWidth", {
+    writable: true,
+    configurable: true,
+    value: width,
+  });
+  Object.defineProperty(window, "innerHeight", {
+    writable: true,
+    configurable: true,
+    value: height,
+  });
+}
+
 describe("HelpModal/HelpModal", () => {
+  beforeEach(() => {
+    // Desktop default — keeps the dialog presentation for the existing suite.
+    setViewport(1280, 900);
+  });
+
   it("renders dialog when isOpen=true", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByRole("dialog", { name: en.help.title })).toBeInTheDocument();
@@ -30,6 +49,32 @@ describe("HelpModal/HelpModal", () => {
   it("moves focus to the close button when the dialog opens", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(document.activeElement).toBe(screen.getByLabelText(en.help.close));
+  });
+
+  it("returns focus to the trigger when the desktop dialog closes", async () => {
+    function Harness() {
+      const triggerRef = useRef<HTMLButtonElement | null>(null);
+      const [open, setOpen] = useState(true);
+      return (
+        <>
+          <button ref={triggerRef} onClick={() => setOpen(true)}>
+            open help
+          </button>
+          <HelpModal
+            isOpen={open}
+            onClose={() => setOpen(false)}
+            triggerRef={triggerRef}
+          />
+        </>
+      );
+    }
+    render(<Harness />);
+    fireEvent.click(screen.getByLabelText(en.help.close));
+    // DesktopFocusReturn's unmount cleanup restores focus to the trigger on the
+    // next animation frame (deferred past Radix's FocusScope teardown).
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByText("open help")),
+    );
   });
 
   it("renders a tab for every help tab and starts on Start", () => {
@@ -130,5 +175,34 @@ describe("HelpModal/HelpModal", () => {
     render(<HelpModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByLabelText(en.help.close).className).toMatch(/icon-button--sm/);
     expect(typeof styles["help-modal-close"]).toBe("string");
+  });
+
+  it("presents as an AdaptiveModal sheet (not the desktop dialog) on mobile", () => {
+    setViewport(390, 844);
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    // Mobile routes through AdaptiveModal presentation="sheet".
+    expect(screen.getByTestId("adaptive-modal-sheet")).toBeInTheDocument();
+    // The desktop fade/scale dialog surface must NOT be rendered on mobile.
+    expect(screen.queryByTestId("help-modal")).not.toBeInTheDocument();
+    // Tabs + close still present inside the sheet.
+    expect(screen.getAllByRole("tab")).toHaveLength(HELP_TABS.length);
+    expect(screen.getByLabelText(en.help.close)).toBeInTheDocument();
+  });
+
+  it("calls onClose when the sheet close button is clicked on mobile", () => {
+    setViewport(390, 844);
+    const onClose = vi.fn();
+    render(<HelpModal isOpen={true} onClose={onClose} />);
+    fireEvent.click(screen.getByLabelText(en.help.close));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("presents as an AdaptiveModal sheet (not the desktop dialog) on tablet-split", () => {
+    // 800x1100 → tablet tier, tall → tablet-split → useSheetShell. The touch
+    // shell must open Help as the sheet, matching the header overflow menu.
+    setViewport(800, 1100);
+    render(<HelpModal isOpen={true} onClose={vi.fn()} />);
+    expect(screen.getByTestId("adaptive-modal-sheet")).toBeInTheDocument();
+    expect(screen.queryByTestId("help-modal")).not.toBeInTheDocument();
   });
 });

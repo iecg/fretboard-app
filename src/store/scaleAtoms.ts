@@ -199,6 +199,19 @@ export const scaleLabelAtom = atom(
   (get) => `${formatAccidental(get(activeBrowseOptionAtom).label)}`,
 );
 
+/**
+ * Strips the parenthetical mode suffix from a scale label, leaving only the
+ * root + scale-name headline. e.g. "C Major (Ionian)" → "C Major".
+ * Shared single source for compact scale readouts (header cluster, mobile
+ * sheet peek). Exported as a pure helper so non-atom callers can reuse it.
+ */
+export function scaleHeadline(label: string): string {
+  return label.split(" (")[0].trim();
+}
+
+/** The scale label reduced to its headline (root + scale name only). */
+export const scaleHeadlineAtom = atom((get) => scaleHeadline(get(scaleLabelAtom)));
+
 // Transient: resets when root or scale changes.
 const internalHiddenNotesAtom = atom<{
   root: string;

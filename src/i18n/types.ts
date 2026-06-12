@@ -125,6 +125,7 @@ export interface Dictionary {
     unmuteTitle: string;
     help: string;
     helpTitle: string;
+    moreActions: string;
     themeToLight: string;
     themeToDark: string;
     dismiss: string;
@@ -279,6 +280,7 @@ export interface Dictionary {
     progressionNavigation: string;
     pauseProgressionTooltip: string;
     playProgressionTooltip: string;
+    loopProgression: string;
     stopProgression: string;
     stopProgressionTooltip: string;
     presetCustom: string;
@@ -308,6 +310,18 @@ export interface Dictionary {
     chordSelected: string;
     chordUnavailable: string;
     playingChord: string;
+  };
+  mobileShell: {
+    stageLabel: string;
+  };
+  mobileDock: {
+    label: string;
+    zoomIn: string;
+    zoomOut: string;
+  };
+  mobilePanels: {
+    closeOverlay: string;
+    closeSong: string;
   };
 }
 

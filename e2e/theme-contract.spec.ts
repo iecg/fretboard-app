@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { loadVisualState } from "./visual-helpers";
+import { loadVisualState, openMobilePanel } from "./visual-helpers";
 
 /**
  * Resolve a CSS custom property to the browser's COMPUTED color string, matching
@@ -152,18 +152,18 @@ test.describe("Theme Contract", () => {
   });
 
 
-  test("Inspector bottom tab bar uses theme-appropriate active indicators", async ({ page }) => {
-    // Mobile layout renders the Inspector with placement="bottom"; the default
-    // active tab is "Scale".
+  test("mobile dock toggles use theme-appropriate active indicators", async ({ page }) => {
+    // The dock's panel toggles reuse the Inspector tab visual language: an
+    // open toggle carries a non-transparent accent underline (border-bottom) —
+    // the active-indicator contract worth keeping across themes.
     await loadVisualState(page, { theme: "dark" }, { width: 390, height: 844 });
-    const activeTab = page.locator(
-      '[data-placement="bottom"] [role="tab"][data-state="active"]',
+    await openMobilePanel(page, "overlay");
+    const openToggle = page.locator('[data-testid="dock-toggle-overlay"][data-state="open"]');
+    await expect(openToggle).toBeVisible();
+    const borderBottomColor = await openToggle.evaluate(
+      (el) => getComputedStyle(el).borderBottomColor,
     );
-    await expect(activeTab).toBeVisible();
-    const borderTopColor = await activeTab.evaluate(
-      (el) => getComputedStyle(el).borderTopColor,
-    );
-    expect(borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
+    expect(borderBottomColor).not.toBe("rgba(0, 0, 0, 0)");
   });
 
   test("fretboard tonic note uses key-tonic role color in light mode", async ({ page }) => {
