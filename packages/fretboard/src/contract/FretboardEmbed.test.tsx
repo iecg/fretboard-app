@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FretboardEmbed } from "./FretboardEmbed";
+import type { FretboardEventSink } from "./events";
 // Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
 import "../components/FretboardSVG/FretboardSVG";
 
@@ -326,14 +327,14 @@ describe("FretboardEmbed — M3 events-out", () => {
     vi.resetModules();
   });
 
-  async function renderForEvents(config: Parameters<typeof FretboardEmbed>[0]["config"], onEvent: (e: unknown) => void) {
+  async function renderForEvents(config: Parameters<typeof FretboardEmbed>[0]["config"], onEvent: FretboardEventSink) {
     vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
       useProgressionAudioPlayback: () => {},
       __resetProgressionAudioPlaybackForTests: () => {},
     }));
     vi.doMock("../components/Fretboard/Fretboard", () => ({ Fretboard: () => null }));
     const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
-    render(<Fresh config={config} onEvent={onEvent as never} />);
+    render(<Fresh config={config} onEvent={onEvent} />);
     await act(async () => { await Promise.resolve(); });
     // Second flush: preset effect may run after the initial events-out effect.
     // The subscription catches the subsequent resolvedProgressionStepsAtom change,
@@ -342,19 +343,18 @@ describe("FretboardEmbed — M3 events-out", () => {
   }
 
   it("emits progressionResolved with resolved chord labels and an initial playbackStateChanged", async () => {
-    const events: { type: string }[] = [];
+    const events: Parameters<FretboardEventSink>[0][] = [];
     await renderForEvents(
       { progressionEnabled: true, progressionPreset: "one-five-six-four", root: "C", scale: "major" },
-      (e) => events.push(e as { type: string }),
+      (e) => events.push(e),
     );
     // Multiple progressionResolved events may fire (initial empty + post-preset).
     // Assert on the LAST one, which reflects the fully-resolved preset steps.
-    const resolved = [...events].reverse().find((e) => e.type === "progressionResolved") as
-      | { type: "progressionResolved"; steps: { index: number; label: string }[] }
-      | undefined;
+    const resolved = [...events].reverse().find((e) => e.type === "progressionResolved");
     expect(resolved).toBeDefined();
-    expect(resolved!.steps.length).toBe(4);
-    expect(resolved!.steps[0].label).toBe("C");
+    expect(resolved!.type === "progressionResolved" && resolved!.steps.length).toBe(4);
+    expect(resolved!.type === "progressionResolved" && resolved!.steps[0].label).toBe("C");
     expect(events.some((e) => e.type === "playbackStateChanged")).toBe(true);
+    expect(events.some((e) => e.type === "activeStepChanged")).toBe(true);
   });
 });

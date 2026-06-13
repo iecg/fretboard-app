@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../components/Fretboard/Fretboard";
 import { baseRootNoteAtom, baseScaleNameAtom, scaleVisibleAtom } from "../store/scaleAtoms";
@@ -192,18 +192,26 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
     }
   }, [store, config.progressionPlaying]);
 
+  // Keep the latest onEvent without making the subscription effect depend on its
+  // identity — hosts often pass an inline arrow, which would otherwise re-subscribe
+  // and re-emit the initial snapshot on every host render.
+  const onEventRef = useRef(onEvent);
+  useEffect(() => { onEventRef.current = onEvent; }, [onEvent]);
+
   // M3: events-out. Subscribe to the isolated store and push coarse, human-speed
   // events to the host. `displayedProgressionStepIndexAtom` already debounces
   // RAF→React via startTransition, so this fires at step boundaries, not per frame.
   useEffect(() => {
-    if (!config.progressionEnabled || !onEvent) return;
+    if (!config.progressionEnabled) return;
 
     const labelOf = (s: { shortChordLabel: string | null; label: string }) =>
       s.shortChordLabel ?? s.label;
 
     const emitResolved = () => {
+      const sink = onEventRef.current;
+      if (!sink) return;
       const steps = store.get(resolvedProgressionStepsAtom);
-      onEvent({
+      sink({
         type: "progressionResolved",
         steps: steps.map((s) => ({
           index: s.index,
@@ -214,13 +222,17 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
       });
     };
     const emitActive = () => {
+      const sink = onEventRef.current;
+      if (!sink) return;
       const idx = store.get(displayedProgressionStepIndexAtom);
       const steps = store.get(resolvedProgressionStepsAtom);
       const s = steps[idx];
-      onEvent({ type: "activeStepChanged", index: idx, label: s ? labelOf(s) : "" });
+      sink({ type: "activeStepChanged", index: idx, label: s ? labelOf(s) : "" });
     };
     const emitPlayback = () => {
-      onEvent({
+      const sink = onEventRef.current;
+      if (!sink) return;
+      sink({
         type: "playbackStateChanged",
         playing: store.get(progressionPlayingAtom),
         loading: store.get(progressionPlaybackLoadingAtom),
@@ -233,6 +245,7 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
       store.sub(displayedProgressionStepIndexAtom, emitActive),
       store.sub(progressionPlayingAtom, emitPlayback),
       store.sub(progressionPlaybackLoadingAtom, emitPlayback),
+      // blockedReason derives from resolvedProgressionStepsAtom, so a preset load fires emitPlayback alongside emitResolved — intentional.
       store.sub(progressionPlaybackBlockedReasonAtom, emitPlayback),
     ];
     // Initial snapshot so the host renders correct state before the first change.
@@ -240,7 +253,7 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
     emitActive();
     emitPlayback();
     return () => unsubs.forEach((u) => u());
-  }, [store, onEvent, config.progressionEnabled]);
+  }, [store, config.progressionEnabled]);
 
   useEffect(() => {
     // Jotai's primitive `set` treats a function value as an updater
