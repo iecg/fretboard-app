@@ -15,7 +15,7 @@ import { prefetchAudioModule, resumeGuitarAudio } from "../core/lazyGuitarAudio"
 export interface FretboardConfig {
   /** Root note as a sharp name, e.g. "C", "F#". */
   root?: string;
-  /** Scale name as stored by the app's internal token (e.g. "major", "minorPentatonic"). */
+  /** Scale name as stored by the app's internal token (e.g. "major", "minor pentatonic"). */
   scale?: string;
   theme?: ThemePreference;
   displayFormat?: "notes" | "degrees" | "none";
@@ -23,6 +23,26 @@ export interface FretboardConfig {
   audio?: "builtin" | "events";
   /** Pixel height per string row (host-controlled sizing). */
   stringRowPx?: number;
+
+  // --- M2: scale/fingering overlay controls (all human-speed, serializable) ---
+  /** Whether the scale overlay is shown on the board. */
+  scaleVisible?: boolean;
+  /** Active fingering pattern. */
+  fingeringPattern?: "none" | "caged" | "3nps" | "one-string" | "two-strings";
+  /** CAGED shape when fingeringPattern === "caged". */
+  cagedShape?: "C" | "A" | "G" | "E" | "D";
+  /** 3NPS position (1–7) when fingeringPattern === "3nps". */
+  npsPosition?: number;
+  /** 3NPS octave (0 = Low, 1 = High) when fingeringPattern === "3nps". */
+  npsOctave?: number;
+  /** Active string index (0–5) when fingeringPattern === "one-string". */
+  oneStringIndex?: number;
+  /** Connector toggle (0 = Off, 1 = On) when fingeringPattern === "one-string". */
+  oneStringInterval?: number;
+  /** Active pair index (0–4) when fingeringPattern === "two-strings". */
+  twoStringsPair?: number;
+  /** Interval (0 = Off, 1 = 3rds, 2 = 4ths, 3 = 6ths) when fingeringPattern === "two-strings". */
+  twoStringsInterval?: number;
 }
 
 export interface FretboardEmbedProps {

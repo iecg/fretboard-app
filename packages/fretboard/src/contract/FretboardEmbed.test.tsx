@@ -3,6 +3,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FretboardEmbed } from "./FretboardEmbed";
+import { useAtomValue } from "jotai";
+import {
+  fingeringPatternAtom,
+  cagedShapesAtom,
+  npsPositionAtom,
+  npsOctaveAtom,
+  oneStringIndexAtom,
+  oneStringIntervalAtom,
+  twoStringsPairAtom,
+  twoStringsIntervalAtom,
+} from "../store/fingeringAtoms";
+import { scaleVisibleAtom } from "../store/scaleAtoms";
 // Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
 import "../components/FretboardSVG/FretboardSVG";
 
@@ -102,5 +114,79 @@ describe("FretboardEmbed", () => {
     render(<FretboardEmbed config={{ audio: "events" }} />);
     await flushSuspense();
     expect(prefetchAudioModule).not.toHaveBeenCalled();
+  });
+});
+
+describe("FretboardEmbed — M2 fingering/scale hydration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderWithProbe(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
+    vi.doMock("../components/Fretboard/Fretboard", () => ({
+      Fretboard: () => {
+        const fingeringPattern = useAtomValue(fingeringPatternAtom);
+        const cagedShapes = useAtomValue(cagedShapesAtom);
+        const npsPosition = useAtomValue(npsPositionAtom);
+        const npsOctave = useAtomValue(npsOctaveAtom);
+        const oneStringIndex = useAtomValue(oneStringIndexAtom);
+        const oneStringInterval = useAtomValue(oneStringIntervalAtom);
+        const twoStringsPair = useAtomValue(twoStringsPairAtom);
+        const twoStringsInterval = useAtomValue(twoStringsIntervalAtom);
+        const scaleVisible = useAtomValue(scaleVisibleAtom);
+        return (
+          <div
+            data-testid="probe"
+            data-fingering={fingeringPattern}
+            data-caged={Array.from(cagedShapes).join(",")}
+            data-nps-pos={String(npsPosition)}
+            data-nps-oct={String(npsOctave)}
+            data-one-idx={String(oneStringIndex)}
+            data-one-int={String(oneStringInterval)}
+            data-two-pair={String(twoStringsPair)}
+            data-two-int={String(twoStringsInterval)}
+            data-scale-visible={String(scaleVisible)}
+          />
+        );
+      },
+    }));
+    const { FretboardEmbed: FreshFretboardEmbed } = await import("./FretboardEmbed");
+    return render(<FreshFretboardEmbed config={config} />);
+  }
+
+  it("hydrates the active fingering pattern + CAGED shape", async () => {
+    await renderWithProbe({ fingeringPattern: "caged", cagedShape: "A" });
+    await flushSuspense();
+    const probe = screen.getByTestId("probe");
+    expect(probe.getAttribute("data-fingering")).toBe("caged");
+    expect(probe.getAttribute("data-caged")).toBe("A");
+  });
+
+  it("hydrates 3NPS position + octave", async () => {
+    await renderWithProbe({ fingeringPattern: "3nps", npsPosition: 4, npsOctave: 1 });
+    await flushSuspense();
+    const probe = screen.getByTestId("probe");
+    expect(probe.getAttribute("data-nps-pos")).toBe("4");
+    expect(probe.getAttribute("data-nps-oct")).toBe("1");
+  });
+
+  it("hydrates one-string + two-strings sub-params and scaleVisible", async () => {
+    await renderWithProbe({
+      fingeringPattern: "two-strings",
+      oneStringIndex: 3,
+      oneStringInterval: 1,
+      twoStringsPair: 2,
+      twoStringsInterval: 3,
+      scaleVisible: false,
+    });
+    await flushSuspense();
+    const probe = screen.getByTestId("probe");
+    expect(probe.getAttribute("data-one-idx")).toBe("3");
+    expect(probe.getAttribute("data-one-int")).toBe("1");
+    expect(probe.getAttribute("data-two-pair")).toBe("2");
+    expect(probe.getAttribute("data-two-int")).toBe("3");
+    expect(probe.getAttribute("data-scale-visible")).toBe("false");
   });
 });
