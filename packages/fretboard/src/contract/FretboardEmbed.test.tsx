@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FretboardEmbed } from "./FretboardEmbed";
+import type { FretboardEventSink } from "./events";
 // Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
 import "../components/FretboardSVG/FretboardSVG";
 
@@ -199,5 +200,219 @@ describe("FretboardEmbed — M2 fingering/scale hydration", () => {
     expect(probe.getAttribute("data-two-pair")).toBe("2");
     expect(probe.getAttribute("data-two-int")).toBe("3");
     expect(probe.getAttribute("data-scale-visible")).toBe("false");
+  });
+});
+
+describe("FretboardEmbed — M3 progression hydration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderWithSongProbe(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
+    const [
+      { useAtomValue },
+      {
+        currentProgressionPresetIdAtom: presetIdAtom,
+        progressionLoopEnabledAtom: loopAtom,
+        progressionTempoBpmAtom: tempoAtom,
+        progressionGenreStyleAtom: genreAtom,
+        progressionDrumsEnabledAtom: drumsAtom,
+        progressionBassEnabledAtom: bassAtom,
+        progressionChordEnabledAtom: chordsAtom,
+        progressionMetronomeEnabledAtom: metroAtom,
+        progressionPlayingAtom: playingAtom,
+      },
+    ] = await Promise.all([import("jotai"), import("../store/progressionAtoms")]);
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: () => {},
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    vi.doMock("../components/Fretboard/Fretboard", () => ({
+      Fretboard: () => (
+        <div
+          data-testid="song-probe"
+          data-preset={String(useAtomValue(presetIdAtom))}
+          data-loop={String(useAtomValue(loopAtom))}
+          data-tempo={String(useAtomValue(tempoAtom))}
+          data-genre={String(useAtomValue(genreAtom))}
+          data-drums={String(useAtomValue(drumsAtom))}
+          data-bass={String(useAtomValue(bassAtom))}
+          data-chords={String(useAtomValue(chordsAtom))}
+          data-metro={String(useAtomValue(metroAtom))}
+          data-playing={String(useAtomValue(playingAtom))}
+        />
+      ),
+    }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(<Fresh config={config} />);
+    await act(async () => { await Promise.resolve(); });
+    return screen.getByTestId("song-probe");
+  }
+
+  it("hydrates preset, loop, tempo, genre and the four layer toggles", async () => {
+    const probe = await renderWithSongProbe({
+      progressionEnabled: true,
+      progressionPreset: "two-five-one",
+      progressionLoop: false,
+      progressionTempoBpm: 120,
+      progressionGenre: "jazz",
+      drumsEnabled: false,
+      bassEnabled: false,
+      chordsEnabled: true,
+      metronomeEnabled: true,
+    });
+    expect(probe.getAttribute("data-preset")).toBe("two-five-one");
+    expect(probe.getAttribute("data-loop")).toBe("false");
+    expect(probe.getAttribute("data-tempo")).toBe("120");
+    expect(probe.getAttribute("data-genre")).toBe("jazz");
+    expect(probe.getAttribute("data-drums")).toBe("false");
+    expect(probe.getAttribute("data-bass")).toBe("false");
+    expect(probe.getAttribute("data-chords")).toBe("true");
+    expect(probe.getAttribute("data-metro")).toBe("true");
+  });
+
+  it("hydrates progressionPlaying after the preset load (transport effect wins ordering)", async () => {
+    // Loading the preset resets playing→false; the transport effect is declared
+    // AFTER the preset effect, so on mount it must re-set playing→true. This
+    // proves both that the transport effect runs and that its declaration order
+    // wins over the preset's reset.
+    const probe = await renderWithSongProbe({
+      progressionEnabled: true,
+      progressionPreset: "two-five-one",
+      progressionPlaying: true,
+    });
+    expect(probe.getAttribute("data-preset")).toBe("two-five-one");
+    expect(probe.getAttribute("data-playing")).toBe("true");
+  });
+});
+
+describe("FretboardEmbed — progression playback runner mount", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderEmbed(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
+    const hookSpy = vi.fn();
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: hookSpy,
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    // Mock the heavy child so the test stays in jsdom without SVG/audio.
+    vi.doMock("../components/Fretboard/Fretboard", () => ({ Fretboard: () => null }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(<Fresh config={config} />);
+    await act(async () => { await Promise.resolve(); });
+    return hookSpy;
+  }
+
+  it("mounts the playback hook when progressionEnabled is true", async () => {
+    const spy = await renderEmbed({ progressionEnabled: true });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it("does NOT mount the playback hook by default", async () => {
+    const spy = await renderEmbed({});
+    expect(spy).not.toHaveBeenCalled();
+  });
+});
+
+describe("FretboardEmbed — M3 chord card hydration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  it("hydrates voicing, practice lens, and the active chord quality override", async () => {
+    const [
+      { useAtomValue },
+      { voicingAtom },
+      { practiceLensAtom },
+      { activeChordQualityAtom, activeChordRootAtom },
+    ] = await Promise.all([
+      import("jotai"),
+      import("../store/chordOverlayAtoms"),
+      import("../store/practiceLensAtoms"),
+      import("../store/songStateAtoms"),
+    ]);
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: () => {},
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    vi.doMock("../components/Fretboard/Fretboard", () => ({
+      Fretboard: () => (
+        <div
+          data-testid="chord-probe"
+          data-voicing={String(useAtomValue(voicingAtom))}
+          data-lens={String(useAtomValue(practiceLensAtom))}
+          data-quality={String(useAtomValue(activeChordQualityAtom))}
+          data-root={String(useAtomValue(activeChordRootAtom))}
+        />
+      ),
+    }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(
+      <Fresh
+        config={{
+          progressionEnabled: true,
+          progressionPreset: "one-five-six-four",
+          root: "C",
+          scale: "major",
+          chordVoicing: "close",
+          chordPracticeLens: "root",
+          activeChordQuality: "maj7",
+          activeChordManualRoot: "F#",
+        }}
+      />,
+    );
+    await act(async () => { await Promise.resolve(); });
+    const probe = screen.getByTestId("chord-probe");
+    expect(probe.getAttribute("data-voicing")).toBe("close");
+    expect(probe.getAttribute("data-lens")).toBe("root");
+    expect(probe.getAttribute("data-quality")).toBe("maj7");
+    expect(probe.getAttribute("data-root")).toBe("F#");
+  });
+});
+
+describe("FretboardEmbed — M3 events-out", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderForEvents(config: Parameters<typeof FretboardEmbed>[0]["config"], onEvent: FretboardEventSink) {
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: () => {},
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    vi.doMock("../components/Fretboard/Fretboard", () => ({ Fretboard: () => null }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(<Fresh config={config} onEvent={onEvent} />);
+    await act(async () => { await Promise.resolve(); });
+    // Second flush: preset effect may run after the initial events-out effect.
+    // The subscription catches the subsequent resolvedProgressionStepsAtom change,
+    // but we need another microtask tick for it to propagate to our collector.
+    await act(async () => { await Promise.resolve(); });
+  }
+
+  it("emits progressionResolved with resolved chord labels and an initial playbackStateChanged", async () => {
+    const events: Parameters<FretboardEventSink>[0][] = [];
+    await renderForEvents(
+      { progressionEnabled: true, progressionPreset: "one-five-six-four", root: "C", scale: "major" },
+      (e) => events.push(e),
+    );
+    // Multiple progressionResolved events may fire (initial empty + post-preset).
+    // Assert on the LAST one, which reflects the fully-resolved preset steps.
+    const resolved = [...events].reverse().find((e) => e.type === "progressionResolved");
+    expect(resolved).toBeDefined();
+    expect(resolved!.type === "progressionResolved" && resolved!.steps.length).toBe(4);
+    expect(resolved!.type === "progressionResolved" && resolved!.steps[0].label).toBe("C");
+    expect(events.some((e) => e.type === "playbackStateChanged")).toBe(true);
+    expect(events.some((e) => e.type === "activeStepChanged")).toBe(true);
   });
 });

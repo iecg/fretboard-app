@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../components/Fretboard/Fretboard";
 import { baseRootNoteAtom, baseScaleNameAtom, scaleVisibleAtom } from "../store/scaleAtoms";
@@ -6,6 +6,7 @@ import { themeAtom, displayFormatAtom, type ThemePreference } from "../store/uiA
 import { audioModeAtom, fretboardEventSinkAtom } from "./embedAtoms";
 import type { FretboardEventSink } from "./events";
 import { prefetchAudioModule, resumeGuitarAudio } from "../core/lazyGuitarAudio";
+import { ProgressionPlaybackRunner } from "./ProgressionPlaybackRunner";
 import {
   fingeringPatternAtom,
   selectSingleCagedShapeAtom,
@@ -16,6 +17,25 @@ import {
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "../store/fingeringAtoms";
+import { voicingAtom } from "../store/chordOverlayAtoms";
+import { practiceLensAtom } from "../store/practiceLensAtoms";
+import { updateActiveChordAtom } from "../store/songStateAtoms";
+import {
+  loadProgressionPresetAtom,
+  progressionLoopEnabledAtom,
+  progressionTempoBpmAtom,
+  progressionGenreStyleAtom,
+  progressionDrumsEnabledAtom,
+  progressionBassEnabledAtom,
+  progressionChordEnabledAtom,
+  progressionMetronomeEnabledAtom,
+  setProgressionPlayingAtom,
+  resolvedProgressionStepsAtom,
+  displayedProgressionStepIndexAtom,
+  progressionPlayingAtom,
+  progressionPlaybackLoadingAtom,
+  progressionPlaybackBlockedReasonAtom,
+} from "../store/progressionAtoms";
 
 /**
  * Serializable configuration for an embedded fretboard. Every field crosses
@@ -53,6 +73,35 @@ export interface FretboardConfig {
   twoStringsPair?: number;
   /** Interval (0 = Off, 1 = 3rds, 2 = 4ths, 3 = 6ths) when fingeringPattern === "two-strings". */
   twoStringsInterval?: number;
+
+  // --- M3: in-webview progression playback (opt-in) ---
+  /** Mount the Tone.js progression engine for this embed. Default false (M2 embeds unchanged). */
+  progressionEnabled?: boolean;
+  /** Progression preset id (e.g. "one-five-six-four"). Loading resets playback + applies the preset's scale/genre. */
+  progressionPreset?: string;
+  /** Transport: play/pause. */
+  progressionPlaying?: boolean;
+  /** Loop the progression. */
+  progressionLoop?: boolean;
+  /** Tempo in BPM (engine clamps to 40..240). */
+  progressionTempoBpm?: number;
+  /** Genre style: "pop"|"rock"|"blues"|"jazz"|"ballad"|"funk"|"bossa-nova". */
+  progressionGenre?: string;
+  /** Layer toggles. */
+  drumsEnabled?: boolean;
+  bassEnabled?: boolean;
+  chordsEnabled?: boolean;
+  metronomeEnabled?: boolean;
+
+  // --- M3: chord card (acts on the active progression step + board overlay) ---
+  /** Quality override for the active chord (one of the CHORD_DEFINITIONS keys), or null to clear. */
+  activeChordQuality?: string | null;
+  /** Manual root for the active chord (sharp name), or null to clear. */
+  activeChordManualRoot?: string | null;
+  /** Board voicing overlay. */
+  chordVoicing?: "off" | "full" | "close";
+  /** Practice lens overlay. */
+  chordPracticeLens?: "guide" | "root" | "common";
 }
 
 export interface FretboardEmbedProps {
@@ -116,6 +165,125 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
     config.twoStringsInterval,
   ]);
 
+  // M3: preset load — its OWN effect, keyed only on the preset id. Loading a
+  // preset resets playing→false and applies the preset's scale + category genre,
+  // so it must NOT re-run when unrelated song fields change (e.g. a tempo tweak
+  // would otherwise reload the preset and stop playback).
+  useEffect(() => {
+    if (config.progressionPreset !== undefined) {
+      store.set(loadProgressionPresetAtom, config.progressionPreset);
+    }
+  }, [store, config.progressionPreset]);
+
+  // M3: song feel — loop / tempo / genre / layers. Declared AFTER the preset
+  // effect so on mount these override the preset's category defaults. Keyed
+  // narrowly so a feel change never reloads the preset.
+  useEffect(() => {
+    if (config.progressionLoop !== undefined) store.set(progressionLoopEnabledAtom, config.progressionLoop);
+    if (config.progressionTempoBpm !== undefined) store.set(progressionTempoBpmAtom, config.progressionTempoBpm);
+    if (config.progressionGenre !== undefined) store.set(progressionGenreStyleAtom, config.progressionGenre);
+    if (config.drumsEnabled !== undefined) store.set(progressionDrumsEnabledAtom, config.drumsEnabled);
+    if (config.bassEnabled !== undefined) store.set(progressionBassEnabledAtom, config.bassEnabled);
+    if (config.chordsEnabled !== undefined) store.set(progressionChordEnabledAtom, config.chordsEnabled);
+    if (config.metronomeEnabled !== undefined) store.set(progressionMetronomeEnabledAtom, config.metronomeEnabled);
+  }, [
+    store,
+    config.progressionLoop,
+    config.progressionTempoBpm,
+    config.progressionGenre,
+    config.drumsEnabled,
+    config.bassEnabled,
+    config.chordsEnabled,
+    config.metronomeEnabled,
+  ]);
+
+  // M3: transport — playing in its OWN effect so toggling play never reloads the
+  // preset or re-applies the feel.
+  useEffect(() => {
+    if (config.progressionPlaying !== undefined) {
+      store.set(setProgressionPlayingAtom, config.progressionPlaying);
+    }
+  }, [store, config.progressionPlaying]);
+
+  // M3: chord card. Voicing/lens are board overlays; quality/manualRoot write to
+  // the active progression step via updateActiveChordAtom (no-op if no active
+  // step). null is a meaningful value here (clears the override), so guard only
+  // against undefined.
+  // Declared AFTER the preset effect so on mount the preset populates steps first; otherwise the quality/manualRoot writes find no active step and no-op.
+  useEffect(() => {
+    if (config.chordVoicing !== undefined) store.set(voicingAtom, config.chordVoicing);
+    if (config.chordPracticeLens !== undefined) store.set(practiceLensAtom, config.chordPracticeLens);
+    if (config.activeChordQuality !== undefined) {
+      store.set(updateActiveChordAtom, { quality: config.activeChordQuality });
+    }
+    if (config.activeChordManualRoot !== undefined) {
+      store.set(updateActiveChordAtom, { root: config.activeChordManualRoot });
+    }
+  }, [store, config.chordVoicing, config.chordPracticeLens, config.activeChordQuality, config.activeChordManualRoot]);
+
+  // Keep the latest onEvent without making the subscription effect depend on its
+  // identity — hosts often pass an inline arrow, which would otherwise re-subscribe
+  // and re-emit the initial snapshot on every host render.
+  const onEventRef = useRef(onEvent);
+  useEffect(() => { onEventRef.current = onEvent; }, [onEvent]);
+
+  // M3: events-out. Subscribe to the isolated store and push coarse, human-speed
+  // events to the host. `displayedProgressionStepIndexAtom` already debounces
+  // RAF→React via startTransition, so this fires at step boundaries, not per frame.
+  useEffect(() => {
+    if (!config.progressionEnabled) return;
+
+    const labelOf = (s: { shortChordLabel: string | null; label: string }) =>
+      s.shortChordLabel ?? s.label;
+
+    const emitResolved = () => {
+      const sink = onEventRef.current;
+      if (!sink) return;
+      const steps = store.get(resolvedProgressionStepsAtom);
+      sink({
+        type: "progressionResolved",
+        steps: steps.map((s) => ({
+          index: s.index,
+          degree: String(s.degree),
+          label: labelOf(s),
+          unavailable: s.unavailable,
+        })),
+      });
+    };
+    const emitActive = () => {
+      const sink = onEventRef.current;
+      if (!sink) return;
+      const idx = store.get(displayedProgressionStepIndexAtom);
+      const steps = store.get(resolvedProgressionStepsAtom);
+      const s = steps[idx];
+      sink({ type: "activeStepChanged", index: idx, label: s ? labelOf(s) : "" });
+    };
+    const emitPlayback = () => {
+      const sink = onEventRef.current;
+      if (!sink) return;
+      sink({
+        type: "playbackStateChanged",
+        playing: store.get(progressionPlayingAtom),
+        loading: store.get(progressionPlaybackLoadingAtom),
+        blockedReason: store.get(progressionPlaybackBlockedReasonAtom),
+      });
+    };
+
+    const unsubs = [
+      store.sub(resolvedProgressionStepsAtom, emitResolved),
+      store.sub(displayedProgressionStepIndexAtom, emitActive),
+      store.sub(progressionPlayingAtom, emitPlayback),
+      store.sub(progressionPlaybackLoadingAtom, emitPlayback),
+      // blockedReason derives from resolvedProgressionStepsAtom, so a preset load fires emitPlayback alongside emitResolved — intentional.
+      store.sub(progressionPlaybackBlockedReasonAtom, emitPlayback),
+    ];
+    // Initial snapshot so the host renders correct state before the first change.
+    emitResolved();
+    emitActive();
+    emitPlayback();
+    return () => unsubs.forEach((u) => u());
+  }, [store, config.progressionEnabled]);
+
   useEffect(() => {
     // Jotai's primitive `set` treats a function value as an updater
     // `(prev) => next`. The sink is itself a function, so wrap it in an updater
@@ -144,6 +312,7 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
 
   return (
     <Provider store={store}>
+      {config.progressionEnabled ? <ProgressionPlaybackRunner /> : null}
       <Fretboard stringRowPx={config.stringRowPx} />
     </Provider>
   );
