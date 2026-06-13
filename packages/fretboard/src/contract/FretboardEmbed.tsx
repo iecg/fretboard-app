@@ -78,7 +78,9 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
     if (audioMode !== "builtin" || typeof window === "undefined") return;
     prefetchAudioModule();
     const unlock = () => {
-      void resumeGuitarAudio();
+      // Best-effort unlock; swallow rejection so a failed lazy import/resume
+      // never surfaces as an unhandledrejection in embedded hosts.
+      void resumeGuitarAudio().catch(() => {});
     };
     window.addEventListener("pointerdown", unlock, { once: true });
     return () => window.removeEventListener("pointerdown", unlock);
