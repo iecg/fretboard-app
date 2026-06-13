@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, lazy, Suspense, useDeferredValue } from "react";
+import { useAtomValue } from "jotai";
 import { clsx } from "clsx";
 import styles from "./Fretboard.module.css";
 import {
@@ -6,6 +7,7 @@ import {
   getNoteFrequency,
 } from "@fretflow/core";
 import { playGuitarNote } from "../../core/lazyGuitarAudio";
+import { audioModeAtom, fretboardEventSinkAtom } from "../../contract/embedAtoms";
 import { getCachedFretboardLayout } from "../../core/fretboardLayoutCache";
 import type { AutoCenterTarget } from "../../store/shapeAtoms";
 const LazyFretboardSVG = lazy(() => 
@@ -84,6 +86,10 @@ interface FretboardProps {
 }
 
 export function Fretboard(props: FretboardProps) {
+  // Audio routing for the embed contract. Default mode is "builtin" and the
+  // web app never sets it otherwise, so web behavior is unchanged.
+  const audioMode = useAtomValue(audioModeAtom);
+  const eventSink = useAtomValue(fretboardEventSinkAtom);
   const baseState = useFretboardTopologyModel();
   const state = useDeferredValue(baseState);
   const baseViewport = useFretboardViewportModel();
@@ -308,9 +314,13 @@ export function Fretboard(props: FretboardProps) {
       fretIndex,
     );
     const frequency = getNoteFrequency(fretNoteWithOctave);
-    await playGuitarNote(frequency);
+    if (audioMode === "events") {
+      eventSink?.({ type: "noteActivated", frequency });
+    } else {
+      await playGuitarNote(frequency);
+    }
     if (onFretClickProp) onFretClickProp(stringIndex, fretIndex, noteName);
-  }, [tuning, onFretClickProp]);
+  }, [tuning, onFretClickProp, audioMode, eventSink]);
 
   const neckWidth = totalColumns * effectiveZoom;
 

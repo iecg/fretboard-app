@@ -1,0 +1,74 @@
+import { useEffect, useState } from "react";
+import { Provider, createStore } from "jotai";
+import { Fretboard } from "../components/Fretboard/Fretboard";
+import { baseRootNoteAtom, baseScaleNameAtom } from "../store/scaleAtoms";
+import { themeAtom, displayFormatAtom, type ThemePreference } from "../store/uiAtoms";
+import { audioModeAtom, fretboardEventSinkAtom } from "./embedAtoms";
+import type { FretboardEventSink } from "./events";
+
+/**
+ * Serializable configuration for an embedded fretboard. Every field crosses
+ * process/webview boundaries, so values must stay JSON-serializable and only
+ * change at human speed (no per-frame updates). Grows with consumers (M2+).
+ */
+export interface FretboardConfig {
+  /** Root note as a sharp name, e.g. "C", "F#". */
+  root?: string;
+  /** Scale name as stored by the app's internal token (e.g. "major", "minorPentatonic"). */
+  scale?: string;
+  theme?: ThemePreference;
+  displayFormat?: "notes" | "degrees" | "none";
+  /** "builtin" (default): package plays its own audio. "events": silent, emits FretboardEvents. */
+  audio?: "builtin" | "events";
+  /** Pixel height per string row (host-controlled sizing). */
+  stringRowPx?: number;
+}
+
+export interface FretboardEmbedProps {
+  config: FretboardConfig;
+  onEvent?: FretboardEventSink;
+}
+
+/**
+ * Controlled, isolated-store wrapper for embedding the fretboard in a host
+ * shell (e.g. an Expo DOM island). Serializable `config` in, `FretboardEvent`s
+ * out, with injectable audio. The web app keeps rendering `<Fretboard/>`
+ * directly against the default Jotai store — this is a NEW, additive surface.
+ *
+ * Note: each embed gets an isolated in-memory store, but the persisted
+ * scale/root atoms (`atomWithStorage`) share global localStorage keys. Two
+ * embeds mounted concurrently therefore share persisted scale/root state
+ * (last write wins on reload). Per-embed storage namespacing is deferred to a
+ * later milestone (injectable storage-key prefix).
+ *
+ * The effects below are the hydration layer: imperative atom writes keyed on
+ * config changes. FretboardSVG and everything beneath it keep their direct
+ * atom subscriptions untouched.
+ */
+export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
+  // One isolated store per embed: embeds never share state with a host app
+  // that might also be running the default Jotai store.
+  const [store] = useState(() => createStore());
+
+  useEffect(() => {
+    if (config.root !== undefined) store.set(baseRootNoteAtom, config.root);
+    if (config.scale !== undefined) store.set(baseScaleNameAtom, config.scale);
+    if (config.theme !== undefined) store.set(themeAtom, config.theme);
+    if (config.displayFormat !== undefined)
+      store.set(displayFormatAtom, config.displayFormat);
+    store.set(audioModeAtom, config.audio ?? "builtin");
+  }, [store, config.root, config.scale, config.theme, config.displayFormat, config.audio]);
+
+  useEffect(() => {
+    // Jotai's primitive `set` treats a function value as an updater
+    // `(prev) => next`. The sink is itself a function, so wrap it in an updater
+    // to STORE it rather than invoke it.
+    store.set(fretboardEventSinkAtom, () => onEvent ?? null);
+  }, [store, onEvent]);
+
+  return (
+    <Provider store={store}>
+      <Fretboard stringRowPx={config.stringRowPx} />
+    </Provider>
+  );
+}
