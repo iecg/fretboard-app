@@ -18,7 +18,6 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm --filter @fretflow/core run build && tsc -b && vite build && cp dist/index.html dist/404.html",
-    "build:mobile": "VITE_MOBILE=true pnpm run build",
     "build:types": "pnpm --filter @fretflow/core run build && tsc -b",
     "lint": "eslint . && node scripts/check-fretboard-boundaries.mjs",
     "ui:tokens": "node scripts/ui-tokens.mjs",
