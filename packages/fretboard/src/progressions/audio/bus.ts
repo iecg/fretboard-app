@@ -13,6 +13,7 @@
 
 import { getDraw } from "tone";
 import { registerAudioContext, unregisterAudioContext } from "../../core/audioIdleSuspend";
+import { IS_DEV } from "../../env";
 import { buildLayerBuses, type LayerBuses } from "./layerBuses";
 import { _resetToneBusForTests, bindToneToProgressionContext, resetToneBusBinding } from "./toneBus";
 import { materializeSignalGraph, type MaterializedGraph, type SignalGraphPlan } from "./sound/buildSignalGraph";
@@ -160,7 +161,7 @@ export function ensureProgressionAudio(): ProgressionAudio | null {
     // this try/catch for the entire round-1 plan because the catch logged
     // nothing. The console.warn flips a known-recoverable failure into an
     // observable one during development without polluting production logs.
-    if (import.meta.env.DEV) {
+    if (IS_DEV) {
       console.warn("[progression-audio] ensureProgressionAudio init failed:", err);
     }
     unsupported = true;

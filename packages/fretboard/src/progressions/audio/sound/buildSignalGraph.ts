@@ -15,6 +15,7 @@ import type { TierProfile } from "./qualityTiers";
 import type { GenreMix, MixInstrument } from "./genreMixPresets";
 import type { InsertSpec } from "./patchTypes";
 import { getBassPatch, getChordPatch, getDrumKitPatch } from "./instrumentPatches";
+import { IS_DEV } from "../../../env";
 
 export interface ChannelPlan {
   volumeDb: number;
@@ -88,7 +89,7 @@ function buildReverb(
     const r = new Reverb({ decay, wet });
     // async impulse; safe to use before resolve (silent until ready)
     void r.generate().catch((err) => {
-      if (import.meta.env.DEV) console.warn("[buildSignalGraph] Reverb.generate() failed:", err);
+      if (IS_DEV) console.warn("[buildSignalGraph] Reverb.generate() failed:", err);
     });
     return r;
   }

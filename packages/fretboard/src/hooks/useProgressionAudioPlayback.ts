@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtomValue, useSetAtom, useStore } from "jotai";
 import { getNoteFrequency } from "@fretflow/core";
+import { IS_TEST } from "../env";
 import { audioOutputWedgedAtom, audioQualityAtom, isMutedAtom } from "../store/audioAtoms";
 import {
   beatsPerBarAtom,
@@ -425,7 +426,7 @@ export function useProgressionAudioPlayback() {
     // defer the spinner by 150ms to prevent rapid UI flashing on fast rebuilds.
     let loadingTimer: ReturnType<typeof setTimeout> | undefined;
     const needsResume = isContextSuspended("progression");
-    if (import.meta.env.MODE === "test" || needsResume) {
+    if (IS_TEST || needsResume) {
       setLoading(true);
     } else {
       loadingTimer = setTimeout(() => {
