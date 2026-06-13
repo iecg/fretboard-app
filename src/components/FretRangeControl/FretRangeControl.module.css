@@ -113,7 +113,7 @@
   top: 0;
   height: 100%;
   border-radius: 2px;
-  background: var(--faceplate-accent, var(--dc-accent));
+  background: var(--faceplate-accent, #4DE4FF);
   transition: left 0.2s ease, width 0.2s ease;
 }
 

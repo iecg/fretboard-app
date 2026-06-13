@@ -103,7 +103,7 @@
 
 .propLabelAccessory {
   min-width: 0;
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0;
