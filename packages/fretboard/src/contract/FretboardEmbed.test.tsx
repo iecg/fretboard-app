@@ -202,6 +202,75 @@ describe("FretboardEmbed — M2 fingering/scale hydration", () => {
   });
 });
 
+describe("FretboardEmbed — M3 progression hydration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderWithSongProbe(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
+    const [
+      { useAtomValue: u },
+      {
+        currentProgressionPresetIdAtom: presetIdAtom,
+        progressionLoopEnabledAtom: loopAtom,
+        progressionTempoBpmAtom: tempoAtom,
+        progressionGenreStyleAtom: genreAtom,
+        progressionDrumsEnabledAtom: drumsAtom,
+        progressionBassEnabledAtom: bassAtom,
+        progressionChordEnabledAtom: chordsAtom,
+        progressionMetronomeEnabledAtom: metroAtom,
+      },
+    ] = await Promise.all([import("jotai"), import("../store/progressionAtoms")]);
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: () => {},
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    vi.doMock("../components/Fretboard/Fretboard", () => ({
+      Fretboard: () => (
+        <div
+          data-testid="song-probe"
+          data-preset={String(u(presetIdAtom))}
+          data-loop={String(u(loopAtom))}
+          data-tempo={String(u(tempoAtom))}
+          data-genre={String(u(genreAtom))}
+          data-drums={String(u(drumsAtom))}
+          data-bass={String(u(bassAtom))}
+          data-chords={String(u(chordsAtom))}
+          data-metro={String(u(metroAtom))}
+        />
+      ),
+    }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(<Fresh config={config} />);
+    await act(async () => { await Promise.resolve(); });
+    return screen.getByTestId("song-probe");
+  }
+
+  it("hydrates preset, loop, tempo, genre and the four layer toggles", async () => {
+    const probe = await renderWithSongProbe({
+      progressionEnabled: true,
+      progressionPreset: "two-five-one",
+      progressionLoop: false,
+      progressionTempoBpm: 120,
+      progressionGenre: "jazz",
+      drumsEnabled: false,
+      bassEnabled: false,
+      chordsEnabled: true,
+      metronomeEnabled: true,
+    });
+    expect(probe.getAttribute("data-preset")).toBe("two-five-one");
+    expect(probe.getAttribute("data-loop")).toBe("false");
+    expect(probe.getAttribute("data-tempo")).toBe("120");
+    expect(probe.getAttribute("data-genre")).toBe("jazz");
+    expect(probe.getAttribute("data-drums")).toBe("false");
+    expect(probe.getAttribute("data-bass")).toBe("false");
+    expect(probe.getAttribute("data-chords")).toBe("true");
+    expect(probe.getAttribute("data-metro")).toBe("true");
+  });
+});
+
 describe("FretboardEmbed — progression playback runner mount", () => {
   beforeEach(() => {
     localStorage.clear();

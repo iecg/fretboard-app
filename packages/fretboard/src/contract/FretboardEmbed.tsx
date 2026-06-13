@@ -17,6 +17,17 @@ import {
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "../store/fingeringAtoms";
+import {
+  loadProgressionPresetAtom,
+  progressionLoopEnabledAtom,
+  progressionTempoBpmAtom,
+  progressionGenreStyleAtom,
+  progressionDrumsEnabledAtom,
+  progressionBassEnabledAtom,
+  progressionChordEnabledAtom,
+  progressionMetronomeEnabledAtom,
+  setProgressionPlayingAtom,
+} from "../store/progressionAtoms";
 
 /**
  * Serializable configuration for an embedded fretboard. Every field crosses
@@ -58,6 +69,21 @@ export interface FretboardConfig {
   // --- M3: in-webview progression playback (opt-in) ---
   /** Mount the Tone.js progression engine for this embed. Default false (M2 embeds unchanged). */
   progressionEnabled?: boolean;
+  /** Progression preset id (e.g. "one-five-six-four"). Loading resets playback + applies the preset's scale/genre. */
+  progressionPreset?: string;
+  /** Transport: play/pause. */
+  progressionPlaying?: boolean;
+  /** Loop the progression. */
+  progressionLoop?: boolean;
+  /** Tempo in BPM (engine clamps to 40..240). */
+  progressionTempoBpm?: number;
+  /** Genre style: "pop"|"rock"|"blues"|"jazz"|"ballad"|"funk"|"bossa-nova". */
+  progressionGenre?: string;
+  /** Layer toggles. */
+  drumsEnabled?: boolean;
+  bassEnabled?: boolean;
+  chordsEnabled?: boolean;
+  metronomeEnabled?: boolean;
 }
 
 export interface FretboardEmbedProps {
@@ -120,6 +146,46 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
     config.twoStringsPair,
     config.twoStringsInterval,
   ]);
+
+  // M3: preset load — its OWN effect, keyed only on the preset id. Loading a
+  // preset resets playing→false and applies the preset's scale + category genre,
+  // so it must NOT re-run when unrelated song fields change (e.g. a tempo tweak
+  // would otherwise reload the preset and stop playback).
+  useEffect(() => {
+    if (config.progressionPreset !== undefined) {
+      store.set(loadProgressionPresetAtom, config.progressionPreset);
+    }
+  }, [store, config.progressionPreset]);
+
+  // M3: song feel — loop / tempo / genre / layers. Declared AFTER the preset
+  // effect so on mount these override the preset's category defaults. Keyed
+  // narrowly so a feel change never reloads the preset.
+  useEffect(() => {
+    if (config.progressionLoop !== undefined) store.set(progressionLoopEnabledAtom, config.progressionLoop);
+    if (config.progressionTempoBpm !== undefined) store.set(progressionTempoBpmAtom, config.progressionTempoBpm);
+    if (config.progressionGenre !== undefined) store.set(progressionGenreStyleAtom, config.progressionGenre);
+    if (config.drumsEnabled !== undefined) store.set(progressionDrumsEnabledAtom, config.drumsEnabled);
+    if (config.bassEnabled !== undefined) store.set(progressionBassEnabledAtom, config.bassEnabled);
+    if (config.chordsEnabled !== undefined) store.set(progressionChordEnabledAtom, config.chordsEnabled);
+    if (config.metronomeEnabled !== undefined) store.set(progressionMetronomeEnabledAtom, config.metronomeEnabled);
+  }, [
+    store,
+    config.progressionLoop,
+    config.progressionTempoBpm,
+    config.progressionGenre,
+    config.drumsEnabled,
+    config.bassEnabled,
+    config.chordsEnabled,
+    config.metronomeEnabled,
+  ]);
+
+  // M3: transport — playing in its OWN effect so toggling play never reloads the
+  // preset or re-applies the feel.
+  useEffect(() => {
+    if (config.progressionPlaying !== undefined) {
+      store.set(setProgressionPlayingAtom, config.progressionPlaying);
+    }
+  }, [store, config.progressionPlaying]);
 
   useEffect(() => {
     // Jotai's primitive `set` treats a function value as an updater
