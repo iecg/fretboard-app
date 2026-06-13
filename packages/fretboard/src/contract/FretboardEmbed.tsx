@@ -209,6 +209,7 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
   // the active progression step via updateActiveChordAtom (no-op if no active
   // step). null is a meaningful value here (clears the override), so guard only
   // against undefined.
+  // Declared AFTER the preset effect so on mount the preset populates steps first; otherwise the quality/manualRoot writes find no active step and no-op.
   useEffect(() => {
     if (config.chordVoicing !== undefined) store.set(voicingAtom, config.chordVoicing);
     if (config.chordPracticeLens !== undefined) store.set(practiceLensAtom, config.chordPracticeLens);

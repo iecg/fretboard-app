@@ -332,7 +332,7 @@ describe("FretboardEmbed — M3 chord card hydration", () => {
       { useAtomValue },
       { voicingAtom },
       { practiceLensAtom },
-      { activeChordQualityAtom },
+      { activeChordQualityAtom, activeChordRootAtom },
     ] = await Promise.all([
       import("jotai"),
       import("../store/chordOverlayAtoms"),
@@ -350,6 +350,7 @@ describe("FretboardEmbed — M3 chord card hydration", () => {
           data-voicing={String(useAtomValue(voicingAtom))}
           data-lens={String(useAtomValue(practiceLensAtom))}
           data-quality={String(useAtomValue(activeChordQualityAtom))}
+          data-root={String(useAtomValue(activeChordRootAtom))}
         />
       ),
     }));
@@ -364,6 +365,7 @@ describe("FretboardEmbed — M3 chord card hydration", () => {
           chordVoicing: "close",
           chordPracticeLens: "root",
           activeChordQuality: "maj7",
+          activeChordManualRoot: "F#",
         }}
       />,
     );
@@ -372,6 +374,7 @@ describe("FretboardEmbed — M3 chord card hydration", () => {
     expect(probe.getAttribute("data-voicing")).toBe("close");
     expect(probe.getAttribute("data-lens")).toBe("root");
     expect(probe.getAttribute("data-quality")).toBe("maj7");
+    expect(probe.getAttribute("data-root")).toBe("F#");
   });
 });
 
