@@ -8,8 +8,14 @@ import "../components/FretboardSVG/FretboardSVG";
 
 vi.mock("../core/lazyGuitarAudio", () => ({
   playGuitarNote: vi.fn().mockResolvedValue(undefined),
+  prefetchAudioModule: vi.fn(),
+  resumeGuitarAudio: vi.fn().mockResolvedValue(undefined),
 }));
-import { playGuitarNote } from "../core/lazyGuitarAudio";
+import {
+  playGuitarNote,
+  prefetchAudioModule,
+  resumeGuitarAudio,
+} from "../core/lazyGuitarAudio";
 
 // Flushes React.lazy Suspense so the FretboardSVG mounts before assertions.
 async function flushSuspense() {
@@ -81,5 +87,20 @@ describe("FretboardEmbed", () => {
     const user = userEvent.setup();
     await user.click(firstHitTarget());
     expect(playGuitarNote).toHaveBeenCalled();
+  });
+
+  it('audio="builtin": prefetches the audio module on mount and resumes on first gesture', async () => {
+    render(<FretboardEmbed config={{}} />);
+    await flushSuspense();
+    expect(prefetchAudioModule).toHaveBeenCalled();
+    expect(resumeGuitarAudio).not.toHaveBeenCalled();
+    await userEvent.setup().pointer({ keys: "[MouseLeft]", target: firstHitTarget() });
+    expect(resumeGuitarAudio).toHaveBeenCalled();
+  });
+
+  it('audio="events": does NOT prefetch the builtin audio module', async () => {
+    render(<FretboardEmbed config={{ audio: "events" }} />);
+    await flushSuspense();
+    expect(prefetchAudioModule).not.toHaveBeenCalled();
   });
 });

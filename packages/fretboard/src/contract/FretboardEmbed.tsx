@@ -5,6 +5,7 @@ import { baseRootNoteAtom, baseScaleNameAtom } from "../store/scaleAtoms";
 import { themeAtom, displayFormatAtom, type ThemePreference } from "../store/uiAtoms";
 import { audioModeAtom, fretboardEventSinkAtom } from "./embedAtoms";
 import type { FretboardEventSink } from "./events";
+import { prefetchAudioModule, resumeGuitarAudio } from "../core/lazyGuitarAudio";
 
 /**
  * Serializable configuration for an embedded fretboard. Every field crosses
@@ -65,6 +66,25 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
     // to STORE it rather than invoke it.
     store.set(fretboardEventSinkAtom, () => onEvent ?? null);
   }, [store, onEvent]);
+
+  // Web Audio unlock for embedded hosts (WKWebView/Safari). The tap handler
+  // resumes the AudioContext only AFTER an async module import, which runs past
+  // the gesture's user-activation window — so the first audible tap stays
+  // silent. Prefetch the audio module on mount and resume it on the first
+  // pointer gesture so taps actually play. Builtin mode only; web app behavior
+  // is unchanged (it renders <Fretboard/> directly, not FretboardEmbed).
+  const audioMode = config.audio ?? "builtin";
+  useEffect(() => {
+    if (audioMode !== "builtin" || typeof window === "undefined") return;
+    prefetchAudioModule();
+    const unlock = () => {
+      // Best-effort unlock; swallow rejection so a failed lazy import/resume
+      // never surfaces as an unhandledrejection in embedded hosts.
+      void resumeGuitarAudio().catch(() => {});
+    };
+    window.addEventListener("pointerdown", unlock, { once: true });
+    return () => window.removeEventListener("pointerdown", unlock);
+  }, [audioMode]);
 
   return (
     <Provider store={store}>
