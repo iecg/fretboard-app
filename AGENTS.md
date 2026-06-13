@@ -54,7 +54,7 @@ pnpm run preview               # preview build locally
 
 ### State & Logic
 
-- **State:** Jotai atoms under `src/store/`, domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `progressionAtoms`, `songStateAtoms`, `voicingFallbackAtoms`, `voicingStringSets`, `composableSelectors`, `actions`. Import directly from the relevant domain module (e.g. `import { rootNoteAtom } from "../store/scaleAtoms"`). Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
+- **State:** Jotai atoms live in `@fretflow/fretboard` (`packages/fretboard/src/store/`), domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `progressionAtoms`, `songStateAtoms`, `voicingFallbackAtoms`, `voicingStringSets`, `composableSelectors`, `actions`. App-shell atoms (`inspectorAtoms`, `languageAtom`, `urlOverrideAtoms`) remain in `src/store/`. Old `src/store/*` paths are thin re-export stubs — new code should import from `@fretflow/fretboard/store/<module>` (or the package's public surface) directly. Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
 - **Domain (pure):** `@fretflow/core` workspace package at `packages/core/src/` — `theory.ts`, `theoryCatalog.ts`, `guitar.ts`, `degrees.ts`, `circleOfFifthsUtils.ts`, `diatonicNotes.ts`, `constants.ts`. Includes the `shapes/` package (`templates`, `fullChordShapes`, `voicings`, `helpers`, `polygons`, `threeNPS`, `analytics`, `practicePatterns`).
 - **Music theory:** `@fretflow/core`'s theory functions (`getNoteDisplay`, `getChordNotes`, `getScaleNotes`, `getDiatonicChord`, `getKeySignature`, etc.) are backed by [Tonal.js](https://github.com/tonaljs/tonal) (`@tonaljs/note`, `@tonaljs/chord`, `@tonaljs/scale`, `@tonaljs/key`, `@tonaljs/interval`, `@tonaljs/roman-numeral`, `@tonaljs/progression`). Naming translation lives in `packages/core/src/lib/tonal.ts`.
 - **Audio:** `GuitarSynth` singleton in `src/core/audio.ts` (Web Audio API). Tone.js progression playback in `src/progressions/` + `src/hooks/useProgressionAudioPlayback.ts`.
@@ -63,7 +63,7 @@ pnpm run preview               # preview build locally
 ### Components & Layout
 
 - **Orchestration:** `src/App.tsx` wires atoms to `MainLayoutWrapper`.
-- **Rendering:** `components/Fretboard/Fretboard.tsx` wraps `components/FretboardSVG/FretboardSVG.tsx` (the primary SVG renderer — large, direct atom subscriptions).
+- **Rendering:** `packages/fretboard/src/components/Fretboard/Fretboard.tsx` wraps `packages/fretboard/src/components/FretboardSVG/FretboardSVG.tsx` (the primary SVG renderer — large, direct atom subscriptions). The package's public contract is `FretboardEmbed` (serializable `config` in, `FretboardEvent`s out via `onEvent`, `audio: "builtin" | "events"`) — an additive surface that does not change how the web app renders `<Fretboard/>`.
 - **Controls:** `components/Inspector/` is the control surface — a two-tab Inspector (`tabs.tsx`: `view` → "Overlay", `song` → "Song"). The **Overlay** tab (`ViewTab.tsx`) stacks two `InspectorCard`s: a Scale card hosting `FingeringPatternControls` (pattern / shape / position) and a Chord card hosting `ChordOverlayControls` (voicing + close-mode string set). The **Song** tab (`SongControls/SongControls.tsx`) owns key + scale (root/scale dropdowns), progression preset + sequence, time signature + tempo, and the backing track. On mobile the Inspector renders as a bottom tab bar; on larger screens as side-by-side cards.
 - **Layout:** `useLayoutMode` (in `src/hooks/`) measures viewport via `src/layout/responsive.ts` → returns `{ tier, variant, … }`. `MainLayoutWrapper` emits `data-layout-tier` (mobile/tablet/desktop) and `data-layout-variant` (mobile/landscape-mobile/tablet-split/tablet-stacked/desktop-split/desktop-stacked/desktop-3col) attributes. **Both gate responsive CSS — always consider both.**
 - **Primitives:** `ToggleBar`, `StepperControl` (+ `StepperSelect`, `StepperShell`), `LabeledSelect`, `NotePill`, `Switch`, `Tooltip` / `SettingsTooltip`, and `InspectorCard`.
@@ -72,20 +72,27 @@ pnpm run preview               # preview build locally
 
 ```text
 packages/
-└── core/                     # @fretflow/core — pure music-theory package
-    └── src/                  # theory, theoryCatalog, guitar, degrees, circleOfFifthsUtils,
-                              # diatonicNotes, constants, shapes/, lib/tonal.ts
+├── core/                     # @fretflow/core — pure music-theory package
+│   └── src/                  # theory, theoryCatalog, guitar, degrees, circleOfFifthsUtils,
+│                             # diatonicNotes, constants, shapes/, lib/tonal.ts
+└── fretboard/                # @fretflow/fretboard — fretboard renderer, Jotai store closure,
+    └── src/                  # progression engine, audio runtime, FretboardEmbed contract.
+                              # Source-only (no dist); consumed via Vite alias + tsconfig paths.
+                              # Self-contained: no imports from src/, no import.meta
+                              # (enforced by scripts/check-fretboard-boundaries.mjs in `pnpm run lint`).
 
 src/
 ├── App.tsx                   # orchestrator (~260 lines)
 ├── main.tsx
 ├── core/                     # app-side runtime (audio, lazyGuitarAudio, toneInit,
 │                             # fretboardLayoutCache, polygonCoverage)
-├── store/                    # Jotai atom modules (domain-split) + actions.ts
+├── store/                    # app-shell atoms (inspectorAtoms, languageAtom, urlOverrideAtoms)
+│                             # + re-export stubs; the domain atom closure now lives in
+│                             # packages/fretboard/src/store/
 ├── hooks/                    # useLayoutMode, useFretboardState, useFretboardTopologyModel,
 │                             # usePlaybackTransportModel, useProgressionAudioPlayback, ...
 ├── layout/                   # breakpoints + responsive layout resolver
-├── progressions/             # progression domain + Tone.js audio engine
+├── progressions/             # (now in packages/fretboard/) progression domain + Tone.js audio engine
 ├── utils/                    # storage helpers, dom helpers
 ├── i18n/                     # translation strings + useTranslation
 ├── test-utils/               # renderWithAtoms, a11y helpers, vitest setup

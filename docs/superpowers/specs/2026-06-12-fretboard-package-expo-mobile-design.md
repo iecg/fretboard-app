@@ -56,6 +56,8 @@ How DOM components work: a file beginning with the `'use dom'` directive default
 
 ### Package: `@fretflow/state`
 
+> **Amendment (M0 implementation):** `src/store` and `src/progressions` proved to be mutually coupled, so a standalone state package would create a dependency cycle. State ships inside `@fretflow/fretboard` as the internal `store/` module (subpath-importable via `@fretflow/fretboard/store/*`). Everything else in this section applies to that module unchanged.
+
 The domain-split Jotai atom modules move from `src/store/` into `packages/state/`. Internal-facing: consumed by `@fretflow/fretboard` and by the web app (which keeps its existing atom-level integration). Changes required by the move:
 
 - **Storage adapter injection.** `atomWithStorage` currently assumes `localStorage` via `src/utils/storage.ts`. The package accepts an injected storage implementation (web: `localStorage`; the DOM island also uses `localStorage`; a future native consumer could supply AsyncStorage). Keys and prefixing behavior are unchanged.
