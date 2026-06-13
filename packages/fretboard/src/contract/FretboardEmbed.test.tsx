@@ -3,18 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FretboardEmbed } from "./FretboardEmbed";
-import { useAtomValue } from "jotai";
-import {
-  fingeringPatternAtom,
-  cagedShapesAtom,
-  npsPositionAtom,
-  npsOctaveAtom,
-  oneStringIndexAtom,
-  oneStringIntervalAtom,
-  twoStringsPairAtom,
-  twoStringsIntervalAtom,
-} from "../store/fingeringAtoms";
-import { scaleVisibleAtom } from "../store/scaleAtoms";
 // Prime the lazy chunk so React.lazy() resolves on first microtask in jsdom.
 import "../components/FretboardSVG/FretboardSVG";
 
@@ -125,17 +113,37 @@ describe("FretboardEmbed — M2 fingering/scale hydration", () => {
   });
 
   async function renderWithProbe(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
+    // All imports are deferred until after vi.doMock so that each call to
+    // renderWithProbe gets a fresh module graph (consistent atom instances).
+    const [
+      { useAtomValue: freshUseAtomValue },
+      {
+        fingeringPatternAtom: fpAtom,
+        cagedShapesAtom: csAtom,
+        npsPositionAtom: npsPosAtom,
+        npsOctaveAtom: npsOctAtom,
+        oneStringIndexAtom: osIdxAtom,
+        oneStringIntervalAtom: osIntAtom,
+        twoStringsPairAtom: tsPairAtom,
+        twoStringsIntervalAtom: tsIntAtom,
+      },
+      { scaleVisibleAtom: svAtom },
+    ] = await Promise.all([
+      import("jotai"),
+      import("../store/fingeringAtoms"),
+      import("../store/scaleAtoms"),
+    ]);
     vi.doMock("../components/Fretboard/Fretboard", () => ({
       Fretboard: () => {
-        const fingeringPattern = useAtomValue(fingeringPatternAtom);
-        const cagedShapes = useAtomValue(cagedShapesAtom);
-        const npsPosition = useAtomValue(npsPositionAtom);
-        const npsOctave = useAtomValue(npsOctaveAtom);
-        const oneStringIndex = useAtomValue(oneStringIndexAtom);
-        const oneStringInterval = useAtomValue(oneStringIntervalAtom);
-        const twoStringsPair = useAtomValue(twoStringsPairAtom);
-        const twoStringsInterval = useAtomValue(twoStringsIntervalAtom);
-        const scaleVisible = useAtomValue(scaleVisibleAtom);
+        const fingeringPattern = freshUseAtomValue(fpAtom);
+        const cagedShapes = freshUseAtomValue(csAtom);
+        const npsPosition = freshUseAtomValue(npsPosAtom);
+        const npsOctave = freshUseAtomValue(npsOctAtom);
+        const oneStringIndex = freshUseAtomValue(osIdxAtom);
+        const oneStringInterval = freshUseAtomValue(osIntAtom);
+        const twoStringsPair = freshUseAtomValue(tsPairAtom);
+        const twoStringsInterval = freshUseAtomValue(tsIntAtom);
+        const scaleVisible = freshUseAtomValue(svAtom);
         return (
           <div
             data-testid="probe"
@@ -159,6 +167,7 @@ describe("FretboardEmbed — M2 fingering/scale hydration", () => {
   it("hydrates the active fingering pattern + CAGED shape", async () => {
     await renderWithProbe({ fingeringPattern: "caged", cagedShape: "A" });
     await flushSuspense();
+    await act(async () => { await Promise.resolve(); });
     const probe = screen.getByTestId("probe");
     expect(probe.getAttribute("data-fingering")).toBe("caged");
     expect(probe.getAttribute("data-caged")).toBe("A");
@@ -167,6 +176,7 @@ describe("FretboardEmbed — M2 fingering/scale hydration", () => {
   it("hydrates 3NPS position + octave", async () => {
     await renderWithProbe({ fingeringPattern: "3nps", npsPosition: 4, npsOctave: 1 });
     await flushSuspense();
+    await act(async () => { await Promise.resolve(); });
     const probe = screen.getByTestId("probe");
     expect(probe.getAttribute("data-nps-pos")).toBe("4");
     expect(probe.getAttribute("data-nps-oct")).toBe("1");
@@ -182,6 +192,7 @@ describe("FretboardEmbed — M2 fingering/scale hydration", () => {
       scaleVisible: false,
     });
     await flushSuspense();
+    await act(async () => { await Promise.resolve(); });
     const probe = screen.getByTestId("probe");
     expect(probe.getAttribute("data-one-idx")).toBe("3");
     expect(probe.getAttribute("data-one-int")).toBe("1");
