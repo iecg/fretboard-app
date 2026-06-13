@@ -132,57 +132,21 @@
   /* Disabled state — clearly inactive */
   --disabled-opacity: 0.4;
 
-  /* Fretboard wood — warm maple */
-  --fretboard-wood-top: #fbe6c6;
-  --fretboard-wood-mid: #f1c38e;
-  --fretboard-wood-bottom: #e0ab68;
+  /* Fretboard renderer color/geometry tokens (wood, fret wire, strings, nut,
+     inlay pearls, edges, glow opacity) moved to
+     @fretflow/fretboard/styles/fretboard-tokens.css. The tokens kept here are
+     app-side fretboard chrome not referenced by the package renderer. */
   --fretboard-wood-grain: rgba(120, 70, 30, 0.15);
-  --fret-wire-dark: #5c4a3a;
-  --fret-wire-medium: #bbaa97;
-  --fret-wire-bright: #f3eee2;
   --fret-wire-highlight: rgb(255 255 255 / 0.25);
-  --fret-wire-shadow: rgb(0 0 0 / 0.15);
   --fret-marker: rgba(60, 30, 10, 0.15);
   --fret-nut-bg: #f8f4e8;
   --fret-nut-wire: #475569;
   --fretboard-border: #9e633e;
-
-  /* String colors — warm metal on light maple (retoned from cool blue-gray) */
-  --string-wire: #d8cdb8;
-  --string-wire-bass: #b8a585;
-
-  /* Nut gradient — bone white */
-  --nut-stop-1: #ffffff;
-  --nut-stop-2: #fcfbf8;
-  --nut-stop-3: #f8f4e8;
-  --nut-stop-4: #f3ecd8;
-
-  /* Inlays — neutral cool-white pearl tuned for maple fretboard (#fbe6c6 → #f1c38e → #e0ab68).
-     Reference: real WP inlays on maple read as near-white pearl — luminance high, chroma < 3%.
-     Against warm maple (brighter/warmer than rosewood), pure cool-seafoam reads as chromatic
-     clash. Solution: collapse green-cyan delta, stay essentially achromatic with faint cool lean.
-     Color family: neutral gray-white, saturation < 3%. NOT teal, NOT seafoam.
-     stop1 rgb(240,242,242): highlight near-white, Δ(G-B)=0, Δ(R-G)=2 — virtually achromatic.
-     stop2 rgb(216,218,218): mid neutral gray, achromatic.
-     stop3 rgb(188,192,192): slightly cool anchor, Δ(G-B)=0, Δ(R-G)=4 — minimal chroma.
-     No walnut rim; dots sit flush against the wood with no hard stroke. */
   --inlay-dot: rgba(60, 30, 10, 0.18);
   --inlay-dot-12: rgba(60, 30, 10, 0.40);
-  --inlay-pearl-stop1: rgb(240, 242, 242);
-  --inlay-pearl-stop2: rgb(216, 218, 218);
-  --inlay-pearl-stop3: rgb(188, 192, 192);
-
   --nut: #f8f4e8;
   --fretboard-edge-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
-  --fretboard-top-edge-color: rgba(255, 255, 255, 0.4);
-  --fretboard-bottom-edge-color: rgba(0, 0, 0, 0.15);
-  --fretboard-nut-slot-color: rgba(0, 0, 0, 0.2);
   --fretboard-headstock-bg: var(--fretboard-wood-mid);
-  /* Light-mode glow opacity. Consumed by the glow-orange SVG <feDropShadow>
-     filter in FretboardDefs.tsx — so this also affects the chord-tone role
-     glow in light mode, not just the lens-emphasis hold/anticipation glow.
-     0.45 is the soft-but-clear target against the cream PANEL. */
-  --fretboard-glow-opacity: 0.45;
 
   /* CAGED shapes — light mode rebalance round 2.
      E lifts to its lighter sky-blue rgb so it visibly separates from A's deeper blue.
@@ -228,13 +192,9 @@
   --selected-chord-border: #d05620; /* ORANGE bright — reference palette */
   --selected-highlight: rgb(255 255 255 / 0.15); /* Backward compatibility alias */
 
-  /* Fretboard accessibility chrome — light-mode override */
-  --fretboard-a11y-hover-bg: rgb(0 0 0 / 0.1);
+  /* --fretboard-a11y-hover-bg, --fretboard-board-shadow, --fretboard-note-text-fill,
+     --fretboard-note-text-stroke moved to @fretflow/fretboard/styles/fretboard-tokens.css */
 
-  /* Fretboard SVG — light-mode rings, fills, and number color */
-  --fretboard-board-shadow: rgb(0 0 0 / 0.15);
-  --fretboard-note-text-fill: #2a251d;  /* INK — reference palette */
-  --fretboard-note-text-stroke: transparent;
   /* Note text — light mode, reference palette */
   --note-text-in-scale:  #2a251d;  /* INK — dark warm brown on cream fills */
   --note-text-tonic:     #2a251d;  /* INK — same; tonic fill is warm enough at 22% */
@@ -258,7 +218,7 @@
   --fretboard-tension-chord-tone-stroke: color-mix(in srgb, var(--note-ring-tonic) 40%, transparent);
   --fretboard-tension-color-tone-fill: color-mix(in srgb, var(--note-ring-color-tone) 15%, #ffffff);
   --fretboard-tension-color-tone-stroke: color-mix(in srgb, var(--note-ring-color-tone) 40%, transparent);
-  --fretboard-fret-number-color: #475569;
+  /* --fretboard-fret-number-color moved to @fretflow/fretboard/styles/fretboard-tokens.css */
 
   /* Fretboard note fill token overrides — light mode, reference palette.
      Tonic + chord-root in warm ORANGE family (rust tints into cream PANEL);
@@ -273,39 +233,11 @@
   --fretboard-note-fill-deemphasis-chord:  var(--fretboard-guide-tones-deemphasis-fill);
   --fretboard-note-fill-deemphasis-violet: var(--fretboard-guide-tones-color-tone-fill);
 
-  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest.
-     Single-source oklch() literals, equivalence-preserving (original hex in comments).
-     Hues differ per theme by design (warm maple here vs cool rosewood in dark) — there is
-     no shared hue, so each triplet is independent. Triplets from scripts/derive-fb-oklch.mjs. */
-  --fb-home-fill: oklch(0.5898 0.1342 60.9); /* was #b5670a */
-  --fb-home-stroke: oklch(0.5285 0.1524 38.7); /* was var(--note-ring-tonic) → #b1431b */
-  --fb-guide-fill: oklch(0.9307 0.0370 225.0); /* was #cfeefb */
-  --fb-guide-stroke: oklch(0.5695 0.1042 226.2); /* was #1583a6 */
-  --fb-neutral-fill: oklch(0.9009 0.0095 62.6); /* was #e3ddd8 */
-  --fb-neutral-stroke: oklch(0.4262 0.0246 74.3); /* was #574d40 */
-  --fb-region-tint: oklch(0.4878 0.0283 67.1 / 0.20); /* was rgba(107, 93, 79, 0.20) */
+  /* Chord-overlay accent (vermillion) kept app-side; resolves through
+     --chord-connector-color-2, now defined in @fretflow/fretboard. The
+     home/guide/neutral/region/halo --fb-* tokens and the full --chord-connector-*
+     palette moved to @fretflow/fretboard/styles/fretboard-tokens.css. */
   --fb-connector-accent: var(--chord-connector-color-2); /* vermillion */
-  --fb-connector-halo: rgb(0 0 0 / 0.6); /* light wood: dark casing carves the line (APCA composited Lc ~57 vs maple) */
-
-  /* Chord-tone connector palette — canonical Okabe-Ito 8-color palette.
-     Identical across light and dark themes for consistent voicing identity.
-     Light mode: lower fill-opacity (0.22 vs dark 0.15) because the warm tan
-     maple wood (#fbe6c6–#e0ab68) provides less contrast than rosewood, so
-     a moderate alpha keeps the connector readable without over-saturating.
-     Halo: warmer, slightly higher opacity to lift off the maple background. */
-  --chord-connector-fill-opacity: 0.22;
-  --chord-connector-outline-width: 1.25px;
-  --chord-connector-outline-opacity: 0.80;
-  --chord-connector-halo-width: 2px;
-  --chord-connector-halo-color: rgba(255, 255, 255, 0.55);
-  --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
-  --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
-  --chord-connector-color-3: #999999; /* Okabe-Ito: gray */
-  --chord-connector-color-4: #009E73; /* Okabe-Ito: bluish green */
-  --chord-connector-color-5: #56B4E9; /* Okabe-Ito: sky blue */
-  --chord-connector-color-6: #0072B2; /* Okabe-Ito: blue */
-  --chord-connector-color-7: #CC79A7; /* Okabe-Ito: reddish purple */
-  --chord-connector-color-8: #F0E442; /* Okabe-Ito: yellow */
 }
 
 /* ==========================================================================
@@ -327,39 +259,11 @@
      which drifts away from the mirror-warm-amber palette anchor. */
   --fretboard-note-fill-scale-only: #3a2f28;
 
-  /* Chord-overlay semantic colors (2026-06 redesign): amber=home, teal=guide, neutral=rest.
-     Single-source oklch() literals, equivalence-preserving (original hex in comments).
-     Hues differ per theme by design (cool rosewood here vs warm maple in light) — there is
-     no shared hue, so each triplet is independent. Triplets from scripts/derive-fb-oklch.mjs.
-     Note: home-stroke here resolves through :root's --neon-orange (#FF9A4D), not light's
-     #b1431b, because dark does not redefine --note-ring-tonic — preserved verbatim. */
-  --fb-home-fill: oklch(0.5898 0.1342 60.9); /* was #b5670a — identical to light by design */
-  --fb-home-stroke: oklch(0.7775 0.1512 55.4); /* was var(--note-ring-tonic) → #FF9A4D */
-  --fb-guide-fill: oklch(0.4375 0.0764 235.5); /* was #1f5876 */
-  --fb-guide-stroke: oklch(0.8837 0.1056 209.8); /* was #7cecff */
-  --fb-neutral-fill: oklch(0.2525 0.0206 251.6); /* was #1b232c */
-  --fb-neutral-stroke: oklch(0.7108 0.0155 244.8); /* was #9aa3ab */
-  --fb-region-tint: oklch(0.7108 0.0155 244.8 / 0.14); /* was rgba(154, 163, 171, 0.14) */
+  /* Chord-overlay accent (orange) kept app-side; resolves through
+     --chord-connector-color-1, now defined in @fretflow/fretboard. The
+     home/guide/neutral/region/halo --fb-* tokens and the full --chord-connector-*
+     palette moved to @fretflow/fretboard/styles/fretboard-tokens.css. */
   --fb-connector-accent: var(--chord-connector-color-1); /* orange */
-  --fb-connector-halo: rgb(0 0 0 / 0.5); /* dark wood: shadow halo carves the line */
-
-  /* Chord-tone connector overrides for dark mode.
-     Same canonical Okabe-Ito palette as light mode. Lower fill opacity because
-     dark rosewood provides high contrast at lower alpha. Halo disabled —
-     all canonical Okabe-Ito colors pass WCAG 3:1 against rosewood. */
-  --chord-connector-fill-opacity: 0.15;
-  --chord-connector-outline-width: 1.25px;
-  --chord-connector-outline-opacity: 0.85;
-  --chord-connector-halo-width: 0;
-  --chord-connector-halo-color: transparent;
-  --chord-connector-color-1: #E69F00; /* Okabe-Ito: orange */
-  --chord-connector-color-2: #D55E00; /* Okabe-Ito: vermillion */
-  --chord-connector-color-3: #999999; /* Okabe-Ito: gray */
-  --chord-connector-color-4: #009E73; /* Okabe-Ito: bluish green */
-  --chord-connector-color-5: #56B4E9; /* Okabe-Ito: sky blue */
-  --chord-connector-color-6: #0072B2; /* Okabe-Ito: blue */
-  --chord-connector-color-7: #CC79A7; /* Okabe-Ito: reddish purple */
-  --chord-connector-color-8: #F0E442; /* Okabe-Ito: yellow */
 
   /* Chip tokens — dark mode chip border and note inner fill */
   --chip-border-muted: rgb(255 255 255 / 0.22);

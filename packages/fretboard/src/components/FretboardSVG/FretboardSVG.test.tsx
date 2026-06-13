@@ -3,6 +3,8 @@ import type { ComponentProps } from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
 import "../../../../../src/styles/index.css";
 import "../../../../../src/styles/themes.css";
+// Fretboard tokens now live in the package; themes.css no longer defines them.
+import "../../styles/fretboard-tokens.css";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
 import { getFretboardNotes } from "@fretflow/core";
 import type { CagedShape, ShapePolygon } from "@fretflow/core";
