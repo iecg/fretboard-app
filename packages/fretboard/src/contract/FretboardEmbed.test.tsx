@@ -201,3 +201,35 @@ describe("FretboardEmbed — M2 fingering/scale hydration", () => {
     expect(probe.getAttribute("data-scale-visible")).toBe("false");
   });
 });
+
+describe("FretboardEmbed — progression playback runner mount", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderEmbed(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
+    const hookSpy = vi.fn();
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: hookSpy,
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    // Mock the heavy child so the test stays in jsdom without SVG/audio.
+    vi.doMock("../components/Fretboard/Fretboard", () => ({ Fretboard: () => null }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(<Fresh config={config} />);
+    await act(async () => { await Promise.resolve(); });
+    return hookSpy;
+  }
+
+  it("mounts the playback hook when progressionEnabled is true", async () => {
+    const spy = await renderEmbed({ progressionEnabled: true });
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it("does NOT mount the playback hook by default", async () => {
+    const spy = await renderEmbed({});
+    expect(spy).not.toHaveBeenCalled();
+  });
+});

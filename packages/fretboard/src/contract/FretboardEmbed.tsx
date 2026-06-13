@@ -6,6 +6,7 @@ import { themeAtom, displayFormatAtom, type ThemePreference } from "../store/uiA
 import { audioModeAtom, fretboardEventSinkAtom } from "./embedAtoms";
 import type { FretboardEventSink } from "./events";
 import { prefetchAudioModule, resumeGuitarAudio } from "../core/lazyGuitarAudio";
+import { ProgressionPlaybackRunner } from "./ProgressionPlaybackRunner";
 import {
   fingeringPatternAtom,
   selectSingleCagedShapeAtom,
@@ -53,6 +54,10 @@ export interface FretboardConfig {
   twoStringsPair?: number;
   /** Interval (0 = Off, 1 = 3rds, 2 = 4ths, 3 = 6ths) when fingeringPattern === "two-strings". */
   twoStringsInterval?: number;
+
+  // --- M3: in-webview progression playback (opt-in) ---
+  /** Mount the Tone.js progression engine for this embed. Default false (M2 embeds unchanged). */
+  progressionEnabled?: boolean;
 }
 
 export interface FretboardEmbedProps {
@@ -144,6 +149,7 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
 
   return (
     <Provider store={store}>
+      {config.progressionEnabled ? <ProgressionPlaybackRunner /> : null}
       <Fretboard stringRowPx={config.stringRowPx} />
     </Provider>
   );
