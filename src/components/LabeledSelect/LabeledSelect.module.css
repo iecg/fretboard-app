@@ -204,7 +204,7 @@
   align-items: center;
   justify-content: center;
   height: 1.5rem;
-  background: var(--faceplate-bg-elevated, var(--bg-2));
+  background: var(--faceplate-bg-elevated, #0d1726);
   color: var(--text-muted);
   cursor: pointer;
   font-size: 10px;

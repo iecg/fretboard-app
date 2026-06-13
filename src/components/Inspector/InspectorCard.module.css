@@ -54,7 +54,7 @@
 }
 
 .cardDesc {
-  font-family: var(--font-ui);
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   color: var(--dc-fg-muted);
   font-weight: 400;
