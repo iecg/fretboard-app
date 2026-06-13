@@ -318,3 +318,43 @@ describe("FretboardEmbed — progression playback runner mount", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 });
+
+describe("FretboardEmbed — M3 events-out", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderForEvents(config: Parameters<typeof FretboardEmbed>[0]["config"], onEvent: (e: unknown) => void) {
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: () => {},
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    vi.doMock("../components/Fretboard/Fretboard", () => ({ Fretboard: () => null }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(<Fresh config={config} onEvent={onEvent as never} />);
+    await act(async () => { await Promise.resolve(); });
+    // Second flush: preset effect may run after the initial events-out effect.
+    // The subscription catches the subsequent resolvedProgressionStepsAtom change,
+    // but we need another microtask tick for it to propagate to our collector.
+    await act(async () => { await Promise.resolve(); });
+  }
+
+  it("emits progressionResolved with resolved chord labels and an initial playbackStateChanged", async () => {
+    const events: { type: string }[] = [];
+    await renderForEvents(
+      { progressionEnabled: true, progressionPreset: "one-five-six-four", root: "C", scale: "major" },
+      (e) => events.push(e as { type: string }),
+    );
+    // Multiple progressionResolved events may fire (initial empty + post-preset).
+    // Assert on the LAST one, which reflects the fully-resolved preset steps.
+    const resolved = [...events].reverse().find((e) => e.type === "progressionResolved") as
+      | { type: "progressionResolved"; steps: { index: number; label: string }[] }
+      | undefined;
+    expect(resolved).toBeDefined();
+    expect(resolved!.steps.length).toBe(4);
+    expect(resolved!.steps[0].label).toBe("C");
+    expect(events.some((e) => e.type === "playbackStateChanged")).toBe(true);
+  });
+});

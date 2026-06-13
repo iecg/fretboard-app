@@ -27,6 +27,11 @@ import {
   progressionChordEnabledAtom,
   progressionMetronomeEnabledAtom,
   setProgressionPlayingAtom,
+  resolvedProgressionStepsAtom,
+  displayedProgressionStepIndexAtom,
+  progressionPlayingAtom,
+  progressionPlaybackLoadingAtom,
+  progressionPlaybackBlockedReasonAtom,
 } from "../store/progressionAtoms";
 
 /**
@@ -186,6 +191,56 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
       store.set(setProgressionPlayingAtom, config.progressionPlaying);
     }
   }, [store, config.progressionPlaying]);
+
+  // M3: events-out. Subscribe to the isolated store and push coarse, human-speed
+  // events to the host. `displayedProgressionStepIndexAtom` already debounces
+  // RAF→React via startTransition, so this fires at step boundaries, not per frame.
+  useEffect(() => {
+    if (!config.progressionEnabled || !onEvent) return;
+
+    const labelOf = (s: { shortChordLabel: string | null; label: string }) =>
+      s.shortChordLabel ?? s.label;
+
+    const emitResolved = () => {
+      const steps = store.get(resolvedProgressionStepsAtom);
+      onEvent({
+        type: "progressionResolved",
+        steps: steps.map((s) => ({
+          index: s.index,
+          degree: String(s.degree),
+          label: labelOf(s),
+          unavailable: s.unavailable,
+        })),
+      });
+    };
+    const emitActive = () => {
+      const idx = store.get(displayedProgressionStepIndexAtom);
+      const steps = store.get(resolvedProgressionStepsAtom);
+      const s = steps[idx];
+      onEvent({ type: "activeStepChanged", index: idx, label: s ? labelOf(s) : "" });
+    };
+    const emitPlayback = () => {
+      onEvent({
+        type: "playbackStateChanged",
+        playing: store.get(progressionPlayingAtom),
+        loading: store.get(progressionPlaybackLoadingAtom),
+        blockedReason: store.get(progressionPlaybackBlockedReasonAtom),
+      });
+    };
+
+    const unsubs = [
+      store.sub(resolvedProgressionStepsAtom, emitResolved),
+      store.sub(displayedProgressionStepIndexAtom, emitActive),
+      store.sub(progressionPlayingAtom, emitPlayback),
+      store.sub(progressionPlaybackLoadingAtom, emitPlayback),
+      store.sub(progressionPlaybackBlockedReasonAtom, emitPlayback),
+    ];
+    // Initial snapshot so the host renders correct state before the first change.
+    emitResolved();
+    emitActive();
+    emitPlayback();
+    return () => unsubs.forEach((u) => u());
+  }, [store, onEvent, config.progressionEnabled]);
 
   useEffect(() => {
     // Jotai's primitive `set` treats a function value as an updater
