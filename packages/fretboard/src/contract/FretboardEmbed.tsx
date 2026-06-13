@@ -17,6 +17,9 @@ import {
   twoStringsPairAtom,
   twoStringsIntervalAtom,
 } from "../store/fingeringAtoms";
+import { voicingAtom } from "../store/chordOverlayAtoms";
+import { practiceLensAtom } from "../store/practiceLensAtoms";
+import { updateActiveChordAtom } from "../store/songStateAtoms";
 import {
   loadProgressionPresetAtom,
   progressionLoopEnabledAtom,
@@ -89,6 +92,16 @@ export interface FretboardConfig {
   bassEnabled?: boolean;
   chordsEnabled?: boolean;
   metronomeEnabled?: boolean;
+
+  // --- M3: chord card (acts on the active progression step + board overlay) ---
+  /** Quality override for the active chord (one of the CHORD_DEFINITIONS keys), or null to clear. */
+  activeChordQuality?: string | null;
+  /** Manual root for the active chord (sharp name), or null to clear. */
+  activeChordManualRoot?: string | null;
+  /** Board voicing overlay. */
+  chordVoicing?: "off" | "full" | "close";
+  /** Practice lens overlay. */
+  chordPracticeLens?: "guide" | "root" | "common";
 }
 
 export interface FretboardEmbedProps {
@@ -191,6 +204,21 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
       store.set(setProgressionPlayingAtom, config.progressionPlaying);
     }
   }, [store, config.progressionPlaying]);
+
+  // M3: chord card. Voicing/lens are board overlays; quality/manualRoot write to
+  // the active progression step via updateActiveChordAtom (no-op if no active
+  // step). null is a meaningful value here (clears the override), so guard only
+  // against undefined.
+  useEffect(() => {
+    if (config.chordVoicing !== undefined) store.set(voicingAtom, config.chordVoicing);
+    if (config.chordPracticeLens !== undefined) store.set(practiceLensAtom, config.chordPracticeLens);
+    if (config.activeChordQuality !== undefined) {
+      store.set(updateActiveChordAtom, { quality: config.activeChordQuality });
+    }
+    if (config.activeChordManualRoot !== undefined) {
+      store.set(updateActiveChordAtom, { root: config.activeChordManualRoot });
+    }
+  }, [store, config.chordVoicing, config.chordPracticeLens, config.activeChordQuality, config.activeChordManualRoot]);
 
   // Keep the latest onEvent without making the subscription effect depend on its
   // identity — hosts often pass an inline arrow, which would otherwise re-subscribe

@@ -320,6 +320,61 @@ describe("FretboardEmbed — progression playback runner mount", () => {
   });
 });
 
+describe("FretboardEmbed — M3 chord card hydration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  it("hydrates voicing, practice lens, and the active chord quality override", async () => {
+    const [
+      { useAtomValue },
+      { voicingAtom },
+      { practiceLensAtom },
+      { activeChordQualityAtom },
+    ] = await Promise.all([
+      import("jotai"),
+      import("../store/chordOverlayAtoms"),
+      import("../store/practiceLensAtoms"),
+      import("../store/songStateAtoms"),
+    ]);
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: () => {},
+      __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    vi.doMock("../components/Fretboard/Fretboard", () => ({
+      Fretboard: () => (
+        <div
+          data-testid="chord-probe"
+          data-voicing={String(useAtomValue(voicingAtom))}
+          data-lens={String(useAtomValue(practiceLensAtom))}
+          data-quality={String(useAtomValue(activeChordQualityAtom))}
+        />
+      ),
+    }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(
+      <Fresh
+        config={{
+          progressionEnabled: true,
+          progressionPreset: "one-five-six-four",
+          root: "C",
+          scale: "major",
+          chordVoicing: "close",
+          chordPracticeLens: "root",
+          activeChordQuality: "maj7",
+        }}
+      />,
+    );
+    await act(async () => { await Promise.resolve(); });
+    const probe = screen.getByTestId("chord-probe");
+    expect(probe.getAttribute("data-voicing")).toBe("close");
+    expect(probe.getAttribute("data-lens")).toBe("root");
+    expect(probe.getAttribute("data-quality")).toBe("maj7");
+  });
+});
+
 describe("FretboardEmbed — M3 events-out", () => {
   beforeEach(() => {
     localStorage.clear();
