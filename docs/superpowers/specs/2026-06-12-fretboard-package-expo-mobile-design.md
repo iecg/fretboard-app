@@ -141,6 +141,7 @@ M0 happens in this repo. M1–M4 happen in the private repo and are specced sepa
 - **Backgrounded webview timers** degrade progression playback in M1–M2 — accepted temporarily; properly fixed by M3 native audio.
 - **Two audio implementations during M2–M3** — the `builtin`/`events` mode switch keeps them from interleaving; drift risk is contained to the M3 port.
 - **pnpm + Expo + Metro monorepo/submodule plumbing** — known-solvable; budget roughly a day of bundler configuration in M1.
+- **Extensionless package `exports` map** — `@fretflow/fretboard` ships `"./*": "./src/*"` (no file extension). The M0 web app never exercises real Node/Metro resolution of this map because the Vite alias intercepts the specifier first; Metro in M1 will resolve it for real and needs `resolver.sourceExts` to cover `ts`/`tsx` (and may need explicit `.ts`/`.tsx` export targets). Validate as part of the M1 bundler plumbing above before assuming subpath imports resolve.
 - **Extraction churn** — M0 is a large mechanical import-rewrite PR. Mitigated by `git mv` (history preserved), co-located tests, and the zero-visual-diff gate.
 
 ## Open Questions (deferred, non-blocking)

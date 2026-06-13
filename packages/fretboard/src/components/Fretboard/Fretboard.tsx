@@ -315,7 +315,13 @@ export function Fretboard(props: FretboardProps) {
     );
     const frequency = getNoteFrequency(fretNoteWithOctave);
     if (audioMode === "events") {
-      eventSink?.({ type: "noteActivated", frequency });
+      eventSink?.({
+        type: "noteActivated",
+        frequency,
+        note: fretNoteWithOctave,
+        string: stringIndex,
+        fret: fretIndex,
+      });
     } else {
       await playGuitarNote(frequency);
     }

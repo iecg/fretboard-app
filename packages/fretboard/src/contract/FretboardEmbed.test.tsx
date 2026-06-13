@@ -67,6 +67,9 @@ describe("FretboardEmbed", () => {
       expect.objectContaining({
         type: "noteActivated",
         frequency: expect.any(Number),
+        note: expect.any(String),
+        string: expect.any(Number),
+        fret: expect.any(Number),
       }),
     );
     expect(playGuitarNote).not.toHaveBeenCalled();

@@ -63,6 +63,13 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      // `core` is only ever imported by its bare specifier, so it aliases
+      // straight to the entry file. `fretboard` is imported BOTH bare
+      // (`@fretflow/fretboard`) and via deep subpaths
+      // (`@fretflow/fretboard/components/...`), so it must alias to the src
+      // DIRECTORY: Vite does prefix replacement, so the bare form resolves via
+      // directory-index (src/index.ts) while subpaths map 1:1. Pointing this at
+      // `index.ts` to mirror `core` would break every subpath import.
       '@fretflow/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
       '@fretflow/fretboard': fileURLToPath(new URL('./packages/fretboard/src', import.meta.url)),
     },

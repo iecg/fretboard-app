@@ -28,13 +28,15 @@ function walk(dir) {
 }
 
 function check(file) {
-  const text = readFileSync(file, "utf-8");
-  if (stripComments(text).includes("import.meta")) {
+  // Strip comments once so neither check trips on commented-out code (e.g. a
+  // documentation example showing `import.meta` or a relative path).
+  const code = stripComments(readFileSync(file, "utf-8"));
+  if (code.includes("import.meta")) {
     errors.push(`${file}: uses import.meta (Metro cannot parse it — use env.ts)`);
   }
   const specRe =
     /from\s+["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\)|import\s+["']([^"']+)["']/g;
-  for (const m of text.matchAll(specRe)) {
+  for (const m of code.matchAll(specRe)) {
     const spec = m[1] ?? m[2] ?? m[3];
     if (!spec.startsWith(".")) continue;
     const target = resolve(dirname(file), spec);
