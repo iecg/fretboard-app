@@ -1,11 +1,21 @@
 import { useEffect, useState } from "react";
 import { Provider, createStore } from "jotai";
 import { Fretboard } from "../components/Fretboard/Fretboard";
-import { baseRootNoteAtom, baseScaleNameAtom } from "../store/scaleAtoms";
+import { baseRootNoteAtom, baseScaleNameAtom, scaleVisibleAtom } from "../store/scaleAtoms";
 import { themeAtom, displayFormatAtom, type ThemePreference } from "../store/uiAtoms";
 import { audioModeAtom, fretboardEventSinkAtom } from "./embedAtoms";
 import type { FretboardEventSink } from "./events";
 import { prefetchAudioModule, resumeGuitarAudio } from "../core/lazyGuitarAudio";
+import {
+  fingeringPatternAtom,
+  selectSingleCagedShapeAtom,
+  npsPositionAtom,
+  npsOctaveAtom,
+  oneStringIndexAtom,
+  oneStringIntervalAtom,
+  twoStringsPairAtom,
+  twoStringsIntervalAtom,
+} from "../store/fingeringAtoms";
 
 /**
  * Serializable configuration for an embedded fretboard. Every field crosses
@@ -15,7 +25,7 @@ import { prefetchAudioModule, resumeGuitarAudio } from "../core/lazyGuitarAudio"
 export interface FretboardConfig {
   /** Root note as a sharp name, e.g. "C", "F#". */
   root?: string;
-  /** Scale name as stored by the app's internal token (e.g. "major", "minorPentatonic"). */
+  /** Scale name as stored by the app's internal token (e.g. "major", "minor pentatonic"). */
   scale?: string;
   theme?: ThemePreference;
   displayFormat?: "notes" | "degrees" | "none";
@@ -23,6 +33,26 @@ export interface FretboardConfig {
   audio?: "builtin" | "events";
   /** Pixel height per string row (host-controlled sizing). */
   stringRowPx?: number;
+
+  // --- M2: scale/fingering overlay controls (all human-speed, serializable) ---
+  /** Whether the scale overlay is shown on the board. */
+  scaleVisible?: boolean;
+  /** Active fingering pattern. */
+  fingeringPattern?: "none" | "caged" | "3nps" | "one-string" | "two-strings";
+  /** CAGED shape when fingeringPattern === "caged". */
+  cagedShape?: "C" | "A" | "G" | "E" | "D";
+  /** 3NPS position (1–7) when fingeringPattern === "3nps". */
+  npsPosition?: number;
+  /** 3NPS octave (0 = Low, 1 = High) when fingeringPattern === "3nps". */
+  npsOctave?: number;
+  /** Active string index (0–5) when fingeringPattern === "one-string". */
+  oneStringIndex?: number;
+  /** Connector toggle (0 = Off, 1 = On) when fingeringPattern === "one-string". */
+  oneStringInterval?: number;
+  /** Active pair index (0–4) when fingeringPattern === "two-strings". */
+  twoStringsPair?: number;
+  /** Interval (0 = Off, 1 = 3rds, 2 = 4ths, 3 = 6ths) when fingeringPattern === "two-strings". */
+  twoStringsInterval?: number;
 }
 
 export interface FretboardEmbedProps {
@@ -59,6 +89,32 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
       store.set(displayFormatAtom, config.displayFormat);
     store.set(audioModeAtom, config.audio ?? "builtin");
   }, [store, config.root, config.scale, config.theme, config.displayFormat, config.audio]);
+
+  // M2: scale/fingering overlay hydration. Same imperative-write pattern as the
+  // base config effect above — each field is optional, so only defined values
+  // are written (undefined leaves the atom at its persisted/default value).
+  useEffect(() => {
+    if (config.scaleVisible !== undefined) store.set(scaleVisibleAtom, config.scaleVisible);
+    if (config.fingeringPattern !== undefined) store.set(fingeringPatternAtom, config.fingeringPattern);
+    if (config.cagedShape !== undefined) store.set(selectSingleCagedShapeAtom, config.cagedShape);
+    if (config.npsPosition !== undefined) store.set(npsPositionAtom, config.npsPosition);
+    if (config.npsOctave !== undefined) store.set(npsOctaveAtom, config.npsOctave);
+    if (config.oneStringIndex !== undefined) store.set(oneStringIndexAtom, config.oneStringIndex);
+    if (config.oneStringInterval !== undefined) store.set(oneStringIntervalAtom, config.oneStringInterval);
+    if (config.twoStringsPair !== undefined) store.set(twoStringsPairAtom, config.twoStringsPair);
+    if (config.twoStringsInterval !== undefined) store.set(twoStringsIntervalAtom, config.twoStringsInterval);
+  }, [
+    store,
+    config.scaleVisible,
+    config.fingeringPattern,
+    config.cagedShape,
+    config.npsPosition,
+    config.npsOctave,
+    config.oneStringIndex,
+    config.oneStringInterval,
+    config.twoStringsPair,
+    config.twoStringsInterval,
+  ]);
 
   useEffect(() => {
     // Jotai's primitive `set` treats a function value as an updater

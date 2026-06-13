@@ -104,3 +104,100 @@ describe("FretboardEmbed", () => {
     expect(prefetchAudioModule).not.toHaveBeenCalled();
   });
 });
+
+describe("FretboardEmbed — M2 fingering/scale hydration", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    vi.resetModules();
+  });
+
+  async function renderWithProbe(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
+    // All imports are deferred until after vi.doMock so that each call to
+    // renderWithProbe gets a fresh module graph (consistent atom instances).
+    const [
+      { useAtomValue: freshUseAtomValue },
+      {
+        fingeringPatternAtom: fpAtom,
+        cagedShapesAtom: csAtom,
+        npsPositionAtom: npsPosAtom,
+        npsOctaveAtom: npsOctAtom,
+        oneStringIndexAtom: osIdxAtom,
+        oneStringIntervalAtom: osIntAtom,
+        twoStringsPairAtom: tsPairAtom,
+        twoStringsIntervalAtom: tsIntAtom,
+      },
+      { scaleVisibleAtom: svAtom },
+    ] = await Promise.all([
+      import("jotai"),
+      import("../store/fingeringAtoms"),
+      import("../store/scaleAtoms"),
+    ]);
+    vi.doMock("../components/Fretboard/Fretboard", () => ({
+      Fretboard: () => {
+        const fingeringPattern = freshUseAtomValue(fpAtom);
+        const cagedShapes = freshUseAtomValue(csAtom);
+        const npsPosition = freshUseAtomValue(npsPosAtom);
+        const npsOctave = freshUseAtomValue(npsOctAtom);
+        const oneStringIndex = freshUseAtomValue(osIdxAtom);
+        const oneStringInterval = freshUseAtomValue(osIntAtom);
+        const twoStringsPair = freshUseAtomValue(tsPairAtom);
+        const twoStringsInterval = freshUseAtomValue(tsIntAtom);
+        const scaleVisible = freshUseAtomValue(svAtom);
+        return (
+          <div
+            data-testid="probe"
+            data-fingering={fingeringPattern}
+            data-caged={Array.from(cagedShapes).join(",")}
+            data-nps-pos={String(npsPosition)}
+            data-nps-oct={String(npsOctave)}
+            data-one-idx={String(oneStringIndex)}
+            data-one-int={String(oneStringInterval)}
+            data-two-pair={String(twoStringsPair)}
+            data-two-int={String(twoStringsInterval)}
+            data-scale-visible={String(scaleVisible)}
+          />
+        );
+      },
+    }));
+    const { FretboardEmbed: FreshFretboardEmbed } = await import("./FretboardEmbed");
+    return render(<FreshFretboardEmbed config={config} />);
+  }
+
+  it("hydrates the active fingering pattern + CAGED shape", async () => {
+    await renderWithProbe({ fingeringPattern: "caged", cagedShape: "A" });
+    await flushSuspense();
+    await act(async () => { await Promise.resolve(); });
+    const probe = screen.getByTestId("probe");
+    expect(probe.getAttribute("data-fingering")).toBe("caged");
+    expect(probe.getAttribute("data-caged")).toBe("A");
+  });
+
+  it("hydrates 3NPS position + octave", async () => {
+    await renderWithProbe({ fingeringPattern: "3nps", npsPosition: 4, npsOctave: 1 });
+    await flushSuspense();
+    await act(async () => { await Promise.resolve(); });
+    const probe = screen.getByTestId("probe");
+    expect(probe.getAttribute("data-nps-pos")).toBe("4");
+    expect(probe.getAttribute("data-nps-oct")).toBe("1");
+  });
+
+  it("hydrates one-string + two-strings sub-params and scaleVisible", async () => {
+    await renderWithProbe({
+      fingeringPattern: "two-strings",
+      oneStringIndex: 3,
+      oneStringInterval: 1,
+      twoStringsPair: 2,
+      twoStringsInterval: 3,
+      scaleVisible: false,
+    });
+    await flushSuspense();
+    await act(async () => { await Promise.resolve(); });
+    const probe = screen.getByTestId("probe");
+    expect(probe.getAttribute("data-one-idx")).toBe("3");
+    expect(probe.getAttribute("data-one-int")).toBe("1");
+    expect(probe.getAttribute("data-two-pair")).toBe("2");
+    expect(probe.getAttribute("data-two-int")).toBe("3");
+    expect(probe.getAttribute("data-scale-visible")).toBe("false");
+  });
+});
