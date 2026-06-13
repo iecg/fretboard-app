@@ -11,7 +11,9 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@fretflow/core": ["packages/core/src/index.ts"]
+      "@fretflow/core": ["packages/core/src/index.ts"],
+      "@fretflow/fretboard": ["packages/fretboard/src/index.ts"],
+      "@fretflow/fretboard/*": ["packages/fretboard/src/*"]
     },
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
@@ -25,5 +27,5 @@
     "noFallthroughCasesInSwitch": true,
     "strict": true
   },
-  "include": ["src", "packages/core/src"]
+  "include": ["src", "packages/core/src", "packages/fretboard/src"]
 }
