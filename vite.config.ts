@@ -8,7 +8,7 @@ import { fileURLToPath, URL } from 'node:url'
 const { version } = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
 export default defineConfig({
-  base: process.env.VITE_MOBILE === 'true' ? './' : '/fretboard-app/',
+  base: '/fretboard-app/',
   server: {
     watch: {
       ignored: ['**/.claude/**', '**/.worktrees/**'],
