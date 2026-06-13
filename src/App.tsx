@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense } from "react";
 import { useAtomValue, useAtom, createStore, Provider } from "jotai";
-import { Fretboard } from "./components/Fretboard/Fretboard";
+import { Fretboard } from "@fretflow/fretboard/components/Fretboard/Fretboard";
 import {
   resumeGuitarAudio,
   setGuitarAudioErrorHandler,

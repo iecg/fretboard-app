@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import type { ComponentProps } from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
-import "../../styles/index.css";
-import "../../styles/themes.css";
+import "../../../../../src/styles/index.css";
+import "../../../../../src/styles/themes.css";
 import { FretboardSVG } from "../FretboardSVG/FretboardSVG";
 import { getFretboardNotes } from "@fretflow/core";
 import type { CagedShape, ShapePolygon } from "@fretflow/core";

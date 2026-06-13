@@ -8,7 +8,7 @@ import { k } from "./test-utils/storage";
 // cache synchronously, allowing Suspense to mount them without async delay.
 import "./components/Inspector/Inspector";
 import "./components/StatusBar/StatusBar";
-import "./components/FretboardSVG/FretboardSVG";
+import "@fretflow/fretboard/components/FretboardSVG/FretboardSVG";
 
 const lazyAudio = vi.hoisted(() => ({
   playGuitarNote: vi.fn(),
@@ -19,7 +19,7 @@ const lazyAudio = vi.hoisted(() => ({
   prefetchAudioModule: vi.fn(),
 }));
 
-vi.mock("./core/lazyGuitarAudio", () => lazyAudio);
+vi.mock("@fretflow/fretboard/core/lazyGuitarAudio", () => lazyAudio);
 
 // Cross-cutting integration tests that App.test.tsx cannot prove because it
 // mocks the Fretboard. Persistence round-trips for individual atoms are
