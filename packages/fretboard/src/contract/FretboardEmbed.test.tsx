@@ -211,7 +211,7 @@ describe("FretboardEmbed — M3 progression hydration", () => {
 
   async function renderWithSongProbe(config: Parameters<typeof FretboardEmbed>[0]["config"]) {
     const [
-      { useAtomValue: u },
+      { useAtomValue },
       {
         currentProgressionPresetIdAtom: presetIdAtom,
         progressionLoopEnabledAtom: loopAtom,
@@ -221,6 +221,7 @@ describe("FretboardEmbed — M3 progression hydration", () => {
         progressionBassEnabledAtom: bassAtom,
         progressionChordEnabledAtom: chordsAtom,
         progressionMetronomeEnabledAtom: metroAtom,
+        progressionPlayingAtom: playingAtom,
       },
     ] = await Promise.all([import("jotai"), import("../store/progressionAtoms")]);
     vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
@@ -231,14 +232,15 @@ describe("FretboardEmbed — M3 progression hydration", () => {
       Fretboard: () => (
         <div
           data-testid="song-probe"
-          data-preset={String(u(presetIdAtom))}
-          data-loop={String(u(loopAtom))}
-          data-tempo={String(u(tempoAtom))}
-          data-genre={String(u(genreAtom))}
-          data-drums={String(u(drumsAtom))}
-          data-bass={String(u(bassAtom))}
-          data-chords={String(u(chordsAtom))}
-          data-metro={String(u(metroAtom))}
+          data-preset={String(useAtomValue(presetIdAtom))}
+          data-loop={String(useAtomValue(loopAtom))}
+          data-tempo={String(useAtomValue(tempoAtom))}
+          data-genre={String(useAtomValue(genreAtom))}
+          data-drums={String(useAtomValue(drumsAtom))}
+          data-bass={String(useAtomValue(bassAtom))}
+          data-chords={String(useAtomValue(chordsAtom))}
+          data-metro={String(useAtomValue(metroAtom))}
+          data-playing={String(useAtomValue(playingAtom))}
         />
       ),
     }));
@@ -268,6 +270,20 @@ describe("FretboardEmbed — M3 progression hydration", () => {
     expect(probe.getAttribute("data-bass")).toBe("false");
     expect(probe.getAttribute("data-chords")).toBe("true");
     expect(probe.getAttribute("data-metro")).toBe("true");
+  });
+
+  it("hydrates progressionPlaying after the preset load (transport effect wins ordering)", async () => {
+    // Loading the preset resets playing→false; the transport effect is declared
+    // AFTER the preset effect, so on mount it must re-set playing→true. This
+    // proves both that the transport effect runs and that its declaration order
+    // wins over the preset's reset.
+    const probe = await renderWithSongProbe({
+      progressionEnabled: true,
+      progressionPreset: "two-five-one",
+      progressionPlaying: true,
+    });
+    expect(probe.getAttribute("data-preset")).toBe("two-five-one");
+    expect(probe.getAttribute("data-playing")).toBe("true");
   });
 });
 
