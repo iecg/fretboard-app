@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { BREAKPOINTS } from "../layout/breakpoints";
 
 const inspectorCSS = readFileSync(
-  resolve(__dirname, "../components/Inspector/Inspector.module.css"),
+  resolve(__dirname, "../../../../src/components/Inspector/Inspector.module.css"),
   "utf-8",
 );
 import {

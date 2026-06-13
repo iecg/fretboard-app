@@ -17,10 +17,12 @@ import { get3NPSCoordinates, STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
 // Mock child components to isolate App-level wiring (state -> rendered tree).
-vi.mock("./components/Fretboard/Fretboard", async () => {
+vi.mock("@fretflow/fretboard/components/Fretboard/Fretboard", async () => {
   const { useAtomValue } = await import("jotai");
-  const { rootNoteAtom, colorNotesAtom } = await import("./store/scaleAtoms");
-  const { shapeDataAtom } = await import("./store/shapeAtoms");
+  const { rootNoteAtom, colorNotesAtom } = await import(
+    "@fretflow/fretboard/store/scaleAtoms"
+  );
+  const { shapeDataAtom } = await import("@fretflow/fretboard/store/shapeAtoms");
   return {
     Fretboard: ({ stringRowPx }: { stringRowPx?: number }) => {
       const rootNote = useAtomValue(rootNoteAtom);
