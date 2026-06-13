@@ -61,7 +61,7 @@
 }
 
 .fretboard-note:focus-visible :is(circle, path, polygon) {
-  stroke: var(--accent-primary) !important;
+  stroke: var(--accent-primary, #147088) !important;
   stroke-width: 3 !important;
 }
 
@@ -150,8 +150,8 @@
 :global([data-theme="modern-light"]) .fretboard-note.chord-tone-in-scale text,
 :global([data-theme="modern-light"]) .fretboard-note.note-diatonic-chord text,
 :global([data-theme="modern-light"]) .fretboard-note.note-active text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
+  stroke: var(--note-label-on-color-stroke, rgba(246, 242, 233, 0.50));
+  fill: var(--note-label-on-color, #2a251d);
 }
 
 /* Dark-mode per-role label-fill overrides (audit rows 1, 2, 3).
@@ -175,8 +175,8 @@
 }
 
 :global([data-theme="modern-light"]) .fretboard-note:is(.chord-tone-outside-scale, .note-blue) text {
-  stroke: var(--note-label-on-color-stroke);
-  fill: var(--note-label-on-color);
+  stroke: var(--note-label-on-color-stroke, rgba(246, 242, 233, 0.50));
+  fill: var(--note-label-on-color, #2a251d);
 }
 
 /* Chromatic-diamond labels read crisply — subordination comes from SIZE, not a dim glyph. */
@@ -237,7 +237,7 @@
    so `!important` is the robust, intent-correct exemption — the same escape the
    former glow underlay used in this file. */
 .note-target-backing {
-  fill: var(--note-incoming) !important;
+  fill: var(--note-incoming, #0f9d72) !important;
   stroke: none !important;
   pointer-events: none;
 }
@@ -286,7 +286,7 @@
 }
 
 .note-guide-ring-core {
-  stroke: var(--note-incoming) !important;
+  stroke: var(--note-incoming, #0f9d72) !important;
 }
 
 /* Stroke weights are constant across phases (no scale animation, so the ring
@@ -344,7 +344,7 @@
    the countdown. */
 .note-guide-ring-flash {
   fill: none !important;
-  stroke: var(--note-incoming) !important;
+  stroke: var(--note-incoming, #0f9d72) !important;
   stroke-width: 3 !important;
   opacity: 0;
   transform-box: fill-box;
@@ -397,7 +397,7 @@
    without overlapping the main note glyph. */
 .note-guide-label {
   dominant-baseline: middle;
-  fill: var(--note-incoming);
+  fill: var(--note-incoming, #0f9d72);
   font-size: 9px;
   font-weight: 600;
   pointer-events: none;
@@ -431,9 +431,9 @@
 
 .note-bubble:focus-visible {
   opacity: 1 !important;
-  outline: var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  box-shadow: var(--focus-ring-glow);
+  outline: var(--focus-ring, 2px solid #147088);
+  outline-offset: var(--focus-ring-offset, 2px);
+  box-shadow: var(--focus-ring-glow, 0 0 0 3px rgb(20 112 136 / 0.20));
 }
 
 /* Fret numbers row */
@@ -443,7 +443,7 @@
 
 .fret-number {
   text-align: center;
-  font-family: var(--font-sans);
+  font-family: var(--font-sans, "Inter", system-ui, "Avenir", "Helvetica", "Arial", sans-serif);
   font-size: 0.9rem;
   font-weight: 500;
   color: rgb(191 204 216 / 0.72);

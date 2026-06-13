@@ -2,14 +2,30 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parse, converter } from "culori";
 
-const THEMES_CSS = fileURLToPath(new URL("../themes.css", import.meta.url));
+// Theme tokens are split across the app's themes.css and the fretboard
+// package's own token stylesheet (fretboard-specific tokens — --fb-*,
+// --chord-connector-*, wood/wire/etc. — were extracted into the package so it
+// is self-contained for styling). readThemeBlock() merges the `[data-theme]`
+// block from every source so every token resolves regardless of which file
+// owns it.
+const THEME_SOURCES = [
+  new URL("../themes.css", import.meta.url),
+  new URL(
+    "../../../packages/fretboard/src/styles/fretboard-tokens.css",
+    import.meta.url,
+  ),
+].map((u) => fileURLToPath(u));
 
-/** Parse `[data-theme="<theme>"] { ... }` into a {token: value} map. */
-export function readThemeBlock(theme: string): Record<string, string> {
-  const css = readFileSync(THEMES_CSS, "utf8");
+/** Parse the `[data-theme="<theme>"] { ... }` block from one CSS file into a
+ *  {token: value} map. Returns {} if the file has no such block. */
+function readThemeBlockFromFile(
+  file: string,
+  theme: string,
+): Record<string, string> {
+  const css = readFileSync(file, "utf8");
   const head = `[data-theme="${theme}"] {`;
   const start = css.indexOf(head);
-  if (start === -1) throw new Error(`theme block not found: ${theme}`);
+  if (start === -1) return {};
   // Match to the first top-level closing brace of this block.
   let depth = 0;
   let i = start + head.length - 1;
@@ -26,6 +42,21 @@ export function readThemeBlock(theme: string): Record<string, string> {
   for (const m of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) {
     out[m[1]] = m[2].trim();
   }
+  return out;
+}
+
+/** Merge the `[data-theme="<theme>"]` token maps across all theme sources
+ *  (app themes.css + the @fretflow/fretboard token file). Each token is defined
+ *  in exactly one source, so the merge is conflict-free. */
+export function readThemeBlock(theme: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  let found = false;
+  for (const file of THEME_SOURCES) {
+    const block = readThemeBlockFromFile(file, theme);
+    if (Object.keys(block).length > 0) found = true;
+    Object.assign(out, block);
+  }
+  if (!found) throw new Error(`theme block not found: ${theme}`);
   return out;
 }
 

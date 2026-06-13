@@ -137,12 +137,24 @@ export function collectReferences(files) {
 
 function main() {
   const srcDir = fileURLToPath(new URL("../src", import.meta.url));
+  // Fretboard tokens (--fb-*, --chord-connector-*, wood/wire/etc.) were
+  // extracted into @fretflow/fretboard so the package is self-contained for
+  // styling. The app's HelpModal diagrams still reference --fb-* from src/, so
+  // the package's stylesheets must be pooled into the DEFINITIONS scan or those
+  // references would be flagged undefined. References are still collected from
+  // src/ only — the package's own var() usage carries inline fallbacks and
+  // runtime-injected tokens the src-scoped checker is not designed to resolve.
+  const pkgFretboardDir = fileURLToPath(
+    new URL("../packages/fretboard/src", import.meta.url),
+  );
   const cssFiles = listFiles(srcDir, [".css"]);
   // Token definitions live in CSS *and* in React inline-style keys (.ts/.tsx);
   // references only live in CSS.
   const defined = collectDefinedTokens([
     ...cssFiles,
     ...listFiles(srcDir, [".ts", ".tsx"]),
+    ...listFiles(pkgFretboardDir, [".css"]),
+    ...listFiles(pkgFretboardDir, [".ts", ".tsx"]),
   ]);
   const refs = collectReferences(cssFiles);
   const undefinedRefs = findUndefined(defined, refs);

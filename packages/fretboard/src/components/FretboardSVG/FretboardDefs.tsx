@@ -205,7 +205,7 @@ export const FretboardDefs = memo(({
           dx="0"
           dy="0"
           stdDeviation="3"
-          floodColor="var(--neon-orange)"
+          floodColor="var(--neon-orange, #b1431b)"
           floodOpacity="var(--fretboard-glow-opacity)"
         />
       </filter>
