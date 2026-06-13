@@ -3,7 +3,7 @@ import {
   STORAGE_PREFIX,
   LEGACY_KEYS,
   COACHMARK_SETTINGS_DISMISSED_KEY,
-} from "../src/utils/storageConstants";
+} from "../packages/fretboard/src/utils/storageConstants";
 
 export interface FullPageVisualOptions {
   maxDiffPixels?: number;

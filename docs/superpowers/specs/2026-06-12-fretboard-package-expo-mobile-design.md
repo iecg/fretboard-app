@@ -56,6 +56,8 @@ How DOM components work: a file beginning with the `'use dom'` directive default
 
 ### Package: `@fretflow/state`
 
+> **Amendment (M0 implementation):** `src/store` and `src/progressions` proved to be mutually coupled, so a standalone state package would create a dependency cycle. State ships inside `@fretflow/fretboard` as the internal `store/` module (subpath-importable via `@fretflow/fretboard/store/*`). Everything else in this section applies to that module unchanged.
+
 The domain-split Jotai atom modules move from `src/store/` into `packages/state/`. Internal-facing: consumed by `@fretflow/fretboard` and by the web app (which keeps its existing atom-level integration). Changes required by the move:
 
 - **Storage adapter injection.** `atomWithStorage` currently assumes `localStorage` via `src/utils/storage.ts`. The package accepts an injected storage implementation (web: `localStorage`; the DOM island also uses `localStorage`; a future native consumer could supply AsyncStorage). Keys and prefixing behavior are unchanged.
@@ -139,6 +141,7 @@ M0 happens in this repo. M1–M4 happen in the private repo and are specced sepa
 - **Backgrounded webview timers** degrade progression playback in M1–M2 — accepted temporarily; properly fixed by M3 native audio.
 - **Two audio implementations during M2–M3** — the `builtin`/`events` mode switch keeps them from interleaving; drift risk is contained to the M3 port.
 - **pnpm + Expo + Metro monorepo/submodule plumbing** — known-solvable; budget roughly a day of bundler configuration in M1.
+- **Extensionless package `exports` map** — `@fretflow/fretboard` ships `"./*": "./src/*"` (no file extension). The M0 web app never exercises real Node/Metro resolution of this map because the Vite alias intercepts the specifier first; Metro in M1 will resolve it for real and needs `resolver.sourceExts` to cover `ts`/`tsx` (and may need explicit `.ts`/`.tsx` export targets). Validate as part of the M1 bundler plumbing above before assuming subpath imports resolve.
 - **Extraction churn** — M0 is a large mechanical import-rewrite PR. Mitigated by `git mv` (history preserved), co-located tests, and the zero-visual-diff gate.
 
 ## Open Questions (deferred, non-blocking)

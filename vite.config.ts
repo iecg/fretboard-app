@@ -51,7 +51,9 @@ export default defineConfig({
             compilationMode: 'infer',
             // Restrict to app + workspace core. Excludes node_modules and tests.
             sources: (filename: string) =>
-              (filename.includes('/src/') || filename.includes('/packages/core/src/')) &&
+              (filename.includes('/src/') ||
+                filename.includes('/packages/core/src/') ||
+                filename.includes('/packages/fretboard/src/')) &&
               !filename.includes('.test.') &&
               !filename.includes('.spec.'),
           }],
@@ -61,7 +63,15 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      // `core` is only ever imported by its bare specifier, so it aliases
+      // straight to the entry file. `fretboard` is imported BOTH bare
+      // (`@fretflow/fretboard`) and via deep subpaths
+      // (`@fretflow/fretboard/components/...`), so it must alias to the src
+      // DIRECTORY: Vite does prefix replacement, so the bare form resolves via
+      // directory-index (src/index.ts) while subpaths map 1:1. Pointing this at
+      // `index.ts` to mirror `core` would break every subpath import.
       '@fretflow/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
+      '@fretflow/fretboard': fileURLToPath(new URL('./packages/fretboard/src', import.meta.url)),
     },
   },
   css: {
@@ -130,7 +140,11 @@ export default defineConfig({
         classNameStrategy: 'non-scoped',
       },
     },
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'packages/core/src/**/*.{test,spec}.{ts,tsx}'],
+    include: [
+      'src/**/*.{test,spec}.{ts,tsx}',
+      'packages/core/src/**/*.{test,spec}.{ts,tsx}',
+      'packages/fretboard/src/**/*.{test,spec}.{ts,tsx}',
+    ],
     exclude: ['e2e/**'],
     // Vitest 4 CI defaults to updateSnapshot="none". "new" ensures missing snapshots
     // are written. Snapshots are gitignored as Node 22/24 produce slight SVG differences.
@@ -141,6 +155,7 @@ export default defineConfig({
       exclude: [
         'node_modules/',
         'src/test-utils/',
+        'packages/fretboard/src/test-utils/',
         '**/*.test.*',
         '**/*.spec.*',
         '**/*.d.ts',
@@ -149,7 +164,7 @@ export default defineConfig({
         '**/build/**',
         'coverage/**',
       ],
-      include: ['src/**/*.{ts,tsx}'],
+      include: ['src/**/*.{ts,tsx}', 'packages/fretboard/src/**/*.{ts,tsx}'],
       thresholds: {
         lines: 70,
         functions: 65,
