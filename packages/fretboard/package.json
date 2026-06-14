@@ -11,7 +11,7 @@
   "dependencies": {
     "@fretflow/core": "workspace:*",
     "clsx": "^2.1.1",
-    "jotai": "^2.20.0",
+    "jotai": "2.20.0",
     "motion": "^12.40.0",
     "tone": "^15.1.22"
   },
