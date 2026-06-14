@@ -20,7 +20,10 @@ describe("progression-logic entry (Tone-free native surface)", () => {
   it("buildAllLayersAsync produces layered events for a resolved preset", async () => {
     const preset = PROGRESSION_PRESETS.find((p) => p.id === "one-five-six-four")!;
     const genre = getGenreStyle("pop")!; // use a real genre's pattern ids
-    const steps = preset.steps.map((s, i) => resolveProgressionStep(s, preset.scale, "C", i, false));
+    // preset.steps is Omit<ProgressionStep,"id"> — ids are assigned on load; supply one here.
+    const steps = preset.steps.map((s, i) =>
+      resolveProgressionStep({ id: `${preset.id}-${i}`, ...s }, preset.scale, "C", i, false),
+    );
     const layers = await buildAllLayersAsync({
       steps, tempoBpm: 90, beatsPerBar: 4, swing: genre.swing,
       chordPatternId: genre.chordPattern, bassPatternId: genre.bassPattern, drumPatternId: genre.drumPattern,
