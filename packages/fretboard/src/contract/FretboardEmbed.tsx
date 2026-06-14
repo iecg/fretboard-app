@@ -30,6 +30,7 @@ import {
   progressionChordEnabledAtom,
   progressionMetronomeEnabledAtom,
   setProgressionPlayingAtom,
+  setProgressionActiveStepIndexAtom,
   resolvedProgressionStepsAtom,
   displayedProgressionStepIndexAtom,
   progressionPlayingAtom,
@@ -102,6 +103,10 @@ export interface FretboardConfig {
   chordVoicing?: "off" | "full" | "close";
   /** Practice lens overlay. */
   chordPracticeLens?: "guide" | "root" | "common";
+
+  // --- M3: native-audio step highlight (native engine owns the clock) ---
+  /** Host-driven active progression step (native audio owns the clock). Highlights the board's current chord. */
+  activeProgressionStepIndex?: number;
 }
 
 export interface FretboardEmbedProps {
@@ -220,6 +225,15 @@ export function FretboardEmbed({ config, onEvent }: FretboardEmbedProps) {
       store.set(updateActiveChordAtom, { root: config.activeChordManualRoot });
     }
   }, [store, config.chordVoicing, config.chordPracticeLens, config.activeChordQuality, config.activeChordManualRoot]);
+
+  // M3-native: the native engine owns the clock and pushes the active step in so
+  // the board highlights the current chord (the in-webview visual clock does not
+  // run here — progressionEnabled stays false on mobile).
+  useEffect(() => {
+    if (config.activeProgressionStepIndex !== undefined) {
+      store.set(setProgressionActiveStepIndexAtom, config.activeProgressionStepIndex);
+    }
+  }, [store, config.activeProgressionStepIndex]);
 
   // Keep the latest onEvent without making the subscription effect depend on its
   // identity — hosts often pass an inline arrow, which would otherwise re-subscribe

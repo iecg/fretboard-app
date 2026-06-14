@@ -378,6 +378,27 @@ describe("FretboardEmbed — M3 chord card hydration", () => {
   });
 });
 
+describe("FretboardEmbed — M3 native active-step hydration", () => {
+  beforeEach(() => { localStorage.clear(); vi.clearAllMocks(); vi.resetModules(); });
+
+  it("hydrates activeProgressionStepIndex into the displayed step", async () => {
+    const [{ useAtomValue }, { displayedProgressionStepIndexAtom }] = await Promise.all([
+      import("jotai"),
+      import("../store/progressionAtoms"),
+    ]);
+    vi.doMock("../hooks/useProgressionAudioPlayback", () => ({
+      useProgressionAudioPlayback: () => {}, __resetProgressionAudioPlaybackForTests: () => {},
+    }));
+    vi.doMock("../components/Fretboard/Fretboard", () => ({
+      Fretboard: () => <div data-testid="probe" data-step={String(useAtomValue(displayedProgressionStepIndexAtom))} />,
+    }));
+    const { FretboardEmbed: Fresh } = await import("./FretboardEmbed");
+    render(<Fresh config={{ progressionPreset: "one-five-six-four", root: "C", scale: "major", activeProgressionStepIndex: 2 }} />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByTestId("probe").getAttribute("data-step")).toBe("2");
+  });
+});
+
 describe("FretboardEmbed — M3 events-out", () => {
   beforeEach(() => {
     localStorage.clear();
