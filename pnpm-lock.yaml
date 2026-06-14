@@ -39,7 +39,7 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       jotai:
-        specifier: ^2.20.0
+        specifier: 2.20.0
         version: 2.20.0(@babel/core@7.29.0)(@babel/template@7.29.7)(@types/react@19.2.16)(react@19.2.7)
       lucide-react:
         specifier: ^1.17.0
@@ -197,7 +197,7 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       jotai:
-        specifier: ^2.20.0
+        specifier: 2.20.0
         version: 2.20.0(@babel/core@7.29.0)(@babel/template@7.29.7)(@types/react@19.2.16)(react@19.2.7)
       motion:
         specifier: ^12.40.0
