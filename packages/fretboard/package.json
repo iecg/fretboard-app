@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./progression-logic": "./src/progression-logic.ts",
     "./*": "./src/*"
   },
   "dependencies": {
