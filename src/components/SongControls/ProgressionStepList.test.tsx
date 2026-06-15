@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { axe } from "../../test-utils/a11y";
-import { ProgressionStepList } from "./ProgressionStepList";
+import { ProgressionStepList, singleMoveDiff } from "./ProgressionStepList";
 import type { ResolvedProgressionStep } from "../../progressions/progressionDomain";
 
 function makeStep(
@@ -75,5 +75,19 @@ describe("ProgressionStepList", () => {
       <ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} label="Chords" caption="Steps" />,
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("singleMoveDiff", () => {
+  it("detects a single move", () => {
+    expect(singleMoveDiff(["a", "b", "c"], ["b", "a", "c"])).toEqual({ from: 0, to: 1 });
+    expect(singleMoveDiff(["a", "b", "c"], ["b", "c", "a"])).toEqual({ from: 0, to: 2 });
+    expect(singleMoveDiff(["a", "b", "c"], ["c", "a", "b"])).toEqual({ from: 2, to: 0 });
+    expect(singleMoveDiff(["a", "b", "c"], ["a", "c", "b"])).toEqual({ from: 1, to: 2 });
+  });
+
+  it("returns null for an unchanged or mismatched order", () => {
+    expect(singleMoveDiff(["a", "b", "c"], ["a", "b", "c"])).toBeNull();
+    expect(singleMoveDiff(["a", "b"], ["a", "b", "c"])).toBeNull();
   });
 });
