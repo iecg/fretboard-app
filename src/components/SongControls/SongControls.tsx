@@ -114,6 +114,7 @@ export function SongControls() {
     duplicateProgressionStep,
     removeProgressionStep,
     moveProgressionStep,
+    reorderProgressionSteps,
     updateProgressionStepDuration,
     updateProgressionStepQuality,
     selectProgressionStepRoot,
@@ -391,6 +392,7 @@ export function SongControls() {
                   steps={resolvedProgressionSteps}
                   activeIndex={activeProgressionStepIndex}
                   onSelect={setActiveProgressionStepIndex}
+                  onReorder={(from, to) => reorderProgressionSteps({ from, to })}
                   label={t("controls.progressionNavigation")}
                   caption={t("controls.stepsLabel")}
                   meta={listMeta}
