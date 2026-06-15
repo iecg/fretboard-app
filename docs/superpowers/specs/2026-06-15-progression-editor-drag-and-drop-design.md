@@ -42,8 +42,10 @@ Built on `motion` (already a dependency, v^12.40) via `Reorder.Group` /
   `dragListener={false}` and a `useDragControls()` instance whose `.start(event)`
   is fired from the handle's `onPointerDown`. This guarantees tap/click on the rest
   of the row still selects the step (critical on touch).
-- The handle has `aria-hidden` visuals but a labeled control wrapper
-  (`aria-label="Reorder {chord label}"` or equivalent) and `cursor: grab`.
+- The handle is `aria-hidden` (pointer-only) with `cursor: grab`. A focusable,
+  labeled handle was deliberately rejected: it would expose an AT control that
+  does nothing, since the accessible reorder paths are the global `Alt+←/→`
+  shortcut and the toolbar Move Up/Down buttons (see Non-Goals).
 
 ### Drop semantics
 On drop (and on every keyboard reorder), the editor matches the existing
