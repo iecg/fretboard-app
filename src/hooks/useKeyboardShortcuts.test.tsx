@@ -16,8 +16,13 @@ import {
   progressionBassEnabledAtom,
   progressionDrumsEnabledAtom,
   progressionMetronomeEnabledAtom,
+  progressionTempoBpmAtom,
 } from "../store/progressionAtoms";
 import { isMutedAtom } from "../store/audioAtoms";
+import {
+  TEMPO_STEPPER_ID,
+  PROGRESSION_STEP_LIST_ID,
+} from "../components/SongControls/progressionFocusIds";
 
 function makeWrapper(store: ReturnType<typeof createStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
@@ -297,5 +302,89 @@ describe("useKeyboardShortcuts", () => {
     act(() => { fireEvent.keyDown(document, { key: "ArrowLeft" }); });
 
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+  });
+
+  it("ArrowUp moves focus to the tempo stepper when it is present", () => {
+    store.set(progressionTempoBpmAtom, 100);
+    const el = document.createElement("div");
+    el.id = TEMPO_STEPPER_ID;
+    el.tabIndex = -1;
+    document.body.appendChild(el);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowUp" }); });
+
+    expect(store.get(progressionTempoBpmAtom)).toBe(105);
+    expect(document.activeElement).toBe(el);
+    document.body.removeChild(el);
+  });
+
+  it("ArrowDown moves focus to the tempo stepper when it is present", () => {
+    store.set(progressionTempoBpmAtom, 100);
+    const el = document.createElement("div");
+    el.id = TEMPO_STEPPER_ID;
+    el.tabIndex = -1;
+    document.body.appendChild(el);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowDown" }); });
+
+    expect(store.get(progressionTempoBpmAtom)).toBe(95);
+    expect(document.activeElement).toBe(el);
+    document.body.removeChild(el);
+  });
+
+  it("ArrowUp still changes tempo and does not throw when the stepper is absent", () => {
+    store.set(progressionTempoBpmAtom, 100);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowUp" }); });
+
+    expect(store.get(progressionTempoBpmAtom)).toBe(105);
+  });
+
+  it("ArrowRight moves focus to the chord list when not playing", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 0);
+    const el = document.createElement("div");
+    el.id = PROGRESSION_STEP_LIST_ID;
+    el.tabIndex = -1;
+    document.body.appendChild(el);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowRight" }); });
+
+    expect(document.activeElement).toBe(el);
+    document.body.removeChild(el);
+  });
+
+  it("ArrowLeft moves focus to the chord list when not playing", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 2);
+    const el = document.createElement("div");
+    el.id = PROGRESSION_STEP_LIST_ID;
+    el.tabIndex = -1;
+    document.body.appendChild(el);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft" }); });
+
+    expect(document.activeElement).toBe(el);
+    document.body.removeChild(el);
+  });
+
+  it("ArrowRight does not move focus to the chord list while playing", () => {
+    store.set(setProgressionPlayingAtom, true);
+    store.set(activeProgressionStepIndexAtom, 0);
+    const el = document.createElement("div");
+    el.id = PROGRESSION_STEP_LIST_ID;
+    el.tabIndex = -1;
+    document.body.appendChild(el);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowRight" }); });
+
+    expect(document.activeElement).not.toBe(el);
+    document.body.removeChild(el);
   });
 });
