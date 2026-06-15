@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { axe } from "../../test-utils/a11y";
-import { ProgressionStepList, singleMoveDiff } from "./ProgressionStepList";
+import { ProgressionStepList } from "./ProgressionStepList";
+import { singleMoveDiff } from "./progressionStepListUtils";
 import type { ResolvedProgressionStep } from "../../progressions/progressionDomain";
 
 function makeStep(
@@ -78,20 +79,22 @@ describe("ProgressionStepList", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("still calls onSelect with the row index when the row button is clicked", () => {
+  it("selects on row-button click without triggering a reorder", () => {
     const onSelect = vi.fn();
+    const onReorder = vi.fn();
     render(
       <ProgressionStepList
         steps={steps}
         activeIndex={0}
         onSelect={onSelect}
-        onReorder={vi.fn()}
+        onReorder={onReorder}
         label="Chords"
         caption="Steps"
       />,
     );
     fireEvent.click(screen.getAllByRole("button")[1]);
     expect(onSelect).toHaveBeenCalledWith(1);
+    expect(onReorder).not.toHaveBeenCalled();
   });
 
   it("renders one button per row (handles are aria-hidden) with no a11y violation", async () => {
