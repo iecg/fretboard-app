@@ -14,6 +14,9 @@ import {
   previousProgressionStepAtom,
   advanceProgressionPlaybackAtom,
   progressionTempoBpmAtom,
+  progressionStepsAtom,
+  activeProgressionStepIndexAtom,
+  reorderProgressionStepsAtom,
 } from "../store/progressionAtoms";
 import { inspectorActiveTabAtom } from "../store/inspectorAtoms";
 import { toggleMuteAtom } from "../store/audioAtoms";
@@ -35,6 +38,19 @@ export function useKeyboardShortcuts() {
         target?.isContentEditable
       )
         return;
+      // Alt+Arrow reorders the active step within the sequence (Option+Arrow on
+      // macOS — no default browser/OS binding outside text inputs). Runs before
+      // the modifier early-return below, which otherwise drops all alt combos.
+      if (e.altKey && !e.metaKey && !e.ctrlKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        const steps = store.get(progressionStepsAtom);
+        const from = store.get(activeProgressionStepIndexAtom);
+        const to = from + (e.key === "ArrowLeft" ? -1 : 1);
+        if (from >= 0 && from < steps.length && to >= 0 && to < steps.length) {
+          e.preventDefault();
+          store.set(reorderProgressionStepsAtom, { from, to });
+        }
+        return;
+      }
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       switch (e.key) {
