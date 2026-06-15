@@ -31,6 +31,7 @@ import { buildChordRootGroups, classifyRoot } from "./chordRootOptions";
 import { buildQualityGroupsWithDiatonic } from "./qualityGroups";
 import { ProgressionStepList } from "./ProgressionStepList";
 import { ChordTonesReadout } from "./ChordTonesReadout";
+import { TEMPO_STEPPER_ID } from "./progressionFocusIds";
 import shared from "../shared/shared.module.css";
 import { CUSTOM_PRESET_ID, progressionPlayingAtom } from "../../store/progressionAtoms";
 import styles from "./SongControls.module.css";
@@ -311,6 +312,7 @@ export function SongControls() {
                   formatValue={(bpm) => `${bpm} BPM`}
                   onChange={setProgressionTempoBpm}
                   width="auto"
+                  groupId={TEMPO_STEPPER_ID}
                 />
               </Prop>
             </PropGrid>
