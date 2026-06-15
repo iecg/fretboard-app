@@ -18,6 +18,7 @@ import {
   loadedPresetIdAtom,
   resolvedProgressionStepsAtom,
   moveProgressionStepAtom,
+  reorderProgressionStepsAtom,
   progressionLoopEnabledAtom,
   progressionPlaybackBlockedReasonAtom,
   progressionPlayingAtom,
@@ -775,5 +776,46 @@ describe("chord/bass variation atoms", () => {
     store.set(resetProgressionAtomsAtom);
     expect(store.get(progressionChordVariationsAtom)).toEqual([]);
     expect(store.get(progressionBassVariationsAtom)).toEqual([]);
+  });
+});
+
+describe("reorderProgressionStepsAtom", () => {
+  const seed = () => [
+    { id: "a", degree: "I", duration: { value: 1, unit: "bar" as const }, qualityOverride: null, manualRoot: null },
+    { id: "b", degree: "V", duration: { value: 1, unit: "bar" as const }, qualityOverride: null, manualRoot: null },
+    { id: "c", degree: "vi", duration: { value: 1, unit: "bar" as const }, qualityOverride: null, manualRoot: null },
+  ];
+
+  it("moves a step to a non-adjacent index and follows it with the active cursor", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, seed());
+    store.set(loadedPresetIdAtom, "some-preset");
+
+    store.set(reorderProgressionStepsAtom, { from: 0, to: 2 });
+
+    expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["b", "c", "a"]);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+    expect(store.get(loadedPresetIdAtom)).toBeNull();
+  });
+
+  it("is a no-op for equal or out-of-range indices", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, seed());
+
+    store.set(reorderProgressionStepsAtom, { from: 1, to: 1 });
+    store.set(reorderProgressionStepsAtom, { from: 0, to: 5 });
+    store.set(reorderProgressionStepsAtom, { from: -1, to: 0 });
+
+    expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("moveProgressionStepAtom still swaps adjacent steps via delegation", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, seed());
+
+    store.set(moveProgressionStepAtom, { id: "c", direction: -1 });
+
+    expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["a", "c", "b"]);
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
   });
 });
