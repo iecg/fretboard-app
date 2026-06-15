@@ -1,7 +1,9 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { axe } from "../../test-utils/a11y";
 import { ProgressionStepList } from "./ProgressionStepList";
+import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
 import type { ResolvedProgressionStep } from "../../progressions/progressionDomain";
 
 function makeStep(
@@ -75,5 +77,23 @@ describe("ProgressionStepList", () => {
       <ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} label="Chords" caption="Steps" />,
     );
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe("ProgressionStepList focus target", () => {
+  it("exposes a focusable scroll container with the shared id", () => {
+    const { container } = render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={0}
+        onSelect={() => {}}
+        label="Progression"
+        caption="Steps"
+      />,
+    );
+
+    const scroll = container.querySelector(`#${PROGRESSION_STEP_LIST_ID}`);
+    expect(scroll).not.toBeNull();
+    expect(scroll?.getAttribute("tabindex")).toBe("-1");
   });
 });

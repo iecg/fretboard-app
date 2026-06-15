@@ -5,6 +5,7 @@ import {
   type ResolvedProgressionStep,
 } from "../../progressions/progressionDomain";
 import { useTranslation } from "../../hooks/useTranslation";
+import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
 import styles from "./ProgressionStepList.module.css";
 
 interface ProgressionStepListProps {
@@ -54,7 +55,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, label, capti
         <span className={styles.captionTitle}>{caption}</span>
         {meta ? <span className={styles.captionMeta}>{meta}</span> : null}
       </div>
-      <div className={styles.scroll}>
+      <div className={styles.scroll} id={PROGRESSION_STEP_LIST_ID} tabIndex={-1}>
         <ul className={styles.list} aria-label={label} ref={listRef}>
           {steps.map((step, index) => {
             const active = index === activeIndex;
