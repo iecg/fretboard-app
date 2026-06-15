@@ -101,6 +101,42 @@ vi.mock("motion/react", async () => {
     },
   });
 
+  // Reorder.Group renders as the `as` prop element (default "ul"),
+  // Reorder.Item renders as the `as` prop element (default "li").
+  // Both strip animation/drag props before forwarding to the DOM.
+  const REORDER_STRIP = new Set([
+    ...Array.from(ANIMATION_PROPS),
+    "axis",
+    "values",
+    "onReorder",
+    "dragListener",
+    "dragControls",
+    "onDragStart",
+    "onDragEnd",
+    "value",
+  ]);
+  const ReorderGroup = React.forwardRef<HTMLElement, Record<string, unknown>>(
+    ({ children, as: tag = "ul", ...props }, ref) => {
+      const rest: Record<string, unknown> = {};
+      Object.entries(props).forEach(([key, value]) => {
+        if (!REORDER_STRIP.has(key)) rest[key] = value;
+      });
+      return React.createElement(tag as string, { ...rest, ref }, children as React.ReactNode);
+    },
+  );
+  ReorderGroup.displayName = "Reorder.Group";
+
+  const ReorderItem = React.forwardRef<HTMLElement, Record<string, unknown>>(
+    ({ children, as: tag = "li", ...props }, ref) => {
+      const rest: Record<string, unknown> = {};
+      Object.entries(props).forEach(([key, value]) => {
+        if (!REORDER_STRIP.has(key)) rest[key] = value;
+      });
+      return React.createElement(tag as string, { ...rest, ref }, children as React.ReactNode);
+    },
+  );
+  ReorderItem.displayName = "Reorder.Item";
+
   return {
     motion: motionProxy,
     AnimatePresence: ({ children }: { children: React.ReactNode }) =>
@@ -108,6 +144,11 @@ vi.mock("motion/react", async () => {
     MotionConfig: ({ children }: { children: React.ReactNode }) =>
       children as React.ReactElement,
     useReducedMotion: vi.fn().mockReturnValue(null),
+    useDragControls: vi.fn(() => ({ start: vi.fn() })),
+    Reorder: {
+      Group: ReorderGroup,
+      Item: ReorderItem,
+    },
   };
 });
 

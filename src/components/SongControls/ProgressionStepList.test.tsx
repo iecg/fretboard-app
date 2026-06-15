@@ -34,7 +34,7 @@ const steps: ResolvedProgressionStep[] = [
 
 describe("ProgressionStepList", () => {
   it("renders one row per step with degree, name, and duration in the accessible name", () => {
-    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} label="Chords" caption="Steps" />);
+    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} onReorder={vi.fn()} label="Chords" caption="Steps" />);
     const rows = screen.getAllByRole("button");
     expect(rows).toHaveLength(2);
     expect(rows[0]).toHaveAccessibleName(/Chord 1, i, A minor, 1 bar/);
@@ -42,7 +42,7 @@ describe("ProgressionStepList", () => {
   });
 
   it("marks the active row with aria-current", () => {
-    render(<ProgressionStepList steps={steps} activeIndex={1} onSelect={() => {}} label="Chords" caption="Steps" />);
+    render(<ProgressionStepList steps={steps} activeIndex={1} onSelect={() => {}} onReorder={vi.fn()} label="Chords" caption="Steps" />);
     const rows = screen.getAllByRole("button");
     expect(rows[1]).toHaveAttribute("aria-current", "true");
     expect(rows[0]).not.toHaveAttribute("aria-current");
@@ -50,7 +50,7 @@ describe("ProgressionStepList", () => {
 
   it("calls onSelect with the row index on click", () => {
     const onSelect = vi.fn();
-    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={onSelect} label="Chords" caption="Steps" />);
+    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={onSelect} onReorder={vi.fn()} label="Chords" caption="Steps" />);
     fireEvent.click(screen.getAllByRole("button")[1]);
     expect(onSelect).toHaveBeenCalledWith(1);
   });
@@ -61,6 +61,7 @@ describe("ProgressionStepList", () => {
         steps={steps}
         activeIndex={0}
         onSelect={() => {}}
+        onReorder={vi.fn()}
         label="Chords"
         caption="Steps"
         meta="2 chords · 3 bars"
@@ -72,8 +73,39 @@ describe("ProgressionStepList", () => {
 
   it("has no accessibility violations", async () => {
     const { container } = render(
-      <ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} label="Chords" caption="Steps" />,
+      <ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} onReorder={vi.fn()} label="Chords" caption="Steps" />,
     );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("still calls onSelect with the row index when the row button is clicked", () => {
+    const onSelect = vi.fn();
+    render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={0}
+        onSelect={onSelect}
+        onReorder={vi.fn()}
+        label="Chords"
+        caption="Steps"
+      />,
+    );
+    fireEvent.click(screen.getAllByRole("button")[1]);
+    expect(onSelect).toHaveBeenCalledWith(1);
+  });
+
+  it("renders one button per row (handles are aria-hidden) with no a11y violation", async () => {
+    const { container } = render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={0}
+        onSelect={vi.fn()}
+        onReorder={vi.fn()}
+        label="Chords"
+        caption="Steps"
+      />,
+    );
+    expect(screen.getAllByRole("button")).toHaveLength(steps.length);
     expect(await axe(container)).toHaveNoViolations();
   });
 });

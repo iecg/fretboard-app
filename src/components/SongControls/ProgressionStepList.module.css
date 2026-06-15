@@ -140,7 +140,8 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   height: 2.7rem;
   padding: 0 0.8rem 0 0.75rem;
   border: 1px solid transparent;
@@ -150,6 +151,41 @@
   text-align: left;
   cursor: pointer;
   transition: var(--dc-transition);
+}
+
+/* Reorder.Item wrapper: lays the select button beside its drag handle. */
+.item {
+  display: flex;
+  align-items: stretch;
+  gap: 0.15rem;
+  list-style: none;
+}
+
+/* Drag handle — pointer-only affordance. It is aria-hidden because the keyboard
+   reorder path lives in the global Alt+Arrow shortcut + toolbar Move buttons, so
+   a focusable handle would add a control that does nothing for AT users.
+   `touch-action: none` lets a touch drag move the row instead of scrolling. */
+.handle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  border-radius: 6px;
+  color: var(--dc-fg-faint, var(--dc-fg-muted));
+  cursor: grab;
+  touch-action: none;
+  opacity: 0.55;
+  transition: var(--dc-transition);
+}
+
+.handle:hover {
+  opacity: 1;
+  background-color: var(--dc-bg-hover);
+}
+
+.handle:active {
+  cursor: grabbing;
 }
 
 /* Left tick — transparent at rest, cyan when active. */
@@ -283,5 +319,9 @@
    44px minimum. The sheet content is portaled out of the [data-layout-tier]
    shell, so scope to the Inspector's sheet placement. Desktop rows keep 2.7rem. */
 :global([data-placement="sheet"]) .row {
+  min-height: var(--size-touch-target);
+}
+
+:global([data-placement="sheet"]) .handle {
   min-height: var(--size-touch-target);
 }
