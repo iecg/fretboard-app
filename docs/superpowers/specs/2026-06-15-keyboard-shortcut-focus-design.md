@@ -92,17 +92,14 @@ the hidden-tab case.
 interaction was a keydown, so the heuristic resolves to keyboard. The ring shows;
 it does not show for mouse-driven changes.
 
-### Remove the stray mobile-panel outline
+### Mobile panel outline — already suppressed (no change)
 
 [`MobilePanel.tsx`](../../../src/components/MobileShell/MobilePanel.tsx) focuses the
-panel body as a screen-reader landing zone. Because focus now moves to the actual
-control on the next shortcut, the panel no longer retains focus during
-shortcut use. To eliminate the default UA outline on the `tabIndex={-1}` panel
-while it is the landing zone, add `outline: none` for the panel's `:focus` (not
-`:focus-visible`) state in
-[`MobilePanel.module.css`](../../../src/components/MobileShell/MobilePanel.module.css).
-This is safe: the panel is not a keyboard Tab stop and conveys no actionable
-state of its own; its focus exists only to relocate the SR cursor on open.
+panel body as a screen-reader landing zone. Verified during planning: the `.panel`
+rule in `MobilePanels.module.css` already sets `outline: none`, so the panel does
+not draw its own ring. Once focus moves to the actual control on the next
+shortcut, the panel no longer retains focus during shortcut use either. **No CSS
+change to the panel is required.**
 
 ## Components / files touched
 
@@ -114,7 +111,7 @@ state of its own; its focus exists only to relocate the SR cursor on open.
 | `src/components/SongControls/SongControls.tsx` | Pass the tempo stepper `id`. |
 | `src/components/SongControls/ProgressionStepList.tsx` | `id` + `tabIndex={-1}` on the scroll container. |
 | `src/components/SongControls/ProgressionStepList.module.css` | `:focus-visible` ring on the scroll container. |
-| `src/components/MobileShell/MobilePanel.module.css` | Suppress UA outline on the landing-zone panel `:focus`. |
+| `src/components/SongControls/progressionFocusIds.ts` | New: shared id constants for the focus targets (prevents string drift between hook and components). |
 
 ## Testing
 
