@@ -78,9 +78,18 @@ New bindings added to the same handler (handled **before** the modifier early-re
     binding outside text inputs, so capturing it is safe on macOS, Windows, Linux.
 
 ### Platforms
-Enabled on desktop and touch (the mobile Inspector renders `SongControls`).
-`motion` `Reorder` supports pointer and touch. Respect `prefers-reduced-motion`
-for the layout animation; drag still functions when reduced motion is set.
+Pointer drag (motion `Reorder`) is enabled only when the inspector renders
+**inline** — desktop and tablet non-sheet layouts (`!useSheetShell`). Respect
+`prefers-reduced-motion` for the layout animation; drag still functions when
+reduced motion is set.
+
+Inside the **bottom sheet** (mobile tier and the `tablet-split` variant, i.e.
+`useSheetShell === true`) the list renders as a plain selectable `ul`/`li` with
+**no** drag handle. Reordering there is done with the toolbar Move Up/Down buttons
+(and, on a hardware keyboard, the global `Alt+←/→`). This is a hard constraint, not
+a preference: motion `Reorder`'s layout animations deadlock the sheet's
+`AnimatePresence` exit, leaving the sheet stuck open after a close. `SongControls`
+passes `enableDrag={!useSheetShell}` to switch variants.
 
 ## State / Atom Changes
 

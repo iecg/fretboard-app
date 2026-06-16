@@ -77,7 +77,7 @@ const SUGGESTION_FEEL_LABEL_KEYS: Record<SuggestionFeel, string> = {
 
 export function SongControls() {
   const { t } = useTranslation();
-  const { tier } = useLayoutMode();
+  const { tier, useSheetShell } = useLayoutMode();
   const {
     scaleName,
     rootNote,
@@ -393,6 +393,7 @@ export function SongControls() {
                   activeIndex={activeProgressionStepIndex}
                   onSelect={setActiveProgressionStepIndex}
                   onReorder={(from, to) => reorderProgressionSteps({ from, to })}
+                  enableDrag={!useSheetShell}
                   label={t("controls.progressionNavigation")}
                   caption={t("controls.stepsLabel")}
                   meta={listMeta}

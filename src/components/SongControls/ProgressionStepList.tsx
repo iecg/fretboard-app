@@ -23,14 +23,50 @@ interface ProgressionStepListProps {
   caption: string;
   /** Right-aligned summary in the caption row (e.g. "9 chords · 10 bars"). */
   meta?: string;
+  /**
+   * Enable pointer drag-to-reorder (motion `Reorder`). Defaults to true.
+   *
+   * Must be false inside the mobile/tablet bottom sheet: motion's `Reorder`
+   * layout animations deadlock the sheet's `AnimatePresence` exit, leaving the
+   * sheet stuck open after close. In that context the list renders as a plain
+   * selectable list and reordering is done via the toolbar Move buttons (and the
+   * global Alt+Arrow shortcut).
+   */
+  enableDrag?: boolean;
 }
 
-interface StepRowProps {
+interface StepSelectButtonProps {
   step: ResolvedProgressionStep;
   index: number;
   active: boolean;
   onSelect: (index: number) => void;
   buttonRef?: Ref<HTMLButtonElement>;
+}
+
+/** The selectable row body, shared by the draggable and static list variants. */
+function StepSelectButton({ step, index, active, onSelect, buttonRef }: StepSelectButtonProps) {
+  const { t } = useTranslation();
+  const name = step.resolvedChordLabel ?? t("controls.chordUnavailable");
+  const duration = formatProgressionDurationLabel(step.duration);
+  return (
+    <button
+      type="button"
+      ref={buttonRef}
+      className={clsx(styles.row, { [styles.active]: active })}
+      aria-current={active ? "true" : undefined}
+      data-unavailable={step.unavailable || undefined}
+      aria-label={`${t("controls.chordPositionLabel")} ${index + 1}, ${step.degree}, ${name}, ${duration}${active ? `, ${t("controls.chordSelected")}` : ""}`}
+      onClick={() => onSelect(index)}
+    >
+      <span className={styles.index} aria-hidden="true">{index + 1}</span>
+      <span className={styles.chip} aria-hidden="true">{step.degree}</span>
+      <span className={styles.name} aria-hidden="true">{name}</span>
+      <span className={styles.duration} aria-hidden="true">{duration}</span>
+    </button>
+  );
+}
+
+interface DraggableStepRowProps extends StepSelectButtonProps {
   onDragActive: (dragging: boolean) => void;
 }
 
@@ -41,11 +77,8 @@ interface StepRowProps {
  * (not nested in the button) and `aria-hidden`: the keyboard reorder path lives
  * in the global Alt+Arrow shortcut and the toolbar Move buttons.
  */
-function StepRow({ step, index, active, onSelect, buttonRef, onDragActive }: StepRowProps) {
-  const { t } = useTranslation();
+function DraggableStepRow({ step, index, active, onSelect, buttonRef, onDragActive }: DraggableStepRowProps) {
   const controls = useDragControls();
-  const name = step.resolvedChordLabel ?? t("controls.chordUnavailable");
-  const duration = formatProgressionDurationLabel(step.duration);
   return (
     <Reorder.Item
       value={step.id}
@@ -57,20 +90,7 @@ function StepRow({ step, index, active, onSelect, buttonRef, onDragActive }: Ste
       onDragEnd={() => onDragActive(false)}
       whileDrag={{ scale: 1.015 }}
     >
-      <button
-        type="button"
-        ref={buttonRef}
-        className={clsx(styles.row, { [styles.active]: active })}
-        aria-current={active ? "true" : undefined}
-        data-unavailable={step.unavailable || undefined}
-        aria-label={`${t("controls.chordPositionLabel")} ${index + 1}, ${step.degree}, ${name}, ${duration}${active ? `, ${t("controls.chordSelected")}` : ""}`}
-        onClick={() => onSelect(index)}
-      >
-        <span className={styles.index} aria-hidden="true">{index + 1}</span>
-        <span className={styles.chip} aria-hidden="true">{step.degree}</span>
-        <span className={styles.name} aria-hidden="true">{name}</span>
-        <span className={styles.duration} aria-hidden="true">{duration}</span>
-      </button>
+      <StepSelectButton step={step} index={index} active={active} onSelect={onSelect} buttonRef={buttonRef} />
       <span
         className={styles.handle}
         aria-hidden="true"
@@ -85,11 +105,12 @@ function StepRow({ step, index, active, onSelect, buttonRef, onDragActive }: Ste
 /**
  * The master pane of the progression editor: a vertical, scrollable list of
  * chords rendered as a "quiet index". Each row is a flat select button with an
- * index, a Roman-numeral chip, the compact chord name, and its duration, plus a
- * grab handle for drag-to-reorder. The active row carries a cyan left-tick +
- * tint. Top/bottom fade hints appear only when the list overflows.
+ * index, a Roman-numeral chip, the compact chord name, and its duration. When
+ * `enableDrag` is set (desktop/tablet-inline) each row also gets a grab handle
+ * for drag-to-reorder. The active row carries a cyan left-tick + tint. Top/bottom
+ * fade hints appear only when the list overflows.
  */
-export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, label, caption, meta }: ProgressionStepListProps) {
+export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, label, caption, meta, enableDrag = true }: ProgressionStepListProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   const draggingRef = useRef(false);
@@ -121,29 +142,45 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, l
         {meta ? <span className={styles.captionMeta}>{meta}</span> : null}
       </div>
       <div className={styles.scroll}>
-        <Reorder.Group
-          as="ul"
-          axis="y"
-          values={ids}
-          onReorder={handleReorder}
-          className={styles.list}
-          aria-label={label}
-          ref={listRef}
-        >
-          {steps.map((step, index) => (
-            <StepRow
-              key={step.id}
-              step={step}
-              index={index}
-              active={index === activeIndex}
-              onSelect={onSelect}
-              buttonRef={index === activeIndex ? activeRef : undefined}
-              onDragActive={(dragging) => {
-                draggingRef.current = dragging;
-              }}
-            />
-          ))}
-        </Reorder.Group>
+        {enableDrag ? (
+          <Reorder.Group
+            as="ul"
+            axis="y"
+            values={ids}
+            onReorder={handleReorder}
+            className={styles.list}
+            aria-label={label}
+            ref={listRef}
+          >
+            {steps.map((step, index) => (
+              <DraggableStepRow
+                key={step.id}
+                step={step}
+                index={index}
+                active={index === activeIndex}
+                onSelect={onSelect}
+                buttonRef={index === activeIndex ? activeRef : undefined}
+                onDragActive={(dragging) => {
+                  draggingRef.current = dragging;
+                }}
+              />
+            ))}
+          </Reorder.Group>
+        ) : (
+          <ul className={styles.list} aria-label={label} ref={listRef}>
+            {steps.map((step, index) => (
+              <li key={step.id} className={styles.item}>
+                <StepSelectButton
+                  step={step}
+                  index={index}
+                  active={index === activeIndex}
+                  onSelect={onSelect}
+                  buttonRef={index === activeIndex ? activeRef : undefined}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
