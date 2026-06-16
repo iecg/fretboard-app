@@ -18,6 +18,9 @@ interface ProgressionStepListProps {
   onSelect: (index: number) => void;
   /** Reorder a step from one index to another (pointer drag). */
   onReorder: (from: number, to: number) => void;
+  /** Move the active step by one in the list (keyboard ←/→). Wired to the same
+   * actions as the global chord-nav shortcut so behavior is identical. */
+  onNavigate: (direction: -1 | 1) => void;
   /** Accessible label for the list container. */
   label: string;
   /** Visible mono caption above the list (e.g. "Steps"). */
@@ -55,6 +58,7 @@ function StepSelectButton({ step, index, active, onSelect, buttonRef, trailing }
     <button
       type="button"
       ref={buttonRef}
+      tabIndex={active ? 0 : -1}
       className={clsx(styles.row, { [styles.active]: active })}
       aria-current={active ? "true" : undefined}
       data-unavailable={step.unavailable || undefined}
