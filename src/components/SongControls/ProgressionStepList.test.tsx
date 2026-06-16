@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { useState } from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { axe } from "../../test-utils/a11y";
 import { ProgressionStepList } from "./ProgressionStepList";
 import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
@@ -260,21 +261,23 @@ describe("ProgressionStepList keyboard navigation", () => {
     expect(onNavigate).not.toHaveBeenCalled();
   });
 
-  it("moves focus to the new active row after navigation re-renders", () => {
-    const { rerender } = renderList(0);
+  it("moves focus to the active row after keyboard navigation", async () => {
+    function Harness() {
+      const [idx, setIdx] = useState(0);
+      return (
+        <ProgressionStepList
+          steps={steps}
+          activeIndex={idx}
+          onSelect={() => {}}
+          onReorder={vi.fn()}
+          onNavigate={(direction) => setIdx((i) => i + direction)}
+          label="Chords"
+          caption="Steps"
+        />
+      );
+    }
+    render(<Harness />);
     fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowRight" });
-    // Simulate the atom update that onNavigate would cause:
-    rerender(
-      <ProgressionStepList
-        steps={steps}
-        activeIndex={1}
-        onSelect={() => {}}
-        onReorder={vi.fn()}
-        onNavigate={vi.fn()}
-        label="Chords"
-        caption="Steps"
-      />,
-    );
-    expect(document.activeElement).toBe(screen.getAllByRole("button")[1]);
+    await waitFor(() => expect(document.activeElement).toBe(screen.getAllByRole("button")[1]));
   });
 });

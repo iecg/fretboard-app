@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { ReactNode, Ref } from "react";
 import clsx from "clsx";
 import { Reorder, useDragControls } from "motion/react";
@@ -133,23 +133,16 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, o
   const activeRef = useRef<HTMLButtonElement>(null);
   const draggingRef = useRef(false);
 
-  // Bumped on each in-list ←/→ keystroke so the active row takes focus after the
-  // navigation re-renders. A counter (not a boolean) so it still fires when the
-  // index clamps at an end — focusing the unchanged active row is harmless and
-  // avoids a stale flag stealing focus on a later playback-driven change.
-  const [navFocusTick, setNavFocusTick] = useState(0);
-
-  useLayoutEffect(() => {
-    if (navFocusTick === 0) return;
-    activeRef.current?.focus({ preventScroll: true });
-  }, [navFocusTick, activeIndex]);
-
   const handleListKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     event.preventDefault();
     onNavigate(event.key === "ArrowLeft" ? -1 : 1);
-    setNavFocusTick((tick) => tick + 1);
+    // Focus the active row after the navigation re-render commits. rAF runs after
+    // React has flushed the atom-driven update, so activeRef points at the new
+    // active row (or the same row if the index clamped at an end). Scheduling only
+    // here means playback/click/drag never steal focus.
+    requestAnimationFrame(() => activeRef.current?.focus({ preventScroll: true }));
   };
 
   // Keep the active row visible *within the list's own scrollport* only. Skip
