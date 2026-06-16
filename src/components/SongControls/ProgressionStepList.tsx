@@ -12,6 +12,12 @@ import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
 import { singleMoveDiff } from "./progressionStepListUtils";
 import styles from "./ProgressionStepList.module.css";
 
+// Id of the inner list, used to give the focusable scroll container its
+// accessible name via `aria-labelledby` without duplicating the literal
+// `aria-label` (two elements with the same `aria-label` break strict-mode
+// e2e selectors that target the list by name).
+const STEP_LIST_LABEL_ID = "progression-step-list-label";
+
 interface ProgressionStepListProps {
   steps: ResolvedProgressionStep[];
   activeIndex: number;
@@ -172,7 +178,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, o
         {meta ? <span className={styles.captionMeta}>{meta}</span> : null}
       </div>
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
-      <div className={styles.scroll} id={PROGRESSION_STEP_LIST_ID} role="group" aria-label={label} tabIndex={-1} onKeyDown={handleListKeyDown}>
+      <div className={styles.scroll} id={PROGRESSION_STEP_LIST_ID} role="group" aria-labelledby={STEP_LIST_LABEL_ID} tabIndex={-1} onKeyDown={handleListKeyDown}>
         {enableDrag ? (
           <Reorder.Group
             as="ul"
@@ -180,6 +186,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, o
             values={ids}
             onReorder={handleReorder}
             className={styles.list}
+            id={STEP_LIST_LABEL_ID}
             aria-label={label}
             ref={listRef}
           >
@@ -198,7 +205,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, o
             ))}
           </Reorder.Group>
         ) : (
-          <ul className={styles.list} aria-label={label} ref={listRef}>
+          <ul className={styles.list} id={STEP_LIST_LABEL_ID} aria-label={label} ref={listRef}>
             {steps.map((step, index) => (
               <li key={step.id} className={styles.item}>
                 <StepSelectButton
