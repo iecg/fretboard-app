@@ -171,3 +171,33 @@ describe("StepperControl/StepperControl", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 });
+
+describe("StepperControl groupId", () => {
+  it("renders the group element with the given id and tabIndex=-1", () => {
+    const { container } = render(
+      <StepperControl
+        value={100}
+        onChange={() => {}}
+        min={40}
+        max={240}
+        groupId="test-stepper"
+        label="Tempo"
+      />,
+    );
+
+    const group = container.querySelector("#test-stepper");
+    expect(group).not.toBeNull();
+    expect(group?.getAttribute("role")).toBe("group");
+    expect(group?.getAttribute("tabindex")).toBe("-1");
+  });
+
+  it("does not set a tabIndex when no groupId is given", () => {
+    const { container } = render(
+      <StepperControl value={100} onChange={() => {}} min={40} max={240} label="Tempo" />,
+    );
+
+    const group = container.querySelector('[role="group"]');
+    expect(group).not.toBeNull();
+    expect(group?.getAttribute("tabindex")).toBeNull();
+  });
+});

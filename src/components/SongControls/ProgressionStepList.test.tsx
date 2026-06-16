@@ -1,7 +1,10 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { useState } from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { axe } from "../../test-utils/a11y";
 import { ProgressionStepList } from "./ProgressionStepList";
+import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
 import { singleMoveDiff } from "./progressionStepListUtils";
 import type { ResolvedProgressionStep } from "../../progressions/progressionDomain";
 
@@ -35,7 +38,7 @@ const steps: ResolvedProgressionStep[] = [
 
 describe("ProgressionStepList", () => {
   it("renders one row per step with degree, name, and duration in the accessible name", () => {
-    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} onReorder={vi.fn()} label="Chords" caption="Steps" />);
+    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} onReorder={vi.fn()} onNavigate={vi.fn()} label="Chords" caption="Steps" />);
     const rows = screen.getAllByRole("button");
     expect(rows).toHaveLength(2);
     expect(rows[0]).toHaveAccessibleName(/Chord 1, i, A minor, 1 bar/);
@@ -43,7 +46,7 @@ describe("ProgressionStepList", () => {
   });
 
   it("marks the active row with aria-current", () => {
-    render(<ProgressionStepList steps={steps} activeIndex={1} onSelect={() => {}} onReorder={vi.fn()} label="Chords" caption="Steps" />);
+    render(<ProgressionStepList steps={steps} activeIndex={1} onSelect={() => {}} onReorder={vi.fn()} onNavigate={vi.fn()} label="Chords" caption="Steps" />);
     const rows = screen.getAllByRole("button");
     expect(rows[1]).toHaveAttribute("aria-current", "true");
     expect(rows[0]).not.toHaveAttribute("aria-current");
@@ -51,7 +54,7 @@ describe("ProgressionStepList", () => {
 
   it("calls onSelect with the row index on click", () => {
     const onSelect = vi.fn();
-    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={onSelect} onReorder={vi.fn()} label="Chords" caption="Steps" />);
+    render(<ProgressionStepList steps={steps} activeIndex={0} onSelect={onSelect} onReorder={vi.fn()} onNavigate={vi.fn()} label="Chords" caption="Steps" />);
     fireEvent.click(screen.getAllByRole("button")[1]);
     expect(onSelect).toHaveBeenCalledWith(1);
   });
@@ -63,6 +66,7 @@ describe("ProgressionStepList", () => {
         activeIndex={0}
         onSelect={() => {}}
         onReorder={vi.fn()}
+        onNavigate={vi.fn()}
         label="Chords"
         caption="Steps"
         meta="2 chords · 3 bars"
@@ -74,7 +78,7 @@ describe("ProgressionStepList", () => {
 
   it("has no accessibility violations", async () => {
     const { container } = render(
-      <ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} onReorder={vi.fn()} label="Chords" caption="Steps" />,
+      <ProgressionStepList steps={steps} activeIndex={0} onSelect={() => {}} onReorder={vi.fn()} onNavigate={vi.fn()} label="Chords" caption="Steps" />,
     );
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -88,6 +92,7 @@ describe("ProgressionStepList", () => {
         activeIndex={0}
         onSelect={onSelect}
         onReorder={onReorder}
+        onNavigate={vi.fn()}
         label="Chords"
         caption="Steps"
       />,
@@ -104,6 +109,7 @@ describe("ProgressionStepList", () => {
         activeIndex={0}
         onSelect={vi.fn()}
         onReorder={vi.fn()}
+        onNavigate={vi.fn()}
         label="Chords"
         caption="Steps"
       />,
@@ -122,6 +128,7 @@ describe("ProgressionStepList", () => {
         activeIndex={0}
         onSelect={onSelect}
         onReorder={vi.fn()}
+        onNavigate={vi.fn()}
         label="Chords"
         caption="Steps"
       />,
@@ -139,6 +146,7 @@ describe("ProgressionStepList", () => {
         activeIndex={0}
         onSelect={onSelect}
         onReorder={vi.fn()}
+        onNavigate={vi.fn()}
         enableDrag={false}
         label="Chords"
         caption="Steps"
@@ -170,5 +178,106 @@ describe("singleMoveDiff", () => {
     // Middle-section reversal: endpoints match a candidate move, but replaying
     // it would not reproduce `next`, so it must be rejected.
     expect(singleMoveDiff(["a", "b", "c", "d", "e"], ["a", "d", "c", "b", "e"])).toBeNull();
+  });
+});
+
+describe("ProgressionStepList focus target", () => {
+  it("exposes a focusable scroll container with the shared id", () => {
+    const { container } = render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={0}
+        onSelect={() => {}}
+        onReorder={vi.fn()}
+        onNavigate={vi.fn()}
+        label="Progression"
+        caption="Steps"
+      />,
+    );
+
+    const scroll = container.querySelector(`#${PROGRESSION_STEP_LIST_ID}`);
+    expect(scroll).not.toBeNull();
+    expect(scroll?.getAttribute("tabindex")).toBe("-1");
+  });
+});
+
+describe("ProgressionStepList roving tabindex", () => {
+  it("makes only the active row a tab stop (tabIndex 0), others -1", () => {
+    render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={1}
+        onSelect={() => {}}
+        onReorder={vi.fn()}
+        onNavigate={vi.fn()}
+        label="Chords"
+        caption="Steps"
+      />,
+    );
+    const rows = screen.getAllByRole("button");
+    expect(rows[0]).toHaveAttribute("tabindex", "-1");
+    expect(rows[1]).toHaveAttribute("tabindex", "0");
+  });
+});
+
+describe("ProgressionStepList keyboard navigation", () => {
+  function renderList(activeIndex: number, onNavigate = vi.fn()) {
+    const utils = render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={activeIndex}
+        onSelect={() => {}}
+        onReorder={vi.fn()}
+        onNavigate={onNavigate}
+        label="Chords"
+        caption="Steps"
+      />,
+    );
+    return { ...utils, onNavigate };
+  }
+
+  it("calls onNavigate(+1) on plain ArrowRight", () => {
+    const { onNavigate } = renderList(0);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowRight" });
+    expect(onNavigate).toHaveBeenCalledWith(1);
+  });
+
+  it("calls onNavigate(-1) on plain ArrowLeft", () => {
+    const { onNavigate } = renderList(1);
+    fireEvent.keyDown(screen.getAllByRole("button")[1], { key: "ArrowLeft" });
+    expect(onNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  it("ignores ArrowRight with Alt (reorder shortcut passes through)", () => {
+    const { onNavigate } = renderList(0);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowRight", altKey: true });
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
+
+  it("ignores ArrowUp/ArrowDown (tempo keys pass through)", () => {
+    const { onNavigate } = renderList(0);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowUp" });
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowDown" });
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
+
+  it("moves focus to the active row after keyboard navigation", async () => {
+    function Harness() {
+      const [idx, setIdx] = useState(0);
+      return (
+        <ProgressionStepList
+          steps={steps}
+          activeIndex={idx}
+          onSelect={() => {}}
+          onReorder={vi.fn()}
+          onNavigate={(direction) => setIdx((i) => i + direction)}
+          label="Chords"
+          caption="Steps"
+        />
+      );
+    }
+    render(<Harness />);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowRight" });
+    await waitFor(() => expect(document.activeElement).toBe(screen.getAllByRole("button")[1]));
   });
 });

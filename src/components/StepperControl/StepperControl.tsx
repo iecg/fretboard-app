@@ -44,6 +44,10 @@ export interface StepperControlProps {
   width?: "fill" | "auto";
   /** When true, both stepper buttons are disabled regardless of value bounds. */
   disabled?: boolean;
+  /** When set, the stepper group element gets this DOM id and becomes
+   * programmatically focusable (tabIndex=-1) so global keyboard shortcuts can
+   * focus it. Does not add a Tab stop — the +/- buttons remain the tab stops. */
+  groupId?: string;
 }
 
 export function StepperControl({
@@ -59,6 +63,7 @@ export function StepperControl({
   testId,
   width,
   disabled = false,
+  groupId,
 }: StepperControlProps) {
   return (
     <div
@@ -73,6 +78,8 @@ export function StepperControl({
         role="group"
         aria-label={label ?? "Stepper control"}
         data-testid={testId}
+        id={groupId}
+        tabIndex={groupId ? -1 : undefined}
       >
         <motion.button
           type="button"

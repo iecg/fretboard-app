@@ -31,8 +31,10 @@ import { buildChordRootGroups, classifyRoot } from "./chordRootOptions";
 import { buildQualityGroupsWithDiatonic } from "./qualityGroups";
 import { ProgressionStepList } from "./ProgressionStepList";
 import { ChordTonesReadout } from "./ChordTonesReadout";
+import { TEMPO_STEPPER_ID } from "./progressionFocusIds";
 import shared from "../shared/shared.module.css";
-import { CUSTOM_PRESET_ID, progressionPlayingAtom } from "../../store/progressionAtoms";
+import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
+import { progressionPlayingAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import styles from "./SongControls.module.css";
 
 // Look up a scale family by id; fail loudly at module init if the catalog id
@@ -115,6 +117,8 @@ export function SongControls() {
     removeProgressionStep,
     moveProgressionStep,
     reorderProgressionSteps,
+    previousProgressionStep,
+    advanceProgressionPlayback,
     updateProgressionStepDuration,
     updateProgressionStepQuality,
     selectProgressionStepRoot,
@@ -125,6 +129,8 @@ export function SongControls() {
     currentProgressionPresetId,
     setActiveProgressionStepIndex,
   } = useProgressionState();
+
+  const isProgressionPlaying = useAtomValue(progressionPlayingAtom);
 
   const activeRoot = activeResolvedProgressionStep?.root ?? rootNote;
   const qualityGroups: LabeledSelectGroup[] = buildQualityGroupsWithDiatonic(
@@ -312,6 +318,7 @@ export function SongControls() {
                   formatValue={(bpm) => `${bpm} BPM`}
                   onChange={setProgressionTempoBpm}
                   width="auto"
+                  groupId={TEMPO_STEPPER_ID}
                 />
               </Prop>
             </PropGrid>
@@ -393,6 +400,11 @@ export function SongControls() {
                   activeIndex={activeProgressionStepIndex}
                   onSelect={setActiveProgressionStepIndex}
                   onReorder={(from, to) => reorderProgressionSteps({ from, to })}
+                  onNavigate={(direction) => {
+                    if (isProgressionPlaying) return;
+                    if (direction < 0) previousProgressionStep();
+                    else advanceProgressionPlayback();
+                  }}
                   enableDrag={!useSheetShell}
                   label={t("controls.progressionNavigation")}
                   caption={t("controls.stepsLabel")}

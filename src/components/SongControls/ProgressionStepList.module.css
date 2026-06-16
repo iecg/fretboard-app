@@ -47,6 +47,12 @@
   position: relative;
 }
 
+.scroll:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-md);
+}
+
 .list {
   display: flex;
   flex-direction: column;

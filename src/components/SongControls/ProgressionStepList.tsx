@@ -8,8 +8,15 @@ import {
   type ResolvedProgressionStep,
 } from "../../progressions/progressionDomain";
 import { useTranslation } from "../../hooks/useTranslation";
+import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
 import { singleMoveDiff } from "./progressionStepListUtils";
 import styles from "./ProgressionStepList.module.css";
+
+// Id of the inner list, used to give the focusable scroll container its
+// accessible name via `aria-labelledby` without duplicating the literal
+// `aria-label` (two elements with the same `aria-label` break strict-mode
+// e2e selectors that target the list by name).
+const STEP_LIST_LABEL_ID = "progression-step-list-label";
 
 interface ProgressionStepListProps {
   steps: ResolvedProgressionStep[];
@@ -17,6 +24,9 @@ interface ProgressionStepListProps {
   onSelect: (index: number) => void;
   /** Reorder a step from one index to another (pointer drag). */
   onReorder: (from: number, to: number) => void;
+  /** Move the active step by one in the list (keyboard ←/→). Wired to the same
+   * actions as the global chord-nav shortcut so behavior is identical. */
+  onNavigate: (direction: -1 | 1) => void;
   /** Accessible label for the list container. */
   label: string;
   /** Visible mono caption above the list (e.g. "Steps"). */
@@ -54,6 +64,7 @@ function StepSelectButton({ step, index, active, onSelect, buttonRef, trailing }
     <button
       type="button"
       ref={buttonRef}
+      tabIndex={active ? 0 : -1}
       className={clsx(styles.row, { [styles.active]: active })}
       aria-current={active ? "true" : undefined}
       data-unavailable={step.unavailable || undefined}
@@ -123,10 +134,22 @@ function DraggableStepRow({ step, index, active, onSelect, buttonRef, onDragActi
  * for drag-to-reorder. The active row carries a cyan left-tick + tint. Top/bottom
  * fade hints appear only when the list overflows.
  */
-export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, label, caption, meta, enableDrag = true }: ProgressionStepListProps) {
+export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, onNavigate, label, caption, meta, enableDrag = true }: ProgressionStepListProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   const draggingRef = useRef(false);
+
+  const handleListKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    onNavigate(event.key === "ArrowLeft" ? -1 : 1);
+    // Focus the active row after the navigation re-render commits. rAF runs after
+    // React has flushed the atom-driven update, so activeRef points at the new
+    // active row (or the same row if the index clamped at an end). Scheduling only
+    // here means playback/click/drag never steal focus.
+    requestAnimationFrame(() => activeRef.current?.focus({ preventScroll: true }));
+  };
 
   // Keep the active row visible *within the list's own scrollport* only. Skip
   // while a drag is in flight — the reorder action retargets the active index on
@@ -154,7 +177,8 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, l
         <span className={styles.captionTitle}>{caption}</span>
         {meta ? <span className={styles.captionMeta}>{meta}</span> : null}
       </div>
-      <div className={styles.scroll}>
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+      <div className={styles.scroll} id={PROGRESSION_STEP_LIST_ID} role="group" aria-labelledby={STEP_LIST_LABEL_ID} tabIndex={-1} onKeyDown={handleListKeyDown}>
         {enableDrag ? (
           <Reorder.Group
             as="ul"
@@ -162,6 +186,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, l
             values={ids}
             onReorder={handleReorder}
             className={styles.list}
+            id={STEP_LIST_LABEL_ID}
             aria-label={label}
             ref={listRef}
           >
@@ -180,7 +205,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, l
             ))}
           </Reorder.Group>
         ) : (
-          <ul className={styles.list} aria-label={label} ref={listRef}>
+          <ul className={styles.list} id={STEP_LIST_LABEL_ID} aria-label={label} ref={listRef}>
             {steps.map((step, index) => (
               <li key={step.id} className={styles.item}>
                 <StepSelectButton

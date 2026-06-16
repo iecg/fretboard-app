@@ -28,6 +28,26 @@ import {
   MIN_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
 } from "../progressions/progressionDomain";
+import {
+  TEMPO_STEPPER_ID,
+  PROGRESSION_STEP_LIST_ID,
+} from "../components/SongControls/progressionFocusIds";
+
+/** Focus a shortcut target by id if it is currently rendered. A no-op when the
+ * element is absent (e.g. its inspector tab is not showing) — the state mutation
+ * has already happened, so we just skip moving focus. `preventScroll` keeps the
+ * page and the list scrollport from jumping. */
+function focusShortcutTarget(id: string) {
+  document.getElementById(id)?.focus({ preventScroll: true });
+}
+
+/** True when keyboard focus is currently inside the chord list — in which case
+ * the list's own ←/→ handler owns navigation and the global one must stand down
+ * (the window listener fires regardless of React's stopPropagation). */
+function focusInsideChordList() {
+  const list = document.getElementById(PROGRESSION_STEP_LIST_ID);
+  return !!list && list.contains(document.activeElement);
+}
 
 export function useKeyboardShortcuts() {
   const store = useStore();
@@ -108,14 +128,16 @@ export function useKeyboardShortcuts() {
           );
           break;
         case "ArrowLeft":
-          if (store.get(progressionPlayingAtom)) return;
+          if (store.get(progressionPlayingAtom) || focusInsideChordList()) return;
           e.preventDefault();
           store.set(previousProgressionStepAtom);
+          focusShortcutTarget(PROGRESSION_STEP_LIST_ID);
           break;
         case "ArrowRight":
-          if (store.get(progressionPlayingAtom)) return;
+          if (store.get(progressionPlayingAtom) || focusInsideChordList()) return;
           e.preventDefault();
           store.set(advanceProgressionPlaybackAtom);
+          focusShortcutTarget(PROGRESSION_STEP_LIST_ID);
           break;
         case "ArrowUp":
           e.preventDefault();
@@ -126,6 +148,7 @@ export function useKeyboardShortcuts() {
               store.get(progressionTempoBpmAtom) + 5,
             ),
           );
+          focusShortcutTarget(TEMPO_STEPPER_ID);
           break;
         case "ArrowDown":
           e.preventDefault();
@@ -136,6 +159,7 @@ export function useKeyboardShortcuts() {
               store.get(progressionTempoBpmAtom) - 5,
             ),
           );
+          focusShortcutTarget(TEMPO_STEPPER_ID);
           break;
         case "t":
         case "T":
