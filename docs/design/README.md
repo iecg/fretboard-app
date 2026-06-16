@@ -8,6 +8,7 @@ than re-deriving the grounding, and add any new sources back into it.
 
 | Doc | Consult before changing… |
 |---|---|
+| [`architecture.md`](./architecture.md) | module inventory, component wiring, state/atom layout, CAGED/3NPS rendering pipeline, note roles, CI shape — *where the code lives* (structural map, not rationale) |
 | [`fretboard-visual-language.md`](./fretboard-visual-language.md) | markers, color, marker shape/size/fill, connectors, voice-leading motion, contrast/OKLCH tokens — *how notes are drawn* |
 | [`audio-voicing-engine.md`](./audio-voicing-engine.md) | voicing selection, inversion-based strum, close-voicing fallback, audio / Tone.js playback |
 | [`music-theory-pedagogy.md`](./music-theory-pedagogy.md) | chord qualities & extensions, scales, guide tones, improvisation lenses, modal characteristic tones — *what notes mean* |
