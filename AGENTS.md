@@ -19,33 +19,13 @@ pnpm run ui:tokens             # flag undefined CSS token (var(--x)) references 
 pnpm run preview               # preview build locally
 ```
 
-**MANDATORY:** Run `lint`, `test`, and `build` locally before opening a PR. Git hooks do **not** run these checks — `.githooks/pre-commit` only blocks direct commits to `main`. CI is the real gate, but running them locally first avoids burning a CI cycle.
+**MANDATORY:** Run `lint` and `test` locally before opening a PR; run `build` too when the change touches types, imports, or the build graph (it's the slow one). Git hooks do **not** run these checks — `.githooks/pre-commit` only blocks direct commits to `main`. CI is the real gate, but running them locally first avoids burning a CI cycle.
 
 ## Development Workflow
 
 - **Branching:** Trunk-based. `main` = trunk. PRs required.
 - **Commits:** Conventional Commits with scope. `type(scope): message`.
-- **Breaking changes:** The Auto Release workflow uses the Angular preset, which does **not** recognize the `!` shorthand (e.g. `feat!:`). To trigger a major version bump you **must** include a `BREAKING CHANGE:` footer in the commit body:
-
-  ```text
-  feat(scope): short subject
-
-  Optional body.
-
-  BREAKING CHANGE: explanation of what breaks and how to migrate.
-  ```
-
-  When merging a PR via squash, ensure the squash commit body (not just the title) carries the footer — GitHub does not append PR body to the commit by default. Without the footer, breaking PRs will be released as a minor bump.
-
-  **Footer placement matters.** `conventional-commits-parser` only promotes `BREAKING CHANGE:` to a breaking-change note when it lives in the **footer section** — the final paragraph block of the commit. Things that displace it out of the footer block (and silently demote the release to a minor bump):
-  - Markdown horizontal rules (`---`, `---------`) in the body.
-  - A trailing `Co-authored-by:` / `Signed-off-by:` / "Generated with Claude Code" paragraph after the `BREAKING CHANGE:` line.
-  - Any "token: value" paragraph that comes after `BREAKING CHANGE:`.
-
-  Keep the body plain text and put `BREAKING CHANGE:` as the last paragraph. If the squash UI appends trailers, use **Rebase and merge** instead to preserve the body verbatim. After merging, dispatch Auto Release and confirm the dry-run prints `Type: major` before the tag step runs.
-
-  When squashing, GitHub fills the squash body from the PR description by default. Confirmed failure mode: PR #463 and PR #465 both squashed with a PR description that contained markdown rules and ended with a `Co-authored-by:` paragraph, and the analyzer scored both as non-breaking. The safe path for any breaking PR is to use **Rebase and merge** so the branch commit body lands on `main` verbatim.
-- **Releases:** Triggered via GitHub Actions (Auto Release). Never tag manually.
+- **Releases & breaking changes:** Triggered via GitHub Actions (Auto Release). Never tag manually. Breaking changes need a `BREAKING CHANGE:` footer (the Angular preset ignores `!`), and footer placement is fiddly — read [`RELEASING.md`](RELEASING.md) before merging a breaking PR or cutting a release.
 - **Worktrees (preferred isolation):** Before starting multi-step feature work or executing an implementation plan, create a git worktree first — invoke `superpowers:using-git-worktrees`. Run each concurrent/subagent stream that touches files in its own worktree so parallel agents never clobber a shared working tree. Quick single-file doc/config edits on a short-lived branch may skip the worktree. The `.githooks/pre-commit` nudge is only a last-resort reminder when this was missed.
 - **Git hooks:** `.githooks/pre-commit` (plain POSIX shell) hard-blocks direct commits to `main` and prints a non-blocking nudge to use a worktree when committing in the primary checkout while other worktrees exist. Registered via `git config core.hooksPath .githooks` in the `postinstall` script. No husky and no Node-based tooling in hooks — they stay near-zero CPU so concurrent AI agents never thrash or stall on a hung hook.
 - **Instruction files:** `AGENTS.md` is the canonical project guide. `CLAUDE.md` and `GEMINI.md` are `@AGENTS.md` import stubs so Claude Code, Gemini CLI, opencode, Codex, Copilot, and Antigravity all read the same content. Edit `AGENTS.md` only.
@@ -57,7 +37,7 @@ pnpm run preview               # preview build locally
 - **State:** Jotai atoms live in `@fretflow/fretboard` (`packages/fretboard/src/store/`), domain-split across `scaleAtoms`, `chordOverlayAtoms`, `practiceLensAtoms`, `fingeringAtoms`, `shapeAtoms`, `layoutAtoms`, `audioAtoms`, `uiAtoms`, `progressionAtoms`, `songStateAtoms`, `voicingFallbackAtoms`, `voicingStringSets`, `composableSelectors`, `actions`. App-shell atoms (`inspectorAtoms`, `languageAtom`, `urlOverrideAtoms`) remain in `src/store/`. Old `src/store/*` paths are thin re-export stubs — new code should import from `@fretflow/fretboard/store/<module>` (or the package's public surface) directly. Components subscribe directly to the atoms they consume (atomic reactivity — no prop drilling).
 - **Domain (pure):** `@fretflow/core` workspace package at `packages/core/src/` — `theory.ts`, `theoryCatalog.ts`, `guitar.ts`, `degrees.ts`, `circleOfFifthsUtils.ts`, `diatonicNotes.ts`, `constants.ts`. Includes the `shapes/` package (`templates`, `fullChordShapes`, `voicings`, `helpers`, `polygons`, `threeNPS`, `analytics`, `practicePatterns`).
 - **Music theory:** `@fretflow/core`'s theory functions (`getNoteDisplay`, `getChordNotes`, `getScaleNotes`, `getDiatonicChord`, `getKeySignature`, etc.) are backed by [Tonal.js](https://github.com/tonaljs/tonal) (`@tonaljs/note`, `@tonaljs/chord`, `@tonaljs/scale`, `@tonaljs/key`, `@tonaljs/interval`, `@tonaljs/roman-numeral`, `@tonaljs/progression`). Naming translation lives in `packages/core/src/lib/tonal.ts`.
-- **Audio:** `GuitarSynth` singleton in `src/core/audio.ts` (Web Audio API). Tone.js progression playback in `src/progressions/` + `src/hooks/useProgressionAudioPlayback.ts`.
+- **Audio:** `GuitarSynth` singleton in `packages/fretboard/src/core/audio.ts` (Web Audio API). Tone.js progression playback in `packages/fretboard/src/progressions/` + `packages/fretboard/src/hooks/useProgressionAudioPlayback.ts`. The matching `src/` paths (`src/progressions/`, `src/hooks/useProgressionAudioPlayback.ts`) are thin re-export stubs — import from `@fretflow/fretboard/...` in new code.
 - **Persistence:** `atomWithStorage` with keys prefixed via `src/utils/storage.ts`.
 
 ### Components & Layout
@@ -82,7 +62,7 @@ packages/
                               # (enforced by scripts/check-fretboard-boundaries.mjs in `pnpm run lint`).
 
 src/
-├── App.tsx                   # orchestrator (~260 lines)
+├── App.tsx                   # orchestrator
 ├── main.tsx
 ├── core/                     # app-side runtime (audio, lazyGuitarAudio, toneInit,
 │                             # fretboardLayoutCache, polygonCoverage)
@@ -109,7 +89,7 @@ src/
 - **Coordinates:** `"string-fret"` keys (e.g., `"0-12"`).
 - **Tests:** Co-located with source — `components/<Name>/<Name>.test.tsx`, `core/<name>.test.ts`, `store/<name>.test.ts`. Shared helpers in `src/test-utils/`.
 - **CSS:**
-  - CSS Modules (`*.module.css`) for all component-scoped styles (38 modules).
+  - CSS Modules (`*.module.css`) for all component-scoped styles.
   - Global foundations under `src/styles/` (`tokens.css`, `semantic.css`, `App.css`, `index.css`) — imported via `src/styles/index.css`.
   - Shared module CSS in `src/components/shared/shared.module.css`.
   - Use `clsx` for conditional classes, `cva` for variant class systems, `motion` (from `motion/react`) for animations.
