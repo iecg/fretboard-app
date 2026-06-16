@@ -41,6 +41,14 @@ function focusShortcutTarget(id: string) {
   document.getElementById(id)?.focus({ preventScroll: true });
 }
 
+/** True when keyboard focus is currently inside the chord list — in which case
+ * the list's own ←/→ handler owns navigation and the global one must stand down
+ * (the window listener fires regardless of React's stopPropagation). */
+function focusInsideChordList() {
+  const list = document.getElementById(PROGRESSION_STEP_LIST_ID);
+  return !!list && list.contains(document.activeElement);
+}
+
 export function useKeyboardShortcuts() {
   const store = useStore();
 
@@ -120,13 +128,13 @@ export function useKeyboardShortcuts() {
           );
           break;
         case "ArrowLeft":
-          if (store.get(progressionPlayingAtom)) return;
+          if (store.get(progressionPlayingAtom) || focusInsideChordList()) return;
           e.preventDefault();
           store.set(previousProgressionStepAtom);
           focusShortcutTarget(PROGRESSION_STEP_LIST_ID);
           break;
         case "ArrowRight":
-          if (store.get(progressionPlayingAtom)) return;
+          if (store.get(progressionPlayingAtom) || focusInsideChordList()) return;
           e.preventDefault();
           store.set(advanceProgressionPlaybackAtom);
           focusShortcutTarget(PROGRESSION_STEP_LIST_ID);

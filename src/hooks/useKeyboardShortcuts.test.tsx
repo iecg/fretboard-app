@@ -441,4 +441,21 @@ describe("useKeyboardShortcuts", () => {
     // Order is unchanged: unmodified arrows never reorder.
     expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["a", "b", "c"]);
   });
+
+  it("ArrowRight does not advance the step when focus is inside the chord list", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 0);
+    const list = document.createElement("div");
+    list.id = PROGRESSION_STEP_LIST_ID;
+    const row = document.createElement("button");
+    list.appendChild(row);
+    document.body.appendChild(list);
+    row.focus();
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowRight" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+    document.body.removeChild(list);
+  });
 });
