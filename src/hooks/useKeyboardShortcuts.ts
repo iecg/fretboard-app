@@ -14,10 +14,14 @@ import {
   previousProgressionStepAtom,
   advanceProgressionPlaybackAtom,
   progressionTempoBpmAtom,
+} from "../store/progressionAtoms";
+// New state code imports atoms from the package surface directly, not the
+// thin src/store re-export stubs (see AGENTS.md).
+import {
   progressionStepsAtom,
   activeProgressionStepIndexAtom,
   reorderProgressionStepsAtom,
-} from "../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 import { inspectorActiveTabAtom } from "../store/inspectorAtoms";
 import { toggleMuteAtom } from "../store/audioAtoms";
 import {

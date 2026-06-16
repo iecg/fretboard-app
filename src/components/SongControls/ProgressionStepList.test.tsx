@@ -148,4 +148,10 @@ describe("singleMoveDiff", () => {
     expect(singleMoveDiff(["a", "b", "c"], ["a", "b", "c"])).toBeNull();
     expect(singleMoveDiff(["a", "b"], ["a", "b", "c"])).toBeNull();
   });
+
+  it("returns null for a multi-element permutation that is not a single move", () => {
+    // Middle-section reversal: endpoints match a candidate move, but replaying
+    // it would not reproduce `next`, so it must be rejected.
+    expect(singleMoveDiff(["a", "b", "c", "d", "e"], ["a", "d", "c", "b", "e"])).toBeNull();
+  });
 });
