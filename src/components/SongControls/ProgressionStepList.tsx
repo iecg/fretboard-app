@@ -178,6 +178,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, o
         <span className={styles.captionTitle}>{caption}</span>
         {meta ? <span className={styles.captionMeta}>{meta}</span> : null}
       </div>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div className={styles.scroll} id={PROGRESSION_STEP_LIST_ID} tabIndex={-1} onKeyDown={handleListKeyDown}>
         {enableDrag ? (
           <Reorder.Group
