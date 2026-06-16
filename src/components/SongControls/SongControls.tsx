@@ -116,6 +116,8 @@ export function SongControls() {
     removeProgressionStep,
     moveProgressionStep,
     reorderProgressionSteps,
+    previousProgressionStep,
+    advanceProgressionPlayback,
     updateProgressionStepDuration,
     updateProgressionStepQuality,
     selectProgressionStepRoot,
@@ -126,6 +128,8 @@ export function SongControls() {
     currentProgressionPresetId,
     setActiveProgressionStepIndex,
   } = useProgressionState();
+
+  const isProgressionPlaying = useAtomValue(progressionPlayingAtom);
 
   const activeRoot = activeResolvedProgressionStep?.root ?? rootNote;
   const qualityGroups: LabeledSelectGroup[] = buildQualityGroupsWithDiatonic(
@@ -395,6 +399,11 @@ export function SongControls() {
                   activeIndex={activeProgressionStepIndex}
                   onSelect={setActiveProgressionStepIndex}
                   onReorder={(from, to) => reorderProgressionSteps({ from, to })}
+                  onNavigate={(direction) => {
+                    if (isProgressionPlaying) return;
+                    if (direction < 0) previousProgressionStep();
+                    else advanceProgressionPlayback();
+                  }}
                   enableDrag={!useSheetShell}
                   label={t("controls.progressionNavigation")}
                   caption={t("controls.stepsLabel")}
