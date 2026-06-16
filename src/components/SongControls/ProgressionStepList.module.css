@@ -158,6 +158,41 @@
   transition: var(--dc-transition);
 }
 
+/* Reorder.Item wrapper (li). The drag handle now lives inside the row button. */
+.item {
+  list-style: none;
+}
+
+/* Drag handle — a trailing, pointer-only affordance inside the row. It is
+   aria-hidden because the keyboard reorder path lives in the global Alt+Arrow
+   shortcut + toolbar Move buttons, so a focusable handle would add a control that
+   does nothing for AT users. `touch-action: none` lets a touch drag move the row
+   instead of scrolling. The negative margins tuck it snug against the row edge. */
+.handle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.7rem;
+  margin: 0 -0.3rem 0 -0.35rem;
+  border-radius: 6px;
+  color: var(--dc-fg-faint, var(--dc-fg-muted));
+  cursor: grab;
+  touch-action: none;
+  opacity: 0.5;
+  transition: var(--dc-transition);
+}
+
+.handle:hover {
+  opacity: 1;
+  background-color: var(--dc-bg-hover);
+}
+
+.handle:active {
+  cursor: grabbing;
+}
+
 /* Left tick — transparent at rest, cyan when active. */
 .row::before {
   content: "";

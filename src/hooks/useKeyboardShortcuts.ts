@@ -15,6 +15,13 @@ import {
   advanceProgressionPlaybackAtom,
   progressionTempoBpmAtom,
 } from "../store/progressionAtoms";
+// New state code imports atoms from the package surface directly, not the
+// thin src/store re-export stubs (see AGENTS.md).
+import {
+  progressionStepsAtom,
+  activeProgressionStepIndexAtom,
+  reorderProgressionStepsAtom,
+} from "@fretflow/fretboard/store/progressionAtoms";
 import { inspectorActiveTabAtom } from "../store/inspectorAtoms";
 import { toggleMuteAtom } from "../store/audioAtoms";
 import {
@@ -47,6 +54,22 @@ export function useKeyboardShortcuts() {
         target?.isContentEditable
       )
         return;
+      // Alt+Up/Down reorders the active step within the sequence (Option+Up/Down
+      // on macOS). Up = earlier, Down = later — matching the vertical editor list.
+      // We deliberately use the vertical axis, not Alt+Left/Right: Chrome on
+      // Windows/Linux binds Alt+Left/Right to history back/forward, which we must
+      // not hijack. Runs before the modifier early-return below (which otherwise
+      // drops all alt combos), and always preventDefaults the handled combo.
+      if (e.altKey && !e.metaKey && !e.ctrlKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+        e.preventDefault();
+        const steps = store.get(progressionStepsAtom);
+        const from = store.get(activeProgressionStepIndexAtom);
+        const to = from + (e.key === "ArrowUp" ? -1 : 1);
+        if (from >= 0 && from < steps.length && to >= 0 && to < steps.length) {
+          store.set(reorderProgressionStepsAtom, { from, to });
+        }
+        return;
+      }
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       switch (e.key) {

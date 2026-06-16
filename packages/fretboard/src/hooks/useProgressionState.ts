@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { activeProgressionStepIndexAtom, activeResolvedProgressionStepAtom, addProgressionStepAtom, duplicateProgressionStepAtom, advanceProgressionPlaybackAtom, applyGenreStyleAtom, beatsPerBarAtom, currentProgressionBarAtom, currentProgressionPresetIdAtom, displayedProgressionStepIndexAtom, loadProgressionPresetAtom, loadProgressionSuggestionAtom, moveProgressionStepAtom, previousProgressionStepAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionGenreStyleAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackBlockedReasonAtom, progressionPlayingAtom, progressionStepDurationMsAtom, progressionStepDeadlineAtom, progressionStepsAtom, progressionTempoBpmAtom, qualityLockAtom, removeProgressionStepAtom, resolvedProgressionStepsAtom, selectProgressionStepRootAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, totalProgressionBarsAtom, updateProgressionStepDegreeAtom, updateProgressionStepDurationAtom, updateProgressionStepQualityAtom } from "../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, activeResolvedProgressionStepAtom, addProgressionStepAtom, duplicateProgressionStepAtom, advanceProgressionPlaybackAtom, applyGenreStyleAtom, beatsPerBarAtom, currentProgressionBarAtom, currentProgressionPresetIdAtom, displayedProgressionStepIndexAtom, loadProgressionPresetAtom, loadProgressionSuggestionAtom, moveProgressionStepAtom, previousProgressionStepAtom, progressionBassEnabledAtom, progressionChordEnabledAtom, progressionDrumsEnabledAtom, progressionGenreStyleAtom, progressionLoopEnabledAtom, progressionMetronomeEnabledAtom, progressionPlaybackBlockedReasonAtom, progressionPlayingAtom, progressionStepDurationMsAtom, progressionStepDeadlineAtom, progressionStepsAtom, progressionTempoBpmAtom, qualityLockAtom, removeProgressionStepAtom, reorderProgressionStepsAtom, resolvedProgressionStepsAtom, selectProgressionStepRootAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom, totalProgressionBarsAtom, updateProgressionStepDegreeAtom, updateProgressionStepDurationAtom, updateProgressionStepQualityAtom } from "../store/progressionAtoms";
 
 export function useProgressionState() {
   const [progressionTempoBpm, setProgressionTempoBpm] = useAtom(progressionTempoBpmAtom);
@@ -63,6 +63,7 @@ export function useProgressionState() {
     duplicateProgressionStep: useSetAtom(duplicateProgressionStepAtom),
     removeProgressionStep: useSetAtom(removeProgressionStepAtom),
     moveProgressionStep: useSetAtom(moveProgressionStepAtom),
+    reorderProgressionSteps: useSetAtom(reorderProgressionStepsAtom),
     updateProgressionStepDegree: useSetAtom(updateProgressionStepDegreeAtom),
     updateProgressionStepDuration: useSetAtom(updateProgressionStepDurationAtom),
     updateProgressionStepQuality: useSetAtom(updateProgressionStepQualityAtom),

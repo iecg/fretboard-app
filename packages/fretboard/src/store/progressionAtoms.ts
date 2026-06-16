@@ -558,17 +558,26 @@ export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {
   }
 });
 
-export const moveProgressionStepAtom = atom(null, (get, set, update: { id: string; direction: -1 | 1 }) => {
+/** Move a step from one index to another (drag-and-drop / keyboard reorder).
+ *  Single source of truth for reordering: clears the loaded-preset marker (the
+ *  sequence no longer matches a stored preset) and lets the active cursor follow
+ *  the moved step. No-op for equal or out-of-range indices. */
+export const reorderProgressionStepsAtom = atom(null, (get, set, update: { from: number; to: number }) => {
   const steps = get(progressionStepsAtom);
-  const from = steps.findIndex((step) => step.id === update.id);
-  const to = from + update.direction;
-  if (from === -1 || to < 0 || to >= steps.length) return;
+  const { from, to } = update;
+  if (from === to || from < 0 || from >= steps.length || to < 0 || to >= steps.length) return;
   const next = [...steps];
   const [moved] = next.splice(from, 1);
   next.splice(to, 0, moved!);
   set(loadedPresetIdAtom, null);
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, to);
+});
+
+export const moveProgressionStepAtom = atom(null, (get, set, update: { id: string; direction: -1 | 1 }) => {
+  const from = get(progressionStepsAtom).findIndex((step) => step.id === update.id);
+  if (from === -1) return;
+  set(reorderProgressionStepsAtom, { from, to: from + update.direction });
 });
 
 export const duplicateProgressionStepAtom = atom(
