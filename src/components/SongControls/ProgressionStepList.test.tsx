@@ -109,9 +109,26 @@ describe("ProgressionStepList", () => {
       />,
     );
     expect(screen.getAllByRole("button")).toHaveLength(steps.length);
-    // Drag-enabled rows carry a grip-handle icon.
-    expect(container.querySelectorAll("svg")).toHaveLength(steps.length);
+    // Drag-enabled rows carry a grip-handle icon, nested inside the row button.
+    expect(container.querySelectorAll("button svg")).toHaveLength(steps.length);
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("clicking the drag handle inside the row does not select the step", () => {
+    const onSelect = vi.fn();
+    const { container } = render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={0}
+        onSelect={onSelect}
+        onReorder={vi.fn()}
+        label="Chords"
+        caption="Steps"
+      />,
+    );
+    const handle = container.querySelector("button svg")!.parentElement!;
+    fireEvent.click(handle);
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   it("renders a plain selectable list with no drag handles when enableDrag is false", async () => {

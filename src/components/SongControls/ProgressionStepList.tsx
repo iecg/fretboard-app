@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { Ref } from "react";
+import type { ReactNode, Ref } from "react";
 import clsx from "clsx";
 import { Reorder, useDragControls } from "motion/react";
 import { GripVertical } from "lucide-react";
@@ -41,10 +41,12 @@ interface StepSelectButtonProps {
   active: boolean;
   onSelect: (index: number) => void;
   buttonRef?: Ref<HTMLButtonElement>;
+  /** Optional trailing content rendered inside the row (e.g. the drag handle). */
+  trailing?: ReactNode;
 }
 
 /** The selectable row body, shared by the draggable and static list variants. */
-function StepSelectButton({ step, index, active, onSelect, buttonRef }: StepSelectButtonProps) {
+function StepSelectButton({ step, index, active, onSelect, buttonRef, trailing }: StepSelectButtonProps) {
   const { t } = useTranslation();
   const name = step.resolvedChordLabel ?? t("controls.chordUnavailable");
   const duration = formatProgressionDurationLabel(step.duration);
@@ -62,6 +64,7 @@ function StepSelectButton({ step, index, active, onSelect, buttonRef }: StepSele
       <span className={styles.chip} aria-hidden="true">{step.degree}</span>
       <span className={styles.name} aria-hidden="true">{name}</span>
       <span className={styles.duration} aria-hidden="true">{duration}</span>
+      {trailing}
     </button>
   );
 }
@@ -72,10 +75,11 @@ interface DraggableStepRowProps extends StepSelectButtonProps {
 
 /**
  * One chord row inside the Reorder.Group. Drag is handle-only
- * (`dragListener={false}` + `useDragControls`) so a tap/click on the row button
- * still selects the step — critical on touch. The grip handle is a sibling span
- * (not nested in the button) and `aria-hidden`: the keyboard reorder path lives
- * in the global Alt+Arrow shortcut and the toolbar Move buttons.
+ * (`dragListener={false}` + `useDragControls`) so a tap/click on the rest of the
+ * row still selects the step — critical on touch. The grip handle sits *inside*
+ * the row (a trailing `aria-hidden` span): `onPointerDown` starts the drag and a
+ * click on the handle is stopped from bubbling so it never selects the step. The
+ * keyboard reorder path lives in the global Alt+Arrow shortcut + toolbar buttons.
  */
 function DraggableStepRow({ step, index, active, onSelect, buttonRef, onDragActive }: DraggableStepRowProps) {
   const controls = useDragControls();
@@ -90,14 +94,23 @@ function DraggableStepRow({ step, index, active, onSelect, buttonRef, onDragActi
       onDragEnd={() => onDragActive(false)}
       whileDrag={{ scale: 1.015 }}
     >
-      <StepSelectButton step={step} index={index} active={active} onSelect={onSelect} buttonRef={buttonRef} />
-      <span
-        className={styles.handle}
-        aria-hidden="true"
-        onPointerDown={(event) => controls.start(event)}
-      >
-        <GripVertical size={14} />
-      </span>
+      <StepSelectButton
+        step={step}
+        index={index}
+        active={active}
+        onSelect={onSelect}
+        buttonRef={buttonRef}
+        trailing={
+          <span
+            className={styles.handle}
+            aria-hidden="true"
+            onPointerDown={(event) => controls.start(event)}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <GripVertical size={14} />
+          </span>
+        }
+      />
     </Reorder.Item>
   );
 }
