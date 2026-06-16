@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode, Ref } from "react";
 import clsx from "clsx";
 import { Reorder, useDragControls } from "motion/react";
@@ -128,10 +128,29 @@ function DraggableStepRow({ step, index, active, onSelect, buttonRef, onDragActi
  * for drag-to-reorder. The active row carries a cyan left-tick + tint. Top/bottom
  * fade hints appear only when the list overflows.
  */
-export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, label, caption, meta, enableDrag = true }: ProgressionStepListProps) {
+export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, onNavigate, label, caption, meta, enableDrag = true }: ProgressionStepListProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
   const draggingRef = useRef(false);
+
+  // Bumped on each in-list ←/→ keystroke so the active row takes focus after the
+  // navigation re-renders. A counter (not a boolean) so it still fires when the
+  // index clamps at an end — focusing the unchanged active row is harmless and
+  // avoids a stale flag stealing focus on a later playback-driven change.
+  const [navFocusTick, setNavFocusTick] = useState(0);
+
+  useLayoutEffect(() => {
+    if (navFocusTick === 0) return;
+    activeRef.current?.focus({ preventScroll: true });
+  }, [navFocusTick, activeIndex]);
+
+  const handleListKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    onNavigate(event.key === "ArrowLeft" ? -1 : 1);
+    setNavFocusTick((tick) => tick + 1);
+  };
 
   // Keep the active row visible *within the list's own scrollport* only. Skip
   // while a drag is in flight — the reorder action retargets the active index on
@@ -159,7 +178,7 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, l
         <span className={styles.captionTitle}>{caption}</span>
         {meta ? <span className={styles.captionMeta}>{meta}</span> : null}
       </div>
-      <div className={styles.scroll} id={PROGRESSION_STEP_LIST_ID} tabIndex={-1}>
+      <div className={styles.scroll} id={PROGRESSION_STEP_LIST_ID} tabIndex={-1} onKeyDown={handleListKeyDown}>
         {enableDrag ? (
           <Reorder.Group
             as="ul"

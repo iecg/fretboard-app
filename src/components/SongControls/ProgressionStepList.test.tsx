@@ -218,3 +218,63 @@ describe("ProgressionStepList roving tabindex", () => {
     expect(rows[1]).toHaveAttribute("tabindex", "0");
   });
 });
+
+describe("ProgressionStepList keyboard navigation", () => {
+  function renderList(activeIndex: number, onNavigate = vi.fn()) {
+    const utils = render(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={activeIndex}
+        onSelect={() => {}}
+        onReorder={vi.fn()}
+        onNavigate={onNavigate}
+        label="Chords"
+        caption="Steps"
+      />,
+    );
+    return { ...utils, onNavigate };
+  }
+
+  it("calls onNavigate(+1) on plain ArrowRight", () => {
+    const { onNavigate } = renderList(0);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowRight" });
+    expect(onNavigate).toHaveBeenCalledWith(1);
+  });
+
+  it("calls onNavigate(-1) on plain ArrowLeft", () => {
+    const { onNavigate } = renderList(1);
+    fireEvent.keyDown(screen.getAllByRole("button")[1], { key: "ArrowLeft" });
+    expect(onNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  it("ignores ArrowRight with Alt (reorder shortcut passes through)", () => {
+    const { onNavigate } = renderList(0);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowRight", altKey: true });
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
+
+  it("ignores ArrowUp/ArrowDown (tempo keys pass through)", () => {
+    const { onNavigate } = renderList(0);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowUp" });
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowDown" });
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
+
+  it("moves focus to the new active row after navigation re-renders", () => {
+    const { rerender } = renderList(0);
+    fireEvent.keyDown(screen.getAllByRole("button")[0], { key: "ArrowRight" });
+    // Simulate the atom update that onNavigate would cause:
+    rerender(
+      <ProgressionStepList
+        steps={steps}
+        activeIndex={1}
+        onSelect={() => {}}
+        onReorder={vi.fn()}
+        onNavigate={vi.fn()}
+        label="Chords"
+        caption="Steps"
+      />,
+    );
+    expect(document.activeElement).toBe(screen.getAllByRole("button")[1]);
+  });
+});
