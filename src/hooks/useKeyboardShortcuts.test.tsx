@@ -458,4 +458,21 @@ describe("useKeyboardShortcuts", () => {
     expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
     document.body.removeChild(list);
   });
+
+  it("ArrowLeft does not change the step when focus is inside the chord list", () => {
+    store.set(setProgressionPlayingAtom, false);
+    store.set(activeProgressionStepIndexAtom, 1);
+    const list = document.createElement("div");
+    list.id = PROGRESSION_STEP_LIST_ID;
+    const row = document.createElement("button");
+    list.appendChild(row);
+    document.body.appendChild(list);
+    row.focus();
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft" }); });
+
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+    document.body.removeChild(list);
+  });
 });
