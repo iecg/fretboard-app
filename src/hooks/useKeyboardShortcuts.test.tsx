@@ -307,45 +307,50 @@ describe("useKeyboardShortcuts", () => {
     expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
   });
 
-  it("Alt+ArrowRight moves the active step later", () => {
+  it("Alt+ArrowDown moves the active step later", () => {
     store.set(progressionStepsAtom, threeSteps());
     store.set(activeProgressionStepIndexAtom, 0);
     renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
 
-    act(() => { fireEvent.keyDown(document, { key: "ArrowRight", altKey: true }); });
+    act(() => { fireEvent.keyDown(document, { key: "ArrowDown", altKey: true }); });
 
     expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["b", "a", "c"]);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
   });
 
-  it("Alt+ArrowLeft moves the active step earlier", () => {
+  it("Alt+ArrowUp moves the active step earlier", () => {
     store.set(progressionStepsAtom, threeSteps());
     store.set(activeProgressionStepIndexAtom, 2);
     renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
 
-    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft", altKey: true }); });
+    act(() => { fireEvent.keyDown(document, { key: "ArrowUp", altKey: true }); });
 
     expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["a", "c", "b"]);
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
   });
 
-  it("Alt+ArrowLeft is a no-op at the first step", () => {
+  it("Alt+ArrowUp is a no-op at the first step", () => {
     store.set(progressionStepsAtom, threeSteps());
     store.set(activeProgressionStepIndexAtom, 0);
     renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
 
-    act(() => { fireEvent.keyDown(document, { key: "ArrowLeft", altKey: true }); });
+    act(() => { fireEvent.keyDown(document, { key: "ArrowUp", altKey: true }); });
 
     expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["a", "b", "c"]);
   });
 
-  it("plain ArrowUp still changes tempo and is not swallowed by the reorder branch", () => {
+  it("plain ArrowUp/ArrowDown still change tempo (not swallowed by the Alt reorder branch)", () => {
     store.set(progressionStepsAtom, threeSteps());
     const before = store.get(progressionTempoBpmAtom);
     renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
 
     act(() => { fireEvent.keyDown(document, { key: "ArrowUp" }); });
-
     expect(store.get(progressionTempoBpmAtom)).toBe(before + 5);
+
+    act(() => { fireEvent.keyDown(document, { key: "ArrowDown" }); });
+    expect(store.get(progressionTempoBpmAtom)).toBe(before);
+
+    // Order is unchanged: unmodified arrows never reorder.
+    expect(store.get(progressionStepsAtom).map((s) => s.id)).toEqual(["a", "b", "c"]);
   });
 });

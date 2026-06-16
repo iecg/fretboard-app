@@ -9,7 +9,7 @@ Add drag-and-drop reordering to the chord list in the progression editor
 (`ProgressionStepList`), plus a first-class keyboard reorder shortcut. Reordering
 today is only possible through the toolbar Move Up / Move Down buttons, which do
 single adjacent swaps. This feature lets users drag a step to any position and
-reorder the active step with `Alt+← / Alt+→`, consistent with the app's existing
+reorder the active step with `Alt+↑ / Alt+↓`, consistent with the app's existing
 global keyboard model.
 
 Built on `motion` (already a dependency, v^12.40) via `Reorder.Group` /
@@ -18,7 +18,7 @@ Built on `motion` (already a dependency, v^12.40) via `Reorder.Group` /
 ## Goals
 
 - Drag any chord step to any position in the list (pointer + touch).
-- Keyboard reordering of the active step via `Alt+ArrowLeft` / `Alt+ArrowRight`,
+- Keyboard reordering of the active step via `Alt+ArrowUp` / `Alt+ArrowDown`,
   added to the existing global keyboard handler.
 - Preserve all existing behavior: tap/click selects a step, Move Up/Down toolbar
   buttons remain, and the current global shortcuts (`↑/↓` tempo, `←/→` step nav)
@@ -44,7 +44,7 @@ Built on `motion` (already a dependency, v^12.40) via `Reorder.Group` /
   of the row still selects the step (critical on touch).
 - The handle is `aria-hidden` (pointer-only) with `cursor: grab`. A focusable,
   labeled handle was deliberately rejected: it would expose an AT control that
-  does nothing, since the accessible reorder paths are the global `Alt+←/→`
+  does nothing, since the accessible reorder paths are the global `Alt+↑/↓`
   shortcut and the toolbar Move Up/Down buttons (see Non-Goals).
 
 ### Drop semantics
@@ -68,14 +68,19 @@ no roving focus; rows are plain Tab stops. The listener skips when focus is in a
 
 New bindings added to the same handler (handled **before** the modifier early-return):
 
-- **Alt+← (Option+←)** — move the active step one position **earlier** (toward index 0).
-- **Alt+→ (Option+→)** — move the active step one position **later**.
-  - Both call the reorder action on the active step's id and let the active index
-    follow the step. Handler calls `preventDefault()`.
+- **Alt+↑ (Option+↑)** — move the active step one position **earlier** (toward index 0).
+- **Alt+↓ (Option+↓)** — move the active step one position **later**.
+  - Both call the reorder action on the active index and let the active index
+    follow the step. Handler always calls `preventDefault()` for the combo.
   - No-op at the sequence boundaries (active step already first / last).
-  - All `Alt+Arrow` combos are currently unused, so there is no conflict.
-  - Cross-platform: `Alt` = Option on macOS; `Option+←/→` has no default browser/OS
-    binding outside text inputs, so capturing it is safe on macOS, Windows, Linux.
+  - **Why the vertical axis, not Alt+←/→:** Chrome on Windows/Linux binds
+    `Alt+Left`/`Alt+Right` to history **Back/Forward**, which the editor must not
+    hijack (and at a boundary no-op the keydown would fall through and navigate).
+    `Alt+Up`/`Alt+Down` has no browser/OS history binding and also matches the
+    vertical layout of the editor list.
+  - Cross-platform: `Alt` = Option on macOS; `Option+↑/↓` has no default browser/OS
+    binding outside text inputs (the global handler already skips text inputs), so
+    capturing it is safe on macOS, Windows, Linux.
 
 ### Platforms
 Pointer drag (motion `Reorder`) is enabled only when the inspector renders
@@ -86,7 +91,7 @@ reduced motion is set.
 Inside the **bottom sheet** (mobile tier and the `tablet-split` variant, i.e.
 `useSheetShell === true`) the list renders as a plain selectable `ul`/`li` with
 **no** drag handle. Reordering there is done with the toolbar Move Up/Down buttons
-(and, on a hardware keyboard, the global `Alt+←/→`). This is a hard constraint, not
+(and, on a hardware keyboard, the global `Alt+↑/↓`). This is a hard constraint, not
 a preference: motion `Reorder`'s layout animations deadlock the sheet's
 `AnimatePresence` exit, leaving the sheet stuck open after a close. `SongControls`
 passes `enableDrag={!useSheetShell}` to switch variants.
@@ -149,7 +154,7 @@ File: `src/components/SongControls/SongControls.tsx`
 
 File: `src/hooks/useKeyboardShortcuts.ts`
 
-- Add `Alt+ArrowLeft` / `Alt+ArrowRight` handling that resolves the active step and
+- Add `Alt+ArrowUp` / `Alt+ArrowDown` handling that resolves the active step and
   dispatches the reorder action (move active step earlier / later). This branch runs
   before the existing `metaKey || ctrlKey || altKey` early-return. Existing
   `ArrowUp/ArrowDown` (tempo) and unmodified `ArrowLeft/ArrowRight` (step nav) paths
@@ -167,7 +172,7 @@ File: `src/components/SongControls/ProgressionStepList.module.css`
   `loadedPresetIdAtom`, and sets the active index to `to`. Confirm
   `moveProgressionStepAtom` still behaves after delegating.
 - **Global shortcut test** (existing `src/hooks/useKeyboardShortcuts.test.tsx`):
-  dispatching `Alt+ArrowLeft` / `Alt+ArrowRight` reorders the
+  dispatching `Alt+ArrowUp` / `Alt+ArrowDown` reorders the
   active step earlier / later and updates `activeProgressionStepIndexAtom`; boundaries
   are no-ops; plain `ArrowUp/ArrowDown` still changes tempo and plain
   `ArrowLeft/ArrowRight` still navigates steps (no regression).
@@ -201,5 +206,5 @@ File: `src/components/SongControls/ProgressionStepList.module.css`
 6. `src/components/SongControls/ProgressionStepList.test.tsx` — callback-contract + a11y tests.
 7. `src/components/SongControls/SongControls.tsx` — wire `onReorder`.
 8. `src/components/SongControls/SongControls.test.tsx` — integration test.
-9. `src/hooks/useKeyboardShortcuts.ts` — add `Alt+←/→` reorder-active-step branch.
+9. `src/hooks/useKeyboardShortcuts.ts` — add `Alt+↑/↓` reorder-active-step branch.
 10. `src/hooks/useKeyboardShortcuts.test.tsx` — keyboard reorder + no-regression tests.

@@ -42,15 +42,18 @@ export function useKeyboardShortcuts() {
         target?.isContentEditable
       )
         return;
-      // Alt+Arrow reorders the active step within the sequence (Option+Arrow on
-      // macOS — no default browser/OS binding outside text inputs). Runs before
-      // the modifier early-return below, which otherwise drops all alt combos.
-      if (e.altKey && !e.metaKey && !e.ctrlKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      // Alt+Up/Down reorders the active step within the sequence (Option+Up/Down
+      // on macOS). Up = earlier, Down = later — matching the vertical editor list.
+      // We deliberately use the vertical axis, not Alt+Left/Right: Chrome on
+      // Windows/Linux binds Alt+Left/Right to history back/forward, which we must
+      // not hijack. Runs before the modifier early-return below (which otherwise
+      // drops all alt combos), and always preventDefaults the handled combo.
+      if (e.altKey && !e.metaKey && !e.ctrlKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+        e.preventDefault();
         const steps = store.get(progressionStepsAtom);
         const from = store.get(activeProgressionStepIndexAtom);
-        const to = from + (e.key === "ArrowLeft" ? -1 : 1);
+        const to = from + (e.key === "ArrowUp" ? -1 : 1);
         if (from >= 0 && from < steps.length && to >= 0 && to < steps.length) {
-          e.preventDefault();
           store.set(reorderProgressionStepsAtom, { from, to });
         }
         return;
