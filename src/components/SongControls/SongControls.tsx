@@ -33,7 +33,8 @@ import { ProgressionStepList } from "./ProgressionStepList";
 import { ChordTonesReadout } from "./ChordTonesReadout";
 import { TEMPO_STEPPER_ID } from "./progressionFocusIds";
 import shared from "../shared/shared.module.css";
-import { CUSTOM_PRESET_ID, progressionPlayingAtom } from "../../store/progressionAtoms";
+import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
+import { progressionPlayingAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import styles from "./SongControls.module.css";
 
 // Look up a scale family by id; fail loudly at module init if the catalog id
