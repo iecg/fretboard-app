@@ -18,6 +18,7 @@ import {
   progressionMetronomeEnabledAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
+  auditionRequestTickAtom,
 } from "../store/progressionAtoms";
 import { isMutedAtom } from "../store/audioAtoms";
 import {
@@ -113,6 +114,38 @@ describe("useKeyboardShortcuts", () => {
     });
 
     expect(store.get(chordOverlayHiddenAtom)).toBe(true);
+  });
+
+  it("A requests an audition (advances the request tick)", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => {
+      fireEvent.keyDown(document, { key: "a" });
+    });
+
+    expect(store.get(auditionRequestTickAtom)).toBe(1);
+  });
+
+  it("uppercase A also requests an audition", () => {
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => {
+      fireEvent.keyDown(document, { key: "A" });
+    });
+
+    expect(store.get(auditionRequestTickAtom)).toBe(1);
+  });
+
+  it("A is inert while the progression is playing", () => {
+    store.set(progressionStepsAtom, threeSteps());
+    store.set(setProgressionPlayingAtom, true);
+    renderHook(() => useKeyboardShortcuts(), { wrapper: makeWrapper(store) });
+
+    act(() => {
+      fireEvent.keyDown(document, { key: "a" });
+    });
+
+    expect(store.get(auditionRequestTickAtom)).toBe(0);
   });
 
   it("does not toggle when focus is inside an INPUT element", () => {

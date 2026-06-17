@@ -12,6 +12,7 @@ const SHORTCUTS: { keys: string; labelKey: string }[] = [
   { keys: "4", labelKey: "help.shortcuts.track4" },
   { keys: "↑ ↓", labelKey: "help.shortcuts.tempo" },
   { keys: "← →", labelKey: "help.shortcuts.steps" },
+  { keys: "A", labelKey: "help.shortcuts.audition" },
   { keys: "T", labelKey: "help.shortcuts.tab" },
   { keys: "S", labelKey: "help.shortcuts.scale" },
   { keys: "C", labelKey: "help.shortcuts.chord" },

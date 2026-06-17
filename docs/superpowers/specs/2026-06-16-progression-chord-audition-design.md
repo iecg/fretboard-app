@@ -1,8 +1,13 @@
-# Progression Chord Audition — Design
+# Progression Chord Preview — Design
 
 **Date:** 2026-06-16
-**Status:** Approved design, ready for implementation plan
+**Status:** Implemented.
 **Topic:** Make it faster to decide "what chord goes here" in the progression editor without replaying the whole progression.
+
+> **Naming:** the user-facing control is **"Preview"** (the plain term used by Hookpad /
+> Key Chords; Scaler 2 calls the same thing "Audition"). Internal identifiers keep the
+> `audition*` names (`useChordAudition`, `auditionActiveAtom`, `resolveAuditionWindow`, …) —
+> only the display strings say "Preview".
 
 ## Problem
 
@@ -22,81 +27,82 @@ Two related annoyances in the existing "add chord" flow compound it:
 
 ## Goals
 
-1. **Audition a slot in context** without playing the whole progression (top priority).
+1. **Preview a slot in context** without playing the whole progression (top priority).
 2. **Faster building** — insert where the user is working, not at the end.
 
-## Non-goals (parked for future features)
+## Non-goals (parked for future features — see [`docs/ROADMAP.md`](../../ROADMAP.md))
 
 - **Smart / function-aware add** — choosing the next chord from cadence + chord-function
   theory. Separate feature; ties into a future "suggestions" priority.
 - **Slash chords / inversions / octave** — manual bass note and register on top of the
   automatic voicing engine. Separate feature.
-- **Auto-audio on edit** — auto-playing the cadence whenever root/quality/duration changes.
-  Deliberately deferred; revisit after using manual audition. Manual-only for now.
+- **Auto-audio on edit** — auto-playing the preview whenever root/quality/duration
+  changes. Deliberately deferred; revisit after using manual preview. Manual-only for now.
 
-## Design
+## Design (prior art: Hookpad "Quick Preview" plays a chord and its neighbours in quick succession)
 
-### 1. Audition control (manual, selection stays silent)
+### 1. Preview control (manual, selection stays silent)
 
-- Selecting a chord row remains **silent** (no behavior change to selection).
-- A dedicated **Audition** control lives in the **editor panel** for the currently
-  selected slot only (not per-row — YAGNI; revisit if one-tap per-row audition is missed).
-- Triggers: the Audition button **and** a keyboard key.
-  - Keyboard key TBD during implementation. Avoid colliding with global play/stop
-    (likely Space). Candidates: `A` or `Shift+Space`. Confirm the actual transport
-    binding before choosing.
+- Selecting a chord row stays **silent** (no behavior change to selection).
+- A single **Preview** button lives in the **editor-panel header** for the currently
+  selected slot. No mode/loop control — preview is one snappy action (a separate Once/Loop
+  toggle was prototyped and cut as clunky; re-clicking is enough to repeat).
+- Triggers: the Preview button **and** the **`A`** key (free; taken keys are
+  Space/`.`/R/M/1–4/arrows/Alt+arrows/T/S/C). Inert while the progression is playing
+  (editor is locked then) and while muted.
+- **Stop state:** while a preview sounds, the button flips to **Stop** (square icon, cyan,
+  `aria-pressed`); the editor eyebrow reads **"Previewing"**. A second trigger stops it.
 
-**What it plays — cadence into the slot:**
+**What it plays — the neighbourhood as a quick phrase:**
 
-- Default audition plays `previous chord → selected chord` (a 2-chord move), using the
-  current tempo and the steps' own durations.
-- If the selected slot is the **first** chord (no predecessor), audition just plays that
-  single chord.
-- Uses the existing audio engine (GuitarSynth strum / Tone.js progression playback path)
-  rather than a new sound path.
+- Plays `previous → selected → next`, **one beat per chord** (a stab-and-move-on phrase),
+  NOT each chord's real length. Clamps at the ends (first slot drops `prev`; last drops
+  `next`).
+- Chord + bass only (drums/metronome omitted for a clean preview).
+- Reuses the engine's pure builder (`buildAllLayersAsync`) and chord/bass voices, scheduled
+  directly on the shared AudioContext — **not** the Tone Transport / visual clock that full
+  playback owns (safe because preview and playback are mutually exclusive).
 
-### 2. Local-loop toggle
+### 2. "Now playing" — moving highlight
 
-- A toggle next to the Audition control. When **on**, audition loops a small window
-  around the slot — `previous → selected → next` — repeating until the user stops.
-- Window **clamps at the ends**: first slot has no previous; last slot has no next.
-- When **off**, audition is the one-shot cadence from section 1.
+- A dedicated `auditionDisplayIndexAtom` (overriding `displayedProgressionStepIndexAtom`
+  and the progression-track view model) advances through the window so the **track playhead
+  and the fretboard light up each chord as it sounds** — like playback, scoped to the
+  window — **without moving the edit cursor** (`activeProgressionStepIndexAtom`). Cleared
+  when the phrase ends.
 
 ### 3. Insert-at-cursor
 
 - `addProgressionStepAtom` inserts the new chord **immediately after the selected chord**
-  instead of appending to the end, and selects the newly inserted chord.
-- If nothing is selected / list is empty, behavior is unchanged (append, which equals
-  insert-at-end).
+  and selects it. Empty/no-selection list → append (equivalent to insert-at-end).
 
 ### 4. Keep "+1 next degree" default
 
-- The new chord's degree/quality default is **unchanged** — still
-  `(previousIdx + 1) % sequence.length` with diatonic quality. Only its insert position
-  changes (section 3). Smarter defaults are a parked future feature.
+- The new chord's degree/quality default is **unchanged** (`(previousIdx + 1) % len` with
+  diatonic quality). Only its insert position changes. Smarter defaults are parked.
 
-## Affected code (orientation, not final list)
+## Affected code
 
 - [`packages/fretboard/src/store/progressionAtoms.ts`](../../../packages/fretboard/src/store/progressionAtoms.ts)
-  — `addProgressionStepAtom` (insert-at-cursor); new audition action atom(s) and a
-  local-loop toggle atom.
+  — `addProgressionStepAtom` (insert-at-cursor); `auditionActiveAtom`,
+  `auditionDisplayIndexAtom`, `auditionRequestTickAtom` / `requestAuditionAtom`;
+  `displayedProgressionStepIndexAtom` prefers the preview index.
+- [`packages/fretboard/src/progressions/auditionWindow.ts`](../../../packages/fretboard/src/progressions/auditionWindow.ts)
+  — pure `resolveAuditionWindow` (neighbourhood bounds).
+- [`packages/fretboard/src/hooks/useChordAudition.ts`](../../../packages/fretboard/src/hooks/useChordAudition.ts)
+  — the audio + moving-highlight side-effect; mounted alongside `useProgressionAudioPlayback`.
 - [`src/components/SongControls/SongControls.tsx`](../../../src/components/SongControls/SongControls.tsx)
-  — Audition button + local-loop toggle in the editor panel; keyboard binding.
-- Audio path: existing GuitarSynth / Tone.js progression playback
-  (`src/hooks/useProgressionAudioPlayback.ts`, `src/core/audio.ts`) — reuse, do not add a
-  new sound path.
-
-## Open questions (resolve during planning)
-
-- Exact keyboard binding for audition (avoid Space collision).
-- Whether audition reuses the full progression-playback transport or a lighter one-shot
-  trigger for the 2–3 chord window.
+  — Preview button (+ Stop state, "Previewing" eyebrow); [`useKeyboardShortcuts.ts`](../../../src/hooks/useKeyboardShortcuts.ts) — `A` binding;
+  i18n + help-shortcut table.
 
 ## Testing
 
-- Unit: `addProgressionStepAtom` inserts after the selected index and selects the new
-  step; appends when nothing selected / empty.
-- Unit: audition window resolves correctly — cadence (`prev → selected`), first-slot
-  single chord, and clamped loop window (`prev → selected → next`) at both ends.
-- Component: Audition button and local-loop toggle present in the editor panel; selection
-  stays silent; keyboard trigger fires audition.
+- Unit: `addProgressionStepAtom` inserts after the selected index / appends when empty;
+  `resolveAuditionWindow` neighbourhood bounds (middle, first, last, single, empty,
+  out-of-range); `auditionDisplayIndexAtom` overrides the displayed index without moving
+  the edit cursor; `requestAudition` advances the tick.
+- Component: single Preview button renders (no mode group); click advances the request
+  tick; Stop state shows while previewing; disabled while playing.
+- Keyboard: `A` requests a preview; inert while playing.
+- Manual (audio + moving highlight): confirm by ear/eye in a real browser — the headless
+  preview can't reliably grant the user-gesture-timed `AudioContext.resume()`.

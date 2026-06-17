@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Lock, LockOpen, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Lock, LockOpen, Plus, Trash2, Volume2 } from "lucide-react";
 import clsx from "clsx";
 import { SCALE_FAMILIES, NOTES, getChordDisplayLabel, getNoteDisplay, getScaleDisplayLabel, type ScaleFamily, type ScaleFamilyId } from "@fretflow/core";
 import {
@@ -128,6 +128,8 @@ export function SongControls() {
     setProgressionTempoBpm,
     currentProgressionPresetId,
     setActiveProgressionStepIndex,
+    requestAudition,
+    auditionActive,
   } = useProgressionState();
 
   const isProgressionPlaying = useAtomValue(progressionPlayingAtom);
@@ -424,6 +426,17 @@ export function SongControls() {
                         <span className={styles["editor-quality-word"]}>{editorQualityWord}</span>
                       </span>
                     </span>
+                    <button
+                      type="button"
+                      className={styles["audition-button"]}
+                      onClick={() => requestAudition()}
+                      disabled={editsLocked || stepCount === 0 || auditionActive}
+                      aria-label={t("controls.auditionChord")}
+                      title={t("controls.auditionChord")}
+                    >
+                      <Volume2 size={14} aria-hidden="true" />
+                      <span className={styles["audition-label"]}>{t("controls.auditionChord")}</span>
+                    </button>
                     <div className={styles["editor-pager"]}>
                       <button
                         type="button"

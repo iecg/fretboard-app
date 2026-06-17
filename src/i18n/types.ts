@@ -223,6 +223,7 @@ export interface Dictionary {
       tab: string;
       scale: string;
       chord: string;
+      audition: string;
     };
   };
   controls: {
@@ -286,6 +287,7 @@ export interface Dictionary {
     presetCustom: string;
     add: string;
     addChord: string;
+    auditionChord: string;
     moveChordUp: string;
     moveChordDown: string;
     duplicateChord: string;
