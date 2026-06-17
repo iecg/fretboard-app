@@ -276,6 +276,11 @@
 }
 
 .editor-title {
+  /* flex: 1 + min-width: 0 makes the title absorb ALL leftover space in the
+     header row, so the chord-name growing/shrinking doesn't shift the
+     right-anchored Preview + pager. The chord name just reflows inside this
+     elastic slot. */
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
@@ -292,7 +297,9 @@
   color: color-mix(in srgb, var(--faceplate-accent) 75%, var(--dc-fg-muted));
 }
 
-/* Chord identity stated once, big: note in full strength, quality word dimmed. */
+/* Chord identity stated once, big: note in full strength, quality word dimmed.
+   min-width + ellipsis lets very long names clip cleanly so the right-anchored
+   Preview button and pager never get pushed. */
 .editor-chord-name {
   font-family: var(--font-sans);
   font-size: 1.35rem;
@@ -300,6 +307,10 @@
   letter-spacing: -0.01em;
   line-height: 1;
   color: var(--text-main);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .editor-quality-word {
@@ -346,6 +357,45 @@
 .pager-button:disabled {
   opacity: var(--disabled-opacity);
   cursor: default;
+}
+
+/* Preview button — sits on the right of the editor header, before the pager.
+   Plays a quick phrase through the selected slot's neighbourhood. */
+.audition-button {
+  composes: surface--control from "../shared/shared.module.css";
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: var(--control-height);
+  padding: 0 0.7rem;
+  font-size: var(--text-xs);
+  color: var(--dc-fg);
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.audition-button:hover:not(:disabled) {
+  color: var(--dc-fg-strong);
+}
+
+.audition-button:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: default;
+}
+
+/* Reads as "engaged" (cyan) while a preview is sounding (Stop state). */
+.audition-button[aria-pressed="true"] {
+  background-color: color-mix(in srgb, var(--faceplate-accent) 14%, transparent);
+  border-color: var(--faceplate-accent);
+  color: var(--faceplate-accent);
+}
+
+.audition-label {
+  font-size: var(--text-xs);
+  font-weight: 500;
 }
 
 .editor-position {

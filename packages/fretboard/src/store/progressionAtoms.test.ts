@@ -5,6 +5,10 @@ import {
   activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
+  auditionActiveAtom,
+  auditionDisplayIndexAtom,
+  auditionRequestTickAtom,
+  requestAuditionAtom,
   advanceProgressionPlaybackAtom, previousProgressionStepAtom,
   beatsPerBarAtom,
   currentProgressionBarAtom,
@@ -356,6 +360,74 @@ describe("derived progression atoms", () => {
       store.set(duplicateProgressionStepAtom, "missing");
 
       expect(store.get(progressionStepsAtom)).toHaveLength(1);
+    });
+  });
+
+  describe("addProgressionStepAtom (insert-at-cursor)", () => {
+    it("inserts the new step directly after the selected step and selects it", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "b", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "c", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(setProgressionActiveStepIndexAtom, 0);
+
+      store.set(addProgressionStepAtom);
+
+      const steps = store.get(progressionStepsAtom);
+      expect(steps).toHaveLength(4);
+      // New step lands at index 1 (after the selected first step), not the bottom.
+      expect(steps.map((s) => s.id).slice(0, 1)).toEqual(["a"]);
+      expect(steps[2]!.id).toBe("b");
+      expect(steps[3]!.id).toBe("c");
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+    });
+
+    it("appends when the list is empty and selects the new step", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, []);
+
+      store.set(addProgressionStepAtom);
+
+      expect(store.get(progressionStepsAtom)).toHaveLength(1);
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
+    });
+  });
+
+  describe("audition atoms", () => {
+    it("requestAudition advances the request tick the hook observes", () => {
+      const store = createStore();
+      expect(store.get(auditionRequestTickAtom)).toBe(0);
+
+      store.set(requestAuditionAtom);
+      expect(store.get(auditionRequestTickAtom)).toBe(1);
+
+      store.set(requestAuditionAtom);
+      expect(store.get(auditionRequestTickAtom)).toBe(2);
+    });
+
+    it("auditionDisplayIndex overrides the displayed index without moving the edit cursor", () => {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "b", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "c", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(setProgressionActiveStepIndexAtom, 2);
+
+      // No audition → displayed follows the edit cursor.
+      expect(store.get(displayedProgressionStepIndexAtom)).toBe(2);
+
+      // Auditioning chord 0 → displayed follows the audition, cursor stays put.
+      store.set(auditionActiveAtom, true);
+      store.set(auditionDisplayIndexAtom, 0);
+      expect(store.get(displayedProgressionStepIndexAtom)).toBe(0);
+      expect(store.get(activeProgressionStepIndexAtom)).toBe(2);
+
+      // Audition ends → displayed snaps back to the edit cursor.
+      store.set(auditionDisplayIndexAtom, null);
+      expect(store.get(displayedProgressionStepIndexAtom)).toBe(2);
     });
   });
 

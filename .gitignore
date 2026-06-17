@@ -48,9 +48,11 @@ scripts/gif-capture/frames/
 # Ignore docs/ contents, but keep superpowers specs/plans tracked so they aren't lost.
 # docs/design/ is also tracked: durable design references that must SURVIVE the
 # periodic pruning of ephemeral specs/plans under docs/superpowers/.
+# docs/ROADMAP.md is tracked too: forward-looking parked features, also survives pruning.
 docs/*
 !docs/superpowers/
 !docs/design/
+!docs/ROADMAP.md
 
 .superpowers/
 .pnpm-store/

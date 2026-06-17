@@ -4,7 +4,7 @@ import { screen, within, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, auditionActiveAtom, auditionRequestTickAtom, beatsPerBarAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
 import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
 import { TooltipProvider } from "../Tooltip/Tooltip";
 import { SongControls } from "./SongControls";
@@ -149,14 +149,51 @@ describe("SongControls", () => {
     const store = makeAtomStore([...BASE_SEEDS]);
     renderWithStore(<SongControls />, store);
 
+    // BASE_SEEDS active index defaults to 0 -> the new chord inserts at index 1
+    // (after the selected first step) and becomes the selection.
     await userEvent.click(screen.getByRole("button", { name: "Add chord" }));
     expect(store.get(progressionStepsAtom)).toHaveLength(3);
-
-    await userEvent.click(screen.getByRole("button", { name: "Move chord up" }));
     expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+
+    // Move the new chord (index 1) up -> it becomes the first step.
+    await userEvent.click(screen.getByRole("button", { name: "Move chord up" }));
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(0);
 
     await userEvent.click(screen.getByRole("button", { name: "Remove chord" }));
     expect(store.get(progressionStepsAtom)).toHaveLength(2);
+  });
+
+  it("renders a single Preview button in the editor", () => {
+    renderWithStore(<SongControls />, makeAtomStore([...BASE_SEEDS]));
+    expect(screen.getByRole("button", { name: "Preview" })).toBeInTheDocument();
+    // No Once/Loop mode control — preview is a single snappy action.
+    expect(screen.queryByRole("group", { name: "Audition mode" })).not.toBeInTheDocument();
+  });
+
+  it("requests a preview when the Preview button is clicked", async () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    renderWithStore(<SongControls />, store);
+
+    await userEvent.click(screen.getByRole("button", { name: "Preview" }));
+    expect(store.get(auditionRequestTickAtom)).toBe(1);
+  });
+
+  it("disables the Preview button while a preview is sounding", () => {
+    const store = makeAtomStore([...BASE_SEEDS, [auditionActiveAtom, true]]);
+    renderWithStore(<SongControls />, store);
+
+    expect(screen.getByRole("button", { name: "Preview" })).toBeDisabled();
+  });
+
+  it("disables the Preview button while the progression is playing", () => {
+    const store = makeAtomStore([...BASE_SEEDS]);
+    act(() => {
+      store.set(setProgressionPlayingAtom, true);
+    });
+    renderWithStore(<SongControls />, store);
+
+    expect(store.get(auditionRequestTickAtom)).toBe(0);
+    expect(screen.getByRole("button", { name: "Preview" })).toBeDisabled();
   });
 
   it("does not render a progression on/off toggle", () => {

@@ -254,6 +254,7 @@ export const en: Dictionary = {
       tab: "Switch overlay / song tab",
       scale: "Show / hide scale",
       chord: "Show / hide chord",
+      audition: "Preview selected chord",
     },
   },
   controls: {
@@ -317,6 +318,7 @@ export const en: Dictionary = {
     presetCustom: "Custom",
     add: "Add",
     addChord: "Add chord",
+    auditionChord: "Preview",
     moveChordUp: "Move chord up",
     moveChordDown: "Move chord down",
     duplicateChord: "Duplicate chord",
