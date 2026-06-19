@@ -305,7 +305,7 @@ export function scheduleCrossStick(
 
 /** Test-only reset so the module behaves predictably across vitest runs. */
 export function _resetDrumKitSynths(): void {
-  const disposeAll = (map: Map<string, Tone.Instrument>) => {
+  const disposeAll = (map: Map<string, { dispose(): void }>) => {
     map.forEach((synth) => {
       try {
         synth.dispose();

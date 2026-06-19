@@ -14,9 +14,6 @@ const ACCENT_FREQ = 1500;
 const NORMAL_FREQ = 900;
 const DECAY = 0.04;
 const RELEASE = 0.01;
-const RELEASE_TAIL_SEC = RELEASE;
-const DISPOSE_TAIL_MS = 20;
-const DISPOSE_TAIL_SEC = DISPOSE_TAIL_MS / 1000;
 
 export interface ClickOptions {
   accent?: boolean;
@@ -29,7 +26,7 @@ export interface ClickHandle {
 
 let metronomeSynth: Tone.Synth | null = null;
 
-function getSynth(dest: AudioNode): Tone.Synth {
+function getSynth(): Tone.Synth {
   if (!metronomeSynth) {
     metronomeSynth = new Tone.Synth({
       oscillator: { type: "sine" },
@@ -48,7 +45,7 @@ export function scheduleClick(
   if (velocity <= 0) return { cancel: () => {} };
 
   const frequency = options.accent ? ACCENT_FREQ : NORMAL_FREQ;
-  const synth = getSynth(dest);
+  const synth = getSynth();
   synth.disconnect();
   synth.connect(dest);
 

@@ -9,8 +9,6 @@ import type { BassPatch } from "./sound/patchTypes";
 import { getBassPatch } from "./sound/instrumentPatches";
 
 const DEFAULT_BASS_PATCH_ID = "bass-finger";
-const DISPOSE_TAIL_MS = 50;
-const DISPOSE_TAIL_SEC = DISPOSE_TAIL_MS / 1000;
 
 export interface BassNoteOptions {
   velocity?: number;

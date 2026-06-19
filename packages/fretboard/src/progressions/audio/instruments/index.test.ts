@@ -1,7 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { getChordVoice } from "./index";
+import { describe, it, expect, beforeEach } from "vitest";
+import { getChordVoice, _resetChordSynths } from "./index";
 
 describe("chord voice resolution (piano-only chord layer)", () => {
+  beforeEach(() => {
+    _resetChordSynths();
+  });
   it("resolves a known patch id to a memoized voice", () => {
     const v = getChordVoice("chord-epiano");
     expect(typeof v.scheduleChord).toBe("function");
