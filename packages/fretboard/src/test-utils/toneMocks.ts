@@ -31,6 +31,8 @@ export interface ToneSynthInstanceSpies {
   dispose: Mock;
   volume: { value: number };
   maxPolyphony: number;
+  envelope: { cancel: Mock };
+  filterEnvelope: { cancel: Mock };
 }
 
 /**
@@ -107,6 +109,19 @@ export function createToneSynthSpies(): {
         }),
         volume: { value: 0 },
         maxPolyphony: 0,
+        envelope: {
+          cancel: vi.fn((_cancelTime?: number) => {
+            for (const playbackTimer of playbackTimers) {
+              clearTimeout(playbackTimer);
+            }
+            playbackTimers.clear();
+          }),
+        },
+        filterEnvelope: {
+          cancel: vi.fn((_cancelTime?: number) => {
+            // filter envelope behaves similarly for simplicity
+          }),
+        },
       };
       instances.push(instance);
       return instance;

@@ -63,16 +63,16 @@ describe("scheduleClick — Tone backend", () => {
     expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
   });
 
-  it("allocates separate Synths for future clicks scheduled in one pass", () => {
+  it("reuses the same Synth for future clicks scheduled in one pass", () => {
     const dest = {} as AudioNode;
     scheduleClick(dest, 2, { accent: true, velocity: 0.8 });
     scheduleClick(dest, 2.5, { accent: false, velocity: 0.7 });
 
-    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     expect(spies.triggerAttackRelease).toHaveBeenCalledTimes(2);
   });
 
-  it("keeps different destinations on different leased synths", () => {
+  it("connects the same synth to a new destination", () => {
     const firstDest = {} as AudioNode;
     const secondDest = {} as AudioNode;
 
@@ -80,9 +80,9 @@ describe("scheduleClick — Tone backend", () => {
     tone.setNow(0.2);
     scheduleClick(secondDest, 0.25, { accent: false, velocity: 0.7 });
 
-    expect(spies.ctorSpy).toHaveBeenCalledTimes(2);
+    expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     expect(tone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
-    expect(tone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
+    expect(tone.instances[0]?.connect).toHaveBeenCalledWith(secondDest);
   });
 
   it("skips scheduling when velocity is zero", () => {
@@ -90,15 +90,14 @@ describe("scheduleClick — Tone backend", () => {
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
-  it("cancel() triggers release then disposes the synth after the envelope settles", () => {
+  it("cancel() triggers release on the synth", () => {
     const handle = scheduleClick({} as AudioNode, 0, {});
     handle.cancel();
     // Release fires immediately so the envelope can decay naturally.
     expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
-    // Dispose is deferred via setTimeout(...20) so the release tail isn't truncated.
     expect(spies.dispose).not.toHaveBeenCalled();
     vi.advanceTimersByTime(25);
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
+    expect(spies.dispose).not.toHaveBeenCalled();
   });
 
   it("cancel() prevents a future-scheduled click from ever being attacked", async () => {
@@ -114,13 +113,11 @@ describe("scheduleClick — Tone backend", () => {
     expect(spies.playbackAttackRelease).not.toHaveBeenCalled();
   });
 
-  it("cancel() is idempotent — repeated calls schedule release/dispose only once", () => {
+  it("cancel() is idempotent — repeated calls trigger release only once", () => {
     const handle = scheduleClick({} as AudioNode, 0, {});
     handle.cancel();
     handle.cancel();
     handle.cancel();
-    vi.advanceTimersByTime(25);
     expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
   });
 });
