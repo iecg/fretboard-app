@@ -15,7 +15,7 @@ vi.mock("tone", async () => {
   };
 });
 
-import { scheduleBassNote } from "./bass";
+import { scheduleBassNote, _resetBassSynths } from "./bass";
 import { getBassPatch } from "./sound/instrumentPatches";
 
 describe("scheduleBassNote — patch-driven Tone backend", () => {
@@ -26,6 +26,7 @@ describe("scheduleBassNote — patch-driven Tone backend", () => {
     s = await synth;
     spies = s.spies;
     vi.useFakeTimers();
+    _resetBassSynths();
     s.reset();
   });
 
@@ -68,37 +69,33 @@ describe("scheduleBassNote — patch-driven Tone backend", () => {
     expect(spies.triggerAttackRelease).not.toHaveBeenCalled();
   });
 
-  it("cancel() before the scheduled start disposes the voice without releasing (kills the pending note)", () => {
-    // now (0) < scheduled time (5): the note is queued but hasn't started, so
-    // the monophonic voice is disposed outright to cancel the pending
-    // triggerAttackRelease — otherwise the next chord's bass would bleed in.
+  it("cancel() before the scheduled start cancels the envelopes without releasing (kills the pending note)", () => {
+    // now (0) < scheduled time (5): the note is queued but hasn't started.
+    // We cancel the envelope triggers to prevent the note from starting.
     const handle = scheduleBassNote({} as AudioNode, 110, 5, { velocity: 0.9 });
     expect(spies.ctorSpy).toHaveBeenCalledTimes(1);
     handle.cancel();
     expect(spies.triggerRelease).not.toHaveBeenCalled();
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
+    expect(s.instances[0]?.envelope.cancel).toHaveBeenCalledTimes(1);
+    expect(s.instances[0]?.filterEnvelope.cancel).toHaveBeenCalledTimes(1);
   });
 
-  it("cancel() releases then disposes the synth after the envelope settles", () => {
+  it("cancel() triggers release on the synth", () => {
     const handle = scheduleBassNote({} as AudioNode, 110, 0);
     handle.cancel();
     expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
     expect(spies.dispose).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(60); // > DISPOSE_TAIL_MS (50)
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it("cancel() is idempotent — release/dispose happen only once", () => {
+  it("cancel() is idempotent — release happens only once", () => {
     const handle = scheduleBassNote({} as AudioNode, 110, 0);
     handle.cancel();
     handle.cancel();
     handle.cancel();
-    vi.advanceTimersByTime(60);
     expect(spies.triggerRelease).toHaveBeenCalledTimes(1);
-    expect(spies.dispose).toHaveBeenCalledTimes(1);
   });
 
-  it("reuses one pool per patch id and separates pools across patches", () => {
+  it("reuses one synth per patch id and separates synths across patches", () => {
     const dest = {} as AudioNode;
     const finger = getBassPatch("bass-finger")!;
     const upright = getBassPatch("bass-upright")!;
