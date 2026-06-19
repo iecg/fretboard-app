@@ -4,8 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ToggleBar } from "../../components/ToggleBar/ToggleBar";
-import { NoteGrid } from "../../components/NoteGrid/NoteGrid";
-import { NOTES } from "@fretflow/core";
+
 
 const sharedCSS = readFileSync(
   resolve(__dirname, "./shared.module.css"),
@@ -109,30 +108,6 @@ describe("ToggleBar responsive class membership", () => {
     renderInTier("mobile");
     screen.getAllByRole("button").forEach((btn) => {
       expect(btn).toHaveClass("toggle-btn");
-    });
-  });
-});
-
-describe("NoteGrid responsive class membership", () => {
-  it("note-btn class is present inside a desktop-tier container", () => {
-    render(
-      <div className="app-container" data-layout-tier="desktop">
-        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} preferFlats={false} />
-      </div>,
-    );
-    screen.getAllByRole("button").forEach((btn) => {
-      expect(btn).toHaveClass("note-btn");
-    });
-  });
-
-  it("note-btn class is present inside a tablet-tier container", () => {
-    render(
-      <div className="app-container" data-layout-tier="tablet">
-        <NoteGrid notes={NOTES} selected="C" onSelect={() => {}} preferFlats={false} />
-      </div>,
-    );
-    screen.getAllByRole("button").forEach((btn) => {
-      expect(btn).toHaveClass("note-btn");
     });
   });
 });

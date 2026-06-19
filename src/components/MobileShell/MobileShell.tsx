@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 import { useTranslation } from "../../hooks/useTranslation";
-import { mobilePanelAtom } from "../../store/uiAtoms";
+import { mobilePanelAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { StageZoomControl } from "./StageZoomControl";
 import styles from "./MobileShell.module.css";
 

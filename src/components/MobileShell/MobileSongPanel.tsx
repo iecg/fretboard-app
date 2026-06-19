@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { useAtom } from "jotai";
-import { mobilePanelAtom } from "../../store/uiAtoms";
+import { mobilePanelAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { MobilePanel } from "./MobilePanel";
 

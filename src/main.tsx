@@ -11,8 +11,8 @@ import '@fretflow/fretboard/styles/fretboard-tokens.css'
 import './styles/controls.css'
 import App from './App.tsx'
 import { ErrorBoundary, ErrorFallback } from './components/ErrorBoundary/ErrorBoundary'
-import { runChordModeMigration } from './store/chordModeMigration'
-import { runV2RedesignMigration } from './store/v2RedesignMigration'
+import { runChordModeMigration } from '@fretflow/fretboard/store/chordModeMigration'
+import { runV2RedesignMigration } from '@fretflow/fretboard/store/v2RedesignMigration'
 
 runChordModeMigration();
 runV2RedesignMigration();

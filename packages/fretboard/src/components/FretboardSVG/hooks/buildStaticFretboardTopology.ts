@@ -33,7 +33,7 @@ export interface UseStaticFretboardTopologyProps {
   totalColumns: number;
   startFret: number;
   maxFret: number;
-  hiddenNotes?: Set<string>;
+
   highlightNotes: string[];
   hasChordOverlay: boolean;
   chordTones: string[];
@@ -64,7 +64,7 @@ export function buildStaticFretboardTopology({
   totalColumns,
   startFret,
   maxFret,
-  hiddenNotes,
+
   highlightNotes,
   hasChordOverlay,
   chordTones,
@@ -93,15 +93,6 @@ export function buildStaticFretboardTopology({
     : rootNote);
   const rootIdx = rootNote ? NOTES.indexOf(normRoot.includes("#") ? normRoot : rootNote) : -1;
 
-  const normalizedHidden = new Set<string>();
-  if (hiddenNotes && hiddenNotes.size > 0) {
-    hiddenNotes.forEach((note) => {
-      normalizedHidden.add(note);
-      const enharmonic = ENHARMONICS[note];
-      if (enharmonic) normalizedHidden.add(enharmonic);
-    });
-  }
-
   const highlightSet = new Set(highlightNotes);
   const chordToneSet = new Set(chordTones);
   const colorNoteSet = new Set(colorNotes);
@@ -120,36 +111,31 @@ export function buildStaticFretboardTopology({
       const isMatchedFullChordPosition =
         !hasFullChordPositionFilter || fullChordPositionKeys.has(positionKey);
       const fullChordShape = fullChordShapeByPosition?.get(positionKey);
-      const isNoteHidden = normalizedHidden.has(noteName) || normalizedHidden.has(positionKey);
 
       const isHighlighted =
-        !isNoteHidden &&
         (highlightSet.has(noteName) || highlightSet.has(positionKey));
 
       const isChordTone =
-        !isNoteHidden &&
         hasChordOverlay &&
         chordToneSet.has(noteName) &&
         isMatchedFullChordPosition;
 
       const isScaleRoot =
-        !isNoteHidden &&
         (noteName === rootNote ||
           ENHARMONICS[noteName] === rootNote ||
           ENHARMONICS[rootNote] === noteName);
 
       const isChordRootNote =
-        !isNoteHidden &&
         !!chordRoot &&
         isMatchedFullChordPosition &&
         (noteName === chordRoot ||
           ENHARMONICS[noteName] === chordRoot ||
           ENHARMONICS[chordRoot] === noteName);
 
-      const isColorNote = !!(!isNoteHidden && colorNoteSet.size > 0 && (
+      const isColorNote = !!(
         colorNoteSet.has(noteName) ||
         (ENHARMONICS[noteName] && colorNoteSet.has(ENHARMONICS[noteName]!))
-      ));
+      );
 
       const isInsideAnyPolygon = polygonCoverage.coveredPositions.has(positionKey);
 
@@ -218,9 +204,7 @@ export function buildStaticFretboardTopology({
           }
         : semantics;
 
-      const noteClass = isNoteHidden
-        ? "note-inactive"
-        : effectiveSemantics
+      const noteClass = effectiveSemantics
           ? classifyNoteFromSemantics(
               effectiveSemantics,
               isInActiveShape,
@@ -239,7 +223,6 @@ export function buildStaticFretboardTopology({
 
       const finalNoteClass = noteClass;
 
-      if (isNoteHidden) continue;
 
       // Scale-aware spelled pitch (e.g. "A#" → "Bb" in F major). This is the
       // pitch the visible "notes"-mode label shows; the a11y aria-label reuses

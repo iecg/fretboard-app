@@ -4,7 +4,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithAtoms, renderWithStore, makeAtomStore } from "../../test-utils/renderWithAtoms";
 import { VoicingControl } from "./VoicingControl";
-import { voicingAtom } from "../../store/chordOverlayAtoms";
+import { voicingAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
 
 describe("ChordOverlayControls/VoicingControl", () => {
   it("renders three options: Off / Full / Close", async () => {

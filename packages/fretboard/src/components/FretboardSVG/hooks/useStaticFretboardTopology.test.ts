@@ -9,7 +9,7 @@ const TOPOLOGY_PROPS = {
   totalColumns: 4,
   startFret: 0,
   maxFret: 5,
-  hiddenNotes: new Set<string>(),
+
   highlightNotes: ["G", "A", "B"],
   hasChordOverlay: true,
   chordTones: ["G", "B", "D"],

@@ -1,1 +1,1 @@
-export { k } from "../utils/storage";
+export { k } from "@fretflow/fretboard/utils/storage";

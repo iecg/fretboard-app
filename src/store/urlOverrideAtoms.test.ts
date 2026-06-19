@@ -10,9 +10,9 @@ import {
   effectiveProgressionStepsAtom,
   clearUrlOverridesAtom,
 } from "./urlOverrideAtoms";
-import { baseRootNoteAtom } from "./scaleAtoms";
+import { baseRootNoteAtom } from "@fretflow/fretboard/store/scaleAtoms";
 import type { ShareState } from "../utils/shareCodec";
-import type { ProgressionStep } from "../progressions/progressionDomain";
+import type { ProgressionStep } from "@fretflow/fretboard/progressions/progressionDomain";
 
 describe("urlOverrideAtoms", () => {
   it("effective atoms return persisted values when no overrides", () => {

@@ -4,9 +4,9 @@ import {
   CHORD_TYPE_SHORT_LABELS,
 } from "../ChordOverlayControls/chordTypeOptions";
 import { getScaleRoots } from "@fretflow/core";
-import { guessQualityForBorrowedRoot } from "../../progressions/progressionDomain";
+import { guessQualityForBorrowedRoot } from "@fretflow/fretboard/progressions/progressionDomain";
 
-export interface QualityGroupLabels {
+interface QualityGroupLabels {
   triads: string;
   sus: string;
   sixths: string;
@@ -119,7 +119,7 @@ export function buildQualityGroupsWithDiatonic(
   return [{ groupLabel: labels.diatonic, options: diatonicOptions }, ...dedupedBase];
 }
 
-export function buildQualitySelectGroups(
+function buildQualitySelectGroups(
   labels: QualityGroupLabels,
 ): LabeledSelectGroup[] {
   return [

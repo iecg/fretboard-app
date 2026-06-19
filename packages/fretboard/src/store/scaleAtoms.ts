@@ -19,7 +19,7 @@ import {
 import { getDegreesForScale } from "@fretflow/core";
 import { k, createStorage, rawStringStorage, booleanStorage, GET_ON_INIT, withStorageErrorBoundary } from "../utils/storage";
 import { fingeringPatternAtom, cagedShapesAtom } from "./fingeringAtoms";
-import { gatedAtom, EMPTY_SET, setsEqual } from "./atomUtils";
+import { gatedAtom } from "./atomUtils";
 import type { CagedShape } from "@fretflow/core";
 import type { PracticeBarColorNote } from "@fretflow/core";
 
@@ -212,42 +212,6 @@ export function scaleHeadline(label: string): string {
 /** The scale label reduced to its headline (root + scale name only). */
 export const scaleHeadlineAtom = atom((get) => scaleHeadline(get(scaleLabelAtom)));
 
-// Transient: resets when root or scale changes.
-const internalHiddenNotesAtom = atom<{
-  root: string;
-  scale: string;
-  notes: Set<string>;
-} | null>(null);
-
-export const hiddenNotesAtom = atom(
-  (get) => {
-    const state = get(internalHiddenNotesAtom);
-    const root = get(rootNoteAtom);
-    const scale = get(scaleNameAtom);
-    if (state && state.root === root && state.scale === scale) {
-      return state.notes;
-    }
-    return EMPTY_SET;
-  },
-  (get, set, update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
-    const root = get(rootNoteAtom);
-    const scale = get(scaleNameAtom);
-    const currentNotes = get(hiddenNotesAtom);
-    const nextNotes =
-      typeof update === "function" ? update(currentNotes) : update;
-    if (setsEqual(currentNotes, nextNotes)) return;
-    set(internalHiddenNotesAtom, { root, scale, notes: nextNotes });
-  },
-);
-
-export const toggleHiddenNoteAtom = atom(null, (_get, set, note: string) => {
-  set(hiddenNotesAtom, (prev) => {
-    const next = new Set(prev);
-    if (next.has(note)) next.delete(note);
-    else next.add(note);
-    return next;
-  });
-});
 
 // Maps old tri-state "off" → false and removes the stale key.
 function readLegacyScaleVisibility(): boolean {
@@ -263,13 +227,6 @@ export const scaleVisibleAtom = atomWithStorage<boolean>(
   readLegacyScaleVisibility(),
   booleanStorage,
   GET_ON_INIT,
-);
-
-// Returns a set of notes that are hidden in the current scale.
-export const effectiveHiddenNotesAtom = gatedAtom(
-  hiddenNotesAtom,
-  scaleVisibleAtom,
-  new Set<string>(),
 );
 
 // Color notes (blue notes, characteristic tones) are cleared when scale is off.
@@ -299,11 +256,10 @@ export const practiceBarColorNotesAtom = atom((get) => {
   });
 });
 
-// Toggling off also clears per-note hidden state so that re-enabling shows the full scale.
+// Toggling off clears scale visibility
 export const toggleScaleVisibleAtom = atom(null, (get, set) => {
   const visible = get(scaleVisibleAtom);
   if (visible) {
-    set(hiddenNotesAtom, new Set<string>());
     set(scaleVisibleAtom, false);
   } else {
     set(scaleVisibleAtom, true);

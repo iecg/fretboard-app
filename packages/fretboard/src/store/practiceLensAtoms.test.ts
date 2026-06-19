@@ -2,7 +2,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createStore } from "jotai";
 import {
-  chordHiddenNotesAtom,
   chordTypeAtom,
   chordLookupAtom,
 } from "./chordOverlayAtoms";
@@ -47,7 +46,6 @@ type Setup = {
   /** Set to `"off"` to disable the chord overlay (empties the progression). */
   overlayMode?: string;
   scaleVisible?: boolean;
-  hidden?: Set<string>;
 };
 
 function setUp(o: Setup = {}) {
@@ -77,7 +75,7 @@ function setUp(o: Setup = {}) {
     }
   }
   if (o.scaleVisible !== undefined) store.set(scaleVisibleAtom, o.scaleVisible);
-  if (o.hidden !== undefined) store.set(chordHiddenNotesAtom, o.hidden);
+
   return store;
 }
 
@@ -163,19 +161,6 @@ describe("noteSemanticMapAtom", () => {
 
   it("returns empty map when chord overlay is off", () => {
     expect(setUp({ overlayMode: "off" }).get(noteSemanticMapAtom).size).toBe(0);
-  });
-
-  it("hidden chord root no longer carries chord-root semantics", () => {
-    const store = setUp({ scaleRoot: "C", scale: "major", chordRoot: "C", chordType: "M" });
-    const before = store.get(noteSemanticMapAtom).get("C");
-    expect(before?.isChordRoot).toBe(true);
-    expect(before?.isChordTone).toBe(true);
-
-    store.set(chordHiddenNotesAtom, new Set(["C"]));
-    const after = store.get(noteSemanticMapAtom).get("C");
-    expect(after).toBeDefined();
-    expect(after!.isChordTone).toBe(false);
-    expect(after!.isChordRoot).toBe(false);
   });
 
   it("uses progression chord semantics even with one-string fingering pattern", () => {

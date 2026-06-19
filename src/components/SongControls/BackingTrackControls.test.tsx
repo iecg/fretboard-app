@@ -3,7 +3,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { progressionDrumPatternAtom, progressionGenreStyleAtom } from "../../store/progressionAtoms";
+import { progressionDrumPatternAtom, progressionGenreStyleAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import { BackingTrackControls } from "./BackingTrackControls";
 
 describe("BackingTrackControls", () => {

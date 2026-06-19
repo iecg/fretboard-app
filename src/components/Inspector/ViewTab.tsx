@@ -4,8 +4,8 @@ import { ChordOverlayControls } from "../ChordOverlayControls/ChordOverlayContro
 import { PropGrid } from "./InspectorGrid";
 import { InspectorCard } from "./InspectorCard";
 import { useTranslation } from "../../hooks/useTranslation";
-import { scaleVisibleAtom, toggleScaleVisibleAtom } from "../../store/scaleAtoms";
-import { chordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
+import { scaleVisibleAtom, toggleScaleVisibleAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { chordOverlayHiddenAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
 import styles from "./ViewTab.module.css";
 
 /**

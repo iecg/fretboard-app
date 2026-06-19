@@ -9,9 +9,9 @@ import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import { useTranslation } from "../../../hooks/useTranslation";
 import useLayoutMode from "../../../hooks/useLayoutMode";
-import { accidentalModeAtom } from "../../../store/scaleAtoms";
-import { enharmonicDisplayAtom, audioQualityAtom } from "../../../store/audioAtoms";
-import { displayFormatAtom } from "../../../store/uiAtoms";
+import { accidentalModeAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { enharmonicDisplayAtom, audioQualityAtom } from "@fretflow/fretboard/store/audioAtoms";
+import { displayFormatAtom } from "@fretflow/fretboard/store/uiAtoms";
 import styles from "../SettingsOverlay.module.css";
 
 export default function DisplaySettingsSection() {

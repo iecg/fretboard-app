@@ -10,7 +10,7 @@ import {
   NOTES,
 } from "@fretflow/core";
 import type { LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
-import { guessQualityForBorrowedRoot } from "../../progressions/progressionDomain";
+import { guessQualityForBorrowedRoot } from "@fretflow/fretboard/progressions/progressionDomain";
 import styles from "./chordRootOptions.module.css";
 import shared from "../shared/shared.module.css";
 

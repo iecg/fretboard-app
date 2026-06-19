@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
-import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { progressionTempoBpmAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import styles from "./TempoReadout.module.css";
 
 /**

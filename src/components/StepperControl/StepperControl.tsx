@@ -1,4 +1,4 @@
-import { cva, type VariantProps } from "class-variance-authority";
+
 import { Minus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import clsx from "clsx";
@@ -11,19 +11,15 @@ import {
 import styles from "./StepperControl.module.css";
 import shared from "../shared/shared.module.css";
 
-const stepperControlVariants = cva(styles["stepper-control"], {
-  variants: {
-    variant: {
-      toolbar: styles.toolbar,
-      mobile: styles.mobile,
-    },
-  },
-  defaultVariants: {
-    variant: "toolbar",
-  },
-});
+export type StepperControlVariant = "toolbar" | "mobile";
 
-type StepperControlVariant = VariantProps<typeof stepperControlVariants>["variant"];
+function getStepperControlClass(variant: StepperControlVariant = "toolbar") {
+  return clsx(
+    styles["stepper-control"],
+    variant === "toolbar" && styles.toolbar,
+    variant === "mobile" && styles.mobile
+  );
+}
 
 export interface StepperControlProps {
   value: number;
@@ -68,7 +64,7 @@ export function StepperControl({
   return (
     <div
       className={clsx(
-        stepperControlVariants({ variant: buttonVariant }),
+        getStepperControlClass(buttonVariant),
         { [styles["stepper-control--fill"]]: width === "fill" }
       )}
     >

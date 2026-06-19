@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { subscribeVisualClock } from "../../progressions/audio/visualClock";
+import { subscribeVisualClock } from "@fretflow/fretboard/progressions/audio/visualClock";
 import styles from "./ProgressionTrack.module.css";
 
 interface ProgressionPlayheadProps {

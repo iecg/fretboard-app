@@ -1,4 +1,4 @@
-import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string";
+
 
 export interface ShareState {
   root: string;
@@ -107,14 +107,39 @@ export function encodeShareState(state: ShareState): string {
 
 const MAX_S_PARAM_LENGTH = 1500;
 
-export function encodeShareUrl(state: ShareState, baseUrl: string): string {
+function encodeBase64UrlSafe(buffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const base64 = btoa(binary);
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function decodeBase64UrlSafe(base64url: string): ArrayBuffer {
+  let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+  while (base64.length % 4) {
+    base64 += "=";
+  }
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+export async function encodeShareUrl(state: ShareState, baseUrl: string): Promise<string> {
   const encoded = encodeShareState(state);
   const url = new URL(baseUrl);
   if (encoded.length <= MAX_S_PARAM_LENGTH) {
     url.searchParams.set("s", encoded);
   } else {
     const json = JSON.stringify(state);
-    url.searchParams.set("z", compressToEncodedURIComponent(json));
+    const stream = new Response(json).body!.pipeThrough(new CompressionStream("deflate"));
+    const buffer = await new Response(stream).arrayBuffer();
+    url.searchParams.set("z", encodeBase64UrlSafe(buffer));
   }
   return url.toString();
 }
@@ -141,15 +166,16 @@ function isValidShareState(value: unknown): value is ShareState {
   );
 }
 
-export function decodeShareUrl(params: URLSearchParams): ShareState | null {
+export async function decodeShareUrl(params: URLSearchParams): Promise<ShareState | null> {
   const s = params.get("s");
   if (s) return decodeShareState(s);
 
   const z = params.get("z");
   if (z) {
     try {
-      const json = decompressFromEncodedURIComponent(z);
-      if (!json) return null;
+      const buffer = decodeBase64UrlSafe(z);
+      const stream = new Response(buffer).body!.pipeThrough(new DecompressionStream("deflate"));
+      const json = await new Response(stream).text();
       const parsed: unknown = JSON.parse(json);
       if (!isValidShareState(parsed)) return null;
       return parsed;

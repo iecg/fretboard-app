@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import clsx from "clsx";
-import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
-import { scaleHeadlineAtom } from "../../store/scaleAtoms";
+import { usePlaybackTransportModel } from "@fretflow/fretboard/hooks/usePlaybackTransportModel";
+import { scaleHeadlineAtom } from "@fretflow/fretboard/store/scaleAtoms";
 import { TransportBar } from "../TransportBar/TransportBar";
 import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
 import { TempoReadout } from "./TempoReadout";

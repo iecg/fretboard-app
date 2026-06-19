@@ -7,15 +7,15 @@ import {
   setGuitarOutputWedgedHandler,
   setGuitarMutePreference,
   prefetchAudioModule,
-} from "./core/lazyGuitarAudio";
-import { probeOutputHealth } from "./core/audioOutputHealth";
-import { isMutedAtom, audioErrorAtom, audioOutputWedgedAtom } from "./store/audioAtoms";
-import { chordTypeAtom } from "./store/chordOverlayAtoms";
-import { fretZoomAtom } from "./store/layoutAtoms";
-import { scaleRowForZoomOut } from "./layout/responsive";
-import audioErrorStyles from "./components/AudioErrorBanner/AudioErrorBanner.module.css";
+} from "@fretflow/fretboard/core/lazyGuitarAudio";
+import { probeOutputHealth } from "@fretflow/fretboard/core/audioOutputHealth";
+import { isMutedAtom, audioErrorAtom, audioOutputWedgedAtom } from "@fretflow/fretboard/store/audioAtoms";
+import { chordTypeAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
+import { fretZoomAtom } from "@fretflow/fretboard/store/layoutAtoms";
+import { scaleRowForZoomOut } from "@fretflow/fretboard/layout/responsive";
+
 import useLayoutMode from "./hooks/useLayoutMode";
-import { useResolvedTheme } from "./hooks/useResolvedTheme";
+import { useResolvedTheme } from "@fretflow/fretboard/hooks/useResolvedTheme";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMediaSession } from "./hooks/useMediaSession";
 import { useTranslation } from "./hooks/useTranslation";
@@ -40,7 +40,7 @@ import { InstallBanner } from "./components/InstallBanner/InstallBanner";
 import { AppHeaderActions } from "./components/AppHeaderActions/AppHeaderActions";
 import { TooltipProvider } from "./components/Tooltip/Tooltip";
 import { ControlsPanelSkeleton } from "./components/LoadingSkeleton/LoadingSkeleton";
-import { AppMotionConfig } from "./components/AppMotionConfig/AppMotionConfig";
+import { MotionConfig } from "motion/react";
 import "./styles/App.css";
 
 const SettingsOverlay = lazy(() => import("./components/SettingsOverlay/SettingsOverlay"));
@@ -131,7 +131,7 @@ function AppContent() {
       prefetchAudioModule();
       // Warm the Tone.js progression engine module cache so first play does
       // not wait for the full dynamic-import cascade at click time.
-      void import("./progressions/audio/progressionAudioEngine");
+      void import("@fretflow/fretboard/progressions/audio/progressionAudioEngine");
     };
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(prefetchAll);
@@ -265,11 +265,11 @@ function AppContent() {
       </MainLayoutWrapper>
     )}
     {audioError && (
-      <div role="alert" className={audioErrorStyles.banner}>
-        <span className={audioErrorStyles.message}>{audioError}</span>
+      <div role="alert" className="audio-error-banner">
+        <span className="audio-error-message">{audioError}</span>
         <button
           type="button"
-          className={audioErrorStyles.dismiss}
+          className="audio-error-dismiss"
           onClick={() => setAudioError(null)}
           aria-label={t("common.dismiss")}
         >
@@ -278,11 +278,11 @@ function AppContent() {
       </div>
     )}
     {audioOutputWedged && (
-      <div role="alert" className={audioErrorStyles.banner}>
-        <span className={audioErrorStyles.message}>{t("common.audioOutputWedged")}</span>
+      <div role="alert" className="audio-error-banner">
+        <span className="audio-error-message">{t("common.audioOutputWedged")}</span>
         <button
           type="button"
-          className={audioErrorStyles.dismiss}
+          className="audio-error-dismiss"
           onClick={() => setAudioOutputWedged(false)}
           aria-label={t("common.dismiss")}
         >
@@ -300,9 +300,9 @@ function App() {
   const [store] = useState(() => createStore());
   return (
     <Provider store={store}>
-      <AppMotionConfig>
+      <MotionConfig reducedMotion="user">
         <AppContent />
-      </AppMotionConfig>
+      </MotionConfig>
     </Provider>
   );
 }

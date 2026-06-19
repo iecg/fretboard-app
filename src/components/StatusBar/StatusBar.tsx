@@ -1,12 +1,12 @@
 import { useAtomValue } from "jotai";
 import { CAGED_SHAPES } from "@fretflow/core";
-import { chordShortLabelAtom } from "../../store/chordOverlayAtoms";
-import { activeChordCachedDegreeAtom } from "../../store/songStateAtoms";
-import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
-import type { FingeringPattern } from "../../store/fingeringAtoms";
-import { fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
-import { progressionTempoBpmAtom, progressionStepsAtom, totalProgressionBarsAtom } from "../../store/progressionAtoms";
-import { scaleLabelAtom } from "../../store/scaleAtoms";
+import { chordShortLabelAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
+import { activeChordCachedDegreeAtom } from "@fretflow/fretboard/store/songStateAtoms";
+import { fingeringPatternAtom, cagedShapesAtom } from "@fretflow/fretboard/store/fingeringAtoms";
+import type { FingeringPattern } from "@fretflow/fretboard/store/fingeringAtoms";
+import { fretStartAtom, fretEndAtom, tuningNameAtom } from "@fretflow/fretboard/store/layoutAtoms";
+import { progressionTempoBpmAtom, progressionStepsAtom, totalProgressionBarsAtom } from "@fretflow/fretboard/store/progressionAtoms";
+import { scaleLabelAtom } from "@fretflow/fretboard/store/scaleAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import styles from "./StatusBar.module.css";
 

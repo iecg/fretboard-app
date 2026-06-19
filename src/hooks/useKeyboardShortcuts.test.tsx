@@ -5,8 +5,8 @@ import { fireEvent } from "@testing-library/react";
 import React from "react";
 import { createStore, Provider } from "jotai";
 import { useKeyboardShortcuts } from "./useKeyboardShortcuts";
-import { scaleVisibleAtom } from "../store/scaleAtoms";
-import { chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+import { scaleVisibleAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { chordOverlayHiddenAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
 import {
   progressionPlayingAtom,
   activeProgressionStepIndexAtom,
@@ -18,8 +18,8 @@ import {
   progressionMetronomeEnabledAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
-} from "../store/progressionAtoms";
-import { isMutedAtom } from "../store/audioAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
+import { isMutedAtom } from "@fretflow/fretboard/store/audioAtoms";
 import {
   TEMPO_STEPPER_ID,
   PROGRESSION_STEP_LIST_ID,

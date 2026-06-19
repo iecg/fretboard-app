@@ -8,13 +8,13 @@ import {
   MIN_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
   PROGRESSION_PRESETS,
-} from "../../progressions/progressionDomain";
-import { generateCommonProgressions, type SuggestionFeel } from "../../progressions/progressionGeneration";
-import { useProgressionState } from "../../hooks/useProgressionState";
-import { useScaleState } from "../../hooks/useScaleState";
+} from "@fretflow/fretboard/progressions/progressionDomain";
+import { generateCommonProgressions, type SuggestionFeel } from "@fretflow/fretboard/progressions/progressionGeneration";
+import { useProgressionState } from "@fretflow/fretboard/hooks/useProgressionState";
+import { useScaleState } from "@fretflow/fretboard/hooks/useScaleState";
 import { useTranslation } from "../../hooks/useTranslation";
 import useLayoutMode from "../../hooks/useLayoutMode";
-import type { ProgressionPresetCategory } from "../../progressions/progressionDomain";
+import type { ProgressionPresetCategory } from "@fretflow/fretboard/progressions/progressionDomain";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { StepperControl } from "../StepperControl/StepperControl";
 import { LabeledSelect, type LabeledSelectGroup } from "../LabeledSelect/LabeledSelect";
@@ -33,7 +33,7 @@ import { ProgressionStepList } from "./ProgressionStepList";
 import { ChordTonesReadout } from "./ChordTonesReadout";
 import { TEMPO_STEPPER_ID } from "./progressionFocusIds";
 import shared from "../shared/shared.module.css";
-import { CUSTOM_PRESET_ID } from "../../store/progressionAtoms";
+import { CUSTOM_PRESET_ID } from "@fretflow/fretboard/store/progressionAtoms";
 import { progressionPlayingAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import styles from "./SongControls.module.css";
 

@@ -6,8 +6,8 @@ import {
   makeAtomStore,
   renderWithStore,
 } from "../../test-utils/renderWithAtoms";
-import { isMutedAtom } from "../../store/audioAtoms";
-import { themeAtom } from "../../store/uiAtoms";
+import { isMutedAtom } from "@fretflow/fretboard/store/audioAtoms";
+import { themeAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { AppHeaderActions } from "./AppHeaderActions";
 
 describe("AppHeaderActions", () => {

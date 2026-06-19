@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { mobilePanelAtom, type MobilePanelId } from "../../store/uiAtoms";
+import { mobilePanelAtom, type MobilePanelId } from "@fretflow/fretboard/store/uiAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { INSPECTOR_TABS, type InspectorTabId } from "../Inspector/tabs";
 import styles from "./MobileDock.module.css";

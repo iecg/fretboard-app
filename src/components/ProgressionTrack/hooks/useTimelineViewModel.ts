@@ -9,7 +9,7 @@ import {
   progressionPlayingAtom,
   progressionStepsAtom,
   progressionStepAtomsAtom,
-} from "../../../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 import { buildTimelineViewModel } from "./buildTimelineViewModel";
 
 export function useTimelineViewModel() {

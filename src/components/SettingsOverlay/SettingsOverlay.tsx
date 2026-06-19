@@ -3,10 +3,10 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useAtom } from "jotai";
 import { X } from "lucide-react";
 import clsx from "clsx";
-import { settingsOverlayOpenAtom } from "../../store/uiAtoms";
+import { settingsOverlayOpenAtom } from "@fretflow/fretboard/store/uiAtoms";
 import {
   getResponsiveLayout,
-} from "../../layout/responsive";
+} from "@fretflow/fretboard/layout/responsive";
 import { OverlaySection } from "./shared";
 import DisplaySettingsSection from "./sections/DisplaySettingsSection";
 import InstrumentSettingsSection from "./sections/InstrumentSettingsSection";

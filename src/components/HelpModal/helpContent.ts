@@ -5,14 +5,14 @@ export type DiagramId =
   | "voiceLeading"
   | "shortcutTable";
 
-export interface HelpItem {
+interface HelpItem {
   /** i18n key for the bold lead-in label; omit for plain paragraphs. */
   labelKey?: string;
   /** i18n key for the body text. */
   bodyKey: string;
 }
 
-export interface HelpSection {
+interface HelpSection {
   /** i18n key for the section heading. */
   titleKey: string;
   /** Optional diagram rendered below the heading. */

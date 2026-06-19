@@ -10,15 +10,16 @@ export function useShareLinkHandler(): void {
     const params = new URLSearchParams(window.location.search);
     if (!params.has("s") && !params.has("z")) return;
 
-    const state = decodeShareUrl(params);
-    if (!state) return;
+    decodeShareUrl(params).then((state) => {
+      if (!state) return;
 
-    setOverrides(state);
+      setOverrides(state);
 
-    // Strip share params from URL without triggering navigation
-    const url = new URL(window.location.href);
-    url.searchParams.delete("s");
-    url.searchParams.delete("z");
-    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+      // Strip share params from URL without triggering navigation
+      const url = new URL(window.location.href);
+      url.searchParams.delete("s");
+      url.searchParams.delete("z");
+      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    });
   }, [setOverrides]);
 }

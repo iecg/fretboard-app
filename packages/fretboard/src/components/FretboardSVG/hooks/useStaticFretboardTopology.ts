@@ -19,7 +19,7 @@ export function useStaticFretboardTopology(
     totalColumns,
     startFret,
     maxFret,
-    hiddenNotes,
+
     highlightNotes,
     hasChordOverlay,
     chordTones,
@@ -48,7 +48,7 @@ export function useStaticFretboardTopology(
     totalColumns,
     startFret,
     maxFret,
-    hiddenNotes,
+
     highlightNotes,
     hasChordOverlay,
     chordTones,
@@ -75,7 +75,7 @@ export function useStaticFretboardTopology(
     totalColumns,
     startFret,
     maxFret,
-    hiddenNotes,
+
     highlightNotes,
     hasChordOverlay,
     chordTones,

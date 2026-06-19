@@ -6,7 +6,7 @@ import { GripVertical } from "lucide-react";
 import {
   formatProgressionDurationLabel,
   type ResolvedProgressionStep,
-} from "../../progressions/progressionDomain";
+} from "@fretflow/fretboard/progressions/progressionDomain";
 import { useTranslation } from "../../hooks/useTranslation";
 import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
 import { singleMoveDiff } from "./progressionStepListUtils";

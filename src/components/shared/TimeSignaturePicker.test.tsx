@@ -4,7 +4,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { TimeSignaturePicker } from "./TimeSignaturePicker";
-import { beatsPerBarAtom, timeSignatureDenominatorAtom } from "../../store/progressionAtoms";
+import { beatsPerBarAtom, timeSignatureDenominatorAtom } from "@fretflow/fretboard/store/progressionAtoms";
 
 describe("TimeSignaturePicker", () => {
   it("renders the current signature in N/D form", () => {

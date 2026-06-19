@@ -6,7 +6,7 @@ import { axe } from "../../test-utils/a11y";
 import { ProgressionStepList } from "./ProgressionStepList";
 import { PROGRESSION_STEP_LIST_ID } from "./progressionFocusIds";
 import { singleMoveDiff } from "./progressionStepListUtils";
-import type { ResolvedProgressionStep } from "../../progressions/progressionDomain";
+import type { ResolvedProgressionStep } from "@fretflow/fretboard/progressions/progressionDomain";
 
 function makeStep(
   partial: Partial<ResolvedProgressionStep> & { id: string },

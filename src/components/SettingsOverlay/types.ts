@@ -1,4 +1,4 @@
-export type { ThemePreference as ThemeOptionValue } from "../../store/uiAtoms";
+export type { ThemePreference as ThemeOptionValue } from "@fretflow/fretboard/store/uiAtoms";
 
 export type SettingFieldKey =
   | "zoom"

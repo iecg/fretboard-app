@@ -5,9 +5,9 @@ import { Provider, createStore } from "jotai";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
 import SettingsOverlay from "./SettingsOverlay";
-import { setGuitarMutePreference } from "../../core/lazyGuitarAudio";
-import { fretZoomAtom } from "../../store/layoutAtoms";
-import { settingsOverlayOpenAtom, themeAtom } from "../../store/uiAtoms";
+import { setGuitarMutePreference } from "@fretflow/fretboard/core/lazyGuitarAudio";
+import { fretZoomAtom } from "@fretflow/fretboard/store/layoutAtoms";
+import { settingsOverlayOpenAtom, themeAtom } from "@fretflow/fretboard/store/uiAtoms";
 import styles from "./SettingsOverlay.module.css";
 
 // Mock motion so animations are no-ops in test environment.
@@ -43,7 +43,7 @@ vi.mock("motion/react", async () => {
 });
 
 // Mock the audio lazy facade — we only care that setMute is called on reset.
-vi.mock("../../core/lazyGuitarAudio", () => ({
+vi.mock("@fretflow/fretboard/core/lazyGuitarAudio", () => ({
   setGuitarMutePreference: vi.fn(),
   resumeGuitarAudio: vi.fn(),
   playGuitarNote: vi.fn(),

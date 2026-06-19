@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useStore } from "jotai";
-import { scaleVisibleAtom } from "../store/scaleAtoms";
-import { chordOverlayHiddenAtom } from "../store/chordOverlayAtoms";
+import { scaleVisibleAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { chordOverlayHiddenAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
 import {
   progressionPlayingAtom,
   setProgressionPlayingAtom,
@@ -14,7 +14,7 @@ import {
   previousProgressionStepAtom,
   advanceProgressionPlaybackAtom,
   progressionTempoBpmAtom,
-} from "../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 // New state code imports atoms from the package surface directly, not the
 // thin src/store re-export stubs (see AGENTS.md).
 import {
@@ -23,11 +23,11 @@ import {
   reorderProgressionStepsAtom,
 } from "@fretflow/fretboard/store/progressionAtoms";
 import { inspectorActiveTabAtom } from "../store/inspectorAtoms";
-import { toggleMuteAtom } from "../store/audioAtoms";
+import { toggleMuteAtom } from "@fretflow/fretboard/store/audioAtoms";
 import {
   MIN_PROGRESSION_TEMPO_BPM,
   MAX_PROGRESSION_TEMPO_BPM,
-} from "../progressions/progressionDomain";
+} from "@fretflow/fretboard/progressions/progressionDomain";
 import {
   TEMPO_STEPPER_ID,
   PROGRESSION_STEP_LIST_ID,

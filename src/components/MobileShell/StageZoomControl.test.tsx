@@ -4,7 +4,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { fretZoomAtom } from "../../store/layoutAtoms";
+import { fretZoomAtom } from "@fretflow/fretboard/store/layoutAtoms";
 import { StageZoomControl } from "./StageZoomControl";
 
 describe("StageZoomControl", () => {

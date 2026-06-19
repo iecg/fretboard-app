@@ -2,9 +2,9 @@
 import { describe, expect, it } from "vitest";
 import { act, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtoms";
-import { fretStartAtom, fretEndAtom, tuningNameAtom } from "../../store/layoutAtoms";
-import { addProgressionStepAtom, progressionStepsAtom, progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { cagedShapesAtom, fingeringPatternAtom } from "@fretflow/fretboard/store/fingeringAtoms";
+import { fretStartAtom, fretEndAtom, tuningNameAtom } from "@fretflow/fretboard/store/layoutAtoms";
+import { addProgressionStepAtom, progressionStepsAtom, progressionTempoBpmAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import { StatusBar } from "./StatusBar";
 
 describe("StatusBar", () => {

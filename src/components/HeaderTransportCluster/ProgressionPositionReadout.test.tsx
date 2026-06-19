@@ -3,9 +3,9 @@ import { axe } from "vitest-axe";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import { ProgressionPositionReadout } from "./ProgressionPositionReadout";
-import { setActiveStep, _resetTimelineForTests } from "../../progressions/audio/timeline";
-import * as timeline from "../../progressions/audio/timeline";
-import { _resetProgressionAudioForTests, ensureProgressionAudio } from "../../progressions/audio/bus";
+import { setActiveStep, _resetTimelineForTests } from "@fretflow/fretboard/progressions/audio/timeline";
+import * as timeline from "@fretflow/fretboard/progressions/audio/timeline";
+import { _resetProgressionAudioForTests, ensureProgressionAudio } from "@fretflow/fretboard/progressions/audio/bus";
 
 describe("ProgressionPositionReadout", () => {
   beforeEach(() => {

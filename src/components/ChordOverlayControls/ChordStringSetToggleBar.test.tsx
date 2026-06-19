@@ -8,10 +8,10 @@ import { ChordStringSetToggleBar } from "./ChordStringSetToggleBar";
 import {
   voicingAtom,
   voicingStringSetAtom,
-} from "../../store/chordOverlayAtoms";
-import { cagedShapesAtom, fingeringPatternAtom } from "../../store/fingeringAtoms";
-import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
-import { progressionStepsAtom } from "../../store/progressionAtoms";
+} from "@fretflow/fretboard/store/chordOverlayAtoms";
+import { cagedShapesAtom, fingeringPatternAtom } from "@fretflow/fretboard/store/fingeringAtoms";
+import { rootNoteAtom, scaleNameAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { progressionStepsAtom } from "@fretflow/fretboard/store/progressionAtoms";
 
 type ProgressionStepSeed = {
   id: string;

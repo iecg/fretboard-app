@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSetAtom } from "jotai";
-import { resetAtom } from "../../store/actions";
-import { setGuitarMutePreference } from "../../core/lazyGuitarAudio";
+import { resetAtom } from "@fretflow/fretboard/store/actions";
+import { setGuitarMutePreference } from "@fretflow/fretboard/core/lazyGuitarAudio";
 
 export function useResetConfirmation(onConfirm: () => void) {
   const [resetConfirming, setResetConfirming] = useState(false);

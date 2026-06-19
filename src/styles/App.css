@@ -76,3 +76,64 @@
 /* Portrait-lock overlay relocated to MobileShell.module.css (.rotateOverlay*)
    — it is a mobile-shell concern; MobileShell is the only shell rendered at
    the ≤ 767px tier the overlay's show rule targets. */
+.audio-error-banner {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--token-z-overlay-drawer);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: min(28rem, calc(100vw - var(--space-8)));
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-control);
+  border: 1px solid var(--surface-control-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-card);
+  font-size: var(--text-sm);
+  color: var(--text-main);
+  line-height: var(--leading-snug);
+}
+
+@media (max-width: 767px) {
+  .audio-error-banner {
+    bottom: calc(
+      var(--mobile-dock-height, 48px)
+      + env(safe-area-inset-bottom, 0px)
+      + var(--space-2)
+    );
+  }
+}
+
+.audio-error-message {
+  flex: 1;
+}
+
+.audio-error-dismiss {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-medium);
+  background-color: var(--surface-control);
+  background-image: var(--surface-control-bg-image);
+  border: 1px solid var(--surface-control-border);
+  border-radius: var(--radius-sm);
+  color: var(--surface-control-fg-muted);
+  cursor: pointer;
+  transition: var(--transition-surface);
+  white-space: nowrap;
+}
+
+.audio-error-dismiss:hover {
+  background-color: var(--surface-control-hover-bg);
+  background-image: var(--surface-control-hover-bg-image);
+  color: var(--surface-control-hover-fg);
+  border-color: var(--surface-control-hover-border);
+}
+
+.audio-error-dismiss:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: var(--focus-ring-glow);
+}

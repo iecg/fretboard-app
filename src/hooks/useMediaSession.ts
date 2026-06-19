@@ -6,7 +6,7 @@ import {
   stopProgressionPlaybackAtom,
   previousProgressionStepAtom,
   advanceProgressionPlaybackAtom,
-} from "../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 
 export function useMediaSession() {
   const store = useStore();

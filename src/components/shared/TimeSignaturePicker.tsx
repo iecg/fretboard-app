@@ -1,8 +1,8 @@
 import { useAtom } from "jotai";
 import { useMemo } from "react";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
-import { beatsPerBarAtom, timeSignatureDenominatorAtom } from "../../store/progressionAtoms";
-import type { TimeSignatureDenominator } from "../../store/progressionAtoms";
+import { beatsPerBarAtom, timeSignatureDenominatorAtom } from "@fretflow/fretboard/store/progressionAtoms";
+import type { TimeSignatureDenominator } from "@fretflow/fretboard/store/progressionAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 
 const SIGNATURES: ReadonlyArray<{ beats: number; denominator: TimeSignatureDenominator }> = [

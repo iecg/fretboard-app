@@ -4,8 +4,8 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { ViewTab } from "./ViewTab";
-import { scaleVisibleAtom } from "../../store/scaleAtoms";
-import { chordOverlayHiddenAtom } from "../../store/chordOverlayAtoms";
+import { scaleVisibleAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { chordOverlayHiddenAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
 
 describe("ViewTab", () => {
   it("has no accessibility violations", async () => {

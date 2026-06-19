@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { type ReactNode } from "react";
 import { urlOverridesAtom } from "../store/urlOverrideAtoms";
@@ -23,27 +23,31 @@ describe("useShareLinkHandler", () => {
     Object.defineProperty(window, "location", { value: originalLocation, writable: true });
   });
 
-  it("sets urlOverridesAtom when share param is present", () => {
+  it("sets urlOverridesAtom when share param is present", async () => {
     Object.defineProperty(window, "location", {
       value: new URL("https://example.com/app/?s=C.major.120.4x4.I-V-vi-IV"),
       writable: true,
     });
     const store = createStore();
     renderHook(() => useShareLinkHandler(), { wrapper: createWrapper(store) });
-    const overrides = store.get(urlOverridesAtom);
-    expect(overrides).not.toBeNull();
-    expect(overrides?.root).toBe("C");
-    expect(overrides?.steps).toHaveLength(4);
+    await waitFor(() => {
+      const overrides = store.get(urlOverridesAtom);
+      expect(overrides).not.toBeNull();
+      expect(overrides?.root).toBe("C");
+      expect(overrides?.steps).toHaveLength(4);
+    });
   });
 
-  it("strips query params after parsing", () => {
+  it("strips query params after parsing", async () => {
     Object.defineProperty(window, "location", {
       value: new URL("https://example.com/app/?s=C.major.120.4x4.I"),
       writable: true,
     });
     const store = createStore();
     renderHook(() => useShareLinkHandler(), { wrapper: createWrapper(store) });
-    expect(replaceStateSpy).toHaveBeenCalledWith(null, "", expect.not.stringContaining("?s="));
+    await waitFor(() => {
+      expect(replaceStateSpy).toHaveBeenCalledWith(null, "", expect.not.stringContaining("?s="));
+    });
   });
 
   it("does nothing when no share params present", () => {
@@ -57,13 +61,15 @@ describe("useShareLinkHandler", () => {
     expect(replaceStateSpy).not.toHaveBeenCalled();
   });
 
-  it("ignores malformed share params", () => {
+  it("ignores malformed share params", async () => {
     Object.defineProperty(window, "location", {
       value: new URL("https://example.com/app/?s=garbage"),
       writable: true,
     });
     const store = createStore();
     renderHook(() => useShareLinkHandler(), { wrapper: createWrapper(store) });
+    // Wait a bit to ensure it doesn't set it asynchronously
+    await new Promise((resolve) => setTimeout(resolve, 50));
     expect(store.get(urlOverridesAtom)).toBeNull();
   });
 });

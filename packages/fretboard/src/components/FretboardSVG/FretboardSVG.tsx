@@ -88,7 +88,7 @@ interface FretboardSVGProps {
   /** Set of note names that wrap across the nut (open-string equivalents). */
   wrappedNotes?: Set<string>;
   /** Set of note names to suppress from rendering entirely. */
-  hiddenNotes?: Set<string>;
+
   /** When true, renders flat spellings instead of sharps where applicable. */
   preferFlats?: boolean;
   /** Name of the active scale, used for degree color mapping and aria label. */
@@ -312,7 +312,7 @@ export function FretboardSVG({
   colorNotes = DEFAULT_COLOR_NOTES,
   shapePolygons = DEFAULT_SHAPE_POLYGONS,
   wrappedNotes = DEFAULT_WRAPPED_NOTES,
-  hiddenNotes,
+
   preferFlats = false,
   scaleName = "",
   activePattern,
@@ -554,7 +554,7 @@ export function FretboardSVG({
     totalColumns,
     startFret,
     maxFret,
-    hiddenNotes,
+
     highlightNotes,
     hasChordOverlay,
     chordTones,

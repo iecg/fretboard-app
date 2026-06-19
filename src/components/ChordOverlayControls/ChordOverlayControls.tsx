@@ -2,8 +2,8 @@ import { useAtom, useAtomValue } from "jotai";
 import {
   chordTypeAtom,
   voicingAtom,
-} from "../../store/chordOverlayAtoms";
-import { practiceLensAtom, type PracticeLens } from "../../store/practiceLensAtoms";
+} from "@fretflow/fretboard/store/chordOverlayAtoms";
+import { practiceLensAtom, type PracticeLens } from "@fretflow/fretboard/store/practiceLensAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { PropGrid, Prop } from "../Inspector/InspectorGrid";
 import { ToggleBar } from "../ToggleBar/ToggleBar";

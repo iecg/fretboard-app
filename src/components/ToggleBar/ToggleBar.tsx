@@ -1,43 +1,33 @@
 import { useId } from "react";
 import { motion } from "motion/react";
-import { cva, type VariantProps } from "class-variance-authority";
+import { clsx } from "clsx";
 import { ANIMATION_DURATION_FAST } from "@fretflow/core";
 import styles from "./ToggleBar.module.css";
 import shared from "../shared/shared.module.css";
-
 // Each variant supplies its OWN group class. `default` and `chip` opt into the
 // shared `toggle-group` base chrome; `tabs` is fully self-contained (no group
 // container), so the base is NOT applied globally.
-const toggleBarVariants = cva("", {
-  variants: {
-    variant: {
-      default: `${shared["toggle-group"]} ${shared["toggle-group--default"]}`,
-      chip: `${shared["toggle-group"]} ${shared["toggle-group--chip"]}`,
-      tabs: styles["mobile-tab-bar"],
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-  },
-});
+function getToggleBarClass(variant: ToggleBarVariant = "default") {
+  switch (variant) {
+    case "tabs":
+      return styles["mobile-tab-bar"];
+    case "chip":
+      return `${shared["toggle-group"]} ${shared["toggle-group--chip"]}`;
+    case "default":
+    default:
+      return `${shared["toggle-group"]} ${shared["toggle-group--default"]}`;
+  }
+}
 
-const toggleButtonVariants = cva("", {
-  variants: {
-    variant: {
-      default: shared["toggle-btn"],
-      chip: `${shared["toggle-btn"]} ${shared["toggle-btn--chip"]}`,
-      tabs: styles["mobile-tab"],
-    },
-    isActive: {
-      true: shared.active,
-      false: "",
-    },
-  },
-  defaultVariants: {
-    variant: "default",
-    isActive: false,
-  },
-});
+function getToggleButtonClass(variant: ToggleBarVariant = "default", isActive: boolean) {
+  let base = shared["toggle-btn"];
+  if (variant === "tabs") base = styles["mobile-tab"];
+  else if (variant === "chip") base = `${shared["toggle-btn"]} ${shared["toggle-btn--chip"]}`;
+
+  return clsx(base, isActive && shared.active);
+}
+
+export type ToggleBarVariant = "default" | "chip" | "tabs";
 
 type ToggleBarOption<Value extends string | number> = {
   value: Value;
@@ -48,9 +38,8 @@ type ToggleBarOption<Value extends string | number> = {
   description?: string;
 };
 
-interface ToggleBarProps<Value extends string | number> extends VariantProps<
-  typeof toggleBarVariants
-> {
+interface ToggleBarProps<Value extends string | number> {
+  variant?: ToggleBarVariant;
   options: readonly ToggleBarOption<Value>[];
   value: Value | undefined;
   onChange: (value: Value) => void;
@@ -74,7 +63,7 @@ export function ToggleBar<Value extends string | number>({
   const descPrefix = useId();
   return (
     <div
-      className={toggleBarVariants({ variant })}
+      className={getToggleBarClass(variant)}
       role={isTablist ? "tablist" : "group"}
       aria-label={label}
       data-overflow={overflow ?? undefined}
@@ -89,7 +78,7 @@ export function ToggleBar<Value extends string | number>({
             {...(isTablist
               ? { role: "tab", "aria-selected": isActive }
               : { "aria-pressed": isActive })}
-            className={toggleButtonVariants({ variant, isActive })}
+            className={getToggleButtonClass(variant, isActive)}
             onClick={() => onChange(option.value)}
             disabled={disabled || option.disabled}
             title={option.title}

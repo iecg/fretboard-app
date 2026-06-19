@@ -7,7 +7,7 @@ import {
   progressionChordEnabledAtom,
   progressionDrumsEnabledAtom,
   progressionMetronomeEnabledAtom,
-} from "../../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 import { axe } from "../../test-utils/a11y";
 import { InstrumentToggleCluster } from "./InstrumentToggleCluster";
 
