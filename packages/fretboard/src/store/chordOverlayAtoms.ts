@@ -1,6 +1,5 @@
 import { atom, type Atom } from "jotai";
 import { atomWithStorage, selectAtom } from "jotai/utils";
-
 import {
   NOTES,
   CHORD_DEFINITIONS,
@@ -121,7 +120,6 @@ export const chordOverlayHiddenAtom = atomWithStorage<boolean>(
   booleanStorage,
   GET_ON_INIT,
 );
-
 
 export const fullChordsEnabledAtom = atomWithStorage<boolean>(
   k("fullChordsEnabled"),

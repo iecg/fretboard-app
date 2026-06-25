@@ -33,7 +33,6 @@ export interface UseStaticFretboardTopologyProps {
   totalColumns: number;
   startFret: number;
   maxFret: number;
-
   highlightNotes: string[];
   hasChordOverlay: boolean;
   chordTones: string[];
@@ -64,7 +63,6 @@ export function buildStaticFretboardTopology({
   totalColumns,
   startFret,
   maxFret,
-
   highlightNotes,
   hasChordOverlay,
   chordTones,
@@ -205,24 +203,23 @@ export function buildStaticFretboardTopology({
         : semantics;
 
       const noteClass = effectiveSemantics
-          ? classifyNoteFromSemantics(
-              effectiveSemantics,
-              isInActiveShape,
-              hasChordOverlay,
-              isHighlighted,
-            )
-          : classifyNote(
-              isScaleRoot,
-              isChordRootNote,
-              isColorNote,
-              isHighlighted,
-              isChordTone,
-              hasChordOverlay,
-              isInActiveShape,
-            );
+        ? classifyNoteFromSemantics(
+            effectiveSemantics,
+            isInActiveShape,
+            hasChordOverlay,
+            isHighlighted,
+          )
+        : classifyNote(
+            isScaleRoot,
+            isChordRootNote,
+            isColorNote,
+            isHighlighted,
+            isChordTone,
+            hasChordOverlay,
+            isInActiveShape,
+          );
 
       const finalNoteClass = noteClass;
-
 
       // Scale-aware spelled pitch (e.g. "A#" → "Bb" in F major). This is the
       // pitch the visible "notes"-mode label shows; the a11y aria-label reuses

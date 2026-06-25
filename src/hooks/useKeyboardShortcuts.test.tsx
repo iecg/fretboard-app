@@ -18,6 +18,7 @@ import {
   progressionMetronomeEnabledAtom,
   progressionStepsAtom,
   progressionTempoBpmAtom,
+  auditionRequestTickAtom,
 } from "@fretflow/fretboard/store/progressionAtoms";
 import { isMutedAtom } from "@fretflow/fretboard/store/audioAtoms";
 import {

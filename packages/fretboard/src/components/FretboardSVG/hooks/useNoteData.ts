@@ -47,7 +47,6 @@ export interface UseNoteDataProps {
   totalColumns: UseStaticFretboardTopologyProps["totalColumns"];
   startFret: UseStaticFretboardTopologyProps["startFret"];
   maxFret: UseStaticFretboardTopologyProps["maxFret"];
-
   highlightNotes: UseStaticFretboardTopologyProps["highlightNotes"];
   hasChordOverlay: boolean;
   chordTones: UseStaticFretboardTopologyProps["chordTones"];
@@ -81,7 +80,6 @@ export function useNoteData({
   totalColumns,
   startFret,
   maxFret,
-
   highlightNotes,
   hasChordOverlay,
   chordTones,
@@ -110,7 +108,6 @@ export function useNoteData({
     totalColumns,
     startFret,
     maxFret,
-
     highlightNotes,
     hasChordOverlay,
     chordTones,

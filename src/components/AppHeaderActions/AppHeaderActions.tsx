@@ -17,7 +17,6 @@ import { isMutedAtom, toggleMuteAtom } from "@fretflow/fretboard/store/audioAtom
 import { settingsOverlayOpenAtom, themeAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { useResolvedTheme } from "@fretflow/fretboard/hooks/useResolvedTheme";
 import { useTranslation } from "../../hooks/useTranslation";
-
 import { getCollisionPadding } from "../../utils/collision";
 import sharedStyles from "../shared/shared.module.css";
 import styles from "./AppHeaderActions.module.css";

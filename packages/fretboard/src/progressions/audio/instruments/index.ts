@@ -28,7 +28,10 @@ export function getChordVoice(patchId: string): ChordVoice {
           envelope: spec.envelope,
           volume: spec.volume,
         });
-        synth.maxPolyphony = spec.maxPolyphonyFloor || 32;
+        // The synth is shared across every chord on this patch, so polyphony
+        // is summed across overlapping chords + their release tails — floor at
+        // 32 rather than the per-chord `maxPolyphonyFloor` to avoid stealing.
+        synth.maxPolyphony = Math.max(spec.maxPolyphonyFloor, 32);
         synthsByPatchId.set(patch.id, synth);
       }
 
@@ -38,12 +41,25 @@ export function getChordVoice(patchId: string): ChordVoice {
       const durationSec = durationFor(options);
       synth.triggerAttackRelease(notes as string[], durationSec, time, velocity);
 
+      let cancelled = false;
       return {
         cancel: () => {
+          if (cancelled) return;
+          cancelled = true;
           const cancelTime = Tone.now();
           if (cancelTime < time) {
-            synth.dispose();
-            synthsByPatchId.delete(patch.id);
+            // Future-scheduled chord cancelled before it starts. Disposing is
+            // the only reliable way to kill a pending PolySynth attack — but
+            // only if this is still the live synth for the patch (a concurrent
+            // cancel on the shared synth may have already torn it down).
+            if (synthsByPatchId.get(patch.id) === synth) {
+              synthsByPatchId.delete(patch.id);
+              try {
+                synth.dispose();
+              } catch {
+                // Already disposed
+              }
+            }
             return;
           }
           try {

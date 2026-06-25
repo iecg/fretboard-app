@@ -110,7 +110,7 @@ export function createToneSynthSpies(): {
         volume: { value: 0 },
         maxPolyphony: 0,
         envelope: {
-          cancel: vi.fn((_cancelTime?: number) => {
+          cancel: vi.fn(() => {
             for (const playbackTimer of playbackTimers) {
               clearTimeout(playbackTimer);
             }
@@ -118,7 +118,7 @@ export function createToneSynthSpies(): {
           }),
         },
         filterEnvelope: {
-          cancel: vi.fn((_cancelTime?: number) => {
+          cancel: vi.fn(() => {
             // filter envelope behaves similarly for simplicity
           }),
         },

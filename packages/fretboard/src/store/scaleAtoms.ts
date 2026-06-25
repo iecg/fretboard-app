@@ -212,7 +212,6 @@ export function scaleHeadline(label: string): string {
 /** The scale label reduced to its headline (root + scale name only). */
 export const scaleHeadlineAtom = atom((get) => scaleHeadline(get(scaleLabelAtom)));
 
-
 // Maps old tri-state "off" → false and removes the stale key.
 function readLegacyScaleVisibility(): boolean {
   const legacy = withStorageErrorBoundary<string | null>(k("scaleVisibilityMode"), null);

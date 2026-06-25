@@ -309,7 +309,9 @@ export function _resetDrumKitSynths(): void {
     map.forEach((synth) => {
       try {
         synth.dispose();
-      } catch {}
+      } catch {
+        // Already disposed
+      }
     });
     map.clear();
   };

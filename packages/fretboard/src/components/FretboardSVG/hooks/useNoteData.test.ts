@@ -19,7 +19,6 @@ describe("useNoteData", () => {
         totalColumns: 2,
         startFret: 0,
         maxFret: 22,
-
         highlightNotes: ["E", "A"],
         hasChordOverlay: false,
         chordTones: [],
@@ -76,7 +75,6 @@ describe("useNoteData", () => {
           totalColumns: 12,
           startFret: 0,
           maxFret: 12,
-
           highlightNotes: ["C", "E", "G"],
           hasChordOverlay: true,
           chordTones: ["C", "E", "G"],
@@ -192,7 +190,6 @@ describe("useNoteData", () => {
           totalColumns: 12,
           startFret: 0,
           maxFret: 12,
-
           highlightNotes: ["C", "E", "G"],
           hasChordOverlay: true,
           chordTones: ["C", "E", "G"],
@@ -231,7 +228,6 @@ describe("useNoteData", () => {
       totalColumns: 7,
       startFret: 0,
       maxFret: 8,
-
       highlightNotes: ["C", "E", "G"],
       hasChordOverlay: true,
       chordTones: ["C", "E", "G"],

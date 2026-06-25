@@ -9,7 +9,6 @@ const TOPOLOGY_PROPS = {
   totalColumns: 4,
   startFret: 0,
   maxFret: 5,
-
   highlightNotes: ["G", "A", "B"],
   hasChordOverlay: true,
   chordTones: ["G", "B", "D"],
