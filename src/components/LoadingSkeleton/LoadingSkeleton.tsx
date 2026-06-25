@@ -8,14 +8,7 @@ function SkeletonBar({ size = "md", width }: { size?: "sm" | "md" | "lg"; width?
 
 
 
-export function TimelineSkeleton() {
-  return (
-    <div className={styles["timeline-skeleton"]} aria-hidden="true">
-      <div className={styles["timeline-ruler-bone"]} />
-      <div className={styles["timeline-lane-bone"]} />
-    </div>
-  );
-}
+
 
 function ControlCardSkeleton({
   titleWidth,

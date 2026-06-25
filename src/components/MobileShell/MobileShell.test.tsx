@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 import { makeAtomStore, renderWithStore, renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { mobilePanelAtom } from "../../store/uiAtoms";
+import { mobilePanelAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { MobileShell } from "./MobileShell";
 
 describe("MobileShell", () => {

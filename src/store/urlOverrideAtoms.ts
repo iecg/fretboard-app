@@ -1,14 +1,14 @@
 import { atom } from "jotai";
 import type { ShareState } from "../utils/shareCodec";
-import type { ProgressionStep } from "../progressions/progressionDomain";
-import { createProgressionStep } from "../progressions/progressionDomain";
-import { baseRootNoteAtom, baseScaleNameAtom } from "./scaleAtoms";
+import type { ProgressionStep } from "@fretflow/fretboard/progressions/progressionDomain";
+import { createProgressionStep } from "@fretflow/fretboard/progressions/progressionDomain";
+import { baseRootNoteAtom, baseScaleNameAtom } from "@fretflow/fretboard/store/scaleAtoms";
 import {
   progressionTempoBpmAtom,
   beatsPerBarAtom,
   timeSignatureDenominatorAtom,
   progressionStepsAtom,
-} from "./progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 
 export const urlOverridesAtom = atom<ShareState | null>(null);
 

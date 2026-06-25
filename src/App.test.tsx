@@ -12,7 +12,7 @@ import App from "./App";
 import {
   resumeGuitarAudio,
   setGuitarMutePreference,
-} from "./core/lazyGuitarAudio";
+} from "@fretflow/fretboard/core/lazyGuitarAudio";
 import { get3NPSCoordinates, STANDARD_TUNING } from "@fretflow/core";
 import { k } from "./test-utils/storage";
 
@@ -45,8 +45,8 @@ vi.mock("@fretflow/fretboard/components/Fretboard/Fretboard", async () => {
 // component-under-test exposes a root-note setter the suite can fire.
 vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async () => {
   const { useAtomValue, useSetAtom } = await import("jotai");
-  const { rootNoteAtom } = await import("./store/scaleAtoms");
-  const { setRootNoteAtom } = await import("./store/actions");
+  const { rootNoteAtom } = await import("@fretflow/fretboard/store/scaleAtoms");
+  const { setRootNoteAtom } = await import("@fretflow/fretboard/store/actions");
   return {
     FingeringPatternControls: () => {
       const rootNote = useAtomValue(rootNoteAtom);
@@ -64,7 +64,7 @@ vi.mock("./components/FingeringPatternControls/FingeringPatternControls", async 
   };
 });
 
-vi.mock("./core/lazyGuitarAudio", () => ({
+vi.mock("@fretflow/fretboard/core/lazyGuitarAudio", () => ({
   setGuitarMutePreference: vi.fn(),
   setGuitarAudioErrorHandler: vi.fn(),
   setGuitarOutputWedgedHandler: vi.fn(),
@@ -75,7 +75,7 @@ vi.mock("./core/lazyGuitarAudio", () => ({
 
 // Spy: did the idle callback trigger a progression engine import?
 const progressionEnginePrefetch = vi.hoisted(() => ({ called: false }));
-vi.mock("./progressions/audio/progressionAudioEngine", async (importOriginal) => {
+vi.mock("@fretflow/fretboard/progressions/audio/progressionAudioEngine", async (importOriginal) => {
   progressionEnginePrefetch.called = true;
   const actual = await importOriginal();
   return actual as object;

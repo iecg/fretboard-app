@@ -1,5 +1,5 @@
 import { Drum, Guitar, Piano, Timer } from "lucide-react";
-import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
+import { usePlaybackTransportModel } from "@fretflow/fretboard/hooks/usePlaybackTransportModel";
 import { useTranslation } from "../../hooks/useTranslation";
 import { TransportButton } from "./TransportButton";
 import styles from "./TransportBar.module.css";

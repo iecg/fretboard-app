@@ -1,8 +1,8 @@
 import { memo, useMemo, type CSSProperties } from "react";
 import { useAtomValue, type Atom } from "jotai";
-import type { ProgressionStep } from "../../progressions/progressionDomain";
-import { formatProgressionDurationLabel, resolveProgressionStep } from "../../progressions/progressionDomain";
-import { scaleNameAtom, rootNoteAtom, preferFlatsAtom } from "../../store/scaleAtoms";
+import type { ProgressionStep } from "@fretflow/fretboard/progressions/progressionDomain";
+import { formatProgressionDurationLabel, resolveProgressionStep } from "@fretflow/fretboard/progressions/progressionDomain";
+import { scaleNameAtom, rootNoteAtom, preferFlatsAtom } from "@fretflow/fretboard/store/scaleAtoms";
 import styles from "./ProgressionTrack.module.css";
 
 interface ProgressionBlockProps {

@@ -8,7 +8,7 @@ import styles from "./HelpModal.module.css";
 import { en } from "../../i18n/en";
 import { CURRENT_WHATS_NEW_ID, HELP_TABS } from "./helpContent";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
+import { helpWhatsNewSeenAtom } from "@fretflow/fretboard/store/uiAtoms";
 
 function setViewport(width: number, height: number) {
   Object.defineProperty(window, "innerWidth", {

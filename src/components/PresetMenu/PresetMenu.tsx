@@ -2,7 +2,7 @@ import React from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import clsx from "clsx";
-import type { SuggestionFeel } from "../../progressions/progressionGeneration";
+import type { SuggestionFeel } from "@fretflow/fretboard/progressions/progressionGeneration";
 import styles from "./PresetMenu.module.css";
 import { getCollisionPadding } from "../../utils/collision";
 
@@ -24,7 +24,7 @@ const PresetMenuSubContent = React.forwardRef<
 });
 PresetMenuSubContent.displayName = "PresetMenuSubContent";
 
-export interface PresetMenuOption {
+interface PresetMenuOption {
   id: string;
   label: string;
 }

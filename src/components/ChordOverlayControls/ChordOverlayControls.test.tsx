@@ -6,11 +6,11 @@ import { createStore } from "jotai";
 import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { voicingAtom } from "../../store/chordOverlayAtoms";
-import { fingeringPatternAtom, cagedShapesAtom } from "../../store/fingeringAtoms";
-import { progressionStepsAtom } from "../../store/progressionAtoms";
-import { scaleNameAtom, rootNoteAtom } from "../../store/scaleAtoms";
-import { practiceLensAtom } from "../../store/practiceLensAtoms";
+import { voicingAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
+import { fingeringPatternAtom, cagedShapesAtom } from "@fretflow/fretboard/store/fingeringAtoms";
+import { progressionStepsAtom } from "@fretflow/fretboard/store/progressionAtoms";
+import { scaleNameAtom, rootNoteAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { practiceLensAtom } from "@fretflow/fretboard/store/practiceLensAtoms";
 import { ChordOverlayControls } from "./ChordOverlayControls";
 
 /**

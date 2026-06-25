@@ -1,6 +1,6 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { setRootNoteAtom, setScaleNameAtom } from "../store/actions";
-import { rootNoteAtom, scaleNameAtom, scaleNotesAtom, colorNotesAtom, scaleLabelAtom, preferFlatsAtom, hiddenNotesAtom, toggleHiddenNoteAtom, scaleVisibleAtom, toggleScaleVisibleAtom } from "../store/scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, scaleNotesAtom, colorNotesAtom, scaleLabelAtom, preferFlatsAtom, scaleVisibleAtom, toggleScaleVisibleAtom } from "../store/scaleAtoms";
 
 export function useScaleState() {
   const rootNote = useAtomValue(rootNoteAtom);
@@ -15,8 +15,6 @@ export function useScaleState() {
   const colorNotes = useAtomValue(colorNotesAtom);
   const scaleLabel = useAtomValue(scaleLabelAtom);
   const preferFlats = useAtomValue(preferFlatsAtom);
-  const [hiddenNotes, setHiddenNotes] = useAtom(hiddenNotesAtom);
-  const toggleHiddenNote = useSetAtom(toggleHiddenNoteAtom);
   const scaleVisible = useAtomValue(scaleVisibleAtom);
   const toggleScaleVisible = useSetAtom(toggleScaleVisibleAtom);
 
@@ -29,9 +27,6 @@ export function useScaleState() {
     colorNotes,
     scaleLabel,
     preferFlats,
-    hiddenNotes,
-    setHiddenNotes,
-    toggleHiddenNote,
     scaleVisible,
     toggleScaleVisible,
   };

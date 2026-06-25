@@ -2,10 +2,10 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { render, act } from "@testing-library/react";
 import { ProgressionPlayhead } from "./ProgressionPlayhead";
-import { setActiveStep, _resetTimelineForTests } from "../../progressions/audio/timeline";
-import { _resetProgressionAudioForTests, ensureProgressionAudio } from "../../progressions/audio/bus";
+import { setActiveStep, _resetTimelineForTests } from "@fretflow/fretboard/progressions/audio/timeline";
+import { _resetProgressionAudioForTests, ensureProgressionAudio } from "@fretflow/fretboard/progressions/audio/bus";
 import { createStore } from "jotai";
-import { startVisualClock, stopVisualClock } from "../../progressions/audio/visualClock";
+import { startVisualClock, stopVisualClock } from "@fretflow/fretboard/progressions/audio/visualClock";
 
 describe("ProgressionPlayhead", () => {
   beforeEach(() => {

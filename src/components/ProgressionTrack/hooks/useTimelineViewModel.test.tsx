@@ -10,7 +10,7 @@ import {
   fastDisplayedStepIndexPrimitiveAtom,
   progressionStepsAtom,
   setProgressionPlayingAtom,
-} from "../../../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 
 vi.mock("./buildTimelineViewModel", async (importOriginal) => {
   const actual = await importOriginal<typeof builderModule>();

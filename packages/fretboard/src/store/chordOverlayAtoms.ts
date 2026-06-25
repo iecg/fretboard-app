@@ -1,6 +1,5 @@
 import { atom, type Atom } from "jotai";
 import { atomWithStorage, selectAtom } from "jotai/utils";
-import { EMPTY_SET, setsEqual } from "./atomUtils";
 import {
   NOTES,
   CHORD_DEFINITIONS,
@@ -120,34 +119,6 @@ export const chordOverlayHiddenAtom = atomWithStorage<boolean>(
   false,
   booleanStorage,
   GET_ON_INIT,
-);
-
-// Transient per-note hides — keyed by chord identity so it auto-resets when chord changes.
-const internalChordHiddenNotesAtom = atom<{
-  chordRoot: string;
-  chordType: string | null;
-  notes: Set<string>;
-} | null>(null);
-
-export const chordHiddenNotesAtom = atom(
-  (get) => {
-    const state = get(internalChordHiddenNotesAtom);
-    const chordRoot = get(chordRootAtom);
-    const chordType = get(chordTypeAtom);
-    if (state && state.chordRoot === chordRoot && state.chordType === chordType) {
-      return state.notes;
-    }
-    return EMPTY_SET;
-  },
-  (get, set, update: Set<string> | ((prev: Set<string>) => Set<string>)) => {
-    const chordRoot = get(chordRootAtom);
-    const chordType = get(chordTypeAtom);
-    const currentNotes = get(chordHiddenNotesAtom);
-    const nextNotes =
-      typeof update === "function" ? update(currentNotes) : update;
-    if (setsEqual(currentNotes, nextNotes)) return;
-    set(internalChordHiddenNotesAtom, { chordRoot, chordType, notes: nextNotes });
-  },
 );
 
 export const fullChordsEnabledAtom = atomWithStorage<boolean>(
@@ -657,10 +628,7 @@ export const chordTonesAtom = atom((get) => {
   const chordRoot = get(chordRootAtom);
   const chordType = get(chordTypeAtom);
   if (!chordType) return [];
-  const tones = getChordNotes(chordRoot, chordType);
-  const hidden = get(chordHiddenNotesAtom);
-  if (hidden.size === 0) return tones;
-  return tones.filter((n) => !hidden.has(n));
+  return getChordNotes(chordRoot, chordType);
 });
 
 const rawChordMembersAtom = atom((get) => {

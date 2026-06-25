@@ -4,10 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
 import { createStore } from "jotai";
 import { ShareButton } from "./ShareButton";
-import { baseRootNoteAtom, baseScaleNameAtom } from "../../store/scaleAtoms";
-import { progressionTempoBpmAtom, beatsPerBarAtom, timeSignatureDenominatorAtom, progressionStepsAtom } from "../../store/progressionAtoms";
+import { baseRootNoteAtom, baseScaleNameAtom } from "@fretflow/fretboard/store/scaleAtoms";
+import { progressionTempoBpmAtom, beatsPerBarAtom, timeSignatureDenominatorAtom, progressionStepsAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import { renderWithStore } from "../../test-utils/renderWithAtoms";
-import type { ProgressionStep } from "../../progressions/progressionDomain";
+import type { ProgressionStep } from "@fretflow/fretboard/progressions/progressionDomain";
 
 const DEFAULT_STEPS: ProgressionStep[] = [
   { id: "1", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },

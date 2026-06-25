@@ -8,7 +8,7 @@ import {
   progressionPlayingAtom,
   activeProgressionStepIndexAtom,
   setProgressionPlayingAtom,
-} from "../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 
 function makeWrapper(store: ReturnType<typeof createStore>) {
   return function Wrapper({ children }: { children: React.ReactNode }) {

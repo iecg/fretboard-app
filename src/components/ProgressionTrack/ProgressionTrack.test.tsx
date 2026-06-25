@@ -3,7 +3,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, fastDisplayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, fastDisplayedStepIndexPrimitiveAtom, progressionPlayingAtom, progressionStepsAtom, setProgressionActiveStepIndexAtom, setProgressionPlayingAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import { ProgressionTrack } from "./ProgressionTrack";
 
 const fourStepProgression = [

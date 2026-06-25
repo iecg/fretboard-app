@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
-import { getTimelinePosition } from "../../progressions/audio/timeline";
+import { getTimelinePosition } from "@fretflow/fretboard/progressions/audio/timeline";
 import {
   formatProgressionPlaybackPosition,
   type FormattedPlaybackPositionParts,
-} from "../../progressions/progressionDomain";
+} from "@fretflow/fretboard/progressions/progressionDomain";
 import styles from "./HeaderTransportCluster.module.css";
 
 interface ProgressionPositionReadoutProps {

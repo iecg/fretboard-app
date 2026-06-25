@@ -10,7 +10,7 @@ import {
 import { activePositionAtom } from "../store/chordScope";
 import { fingeringPatternAtom, cagedShapesAtom, npsPositionAtom } from "../store/fingeringAtoms";
 import { noteSemanticMapAtom } from "../store/practiceLensAtoms";
-import { rootNoteAtom, scaleNameAtom, preferFlatsAtom, effectiveColorNotesAtom, effectiveHiddenNotesAtom } from "../store/scaleAtoms";
+import { rootNoteAtom, scaleNameAtom, preferFlatsAtom, effectiveColorNotesAtom } from "../store/scaleAtoms";
 import { effectiveShapeDataAtom } from "../store/shapeAtoms";
 import { displayFormatAtom } from "../store/uiAtoms";
 import type { CagedShape } from "@fretflow/core";
@@ -31,7 +31,6 @@ export function useFretboardTopologyModel() {
   const chordTones = useAtomValue(chordTonesAtom);
   const chordRoot = useAtomValue(chordRootAtom);
   const colorNotes = useAtomValue(effectiveColorNotesAtom);
-  const hiddenNotes = useAtomValue(effectiveHiddenNotesAtom);
 
   const fingeringPattern = useAtomValue(fingeringPatternAtom);
   const cagedShapes = useAtomValue(cagedShapesAtom);
@@ -90,7 +89,6 @@ export function useFretboardTopologyModel() {
     chordRoot,
     chordFretSpread: 0,
     colorNotes,
-    hiddenNotes,
     activePattern,
     activeShape,
     shapeScope,
@@ -101,7 +99,7 @@ export function useFretboardTopologyModel() {
   }), [
     rootNote, scaleName, displayFormat, preferFlats, noteSemanticMap,
     highlightNotes, boxBounds, shapePolygons, wrappedNotes,
-    chordTones, chordRoot, colorNotes, hiddenNotes,
+    chordTones, chordRoot, colorNotes,
     activePattern, cagedShapesKey, npsPosition, fingeringPattern, shapeScope, visibleFullChordMatches,
     chordHighlightPositions, showChordConnectors, chordBoxBounds
   ]);

@@ -13,11 +13,10 @@ import {
   VolumeX,
 } from "lucide-react";
 import { ANIMATION_DURATION_XFADE } from "@fretflow/core";
-import { isMutedAtom, toggleMuteAtom } from "../../store/audioAtoms";
-import { settingsOverlayOpenAtom, themeAtom } from "../../store/uiAtoms";
-import { useResolvedTheme } from "../../hooks/useResolvedTheme";
+import { isMutedAtom, toggleMuteAtom } from "@fretflow/fretboard/store/audioAtoms";
+import { settingsOverlayOpenAtom, themeAtom } from "@fretflow/fretboard/store/uiAtoms";
+import { useResolvedTheme } from "@fretflow/fretboard/hooks/useResolvedTheme";
 import { useTranslation } from "../../hooks/useTranslation";
-import { SettingsTooltip } from "../SettingsTooltip/SettingsTooltip";
 import { getCollisionPadding } from "../../utils/collision";
 import sharedStyles from "../shared/shared.module.css";
 import styles from "./AppHeaderActions.module.css";
@@ -146,7 +145,7 @@ export function AppHeaderActions({
 
   // Buttons variant: each button's handler, labels, title, and icon come from
   // the shared `actions` array — only the per-id presentation wrapper differs
-  // (SettingsTooltip on settings, the crossfade on mute, the focus-return ref
+  // (the crossfade on mute, the focus-return ref
   // on help). This keeps handlers/labels single-sourced with the menu variant.
   const renderButton = (action: HeaderAction) => {
     const triggerRef =
@@ -183,9 +182,6 @@ export function AppHeaderActions({
       </button>
     );
 
-    if (action.id === "settings") {
-      return <SettingsTooltip key={action.id}>{button}</SettingsTooltip>;
-    }
     return <Fragment key={action.id}>{button}</Fragment>;
   };
 

@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import type { VoicingType } from "@fretflow/core";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";
-import { voicingAtom } from "../../store/chordOverlayAtoms";
+import { voicingAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 
 /**

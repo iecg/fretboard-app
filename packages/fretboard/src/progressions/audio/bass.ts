@@ -5,13 +5,10 @@
  * notes that share the same patch.
  */
 import * as Tone from "tone";
-import { createReusableVoicePool } from "./createReusableVoicePool";
 import type { BassPatch } from "./sound/patchTypes";
 import { getBassPatch } from "./sound/instrumentPatches";
 
 const DEFAULT_BASS_PATCH_ID = "bass-finger";
-const DISPOSE_TAIL_MS = 50;
-const DISPOSE_TAIL_SEC = DISPOSE_TAIL_MS / 1000;
 
 export interface BassNoteOptions {
   velocity?: number;
@@ -24,24 +21,21 @@ export interface BassVoiceHandle {
   cancel: () => void;
 }
 
-type BassPool = ReturnType<typeof createReusableVoicePool<Tone.MonoSynth>>;
-const poolsByPatchId = new Map<string, BassPool>();
+const synthsByPatchId = new Map<string, Tone.MonoSynth>();
 
-function poolForPatch(patch: BassPatch): BassPool {
-  const existing = poolsByPatchId.get(patch.id);
+function synthForPatch(patch: BassPatch, dest: AudioNode): Tone.MonoSynth {
+  const existing = synthsByPatchId.get(patch.id);
   if (existing) return existing;
-  const pool = createReusableVoicePool<Tone.MonoSynth>({
-    createVoice: () =>
-      new Tone.MonoSynth({
-        volume: patch.volumeDb,
-        oscillator: { type: patch.oscillator.type } as Tone.MonoSynthOptions["oscillator"],
-        envelope: patch.envelope,
-        filter: { type: patch.filter.type, Q: patch.filter.Q },
-        filterEnvelope: patch.filterEnvelope,
-      }),
+  const synth = new Tone.MonoSynth({
+    volume: patch.volumeDb,
+    oscillator: { type: patch.oscillator.type } as Tone.MonoSynthOptions["oscillator"],
+    envelope: patch.envelope,
+    filter: { type: patch.filter.type, Q: patch.filter.Q },
+    filterEnvelope: patch.filterEnvelope,
   });
-  poolsByPatchId.set(patch.id, pool);
-  return pool;
+  synth.connect(dest);
+  synthsByPatchId.set(patch.id, synth);
+  return synth;
 }
 
 /**
@@ -63,62 +57,51 @@ export function scheduleBassNote(
   }
 
   const patch = options.patch ?? getBassPatch(DEFAULT_BASS_PATCH_ID)!;
-  const releaseTailSec = patch.envelope.release;
   const noteLen = Math.max(
     0.05,
     Math.min(2, options.durationSec ?? patch.envelope.decay + patch.envelope.release),
   );
-  const now = Tone.now();
-  const playbackStartTime = Math.max(now, time);
-  const lease = poolForPatch(patch).lease(dest, now);
-  let busyUntil = playbackStartTime + noteLen + releaseTailSec;
-  lease.setBusyUntil(busyUntil);
+
+  const synth = synthForPatch(patch, dest);
+  synth.disconnect();
+  synth.connect(dest);
+
   // Route through the progression bus so silenceProgressionBus() mutes the
   // bass along with the rest of the backing track.
-  lease.voice.triggerAttackRelease(frequency, noteLen, time, velocity);
+  synth.triggerAttackRelease(frequency, noteLen, time, velocity);
 
   let cancelled = false;
   return {
     cancel: () => {
       if (cancelled) return;
       cancelled = true;
-      if (!lease.isCurrent()) return;
 
       const cancelTime = Tone.now();
       if (cancelTime < time) {
         // Note was scheduled for a future `time` but cancelled before it
-        // starts — dispose to KILL the pending triggerAttackRelease on this
-        // monophonic voice. Merely marking it idle would let the note fire.
-        lease.dispose();
+        // starts — cancel the pending triggers on envelopes.
+        synth.envelope.cancel(cancelTime);
+        synth.filterEnvelope.cancel(cancelTime);
         return;
       }
 
-      if (cancelTime >= busyUntil) {
-        return;
-      }
-
-      busyUntil = cancelTime + DISPOSE_TAIL_SEC;
-      lease.setBusyUntil(busyUntil);
-      // Same release-tail pattern as metronome.ts: close the envelope
-      // explicitly, then defer dispose so the tail doesn't get truncated.
-      // Calling synth.dispose() while the voice is mid-decay would cut the
-      // tail abruptly and produce an audible click.
       try {
-        lease.voice.triggerRelease(cancelTime);
-        setTimeout(() => {
-          try {
-            lease.dispose();
-          } catch {
-            /* already disposed */
-          }
-        }, DISPOSE_TAIL_MS);
+        synth.triggerRelease(cancelTime);
       } catch {
-        try {
-          lease.dispose();
-        } catch {
-          /* already disposed */
-        }
+        // Ignore
       }
     },
   };
+}
+
+/** Test-only reset so the module behaves predictably across vitest runs. */
+export function _resetBassSynths(): void {
+  synthsByPatchId.forEach((synth) => {
+    try {
+      synth.dispose();
+    } catch {
+      // Ignore
+    }
+  });
+  synthsByPatchId.clear();
 }

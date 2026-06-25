@@ -4,7 +4,7 @@ import {
   setProgressionActiveStepIndexAtom,
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
-} from "../../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 import { useTimelineViewModel } from "./hooks/useTimelineViewModel";
 import { useTimelineAutoScroll } from "./hooks/useTimelineAutoScroll";
 import styles from "./ProgressionTrack.module.css";

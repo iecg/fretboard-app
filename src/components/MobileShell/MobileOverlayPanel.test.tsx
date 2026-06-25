@@ -4,7 +4,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { mobilePanelAtom } from "../../store/uiAtoms";
+import { mobilePanelAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { MobileOverlayPanel } from "./MobileOverlayPanel";
 import { MobileDock } from "./MobileDock";
 

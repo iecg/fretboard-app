@@ -10,7 +10,16 @@ import { updateActiveChordAtom, activeChordCachedDegreeAtom } from "./songStateA
 import { cagedShapesAtom, fingeringPatternAtom, npsPositionAtom, clickedShapeAtom } from "./fingeringAtoms";
 import { fretStartAtom, fretEndAtom, fretZoomAtom, tuningNameAtom, currentTuningAtom } from "./layoutAtoms";
 import { progressionStepsAtom, progressionTempoBpmAtom, progressionPlayingAtom, activeProgressionStepIndexAtom, setProgressionPlayingAtom } from "./progressionAtoms";
-import { rootNoteAtom, scaleNameAtom, accidentalModeAtom, preferFlatsAtom, colorNotesAtom, scaleVisibleAtom, toggleScaleVisibleAtom, effectiveHiddenNotesAtom, effectiveColorNotesAtom, hiddenNotesAtom, toggleHiddenNoteAtom } from "./scaleAtoms";
+import {
+  rootNoteAtom,
+  scaleNameAtom,
+  accidentalModeAtom,
+  preferFlatsAtom,
+  colorNotesAtom,
+  scaleVisibleAtom,
+  toggleScaleVisibleAtom,
+  effectiveColorNotesAtom,
+} from "./scaleAtoms";
 import { displayFormatAtom } from "./uiAtoms";
 import { STANDARD_TUNING, TUNINGS } from "@fretflow/core";
 
@@ -437,27 +446,18 @@ describe("atoms", () => {
   });
 
   describe("scale visibility (scaleVisibleAtom + toggleScaleVisibleAtom)", () => {
-    it("toggling off clears individually hidden notes and hides the scale", () => {
+    it("toggling off clears scale visibility", () => {
       const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "major");
-      store.set(toggleHiddenNoteAtom, "E");
-      store.set(toggleHiddenNoteAtom, "G");
-      expect(store.get(hiddenNotesAtom).size).toBe(2);
+      store.set(scaleVisibleAtom, true);
       store.set(toggleScaleVisibleAtom);
       expect(store.get(scaleVisibleAtom)).toBe(false);
-      expect(store.get(hiddenNotesAtom).size).toBe(0);
     });
 
-    it("toggling on restores full scale with no hidden notes", () => {
+    it("toggling on restores full scale", () => {
       const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "major");
-      store.set(toggleHiddenNoteAtom, "E");
-      store.set(toggleScaleVisibleAtom);
+      store.set(scaleVisibleAtom, false);
       store.set(toggleScaleVisibleAtom);
       expect(store.get(scaleVisibleAtom)).toBe(true);
-      expect(store.get(hiddenNotesAtom).size).toBe(0);
     });
 
     it("resets to visible=true via resetAtom", () => {
@@ -469,16 +469,6 @@ describe("atoms", () => {
   });
 
   describe("effective* atoms gated by scaleVisible", () => {
-    it("effectiveHiddenNotes is empty when scale is hidden, populated when visible", () => {
-      const store = makeStore();
-      store.set(rootNoteAtom, "C");
-      store.set(scaleNameAtom, "major");
-      store.set(toggleHiddenNoteAtom, "E");
-      expect(store.get(effectiveHiddenNotesAtom).has("E")).toBe(true);
-      store.set(scaleVisibleAtom, false);
-      expect(store.get(effectiveHiddenNotesAtom).size).toBe(0);
-    });
-
     it("effectiveColorNotes is empty when scale is hidden, blue note when visible", () => {
       const store = makeStore();
       store.set(rootNoteAtom, "C");

@@ -57,8 +57,6 @@ interface FretboardProps {
   shapePolygons?: ShapePolygon[];
   /** Set of note names that wrap across the nut (open-string equivalents). */
   wrappedNotes?: Set<string>;
-  /** Set of note names to suppress from rendering entirely. */
-  hiddenNotes?: Set<string>;
   /** Callback fired when the user taps a fret; receives string index, fret index, and note name. */
   onFretClick?: (
     stringIndex: number,
@@ -122,7 +120,6 @@ export function Fretboard(props: FretboardProps) {
   const colorNotes = props.colorNotes ?? state.colorNotes;
   const shapePolygons = props.shapePolygons ?? state.shapePolygons;
   const wrappedNotes = props.wrappedNotes ?? state.wrappedNotes;
-  const hiddenNotes = props.hiddenNotes ?? state.hiddenNotes;
   const preferFlats = props.preferFlats ?? state.preferFlats;
   const scaleName = props.scaleName ?? state.scaleName;
   const activePattern = props.activePattern ?? state.activePattern;
@@ -376,7 +373,6 @@ export function Fretboard(props: FretboardProps) {
             colorNotes={colorNotes}
             shapePolygons={shapePolygons}
             wrappedNotes={wrappedNotes}
-            hiddenNotes={hiddenNotes}
             preferFlats={preferFlats}
             scaleName={scaleName}
             activePattern={activePattern}

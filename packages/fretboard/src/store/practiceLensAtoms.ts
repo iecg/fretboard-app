@@ -32,7 +32,6 @@ import {
 import {
   chordLookupAtom,
   chordOverlayHiddenAtom,
-  chordHiddenNotesAtom,
   fullChordsEnabledAtom,
 } from "./chordOverlayAtoms";
 import { activeChordCachedDegreeAtom } from "./songStateAtoms";
@@ -323,7 +322,6 @@ const chordSemanticInputsAtom = atom((get) => {
   if (get(chordOverlayHiddenAtom)) return null;
   return {
     chordLookup,
-    hiddenNotes: get(chordHiddenNotesAtom),
     chordDegree: get(activeChordCachedDegreeAtom),
   };
 });
@@ -357,22 +355,14 @@ export const noteSemanticMapAtom = atom((get) => {
   } = scaleInputs;
   const {
     chordLookup: { chordRoot, chordMembers, chordType },
-    hiddenNotes,
     chordDegree,
   } = chordInputs;
 
   const colorNoteSet = new Set(colorNotes);
 
-  // Per-note hides: drop hidden notes from chord-tone classification so the
-  // fretboard renders them as scale-only / color-tone / inactive instead of
-  // chord-tone-orange.
-  const visibleMembers = hiddenNotes.size === 0
-    ? chordMembers
-    : chordMembers.filter((m) => !hiddenNotes.has(m.note));
-
-  const memberByNote = new Map<string, (typeof visibleMembers)[number]>();
-  for (const m of visibleMembers) memberByNote.set(m.note, m);
-  const activeChordToneSet = new Set(visibleMembers.map((m) => m.note));
+  const memberByNote = new Map<string, (typeof chordMembers)[number]>();
+  for (const m of chordMembers) memberByNote.set(m.note, m);
+  const activeChordToneSet = new Set(chordMembers.map((m) => m.note));
 
   // diatonic chord check (computed once per evaluation).
   let diatonicChordRoot: string | undefined;

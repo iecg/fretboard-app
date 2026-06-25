@@ -31,7 +31,7 @@ export function ShareButton() {
       })),
     };
 
-    const url = encodeShareUrl(state, BASE_URL);
+    const url = await encodeShareUrl(state, BASE_URL);
 
     if (typeof navigator.share === "function" && navigator.canShare?.({ url })) {
       try {

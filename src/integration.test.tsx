@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import App from "./App";
-import { playGuitarNote } from "./core/lazyGuitarAudio";
+import { playGuitarNote } from "@fretflow/fretboard/core/lazyGuitarAudio";
 import { k } from "./test-utils/storage";
 // Pre-import lazy-loaded components so React.lazy() resolves from the module
 // cache synchronously, allowing Suspense to mount them without async delay.

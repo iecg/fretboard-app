@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import { makeAtomStore, renderWithAtoms, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, progressionTempoBpmAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, progressionStepsAtom, progressionTempoBpmAtom, setProgressionPlayingAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import { ProgressionSummarySlot } from "./ProgressionSummarySlot";
 
 const twoBeatProgression = [

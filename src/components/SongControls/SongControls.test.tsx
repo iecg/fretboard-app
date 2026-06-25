@@ -4,8 +4,8 @@ import { screen, within, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "../../test-utils/a11y";
 import { makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
-import { activeProgressionStepIndexAtom, auditionActiveAtom, auditionRequestTickAtom, beatsPerBarAtom, progressionStepsAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
-import { rootNoteAtom, scaleNameAtom } from "../../store/scaleAtoms";
+import { activeProgressionStepIndexAtom, auditionActiveAtom, auditionRequestTickAtom, beatsPerBarAtom, progressionStepsAtom, setProgressionPlayingAtom } from "@fretflow/fretboard/store/progressionAtoms";
+import { rootNoteAtom, scaleNameAtom } from "@fretflow/fretboard/store/scaleAtoms";
 import { TooltipProvider } from "../Tooltip/Tooltip";
 import { SongControls } from "./SongControls";
 

@@ -217,7 +217,7 @@ export const CLOSE_VOICING_SPAN_LIMIT = 3;
  * (root, 3/b3, b7/7, 9, 13). This is the extension hook that deferred
  * altered-dominant voicings will reuse — keyed by CHORD_DEFINITIONS key.
  */
-export const VOICING_OMISSIONS: Record<string, ChordMemberName[]> = {
+const VOICING_OMISSIONS: Record<string, ChordMemberName[]> = {
   "13": ["5"],
   maj13: ["5"],
   m13: ["5"],

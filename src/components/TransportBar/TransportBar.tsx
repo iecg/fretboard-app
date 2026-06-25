@@ -1,5 +1,5 @@
 import { LoaderCircle, Play, Repeat, Square } from "lucide-react";
-import { usePlaybackTransportModel } from "../../hooks/usePlaybackTransportModel";
+import { usePlaybackTransportModel } from "@fretflow/fretboard/hooks/usePlaybackTransportModel";
 import { useTranslation } from "../../hooks/useTranslation";
 import shared from "../shared/shared.module.css";
 import { InstrumentToggleCluster } from "./InstrumentToggleCluster";

@@ -47,6 +47,8 @@ describe("drumKit — Tone backend", () => {
   let scheduleRide: typeof import("./drumKit").scheduleRide;
   let scheduleCrossStick: typeof import("./drumKit").scheduleCrossStick;
 
+  let _resetDrumKitSynths: typeof import("./drumKit")._resetDrumKitSynths;
+
   beforeEach(async () => {
     const m = await membrane;
     const n = await noise;
@@ -57,12 +59,13 @@ describe("drumKit — Tone backend", () => {
     metalSpies = mt.spies;
     vi.useFakeTimers();
     clock.now = 0;
+    vi.resetModules();
+    ({ scheduleKick, scheduleSnare, scheduleHiHat, scheduleRide, scheduleCrossStick, _resetDrumKitSynths } =
+      await import("./drumKit"));
+    _resetDrumKitSynths();
     m.reset();
     n.reset();
     mt.reset();
-    vi.resetModules();
-    ({ scheduleKick, scheduleSnare, scheduleHiHat, scheduleRide, scheduleCrossStick } =
-      await import("./drumKit"));
   });
 
   afterEach(() => {
@@ -104,16 +107,16 @@ describe("drumKit — Tone backend", () => {
       expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
     });
 
-    it("allocates separate MembraneSynths for future hits scheduled in one pass", () => {
+    it("reuses the same MembraneSynth for future hits scheduled in one pass", () => {
       const dest = {} as AudioNode;
       scheduleKick(dest, 2, { velocity: 0.8 });
       scheduleKick(dest, 2.6, { velocity: 0.75 });
 
-      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
       expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
     });
 
-    it("keeps different destinations on different leased synths", () => {
+    it("connects the same MembraneSynth to a new destination", () => {
       const firstDest = {} as AudioNode;
       const secondDest = {} as AudioNode;
 
@@ -121,9 +124,9 @@ describe("drumKit — Tone backend", () => {
       clock.now = 1.2;
       scheduleKick(secondDest, 1.3, { velocity: 0.75 });
 
-      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
       expect(membraneTone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
-      expect(membraneTone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
+      expect(membraneTone.instances[0]?.connect).toHaveBeenCalledWith(secondDest);
     });
 
     it("skips zero-velocity hits (no MembraneSynth constructed)", () => {
@@ -136,15 +139,13 @@ describe("drumKit — Tone backend", () => {
       expect(membraneSpies.triggerAttackRelease).not.toHaveBeenCalled();
     });
 
-    it("cancel() defers dispose past the kick release tail", () => {
+    it("cancel() does not dispose the MembraneSynth", () => {
       const handle = scheduleKick(
         {} as AudioNode,
         0,
       );
       handle.cancel();
       expect(membraneSpies.dispose).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(700); // > KICK_DISPOSE_MS (600)
-      expect(membraneSpies.dispose).toHaveBeenCalledTimes(1);
     });
 
     it("cancel() prevents a future-scheduled kick from ever being attacked", async () => {
@@ -160,7 +161,7 @@ describe("drumKit — Tone backend", () => {
       expect(membraneSpies.playbackAttackRelease).not.toHaveBeenCalled();
     });
 
-    it("cancel() is idempotent — repeated calls dispose only once", () => {
+    it("cancel() is idempotent — repeated calls do not dispose", () => {
       const handle = scheduleKick(
         {} as AudioNode,
         0,
@@ -168,8 +169,7 @@ describe("drumKit — Tone backend", () => {
       handle.cancel();
       handle.cancel();
       handle.cancel();
-      vi.advanceTimersByTime(700);
-      expect(membraneSpies.dispose).toHaveBeenCalledTimes(1);
+      expect(membraneSpies.dispose).not.toHaveBeenCalled();
     });
   });
 
@@ -233,7 +233,7 @@ describe("drumKit — Tone backend", () => {
       expect(noiseSpies.triggerAttackRelease).not.toHaveBeenCalled();
     });
 
-    it("cancel() defers dispose past the snare release tail and is idempotent", () => {
+    it("cancel() does not dispose the NoiseSynth", () => {
       const handle = scheduleSnare(
         {} as AudioNode,
         0,
@@ -241,8 +241,6 @@ describe("drumKit — Tone backend", () => {
       handle.cancel();
       handle.cancel();
       expect(noiseSpies.dispose).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(400); // > SNARE_DISPOSE_MS (300)
-      expect(noiseSpies.dispose).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -300,32 +298,26 @@ describe("drumKit — Tone backend", () => {
       expect(metalSpies.triggerAttackRelease).not.toHaveBeenCalled();
     });
 
-    it("cancel() defers dispose past the closed-hat release tail", () => {
+    it("cancel() does not dispose the MetalSynth", () => {
       const handle = scheduleHiHat(
         {} as AudioNode,
         0,
       );
       handle.cancel();
       expect(metalSpies.dispose).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(200); // > HAT_CLOSED_DISPOSE_MS (150)
-      expect(metalSpies.dispose).toHaveBeenCalledTimes(1);
     });
 
-    it("cancel() on open hat defers dispose past the longer open-hat tail", () => {
+    it("cancel() on open hat does not dispose the MetalSynth", () => {
       const handle = scheduleHiHat(
         {} as AudioNode,
         0,
         { open: true },
       );
       handle.cancel();
-      // Closed-hat tail (150ms) should NOT yet have disposed the open hat.
-      vi.advanceTimersByTime(200);
       expect(metalSpies.dispose).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(400); // total 600 > HAT_OPEN_DISPOSE_MS (500)
-      expect(metalSpies.dispose).toHaveBeenCalledTimes(1);
     });
 
-    it("cancel() is idempotent — repeated calls dispose only once", () => {
+    it("cancel() is idempotent — repeated calls do not dispose", () => {
       const handle = scheduleHiHat(
         {} as AudioNode,
         0,
@@ -333,8 +325,7 @@ describe("drumKit — Tone backend", () => {
       handle.cancel();
       handle.cancel();
       handle.cancel();
-      vi.advanceTimersByTime(200);
-      expect(metalSpies.dispose).toHaveBeenCalledTimes(1);
+      expect(metalSpies.dispose).not.toHaveBeenCalled();
     });
   });
 
@@ -382,7 +373,7 @@ describe("drumKit — Tone backend", () => {
       expect(metalSpies.triggerAttackRelease).not.toHaveBeenCalled();
     });
 
-    it("cancel() defers dispose past the ride release tail and is idempotent", () => {
+    it("cancel() does not dispose the MetalSynth", () => {
       const handle = scheduleRide(
         {} as AudioNode,
         0,
@@ -390,8 +381,6 @@ describe("drumKit — Tone backend", () => {
       handle.cancel();
       handle.cancel();
       expect(metalSpies.dispose).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(1600); // > RIDE_DISPOSE_MS (1500)
-      expect(metalSpies.dispose).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -430,16 +419,16 @@ describe("drumKit — Tone backend", () => {
       expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
     });
 
-    it("allocates separate MembraneSynths for future hits scheduled in one pass", () => {
+    it("reuses the same MembraneSynth for future hits scheduled in one pass", () => {
       const dest = {} as AudioNode;
       scheduleCrossStick(dest, 2, { velocity: 0.8 });
       scheduleCrossStick(dest, 2.6, { velocity: 0.7 });
 
-      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
       expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
     });
 
-    it("keeps different destinations on different leased synths", () => {
+    it("connects the same MembraneSynth to a new destination", () => {
       const firstDest = {} as AudioNode;
       const secondDest = {} as AudioNode;
 
@@ -447,26 +436,23 @@ describe("drumKit — Tone backend", () => {
       clock.now = 0.3;
       scheduleCrossStick(secondDest, 0.4, { velocity: 0.7 });
 
-      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(2);
+      expect(membraneSpies.ctorSpy).toHaveBeenCalledTimes(1);
       expect(membraneTone.instances[0]?.connect).toHaveBeenCalledWith(firstDest);
-      expect(membraneTone.instances[1]?.connect).toHaveBeenCalledWith(secondDest);
+      expect(membraneTone.instances[0]?.connect).toHaveBeenCalledWith(secondDest);
     });
 
-    it("cancel() defers dispose past the cross-stick release tail", () => {
+    it("cancel() does not dispose the MembraneSynth", () => {
       const handle = scheduleCrossStick({} as AudioNode, 0);
       handle.cancel();
       expect(membraneSpies.dispose).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(200); // > CROSS_STICK_DISPOSE_MS (120)
-      expect(membraneSpies.dispose).toHaveBeenCalledTimes(1);
     });
 
-    it("cancel() is idempotent — repeated calls dispose only once", () => {
+    it("cancel() is idempotent — repeated calls do not dispose", () => {
       const handle = scheduleCrossStick({} as AudioNode, 0);
       handle.cancel();
       handle.cancel();
       handle.cancel();
-      vi.advanceTimersByTime(200);
-      expect(membraneSpies.dispose).toHaveBeenCalledTimes(1);
+      expect(membraneSpies.dispose).not.toHaveBeenCalled();
     });
   });
 

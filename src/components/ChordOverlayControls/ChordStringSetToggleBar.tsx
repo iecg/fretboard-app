@@ -3,7 +3,7 @@ import { useAtom, useAtomValue } from "jotai";
 import {
   voicingStringSetAtom,
   stringSetOptionsAtom,
-} from "../../store/chordOverlayAtoms";
+} from "@fretflow/fretboard/store/chordOverlayAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 

@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { progressionTempoBpmAtom } from "../../store/progressionAtoms";
+import { progressionTempoBpmAtom } from "@fretflow/fretboard/store/progressionAtoms";
 import { TempoReadout } from "./TempoReadout";
 
 describe("TempoReadout", () => {

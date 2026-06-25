@@ -10,7 +10,7 @@ import {
   beatsPerBarAtom,
   setProgressionPlayingAtom,
   progressionPlayingAtom,
-} from "../../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 import { ShellTransport } from "./ShellTransport";
 
 const fourStepProgression = [

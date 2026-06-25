@@ -16,7 +16,7 @@ import {
   progressionPlayingAtom,
   progressionStepsAtom,
   setProgressionPlayingAtom,
-} from "../../store/progressionAtoms";
+} from "@fretflow/fretboard/store/progressionAtoms";
 import { languageAtom } from "../../store/languageAtom";
 import { TooltipProvider } from "../Tooltip/Tooltip";
 import { TransportBar } from "./TransportBar";

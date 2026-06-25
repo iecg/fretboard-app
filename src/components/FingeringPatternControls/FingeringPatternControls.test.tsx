@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { FingeringPatternControls } from "../FingeringPatternControls/FingeringPatternControls";
 import { createStore, Provider } from "jotai";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
-import { fingeringPatternAtom, cagedShapesAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "../../store/fingeringAtoms";
+import { fingeringPatternAtom, cagedShapesAtom, oneStringIndexAtom, oneStringIntervalAtom, twoStringsPairAtom, twoStringsIntervalAtom } from "@fretflow/fretboard/store/fingeringAtoms";
 import { type CagedShape } from "@fretflow/core";
 import { axe } from "../../test-utils/a11y";
 

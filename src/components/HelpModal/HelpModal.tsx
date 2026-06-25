@@ -9,7 +9,7 @@ import { X } from "lucide-react";
 import clsx from "clsx";
 import { useTranslation } from "../../hooks/useTranslation";
 import useLayoutMode from "../../hooks/useLayoutMode";
-import { helpWhatsNewSeenAtom } from "../../store/uiAtoms";
+import { helpWhatsNewSeenAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { HELP_TABS, CURRENT_WHATS_NEW_ID, type HelpTab } from "./helpContent";
 import { HelpDiagram } from "./diagrams/HelpDiagram";
 import { AdaptiveModal } from "../shared/AdaptiveModal";

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { getResponsiveLayout, type ResponsiveLayout } from "../layout/responsive";
+import { getResponsiveLayout, type ResponsiveLayout } from "@fretflow/fretboard/layout/responsive";
 
 interface ViewportState {
   width: number;

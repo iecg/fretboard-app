@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import clsx from "clsx";
 import { CAGED_SHAPES, ANIMATION_DURATION_FAST } from "@fretflow/core";
-import { useShapeState } from "../../hooks/useShapeState";
-import type { FingeringPattern } from "../../store/fingeringAtoms";
+import { useShapeState } from "@fretflow/fretboard/hooks/useShapeState";
+import type { FingeringPattern } from "@fretflow/fretboard/store/fingeringAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { ToggleBar } from "../ToggleBar/ToggleBar";
 import { LabeledSelect } from "../LabeledSelect/LabeledSelect";

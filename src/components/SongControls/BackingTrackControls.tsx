@@ -1,6 +1,6 @@
-import { useProgressionState } from "../../hooks/useProgressionState";
+import { useProgressionState } from "@fretflow/fretboard/hooks/useProgressionState";
 import { useTranslation } from "../../hooks/useTranslation";
-import { GENRE_STYLES } from "../../progressions/audio/genres";
+import { GENRE_STYLES } from "@fretflow/fretboard/progressions/audio/genres";
 import { Prop, GroupHeader } from "../Inspector/InspectorGrid";
 
 export interface BackingTrackControlsProps {

@@ -3,10 +3,10 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithAtoms, makeAtomStore, renderWithStore } from "../../test-utils/renderWithAtoms";
 import { axe } from "../../test-utils/a11y";
-import { activeProgressionStepIndexAtom, beatsPerBarAtom, displayedStepIndexPrimitiveAtom, progressionLoopEnabledAtom, progressionPlayingAtom, progressionStepsAtom, progressionTempoBpmAtom, setProgressionPlayingAtom } from "../../store/progressionAtoms";
-import { _resetProgressionAudioForTests, ensureProgressionAudio } from "../../progressions/audio/bus";
-import { _resetTimelineForTests, setActiveStep } from "../../progressions/audio/timeline";
-import * as timeline from "../../progressions/audio/timeline";
+import { activeProgressionStepIndexAtom, beatsPerBarAtom, displayedStepIndexPrimitiveAtom, progressionLoopEnabledAtom, progressionPlayingAtom, progressionStepsAtom, progressionTempoBpmAtom, setProgressionPlayingAtom } from "@fretflow/fretboard/store/progressionAtoms";
+import { _resetProgressionAudioForTests, ensureProgressionAudio } from "@fretflow/fretboard/progressions/audio/bus";
+import { _resetTimelineForTests, setActiveStep } from "@fretflow/fretboard/progressions/audio/timeline";
+import * as timeline from "@fretflow/fretboard/progressions/audio/timeline";
 import { TooltipProvider } from "../Tooltip/Tooltip";
 import { HeaderTransportCluster } from "./HeaderTransportCluster";
 

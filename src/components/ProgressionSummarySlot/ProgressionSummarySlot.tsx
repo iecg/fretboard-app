@@ -1,4 +1,4 @@
-import { useProgressionAudioPlayback } from "../../hooks/useProgressionAudioPlayback";
+import { useProgressionAudioPlayback } from "@fretflow/fretboard/hooks/useProgressionAudioPlayback";
 import { useChordAudition } from "@fretflow/fretboard/hooks/useChordAudition";
 import { ProgressionTrack } from "../ProgressionTrack/ProgressionTrack";
 

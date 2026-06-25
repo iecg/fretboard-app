@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import { ZoomIn, ZoomOut } from "lucide-react";
 import { FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
-import { fretZoomAtom } from "../../store/layoutAtoms";
+import { fretZoomAtom } from "@fretflow/fretboard/store/layoutAtoms";
 import { useTranslation } from "../../hooks/useTranslation";
 import { TransportButton } from "../TransportBar/TransportButton";
 import styles from "./StageZoomControl.module.css";
