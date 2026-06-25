@@ -165,6 +165,24 @@ export function ProgressionStepList({ steps, activeIndex, onSelect, onReorder, o
     else if (rr.bottom > lr.bottom) listEl.scrollTop += rr.bottom - lr.bottom;
   }, [activeIndex]);
 
+  // Mark the list when its content overflows so the CSS mask fade only shows
+  // when there is actually something to scroll to.
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const update = () => {
+      if (el.scrollHeight > el.clientHeight) {
+        el.setAttribute("data-overflows", "");
+      } else {
+        el.removeAttribute("data-overflows");
+      }
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [steps]);
+
   const ids = steps.map((step) => step.id);
   const handleReorder = (nextIds: string[]) => {
     const move = singleMoveDiff(ids, nextIds);

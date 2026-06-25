@@ -21,6 +21,7 @@ import {
   progressionStepsAtom,
   activeProgressionStepIndexAtom,
   reorderProgressionStepsAtom,
+  requestAuditionAtom,
 } from "@fretflow/fretboard/store/progressionAtoms";
 import { inspectorActiveTabAtom } from "../store/inspectorAtoms";
 import { toggleMuteAtom } from "@fretflow/fretboard/store/audioAtoms";
@@ -102,6 +103,14 @@ export function useKeyboardShortcuts() {
         case "m":
         case "M":
           store.set(toggleMuteAtom);
+          break;
+        case "a":
+        case "A":
+          // Audition the selected slot in context. Inert during playback (the
+          // editor is locked then); the hook also gates on muted / no steps.
+          if (store.get(progressionPlayingAtom)) return;
+          e.preventDefault();
+          store.set(requestAuditionAtom);
           break;
         case "1":
           store.set(

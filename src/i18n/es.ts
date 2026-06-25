@@ -254,6 +254,7 @@ export const es: Dictionary = {
       tab: "Cambiar pestaña superposición / canción",
       scale: "Mostrar / ocultar escala",
       chord: "Mostrar / ocultar acorde",
+      audition: "Escuchar el acorde seleccionado",
     },
   },
   controls: {
@@ -317,6 +318,7 @@ export const es: Dictionary = {
     presetCustom: "Personalizada",
     add: "Añadir",
     addChord: "Añadir acorde",
+    auditionChord: "Escuchar",
     moveChordUp: "Subir acorde",
     moveChordDown: "Bajar acorde",
     duplicateChord: "Duplicar acorde",

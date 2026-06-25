@@ -61,6 +61,7 @@ describe("i18n/help", () => {
       "help.shortcuts.steps",
       "help.shortcuts.scale",
       "help.shortcuts.chord",
+      "help.shortcuts.audition",
     ];
     const resolve = (dict: typeof en, path: string): unknown =>
       path.split(".").reduce<unknown>(

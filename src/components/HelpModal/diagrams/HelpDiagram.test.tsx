@@ -25,6 +25,6 @@ describe("HelpModal/diagrams/HelpDiagram", () => {
 
   it("renders the shortcut table with one row per shortcut", () => {
     const { container } = render(<HelpDiagram id="shortcutTable" />);
-    expect(container.querySelectorAll("tr")).toHaveLength(13);
+    expect(container.querySelectorAll("tr")).toHaveLength(14);
   });
 });

@@ -7,7 +7,7 @@
   min-width: 12rem;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 17rem;
 }
 
 /* Caption: mono "STEPS" title + right-aligned summary meta. */
@@ -45,6 +45,8 @@
    degrades gracefully. */
 .scroll {
   position: relative;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .scroll:focus-visible {
@@ -60,7 +62,7 @@
   margin: 0;
   padding: 0 0.35rem 0 0;
   list-style: none;
-  max-height: 17rem;
+  height: 100%;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--faceplate-divider) transparent;
@@ -92,7 +94,7 @@
     timeline-scope: --chord-list-scroll;
   }
 
-  .list {
+  .list[data-overflows] {
     scroll-timeline: --chord-list-scroll block;
     mask-image: linear-gradient(
       to bottom,
@@ -303,6 +305,7 @@
   flex: 0 0 auto;
   width: 100%;
   min-width: 0;
+  min-height: 0;
 }
 
 :global([data-layout-tier="mobile"]) .scroll {
@@ -312,6 +315,7 @@
 :global([data-layout-tier="mobile"]) .list {
   max-height: none;
   overflow-y: visible;
+  height: auto;
 }
 
 :global([data-layout-tier="mobile"]) .list {

@@ -128,6 +128,38 @@ export const progressionLoopEnabledAtom = atomWithStorage<boolean>(
 );
 
 /**
+ * Preview — hear how the selected slot sits in context without replaying the
+ * whole progression ("Preview" in the UI; "audition" internally). Plays the
+ * neighbourhood `prev → selected → next` as a quick ~1-beat-per-chord phrase.
+ * Manual only (no auto-audio on edit). These atoms are the UI/keyboard surface;
+ * the audio side-effect lives in `useChordAudition`.
+ */
+
+/** True while a preview is sounding. Drives the button's Stop state and the
+ *  editor's "Previewing" label; a second trigger stops it. Transient. */
+export const auditionActiveAtom = atom(false);
+
+/** The progression step index currently sounding during an audition, or null
+ *  when no audition is playing. `useChordAudition` advances it through the
+ *  window; `displayedProgressionStepIndexAtom` and the progression-track view
+ *  model prefer it so the playhead + fretboard follow the audition WITHOUT
+ *  moving the edit cursor (`activeProgressionStepIndexAtom`). Transient. */
+export const auditionDisplayIndexAtom = atom<number | null>(null);
+
+/** Internal monotonic counter. `useChordAudition` watches it and fires an
+ *  audition each time it advances (same observe-a-tick pattern as the playback
+ *  hook's tab-restart tick). UI code should fire `requestAuditionAtom`, not
+ *  write this directly. */
+export const auditionRequestTickAtom = atom(0);
+
+/** Request an audition (button + the `A` shortcut both call this). A request
+ *  while a loop is already sounding stops it — the toggle is handled in the
+ *  hook; here we only advance the tick it observes. */
+export const requestAuditionAtom = atom(null, (get, set) => {
+  set(auditionRequestTickAtom, get(auditionRequestTickAtom) + 1);
+});
+
+/**
  * Backing-track instrument toggles. Persisted so that returning users hear
  * the same groove they left with. Defaults favour the richest sensible
  * experience (strum on by default) while leaving heavier voices off until
@@ -315,6 +347,10 @@ export const displayedStepIndexPrimitiveAtom = atom(0);
  *   clicked on.
  */
 export const displayedProgressionStepIndexAtom = atom((get) => {
+  // An active audition wins: the playhead + fretboard follow the chord being
+  // auditioned, while the edit cursor stays put.
+  const audition = get(auditionDisplayIndexAtom);
+  if (audition != null) return audition;
   if (get(progressionPlayingAtom)) {
     return get(displayedStepIndexPrimitiveAtom);
   }
@@ -535,12 +571,28 @@ export const addProgressionStepAtom = atom(null, (get, set) => {
   const diatonic = getDiatonicChord(degree, scaleName, tonic);
   const qualityOverride = diatonic?.quality ?? null;
 
+  const newStep = createProgressionStep({
+    degree,
+    duration: { value: 1, unit: "bar" },
+    qualityOverride,
+  });
+
+  // Insert directly AFTER the selected chord (not at the bottom) so adding while
+  // a middle chord is selected drops the new chord where the user is working.
+  // Empty list → the new step becomes the first. Mirrors the splice idiom in
+  // duplicateProgressionStepAtom, and the cursor follows the inserted step.
+  const steps = get(progressionStepsAtom);
+  const insertAfter =
+    steps.length === 0
+      ? -1
+      : clampProgressionIndex(get(activeProgressionStepIndexAtom), steps);
   const next = [
-    ...get(progressionStepsAtom),
-    createProgressionStep({ degree, duration: { value: 1, unit: "bar" }, qualityOverride }),
+    ...steps.slice(0, insertAfter + 1),
+    newStep,
+    ...steps.slice(insertAfter + 1),
   ];
   set(progressionStepsAtom, next);
-  set(activeProgressionStepIndexAtom, next.length - 1);
+  set(activeProgressionStepIndexAtom, insertAfter + 1);
 });
 
 export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {
