@@ -13,17 +13,14 @@ These surfaced while designing the chord-audition enhancement
 ([spec](./superpowers/specs/2026-06-16-progression-chord-audition-design.md)) and were
 scoped out of it.
 
-### Smart / function-aware "add chord"
+### Smart / function-aware "add chord" — **shipped**
 
-Replace the fixed "+1 next diatonic degree" default with a suggestion driven by cadence
-and chord-function theory (e.g. propose a plausible next chord given what precedes the
-slot). Could grow into an explicit "suggestions" surface that proposes 2–3 candidates the
-user can audition before committing.
+Picked up and implemented — see
+[`docs/superpowers/specs/2026-07-11-next-chord-suggestions-design.md`](./superpowers/specs/2026-07-11-next-chord-suggestions-design.md).
+One slice remains parked:
 
-- **Why parked:** materially larger than the audition work; needs its own theory grounding
-  (would cite [`music-theory-pedagogy.md`](./design/music-theory-pedagogy.md)).
-- **Related:** pairs naturally with the audition control — audition each suggested
-  candidate in place before committing.
+- **Borrowed-chord suggestions** (e.g. V → ♭VI): needs the borrowed-root plumbing
+  from `getScaleRoots`; v1 suggestions are diatonic-only.
 
 ### Slash chords / inversions / octave
 

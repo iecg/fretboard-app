@@ -715,3 +715,51 @@
 :global([data-placement="sheet"]) .groupColumn {
   flex: 0 0 auto;
 }
+
+/* ── "Suggested next" chips (function-aware add) ─────────────────────────── */
+
+.suggestion-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.suggestion-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.suggestion-chip {
+  composes: surface--control from "../shared/shared.module.css";
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: var(--control-height);
+  padding: 0 0.7rem;
+  font-size: var(--text-xs);
+  color: var(--dc-fg);
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.suggestion-chip:hover:not(:disabled) {
+  color: var(--dc-fg-strong);
+  border-color: color-mix(in srgb, var(--faceplate-accent) 55%, var(--faceplate-divider));
+}
+
+.suggestion-chip:disabled {
+  opacity: var(--disabled-opacity);
+  cursor: default;
+}
+
+.suggestion-degree {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.suggestion-note {
+  color: var(--dc-fg-muted);
+}

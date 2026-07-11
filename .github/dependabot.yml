@@ -8,6 +8,15 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
+    groups:
+      # @playwright/test and the standalone playwright package must move in
+      # lockstep — the `playwright test` CLI resolves through the standalone
+      # package, and a version split breaks every e2e job with "two different
+      # versions of @playwright/test" (see PR #629).
+      playwright:
+        patterns:
+          - "playwright"
+          - "@playwright/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"

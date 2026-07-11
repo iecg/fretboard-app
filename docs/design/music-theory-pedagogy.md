@@ -178,7 +178,45 @@ Blues progression presets load **minor blues** as the fretboard overlay scale, n
 
 ---
 
-## 6. Annotated citation index (theory & pedagogy)
+## 6. Chord-function transitions (next-chord suggestions)
+
+The progression editor's "Suggested next" chips (and the Add button's default
+degree) rank candidates with a **chord-function transition table** —
+`packages/fretboard/src/progressions/nextChordSuggestions.ts`.
+
+**The functional ladder.** Tonal harmony pedagogy teaches progression flow as
+**tonic → pre-dominant → dominant → tonic**: tonic chords (I, vi/VI) can move
+anywhere; pre-dominants (ii, IV/iv) set up the dominant; dominants (V, vii°)
+resolve home. The named exits are the cadences — **authentic** (V → I),
+**plagal** (IV → I), **deceptive** (V → vi/VI) — plus the mediant walk
+(iii → vi → ii/IV → V) that harmony texts draw as the "chord ladder" flowchart.
+**[convention]** (standard tonal-harmony curriculum, e.g. Kostka–Payne-style
+progression charts).
+
+**Minor / modal moves.** The same ladder holds by function in minor
+(III → VI → ii°/iv → V → i), with two additions the major table can't express:
+the **Aeolian ♭VI → ♭VII → i walk** and the **♭VII → i modal cadence** — the
+same moves `getHarmonicMoveAnnotation` already names for borrowed roots
+("Aeolian cadence", "Modal cadence"). **[convention]**
+
+**Why the table is keyed by semitone offset, not scale-step.** Candidates are
+stored per chromatic offset of the previous chord's root (the key
+`getDegreesForScale` already uses), then filtered to offsets the active scale
+actually has a diatonic degree on. One table therefore serves every mode and
+the pentatonics: in Dorian the "subdominant" candidate surfaces as IV (major),
+in minor as iv, and in major pentatonic — which has no 4th degree at all — the
+candidate is simply skipped and the next-ranked function surfaces instead.
+Ranking is the array order; no weights. **[internal]**
+
+**Scope.** Suggestions are deliberately diatonic-only in v1 — borrowed-chord
+suggestions (e.g. V → ♭VI) would need the borrowed-root plumbing from
+`getScaleRoots` and are deferred. The chips complement, not replace, the full
+chord editor: they pre-fill the same degree + diatonic-quality default the Add
+button uses. **[internal]**
+
+---
+
+## 7. Annotated citation index (theory & pedagogy)
 
 **Guide-tone lines & voice leading**
 - **Levine, *The Jazz Theory Book* (Sher Music, 1995); Jerry Coker; Jeff Larsen.**
@@ -222,7 +260,7 @@ Blues progression presets load **minor blues** as the fretboard overlay scale, n
 
 ---
 
-## 7. Open questions / deferred
+## 8. Open questions / deferred
 
 None currently — theory-side deferred items, if any, will land here. (The
 consolidation spot-check found no un-shipped theory ideas; the deferred *rendering*
@@ -232,7 +270,7 @@ by the extended-chord work, not an open theory question.)
 
 ---
 
-## 8. Provenance
+## 9. Provenance
 
 This document consolidates the theory/pedagogy grounding from the following sources.
 Specs are ephemeral (deleted once shipped); SHAs let them be re-read from history
