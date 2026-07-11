@@ -593,6 +593,27 @@ describe("nextChordSuggestionsAtom / addSuggestedProgressionStepAtom", () => {
     expect(suggestions[0]).toMatchObject({ degree: "V", reason: "twoFive" });
   });
 
+  it("follows the edit cursor, not the audition's moving display index", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+
+    // A preview lights up step 1 while the cursor stays on step 0 — the
+    // suggestions (and any insert they trigger) must keep following ii.
+    store.set(auditionActiveAtom, true);
+    store.set(auditionDisplayIndexAtom, 1);
+
+    expect(store.get(nextChordSuggestionsAtom)[0]).toMatchObject({
+      degree: "V",
+      reason: "twoFive",
+    });
+  });
+
   it("returns no suggestions while the progression is empty", () => {
     const store = createStore();
     store.set(progressionStepsAtom, []);

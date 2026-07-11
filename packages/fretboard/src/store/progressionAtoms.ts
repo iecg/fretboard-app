@@ -563,8 +563,13 @@ export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName
  * tonic).
  */
 export const nextChordSuggestionsAtom = atom((get): NextChordSuggestion[] => {
-  if (get(progressionStepsAtom).length === 0) return [];
-  const previous = get(activeProgressionStepAtom);
+  const steps = get(progressionStepsAtom);
+  if (steps.length === 0) return [];
+  // Anchor to the EDIT CURSOR, not activeProgressionStepAtom — that one follows
+  // the displayed index, which an audition (or playback) advances while the
+  // cursor stays put. Insertion happens after the cursor, so the suggestions
+  // must be computed for the same step a click will insert behind.
+  const previous = steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
   return suggestNextChords(previous?.degree ?? null, get(scaleNameAtom), get(rootNoteAtom));
 });
 
@@ -599,7 +604,12 @@ const insertProgressionStepAtom = atom(null, (get, set, degree: DegreeId) => {
 export const addProgressionStepAtom = atom(null, (get, set) => {
   // Default degree is the top function-aware suggestion after the selected
   // chord (tonic when the list is empty) — not a fixed walk up the scale.
-  const previous = get(activeProgressionStepAtom);
+  // Cursor-anchored for the same reason as nextChordSuggestionsAtom above.
+  const steps = get(progressionStepsAtom);
+  const previous =
+    steps.length === 0
+      ? null
+      : steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
   const [suggestion] = suggestNextChords(
     previous?.degree ?? null,
     get(scaleNameAtom),
