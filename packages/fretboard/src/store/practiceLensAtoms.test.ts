@@ -461,6 +461,28 @@ describe("beatPositionAtom (Task 4.3)", () => {
     store.set(progressionStepDeadlineAtom, Date.now() + 10000);
     expect(store.get(beatPositionAtom)).toBe(0);
   });
+
+  it("recomputes on each visual-frame write, so a live store sees time advance", () => {
+    vi.useFakeTimers();
+    const store = makeDefaultStore();
+    store.set(progressionTempoBpmAtom, 120);
+    store.set(progressionStepDeadlineAtom, Date.now() + 2000);
+    // Subscribe so Jotai caches the value — without the frame dependency the
+    // second read below would return the stale cached 0.
+    const unsub = store.sub(beatPositionAtom, () => {});
+    expect(store.get(beatPositionAtom)).toBeCloseTo(0, 1);
+
+    vi.advanceTimersByTime(500);
+    // Simulate one raf tick of the visual clock.
+    store.set(progressionVisualFrameAtom, {
+      stepIndex: 0,
+      globalFraction: 0.1,
+      localFraction: 0.1,
+      paused: false,
+    });
+    expect(store.get(beatPositionAtom)).toBeCloseTo(1, 1);
+    unsub();
+  });
 });
 
 // ---------------------------------------------------------------------------
