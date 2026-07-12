@@ -46,7 +46,7 @@
     "@radix-ui/react-tabs": "^1.1.17",
     "@radix-ui/react-tooltip": "^1.2.9",
     "clsx": "^2.1.1",
-    "jotai": "2.20.0",
+    "jotai": "2.20.1",
     "lucide-react": "^1.17.0",
     "motion": "^12.40.0",
     "react": "^19.2.7",
