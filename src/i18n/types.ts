@@ -288,6 +288,15 @@ export interface Dictionary {
     add: string;
     addChord: string;
     auditionChord: string;
+    suggestedNext: string;
+    suggestionReasonAuthenticCadence: string;
+    suggestionReasonPlagalCadence: string;
+    suggestionReasonDeceptiveCadence: string;
+    suggestionReasonTwoFive: string;
+    suggestionReasonModalCadence: string;
+    suggestionReasonLeadingResolve: string;
+    suggestionReasonToDominant: string;
+    suggestionReasonCommonMove: string;
     moveChordUp: string;
     moveChordDown: string;
     duplicateChord: string;

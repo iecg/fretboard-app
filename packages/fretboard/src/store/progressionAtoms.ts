@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { atomWithStorage, RESET, splitAtom } from "jotai/utils";
-import { getDegreeSequence, getDiatonicChord } from "@fretflow/core";
+import { getDiatonicChord, type DegreeId } from "@fretflow/core";
 import {
   DEFAULT_BEATS_PER_BAR,
   DEFAULT_PROGRESSION_TEMPO_BPM,
@@ -31,6 +31,7 @@ import {
   preferFlatsAtom,
 } from "./scaleAtoms";
 import { getGenreStyle } from "../progressions/audio/genres";
+import { suggestNextChords, type NextChordSuggestion } from "../progressions/nextChordSuggestions";
 import {
   GET_ON_INIT,
   booleanStorage,
@@ -555,26 +556,31 @@ export const remapProgressionStepsForScaleAtom = atom(null, (get, set, scaleName
   set(activeProgressionStepIndexAtom, first ?? 0);
 });
 
-export const addProgressionStepAtom = atom(null, (get, set) => {
+/**
+ * Function-aware candidates for the chord that follows the SELECTED step —
+ * the editor's "Suggested next" chips. Empty while the progression is empty
+ * (the editor panel is hidden there and the default add already opens on the
+ * tonic).
+ */
+export const nextChordSuggestionsAtom = atom((get): NextChordSuggestion[] => {
+  const steps = get(progressionStepsAtom);
+  if (steps.length === 0) return [];
+  // Anchor to the EDIT CURSOR, not activeProgressionStepAtom — that one follows
+  // the displayed index, which an audition (or playback) advances while the
+  // cursor stays put. Insertion happens after the cursor, so the suggestions
+  // must be computed for the same step a click will insert behind.
+  const previous = steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
+  return suggestNextChords(previous?.degree ?? null, get(scaleNameAtom), get(rootNoteAtom));
+});
+
+const insertProgressionStepAtom = atom(null, (get, set, degree: DegreeId) => {
   set(loadedPresetIdAtom, null);
-  const tonic = get(rootNoteAtom);
-  const scaleName = get(scaleNameAtom);
-  const previous = get(activeProgressionStepAtom);
-  const sequence = getDegreeSequence(scaleName);
-
-  const previousIdx = previous ? sequence.indexOf(previous.degree) : -1;
-  const nextIdx = previousIdx >= 0
-    ? (previousIdx + 1) % sequence.length
-    : 0;
-  const degree = sequence[nextIdx] ?? "I";
-
-  const diatonic = getDiatonicChord(degree, scaleName, tonic);
-  const qualityOverride = diatonic?.quality ?? null;
+  const diatonic = getDiatonicChord(degree, get(scaleNameAtom), get(rootNoteAtom));
 
   const newStep = createProgressionStep({
     degree,
     duration: { value: 1, unit: "bar" },
-    qualityOverride,
+    qualityOverride: diatonic?.quality ?? null,
   });
 
   // Insert directly AFTER the selected chord (not at the bottom) so adding while
@@ -593,6 +599,29 @@ export const addProgressionStepAtom = atom(null, (get, set) => {
   ];
   set(progressionStepsAtom, next);
   set(activeProgressionStepIndexAtom, insertAfter + 1);
+});
+
+export const addProgressionStepAtom = atom(null, (get, set) => {
+  // Default degree is the top function-aware suggestion after the selected
+  // chord (tonic when the list is empty) — not a fixed walk up the scale.
+  // Cursor-anchored for the same reason as nextChordSuggestionsAtom above.
+  const steps = get(progressionStepsAtom);
+  const previous =
+    steps.length === 0
+      ? null
+      : steps[clampProgressionIndex(get(activeProgressionStepIndexAtom), steps)] ?? null;
+  const [suggestion] = suggestNextChords(
+    previous?.degree ?? null,
+    get(scaleNameAtom),
+    get(rootNoteAtom),
+    1,
+  );
+  set(insertProgressionStepAtom, suggestion?.degree ?? "I");
+});
+
+/** Insert a specific suggested degree after the selected chord (chip click). */
+export const addSuggestedProgressionStepAtom = atom(null, (_get, set, degree: DegreeId) => {
+  set(insertProgressionStepAtom, degree);
 });
 
 export const removeProgressionStepAtom = atom(null, (get, set, id: string) => {

@@ -5,6 +5,8 @@ import {
   activeProgressionStepIndexAtom,
   activeResolvedProgressionStepAtom,
   addProgressionStepAtom,
+  addSuggestedProgressionStepAtom,
+  nextChordSuggestionsAtom,
   auditionActiveAtom,
   auditionDisplayIndexAtom,
   auditionRequestTickAtom,
@@ -544,7 +546,7 @@ describe("addProgressionStepAtom — v2.0 smart default", () => {
     expect(steps[0].qualityOverride).toBe("M");
   });
 
-  it("uses the next ascending in-key degree for subsequent steps", () => {
+  it("uses the top function-aware suggestion for subsequent steps (I → IV)", () => {
     const store = createStore();
     store.set(rootNoteAtom, "C");
     store.set(scaleNameAtom, "major");
@@ -560,8 +562,90 @@ describe("addProgressionStepAtom — v2.0 smart default", () => {
     store.set(addProgressionStepAtom);
     const steps = store.get(progressionStepsAtom);
     expect(steps).toHaveLength(2);
-    expect(steps[1].degree).toBe("ii");
+    expect(steps[1].degree).toBe("IV");
+    expect(steps[1].qualityOverride).toBe("M");
+  });
+
+  it("resolves the dominant home: adding after a selected V yields I", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(progressionStepsAtom, [
+      { id: "1", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: "M", manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    store.set(addProgressionStepAtom);
+    const steps = store.get(progressionStepsAtom);
+    expect(steps[1].degree).toBe("I");
+  });
+});
+
+describe("nextChordSuggestionsAtom / addSuggestedProgressionStepAtom", () => {
+  it("suggests function-aware candidates for the selected step", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(progressionStepsAtom, [
+      { id: "1", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+    const suggestions = store.get(nextChordSuggestionsAtom);
+    expect(suggestions[0]).toMatchObject({ degree: "V", reason: "twoFive" });
+  });
+
+  it("follows the edit cursor, not the audition's moving display index", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "ii", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+
+    // A preview lights up step 1 while the cursor stays on step 0 — the
+    // suggestions (and any insert they trigger) must keep following ii.
+    store.set(auditionActiveAtom, true);
+    store.set(auditionDisplayIndexAtom, 1);
+
+    expect(store.get(nextChordSuggestionsAtom)[0]).toMatchObject({
+      degree: "V",
+      reason: "twoFive",
+    });
+  });
+
+  it("returns no suggestions while the progression is empty", () => {
+    const store = createStore();
+    store.set(progressionStepsAtom, []);
+    expect(store.get(nextChordSuggestionsAtom)).toEqual([]);
+  });
+
+  it("inserts the chosen degree after the selected chord with diatonic quality", () => {
+    const store = createStore();
+    store.set(rootNoteAtom, "C");
+    store.set(scaleNameAtom, "major");
+    store.set(progressionStepsAtom, [
+      { id: "a", degree: "I", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      { id: "b", degree: "IV", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+    ]);
+    store.set(setProgressionActiveStepIndexAtom, 0);
+
+    store.set(addSuggestedProgressionStepAtom, "vi");
+
+    const steps = store.get(progressionStepsAtom);
+    expect(steps).toHaveLength(3);
+    expect(steps[1].degree).toBe("vi");
     expect(steps[1].qualityOverride).toBe("m");
+    expect(steps[2].id).toBe("b");
+    expect(store.get(activeProgressionStepIndexAtom)).toBe(1);
+  });
+
+  it("clears the loaded-preset marker like other edits", () => {
+    const store = createStore();
+    store.set(loadProgressionPresetAtom, "one-five-six-four");
+    expect(store.get(loadedPresetIdAtom)).not.toBeNull();
+    store.set(addSuggestedProgressionStepAtom, "V");
+    expect(store.get(loadedPresetIdAtom)).toBeNull();
   });
 });
 

@@ -31,6 +31,7 @@ import { buildChordRootGroups, classifyRoot } from "./chordRootOptions";
 import { buildQualityGroupsWithDiatonic } from "./qualityGroups";
 import { ProgressionStepList } from "./ProgressionStepList";
 import { ChordTonesReadout } from "./ChordTonesReadout";
+import { ChordSuggestions } from "./ChordSuggestions";
 import { TEMPO_STEPPER_ID } from "./progressionFocusIds";
 import shared from "../shared/shared.module.css";
 import { CUSTOM_PRESET_ID } from "@fretflow/fretboard/store/progressionAtoms";
@@ -578,6 +579,7 @@ export function SongControls() {
                       </div>
                     </div>
                   </div>
+                  <ChordSuggestions disabled={editsLocked} />
                 </div>
               </div>
             ) : progressionSteps.length === 0 ? (

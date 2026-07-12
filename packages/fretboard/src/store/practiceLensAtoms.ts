@@ -857,15 +857,17 @@ export const guideCountdownActiveAtom = atom((get): boolean => {
  *
  * Formula: `stepDurationBeats - beatsRemaining`, clamped to [0, stepDurationBeats].
  *
- * This atom reads `Date.now()` directly and is therefore time-dependent.
- * In Jotai, derived atoms only recompute when their declared dependencies
- * (tempo, deadline, step) change — NOT on every clock tick.
- *
- * TODO (Task 4.5+): consumers need a 60Hz ticker atom to get live updates;
- * subscribe a raf-driven atom that sets a dummy counter so this recomputes
- * on every animation frame.
+ * This atom reads `Date.now()` as the live clock, and reads the raf-driven
+ * {@link progressionVisualFrameAtom} (same pattern as {@link leadInActiveAtom})
+ * so it recomputes every animation frame while the visual clock runs —
+ * subscribers get live per-frame updates during playback. When the clock is
+ * stopped the frame is null and the atom only recomputes on tempo/deadline/step
+ * changes, which is when its value can change anyway.
  */
 export const beatPositionAtom = atom((get): number => {
+  // Dependency only — the raf clock writes this atom every frame, which is
+  // what keeps the Date.now() read below fresh during playback.
+  get(progressionVisualFrameAtom);
   const tempo = get(progressionTempoBpmAtom);
   const deadline = get(progressionStepDeadlineAtom);
   const stepDurationBeats = get(activeStepDurationBeatsAtom);
