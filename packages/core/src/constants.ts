@@ -8,6 +8,9 @@ export const MAX_FRET = 25;
 export const STRING_ROW_PX_DEFAULT = 36;
 export const STRING_ROW_PX_MIN = 32;
 export const STRING_ROW_PX_MAX = 72;
+export const STRING_ROW_PX_OVERRIDE_MIN = 32;
+export const STRING_ROW_PX_OVERRIDE_MAX = 72;
+export const STRING_ROW_PX_OVERRIDE_DEFAULT = 0; // 0 = use responsive layout default
 
 // Fretboard geometry
 export const NUT_WIDTH = 8;

@@ -19,6 +19,7 @@ export const es: Dictionary = {
     },
     fields: {
       zoom: "Zoom",
+      height: "Altura",
       fretRange: "Rango de trastes",
       tuning: "Afinación",
       accidentals: "Accidentales",
@@ -360,6 +361,8 @@ export const es: Dictionary = {
     label: "Reproducción y controles",
     zoomIn: "Acercar el diapasón",
     zoomOut: "Alejar el diapasón",
+    heightUp: "Aumentar altura del diapasón",
+    heightDown: "Reducir altura del diapasón",
   },
   mobilePanels: {
     closeOverlay: "Cerrar panel de superposición",

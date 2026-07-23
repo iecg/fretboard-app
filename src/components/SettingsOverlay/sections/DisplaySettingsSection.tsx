@@ -3,8 +3,9 @@ import { useAtom } from "jotai";
 import { StepperControl } from "../../StepperControl/StepperControl";
 import { FretRangeControl } from "../../FretRangeControl/FretRangeControl";
 import { ToggleBar } from "../../ToggleBar/ToggleBar";
-import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX } from "@fretflow/core";
-import { ZOOM_STEP, SETTING_FIELDS } from "../constants";
+import { MAX_FRET, FRET_ZOOM_MIN, FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX, STRING_ROW_PX_OVERRIDE_MIN, STRING_ROW_PX_OVERRIDE_MAX } from "@fretflow/core";
+import { ZOOM_STEP, HEIGHT_STEP, SETTING_FIELDS } from "../constants";
+import { stringRowPxOverrideAtom } from "@fretflow/fretboard/store/layoutAtoms";
 import { OverlayFieldHeader } from "../shared";
 import { useSettingsForm } from "../useSettingsForm";
 import { useTranslation } from "../../../hooks/useTranslation";
@@ -23,6 +24,7 @@ export default function DisplaySettingsSection() {
   // full neck, so its stepper floor stays at 100.
   const { useSheetShell } = useLayoutMode();
   const zoomMin = useSheetShell ? FRET_ZOOM_OUT_MIN : FRET_ZOOM_MIN;
+  const [stringRowPxOverride, setStringRowPxOverride] = useAtom(stringRowPxOverrideAtom);
 
   const [displayFormat, setDisplayFormat] = useAtom(displayFormatAtom);
   const [accidentalMode, setAccidentalMode] = useAtom(accidentalModeAtom);
@@ -114,6 +116,28 @@ export default function DisplaySettingsSection() {
                 ? t("settings.view.auto")
                 : `${zoom}${t("settings.view.zoomSuffix")}`
             }
+            buttonVariant="mobile"
+          />
+        </div>
+      </div>
+      <div className={clsx(styles["overlay-field"], styles["overlay-field--divided"])}>
+        <OverlayFieldHeader label={t(SETTING_FIELDS.height.labelKey)} />
+        <div className={styles["overlay-field-control"]}>
+          <StepperControl
+            value={stringRowPxOverride}
+            onChange={(v) => {
+              if (stringRowPxOverride === 0 && v > 0) {
+                setStringRowPxOverride(STRING_ROW_PX_OVERRIDE_MIN);
+              } else if (v > 0 && v < STRING_ROW_PX_OVERRIDE_MIN) {
+                setStringRowPxOverride(0);
+              } else {
+                setStringRowPxOverride(v);
+              }
+            }}
+            min={0}
+            max={STRING_ROW_PX_OVERRIDE_MAX}
+            step={HEIGHT_STEP}
+            formatValue={(px) => px === 0 ? t("settings.view.auto") : `${px}px`}
             buttonVariant="mobile"
           />
         </div>

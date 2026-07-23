@@ -17,6 +17,7 @@ export interface Dictionary {
     };
     fields: {
       zoom: string;
+      height: string;
       fretRange: string;
       tuning: string;
       accidentals: string;
@@ -329,6 +330,8 @@ export interface Dictionary {
     label: string;
     zoomIn: string;
     zoomOut: string;
+    heightUp: string;
+    heightDown: string;
   };
   mobilePanels: {
     closeOverlay: string;
