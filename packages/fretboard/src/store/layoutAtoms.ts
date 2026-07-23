@@ -1,7 +1,15 @@
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { TUNINGS, STANDARD_TUNING } from "@fretflow/core";
-import { MAX_FRET, FRET_ZOOM_OUT_MIN, FRET_ZOOM_MAX, FRET_ZOOM_DEFAULT } from "@fretflow/core";
+import {
+  MAX_FRET,
+  FRET_ZOOM_OUT_MIN,
+  FRET_ZOOM_MAX,
+  FRET_ZOOM_DEFAULT,
+  STRING_ROW_PX_OVERRIDE_MIN,
+  STRING_ROW_PX_OVERRIDE_MAX,
+  STRING_ROW_PX_OVERRIDE_DEFAULT,
+} from "@fretflow/core";
 import { k, rawStringStorage, constrainedNumberStorage, GET_ON_INIT } from "../utils/storage";
 
 const fretCountStorage = constrainedNumberStorage({ min: 0, max: MAX_FRET, integer: true });
@@ -39,6 +47,20 @@ export const fretEndAtom = atomWithStorage(
   k("fretEnd"),
   MAX_FRET,
   fretCountStorage,
+  GET_ON_INIT,
+);
+
+const stringRowPxOverrideStorage = constrainedNumberStorage({
+  min: STRING_ROW_PX_OVERRIDE_MIN,
+  max: STRING_ROW_PX_OVERRIDE_MAX,
+  integer: true,
+});
+
+/** 0 = use responsive layout default; non-zero overrides the row height. */
+export const stringRowPxOverrideAtom = atomWithStorage(
+  k("stringRowPxOverride"),
+  STRING_ROW_PX_OVERRIDE_DEFAULT,
+  stringRowPxOverrideStorage,
   GET_ON_INIT,
 );
 

@@ -360,6 +360,8 @@ export const es: Dictionary = {
     label: "Reproducción y controles",
     zoomIn: "Acercar el diapasón",
     zoomOut: "Alejar el diapasón",
+    heightUp: "Aumentar altura del diapasón",
+    heightDown: "Reducir altura del diapasón",
   },
   mobilePanels: {
     closeOverlay: "Cerrar panel de superposición",

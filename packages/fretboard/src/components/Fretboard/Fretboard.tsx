@@ -81,6 +81,12 @@ interface FretboardProps {
   shapeScope?: ShapeScope;
   /** Optional DOM id forwarded to the inner SVG element for stable references. */
   id?: string;
+  /**
+   * Scale factor applied to the fret width to preserve aspect ratio when
+   * stringRowPx is overridden. 1.0 = default. Pass
+   * effectiveStringRowPx / baselineStringRowPx to maintain visual proportions.
+   */
+  rowScale?: number;
 }
 
 export function Fretboard(props: FretboardProps) {
@@ -135,6 +141,7 @@ export function Fretboard(props: FretboardProps) {
   const startFret = viewport.startFret;
   const endFret = viewport.endFret;
   const stringRowPx = props.stringRowPx ?? STRING_ROW_PX_DEFAULT;
+  const rowScale = props.rowScale ?? 1;
   const onFretClickProp = props.onFretClick;
   const id = props.id;
 
@@ -175,7 +182,7 @@ export function Fretboard(props: FretboardProps) {
   );
   const desktopZoom =
     viewport.fretZoom <= 100 ? autoFitZoom : (autoFitZoom * viewport.fretZoom) / 100;
-  const effectiveZoom = desktopZoom;
+  const effectiveZoom = desktopZoom * rowScale;
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);

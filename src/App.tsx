@@ -11,7 +11,7 @@ import {
 import { probeOutputHealth } from "@fretflow/fretboard/core/audioOutputHealth";
 import { isMutedAtom, audioErrorAtom, audioOutputWedgedAtom } from "@fretflow/fretboard/store/audioAtoms";
 import { chordTypeAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
-import { fretZoomAtom } from "@fretflow/fretboard/store/layoutAtoms";
+import { fretZoomAtom, stringRowPxOverrideAtom } from "@fretflow/fretboard/store/layoutAtoms";
 import { scaleRowForZoomOut } from "@fretflow/fretboard/layout/responsive";
 
 import useLayoutMode from "./hooks/useLayoutMode";
@@ -62,6 +62,7 @@ function AppContent() {
   // Sub-100 zoom on sheet shells = zoom OUT: rows (and with them the note
   // bubbles and the fret-width floor) shrink proportionally so more frets fit.
   const fretZoom = useAtomValue(fretZoomAtom);
+  const stringRowPxOverride = useAtomValue(stringRowPxOverrideAtom);
   const isMuted = useAtomValue(isMutedAtom);
   const [audioError, setAudioError] = useAtom(audioErrorAtom);
   const [audioOutputWedged, setAudioOutputWedged] = useAtom(audioOutputWedgedAtom);
@@ -73,6 +74,8 @@ function AppContent() {
   const helpTriggerRef = useRef<HTMLButtonElement>(null);
   const settingsTriggerRef = useRef<HTMLButtonElement>(null);
   const layout = useLayoutMode();
+  const effectiveStringRowPx = stringRowPxOverride > 0 ? stringRowPxOverride : layout.stringRowPx;
+  const rowScale = effectiveStringRowPx / layout.stringRowPx;
   const theme = useResolvedTheme();
   useKeyboardShortcuts();
   useMediaSession();
@@ -228,7 +231,8 @@ function AppContent() {
           dock={<MobileDock />}
         >
           <Fretboard
-            stringRowPx={scaleRowForZoomOut(layout.stringRowPx, fretZoom)}
+            stringRowPx={scaleRowForZoomOut(effectiveStringRowPx, fretZoom)}
+            rowScale={rowScale}
           />
         </MobileShell>
         {helpModalNode}
@@ -260,7 +264,8 @@ function AppContent() {
         settingsOverlay={settingsOverlayNode}
       >
         <Fretboard
-          stringRowPx={layout.stringRowPx}
+          stringRowPx={effectiveStringRowPx}
+          rowScale={rowScale}
         />
       </MainLayoutWrapper>
     )}

@@ -1,0 +1,26 @@
+/* Floating height-adjust pair anchored next to the zoom controls. */
+
+.heightControl {
+  position: absolute;
+  bottom: 12px;
+  right: 96px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  z-index: var(--z-note, 10);
+  transition: opacity 0.2s ease;
+}
+
+/* stylelint-disable selector-pseudo-class-no-unknown */
+:global([data-mobile-panel="overlay"]) .heightControl,
+:global([data-mobile-panel="song"]) .heightControl {
+  opacity: 0;
+  pointer-events: none;
+}
+/* stylelint-enable selector-pseudo-class-no-unknown */
+
+@media (prefers-reduced-motion: reduce) {
+  .heightControl {
+    transition: none;
+  }
+}

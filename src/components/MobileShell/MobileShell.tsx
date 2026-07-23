@@ -3,6 +3,7 @@ import { useAtomValue } from "jotai";
 import { useTranslation } from "../../hooks/useTranslation";
 import { mobilePanelAtom } from "@fretflow/fretboard/store/uiAtoms";
 import { StageZoomControl } from "./StageZoomControl";
+import { StageHeightControl } from "./StageHeightControl";
 import styles from "./MobileShell.module.css";
 
 interface MobileShellProps {
@@ -82,6 +83,7 @@ export function MobileShell({
         data-testid="mobile-stage"
       >
         {children}
+        <StageHeightControl />
         <StageZoomControl />
       </main>
       {panel}

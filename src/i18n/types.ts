@@ -329,6 +329,8 @@ export interface Dictionary {
     label: string;
     zoomIn: string;
     zoomOut: string;
+    heightUp: string;
+    heightDown: string;
   };
   mobilePanels: {
     closeOverlay: string;

@@ -360,6 +360,8 @@ export const en: Dictionary = {
     label: "Playback and controls",
     zoomIn: "Zoom in on the fretboard",
     zoomOut: "Zoom out on the fretboard",
+    heightUp: "Increase fretboard height",
+    heightDown: "Decrease fretboard height",
   },
   mobilePanels: {
     closeOverlay: "Close overlay panel",
