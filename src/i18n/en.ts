@@ -19,6 +19,7 @@ export const en: Dictionary = {
     },
     fields: {
       zoom: "Zoom",
+      height: "Height",
       fretRange: "Fret Range",
       tuning: "Tuning",
       accidentals: "Accidentals",

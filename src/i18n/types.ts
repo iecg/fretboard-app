@@ -17,6 +17,7 @@ export interface Dictionary {
     };
     fields: {
       zoom: string;
+      height: string;
       fretRange: string;
       tuning: string;
       accidentals: string;

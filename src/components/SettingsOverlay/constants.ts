@@ -18,6 +18,10 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
     key: "zoom",
     labelKey: "settings.fields.zoom",
   },
+  height: {
+    key: "height",
+    labelKey: "settings.fields.height",
+  },
   fretRange: {
     key: "fretRange",
     labelKey: "settings.fields.fretRange",
@@ -34,6 +38,8 @@ export const SETTING_FIELDS: Record<SettingFieldKey, SettingFieldConfig> = {
 };
 
 export const ZOOM_STEP = 10;
+
+export const HEIGHT_STEP = 4;
 
 export const LANGUAGE_OPTIONS = [
   { value: "en", label: "English" },

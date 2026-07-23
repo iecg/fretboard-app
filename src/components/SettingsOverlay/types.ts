@@ -2,6 +2,7 @@ export type { ThemePreference as ThemeOptionValue } from "@fretflow/fretboard/st
 
 export type SettingFieldKey =
   | "zoom"
+  | "height"
   | "fretRange"
   | "tuning"
   | "theme";
