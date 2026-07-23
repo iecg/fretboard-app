@@ -76,4 +76,11 @@ export function scheduleClick(
   };
 }
 
+export function _resetMetronome(): void {
+  if (metronomeSynth) {
+    try { metronomeSynth.dispose(); } catch { /* already disposed */ }
+    metronomeSynth = null;
+  }
+}
+
 export const _metronomeInternals = { ACCENT_FREQ, NORMAL_FREQ, DECAY };

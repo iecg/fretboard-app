@@ -17,6 +17,10 @@ import { IS_DEV } from "../../env";
 import { buildLayerBuses, type LayerBuses } from "./layerBuses";
 import { _resetToneBusForTests, bindToneToProgressionContext, resetToneBusBinding } from "./toneBus";
 import { materializeSignalGraph, type MaterializedGraph, type SignalGraphPlan } from "./sound/buildSignalGraph";
+import { _resetDrumKitSynths } from "./drumKit";
+import { _resetChordSynths } from "./instruments/index";
+import { _resetBassSynths } from "./bass";
+import { _resetMetronome } from "./metronome";
 
 const BUS_GAIN = 0.55;
 const SILENCE_RAMP_SECONDS = 0.02;
@@ -89,6 +93,14 @@ function tearDownForContextReplacement(): void {
   needsGraphRebuild = false;
   contextMayBeZombie = false;
   resetToneBusBinding();
+  // Dispose module-level cached synths — they reference the old (closed)
+  // AudioContext. If left alive, the next schedule*() call tries
+  // synth.connect(dest) across two different AudioContexts and throws
+  // InvalidAccessError, silently killing playback.
+  _resetDrumKitSynths();
+  _resetChordSynths();
+  _resetBassSynths();
+  _resetMetronome();
 }
 
 
@@ -108,6 +120,16 @@ export interface ProgressionAudio {
   layers: LayerBuses;
 }
 
+/** True on Safari/WebKit where AudioContext goes zombie (reports "running" but
+ *  produces no audio) after tab backgrounding or extended idle. Chrome and
+ *  Firefox simply suspend → `ctx.resume()` restores everything, so the
+ *  aggressive teardown+replace is only needed on WebKit. */
+function isWebKit(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  return ua.includes("AppleWebKit") && !ua.includes("Chrome") && !ua.includes("Chromium");
+}
+
 /**
  * Lazily create the shared `AudioContext` + bus, returning them if available.
  * Returns `null` when Web Audio is unsupported or construction fails (e.g.
@@ -116,8 +138,12 @@ export interface ProgressionAudio {
 export function ensureProgressionAudio(): ProgressionAudio | null {
   if (unsupported) return null;
 
-  // Zombie-context recovery (see block comment above the flags).
-  if (ctx) {
+  // Zombie-context recovery — only on Safari/WebKit where the AudioContext
+  // can silently lose output while reporting "running". Chrome and Firefox
+  // just suspend → ctx.resume() restores everything; tearing down the
+  // context on those browsers would kill a perfectly healthy signal graph
+  // and force an unnecessary bar-1 restart.
+  if (ctx && isWebKit()) {
     const isZombieFromBackground = contextMayBeZombie;
     const isZombieFromIdle =
       lastAudioActivityMs > 0 &&
