@@ -61,7 +61,7 @@ importers:
         specifier: ^9.39.4
         version: 9.39.4
       '@playwright/test':
-        specifier: ^1.62.0
+        specifier: ^1.62.1
         version: 1.62.1
       '@testing-library/jest-dom':
         specifier: ^7.0.1
@@ -118,8 +118,8 @@ importers:
         specifier: ^29.1.1
         version: 29.1.1
       playwright:
-        specifier: ^1.62.0
-        version: 1.62.0
+        specifier: ^1.62.1
+        version: 1.62.1
       source-map-explorer:
         specifier: ^2.5.3
         version: 2.5.3
@@ -3616,18 +3616,8 @@ packages:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
 
-  playwright-core@1.62.0:
-    resolution: {integrity: sha512-nsNRyq0r2zsG8AcRHWknc9QRA5XCueC7gWMrs+Gx2tlZn9hcl8zudfh00lhJPY1DE7NmZ6bDsT9g2yey8mXljA==}
-    engines: {node: '>=20'}
-    hasBin: true
-
   playwright-core@1.62.1:
     resolution: {integrity: sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==}
-    engines: {node: '>=20'}
-    hasBin: true
-
-  playwright@1.62.0:
-    resolution: {integrity: sha512-Z14dG305dgaLu6foB1TXQagFiW8JfSUIUaUuPaKQ6NtBPKF1P/qXcqfh6c6K/icPqdy37JmjbiBXf6JNg6Sylw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -3800,8 +3790,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  serialize-javascript@7.1.0:
-    resolution: {integrity: sha512-RNEqWOyhhUQYN9V1GfHwu9AR/g+NTciH6Z5u3/no6X3/w+04J2lVDL+svFQVXgXrEGBMG2puMVN3gq2SNGuTGw==}
+  serialize-javascript@7.1.1:
+    resolution: {integrity: sha512-k3CMsaIvvdSwm8oLB4MXSl0wH2/cwlH7xGcnRd2DaeRmBkbzYmyT8j0tsX60DwD1eRwHTpNpH8ljKu9oUT1MeQ==}
     engines: {node: '>=20.0.0'}
 
   set-function-length@1.2.2:
@@ -3900,8 +3890,8 @@ packages:
     resolution: {integrity: sha512-o7+c9bW6zpAdJHTtujeePODAhkuicdAryFsfVKwA+wGw89wJ4GTY484WTucM9hLtDEOpOvI+aHnzqnC5lHp4Rg==}
     engines: {node: '>= 0.4'}
 
-  string.prototype.matchall@4.0.12:
-    resolution: {integrity: sha512-6CC9uyBL+/48dYizRf7H7VAYCMCNTBeM78x/VTUe9bFEaxBepPJDa1Ow99LqI/1yF7kuy7Q3cQsYMrcjGUcskA==}
+  string.prototype.matchall@4.1.0:
+    resolution: {integrity: sha512-tHNHTxInrYLCga9O9YGxWA3G9/nnzQw8UGAyqGx3Ar1pSTTzIuM4woFSq4SowkXCjJIwq5sIiQvEfRI9tCH1qQ==}
     engines: {node: '>= 0.4'}
 
   string.prototype.trim@1.2.10:
@@ -6187,7 +6177,7 @@ snapshots:
 
   '@rollup/plugin-terser@1.0.0(rollup@4.63.1)':
     dependencies:
-      serialize-javascript: 7.1.0
+      serialize-javascript: 7.1.1
       smob: 1.6.2
       terser: 5.51.2
     optionalDependencies:
@@ -6420,7 +6410,7 @@ snapshots:
       ejs: 3.1.10
       json5: 2.2.3
       magic-string: 0.30.21
-      string.prototype.matchall: 4.0.12
+      string.prototype.matchall: 4.1.0
 
   '@types/aria-query@5.0.4': {}
 
@@ -7845,15 +7835,7 @@ snapshots:
 
   picomatch@4.0.7: {}
 
-  playwright-core@1.62.0: {}
-
   playwright-core@1.62.1: {}
-
-  playwright@1.62.0:
-    dependencies:
-      playwright-core: 1.62.0
-    optionalDependencies:
-      fsevents: 2.3.2
 
   playwright@1.62.1:
     dependencies:
@@ -8066,7 +8048,7 @@ snapshots:
 
   semver@7.8.1: {}
 
-  serialize-javascript@7.1.0: {}
+  serialize-javascript@7.1.1: {}
 
   set-function-length@1.2.2:
     dependencies:
@@ -8193,7 +8175,7 @@ snapshots:
       define-properties: 1.2.1
       es-abstract: 1.24.2
 
-  string.prototype.matchall@4.0.12:
+  string.prototype.matchall@4.1.0:
     dependencies:
       call-bind: 1.0.9
       call-bound: 1.0.4
