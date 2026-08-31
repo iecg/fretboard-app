@@ -10,6 +10,7 @@ import {
 import { buildFunkColorVoicing } from "../progressionAudio";
 import { buildVoicing, STRUM_PRESET } from "../voicingEngine";
 import type { ResolvedProgressionStep } from "../progressionDomain";
+import { GENRE_STYLES } from "./genres";
 
 vi.mock("./humanize", () => ({
   applyJitter: (params: { time: number; velocity: number }) => ({ time: params.time, velocity: params.velocity }),
@@ -398,12 +399,14 @@ describe("buildAllLayers", () => {
       const withFill = await buildAllLayersAsync({ ...baseInput, steps: fourBarSteps, drumVariations: ["fill-every-4"] });
 
       const snares = (b: typeof base) => b.drums.filter((d) => d.value.type === "snare");
-      // The fill adds its 4-snare flurry exactly ONCE (one firing bar), not 4×.
-      expect(snares(withFill).length - snares(base).length).toBe(4);
+      // The fill's snare flurry lands exactly ONCE (one firing bar), not 4×.
+      // 3 new hits, not 4: the fill's snare on beat 4 restates one `rock`
+      // already plays, and layered hits merge per (voice, beat).
+      expect(snares(withFill).length - snares(base).length).toBe(3);
 
-      // …and those 4 extra snares all land inside bar 3 (absolute), i.e. [12,16)s.
+      // …and those extra snares all land inside bar 3 (absolute), i.e. [12,16)s.
       const inBar3 = (b: typeof base) => snares(b).filter((d) => d.time >= 12 && d.time < 16).length;
-      expect(inBar3(withFill) - inBar3(base)).toBe(4);
+      expect(inBar3(withFill) - inBar3(base)).toBe(3);
       // Nothing added in bars 0..2 ([0,12)s).
       const before = (b: typeof base) => snares(b).filter((d) => d.time < 12).length;
       expect(before(withFill)).toBe(before(base));
@@ -518,8 +521,9 @@ describe("buildAllLayers", () => {
       const withFill = await buildAllLayersAsync({ ...baseInput, steps, drumVariations: ["fill-every-4"] });
       const snares = (b: typeof base) => b.drums.filter((d) => d.value.type === "snare");
       const inBar3 = (b: typeof base) => snares(b).filter((d) => d.time >= 12 && d.time < 16).length;
-      expect(snares(withFill).length - snares(base).length).toBe(4);
-      expect(inBar3(withFill) - inBar3(base)).toBe(4);
+      // 3, not 4 — the fill's snare on beat 4 merges with `rock`'s own.
+      expect(snares(withFill).length - snares(base).length).toBe(3);
+      expect(inBar3(withFill) - inBar3(base)).toBe(3);
     });
   });
 
@@ -760,6 +764,98 @@ describe("buildAllLayers", () => {
     it("returns undefined for an empty progression", () => {
       expect(nextResolvableRoot([], 0, true)).toBeUndefined();
     });
+  });
+
+  describe("drum variations layer without doubling a voice", () => {
+    // The kit voices are single shared Tone synths, so two events of one voice
+    // at one time make Tone's `Source.start` throw and abort the rest of that
+    // Transport tick. Turnaround fills fire on `absoluteBar % 4 === 3` — the
+    // 4th chord of a 4-bar progression — and restate beats the base pattern
+    // already plays.
+    const fourBars = [
+      step({ id: "a", index: 0, root: "C" }),
+      step({ id: "b", index: 1, root: "F" }),
+      step({ id: "c", index: 2, root: "A", quality: "m", diatonicQuality: "m" }),
+      step({ id: "d", index: 3, root: "G" }),
+    ];
+
+    it("emits pop's turnaround bar with one hit per voice per beat", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        drumPatternId: "pop",
+        drumVariations: ["open-hat-and-of-4", "fill-every-4"],
+        steps: fourBars,
+      });
+
+      // Bar 4 spans [12, 16) at 60bpm / 4 beats per bar.
+      const turnaround = out.drums.filter((d) => d.time >= 12 && d.time < 16);
+      const seen = new Set<string>();
+      for (const hit of turnaround) {
+        const key = `${hit.value.type}@${hit.time}`;
+        expect(seen.has(key)).toBe(false);
+        seen.add(key);
+      }
+      // The fill did fire: snares on 3, "3&", 4 and "4&" of the bar.
+      const snares = turnaround
+        .filter((d) => d.value.type === "snare")
+        .map((d) => d.time - 12)
+        .sort((a, b) => a - b);
+      expect(snares).toEqual([1, 2, 2.5, 3, 3.5]);
+    });
+
+    it("keeps the louder velocity where base and fill name the same beat", async () => {
+      const out = await buildAllLayersAsync({
+        ...baseInput,
+        drumPatternId: "pop",
+        drumVariations: ["fill-every-4"],
+        steps: fourBars,
+      });
+      const at = (type: string, beat: number) =>
+        out.drums.find((d) => d.value.type === type && d.time === 12 + beat);
+
+      // pop snare on "2&" is a 0.2 ghost; the fill's is a 0.8 accent.
+      expect(at("snare", 2.5)?.value.velocity).toBe(0.8);
+      // pop snare on 4 is 1; the fill's is 0.9 — the base accent survives.
+      expect(at("snare", 3)?.value.velocity).toBe(1);
+      // Both kicks on the downbeat are full velocity; one hit remains.
+      expect(at("kick", 0)?.value.velocity).toBe(1);
+    });
+
+    // Tone sorts a Part's events by time before delivering them, so the
+    // invariant that matters is that no voice is asked to start twice at the
+    // same instant anywhere in the timeline.
+    it.each(GENRE_STYLES)(
+      "$id: no drum voice is scheduled twice at one time across 8 bars",
+      async (genre) => {
+        const eightBars = Array.from({ length: 8 }, (_, i) =>
+          step({ id: `s${i}`, index: i, root: "C" }),
+        );
+        const out = await buildAllLayersAsync({
+          ...baseInput,
+          swing: genre.swing,
+          drumPatternId: genre.drumPattern,
+          drumVariations: genre.drumVariations,
+          steps: eightBars,
+        });
+        expect(out.drums.length).toBeGreaterThan(0);
+
+        const timesByVoice = new Map<string, number[]>();
+        for (const hit of out.drums) {
+          const times = timesByVoice.get(hit.value.type) ?? [];
+          times.push(hit.time);
+          timesByVoice.set(hit.value.type, times);
+        }
+        for (const [voice, times] of timesByVoice) {
+          const sorted = [...times].sort((a, b) => a - b);
+          for (let i = 1; i < sorted.length; i++) {
+            expect(
+              sorted[i],
+              `${genre.id}: ${voice} scheduled twice at ${sorted[i]}`,
+            ).toBeGreaterThan(sorted[i - 1]);
+          }
+        }
+      },
+    );
   });
 });
 

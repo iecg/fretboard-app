@@ -132,6 +132,15 @@ lenses design).
   which is precisely why it justifies a lens. **[spec]** voice-leading pedagogy
   (common-tone retention / re-functioning).
 
+**"Next" wraps: a progression is a cycle.** On the final chord all three lenses
+look back at the *first* chord — on `C–F–Am–G` the `G` aims at `C`'s 3rd, `E`.
+This holds whether or not the transport's Loop toggle is on: the loop setting
+governs whether the audio keeps rolling, not what the player is practicing
+resolving toward, and the last chord of a progression is precisely where the
+target (the tonic it cadences to) matters most. Silencing the aim cue on the
+final chord would drop the cue on the one change the player most needs to hear
+coming. **[spec]**
+
 The three lenses split into two paradigms: **Target** lenses (Root, Guide) "aim
 ahead" at a small next-chord target set via the planning→landing ring; the
 **Field** lens (Common) emphasizes tones *across* the change with a steady hold.

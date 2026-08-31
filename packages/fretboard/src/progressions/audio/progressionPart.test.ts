@@ -112,4 +112,24 @@ describe("createProgressionPart", () => {
     // loopEnd unchanged when not supplied:
     expect(toneMocks.parts[0].loopEnd).toBe(8);
   });
+
+  // Tone delivers every event scheduled at a tick in one pass, so a throw that
+  // escaped this callback would abort the pass and silently drop the layers
+  // scheduled behind it.
+  it("contains an onEvent failure instead of letting it escape the Part callback", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const boom = new Error("scheduling failed");
+    createProgressionPart<number>({
+      events: [{ time: 0, value: 1 }],
+      loop: false,
+      loopEnd: 0,
+      onEvent: () => { throw boom; },
+    });
+
+    expect(() => toneMocks.parts[0].callback(0, 1)).not.toThrow();
+    expect(consoleError).toHaveBeenCalledWith(
+      "Error in progression part event:",
+      boom,
+    );
+  });
 });

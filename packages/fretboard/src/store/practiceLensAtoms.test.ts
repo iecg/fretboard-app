@@ -315,7 +315,7 @@ describe("nextChordTonesAtom / commonTonesWithNextAtom", () => {
     expect(store.get(commonTonesWithNextAtom)).toEqual(new Set(["G"]));
   });
 
-  it("nextChordTonesAtom does not wrap around when loop is disabled and active step is the last step", () => {
+  it("nextChordTonesAtom wraps around on the last step even when loop is disabled", () => {
     const store = makeAtomStore([
       [scaleNameAtom, "major"],
       [rootNoteAtom, "C"],
@@ -327,7 +327,7 @@ describe("nextChordTonesAtom / commonTonesWithNextAtom", () => {
       ]],
       [displayedStepIndexPrimitiveAtom, 1],
     ]);
-    expect(store.get(nextChordTonesAtom)).toEqual(new Set());
+    expect(store.get(nextChordTonesAtom)).toEqual(new Set(["C", "E", "G"]));
   });
 
   it("nextChordTonesAtom still wraps around when loop is enabled and active step is the last step", () => {
@@ -548,6 +548,14 @@ describe("nextChordGuideTonesAtom", () => {
     store.set(activeProgressionStepIndexAtom, 3);
     const guideTones = store.get(nextChordGuideTonesAtom);
     expect(guideTones).toEqual(new Set(["E"]));
+  });
+
+  it("wraps around on the last step with loop disabled too (C major → E, labeled 3)", () => {
+    const store = makeDefaultStore();
+    store.set(progressionLoopEnabledAtom, false);
+    store.set(activeProgressionStepIndexAtom, 3);
+    expect(store.get(nextChordGuideTonesAtom)).toEqual(new Set(["E"]));
+    expect(store.get(nextChordGuideToneLabelsAtom)).toEqual(new Map([["E", "3"]]));
   });
 
   it("labels map gives each guide tone its function in the next chord (triad → 3)", () => {

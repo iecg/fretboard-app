@@ -481,4 +481,57 @@ describe("drumKit — Tone backend", () => {
       expect(opts.volume).toBe(0);
     });
   });
+
+  // Each voice is one shared monophonic synth, so Tone's `Source.start`
+  // asserts strictly-increasing start times. A violation throws out of the
+  // Tone.Part callback and takes the rest of that Transport tick with it, so
+  // the duplicate is dropped here instead.
+  describe("non-increasing start times", () => {
+    it("schedules the kick once when two hits name the same time", () => {
+      const dest = {} as AudioNode;
+      scheduleKick(dest, 3, { velocity: 1 });
+      scheduleKick(dest, 3, { velocity: 0.9 });
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+    });
+
+    it("drops a snare scheduled earlier than the previous one", () => {
+      const dest = {} as AudioNode;
+      scheduleSnare(dest, 3, { velocity: 1 });
+      scheduleSnare(dest, 2.5, { velocity: 1 });
+      expect(noiseSpies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+      const [, time] = noiseSpies.triggerAttackRelease.mock.calls[0]!;
+      expect(time).toBeCloseTo(3, 3);
+    });
+
+    it("still schedules a strictly later hit on the same voice", () => {
+      const dest = {} as AudioNode;
+      scheduleKick(dest, 3, { velocity: 1 });
+      scheduleKick(dest, 3.5, { velocity: 1 });
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it("tracks voices independently — a snare at the kick's time still fires", () => {
+      const dest = {} as AudioNode;
+      scheduleKick(dest, 3, { velocity: 1 });
+      scheduleSnare(dest, 3, { velocity: 1 });
+      expect(membraneSpies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+      expect(noiseSpies.triggerAttackRelease).toHaveBeenCalledTimes(1);
+    });
+
+    it("tracks open and closed hats independently (separate synths)", () => {
+      const dest = {} as AudioNode;
+      scheduleHiHat(dest, 3, { velocity: 1 });
+      scheduleHiHat(dest, 3, { velocity: 1, open: true });
+      expect(metalSpies.triggerAttackRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it("returns an inert handle for the dropped hit — it cannot cancel the live one", () => {
+      const dest = {} as AudioNode;
+      scheduleKick(dest, 3, { velocity: 1 });
+      const dropped = scheduleKick(dest, 3, { velocity: 1 });
+      clock.now = 1; // before the surviving hit, so a real handle would cancel
+      expect(() => dropped.cancel()).not.toThrow();
+      expect(membraneTone.instances[0]!.envelope.cancel).not.toHaveBeenCalled();
+    });
+  });
 });
