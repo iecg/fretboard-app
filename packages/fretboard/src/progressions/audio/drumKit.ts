@@ -39,6 +39,42 @@ const openHatSynths = new Map<string, Tone.MetalSynth>();
 const rideSynths = new Map<string, Tone.MetalSynth>();
 const crossStickSynths = new Map<string, Tone.MembraneSynth>();
 
+/**
+ * Last start time handed to each voice, keyed exactly like the synth caches
+ * above — one entry per (voice, kit id), because that is the granularity at
+ * which a synth is shared.
+ *
+ * Every voice here is a single monophonic Tone synth, so `triggerAttackRelease`
+ * ultimately calls `Source.start`, which asserts that each start is strictly
+ * later than the previous one. A violation throws out of the Tone.Part callback
+ * and aborts the rest of that Transport tick, silently dropping the layers
+ * scheduled behind the drums. Dropping the offending hit is both quieter and
+ * safer: two starts at one instant were never going to sound like two strokes.
+ *
+ * Deliberately NOT cleared when playback restarts. A restart rewinds the
+ * Transport while hits committed within the scheduling lookahead are still
+ * pending on these synths, so the new run's first hits can land at an earlier
+ * absolute time than the stale ones; keeping the map costs at most a lookahead
+ * of drums and keeps the assert unreachable. It is cleared with the synths
+ * themselves in {@link _resetDrumKitSynths}.
+ */
+const lastStartTimes = new Map<string, number>();
+
+/** Below this gap two starts are the same instant as far as Tone is concerned. */
+const START_EPSILON_SECONDS = 1e-4;
+
+/**
+ * Reserve `time` for a voice, or report that it is already taken. Returns false
+ * when the hit must be dropped.
+ */
+function claimVoiceStart(voice: string, kit: DrumKitPatch | undefined, time: number): boolean {
+  const key = `${voice}:${kitKey(kit)}`;
+  const last = lastStartTimes.get(key);
+  if (last !== undefined && time <= last + START_EPSILON_SECONDS) return false;
+  lastStartTimes.set(key, time);
+  return true;
+}
+
 // ── Kick ───────────────────────────────────────────────────────────────────
 const DEFAULT_KICK_ENV = {
   attack: 0.001,
@@ -72,6 +108,8 @@ export function scheduleKick(
 ): DrumVoiceHandle {
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
+
+  if (!claimVoiceStart("kick", options.kit, time)) return NOOP_HANDLE;
 
   const synth = getKickSynth(options.kit, dest);
   synth.disconnect();
@@ -122,6 +160,8 @@ export function scheduleSnare(
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
   const duration = options.kit?.voices.snare?.envelope?.decay ?? 0.18;
+
+  if (!claimVoiceStart("snare", options.kit, time)) return NOOP_HANDLE;
 
   const synth = getSnareSynth(options.kit, dest);
   synth.disconnect();
@@ -182,6 +222,8 @@ export function scheduleHiHat(
   const open = options.open ?? false;
   const decay = hatDecay(open, options.kit);
 
+  if (!claimVoiceStart(open ? "openHat" : "hihat", options.kit, time)) return NOOP_HANDLE;
+
   const synth = getHiHatSynth(open, options.kit, dest);
   synth.disconnect();
   synth.connect(dest);
@@ -232,6 +274,8 @@ export function scheduleRide(
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
   const decay = options.kit?.voices.ride?.decay ?? 1.0;
+
+  if (!claimVoiceStart("ride", options.kit, time)) return NOOP_HANDLE;
 
   const synth = getRideSynth(options.kit, dest);
   synth.disconnect();
@@ -285,6 +329,8 @@ export function scheduleCrossStick(
   const velocity = clampVelocity(options.velocity);
   if (velocity <= 0) return NOOP_HANDLE;
 
+  if (!claimVoiceStart("crossStick", options.kit, time)) return NOOP_HANDLE;
+
   const synth = getCrossStickSynth(options.kit, dest);
   synth.disconnect();
   synth.connect(dest);
@@ -321,4 +367,5 @@ export function _resetDrumKitSynths(): void {
   disposeAll(openHatSynths);
   disposeAll(rideSynths);
   disposeAll(crossStickSynths);
+  lastStartTimes.clear();
 }

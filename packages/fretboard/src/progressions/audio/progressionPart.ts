@@ -30,7 +30,16 @@ export function createProgressionPart<V>(
 ): ProgressionPartHandle {
   const tuples: Array<[number, V]> = opts.events.map((e) => [e.time, e.value]);
   const part = new Part((time: number, value: V) => {
-    opts.onEvent(time, value);
+    // Tone iterates every event scheduled at a tick in one pass, so a throw
+    // here would abort the rest of that pass and silently drop the layers
+    // behind this one — a drum-scheduling failure taking the chord onsets (and
+    // the visual timeline they drive) down with it. Contain it to its own
+    // layer; mirrors the subscriber guard in `visualClock`.
+    try {
+      opts.onEvent(time, value);
+    } catch (err) {
+      console.error("Error in progression part event:", err);
+    }
   }, tuples) as unknown as {
     start: (time?: number, offset?: number) => void;
     stop: () => void;

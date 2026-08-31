@@ -43,13 +43,13 @@ import {
   progressionTempoBpmAtom,
   progressionStepDeadlineAtom,
   beatsPerBarAtom,
-  progressionLoopEnabledAtom,
   progressionPlayingAtom,
   progressionStepDurationMsAtom,
   progressionBarDurationMsAtom,
 } from "./progressionAtoms";
 import { progressionVisualFrameAtom } from "./progressionVisualAtoms";
 import {
+  clampProgressionIndex,
   getProgressionDurationBeats,
   MIN_PROGRESSION_TEMPO_BPM,
 } from "../progressions/progressionDomain";
@@ -463,7 +463,9 @@ export const practiceCuesAtom = atom((get) => {
 
 /**
  * Pitch-class set of the chord at the step *after* the active progression step.
- * Wraps around so that the last step's next is the first step. When the
+ * Wraps around so that the last step's next is the first step, whether or not
+ * the transport loops — the aim lenses read a progression as a practice cycle,
+ * so the final chord still points back at the tonic it resolves to. When the
  * progression has exactly one step, next wraps to that same step (all its
  * tones are returned).
  *
@@ -478,10 +480,7 @@ export const practiceCuesAtom = atom((get) => {
 export const nextChordTonesAtom = atom((get): Set<string> => {
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Set();
-  const active = get(displayedProgressionStepIndexAtom);
-  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
-    return new Set();
-  }
+  const active = clampProgressionIndex(get(displayedProgressionStepIndexAtom), steps);
   const nextIndex = (active + 1) % steps.length;
   const step = steps[nextIndex];
   if (!step || step.unavailable || step.root === null || step.quality === null) {
@@ -586,6 +585,9 @@ export const departingTonesAtom = atom((get): Set<string> => {
  *  - "common": an empty Map — the Field lens has no aim ring; the common-hold
  *    branch in `getEmphasis` takes over.
  *
+ * Wraps at the end of the progression: the last step aims at the first,
+ * regardless of the transport's loop setting (see {@link nextChordTonesAtom}).
+ *
  * Also returns an empty Map when the progression is empty, the next step is
  * unavailable, or root/quality is missing. This is the canonical source for the
  * ring's target set; {@link nextChordGuideTonesAtom} derives its keys.
@@ -597,10 +599,7 @@ export const nextTargetToneLabelsAtom = atom((get): Map<string, string> => {
 
   const steps = get(resolvedProgressionStepsAtom);
   if (steps.length === 0) return new Map();
-  const active = get(displayedProgressionStepIndexAtom);
-  if (active === steps.length - 1 && !get(progressionLoopEnabledAtom)) {
-    return new Map();
-  }
+  const active = clampProgressionIndex(get(displayedProgressionStepIndexAtom), steps);
   const nextIndex = (active + 1) % steps.length;
   const step = steps[nextIndex];
   if (!step || step.unavailable || step.root === null || step.quality === null) {

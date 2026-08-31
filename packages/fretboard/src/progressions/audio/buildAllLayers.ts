@@ -170,6 +170,37 @@ function collectDrumHits(pattern: CatalogDrumPattern): VoicedDrumHit[] {
 }
 
 /**
+ * Collapse hits that name the same (voice, beat) down to one, keeping the
+ * loudest.
+ *
+ * Drum variations LAYER on top of the base pattern (unlike chord and bass
+ * variations, which replace it), so a turnaround fill can restate a beat the
+ * base pattern already plays — e.g. `pop`'s kick on 1 and `fill-every-4`'s kick
+ * on 1. Two hits of one voice at one beat are not two drum strokes: the kit
+ * voices are single shared Tone synths, and a duplicate start makes Tone's
+ * `Source.start` throw ("Start time must be strictly greater than previous
+ * start time"), which aborts the rest of that Transport tick. The humanizer
+ * cannot separate them either — its seed is derived from the beat, so both
+ * copies land on the bit-identical jittered time.
+ *
+ * Keeping the louder velocity preserves the fill's accents where it hits
+ * harder and the base pattern's where it does. First-seen order is preserved.
+ */
+function mergeDrumHits(hits: readonly VoicedDrumHit[]): VoicedDrumHit[] {
+  const byVoiceAndBeat = new Map<string, VoicedDrumHit>();
+  for (const hit of hits) {
+    const key = `${hit.type}@${hit.beat}`;
+    const existing = byVoiceAndBeat.get(key);
+    if (!existing) {
+      byVoiceAndBeat.set(key, hit);
+    } else if (hit.velocity > existing.velocity) {
+      byVoiceAndBeat.set(key, hit);
+    }
+  }
+  return [...byVoiceAndBeat.values()];
+}
+
+/**
  * Flatten a resolved progression into per-layer event streams ready to feed
  * Tone primitives. Pure function — no audio scheduling, no Tone references.
  *
@@ -445,7 +476,10 @@ export async function buildAllLayersAsync(input: BuildAllLayersInput): Promise<B
       const firingVariationHits: VoicedDrumHit[] = variations
         .filter((v) => variationFiresOnBar(v, absoluteBar))
         .flatMap((v) => collectDrumHits(v.pattern));
-      const drumHitsForBar: VoicedDrumHit[] = [...baseForBar, ...firingVariationHits];
+      const drumHitsForBar: VoicedDrumHit[] = mergeDrumHits([
+        ...baseForBar,
+        ...firingVariationHits,
+      ]);
       if (drumHitsForBar.length > 0) {
         const hits = repeatPatternToBeats(drumHitsForBar, eventBeats, input.beatsPerBar);
         for (const hit of hits) {
