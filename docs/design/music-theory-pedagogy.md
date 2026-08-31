@@ -98,7 +98,9 @@ Larsen (guide-tone lines).
 
 This grounding is why the internal `GUIDE_TONE_RAW` member set is exactly
 `{b3, 3, b7, 7}` and why a note's guide-tone status is computed only from those
-members (`practiceLensAtoms.ts`). **[spec]**
+members (`practiceLensAtoms.ts`), independent of whether that pitch class
+belongs to the active scale — a pentatonic scale's missing 4th/7th does not
+strip a chord's guide tones of their identity. **[spec]**
 
 ---
 

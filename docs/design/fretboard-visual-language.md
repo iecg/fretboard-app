@@ -217,6 +217,11 @@ Because salience is figure-relative, the presentation differs by mode.
 | Diatonic color tone (ground) | circle | small | **hollow** | neutral |
 | Chromatic / outside chord tone | **diamond** | medium | filled | neutral |
 
+Guide-tone teal styling is intentionally independent of scale membership — a
+chord's 3rd/7th keeps its teal identity even when the active scale (e.g. a
+pentatonic) excludes that pitch class. The "outside chord tone" diamond row
+is for non-guide-tone chromatic/tension notes only.
+
 **Chord overlay OFF** — the scale is the figure (present, not recessed):
 
 | Role | Shape | Size | Fill | Color |

@@ -298,6 +298,25 @@ describe("semantics utils", () => {
       expect(classifyNoteFromSemantics(sem, true, true, true)).toBe("chord-tone-outside-scale");
     });
 
+    it("classifies an outside-scale guide tone (e.g. a pentatonic-excluded 7th) as chord-tone-in-scale, not chord-tone-outside-scale", () => {
+      // Regression test: C major pentatonic (no 4th/7th) with a Cmaj7/C7
+      // chord active. B (the 7th) is a guide tone but is NOT in the
+      // pentatonic subset. Per docs/design/fretboard-visual-language.md §4,
+      // guide tones render teal/circle unconditionally — scale membership
+      // must not strip that identity.
+      const sem = {
+        isScaleRoot: false,
+        isChordRoot: false,
+        isChordTone: true,
+        isInScale: false,
+        isColorTone: false,
+        isGuideTone: true,
+        isTension: false,
+        isDiatonicChord: false,
+      } as NoteSemantics;
+      expect(classifyNoteFromSemantics(sem, true, true, false)).toBe("chord-tone-in-scale");
+    });
+
     it("chord-tone-outside-scale in-shape but out-of-voicing-range still returns chord-tone-outside-scale", () => {
       // e.g. the b7 of a dominant 7th chord: not diatonic, not highlighted,
       // inside the 3NPS shape but outside the voicing's narrower range window.
