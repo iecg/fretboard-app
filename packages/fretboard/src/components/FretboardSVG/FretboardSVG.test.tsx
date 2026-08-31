@@ -558,6 +558,35 @@ describe("FretboardSVG/FretboardSVG", () => {
       expect(container.querySelectorAll('[data-note-guide-tone="true"]').length).toBeGreaterThan(0);
     });
 
+    it("guide tone outside the active pentatonic scale still renders as chord-tone-in-scale (teal), not chord-tone-outside-scale", () => {
+      // G major pentatonic (G-A-B-D-E) has no 7th. F is the b7 of a G7 chord —
+      // a guide tone that falls outside the pentatonic subset. It must keep
+      // its teal guide-tone identity rather than falling back to the generic
+      // chromatic/outside-scale diamond treatment.
+      const semantics = sem([
+        ["F", { isChordTone: true, isInScale: false, isGuideTone: true, memberName: "b7" }],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["G", "B", "D", "F"]}
+          chordRoot="G"
+          rootNote="G"
+          highlightNotes={["G", "A", "B", "D", "E"]}
+          noteSemantics={semantics}
+        />,
+      );
+      // Scope to the `<g>` note-marker elements (the hit-target `<button>`
+      // layer also carries data-note-guide-tone but not data-note-shape).
+      const guideNotes = container.querySelectorAll('g[data-note-guide-tone="true"]');
+      expect(guideNotes.length).toBeGreaterThan(0);
+      guideNotes.forEach((el) => {
+        expect(el.classList.contains("chord-tone-in-scale")).toBe(true);
+        expect(el.classList.contains("chord-tone-outside-scale")).toBe(false);
+        expect(el.getAttribute("data-note-shape")).toBe("circle");
+      });
+    });
+
     it("notes without semantics entry have no data-note-tension or data-note-guide-tone", () => {
       const semantics = sem([
         ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root" }],

@@ -159,6 +159,10 @@ export function classifyNoteFromSemantics(
     return sem.isInScale ? "chord-root" : "chord-root-outside";
   if (sem.isDiatonicChord && sem.isChordTone && isInActiveShape) return "note-diatonic-chord";
   if (sem.isInScale && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
+  // Guide-tone identity (3rd/7th) wins over scale membership — a pentatonic
+  // scale's missing 4th/7th shouldn't strip the chord's guide tones of
+  // their teal treatment. See docs/design/fretboard-visual-language.md §4.
+  if (sem.isGuideTone && sem.isChordTone && isInActiveShape) return "chord-tone-in-scale";
   if (sem.isColorTone && isInActiveShape && isHighlighted) return "note-blue";
   if (sem.isInScale && isInActiveShape && isHighlighted) return "scale-only";
   if (sem.isChordTone && isInActiveShape) return "chord-tone-outside-scale";
