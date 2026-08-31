@@ -320,3 +320,48 @@ describe("FretboardNote — common-hold ring", () => {
   });
 });
 
+
+describe("FretboardNote — incoming ghost (lead-in preview)", () => {
+  const ghostNote = (overrides: Partial<RenderedFretboardNote> = {}) =>
+    makeNote({
+      noteName: "B",
+      displayName: "B",
+      displayValue: "B",
+      noteClass: "incoming-ghost",
+      isHidden: false,
+      transitionRole: "guide-target",
+      applyLensEmphasis: {
+        radiusBoost: 1,
+        opacityBoost: 1,
+        transitionRole: "guide-target",
+        guideTargetLabel: "3",
+      },
+      ...overrides,
+    });
+
+  it("renders visibly with its own role and the full countdown ring", () => {
+    const { container } = renderNote(ghostNote());
+    const g = container.querySelector("g[data-note-shape]")!;
+    expect(g.classList.contains("hidden")).toBe(false);
+    expect(g.getAttribute("aria-hidden")).toBeNull();
+    expect(g.getAttribute("data-note-role")).toBe("incoming-ghost");
+    // Chord-tier circle, matching what it flips to at the chord boundary.
+    expect(g.getAttribute("data-note-shape")).toBe("circle");
+    expect(container.querySelector("[data-guide-ring]")).not.toBeNull();
+    expect(
+      container.querySelector("[data-guide-ring]")?.getAttribute("data-guide-phase"),
+    ).toBe("landing");
+    // Backing disc + the interval label naming the incoming chord member.
+    expect(container.querySelector("[data-guide-phase]:not([data-guide-ring])")).not.toBeNull();
+    expect(container.querySelector("[data-guide-label]")?.textContent).toBe("3");
+  });
+
+  it("stays a quiet secondary marker outside the active region", () => {
+    const { container } = renderNote(ghostNote({ isInRegion: false }), {
+      countdownTicks: [0.25, 0.5, 0.75],
+    });
+    const ring = container.querySelector("[data-guide-ring]");
+    expect(ring?.getAttribute("data-guide-primary")).toBe("false");
+    expect(container.querySelectorAll("[data-guide-tick]")).toHaveLength(0);
+  });
+});

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getEmphasis, classifyNote, classifyNoteFromSemantics, getNoteVisuals } from "./semantics";
+import { getEmphasis, classifyNote, classifyNoteFromSemantics, getNoteVisuals, INCOMING_GHOST_CLASS } from "./semantics";
 import type { LeadLensContext } from "./semantics";
 import type { NoteSemantics } from "@fretflow/core";
 import type { PracticeLens } from "../../../store/practiceLensAtoms";
@@ -388,6 +388,16 @@ describe("semantics utils", () => {
 
     it("returns circle for key tonic", () => {
       expect(getNoteVisuals("key-tonic").noteShape).toBe("circle");
+    });
+
+    it("gives the incoming ghost the SAME geometry as the chord tone it becomes", () => {
+      // The lead-in ghost flips to chord-tone-in-scale at the chord boundary.
+      // Matching radius and shape keeps that flip a pure fill/colour change —
+      // the note "pop" the preview exists to fix.
+      expect(getNoteVisuals(INCOMING_GHOST_CLASS)).toEqual(
+        getNoteVisuals("chord-tone-in-scale"),
+      );
+      expect(getNoteVisuals(INCOMING_GHOST_CLASS)).toEqual({ radiusScale: 0.95, noteShape: "circle" });
     });
   });
 });

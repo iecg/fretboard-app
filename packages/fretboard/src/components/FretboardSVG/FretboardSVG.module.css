@@ -129,6 +129,16 @@
   stroke-width: 1.7;
 }
 
+/* Lead-in ghost — a next-chord target the active scale hides (e.g. the 3rd of
+   the next chord under a pentatonic). HOLLOW ring in the incoming hue so it
+   reads as "go here next", and flips to the solid teal chord-tone marker at the
+   chord boundary. See docs/design/fretboard-visual-language.md §E. */
+.fretboard-note.incoming-ghost :is(circle, path, polygon) {
+  fill: none;
+  stroke: var(--note-incoming, #0f9d72);
+  stroke-width: 2.2;
+}
+
 /* No-overlay scale tone — the scale IS the figure: neutral FILLED, present. */
 .fretboard-note.note-active :is(circle, path, polygon) {
   fill: var(--fb-neutral-fill);
@@ -191,7 +201,7 @@
    reads as a ghosted number that recedes into the light wood while staying
    legible. paint-order: stroke (set on the base text rule) keeps the halo
    under the fill. */
-:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .color-tone) text {
+:global([data-theme="modern-light"]) .fretboard-note:is(.scale-only, .color-tone, .incoming-ghost) text {
   fill: var(--fb-neutral-fill);
   stroke: var(--fb-neutral-stroke);
   stroke-width: 1.6;
@@ -205,7 +215,7 @@
    to preserve the outer edge of the majority of note bubbles: baseline chosen as
    note-active (previous light value 2.8), delta = 3.6 - 2.8 = 0.8, shrink = 0.4px.
    Hollow roles are excluded, so they keep full --note-r (no compensation needed). */
-:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) :is(circle, path, polygon) {
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive):not(.incoming-ghost) :is(circle, path, polygon) {
   stroke-width: 3.6;
 }
 
@@ -215,7 +225,7 @@
    pulled the drain track in to the marker radius (collapse = standoff + 0.4px,
    larger on bigger notes), which made the beat ticks — positioned at ringR — read
    as poking out past the track into the wood on big chord-tone bubbles. */
-:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive) circle:not(.note-guide-ring-halo):not(.note-guide-ring-core):not(.note-guide-ring-flash) {
+:global([data-theme="modern-light"]) .fretboard-note:not(.scale-only):not(.color-tone):not(.note-inactive):not(.incoming-ghost) circle:not(.note-guide-ring-halo):not(.note-guide-ring-core):not(.note-guide-ring-flash) {
   r: calc(var(--note-r) * 1px - 0.4px);
 }
 

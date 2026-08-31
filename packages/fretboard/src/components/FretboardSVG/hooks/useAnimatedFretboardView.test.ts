@@ -300,6 +300,11 @@ function makeLensTopologyNote(
     isHidden: false,
     isTension: false,
     isGuideTone: false,
+    positionKey: "0-5",
+    isMatchedFullChordPosition: true,
+    isInsideAnyPolygon: true,
+    isChordInRange: true,
+    isInActiveShape: true,
     ...overrides,
   } as StaticFretboardTopologyNote;
 }
@@ -380,5 +385,139 @@ describe("renderedNoteSignature — hold-common is not stale", () => {
     // Different transitionRole ⇒ different signature ⇒ NOT the same cached object.
     expect(after).not.toBe(before);
     expect(after.transitionRole).toBe("hold-common");
+  });
+});
+
+
+describe("buildAnimatedFretboardNotes — incoming ghost", () => {
+  /** A next-chord target the topology hid: outside the scale, not a tone of the
+   *  active chord, so `noteSemanticMapAtom` gave it no entry at all. */
+  const hiddenTarget = () =>
+    makeLensTopologyNote({ noteName: "B", noteClass: "note-inactive", isHidden: true });
+
+  const countdownOnB = (overrides: Partial<EmphasisContext> = {}) =>
+    makeLensEmphasisContext({
+      lens: "guide",
+      nextGuideTones: new Set(["B"]),
+      nextGuideToneLabels: new Map([["B", "3"]]),
+      guideCountdownActive: true,
+      ...overrides,
+    });
+
+  it("promotes a hidden out-of-scale next-chord guide tone to a visible ghost", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [hiddenTarget()],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB(),
+    });
+    expect(notes[0].noteClass).toBe("incoming-ghost");
+    expect(notes[0].isHidden).toBe(false);
+    expect(notes[0].transitionRole).toBe("guide-target");
+    expect(notes[0].applyLensEmphasis.guideTargetLabel).toBe("3");
+  });
+
+  it("does not promote a target outside the active shape", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({
+        noteName: "B", noteClass: "note-inactive", isHidden: true, isInActiveShape: false,
+      })],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB(),
+    });
+    expect(notes[0].noteClass).toBe("note-inactive");
+    expect(notes[0].isHidden).toBe(true);
+  });
+
+  it("does not leak through the full-chord voicing position filter", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({
+        noteName: "B", noteClass: "note-inactive", isHidden: true, isMatchedFullChordPosition: false,
+      })],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB(),
+    });
+    expect(notes[0].noteClass).toBe("note-inactive");
+    expect(notes[0].isHidden).toBe(true);
+  });
+
+  it("does not promote when the transport is stopped (no emphasis context)", () => {
+    // useEmphasisContext returns null unless the progression is playing, so
+    // every static/stopped render — including the whole visual-regression
+    // suite — is provably unaffected by the promotion.
+    const notes = buildAnimatedFretboardNotes({
+      topology: [hiddenTarget()],
+      hasChordOverlay: true,
+      emphasisContext: null,
+    });
+    expect(notes[0].transitionRole).toBeUndefined();
+    expect(notes[0].noteClass).toBe("note-inactive");
+    expect(notes[0].isHidden).toBe(true);
+  });
+
+  it("does not promote outside the countdown window", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [hiddenTarget()],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB({ guideCountdownActive: false }),
+    });
+    expect(notes[0].noteClass).toBe("note-inactive");
+    expect(notes[0].isHidden).toBe(true);
+  });
+
+  it("does not promote on a hold-common role under the Field lens", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [hiddenTarget()],
+      hasChordOverlay: true,
+      emphasisContext: makeLensEmphasisContext({
+        lens: "common",
+        commonTones: new Set(["B"]),
+        guideCountdownActive: true,
+      }),
+    });
+    expect(notes[0].transitionRole).toBe("hold-common");
+    expect(notes[0].noteClass).toBe("note-inactive");
+    expect(notes[0].isHidden).toBe(true);
+  });
+
+  it("leaves an already-visible in-scale target's class untouched", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({ noteName: "B", noteClass: "chord-tone-in-scale" })],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB(),
+    });
+    expect(notes[0].noteClass).toBe("chord-tone-in-scale");
+    expect(notes[0].transitionRole).toBe("guide-target");
+  });
+
+  it("derives emphasis from the pre-promotion class (neutral, no dimming)", () => {
+    const notes = buildAnimatedFretboardNotes({
+      topology: [hiddenTarget()],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB(),
+    });
+    expect(notes[0].applyLensEmphasis.opacityBoost).toBe(1);
+    expect(notes[0].applyLensEmphasis.radiusBoost).toBe(1);
+  });
+
+  it("busts the rendered-note cache when a note flips to incoming-ghost", () => {
+    const fretCenterX = (i: number) => i * 10;
+    const stringYAt = () => 20;
+
+    const restingNotes = buildAnimatedFretboardNotes({
+      topology: [hiddenTarget()],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB({ guideCountdownActive: false }),
+    });
+    const before = buildRenderedFretboardNotes({ noteData: restingNotes, fretCenterX, stringYAt })[0];
+
+    const ghostNotes = buildAnimatedFretboardNotes({
+      topology: [hiddenTarget()],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB(),
+    });
+    const after = buildRenderedFretboardNotes({ noteData: ghostNotes, fretCenterX, stringYAt })[0];
+
+    expect(after).not.toBe(before);
+    expect(after.noteClass).toBe("incoming-ghost");
   });
 });

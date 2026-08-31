@@ -183,6 +183,24 @@ Three meta-principles govern the model:
   notes that are *outside* the current scale (normally hidden) as hollow ghost rings that
   flip solid at the boundary — which also fixes the note "pop." **[convention]** "where the
   fingers go next."
+  *Implemented* as the `incoming-ghost` note class. An out-of-scale next-chord target gets
+  no entry in `noteSemanticMapAtom` (it gates on `isInScale || isChordTone || isColorTone`),
+  so the static topology classifies it `note-inactive` and hides it — taking the countdown
+  ring, backing disc and interval label with it, since all three render inside that `<g>`.
+  `buildAnimatedFretboardNotes` therefore promotes such a note to `incoming-ghost` while
+  its `transitionRole` is `guide-target`, gated on `isInActiveShape &&
+  isMatchedFullChordPosition` (the second conjunct keeps the ghost from leaking through the
+  full-chord voicing filter, since `isInPlayableContext` short-circuits to `true` before
+  that filter runs). The ghost carries the same radius and circle shape as the
+  `chord-tone-in-scale` marker it becomes, so the boundary flip is a pure fill/colour
+  change. It is assigned only in the animated layer — never by `classifyNoteFromSemantics`
+  — because it depends on time, not on static harmony. Applies to the `root` lens too: an
+  out-of-scale next-chord root ghosts the same way.
+  **Known limit:** 3NPS with an active position gates on a coordinate whitelist built from
+  scale positions only, so an out-of-scale pitch has no pattern coordinate and gets no
+  ghost there. The same gate keeps an out-of-scale guide tone of the *active* chord hidden
+  in 3NPS; both want one decision about whether a scale-derived shape should ever surface
+  out-of-scale notes.
 - **`--note-incoming` is a dedicated green-teal hue** chosen to avoid collision with
   amber (home/tension), teal-held, and the old `#fb923c` anticipation hue. **[internal]**
   "one hue = one meaning."

@@ -892,6 +892,79 @@ describe("FretboardSVG/FretboardSVG", () => {
     });
   });
 
+  describe("lead-in preview of an out-of-scale next-chord target", () => {
+    /** C major pentatonic (C-D-E-G-A) with Am sounding: exactly what
+     *  `noteSemanticMapAtom` emits — no entry at all for B, because B is
+     *  neither in the scale, nor an Am chord tone, nor a color note. */
+    const PENTATONIC_SEMANTICS_UNDER_AM = sem([
+      ["C", { isScaleRoot: true, isInScale: true }],
+      ["D", { isInScale: true }],
+      ["E", { isInScale: true, isChordTone: true }],
+      ["G", { isInScale: true }],
+      ["A", { isInScale: true, isChordTone: true, isChordRoot: true }],
+    ]);
+
+    /** vi → V in C major (Am → G), parked inside the countdown window. */
+    function makeAmToGStore() {
+      const store = createStore();
+      store.set(progressionStepsAtom, [
+        { id: "vi", degree: "vi", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+        { id: "v", degree: "V", duration: { value: 1, unit: "bar" }, qualityOverride: null, manualRoot: null },
+      ]);
+      store.set(beatsPerBarAtom, 4);
+      store.set(setProgressionPlayingAtom, true);
+      store.set(progressionVisualFrameAtom, { stepIndex: 0, globalFraction: 0.375, localFraction: 0.75, paused: false });
+      store.set(progressionStepDeadlineAtom, Date.now() + 100);
+      return store;
+    }
+
+    const AM_UNDER_PENTATONIC = {
+      chordTones: ["A", "C", "E"],
+      chordRoot: "A",
+      rootNote: "C",
+      highlightNotes: ["C", "D", "E", "G", "A"],
+      noteSemantics: PENTATONIC_SEMANTICS_UNDER_AM,
+    };
+
+    it("renders B as an incoming ghost while Am plays, instead of hiding it", () => {
+      // Regression for the C major pentatonic + C-F-Am-G report: B is the 3rd
+      // of the upcoming G, but it is outside the pentatonic and not an Am chord
+      // tone, so the topology classified it "note-inactive" and CSS hid the
+      // whole <g> — countdown ring, backing disc and interval label included.
+      const { container } = renderWithStore(
+        <FretboardSVGWithEmphasis {...BASE_PROPS} {...AM_UNDER_PENTATONIC} />,
+        makeAmToGStore(),
+      );
+
+      const ghosts = container.querySelectorAll('g[data-note-role="incoming-ghost"]');
+      expect(ghosts.length).toBeGreaterThan(0);
+      ghosts.forEach((g) => {
+        expect(g.classList.contains("hidden")).toBe(false);
+        expect(g.getAttribute("data-transition-role")).toBe("guide-target");
+        expect(g.getAttribute("data-note-shape")).toBe("circle");
+        expect(g.querySelector("[data-guide-ring]")).not.toBeNull();
+      });
+    });
+
+    it("leaves the promotion out of the hit-target layer, so tab order never churns mid-playback", () => {
+      // FretboardSVG passes the PRE-promotion topology to FretboardHitTargetLayer.
+      // Keeping it that way means a ghost appearing and vanishing over a
+      // countdown cannot yank focus or rewrite the a11y tree.
+      const { container } = renderWithStore(
+        <FretboardSVGWithEmphasis {...BASE_PROPS} {...AM_UNDER_PENTATONIC} />,
+        makeAmToGStore(),
+      );
+
+      const bButtons = [...container.querySelectorAll('button[data-note-name="B"]')];
+      expect(bButtons.length).toBeGreaterThan(0);
+      bButtons.forEach((btn) => {
+        expect(btn.getAttribute("aria-hidden")).toBe("true");
+        expect((btn as HTMLButtonElement).tabIndex).toBe(-1);
+        expect(btn.getAttribute("data-note-role")).toBeNull();
+      });
+    });
+  });
+
   describe("lead-in board signals", () => {
     it("exposes --guide-duration and data-transition-phase='countdown' during the countdown window", () => {
       const store = createStore();
