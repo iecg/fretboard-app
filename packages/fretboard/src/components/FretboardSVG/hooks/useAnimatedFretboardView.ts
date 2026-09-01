@@ -80,14 +80,21 @@ export function buildAnimatedFretboardNotes({
     // ACTIVE chord, which under this gate always have an unstripped semantics
     // entry and are therefore never hidden — that case is unreachable.
     //
-    // KNOWN LIMIT: 3NPS with an active position is coordinate-gated
-    // (buildStaticFretboardTopology.ts, the `highlightSet.has(positionKey)`
-    // branch) and its highlight set holds scale positions only, so an
-    // out-of-scale pitch has no pattern coordinate and gets no ghost.
+    // Gated on `isInPatternFretWindow`, not `isInActiveShape`: the latter is
+    // coordinate-whitelisted in 3NPS (its highlight set holds scale positions
+    // only), so an out-of-scale pitch would otherwise never reach the shape.
+    // `isInPatternFretWindow` is a superset of `isInActiveShape` by
+    // construction — identical everywhere except 3NPS-with-a-position — so
+    // this is a plain swap, not a widening, for every other mode. No extra
+    // "is this actually a guide tone" check is needed here (unlike the
+    // classifyNoteFromSemantics call site in buildStaticFretboardTopology.ts):
+    // `transitionRole === "guide-target"` is already derived from the
+    // lens-filtered aim-target atoms (nextChordGuideTonesAtom /
+    // TARGET_MEMBERS_BY_LENS), so the scoping is already in place upstream.
     const promoteGhost =
       note.isHidden &&
       applyLensEmphasis.transitionRole === "guide-target" &&
-      note.isInActiveShape &&
+      note.isInPatternFretWindow &&
       note.isMatchedFullChordPosition;
 
     return {

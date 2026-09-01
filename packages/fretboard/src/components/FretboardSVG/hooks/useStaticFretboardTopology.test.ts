@@ -129,6 +129,59 @@ describe("useStaticFretboardTopology", () => {
     expect(result.current.find((note) => note.positionKey === "0-2")?.applyDimOpacity).toBe(true);
   });
 
+  describe("3NPS: isInPatternFretWindow vs. isInActiveShape", () => {
+    // 3NPS's coordinate whitelist (highlightNotes, in "string-fret" form) only
+    // ever contains SCALE positions (get3NPSCoordinates walks scale notes
+    // only) — an out-of-scale pitch can never have a coordinate there, even
+    // when its fret sits inside the shape's box. isInPatternFretWindow is the
+    // same fret-range test with that whitelist dropped.
+    const THREE_NPS_PROPS = {
+      ...TOPOLOGY_PROPS,
+      fretboardLayout: [["G", "G#", "A", "A#", "B", "C"]],
+      totalColumns: 5,
+      maxFret: 6,
+      activePattern: "3nps" as const,
+      shapeScope: "single" as const,
+      chordBoxBounds: [{ minFret: 0, maxFret: 3 }],
+      // Deliberately omits "0-3" (B, fret 3) even though fret 3 is inside the
+      // box — simulating an out-of-scale guide tone the 3NPS walker never
+      // placed a coordinate for.
+      highlightNotes: ["0-0", "0-2"],
+    };
+
+    it("excludes a whitelist-only position from isInActiveShape but admits it via isInPatternFretWindow", () => {
+      const { result } = renderHook(() => useStaticFretboardTopology(THREE_NPS_PROPS));
+      const note = result.current.find((n) => n.positionKey === "0-3");
+      expect(note?.isInActiveShape).toBe(false);
+      expect(note?.isInPatternFretWindow).toBe(true);
+    });
+
+    it("excludes a position outside the fret window from both", () => {
+      const { result } = renderHook(() => useStaticFretboardTopology(THREE_NPS_PROPS));
+      // Fret 5 is outside chordBoxBounds [0, 3] (chordFretSpread: 0).
+      const note = result.current.find((n) => n.positionKey === "0-5");
+      expect(note?.isInActiveShape).toBe(false);
+      expect(note?.isInPatternFretWindow).toBe(false);
+    });
+
+    it("keeps an in-whitelist position true for both (no regression)", () => {
+      const { result } = renderHook(() => useStaticFretboardTopology(THREE_NPS_PROPS));
+      const note = result.current.find((n) => n.positionKey === "0-0");
+      expect(note?.isInActiveShape).toBe(true);
+      expect(note?.isInPatternFretWindow).toBe(true);
+    });
+
+    it("equals isInActiveShape everywhere outside the 3NPS-with-a-position branch", () => {
+      // Default TOPOLOGY_PROPS has no active pattern/position, so
+      // isInPlayableContext (and therefore isInActiveShape) is true for every
+      // position — isInPatternFretWindow must short-circuit to the same value.
+      const { result } = renderHook(() => useStaticFretboardTopology(TOPOLOGY_PROPS));
+      result.current.forEach((note) => {
+        expect(note.isInPatternFretWindow).toBe(note.isInActiveShape);
+      });
+    });
+  });
+
   describe("displayName (issue #493 a11y spelling)", () => {
     // In F major the chromatic "A#" is spelled "Bb". displayName must carry the
     // scale-aware spelling so screen-reader labels match the visible note text.
