@@ -25,6 +25,8 @@ export interface StaticFretboardTopologyNote extends NoteData {
   isInsideAnyPolygon: boolean;
   isChordInRange: boolean;
   isInActiveShape: boolean;
+  /** See the definition site in the loop body below for the full rationale. */
+  isInPatternFretWindow: boolean;
 }
 
 export interface UseStaticFretboardTopologyProps {
@@ -190,6 +192,34 @@ export function buildStaticFretboardTopology({
       const isChordInRange = isInPlayableContext;
       const isInActiveShape = isInPlayableContext || !hasChordOverlay || !activePattern;
 
+      // Fret-window-only reachability for 3NPS, ignoring the exact scale-note
+      // coordinate whitelist `isInPlayableContext` applies there (the
+      // `highlightSet.has(positionKey)` check inside its 3nps branch above). An
+      // out-of-scale guide tone has no pattern coordinate — get3NPSCoordinates
+      // walks scale notes only — and would otherwise be structurally
+      // unreachable in 3NPS even when it fits physically within the shape's
+      // fret span, unlike CAGED's polygon-vertex test (geometry-only, no
+      // coordinate whitelist), which already admits it. Superset of
+      // isInPlayableContext by construction: identical to it everywhere except
+      // the 3NPS-with-a-position branch, which layers a coordinate filter on
+      // top of the same fret-range test. Deliberately NOT folded into
+      // isInPlayableContext itself, to keep that IIFE's existing behavior
+      // byte-identical — a little duplicated fret-range arithmetic here is a
+      // fair price for that guarantee. Consumed only for guide-tone notes (see
+      // the classifyNoteFromSemantics call below) and by the lead-in ghost
+      // promotion in useAnimatedFretboardView.ts, never as a blanket widening.
+      const isInPatternFretWindow =
+        isInPlayableContext ||
+        (activePattern === "3nps" &&
+          shapeScope !== "global" &&
+          chordBoxBounds !== null &&
+          chordBoxBounds.length > 0 &&
+          chordBoxBounds.some(
+            (bounds) =>
+              fretIndex >= bounds.minFret - chordFretSpread &&
+              fretIndex <= bounds.maxFret + chordFretSpread,
+          ));
+
       const semantics = noteSemantics?.get(noteName);
       const effectiveSemantics = semantics && !isMatchedFullChordPosition
         ? {
@@ -205,7 +235,15 @@ export function buildStaticFretboardTopology({
       const noteClass = effectiveSemantics
         ? classifyNoteFromSemantics(
             effectiveSemantics,
-            isInActiveShape,
+            // Widen to the fret-window-only check ONLY for a guide tone: in
+            // classifyNoteFromSemantics's priority-ordered branches
+            // (isChordRoot → isDiatonicChord → isInScale → isGuideTone →
+            // isColorTone → plain isInScale → plain isChordTone), a genuine
+            // out-of-scale guide tone fails every earlier branch regardless of
+            // this value, so only the guide-tone branch itself ever consumes
+            // the wider check — this can't blanket-reveal other out-of-scale
+            // chord tones or roots in 3NPS. See isInPatternFretWindow above.
+            effectiveSemantics.isGuideTone ? isInPatternFretWindow : isInActiveShape,
             hasChordOverlay,
             isHighlighted,
           )
@@ -282,6 +320,7 @@ export function buildStaticFretboardTopology({
         isInsideAnyPolygon,
         isChordInRange,
         isInActiveShape,
+        isInPatternFretWindow,
       });
     }
   }

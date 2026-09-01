@@ -305,6 +305,7 @@ function makeLensTopologyNote(
     isInsideAnyPolygon: true,
     isChordInRange: true,
     isInActiveShape: true,
+    isInPatternFretWindow: true,
     ...overrides,
   } as StaticFretboardTopologyNote;
 }
@@ -416,16 +417,37 @@ describe("buildAnimatedFretboardNotes — incoming ghost", () => {
     expect(notes[0].applyLensEmphasis.guideTargetLabel).toBe("3");
   });
 
-  it("does not promote a target outside the active shape", () => {
+  it("does not promote a target outside the active shape (e.g. CAGED, off the polygon band)", () => {
+    // isInPatternFretWindow is a superset of isInActiveShape by construction —
+    // it can only be false here too (never true while isInActiveShape is
+    // false) outside 3NPS, since only 3NPS's coordinate whitelist can make the
+    // two diverge. See the next test for that divergent (3NPS) case.
     const notes = buildAnimatedFretboardNotes({
       topology: [makeLensTopologyNote({
-        noteName: "B", noteClass: "note-inactive", isHidden: true, isInActiveShape: false,
+        noteName: "B", noteClass: "note-inactive", isHidden: true,
+        isInActiveShape: false, isInPatternFretWindow: false,
       })],
       hasChordOverlay: true,
       emphasisContext: countdownOnB(),
     });
     expect(notes[0].noteClass).toBe("note-inactive");
     expect(notes[0].isHidden).toBe(true);
+  });
+
+  it("promotes a 3NPS target that fits the shape's fret window but has no exact pattern coordinate", () => {
+    // In 3NPS, isInActiveShape is coordinate-whitelisted to scale positions
+    // only, while isInPatternFretWindow is the same fret-range test without
+    // that whitelist — this is exactly the gap this promotion exists to close.
+    const notes = buildAnimatedFretboardNotes({
+      topology: [makeLensTopologyNote({
+        noteName: "B", noteClass: "note-inactive", isHidden: true,
+        isInActiveShape: false, isInPatternFretWindow: true,
+      })],
+      hasChordOverlay: true,
+      emphasisContext: countdownOnB(),
+    });
+    expect(notes[0].noteClass).toBe("incoming-ghost");
+    expect(notes[0].isHidden).toBe(false);
   });
 
   it("does not leak through the full-chord voicing position filter", () => {
