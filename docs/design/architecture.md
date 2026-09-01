@@ -28,7 +28,9 @@ See [`fretboard-visual-language.md`](./fretboard-visual-language.md) for the *wh
 
 ## Note Roles
 
-Notes carry a semantic role (`root-active`, `chord-tone`, `note-blue`, `note-active`, `note-scale-only`, `chord-outside`, `note-inactive`). The **emphasis layer** in `src/components/FretboardSVG/utils/semantics.ts#getEmphasis` adds voice-leading cues (anticipation, hold, departing) when a progression is active, falling back to guide-tone emphasis when there's no progression.
+Notes carry a semantic role — the note class assigned by `classifyNoteFromSemantics` in `packages/fretboard/src/components/FretboardSVG/utils/semantics.ts`: `key-tonic`, `chord-root`, `chord-root-outside`, `note-diatonic-chord`, `chord-tone-in-scale`, `chord-tone-outside-scale`, `note-blue`, `scale-only`, `note-active`, `color-tone`, `note-inactive` (the last is hidden outright — `isHidden` is literally `noteClass === "note-inactive"`). The **emphasis layer** in the same file (`getEmphasis`) adds voice-leading cues (guide-target countdown, held, common) when a progression is active.
+
+One class is assigned *outside* that classifier: `incoming-ghost`, applied by `buildAnimatedFretboardNotes` (`hooks/useAnimatedFretboardView.ts`) to un-hide a next-chord lead-in target that the active scale excludes. It belongs to the animated layer because it depends on the time-varying voice-leading context rather than on static harmony — see [`fretboard-visual-language.md`](./fretboard-visual-language.md) §E.
 
 **Scale and chord rendering are independent domains** — do not cross-wire their visibility or color state. (Loading a progression preset is the one intentional exception: it sets the active *scale* — a one-time user action establishing harmonic context — but it does not couple the rendering/color domains.) This guardrail is also stated in `AGENTS.md` because it's easy to violate.
 

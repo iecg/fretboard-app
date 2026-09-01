@@ -21,6 +21,7 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
   "chord-outside": "chord tone outside scale",
   "color-tone": "color tone",
   "key-tonic": "key tonic",
+  "incoming-ghost": "incoming note (next chord)",
   "note-inactive": "inactive",
 };
 

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getEmphasis, type LeadLensContext } from "../utils/semantics";
+import { getEmphasis, INCOMING_GHOST_CLASS, type LeadLensContext } from "../utils/semantics";
 import type { NoteData } from "./useNoteData";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
 import type { EmphasisContext } from "./useEmphasisContext";
@@ -58,11 +58,43 @@ export function buildAnimatedFretboardNotes({
       };
     }
 
+    // Emphasis is derived from the PRE-promotion class on purpose: a hidden
+    // target is "note-inactive", whose base emphasis is the neutral {1, 1}.
     const applyLensEmphasis = getEmphasis(note.noteClass, note.isGuideTone, leadContext);
+
+    // Lead-in ghost. An out-of-scale next-chord target has no entry in
+    // `noteSemanticMapAtom` (it gates on `isInScale || isChordTone ||
+    // isColorTone`), so the topology classified it "note-inactive" and hid it —
+    // taking the countdown ring, backing disc and interval label with it, since
+    // they all render inside that `<g>`. Un-hide it as a hollow incoming-hue
+    // ring for the countdown window; at the chord boundary the note gains a
+    // semantics entry and flips to the solid teal "chord-tone-in-scale" marker.
+    //
+    // `isMatchedFullChordPosition` is NOT optional: `isInPlayableContext`
+    // returns true as soon as `chordBoxBounds === null`, BEFORE the full-chord
+    // filter runs, so a non-matched voicing position can carry
+    // `isInActiveShape === true` with stripped semantics. Without this conjunct
+    // the ghost would leak through the full-chord voicing filter.
+    //
+    // Only "guide-target": "hold-guide" / "hold-common" mark tones of the
+    // ACTIVE chord, which under this gate always have an unstripped semantics
+    // entry and are therefore never hidden — that case is unreachable.
+    //
+    // KNOWN LIMIT: 3NPS with an active position is coordinate-gated
+    // (buildStaticFretboardTopology.ts, the `highlightSet.has(positionKey)`
+    // branch) and its highlight set holds scale positions only, so an
+    // out-of-scale pitch has no pattern coordinate and gets no ghost.
+    const promoteGhost =
+      note.isHidden &&
+      applyLensEmphasis.transitionRole === "guide-target" &&
+      note.isInActiveShape &&
+      note.isMatchedFullChordPosition;
+
     return {
       ...note,
       applyLensEmphasis,
       transitionRole: applyLensEmphasis.transitionRole,
+      ...(promoteGhost ? { noteClass: INCOMING_GHOST_CLASS, isHidden: false } : null),
     };
   });
 }

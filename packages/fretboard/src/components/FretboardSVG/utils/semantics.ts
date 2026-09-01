@@ -7,6 +7,17 @@ import type { PracticeLens } from "../../../store/practiceLensAtoms";
 
 export type BoxBound = { minFret: number; maxFret: number };
 
+/**
+ * Note class for a lead-in preview of a next-chord target that the harmonic
+ * topology hides — e.g. the 3rd of the next chord when the active scale is a
+ * pentatonic that omits it. Assigned ONLY by `buildAnimatedFretboardNotes`
+ * (never by `buildStaticFretboardTopology` / `classifyNoteFromSemantics`),
+ * because it depends on the time-varying voice-leading context rather than on
+ * static harmony. See docs/design/fretboard-visual-language.md §E
+ * ("Preview the next hand position").
+ */
+export const INCOMING_GHOST_CLASS = "incoming-ghost";
+
 /** Gentle size hold for pivot/common tones under the Field lens. */
 const COMMON_HOLD_RADIUS_BOOST = 1.15;
 
@@ -191,6 +202,11 @@ export function getNoteVisuals(noteClass: string): NoteVisuals {
       return { radiusScale: RADIUS_CHORD, noteShape: "circle" };
     case "scale-only":
       return { radiusScale: RADIUS_SCALE, noteShape: "circle" };
+    // Lead-in ghost: chord-tier circle, matching the "chord-tone-in-scale" it
+    // becomes at the chord boundary, so the flip is a pure fill/colour change
+    // with no size or shape pop (the pop this preview exists to fix).
+    case INCOMING_GHOST_CLASS:
+      return { radiusScale: RADIUS_CHORD, noteShape: "circle" };
     // No-overlay scale tone — the scale IS the figure, so it stays present
     // (medium) rather than receding to scale-tier size.
     case "note-active":
