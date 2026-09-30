@@ -1,5 +1,3 @@
-import * as Tone from "tone";
-
 let started = false;
 
 /**
@@ -12,6 +10,7 @@ let started = false;
  * will re-attempt Tone.start() on a later user gesture.
  */
 export async function ensureToneStarted(): Promise<void> {
+  const Tone = await import("tone");
   if (started) {
     // Safari re-suspends AudioContext after extended idle. Detect and
     // re-call Tone.start() on the next user gesture so audio resumes.

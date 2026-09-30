@@ -130,6 +130,16 @@ export default defineConfig({
               priority: 4,
             },
             {
+              name: 'progression-audio',
+              test: (id: string) => id.includes('packages/fretboard/src/progressions/audio'),
+              priority: 7,
+            },
+            {
+              name: 'guitar-audio',
+              test: (id: string) => id.includes('packages/fretboard/src/core/audio'),
+              priority: 7,
+            },
+            {
               name: 'fretboard-pkg',
               test: (id: string) => id.includes('packages/fretboard'),
               priority: 4,

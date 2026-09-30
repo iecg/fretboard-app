@@ -40,7 +40,6 @@ import type { BassPatch, DrumKitPatch } from "../progressions/audio/sound/patchT
 import { startVisualClock, stopVisualClock } from "../progressions/audio/visualClock";
 import { ensureToneStarted } from "../core/toneInit";
 import { holdAudioActive, isContextSuspended, releaseAudioActive } from "../core/audioIdleSuspend";
-import { probeOutputHealth } from "../core/audioOutputHealth";
 
 const SCHEDULE_LEAD_SECONDS = 0.05;
 
@@ -364,9 +363,12 @@ export function useProgressionAudioPlayback() {
     if (!playing || blocked || muted) return;
     let cancelled = false;
     const id = window.setInterval(() => {
-      void probeOutputHealth().then((health) => {
-        if (!cancelled && health === "wedged") setOutputWedged(true);
-      });
+      void import("../core/audioOutputHealth")
+        .then(({ probeOutputHealth }) => probeOutputHealth())
+        .then((health) => {
+          if (!cancelled && health === "wedged") setOutputWedged(true);
+        })
+        .catch(() => {});
     }, 1000);
     return () => {
       cancelled = true;
