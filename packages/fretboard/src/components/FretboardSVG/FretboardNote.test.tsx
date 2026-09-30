@@ -28,7 +28,7 @@ function makeNote(overrides: Partial<RenderedFretboardNote> = {}): RenderedFretb
 
 function renderNote(
   note: RenderedFretboardNote,
-  extra?: { countdownTicks?: number[] },
+  extra?: { countdownTicks?: number[]; prefersReducedMotion?: boolean },
 ) {
   return render(
     <svg>
@@ -37,6 +37,7 @@ function renderNote(
         noteBubblePx={40}
         displayFormat="notes"
         countdownTicks={extra?.countdownTicks}
+        prefersReducedMotion={extra?.prefersReducedMotion}
       />
     </svg>,
   );

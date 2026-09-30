@@ -1,5 +1,5 @@
-import React, { memo } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import React, { memo, useRef } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { clsx } from "clsx";
 import { formatAccidental } from "@fretflow/core";
 import { getNoteVisuals } from "./utils/semantics";
@@ -49,6 +49,7 @@ interface FretboardNoteProps {
   /** Window-fractions (0,1) for static beat-tick notches on the countdown ring. */
   countdownTicks?: number[];
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
+  prefersReducedMotion?: boolean;
 }
 
 export const FretboardNote = memo(function FretboardNote({
@@ -60,6 +61,7 @@ export const FretboardNote = memo(function FretboardNote({
   numStrings,
   countdownTicks,
   onNoteClick,
+  prefersReducedMotion = false,
 }: FretboardNoteProps) {
   const {
     stringIndex,
@@ -80,7 +82,6 @@ export const FretboardNote = memo(function FretboardNote({
     transitionRole,
   } = note;
 
-  const prefersReducedMotion = useReducedMotion();
   const guideFade = { duration: prefersReducedMotion ? 0 : 0.18, ease: "easeOut" as const };
   // "hold-guide" and "hold-common" both render the calm static "hold" ring:
   // drain/loom/flash/tick keyframes are gated to the "landing" phase, so a held
@@ -91,6 +92,13 @@ export const FretboardNote = memo(function FretboardNote({
       : transitionRole === "hold-common" || transitionRole === "hold-guide"
         ? "hold"
         : undefined;
+
+  const hadGuidePhaseRef = useRef(false);
+  const hasGuidePhase = guidePhase !== undefined;
+  if (hasGuidePhase) {
+    hadGuidePhaseRef.current = true;
+  }
+  const shouldMountAnimatePresence = hasGuidePhase || hadGuidePhaseRef.current;
 
   const baseRadius = noteBubblePx / 2;
   const { radiusScale, noteShape } = getNoteVisuals(noteClass);
@@ -204,97 +212,101 @@ export const FretboardNote = memo(function FretboardNote({
           motion owns the group OPACITY so AnimatePresence fades it in on mount
           and OUT on removal — decoupling the fade-out from React's
           startTransition-jittered unmount (the boundary flash). */}
-      <AnimatePresence>
-        {guidePhase && (
-          <motion.g
-            key="guide-ring"
-            className={styles["note-guide-ring"]}
-            data-guide-ring="true"
-            data-guide-phase={guidePhase}
-            // Only "primary" targets (inside the active shape region) get the
-            // animated countdown — humans can phase-track only ~4 simultaneous
-            // "clocks" (Gu et al. 2014), and a guide tone lights up at every
-            // fretboard position. Secondary targets stay as quiet static markers.
-            data-guide-primary={note.isInRegion ? "true" : "false"}
-            aria-hidden="true"
-            initial={{ opacity: 0 }}
-            // Primary targets hold full group opacity; the escalating salience
-            // comes from the core's brightness ramp + looming scale over the
-            // countdown window, not a dimmer group. Secondary (out-of-region)
-            // targets are quiet static markers at reduced opacity.
-            animate={{ opacity: note.isInRegion ? 1 : 0.4 }}
-            exit={{ opacity: 0 }}
-            transition={guideFade}
-            style={{ transformBox: "fill-box", transformOrigin: "center" } as React.CSSProperties}
-          >
-            <circle className={styles["note-guide-ring-halo"]} cx={cx} cy={cy} r={ringR} />
-            <circle
-              className={styles["note-guide-ring-core"]}
-              cx={cx}
-              cy={cy}
-              r={ringR}
-              pathLength={100}
-            />
-            {/* On-beat flash — a bright ring that blooms outward as the core
-                drains empty, giving a sharp coincidence landmark exactly on the
-                beat (the gradual drain alone has no crisp "now" instant). CSS
-                only animates it in the landing phase. */}
-            <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
-            {/* Static beat-tick marks — short BRIGHT radial ticks centered on the
-                drain track (ringR) at each beat boundary, giving a countable
-                "segment done" read as the green core drains past them. Only on
-                PRIMARY (in-region) targets, and only when the step has enough
-                beats to warrant ticks (countdownTicks empty otherwise). Each is a
-                <line> at angle θ = 2π·f (drain origin at 3 o'clock, sweeping
-                clockwise), spanning ringR ± TICK_HALF_LEN so it crosses the track
-                band — clock ticks: axis-aligned at the 4-beat cardinal positions.
-                Anchored to ringR (each note's OWN track radius), so chord tones
-                and in-scale tones — different marker sizes, hence different ringR
-                — both get ticks precisely on their track without per-type tuning.
-                Rendered INSIDE the ring group so the ring's loom scales the ticks
-                WITH the track, keeping them locked on it through the countdown. */}
-            {guidePhase === "landing" &&
-              note.isInRegion &&
-              countdownTicks?.map((f, i) => {
-                const theta = 2 * Math.PI * f;
-                const cos = Math.cos(theta);
-                const sin = Math.sin(theta);
-                const inner = ringR - TICK_HALF_LEN;
-                const outer = ringR + TICK_HALF_LEN;
-                return (
-                  <line
-                    key={`tick-${i}`}
-                    className={styles["note-guide-ring-tick"]}
-                    data-guide-tick="true"
-                    x1={cx + cos * inner}
-                    y1={cy + sin * inner}
-                    x2={cx + cos * outer}
-                    y2={cy + sin * outer}
-                    aria-hidden="true"
-                  />
-                );
-              })}
-          </motion.g>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {applyLensEmphasis.guideTargetLabel && (
-          <motion.text
-            key="guide-label"
-            className={styles["note-guide-label"]}
-            data-guide-label="true"
-            x={cx + ringR + 3}
-            y={cy - ringR - 1}
-            aria-hidden="true"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={guideFade}
-          >
-            {applyLensEmphasis.guideTargetLabel}
-          </motion.text>
-        )}
-      </AnimatePresence>
+      {shouldMountAnimatePresence && (
+        <>
+          <AnimatePresence>
+            {guidePhase && (
+              <motion.g
+                key="guide-ring"
+                className={styles["note-guide-ring"]}
+                data-guide-ring="true"
+                data-guide-phase={guidePhase}
+                // Only "primary" targets (inside the active shape region) get the
+                // animated countdown — humans can phase-track only ~4 simultaneous
+                // "clocks" (Gu et al. 2014), and a guide tone lights up at every
+                // fretboard position. Secondary targets stay as quiet static markers.
+                data-guide-primary={note.isInRegion ? "true" : "false"}
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                // Primary targets hold full group opacity; the escalating salience
+                // comes from the core's brightness ramp + looming scale over the
+                // countdown window, not a dimmer group. Secondary (out-of-region)
+                // targets are quiet static markers at reduced opacity.
+                animate={{ opacity: note.isInRegion ? 1 : 0.4 }}
+                exit={{ opacity: 0 }}
+                transition={guideFade}
+                style={{ transformBox: "fill-box", transformOrigin: "center" } as React.CSSProperties}
+              >
+                <circle className={styles["note-guide-ring-halo"]} cx={cx} cy={cy} r={ringR} />
+                <circle
+                  className={styles["note-guide-ring-core"]}
+                  cx={cx}
+                  cy={cy}
+                  r={ringR}
+                  pathLength={100}
+                />
+                {/* On-beat flash — a bright ring that blooms outward as the core
+                    drains empty, giving a sharp coincidence landmark exactly on the
+                    beat (the gradual drain alone has no crisp "now" instant). CSS
+                    only animates it in the landing phase. */}
+                <circle className={styles["note-guide-ring-flash"]} cx={cx} cy={cy} r={ringR} />
+                {/* Static beat-tick marks — short BRIGHT radial ticks centered on the
+                    drain track (ringR) at each beat boundary, giving a countable
+                    "segment done" read as the green core drains past them. Only on
+                    PRIMARY (in-region) targets, and only when the step has enough
+                    beats to warrant ticks (countdownTicks empty otherwise). Each is a
+                    <line> at angle θ = 2π·f (drain origin at 3 o'clock, sweeping
+                    clockwise), spanning ringR ± TICK_HALF_LEN so it crosses the track
+                    band — clock ticks: axis-aligned at the 4-beat cardinal positions.
+                    Anchored to ringR (each note's OWN track radius), so chord tones
+                    and in-scale tones — different marker sizes, hence different ringR
+                    — both get ticks precisely on their track without per-type tuning.
+                    Rendered INSIDE the ring group so the ring's loom scales the ticks
+                    WITH the track, keeping them locked on it through the countdown. */}
+                {guidePhase === "landing" &&
+                  note.isInRegion &&
+                  countdownTicks?.map((f, i) => {
+                    const theta = 2 * Math.PI * f;
+                    const cos = Math.cos(theta);
+                    const sin = Math.sin(theta);
+                    const inner = ringR - TICK_HALF_LEN;
+                    const outer = ringR + TICK_HALF_LEN;
+                    return (
+                      <line
+                        key={`tick-${i}`}
+                        className={styles["note-guide-ring-tick"]}
+                        data-guide-tick="true"
+                        x1={cx + cos * inner}
+                        y1={cy + sin * inner}
+                        x2={cx + cos * outer}
+                        y2={cy + sin * outer}
+                        aria-hidden="true"
+                      />
+                    );
+                  })}
+              </motion.g>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {applyLensEmphasis.guideTargetLabel && (
+              <motion.text
+                key="guide-label"
+                className={styles["note-guide-label"]}
+                data-guide-label="true"
+                x={cx + ringR + 3}
+                y={cy - ringR - 1}
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={guideFade}
+              >
+                {applyLensEmphasis.guideTargetLabel}
+              </motion.text>
+            )}
+          </AnimatePresence>
+        </>
+      )}
       {displayFormat !== "none" && (
         <text x={cx} y={cy}>
           {formatAccidental(displayValue)}
