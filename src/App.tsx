@@ -8,7 +8,6 @@ import {
   setGuitarMutePreference,
   prefetchAudioModule,
 } from "@fretflow/fretboard/core/lazyGuitarAudio";
-import { probeOutputHealth } from "@fretflow/fretboard/core/audioOutputHealth";
 import { isMutedAtom, audioErrorAtom, audioOutputWedgedAtom } from "@fretflow/fretboard/store/audioAtoms";
 import { chordTypeAtom } from "@fretflow/fretboard/store/chordOverlayAtoms";
 import { fretZoomAtom, stringRowPxOverrideAtom } from "@fretflow/fretboard/store/layoutAtoms";
@@ -114,12 +113,12 @@ function AppContent() {
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
     const onDeviceChange = () => {
       clearTimeout(settleTimer);
-      settleTimer = setTimeout(() => {
-        void probeOutputHealth()
-          .then((health) => {
-            if (health === "wedged") setAudioOutputWedged(true);
-          })
-          .catch(() => {});
+      settleTimer = setTimeout(async () => {
+        try {
+          const { probeOutputHealth } = await import("@fretflow/fretboard/core/audioOutputHealth");
+          const health = await probeOutputHealth();
+          if (health === "wedged") setAudioOutputWedged(true);
+        } catch {}
       }, 600);
     };
     md.addEventListener("devicechange", onDeviceChange);
