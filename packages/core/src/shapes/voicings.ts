@@ -55,21 +55,44 @@ export function scoreCloseVoicing(
   voicing: Voicing,
   weights: CloseVoicingScoreWeights = CLOSE_VOICING_SCORE_WEIGHTS,
 ): number {
-  const fretted = voicing.notes.map((n) => n.fretIndex).filter((f) => f > 0);
-  const openCount = voicing.notes.length - fretted.length;
-  const span = fretted.length > 0 ? Math.max(...fretted) - Math.min(...fretted) : 0;
-  // Sum of absolute deviations from the mean fret (= n × MAD). The integer-
-  // arithmetic form below is translation-invariant, so transposed grips score
-  // bit-identically (avoids the floating-point drift a direct mean would cause).
-  const n = fretted.length;
-  const sum = fretted.reduce((a, b) => a + b, 0);
-  const compact = n > 0 ? fretted.reduce((s, f) => s + Math.abs(f * n - sum), 0) / n : 0;
-  const topFret = voicing.notes.length > 0 ? Math.max(...voicing.notes.map((n) => n.fretIndex)) : 0;
+  const notes = voicing.notes;
+  let frettedCount = 0;
+  let minFret = Infinity;
+  let maxFret = -Infinity;
+  let topFret = 0;
+  let sum = 0;
+
+  for (let i = 0; i < notes.length; i++) {
+    const f = notes[i]!.fretIndex;
+    if (f > topFret) topFret = f;
+    if (f > 0) {
+      frettedCount++;
+      if (f < minFret) minFret = f;
+      if (f > maxFret) maxFret = f;
+      sum += f;
+    }
+  }
+
+  const openCount = notes.length - frettedCount;
+  const span = frettedCount > 0 ? maxFret - minFret : 0;
+
+  let compact = 0;
+  if (frettedCount > 0) {
+    let devSum = 0;
+    for (let i = 0; i < notes.length; i++) {
+      const f = notes[i]!.fretIndex;
+      if (f > 0) {
+        devSum += Math.abs(f * frettedCount - sum);
+      }
+    }
+    compact = devSum / frettedCount;
+  }
+
   const highNeck = Math.max(0, topFret - HIGH_NECK_THRESHOLD);
 
   return (
     weights.span * span +
-    weights.fretted * fretted.length +
+    weights.fretted * frettedCount +
     weights.compact * compact +
     weights.highNeck * highNeck -
     weights.open * openCount
@@ -84,11 +107,24 @@ export function compareCloseVoicings(a: Voicing, b: Voicing): number {
   const sa = scoreCloseVoicing(a);
   const sb = scoreCloseVoicing(b);
   if (sa !== sb) return sa - sb;
-  const topA = a.notes.length > 0 ? Math.max(...a.notes.map((n) => n.fretIndex)) : 0;
-  const topB = b.notes.length > 0 ? Math.max(...b.notes.map((n) => n.fretIndex)) : 0;
+  let topA = 0;
+  for (let i = 0; i < a.notes.length; i++) {
+    if (a.notes[i]!.fretIndex > topA) topA = a.notes[i]!.fretIndex;
+  }
+  let topB = 0;
+  for (let i = 0; i < b.notes.length; i++) {
+    if (b.notes[i]!.fretIndex > topB) topB = b.notes[i]!.fretIndex;
+  }
   if (topA !== topB) return topA - topB;
-  const lowA = a.notes.length > 0 ? Math.min(...a.notes.map((n) => n.stringIndex)) : 0;
-  const lowB = b.notes.length > 0 ? Math.min(...b.notes.map((n) => n.stringIndex)) : 0;
+
+  let lowA = a.notes.length > 0 ? a.notes[0]!.stringIndex : 0;
+  for (let i = 1; i < a.notes.length; i++) {
+    if (a.notes[i]!.stringIndex < lowA) lowA = a.notes[i]!.stringIndex;
+  }
+  let lowB = b.notes.length > 0 ? b.notes[0]!.stringIndex : 0;
+  for (let i = 1; i < b.notes.length; i++) {
+    if (b.notes[i]!.stringIndex < lowB) lowB = b.notes[i]!.stringIndex;
+  }
   return lowA - lowB;
 }
 
@@ -116,9 +152,19 @@ export function selectNeckSpread(candidates: Voicing[]): Voicing[] {
   for (const v of ranked) {
     // Open strings (fret 0) are excluded from the window, so any all-open grip
     // collapses to {0,0} — two all-open voicings of a chord never both appear.
-    const fretted = v.notes.map((n) => n.fretIndex).filter((f) => f > 0);
-    const lo = fretted.length > 0 ? Math.min(...fretted) : 0;
-    const hi = fretted.length > 0 ? Math.max(...fretted) : 0;
+    let minF = Infinity;
+    let maxF = -Infinity;
+    let hasFretted = false;
+    for (let i = 0; i < v.notes.length; i++) {
+      const f = v.notes[i]!.fretIndex;
+      if (f > 0) {
+        hasFretted = true;
+        if (f < minF) minF = f;
+        if (f > maxF) maxF = f;
+      }
+    }
+    const lo = hasFretted ? minF : 0;
+    const hi = hasFretted ? maxF : 0;
     const overlaps = windows.some(
       (w) => lo <= w.hi + NECK_SPREAD_OVERLAP_TOLERANCE && hi >= w.lo - NECK_SPREAD_OVERLAP_TOLERANCE,
     );
