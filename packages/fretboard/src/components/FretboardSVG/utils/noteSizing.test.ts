@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   taperAwareRadiusScale,
+  _clearTaperScaleCache,
   NOTE_TAPER_MIN_SCALE,
   connectorDashArray,
 } from "./noteSizing";
@@ -50,6 +51,17 @@ describe("taperAwareRadiusScale", () => {
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, neckHeight: 0 })).toBe(1);
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, numStrings: 1 })).toBe(1);
     expect(taperAwareRadiusScale({ x: 0, ...GEOM, noteBubblePx: 0 })).toBe(1);
+  });
+
+  it("caches computed values and handles _clearTaperScaleCache", () => {
+    _clearTaperScaleCache();
+    const val1 = taperAwareRadiusScale({ x: 100, ...GEOM });
+    const val2 = taperAwareRadiusScale({ x: 100, ...GEOM });
+    expect(val1).toBe(val2);
+
+    _clearTaperScaleCache();
+    const val3 = taperAwareRadiusScale({ x: 100, ...GEOM });
+    expect(val3).toBe(val1);
   });
 });
 

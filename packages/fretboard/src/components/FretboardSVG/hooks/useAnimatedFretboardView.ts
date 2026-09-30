@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { getEmphasis, INCOMING_GHOST_CLASS, type LeadLensContext } from "../utils/semantics";
+import { getEmphasis, INCOMING_GHOST_CLASS } from "../utils/semantics";
 import type { NoteData } from "./useNoteData";
 import type { StaticFretboardTopologyNote } from "./useStaticFretboardTopology";
 import type { EmphasisContext } from "./useEmphasisContext";
@@ -41,26 +41,12 @@ export function buildAnimatedFretboardNotes({
   hasChordOverlay,
   emphasisContext,
 }: BuildAnimatedFretboardNotesProps): NoteData[] {
-  return topology.map((note) => {
-    let leadContext: LeadLensContext | undefined;
-    if (hasChordOverlay && emphasisContext) {
-      leadContext = {
-        notePc: note.noteName,
-        nextGuideTones: emphasisContext.nextGuideTones,
-        nextGuideToneLabels: emphasisContext.nextGuideToneLabels,
-        nextChordTones: emphasisContext.nextChordTones,
-        incomingTones: emphasisContext.incomingTones,
-        departingTones: emphasisContext.departingTones,
-        guideCountdownActive: emphasisContext.guideCountdownActive,
-        lens: emphasisContext.lens,
-        commonTones: emphasisContext.commonTones,
-        heldTargetTones: emphasisContext.heldTargetTones,
-      };
-    }
+  const activeLensContext = hasChordOverlay && emphasisContext ? emphasisContext : undefined;
 
+  return topology.map((note) => {
     // Emphasis is derived from the PRE-promotion class on purpose: a hidden
     // target is "note-inactive", whose base emphasis is the neutral {1, 1}.
-    const applyLensEmphasis = getEmphasis(note.noteClass, note.isGuideTone, leadContext);
+    const applyLensEmphasis = getEmphasis(note.noteClass, note.isGuideTone, activeLensContext, note.noteName);
 
     // Lead-in ghost. An out-of-scale next-chord target has no entry in
     // `noteSemanticMapAtom` (it gates on `isInScale || isChordTone ||
@@ -146,6 +132,39 @@ function renderedNoteSignature(
   return `${note.stringIndex}|${note.fretIndex}|${note.noteName}|${note.octave}|${note.noteClass}|${note.displayName}|${note.displayValue}|${note.cx}|${note.cy}|${note.applyDimOpacity}|${emph.opacityBoost}|${emph.radiusBoost}|${emph.transitionRole ?? ""}|${emph.guideTargetLabel ?? ""}|${note.isHidden}|${note.isTension}|${note.isGuideTone}|${note.fullChordShape ?? ""}|${note.isInRegion}`;
 }
 
+function isRenderedNoteMatch(
+  prev: RenderedFretboardNote,
+  note: NoteData,
+  cx: number,
+): boolean {
+  if (prev.cx !== cx) return false;
+  if (
+    prev.stringIndex !== note.stringIndex ||
+    prev.fretIndex !== note.fretIndex ||
+    prev.noteName !== note.noteName ||
+    prev.octave !== note.octave ||
+    prev.noteClass !== note.noteClass ||
+    prev.displayName !== note.displayName ||
+    prev.displayValue !== note.displayValue ||
+    prev.applyDimOpacity !== note.applyDimOpacity ||
+    prev.isHidden !== note.isHidden ||
+    prev.isTension !== note.isTension ||
+    prev.isGuideTone !== note.isGuideTone ||
+    prev.fullChordShape !== note.fullChordShape ||
+    prev.isInRegion !== note.isInRegion
+  ) {
+    return false;
+  }
+  const prevEmph = prev.applyLensEmphasis;
+  const nextEmph = note.applyLensEmphasis;
+  return (
+    prevEmph.opacityBoost === nextEmph.opacityBoost &&
+    prevEmph.radiusBoost === nextEmph.radiusBoost &&
+    prevEmph.transitionRole === nextEmph.transitionRole &&
+    prevEmph.guideTargetLabel === nextEmph.guideTargetLabel
+  );
+}
+
 export function buildRenderedFretboardNotes({
   noteData,
   fretCenterX,
@@ -162,15 +181,16 @@ export function buildRenderedFretboardNotes({
   const result = noteData.map((note) => {
     const key = `${note.stringIndex}-${note.fretIndex}`;
     const cx = fretCenterX(note.fretIndex);
-    const positioned: RenderedFretboardNote = { ...note, cx, cy: stringYAt(note.stringIndex, cx) };
-    const sig = renderedNoteSignature(positioned);
     const prev = prevCache.get(key);
 
-    if (prev && prev.sig === sig) {
-      // Cache hit — reuse the stable object reference so the memoized per-note renderer can bail.
+    if (prev && isRenderedNoteMatch(prev.result, note, cx)) {
+      // Cache hit — reuse the stable object reference directly without allocations.
       nextCache.set(key, prev);
       return prev.result;
     }
+
+    const positioned: RenderedFretboardNote = { ...note, cx, cy: stringYAt(note.stringIndex, cx) };
+    const sig = renderedNoteSignature(positioned);
     nextCache.set(key, { sig, result: positioned });
     return positioned;
   });

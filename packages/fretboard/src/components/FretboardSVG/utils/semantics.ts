@@ -85,13 +85,19 @@ export function getEmphasis(
   // this flag no longer affects the result. The parameter is retained to keep
   // the call-site contract (and the lead-in voice-leading path) stable.
   _isGuideTone: boolean,
-  leadContext?: LeadLensContext,
+  leadContext?: (Omit<LeadLensContext, "notePc"> & { notePc?: string }) | null,
+  notePcOverride?: string,
 ): LensEmphasis {
   if (!leadContext) {
     return applyTonesBase(noteClass);
   }
 
-  const { notePc, nextGuideTones, nextGuideToneLabels, guideCountdownActive, lens, commonTones, heldTargetTones } = leadContext;
+  const notePc = notePcOverride ?? leadContext.notePc;
+  if (!notePc) {
+    return applyTonesBase(noteClass);
+  }
+
+  const { nextGuideTones, nextGuideToneLabels, guideCountdownActive, lens, commonTones, heldTargetTones } = leadContext;
 
   // The note's resting emphasis when not actively targeted — the base model.
   const resting: LensEmphasis = applyTonesBase(noteClass);

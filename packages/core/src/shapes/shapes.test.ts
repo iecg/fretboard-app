@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getCagedCoordinates, CAGED_SHAPES, findMainShape, getShapeCenterFret } from './index';
-import { get3NPSCoordinates } from './threeNPS';
+import { getCagedCoordinates, _clearCagedCache, CAGED_SHAPES, findMainShape, getShapeCenterFret } from './index';
+import { get3NPSCoordinates, _clear3NPSCache } from './threeNPS';
 import { STANDARD_TUNING } from '../guitar';
 
 describe('getCagedCoordinates', () => {
@@ -23,12 +23,41 @@ describe('getCagedCoordinates', () => {
   // pixel conversion happens in Fretboard.tsx at render time. Calling the
   // function twice with identical args must produce identical output regardless
   // of what layoutMode the app is in.
-  it('returns identical polygon vertices on repeated calls (layout-mode-independent)', () => {
+  it('returns identical polygon vertices and cached reference on repeated calls (layout-mode-independent)', () => {
     const result1 = getCagedCoordinates('C', 'E', 'major', STANDARD_TUNING, 24);
     const result2 = getCagedCoordinates('C', 'E', 'major', STANDARD_TUNING, 24);
     expect(result1.polygons.length).toBeGreaterThan(0);
+    expect(result1).toBe(result2);
     expect(result1.polygons).toEqual(result2.polygons);
     expect(result1.coordinates).toEqual(result2.coordinates);
+  });
+
+  it('returns different cached results for different root notes and respects cache clear', () => {
+    const cResult = getCagedCoordinates('C', 'C', 'major', STANDARD_TUNING, 24);
+    const gResult = getCagedCoordinates('G', 'C', 'major', STANDARD_TUNING, 24);
+    expect(cResult).not.toBe(gResult);
+    expect(cResult.coordinates).not.toEqual(gResult.coordinates);
+
+    _clearCagedCache();
+    const cResultAfterClear = getCagedCoordinates('C', 'C', 'major', STANDARD_TUNING, 24);
+    expect(cResultAfterClear).toEqual(cResult);
+    expect(cResultAfterClear).not.toBe(cResult);
+  });
+});
+
+describe('get3NPSCoordinates memoization', () => {
+  it('returns stable cached reference on repeated calls and respects clear', () => {
+    const res1 = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 1, 0);
+    const res2 = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 1, 0);
+    expect(res1).toBe(res2);
+
+    const diffPos = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 2, 0);
+    expect(diffPos).not.toBe(res1);
+
+    _clear3NPSCache();
+    const resAfterClear = get3NPSCoordinates('C', 'major', STANDARD_TUNING, 24, 1, 0);
+    expect(resAfterClear).toEqual(res1);
+    expect(resAfterClear).not.toBe(res1);
   });
 });
 
