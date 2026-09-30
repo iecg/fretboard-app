@@ -58,7 +58,28 @@ export const ENHARMONICS: Record<string, string> = {
   Bb: "A#",
 };
 
+const MAX_THEORY_CACHE_ENTRIES = 256;
+const scaleNotesCache = new Map<string, string[]>();
+const chordNotesCache = new Map<string, string[]>();
+
+export function clearTheoryCache(): void {
+  scaleNotesCache.clear();
+  chordNotesCache.clear();
+}
+
+const FLAT_KEY_ROOTS = new Set([
+  "F", "Bb", "Eb", "Ab", "Db", "Gb", "Cb",
+  "f", "bb", "eb", "ab", "db", "gb", "cb",
+]);
+
+const SHARP_OR_NATURAL_KEY_ROOTS = new Set([
+  "C", "G", "D", "A", "E", "B", "F#", "C#", "G#", "D#", "A#",
+  "c#", "d#", "f#", "g#", "a#",
+]);
+
 export function isFlatKey(rootNote: string): boolean {
+  if (FLAT_KEY_ROOTS.has(rootNote)) return true;
+  if (SHARP_OR_NATURAL_KEY_ROOTS.has(rootNote)) return false;
   const key = Key.majorKey(rootNote);
   return typeof key.alteration === "number" && key.alteration < 0;
 }
@@ -342,13 +363,24 @@ export function getIntervalNotes(
 }
 
 export function getScaleNotes(rootNote: string, scaleName: string): string[] {
+  const cacheKey = `${rootNote}|${scaleName}`;
+  const cached = scaleNotesCache.get(cacheKey);
+  if (cached) return cached;
+
   const tonalName = normalizeScaleName(scaleName);
   if (!tonalName) return [];
   if (getNoteIndex(rootNote) === -1) return [];
   const tonalScale = Scale.get(`${rootNote} ${tonalName}`);
   // Tonal returns spelled notes. Normalize to sharps-form to maintain the
   // legacy contract (consumers do NOTES.indexOf on the result).
-  return tonalScale.notes.map((n) => normalizeToSharps(n));
+  const result = tonalScale.notes.map((n) => normalizeToSharps(n));
+
+  if (scaleNotesCache.size >= MAX_THEORY_CACHE_ENTRIES) {
+    const oldest = scaleNotesCache.keys().next().value;
+    if (oldest !== undefined) scaleNotesCache.delete(oldest);
+  }
+  scaleNotesCache.set(cacheKey, result);
+  return result;
 }
 
 /**
@@ -365,12 +397,23 @@ export function getScaleSemitones(rootNote: string, scaleName: string): number[]
 }
 
 export function getChordNotes(rootNote: string, chordName: string): string[] {
+  const cacheKey = `${rootNote}|${chordName}`;
+  const cached = chordNotesCache.get(cacheKey);
+  if (cached) return cached;
+
   const chroma = Note.chroma(rootNote);
   if (typeof chroma !== "number" || isNaN(chroma)) return [];
   const tonalChord = Chord.get(`${rootNote}${chordName}`);
   if (tonalChord.empty) return [];
   // Same sharps-form normalization as getIntervalNotes.
-  return tonalChord.notes.map((n) => normalizeToSharps(n));
+  const result = tonalChord.notes.map((n) => normalizeToSharps(n));
+
+  if (chordNotesCache.size >= MAX_THEORY_CACHE_ENTRIES) {
+    const oldest = chordNotesCache.keys().next().value;
+    if (oldest !== undefined) chordNotesCache.delete(oldest);
+  }
+  chordNotesCache.set(cacheKey, result);
+  return result;
 }
 
 /**

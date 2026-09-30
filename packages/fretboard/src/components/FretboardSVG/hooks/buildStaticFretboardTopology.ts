@@ -4,7 +4,6 @@ import {
   getNoteDisplayInScale,
   INTERVAL_NAMES,
   SCALES,
-  getFretNoteWithOctave,
   parseNote,
   type NoteSemantics,
   type ShapePolygon,
@@ -97,6 +96,60 @@ export function buildStaticFretboardTopology({
   const hasFullChordPositionFilter = !!fullChordPositionKeys && fullChordPositionKeys.size > 0;
   const polygonCoverage = buildPolygonCoverage(shapePolygons, maxFret);
 
+  // Precompute 12-pitch spelling map once to avoid 150 getNoteDisplayInScale calls
+  const displayNameByNote = new Map<string, string>();
+  for (const n of NOTES) {
+    displayNameByNote.set(
+      n,
+      getNoteDisplayInScale(n, rootNote, scale, preferFlats),
+    );
+  }
+
+  // Pre-parse open-string tuning info for integer octave arithmetic
+  const openStringParsed = tuning.map((openStr) => {
+    const p = parseNote(openStr) ?? { noteName: "E", octave: 4 };
+    return { octave: p.octave, noteIndex: NOTES.indexOf(p.noteName) };
+  });
+
+  // Pre-index active polygon bounds per string for O(1) range testing
+  interface StringFretRange {
+    minFret: number;
+    maxFret: number;
+  }
+  const activePolygonRangesByString = new Map<number, StringFretRange[]>();
+  const needsPolygonCheck =
+    hasChordOverlay &&
+    shapePolygons.length > 0 &&
+    !!activePattern &&
+    shapeScope !== "global";
+
+  if (needsPolygonCheck) {
+    for (let s = 0; s < numStrings; s++) {
+      const ranges: StringFretRange[] = [];
+      for (const poly of shapePolygons) {
+        if (shapeScope === "single") {
+          if (activePattern === "caged" && poly.shape !== activeShape) continue;
+          if (activePattern === "3nps" && poly.shape !== activeShape) continue;
+        } else if (shapeScope === "multi" && Array.isArray(activeShape)) {
+          if (!(activeShape as CagedShape[]).includes(poly.shape as CagedShape)) continue;
+        }
+
+        const leftFret = poly.vertices[s]?.fret;
+        const rightFret = poly.vertices[poly.vertices.length - 1 - s]?.fret;
+        if (leftFret === undefined || rightFret === undefined) continue;
+        const clampedLeft = Math.min(maxFret, Math.max(0, leftFret));
+        const clampedRight = Math.min(maxFret, Math.max(0, rightFret));
+        if (clampedLeft > clampedRight) continue;
+
+        ranges.push({
+          minFret: clampedLeft - chordFretSpread,
+          maxFret: clampedRight + chordFretSpread,
+        });
+      }
+      activePolygonRangesByString.set(s, ranges);
+    }
+  }
+
   for (let stringIndex = 0; stringIndex < numStrings; stringIndex++) {
     const layoutRow = fretboardLayout[stringIndex];
 
@@ -161,30 +214,11 @@ export function buildStaticFretboardTopology({
         if (shapePolygons.length === 0 || !activePattern) return true;
         if (shapeScope === "global") return true;
 
-        return shapePolygons.some((poly) => {
-          // Truncated polygons' visible portion is still a polygon the user
-          // sees on the fretboard; positions inside it ARE in a playable
-          // context. The clamped-vertex check below correctly filters to the
-          // on-board fret range.
-          if (shapeScope === "single") {
-            if (activePattern === "caged" && poly.shape !== activeShape) return false;
-            if (activePattern === "3nps" && poly.shape !== activeShape) return false;
-          } else if (shapeScope === "multi" && Array.isArray(activeShape)) {
-            if (!(activeShape as CagedShape[]).includes(poly.shape as CagedShape)) return false;
-          }
-
-          const leftFret = poly.vertices[stringIndex]?.fret;
-          const rightFret = poly.vertices[poly.vertices.length - 1 - stringIndex]?.fret;
-          if (leftFret === undefined || rightFret === undefined) return false;
-          const clampedLeft = Math.min(maxFret, Math.max(0, leftFret));
-          const clampedRight = Math.min(maxFret, Math.max(0, rightFret));
-          if (clampedLeft > clampedRight) return false;
-
-          return (
-            fretIndex >= clampedLeft - chordFretSpread &&
-            fretIndex <= clampedRight + chordFretSpread
-          );
-        });
+        const ranges = activePolygonRangesByString.get(stringIndex);
+        if (!ranges || ranges.length === 0) return false;
+        return ranges.some(
+          (r) => fretIndex >= r.minFret && fretIndex <= r.maxFret,
+        );
       })();
 
       const isChordInRange = isInPlayableContext;
@@ -224,12 +258,7 @@ export function buildStaticFretboardTopology({
       // Scale-aware spelled pitch (e.g. "A#" → "Bb" in F major). This is the
       // pitch the visible "notes"-mode label shows; the a11y aria-label reuses
       // it so screen readers announce the same spelling. See issue #493.
-      const displayName = getNoteDisplayInScale(
-        noteName,
-        rootNote,
-        scale,
-        preferFlats,
-      );
+      const displayName = displayNameByNote.get(noteName) ?? noteName;
       let displayValue = displayName;
       if (displayFormat === "degrees" && rootNote) {
         const noteIdx = NOTES.indexOf(noteName);
@@ -255,11 +284,10 @@ export function buildStaticFretboardTopology({
 
       const isHidden = finalNoteClass === "note-inactive";
 
-      const openString = tuning[stringIndex];
-      const noteWithOctave = openString
-        ? getFretNoteWithOctave(openString, fretIndex)
-        : `${noteName}4`;
-      const octave = parseNote(noteWithOctave)?.octave ?? 4;
+      const open = openStringParsed[stringIndex];
+      const octave = open && open.noteIndex !== -1
+        ? open.octave + Math.floor((open.noteIndex + fretIndex) / 12)
+        : 4;
 
       notes.push({
         positionKey,

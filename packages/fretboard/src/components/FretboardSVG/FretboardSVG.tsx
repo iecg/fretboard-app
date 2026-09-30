@@ -718,6 +718,7 @@ export function FretboardSVG({
                     neckHeight={neckHeight}
                     numStrings={numStrings}
                     countdownTicks={countdownTicks}
+                    prefersReducedMotion={prefersReducedMotion}
                   />
                 </g>
                 <ChordConnectorEvaluator {...connectorProps} pass="above" />

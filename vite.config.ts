@@ -92,37 +92,57 @@ export default defineConfig({
             {
               name: 'vendor-react',
               test: /node_modules[\\/](react-dom|react|scheduler)[\\/]/,
-              priority: 3,
+              priority: 10,
             },
             {
               name: 'vendor-state',
               test: /node_modules[\\/]jotai[\\/]/,
-              priority: 3,
-            },
-            {
-              name: 'song-controls',
-              test: (id: string) => id.includes('src/components/SongControls'),
-              priority: 3,
-            },
-            {
-              name: 'status-bar',
-              test: (id: string) => id.includes('src/components/StatusBar'),
-              priority: 3,
+              priority: 10,
             },
             {
               name: 'vendor-motion',
               test: /node_modules[\\/](framer-motion|motion-dom|motion-utils|motion)[\\/]/,
-              priority: 2,
+              priority: 9,
             },
             {
               name: 'vendor-tone',
               test: /node_modules[\\/]tone[\\/]/,
-              priority: 2,
+              priority: 9,
+            },
+            {
+              name: 'vendor-theory',
+              test: /node_modules[\\/](@tonaljs)[\\/]/,
+              priority: 8,
+            },
+            {
+              name: 'vendor-ui',
+              test: /node_modules[\\/](lucide-react|clsx)[\\/]/,
+              priority: 8,
             },
             {
               name: 'vendor',
               test: (id: string) => id.includes('node_modules'),
-              priority: 1,
+              priority: 5,
+            },
+            {
+              name: 'core',
+              test: (id: string) => id.includes('packages/core'),
+              priority: 4,
+            },
+            {
+              name: 'fretboard-pkg',
+              test: (id: string) => id.includes('packages/fretboard'),
+              priority: 4,
+            },
+            {
+              name: 'song-controls',
+              test: (id: string) => id.includes('src/components/SongControls') && !id.includes('node_modules'),
+              priority: 3,
+            },
+            {
+              name: 'status-bar',
+              test: (id: string) => id.includes('src/components/StatusBar') && !id.includes('node_modules'),
+              priority: 3,
             },
           ],
         },
