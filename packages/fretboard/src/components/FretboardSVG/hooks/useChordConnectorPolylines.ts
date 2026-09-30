@@ -237,10 +237,35 @@ export function assignConflictEncodings(
   const polylines = voicings.map((v) =>
     v.noteCoords.map((c) => ({ x: c.fretIndex, y: c.stringIndex })),
   );
+  const bounds = voicings.map((v) => {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (let k = 0; k < v.noteCoords.length; k++) {
+      const c = v.noteCoords[k]!;
+      if (c.fretIndex < minX) minX = c.fretIndex;
+      if (c.fretIndex > maxX) maxX = c.fretIndex;
+      if (c.stringIndex < minY) minY = c.stringIndex;
+      if (c.stringIndex > maxY) maxY = c.stringIndex;
+    }
+    return { minX, maxX, minY, maxY };
+  });
+
   const n = voicings.length;
   const conflicts = voicings.map(() => new Set<number>());
   for (let i = 0; i < n; i++) {
+    const b1 = bounds[i]!;
     for (let j = i + 1; j < n; j++) {
+      const b2 = bounds[j]!;
+      if (
+        b1.minX - b2.maxX > CONFLICT_THRESHOLD_UNITS ||
+        b2.minX - b1.maxX > CONFLICT_THRESHOLD_UNITS ||
+        b1.minY - b2.maxY > CONFLICT_THRESHOLD_UNITS ||
+        b2.minY - b1.maxY > CONFLICT_THRESHOLD_UNITS
+      ) {
+        continue;
+      }
       if (polylineDistance(polylines[i]!, polylines[j]!) <= CONFLICT_THRESHOLD_UNITS) {
         conflicts[i]!.add(j);
         conflicts[j]!.add(i);
