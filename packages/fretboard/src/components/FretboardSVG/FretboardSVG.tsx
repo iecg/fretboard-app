@@ -183,16 +183,6 @@ const areConnectorPropsEqual = (prev: any, next: any) => {
       const pv = prev.explicitVoicings[i];
       const nv = next.explicitVoicings[i];
       if (pv.voicingKey !== nv.voicingKey || pv.isFallback !== nv.isFallback || pv.shape !== nv.shape) return false;
-      if (pv.notes.length !== nv.notes.length) return false;
-      for (let j = 0; j < pv.notes.length; j++) {
-        if (
-          pv.notes[j].stringIndex !== nv.notes[j].stringIndex ||
-          pv.notes[j].fretIndex !== nv.notes[j].fretIndex ||
-          pv.notes[j].noteName !== nv.notes[j].noteName
-        ) {
-          return false;
-        }
-      }
     }
   }
 
@@ -214,8 +204,8 @@ const areConnectorPropsEqual = (prev: any, next: any) => {
     const p = prev.noteData[i];
     const n = next.noteData[i];
     if (
-      p.string !== n.string ||
-      p.fret !== n.fret ||
+      p.stringIndex !== n.stringIndex ||
+      p.fretIndex !== n.fretIndex ||
       p.noteName !== n.noteName ||
       p.noteClass !== n.noteClass
     ) {
