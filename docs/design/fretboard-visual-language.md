@@ -196,11 +196,18 @@ Three meta-principles govern the model:
   change. It is assigned only in the animated layer — never by `classifyNoteFromSemantics`
   — because it depends on time, not on static harmony. Applies to the `root` lens too: an
   out-of-scale next-chord root ghosts the same way.
-  **Known limit:** 3NPS with an active position gates on a coordinate whitelist built from
-  scale positions only, so an out-of-scale pitch has no pattern coordinate and gets no
-  ghost there. The same gate keeps an out-of-scale guide tone of the *active* chord hidden
-  in 3NPS; both want one decision about whether a scale-derived shape should ever surface
-  out-of-scale notes.
+  **Fixed for 3NPS** via `isInPatternFretWindow` — the same fret-range test 3NPS's
+  `isInPlayableContext` branch already runs, minus the coordinate whitelist that
+  branch layers on top (that whitelist is built from scale positions only, so an
+  out-of-scale pitch structurally has no coordinate there — unlike CAGED's
+  polygon-vertex test, which is geometry-only and already admits it). Consumed
+  wherever a guide tone specifically needs to survive that widening: the lead-in
+  ghost gate here, and the "active chord's own out-of-scale guide tone" branch in
+  `classifyNoteFromSemantics`. **Residual limit:** a chord with two or more
+  out-of-scale guide tones still has no matching 3NPS voicing at all — the
+  voicing-selection engine's own ≤1-outside-note tolerance
+  (`scoreFullChordForThreeNpsPosition`) is unchanged by this, so there's nothing
+  to reveal in that case; this is a distinct, pre-existing limitation.
 - **`--note-incoming` is a dedicated green-teal hue** chosen to avoid collision with
   amber (home/tension), teal-held, and the old `#fb923c` anticipation hue. **[internal]**
   "one hue = one meaning."

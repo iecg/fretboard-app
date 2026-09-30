@@ -587,6 +587,47 @@ describe("FretboardSVG/FretboardSVG", () => {
       });
     });
 
+    it("keeps that same out-of-scale guide tone teal under an active 3NPS position", () => {
+      // Same G major pentatonic + G7 scenario as above, but with a 3NPS
+      // position active: `highlightNotes` there is a "string-fret" coordinate
+      // whitelist built from SCALE notes only, so F (the b7) has no coordinate
+      // even though string 0 fret 1 sits inside the position's fret box. Prior
+      // to isInPatternFretWindow, this made isInActiveShape false and the
+      // guide-tone branch in classifyNoteFromSemantics unreachable in 3NPS.
+      const semantics = sem([
+        ["F", { isChordTone: true, isInScale: false, isGuideTone: true, memberName: "b7" }],
+      ]);
+      const { container } = render(
+        <FretboardSVG
+          {...BASE_PROPS}
+          chordTones={["G", "B", "D", "F"]}
+          chordRoot="G"
+          rootNote="G"
+          noteSemantics={semantics}
+          activePattern="3nps"
+          shapeScope="single"
+          activeShape={1}
+          chordBoxBounds={[{ minFret: 0, maxFret: 3 }]}
+          // Position-key coordinates for E/B/G at fret 0 (all in G major
+          // pentatonic) — deliberately excludes "0-1" (F, string 0 fret 1).
+          highlightNotes={["0-0", "1-0", "2-0"]}
+        />,
+      );
+      // F recurs at several frets across the neck; only the occurrences INSIDE
+      // the 3NPS position's fret box (0-3) are expected to render at all — an
+      // F elsewhere is correctly still "note-inactive" (no data-note-role, per
+      // FretboardNote.tsx) and outside this test's claim. Scoping to elements
+      // that carry BOTH attributes isolates the in-window occurrence(s): a
+      // note-inactive position gets data-note-guide-tone (driven purely by
+      // semantics, independent of visibility) but never data-note-role.
+      const guideNotes = container.querySelectorAll('g[data-note-guide-tone="true"][data-note-role]');
+      expect(guideNotes.length).toBeGreaterThan(0);
+      guideNotes.forEach((el) => {
+        expect(el.classList.contains("chord-tone-in-scale")).toBe(true);
+        expect(el.classList.contains("chord-tone-outside-scale")).toBe(false);
+      });
+    });
+
     it("notes without semantics entry have no data-note-tension or data-note-guide-tone", () => {
       const semantics = sem([
         ["C", { isScaleRoot: true, isChordRoot: true, isChordTone: true, isInScale: true, memberName: "root" }],
@@ -961,6 +1002,38 @@ describe("FretboardSVG/FretboardSVG", () => {
         expect(btn.getAttribute("aria-hidden")).toBe("true");
         expect((btn as HTMLButtonElement).tabIndex).toBe(-1);
         expect(btn.getAttribute("data-note-role")).toBeNull();
+      });
+    });
+
+    it("still ghosts B under an active 3NPS position, where the coordinate whitelist alone would hide it", () => {
+      // In 3NPS, `highlightNotes` is a "string-fret" coordinate whitelist
+      // built from SCALE notes only (get3NPSCoordinates walks scale notes,
+      // never chromatic ones) — B has no coordinate there even though string 1
+      // fret 0 (its open-string position on standard tuning) sits inside the
+      // active position's fret box. isInPatternFretWindow (the fret-range test
+      // with that whitelist dropped) is what lets the ghost through here.
+      // Only B carries transitionRole "guide-target" in this fixture (it's the
+      // sole next-chord guide tone), so any promoted ghost found IS B.
+      const { container } = renderWithStore(
+        <FretboardSVGWithEmphasis
+          {...BASE_PROPS}
+          {...AM_UNDER_PENTATONIC}
+          activePattern="3nps"
+          shapeScope="single"
+          activeShape={1}
+          chordBoxBounds={[{ minFret: 0, maxFret: 3 }]}
+          // Position-key coordinates for E/G/D at fret 0 (all in C major
+          // pentatonic) — deliberately excludes "1-0" (B, open B string).
+          highlightNotes={["0-0", "2-0", "3-0"]}
+        />,
+        makeAmToGStore(),
+      );
+
+      const ghosts = container.querySelectorAll('g[data-note-role="incoming-ghost"]');
+      expect(ghosts.length).toBeGreaterThan(0);
+      ghosts.forEach((g) => {
+        expect(g.classList.contains("hidden")).toBe(false);
+        expect(g.getAttribute("data-transition-role")).toBe("guide-target");
       });
     });
   });
