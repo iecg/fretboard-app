@@ -362,12 +362,13 @@ export function useProgressionAudioPlayback() {
   useEffect(() => {
     if (!playing || blocked || muted) return;
     let cancelled = false;
-    const id = window.setInterval(async () => {
-      try {
-        const { probeOutputHealth } = await import("../core/audioOutputHealth");
-        const health = await probeOutputHealth();
-        if (!cancelled && health === "wedged") setOutputWedged(true);
-      } catch {}
+    const id = window.setInterval(() => {
+      void import("../core/audioOutputHealth")
+        .then(({ probeOutputHealth }) => probeOutputHealth())
+        .then((health) => {
+          if (!cancelled && health === "wedged") setOutputWedged(true);
+        })
+        .catch(() => {});
     }, 1000);
     return () => {
       cancelled = true;
