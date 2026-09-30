@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Provider, createStore } from "jotai";
 import { axe } from "../../test-utils/a11y";
 import { renderWithAtoms } from "../../test-utils/renderWithAtoms";
@@ -209,10 +210,7 @@ describe("SettingsOverlay/SettingsOverlay", () => {
     const { store } = renderOpenOverlay();
     const backdrop = document.querySelector(".settings-overlay-backdrop");
     expect(backdrop).toBeTruthy();
-    // DismissableLayer registers its pointerdown listener via setTimeout(0);
-    // wait for the next macrotask so it's in place before we trigger.
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
-    fireEvent.pointerDown(backdrop!);
+    await userEvent.click(backdrop!);
     expect(store.get(settingsOverlayOpenAtom)).toBe(false);
   });
 
