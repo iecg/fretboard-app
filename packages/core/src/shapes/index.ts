@@ -5,11 +5,11 @@ export type { FullChordMatch, FullChordMatchNote } from "./fullChordShapes";
 export { getFullChordShapeMatches } from "./fullChordShapes";
 
 export type { ShapeVertex, ShapePolygon, ShapeResult } from "./polygons";
-export { getCagedCoordinates } from "./polygons";
+export { getCagedCoordinates, _clearCagedCache } from "./polygons";
 
 export { findMainShape, getShapeCenterFret, isShapeOutOfView, hasWrappedNotes } from "./analytics";
 
-export { get3NPSCoordinates } from "./threeNPS";
+export { get3NPSCoordinates, _clear3NPSCache } from "./threeNPS";
 
 export type {
   Voicing, VoicingNote, VoicingType,

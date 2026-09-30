@@ -67,6 +67,13 @@ export interface ShapeResult {
   wrappedNotes: Set<string>;
 }
 
+const MAX_CAGED_CACHE_SIZE = 128;
+const cagedCache = new Map<string, ShapeResult>();
+
+export function _clearCagedCache(): void {
+  cagedCache.clear();
+}
+
 export function getCagedCoordinates(
   rootNote: string,
   shape: CagedShape,
@@ -74,6 +81,10 @@ export function getCagedCoordinates(
   tuning: string[],
   frets: number,
 ): ShapeResult {
+  const cacheKey = `${rootNote}|${shape}|${scaleName}|${tuning.join(',')}|${frets}`;
+  const cached = cagedCache.get(cacheKey);
+  if (cached) return cached;
+
   const validNotes = getScaleNotes(rootNote, scaleName);
   const layout = getFretboardNotes(tuning, frets);
 
@@ -222,10 +233,18 @@ export function getCagedCoordinates(
     }
   }
 
-  return {
+  const result: ShapeResult = {
     coordinates: coordSetToStrings(coordinates),
     bounds,
     polygons,
     wrappedNotes: allWrappedNotes,
   };
+
+  if (cagedCache.size >= MAX_CAGED_CACHE_SIZE) {
+    const firstKey = cagedCache.keys().next().value;
+    if (firstKey !== undefined) cagedCache.delete(firstKey);
+  }
+  cagedCache.set(cacheKey, result);
+
+  return result;
 }

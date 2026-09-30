@@ -538,16 +538,29 @@ export const visibleVoicingMatchesAtom = atom((get): Voicing[] => {
 // useNoteData) when the chord highlight set is value-equal across Jotai
 // re-evaluations triggered by upstream dep churn.
 let cachedHighlightSet: Set<string> = new Set();
-let cachedHighlightKey = "<uninitialized>";
+let cachedInitialized = false;
 
-function memoizedHighlightSet(positionKeys: Iterable<string>): Set<string> {
-  const sorted = [...new Set(positionKeys)].sort();
-  const fingerprint = sorted.join("|");
-  if (fingerprint === cachedHighlightKey) {
-    return cachedHighlightSet;
+export function _resetCachedHighlightSet(): void {
+  cachedHighlightSet = new Set();
+  cachedInitialized = false;
+}
+
+export function memoizedHighlightSet(positionKeys: Iterable<string>): Set<string> {
+  const nextSet = positionKeys instanceof Set ? positionKeys : new Set(positionKeys);
+  if (cachedInitialized && nextSet.size === cachedHighlightSet.size) {
+    let equal = true;
+    for (const item of nextSet) {
+      if (!cachedHighlightSet.has(item)) {
+        equal = false;
+        break;
+      }
+    }
+    if (equal) {
+      return cachedHighlightSet;
+    }
   }
-  cachedHighlightKey = fingerprint;
-  cachedHighlightSet = new Set(sorted);
+  cachedInitialized = true;
+  cachedHighlightSet = nextSet;
   return cachedHighlightSet;
 }
 
@@ -611,12 +624,16 @@ function addChordTonesWithinPolygon(
   const tuning = get(currentTuningAtom);
   const layout = getCachedFretboardLayout(tuning, 24);
   const polygonCoverage = buildPolygonCoverage(shapePolygons, 24);
-  for (let s = 0; s < tuning.length; s++) {
-    for (let f = 0; f <= 24; f++) {
-      if (tones.includes(layout[s][f])) {
-        const key = `${s}-${f}`;
-        if (polygonCoverage.coveredPositions.has(key)) {
-          result.add(key);
+  const toneSet = new Set(tones);
+
+  for (const [s, ranges] of polygonCoverage.stringRanges) {
+    const layoutRow = layout[s];
+    if (!layoutRow) continue;
+    for (let r = 0; r < ranges.length; r++) {
+      const range = ranges[r];
+      for (let f = range.minFret; f <= range.maxFret; f++) {
+        if (toneSet.has(layoutRow[f])) {
+          result.add(`${s}-${f}`);
         }
       }
     }

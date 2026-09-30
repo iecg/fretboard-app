@@ -27,6 +27,69 @@ interface FretboardHitTargetLayerProps {
   onNoteClick?: (stringIndex: number, fretIndex: number, noteName: string) => void;
 }
 
+interface HitTargetButtonProps {
+  stringIndex: number;
+  fretIndex: number;
+  noteClass: string;
+  displayValue: string;
+  isHidden: boolean;
+  noteName: string;
+  isTension: boolean;
+  isGuideTone: boolean;
+  left: number;
+  top: number;
+  noteBubblePx: number;
+  noteFontPx: number;
+  interactive: boolean;
+}
+
+const HitTargetButton = memo(function HitTargetButton({
+  stringIndex,
+  fretIndex,
+  noteClass,
+  displayValue,
+  isHidden,
+  noteName,
+  isTension,
+  isGuideTone,
+  left,
+  top,
+  noteBubblePx,
+  noteFontPx,
+  interactive,
+}: HitTargetButtonProps) {
+  return (
+    <button
+      type="button"
+      data-string-index={stringIndex}
+      data-fret-index={fretIndex}
+      data-note-name={noteName}
+      disabled={!interactive}
+      aria-hidden={isHidden || undefined}
+      tabIndex={isHidden ? -1 : undefined}
+      aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}${NOTE_CLASS_ROLE[noteClass] ? `, ${NOTE_CLASS_ROLE[noteClass]}` : ""}`}
+      data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
+      data-note-tension={isTension || undefined}
+      data-note-guide-tone={isGuideTone || undefined}
+      className={clsx(
+        styles["note-bubble"],
+        styles[noteClass],
+        isHidden && "hidden",
+      )}
+      style={{
+        position: "absolute",
+        left,
+        top,
+        width: noteBubblePx,
+        height: noteBubblePx,
+        fontSize: `${noteFontPx}px`,
+        opacity: 0,
+        pointerEvents: interactive ? "auto" : "none",
+      }}
+    />
+  );
+});
+
 export const FretboardHitTargetLayer = memo(({
   noteData,
   fretCenterX,
@@ -37,7 +100,8 @@ export const FretboardHitTargetLayer = memo(({
   neckHeight,
   onNoteClick,
 }: FretboardHitTargetLayerProps) => {
-  const handleContainerClick = onNoteClick
+  const interactive = !!onNoteClick;
+  const handleContainerClick = interactive
     ? (event: React.MouseEvent<HTMLDivElement>) => {
         const target = event.target as HTMLElement | null;
         const button = target?.closest<HTMLButtonElement>("button[data-string-index]");
@@ -48,6 +112,8 @@ export const FretboardHitTargetLayer = memo(({
         onNoteClick(stringIndex, fretIndex, button.dataset.noteName ?? "");
       }
     : undefined;
+
+  const r = noteBubblePx / 2;
 
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
@@ -65,36 +131,22 @@ export const FretboardHitTargetLayer = memo(({
       {noteData.map(({ stringIndex, fretIndex, noteClass, displayValue, isHidden, noteName, isTension, isGuideTone }) => {
         const cx = fretCenterX(fretIndex);
         const cy = stringYAt(stringIndex, cx);
-        const r = noteBubblePx / 2;
         return (
-          <button
+          <HitTargetButton
             key={`btn-${stringIndex}-${fretIndex}`}
-            type="button"
-            data-string-index={stringIndex}
-            data-fret-index={fretIndex}
-            data-note-name={noteName}
-            disabled={!onNoteClick}
-            aria-hidden={isHidden || undefined}
-            tabIndex={isHidden ? -1 : undefined}
-            aria-label={`${formatAccidental(displayValue)} on string ${stringIndex + 1}, fret ${fretIndex}${NOTE_CLASS_ROLE[noteClass] ? `, ${NOTE_CLASS_ROLE[noteClass]}` : ""}`}
-            data-note-role={noteClass !== "note-inactive" ? noteClass : undefined}
-            data-note-tension={isTension || undefined}
-            data-note-guide-tone={isGuideTone || undefined}
-            className={clsx(
-              styles["note-bubble"],
-              styles[noteClass],
-              isHidden && "hidden",
-            )}
-            style={{
-              position: "absolute",
-              left: cx - r,
-              top: cy - r,
-              width: noteBubblePx,
-              height: noteBubblePx,
-              fontSize: `${noteFontPx}px`,
-              opacity: 0,
-              pointerEvents: onNoteClick ? "auto" : "none",
-            }}
+            stringIndex={stringIndex}
+            fretIndex={fretIndex}
+            noteClass={noteClass}
+            displayValue={displayValue}
+            isHidden={isHidden}
+            noteName={noteName}
+            isTension={isTension}
+            isGuideTone={isGuideTone}
+            left={cx - r}
+            top={cy - r}
+            noteBubblePx={noteBubblePx}
+            noteFontPx={noteFontPx}
+            interactive={interactive}
           />
         );
       })}

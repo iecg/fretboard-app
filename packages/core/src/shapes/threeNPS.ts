@@ -2,6 +2,13 @@ import { getScaleNotes } from "../theory";
 import { getFretboardNotes } from "../guitar";
 import type { ShapeResult } from "./polygons";
 
+const MAX_3NPS_CACHE_SIZE = 128;
+const threeNpsCache = new Map<string, ShapeResult>();
+
+export function _clear3NPSCache(): void {
+  threeNpsCache.clear();
+}
+
 export function get3NPSCoordinates(
   rootNote: string,
   scalePattern: string,
@@ -10,6 +17,10 @@ export function get3NPSCoordinates(
   position: number,
   octave = 0,
 ): ShapeResult {
+  const cacheKey = `${rootNote}|${scalePattern}|${tuning.join(',')}|${frets}|${position}|${octave}`;
+  const cached = threeNpsCache.get(cacheKey);
+  if (cached) return cached;
+
   const scaleNotes = getScaleNotes(rootNote, scalePattern);
   if (scaleNotes.length === 0) return { coordinates: [], bounds: [], polygons: [], wrappedNotes: new Set() };
 
@@ -67,10 +78,18 @@ export function get3NPSCoordinates(
       ? [{ minFret: aggregateMinFret, maxFret: aggregateMaxFret }]
       : [];
 
-  return {
+  const result: ShapeResult = {
     coordinates: coords,
     bounds,
     polygons: [],
     wrappedNotes: new Set(),
   };
+
+  if (threeNpsCache.size >= MAX_3NPS_CACHE_SIZE) {
+    const firstKey = threeNpsCache.keys().next().value;
+    if (firstKey !== undefined) threeNpsCache.delete(firstKey);
+  }
+  threeNpsCache.set(cacheKey, result);
+
+  return result;
 }

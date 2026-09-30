@@ -20,6 +20,8 @@ import {
   chordLookupAtom,
   chordLookupRootAtom,
   chordLookupTypeAtom,
+  memoizedHighlightSet,
+  _resetCachedHighlightSet,
 } from "./chordOverlayAtoms";
 import { shapeDataAtom } from "./shapeAtoms";
 import { allChordMembersAtom } from "./composableSelectors";
@@ -1280,6 +1282,20 @@ describe("chordHighlightPositionsAtom referential stability", () => {
     const second = store.get(chordHighlightPositionsAtom);
     expect(second).not.toBe(first);
     expect(second.size).toBe(0);
+  });
+
+  it("memoizedHighlightSet returns the same reference for sets with equal content in different order", () => {
+    _resetCachedHighlightSet();
+    const setA = new Set(["0-1", "1-2", "2-3"]);
+    const setB = new Set(["2-3", "0-1", "1-2"]);
+    const refA = memoizedHighlightSet(setA);
+    const refB = memoizedHighlightSet(setB);
+    expect(refB).toBe(refA);
+
+    const setC = new Set(["0-1", "1-2"]);
+    const refC = memoizedHighlightSet(setC);
+    expect(refC).not.toBe(refA);
+    expect(refC.size).toBe(2);
   });
 });
 

@@ -48,6 +48,13 @@ export const NOTE_TAPER_GAP_FRACTION = 0.18;
  * Returns 1 for degenerate geometry so callers that omit layout info (e.g.
  * existing unit tests) are unaffected.
  */
+const MAX_TAPER_CACHE_SIZE = 64;
+const taperScaleCache = new Map<string, number>();
+
+export function _clearTaperScaleCache(): void {
+  taperScaleCache.clear();
+}
+
 export function taperAwareRadiusScale({
   x,
   neckWidthPx,
@@ -67,6 +74,10 @@ export function taperAwareRadiusScale({
 }): number {
   if (neckWidthPx <= 0 || neckHeight <= 0 || numStrings < 2 || noteBubblePx <= 0) return 1;
 
+  const key = `${x}|${neckWidthPx}|${neckHeight}|${numStrings}|${noteBubblePx}|${minScale}|${gapFraction}`;
+  const cached = taperScaleCache.get(key);
+  if (cached !== undefined) return cached;
+
   const xFrac = Math.max(0, Math.min(1, x / neckWidthPx));
   const spacingRatio =
     STRING_SPREAD_LEFT_FRAC + (1 - STRING_SPREAD_LEFT_FRAC) * xFrac;
@@ -75,7 +86,15 @@ export function taperAwareRadiusScale({
   const referenceSpacing = noteBubblePx * (1 + gapFraction);
 
   const scale = localSpacing / referenceSpacing;
-  return Math.max(minScale, Math.min(1, scale));
+  const result = Math.max(minScale, Math.min(1, scale));
+
+  if (taperScaleCache.size >= MAX_TAPER_CACHE_SIZE) {
+    const firstKey = taperScaleCache.keys().next().value;
+    if (firstKey !== undefined) taperScaleCache.delete(firstKey);
+  }
+  taperScaleCache.set(key, result);
+
+  return result;
 }
 
 /**
