@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   SCALES,
   CHORDS,
@@ -14,7 +14,44 @@ import {
   getKeySignatureForDisplay,
   resolveAccidentalMode,
   getDiatonicChord,
+  isFlatKey,
+  clearTheoryCache,
 } from "./theory";
+
+describe("theory caching", () => {
+  beforeEach(() => {
+    clearTheoryCache();
+  });
+
+  it("returns identical array references on repeated getScaleNotes calls", () => {
+    const a = getScaleNotes("C", "major");
+    const b = getScaleNotes("C", "major");
+    expect(a).toBe(b);
+  });
+
+  it("returns identical array references on repeated getChordNotes calls", () => {
+    const a = getChordNotes("C", "maj7");
+    const b = getChordNotes("C", "maj7");
+    expect(a).toBe(b);
+  });
+
+  it("clears cached references on clearTheoryCache", () => {
+    const a = getScaleNotes("C", "major");
+    clearTheoryCache();
+    const b = getScaleNotes("C", "major");
+    expect(a).toEqual(b);
+    expect(a).not.toBe(b);
+  });
+
+  it("correctly identifies flat keys using fast path", () => {
+    expect(isFlatKey("F")).toBe(true);
+    expect(isFlatKey("Bb")).toBe(true);
+    expect(isFlatKey("Eb")).toBe(true);
+    expect(isFlatKey("C")).toBe(false);
+    expect(isFlatKey("G")).toBe(false);
+    expect(isFlatKey("D")).toBe(false);
+  });
+});
 
 describe("getNoteIndex", () => {
   it("returns correct index for sharp notes", () => {
