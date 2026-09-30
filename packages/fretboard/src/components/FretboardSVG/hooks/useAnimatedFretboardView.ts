@@ -136,27 +136,7 @@ function renderedNoteSignature(
   note: RenderedFretboardNote,
 ): string {
   const emph = note.applyLensEmphasis;
-  return [
-    note.stringIndex,
-    note.fretIndex,
-    note.noteName,
-    note.octave,
-    note.noteClass,
-    note.displayName,
-    note.displayValue,
-    note.cx,
-    note.cy,
-    note.applyDimOpacity,
-    emph.opacityBoost,
-    emph.radiusBoost,
-    emph.transitionRole ?? "",
-    emph.guideTargetLabel ?? "",
-    note.isHidden,
-    note.isTension,
-    note.isGuideTone,
-    note.fullChordShape ?? "",
-    note.isInRegion,
-  ].join("|");
+  return `${note.stringIndex}|${note.fretIndex}|${note.noteName}|${note.octave}|${note.noteClass}|${note.displayName}|${note.displayValue}|${note.cx}|${note.cy}|${note.applyDimOpacity}|${emph.opacityBoost}|${emph.radiusBoost}|${emph.transitionRole ?? ""}|${emph.guideTargetLabel ?? ""}|${note.isHidden}|${note.isTension}|${note.isGuideTone}|${note.fullChordShape ?? ""}|${note.isInRegion}`;
 }
 
 export function buildRenderedFretboardNotes({

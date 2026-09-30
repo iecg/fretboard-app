@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useAtomValue } from "jotai";
 import {
   nextChordGuideTonesAtom,
@@ -48,8 +49,25 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
   const lens = useAtomValue(practiceLensAtom);
   const commonTones = useAtomValue(commonTonesWithNextAtom);
   const heldTargetTones = useAtomValue(heldTargetTonesAtom);
-  if (!enabled || !playing) return null;
-  return {
+
+  return useMemo(() => {
+    if (!enabled || !playing) return null;
+    return {
+      nextGuideTones,
+      nextGuideToneLabels,
+      nextChordTones,
+      incomingTones,
+      departingTones,
+      guideCountdownActive,
+      guideCountdownWindowMs,
+      countdownTicks,
+      lens,
+      commonTones,
+      heldTargetTones,
+    };
+  }, [
+    enabled,
+    playing,
     nextGuideTones,
     nextGuideToneLabels,
     nextChordTones,
@@ -61,5 +79,5 @@ export function useEmphasisContext(enabled: boolean): EmphasisContext | null {
     lens,
     commonTones,
     heldTargetTones,
-  };
+  ]);
 }
