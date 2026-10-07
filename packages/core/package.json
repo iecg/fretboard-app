@@ -29,7 +29,7 @@
   "dependencies": {
     "@tonaljs/chord": "^6.1.2",
     "@tonaljs/interval": "^5.1.0",
-    "@tonaljs/key": "^4.11.2",
+    "@tonaljs/key": "^4.11.3",
     "@tonaljs/mode": "^4.9.2",
     "@tonaljs/note": "^4.12.1",
     "@tonaljs/pcset": "^4.10.1",
